@@ -24,6 +24,7 @@ import { verifyAdminOrigin } from "./common/security/csrf-origin";
 
 export function createApp() {
   const app = express();
+  app.set("trust proxy", 1);
 
   applySecurity(app);
   app.use(globalRateLimit);
