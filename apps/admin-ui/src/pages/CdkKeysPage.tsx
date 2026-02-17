@@ -61,7 +61,7 @@ const TEXT = {
 
 function ProductColumn({ product, search }: { product: ProductItem; search: string }) {
   const qc = useQueryClient();
-  const productKey = String(product.slug || "").trim().toLowerCase();
+  const productKey = normalizeProductKey(product.slug);
   const [text, setText] = useState("");
   const [error, setError] = useState("");
   const [returningId, setReturningId] = useState("");
@@ -318,7 +318,7 @@ export default function CdkKeysPage() {
       .filter((item) => String(item.slug || "").trim())
       .map((item) => ({
         id: item.id,
-        slug: String(item.slug).trim().toLowerCase(),
+        slug: normalizeProductKey(item.slug),
         title: item.title,
       }));
   }, [productsQuery.data]);
@@ -344,3 +344,13 @@ export default function CdkKeysPage() {
   );
 }
 
+function normalizeProductKey(value: string) {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+/, "")
+    .replace(/-+$/, "");
+  return normalized || "chatgpt";
+}

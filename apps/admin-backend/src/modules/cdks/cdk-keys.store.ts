@@ -139,7 +139,14 @@ function normalizeCode(value: string) {
 }
 
 function normalizeProductKey(value: string) {
-  return String(value || "chatgpt").trim().toLowerCase() || "chatgpt";
+  const normalized = String(value || "chatgpt")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+/, "")
+    .replace(/-+$/, "");
+  return normalized || "chatgpt";
 }
 
 function nowIso() {
