@@ -21,7 +21,8 @@ type Product = {
 };
 
 function getBadgeFromTags(tags: string[] = []): BadgeType {
-  const found = tags
+  const list = Array.isArray(tags) ? tags : [];
+  const found = list
     .map((tag) => String(tag || "").toLowerCase())
     .find((tag) => tag.startsWith("badge:"));
   if (!found) return "none";
@@ -31,7 +32,8 @@ function getBadgeFromTags(tags: string[] = []): BadgeType {
 }
 
 function withBadgeTag(tags: string[] = [], badge: BadgeType): string[] {
-  const cleaned = tags.filter((tag) => !String(tag || "").toLowerCase().startsWith("badge:"));
+  const list = Array.isArray(tags) ? tags : [];
+  const cleaned = list.filter((tag) => !String(tag || "").toLowerCase().startsWith("badge:"));
   if (badge === "none") return cleaned;
   return [...cleaned, `badge:${badge}`];
 }
@@ -310,7 +312,7 @@ export default function ProductsPage() {
               </tr>
             </thead>
             <tbody>
-              {(products.data?.items || []).map((item: Product) => {
+              {(Array.isArray(products.data?.items) ? products.data.items : []).map((item: Product) => {
                 const itemBadge = getBadgeFromTags(item.tags || []);
                 return (
                   <tr className="border-t border-slate-200 dark:border-slate-800" key={item.id}>
