@@ -5,7 +5,8 @@ APP_DIR="/var/www/gptishka-new"
 
 cd "$APP_DIR"
 
-git pull origin main
+git fetch origin main
+git reset --hard origin/main
 npm install
 npm run prisma:generate --workspace @gptishka/admin-backend
 npm run build:admin:api

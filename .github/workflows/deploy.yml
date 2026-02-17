@@ -25,6 +25,5 @@ jobs:
           script: |
             set -e
             cd /var/www/gptishka-new
-            git pull origin main
             chmod +x deploy.sh
             ./deploy.sh
