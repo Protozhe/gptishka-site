@@ -257,7 +257,7 @@ export const ordersService = {
     }
     const productKey = String(current?.productKey || "chatgpt");
 
-    const nextCdk = activationStore.reserveCdkForOrder({
+    const nextCdk = await activationStore.reserveCdkForOrder({
       productKey,
       orderId: order.id,
       email: order.email,

@@ -35,7 +35,7 @@ export async function deliverProduct(order: Order) {
     return;
   }
 
-  const cdk = activationStore.reserveCdkForOrder({
+  const cdk = await activationStore.reserveCdkForOrder({
     productKey,
     orderId: order.id,
     email: order.email,

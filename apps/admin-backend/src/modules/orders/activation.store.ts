@@ -80,8 +80,8 @@ export const activationStore = {
     return data.items.slice();
   },
 
-  reserveCdkForOrder(input: { productKey: string; orderId: string; email: string }) {
-    const reserved = cdkKeysStore.assignNextUnused({
+  async reserveCdkForOrder(input: { productKey: string; orderId: string; email: string }) {
+    const reserved = await cdkKeysStore.assignNextUnused({
       productKey: input.productKey,
       orderId: input.orderId,
       email: input.email,
