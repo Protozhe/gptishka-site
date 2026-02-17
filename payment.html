@@ -1,0 +1,79 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Переход к оплате GPTишка" />
+  <title>Оплата - GPTишка</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/logo.min.css">
+  <link rel="stylesheet" href="/assets/css/sections.min.css">
+  <link rel="stylesheet" href="/assets/css/theme.min.css">
+  <style>
+    .payment-redirect {
+      max-width: 760px;
+      margin: 28px auto 0;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 22px;
+      box-shadow: 0 14px 36px rgba(16, 24, 40, .08);
+      padding: 28px;
+    }
+    .payment-redirect h1 { margin: 0 0 8px; font-size: 34px; }
+    .payment-redirect p { margin: 0 0 12px; color: #57607a; }
+    .payment-redirect .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+    .payment-redirect .btn-secondary {
+      border: 1px solid rgba(11, 122, 103, 0.32);
+      color: #0b7a67;
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-overlay"></div>
+
+  <header>
+    <div class="nav">
+      <a href="/index.html" class="logo-link">
+        <img loading="lazy" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTишка" class="logo-img">
+      </a>
+
+      <nav>
+        <a href="/index.html">Главная</a>
+        <a href="/about.html">О сервисе</a>
+        <a href="/reviews.html">Отзывы</a>
+        <a href="/guarantee.html">Гарантия</a>
+        <a href="/contact.html">Связь с нами</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="payment-redirect" aria-live="polite">
+      <h1>Оплата</h1>
+      <p>Перенаправляем вас в корзину для оформления заказа.</p>
+      <p>Если переход не сработал, нажмите кнопку ниже.</p>
+      <div class="actions">
+        <a class="btn" href="/cart.html">Открыть корзину</a>
+        <a class="btn-secondary" href="/index.html">Вернуться на главную</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    window.setTimeout(function () {
+      window.location.replace('/cart.html');
+    }, 200);
+  </script>
+</body>
+</html>

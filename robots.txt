@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /apps/
+Disallow: /includes/
+Disallow: /backups/
+Disallow: /data/
+
+Sitemap: https://gptishka.shop/sitemap.xml

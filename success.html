@@ -1,0 +1,209 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Оплата обрабатывается - GPTишка</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f6f0;
+      --card: #ffffff;
+      --border: rgba(15, 23, 42, 0.08);
+      --text: #18212f;
+      --muted: #55627a;
+      --ok: #0f9d72;
+      --warn: #c27a00;
+      --bad: #c92424;
+      --shadow: 0 16px 42px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Manrope", Arial, sans-serif;
+      background: radial-gradient(circle at top left, #faf4df 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+    .card {
+      width: min(640px, 100%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+    h1 { margin: 0 0 10px; font-size: 30px; line-height: 1.15; }
+    p { margin: 0 0 16px; color: var(--muted); }
+    .meta { margin: 8px 0 0; font-size: 15px; color: var(--text); }
+    .status {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+    .status.pending { background: #fff7e0; border-color: #f0d89e; color: var(--warn); }
+    .status.paid { background: #e8fbf4; border-color: #9be3cb; color: var(--ok); }
+    .status.failed { background: #ffecec; border-color: #f2b2b2; color: var(--bad); }
+    .actions { margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      color: var(--text);
+      text-decoration: none;
+      background: #fff;
+      font-weight: 700;
+    }
+    .btn.primary { background: #1a8f7b; border-color: #1a8f7b; color: #fff; }
+  </style>
+</head>
+<body>
+  <section class="card">
+    <h1>Оплата обрабатывается</h1>
+    <p>Проверяем платеж через webhook. Обычно это занимает до 30 секунд.</p>
+    <div class="meta">Заказ: <strong id="orderId">-</strong></div>
+    <div class="meta">Email: <strong id="emailMasked">-</strong></div>
+    <div class="meta">Сумма: <strong id="amount">-</strong></div>
+    <div class="status pending" id="statusText">Ожидаем подтверждение платежа...</div>
+    <div class="actions">
+      <a class="btn primary" href="/">На главную</a>
+      <a class="btn" href="/cart.html">Вернуться в корзину</a>
+    </div>
+  </section>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const orderId = String(params.get("order_id") || params.get("orderId") || "").trim();
+    const LAST_PAID_ORDER_KEY = "gptishka_last_paid_order_id";
+    const CART_STORAGE_KEYS = [
+      "gptishka_cart_v1",
+      "gptishka_card_qty_v1",
+      "selected_cart",
+      "gptishka_cart_promo_v1",
+      "selected_product",
+    ];
+
+    const orderIdEl = document.getElementById("orderId");
+    const emailMaskedEl = document.getElementById("emailMasked");
+    const amountEl = document.getElementById("amount");
+    const statusEl = document.getElementById("statusText");
+
+    if (!orderId) {
+      orderIdEl.textContent = "не найден";
+      statusEl.className = "status failed";
+      statusEl.textContent = "Не удалось определить order_id. Откройте оплату заново.";
+    } else {
+      orderIdEl.textContent = orderId;
+      try {
+        localStorage.setItem("gptishka_activation_order_id", orderId);
+      } catch (_) {
+        // Ignore storage write errors.
+      }
+      pollOrderStatus(orderId);
+    }
+
+    async function pollOrderStatus(id) {
+      const startedAt = Date.now();
+      const timeoutMs = 30000;
+      const intervalMs = 2000;
+
+      while (Date.now() - startedAt <= timeoutMs) {
+        const done = await requestStatus(id);
+        if (done) return;
+        await wait(intervalMs);
+      }
+
+      statusEl.className = "status pending";
+      statusEl.textContent = "Платеж еще в обработке. Обновите страницу через несколько секунд.";
+    }
+
+    async function requestStatus(id) {
+      try {
+        const response = await fetch(`/api/orders/${encodeURIComponent(id)}/reconcile`, { cache: "no-store" });
+        if (!response.ok) return false;
+        const payload = await response.json();
+
+        const status = String(payload?.status || "PENDING").toUpperCase();
+        const amount = Number(payload?.finalAmount || 0);
+        const currency = String(payload?.currency || "RUB");
+
+        if (payload?.emailMasked) emailMaskedEl.textContent = payload.emailMasked;
+        amountEl.textContent = `${formatAmount(amount)} ${currency}`;
+
+        if (status === "PAID") {
+          handlePaidOrder(id);
+          statusEl.className = "status paid";
+          statusEl.textContent = "Оплачено. Переводим на страницу активации...";
+          setTimeout(() => {
+            window.location.href = `/redeem-start.html?order_id=${encodeURIComponent(id)}`;
+          }, 1200);
+          return true;
+        }
+
+        if (status === "FAILED" || status === "REFUNDED") {
+          statusEl.className = "status failed";
+          statusEl.textContent = status === "REFUNDED" ? "Платеж возвращен." : "Оплата не подтверждена.";
+          return true;
+        }
+
+        statusEl.className = "status pending";
+        statusEl.textContent = "Ожидаем подтверждение платежа...";
+        return false;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function handlePaidOrder(id) {
+      try {
+        const lastPaid = String(localStorage.getItem(LAST_PAID_ORDER_KEY) || "").trim();
+        if (lastPaid === id) return;
+
+        CART_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+        localStorage.setItem(LAST_PAID_ORDER_KEY, id);
+      } catch (_) {
+        // Ignore storage write errors.
+      }
+
+      resetCartUiBadge();
+      notifyCartCleared();
+    }
+
+    function resetCartUiBadge() {
+      const countEl = document.getElementById("headerCartCount");
+      const totalEl = document.getElementById("headerCartTotal");
+      if (countEl) countEl.textContent = "0";
+      if (totalEl) totalEl.textContent = "0 RUB";
+    }
+
+    function notifyCartCleared() {
+      try {
+        window.dispatchEvent(new CustomEvent("gptishka:cart-cleared"));
+      } catch (_) {
+        // Ignore event dispatch failures.
+      }
+    }
+
+    function formatAmount(value) {
+      const amount = Number.isFinite(Number(value)) ? Number(value) : 0;
+      const hasFraction = Math.abs(amount % 1) > 0.000001;
+      return amount.toLocaleString("ru-RU", {
+        minimumFractionDigits: hasFraction ? 2 : 0,
+        maximumFractionDigits: 2,
+      });
+    }
+
+    function wait(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+  </script>
+</body>
+</html>

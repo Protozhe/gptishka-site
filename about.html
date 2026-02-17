@@ -1,0 +1,142 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="GPTишка: безопасная активация и продление ChatGPT Plus с поддержкой и гарантией." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="GPTishka" />
+<meta property="og:title" content="GPTишка - ChatGPT Plus" />
+<meta property="og:description" content="GPTишка: безопасная активация и продление ChatGPT Plus с поддержкой и гарантией." />
+<meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
+<meta property="og:url" content="https://gptishka.shop/about.html" />
+<link rel="icon" href="/favicon.ico" sizes="any">
+<title>О магазине — GPTишка</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/logo.min.css">
+<link rel="stylesheet" href="/assets/css/sections.min.css">
+<link rel="stylesheet" href="/assets/css/theme.min.css">
+</head>
+
+<body>
+    <div class="page-overlay"></div>
+<header>
+    <div class="nav">
+
+        <a href="index.html" class="logo-link">
+          <img loading="lazy" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTишка" class="logo-img">
+        </a>
+    
+    
+                          <nav>
+        <a href="/index.html">Главная</a>
+        <a href="/about.html" class="active">О сервисе</a>
+        <a href="/reviews.html">Отзывы</a>
+        <a href="/guarantee.html">Гарантия</a>
+        <a href="/contact.html">Связь с нами</a>
+        <a href="/index.html#faq">Вопросы и ответы</a>
+      </nav>
+
+    <div class="lang-switch" id="langSwitch">
+        <div class="lang-current" id="langCurrent">
+          <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
+          <span>Русский</span>
+          <span class="arrow">▾</span>
+        </div>
+      
+        <div class="lang-dropdown">
+          <div class="lang-item" data-lang="ru">
+            <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
+            <span>Русский</span>
+          </div>
+          <div class="lang-item" data-lang="en">
+            <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
+            <span>English</span>
+          </div>
+        </div>
+      </div>
+  </div>
+</header>
+<main class="page">
+    <section class="about">
+        <h1>О сервисе</h1>
+      
+        <p>
+          GPTишка — это онлайн-сервис для быстрого и удобного подключения подписки ChatGPT Plus.
+          Мы помогаем пользователям получить доступ к расширенному функционалу без сложных действий,
+          лишних рисков и потери времени.
+        </p>
+      
+        <p>
+          Сервис работает в автоматическом режиме: после оплаты вы получаете понятную инструкцию
+          и необходимые данные для активации. В большинстве случаев подключение занимает всего
+          несколько минут.
+        </p>
+      
+        <p>
+          Мы не запрашиваем логины и пароли от аккаунтов пользователей.
+          Для выполнения операции используется технический токен,
+          который применяется исключительно для активации или продления подписки.
+        </p>
+      
+        <p>
+          Наша цель — сделать процесс максимально прозрачным, безопасным и предсказуемым.
+          Мы сопровождаем клиента на всех этапах и остаёмся на связи,
+          если возникают вопросы до или после оплаты.
+        </p>
+      
+        <p>
+          GPTишка подходит как для новичков, которые только знакомятся с ChatGPT,
+          так и для опытных пользователей, которым важна стабильная работа сервиса
+          и экономия времени.
+        </p>
+      </section>
+      
+</main>
+<footer>
+  <a class="footer-link" href="oferta.html">Публичная оферта</a> · <a class="footer-link" href="politika.html">Политика конфиденциальности</a> · <a class="footer-link" href="refund.html">Условия возврата</a>
+  <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
+</footer>
+<script src="/assets/js/app.min.js" defer></script>
+<script>
+    const langSwitch = document.getElementById("langSwitch");
+    const langCurrent = document.getElementById("langCurrent");
+  
+    // открыть / закрыть dropdown
+    langCurrent.addEventListener("click", () => {
+      langSwitch.classList.toggle("open");
+    });
+  
+    // переключение языка
+    document.querySelectorAll(".lang-item").forEach(item => {
+      item.addEventListener("click", () => {
+        const lang = item.dataset.lang;
+  
+        if (lang === "en") {
+          window.location.href = "/en/index.html";
+        }
+  
+        if (lang === "ru") {
+          window.location.href = "/index.html";
+        }
+      });
+    });
+  
+    // закрытие при клике вне
+    document.addEventListener("click", e => {
+      if (!langSwitch.contains(e.target)) {
+        langSwitch.classList.remove("open");
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+

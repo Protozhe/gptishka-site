@@ -1,0 +1,64 @@
+{
+  "items": [
+    {
+      "orderId": "cmlkt41bp000vbf7gif4f5g99",
+      "email": "askar_971@mail.ru",
+      "productKey": "chatgpt",
+      "cdk": "TEST-CDK-001",
+      "status": "issued",
+      "taskId": null,
+      "issuedAt": "2026-02-13T12:01:45.138Z",
+      "updatedAt": "2026-02-13T12:01:45.138Z"
+    },
+    {
+      "orderId": "cmlkudj800003bfo86v5636n2",
+      "email": "askar_971@mail.ru",
+      "productKey": "chatgpt",
+      "cdk": "69742FA2-47A4-48C5-A7CC-71F334688FE7",
+      "status": "processing",
+      "taskId": "d30793f6-1b32-44c6-9ab4-c2497fbd6579",
+      "issuedAt": "2026-02-13T13:53:12.715Z",
+      "updatedAt": "2026-02-13T14:15:23.642Z"
+    },
+    {
+      "orderId": "cmlkz7bxw0007bfeg1smaim22",
+      "email": "askar_971@mail.ru",
+      "productKey": "chatgpt",
+      "cdk": "A7BDD606-3900-47D0-9C32-67BAA294FD67",
+      "status": "success",
+      "taskId": "cf2b8840-a216-40d4-b90d-b3a79a7ac693",
+      "issuedAt": "2026-02-13T15:03:59.531Z",
+      "updatedAt": "2026-02-13T15:44:27.518Z"
+    },
+    {
+      "orderId": "cmlkzv3ax0001bfz0q55qgrrs",
+      "email": "askar_971@mail.ru",
+      "productKey": "chatgpt",
+      "cdk": "A8DB2A38-AFA5-446E-8E6B-E19133958464",
+      "status": "issued",
+      "taskId": null,
+      "issuedAt": "2026-02-13T14:40:40.511Z",
+      "updatedAt": "2026-02-13T14:40:40.511Z"
+    },
+    {
+      "orderId": "cmll28il40009bfkoq1i8obnq",
+      "email": "askar_971@mail.ru",
+      "productKey": "chatgpt",
+      "cdk": "6907A54E-BBCD-40BB-9A59-1C97AF328BD5",
+      "status": "success",
+      "taskId": "cfef8c80-88c9-4cf2-8b12-94a179f4a376",
+      "issuedAt": "2026-02-13T15:47:23.509Z",
+      "updatedAt": "2026-02-13T16:10:02.689Z"
+    },
+    {
+      "orderId": "cmll3eqty000cbfugou55qylh",
+      "email": "askar_971@mail.ru",
+      "productKey": "chatgpt",
+      "cdk": "6EB52F90-5317-4725-9D42-7C716495F2A3",
+      "status": "issued",
+      "taskId": null,
+      "issuedAt": "2026-02-13T16:49:04.207Z",
+      "updatedAt": "2026-02-13T16:49:04.207Z"
+    }
+  ]
+}

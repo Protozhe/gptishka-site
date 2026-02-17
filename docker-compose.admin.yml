@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gptishka_admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - admin_pg_data:/var/lib/postgresql/data
+
+  admin-api:
+    build:
+      context: .
+      dockerfile: apps/admin-backend/Dockerfile
+    env_file:
+      - apps/admin-backend/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/gptishka_admin?schema=public
+    depends_on:
+      - postgres
+    ports:
+      - "4100:4100"
+    volumes:
+      - ./apps/admin-backend/data:/app/data
+
+  admin-ui:
+    build:
+      context: .
+      dockerfile: apps/admin-ui/Dockerfile
+    depends_on:
+      - admin-api
+    ports:
+      - "5173:80"
+
+volumes:
+  admin_pg_data:

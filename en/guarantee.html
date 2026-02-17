@@ -1,0 +1,170 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="GPTishka: secure activation and renewal of ChatGPT Plus with support and guarantee." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="GPTishka" />
+<meta property="og:title" content="GPTishka - ChatGPT Plus" />
+<meta property="og:description" content="GPTishka: secure activation and renewal of ChatGPT Plus with support and guarantee." />
+<meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
+<meta property="og:url" content="https://gptishka.shop/en/guarantee.html" />
+<link rel="icon" href="/favicon.ico" sizes="any">
+<title>Guarantee — GPTishka</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/logo.min.css">
+<link rel="stylesheet" href="/assets/css/sections.min.css">
+<link rel="stylesheet" href="/assets/css/theme.min.css">
+</head>
+
+<body>
+  <div class="page-overlay"></div>
+
+  <header>
+    <div class="nav">
+      <a href="/en/index.html" class="logo-link">
+        <img loading="lazy" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTishka" class="logo-img">
+      </a>
+
+                        <nav>
+        <a href="/en/index.html">Home</a>
+        <a href="/en/about.html">About</a>
+        <a href="/en/reviews.html">Reviews</a>
+        <a href="/en/guarantee.html" class="active">Guarantee</a>
+        <a href="/en/contact.html">Contact us</a>
+        <a href="/en/index.html#faq">FAQ</a>
+      </nav>
+
+      <div class="lang-switch" id="langSwitch">
+        <div class="lang-current" id="langCurrent">
+          <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="EN">
+          <span>English</span>
+          <span class="arrow">▾</span>
+        </div>
+      
+        <div class="lang-dropdown">
+          <div class="lang-item" data-lang="ru">
+            <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="RU">
+            <span>Русский</span>
+          </div>
+          <div class="lang-item" data-lang="en">
+            <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="EN">
+            <span>English</span>
+          </div>
+        </div>
+      </div>
+      
+  </header>
+
+  <main class="page">
+    <div class="container">
+      <h1>Guarantee</h1>
+
+      <p class="intro">
+        We understand that buying digital services online can raise questions, especially for first-time customers.
+        That is why we openly explain what you can expect when using our service.
+      </p>
+
+      <div class="grid">
+        <div class="block">
+          <h2>What we guarantee</h2>
+          <p>
+            We guarantee proper delivery of the paid service and its operability
+            for the full paid subscription period.
+          </p>
+          <p>
+            If technical issues occur due to the Seller, we will resolve them within a reasonable time,
+            provide a replacement service, or offer compensation according to the public offer.
+          </p>
+          <p>
+            For subscriptions with a term of 6 months or longer, a limited 2-month warranty applies
+            from the activation date, including priority support and issue resolution.
+          </p>
+        </div>
+
+        <div class="block">
+          <h2>Data safety</h2>
+          <p>
+            Only a technical token or service data required for activation is used.
+          </p>
+          <p>
+            We do not request or store account passwords and do not transfer data to third parties.
+            All operations are performed according to basic security and confidentiality principles.
+          </p>
+        </div>
+
+        <div class="block">
+          <h2>Support and communication</h2>
+          <ul>
+            <li>pre-purchase consultation;</li>
+            <li>help during activation/connection;</li>
+            <li>support throughout the service period.</li>
+          </ul>
+          <p>Requests are reviewed as quickly as possible, and support stays with you until full resolution.</p>
+        </div>
+
+        <div class="block">
+          <h2>If something goes wrong</h2>
+          <p>
+            We do not ignore requests and do not shift responsibility.
+            Each case is reviewed individually to find the most fair and reasonable solution.
+          </p>
+          <p>
+            Depending on the situation, we may offer a fix, a replacement service,
+            or compensation within the applicable rules.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+  <a class="footer-link" href="../oferta.html">Public offer</a> · <a class="footer-link" href="../politika.html">Privacy policy</a> · <a class="footer-link" href="refund.html">Refund policy</a>
+  <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
+</footer>
+
+  <script src="/assets/js/app.min.js" defer></script>
+  <script>
+    const langSwitch = document.getElementById("langSwitch");
+    const langCurrent = document.getElementById("langCurrent");
+
+    // open / close dropdown
+    langCurrent.addEventListener("click", () => {
+      langSwitch.classList.toggle("open");
+    });
+
+    // language switch
+    document.querySelectorAll(".lang-item").forEach(item => {
+      item.addEventListener("click", () => {
+        const lang = item.dataset.lang;
+
+        if (lang === "en") {
+          window.location.href = "/en/index.html";
+        }
+
+        if (lang === "ru") {
+          window.location.href = "/index.html";
+        }
+      });
+    });
+
+    // close on outside click
+    document.addEventListener("click", e => {
+      if (!langSwitch.contains(e.target)) {
+        langSwitch.classList.remove("open");
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

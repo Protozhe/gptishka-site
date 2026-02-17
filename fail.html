@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ошибка оплаты</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f8fafc; color: #111827; margin: 0; }
+    .wrap { max-width: 760px; margin: 48px auto; padding: 24px; }
+    .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08); }
+    .err { color: #b91c1c; font-size: 24px; margin: 0 0 12px; }
+    .meta { color: #475569; margin: 8px 0; }
+    .btn { display: inline-block; margin-top: 16px; padding: 10px 16px; border-radius: 8px; background: #0f172a; color: #fff; text-decoration: none; }
+    code { background: #f1f5f9; padding: 2px 6px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1 class="err">Ошибка оплаты</h1>
+      <p class="meta">Платеж не был завершен. Вы можете повторить попытку.</p>
+      <p class="meta">Номер заказа: <code id="orderId">—</code></p>
+      <a class="btn" href="/">Попробовать снова</a>
+    </div>
+  </div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get("orderId") || params.get("order_id") || "—";
+    document.getElementById("orderId").textContent = orderId;
+  </script>
+</body>
+</html>

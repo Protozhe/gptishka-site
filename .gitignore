@@ -1,0 +1,13 @@
+node_modules/
+data/*.sqlite
+data/*.sqlite-shm
+data/*.sqlite-wal
+.env
+*.log
+backups/*
+!backups/.htaccess
+uploads/*
+!uploads/.htaccess
+includes/config.local.php
+apps/admin-backend/.env
+apps/admin-ui/.env

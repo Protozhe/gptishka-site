@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="GPTishka: secure activation and renewal of ChatGPT Plus with support and guarantee." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="GPTishka" />
+<meta property="og:title" content="GPTishka - ChatGPT Plus" />
+<meta property="og:description" content="GPTishka: secure activation and renewal of ChatGPT Plus with support and guarantee." />
+<meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
+<meta property="og:url" content="https://gptishka.shop/en/cart.html" />
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <title>Cart - GPTishka</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/logo.min.css">
+  <link rel="stylesheet" href="/assets/css/sections.min.css">
+  <link rel="stylesheet" href="/assets/css/theme.min.css">
+</head>
+<body>
+  <div class="page-overlay"></div>
+
+  <header>
+    <div class="nav">
+      <a href="/en/index.html" class="logo-link">
+        <img loading="lazy" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTishka" class="logo-img">
+      </a>
+
+      <nav>
+        <a href="/en/index.html">Home</a>
+        <a href="/en/about.html">About</a>
+        <a href="/en/reviews.html">Reviews</a>
+        <a href="/en/guarantee.html">Guarantee</a>
+        <a href="/en/contact.html">Contact us</a>
+        <a href="/en/index.html#faq">FAQ</a>
+      </nav>
+
+      <div class="lang-switch" id="langSwitch">
+        <div class="lang-current" id="langCurrent">
+          <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
+          <span>English</span>
+          <span class="arrow">▾</span>
+        </div>
+
+        <div class="lang-dropdown">
+          <div class="lang-item" data-lang="ru">
+            <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
+            <span>Русский</span>
+          </div>
+          <div class="lang-item" data-lang="en">
+            <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
+            <span>English</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="pricing-header" style="margin-top: 20px;">
+      <h2>Your cart</h2>
+      <p>Review your order, adjust quantities, apply promo code, and complete checkout.</p>
+    </section>
+
+    <section class="cart-box" id="cart">
+      <div class="cart-box__header">
+        <h3>Cart</h3>
+        <p>Change quantity or remove items before payment.</p>
+      </div>
+      <div class="cart-empty" id="cartEmpty">Cart is empty.</div>
+      <div class="cart-list" id="cartList"></div>
+      <div class="cart-summary">
+        <div class="header-cart-panel__promo" style="margin-bottom:10px;">
+          <input type="text" id="cartPromoInput" placeholder="Promo code" autocomplete="off" />
+          <button type="button" id="cartPromoApply">Apply</button>
+        </div>
+        <div class="header-cart-panel__promo-msg" id="cartPromoMsg"></div>
+        <div class="cart-email">
+          <input type="email" id="cartEmailInput" placeholder="Email for order details" autocomplete="email" />
+        </div>
+        <div class="cart-total">Total: <strong id="cartTotal">0 RUB</strong></div>
+        <button type="button" class="btn" id="cartCheckoutBtn" aria-disabled="true">Pay cart</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a class="footer-link" href="/oferta.html">Public offer</a> · <a class="footer-link" href="/politika.html">Privacy policy</a> · <a class="footer-link" href="/en/refund.html">Refund policy</a>
+    <span class="footer-copy">© 2026 GPTishka. All rights reserved.</span>
+  </footer>
+
+  <script src="/assets/js/app.min.js" defer></script>
+  <script>
+    const langSwitch = document.getElementById("langSwitch");
+    const langCurrent = document.getElementById("langCurrent");
+
+    langCurrent.addEventListener("click", () => {
+      langSwitch.classList.toggle("open");
+    });
+
+    document.querySelectorAll(".lang-item").forEach(item => {
+      item.addEventListener("click", () => {
+        const lang = item.dataset.lang;
+        if (lang === "en") window.location.href = "/en/cart.html";
+        if (lang === "ru") window.location.href = "/cart.html";
+      });
+    });
+
+    document.addEventListener("click", e => {
+      if (!langSwitch.contains(e.target)) langSwitch.classList.remove("open");
+    });
+  </script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GPTishka Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/assets/index-BEpLCDKE.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-SMim9AVt.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      (function () {
+        function printError(kind, message) {
+          const pre = document.createElement("pre");
+          pre.style.padding = "16px";
+          pre.style.margin = "16px";
+          pre.style.background = "#fff";
+          pre.style.border = "1px solid #fecaca";
+          pre.style.borderRadius = "12px";
+          pre.style.color = "#991b1b";
+          pre.style.whiteSpace = "pre-wrap";
+          pre.textContent = "[admin-ui " + kind + "] " + message;
+          document.body.appendChild(pre);
+        }
+        window.addEventListener("error", function (event) {
+          printError("error", (event && event.message) || "Unknown error");
+        });
+        window.addEventListener("unhandledrejection", function (event) {
+          var reason = event && event.reason;
+          var text = typeof reason === "string" ? reason : (reason && reason.message) || JSON.stringify(reason);
+          printError("promise", text || "Unhandled rejection");
+        });
+      })();
+    </script>
+  </body>
+</html>

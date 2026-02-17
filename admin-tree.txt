@@ -1,0 +1,179 @@
+﻿admin
++---assets
+|   +---index-76mXbhvs.js
+|   +---index-BADTzyQK.js
+|   +---index-BEpLCDKE.js
+|   +---index-BQVDjTfn.css
+|   +---index-BTLnyIOt.js
+|   +---index-C3ohHuuA.css
+|   +---index-CQy7cjXc.css
+|   +---index-CuSJt66b.js
+|   +---index-CyWVBryl.js
+|   +---index-pcLqHYTf.css
+|   +---index-SMim9AVt.css
+|   \---index-zpZiXEN_.js
++---.htaccess
+\---index.html
+
+admin-backend
++---data
+|   +---backups
+|   |   +---cdk-keys-2026-02-15T22-37-38-769Z.json
+|   |   +---cdk-keys-2026-02-15T22-37-38-819Z.json
+|   |   +---cdk-keys-2026-02-15T22-41-49-327Z.json
+|   |   +---cdk-keys-2026-02-16T08-51-54-817Z.json
+|   |   \---cdk-keys-2026-02-16T09-47-50-482Z.json
+|   +---cdk-keys.audit.log
+|   +---cdk-keys.json
+|   \---order-activations.json
++---prisma
+|   +---migrations
+|   |   +---20260211180940_npm_run_seed_workspace_gptishka_admin_backendnpm_run_dev_admin_api
+|   |   |   \---migration.sql
+|   |   +---20260212181755_align_schema_with_models
+|   |   |   \---migration.sql
+|   |   +---20260212182505_product_i18n_fields
+|   |   |   \---migration.sql
+|   |   +---20260212221200_partners_referrals
+|   |   |   \---migration.sql
+|   |   \---migration_lock.toml
+|   +---schema.prisma
+|   \---seed.ts
++---scripts
+|   \---upsert-admin-user.ts
++---src
+|   +---common
+|   |   +---errors
+|   |   |   +---app-error.ts
+|   |   |   \---error-handler.ts
+|   |   +---http
+|   |   |   \---async-handler.ts
+|   |   +---middleware
+|   |   |   +---request-meta.ts
+|   |   |   \---validation.ts
+|   |   +---security
+|   |   |   +---apply-security.ts
+|   |   |   +---csrf-origin.ts
+|   |   |   +---rate-limit.ts
+|   |   |   \---webhook-security.ts
+|   |   \---utils
+|   |       +---fx.ts
+|   |       +---hash.ts
+|   |       \---slugify.ts
+|   +---config
+|   |   +---env.ts
+|   |   \---prisma.ts
+|   +---modules
+|   |   +---analytics
+|   |   |   \---analytics.routes.ts
+|   |   +---audit
+|   |   |   +---audit.routes.ts
+|   |   |   \---audit.service.ts
+|   |   +---auth
+|   |   |   +---auth.controller.ts
+|   |   |   +---auth.middleware.ts
+|   |   |   +---auth.routes.ts
+|   |   |   +---auth.schemas.ts
+|   |   |   +---auth.service.ts
+|   |   |   \---token.service.ts
+|   |   +---cdks
+|   |   |   +---cdk-keys.store.ts
+|   |   |   \---cdks.routes.ts
+|   |   +---files
+|   |   |   +---files.middleware.ts
+|   |   |   \---files.service.ts
+|   |   +---notifications
+|   |   |   \---notifications.service.ts
+|   |   +---orders
+|   |   |   +---activation.store.ts
+|   |   |   +---delivery.service.ts
+|   |   |   +---orders.controller.ts
+|   |   |   +---orders.repository.ts
+|   |   |   +---orders.routes.ts
+|   |   |   +---orders.schemas.ts
+|   |   |   +---orders.service.ts
+|   |   |   \---public-orders.routes.ts
+|   |   +---partners
+|   |   |   \---partners.routes.ts
+|   |   +---payments
+|   |   |   +---providers
+|   |   |   |   +---gateway.provider.ts
+|   |   |   |   +---stripe.provider.ts
+|   |   |   |   +---stub.provider.ts
+|   |   |   |   \---webmoney.provider.ts
+|   |   |   +---payment.factory.ts
+|   |   |   +---payment-provider.ts
+|   |   |   +---payments.service.ts
+|   |   |   +---payment-webhook.controller.ts
+|   |   |   +---payment-webhook.service.ts
+|   |   |   \---public-enot.routes.ts
+|   |   +---products
+|   |   |   +---products.controller.ts
+|   |   |   +---products.repository.ts
+|   |   |   +---products.routes.ts
+|   |   |   +---products.schemas.ts
+|   |   |   +---products.service.ts
+|   |   |   \---public-products.routes.ts
+|   |   +---promocodes
+|   |   |   +---promocodes.routes.ts
+|   |   |   \---public-promocodes.routes.ts
+|   |   \---users
+|   |       +---users.controller.ts
+|   |       +---users.routes.ts
+|   |       +---users.schemas.ts
+|   |       \---users.service.ts
+|   +---types
+|   |   \---express.d.ts
+|   +---app.ts
+|   \---main.ts
++---uploads
+|   \---.htaccess
++---.env
++---.env.example
++---.gitignore
++---Dockerfile
++---package.json
+\---tsconfig.json
+
+admin-ui
++---src
+|   +---components
+|   |   +---ProtectedRoute.tsx
+|   |   +---Skeleton.tsx
+|   |   \---ThemeToggle.tsx
+|   +---hooks
+|   |   \---useAuth.tsx
+|   +---layout
+|   |   \---AdminLayout.tsx
+|   +---lib
+|   |   +---api.ts
+|   |   \---format.ts
+|   +---pages
+|   |   +---AuditPage.tsx
+|   |   +---CdkKeysPage.tsx
+|   |   +---DashboardPage.tsx
+|   |   +---LoginPage.tsx
+|   |   +---OrdersPage.tsx
+|   |   +---PartnerEarningsPage.tsx
+|   |   +---PartnersPage.tsx
+|   |   +---ProductsPage.tsx
+|   |   +---PromoCodesPage.tsx
+|   |   \---UsersPage.tsx
+|   +---styles
+|   |   \---index.css
+|   +---main.tsx
+|   \---vite-env.d.ts
++---.env
++---.env.example
++---.env.production
++---.gitignore
++---Dockerfile
++---index.html
++---nginx.conf
++---package.json
++---postcss.config.cjs
++---tailwind.config.js
++---tsconfig.json
++---tsconfig.tsbuildinfo
+\---vite.config.ts
+

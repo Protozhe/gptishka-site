@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="GPTишка: безопасная активация и продление ChatGPT Plus с поддержкой и гарантией." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="GPTishka" />
+  <meta property="og:title" content="GPTишка - ChatGPT Plus" />
+  <meta property="og:description" content="GPTишка: безопасная активация и продление ChatGPT Plus с поддержкой и гарантией." />
+  <meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
+  <meta property="og:url" content="https://gptishka.shop/cart.html" />
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <title>Корзина - GPTишка</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/logo.min.css">
+  <link rel="stylesheet" href="/assets/css/sections.min.css">
+  <link rel="stylesheet" href="/assets/css/theme.min.css">
+</head>
+<body>
+  <div class="page-overlay"></div>
+
+  <header>
+    <div class="nav">
+      <a href="/index.html" class="logo-link">
+        <img loading="lazy" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTишка" class="logo-img">
+      </a>
+
+      <nav>
+        <a href="/index.html">Главная</a>
+        <a href="/about.html">О сервисе</a>
+        <a href="/reviews.html">Отзывы</a>
+        <a href="/guarantee.html">Гарантия</a>
+        <a href="/contact.html">Связь с нами</a>
+        <a href="/index.html#faq">Вопросы и ответы</a>
+      </nav>
+
+      <div class="lang-switch" id="langSwitch">
+        <div class="lang-current" id="langCurrent">
+          <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
+          <span>Русский</span>
+          <span class="arrow">▾</span>
+        </div>
+
+        <div class="lang-dropdown">
+          <div class="lang-item" data-lang="ru">
+            <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
+            <span>Русский</span>
+          </div>
+          <div class="lang-item" data-lang="en">
+            <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
+            <span>English</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="pricing-header" style="margin-top: 20px;">
+      <h2>Ваша корзина</h2>
+      <p>Проверьте состав заказа, примените промокод и оплатите.</p>
+    </section>
+
+    <section class="cart-box" id="cart">
+      <div class="cart-box__header">
+        <h3>Корзина</h3>
+        <p>Изменяйте количество и удаляйте позиции перед оплатой.</p>
+      </div>
+      <div class="cart-empty" id="cartEmpty">Корзина пуста.</div>
+      <div class="cart-list" id="cartList"></div>
+      <div class="cart-summary">
+        <div class="header-cart-panel__promo" style="margin-bottom:10px;">
+          <input type="text" id="cartPromoInput" placeholder="Промокод" autocomplete="off" />
+          <button type="button" id="cartPromoApply">Применить</button>
+        </div>
+        <div class="header-cart-panel__promo-msg" id="cartPromoMsg"></div>
+        <div class="cart-email">
+          <input type="email" id="cartEmailInput" placeholder="Email для получения данных заказа" autocomplete="email" />
+        </div>
+        <div class="cart-total">Итого: <strong id="cartTotal">0 RUB</strong></div>
+        <button type="button" class="btn" id="cartCheckoutBtn" aria-disabled="true">Оплатить корзину</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a class="footer-link" href="/oferta.html">Публичная оферта</a> · <a class="footer-link" href="/politika.html">Политика конфиденциальности</a> · <a class="footer-link" href="/refund.html">Условия возврата</a>
+    <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
+  </footer>
+
+  <script src="/assets/js/app.min.js" defer></script>
+  <script>
+    const langSwitch = document.getElementById("langSwitch");
+    const langCurrent = document.getElementById("langCurrent");
+
+    langCurrent.addEventListener("click", () => {
+      langSwitch.classList.toggle("open");
+    });
+
+    document.querySelectorAll(".lang-item").forEach(item => {
+      item.addEventListener("click", () => {
+        const lang = item.dataset.lang;
+        if (lang === "en") window.location.href = "/en/cart.html";
+        if (lang === "ru") window.location.href = "/cart.html";
+      });
+    });
+
+    document.addEventListener("click", e => {
+      if (!langSwitch.contains(e.target)) langSwitch.classList.remove("open");
+    });
+  </script>
+</body>
+</html>

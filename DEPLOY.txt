@@ -1,0 +1,63 @@
+REG.RU Production Deploy (GPTishka)
+
+1. Upload files
+- Upload project root to hosting document root (for example: `public_html/`).
+- Do not upload local logs and caches.
+- Keep structure:
+  - `assets/`, `images/`, `fonts/`, `admin/`, `en/`, `payment/`, `includes/`
+  - `server.js`, `.htaccess`, `404.html`, `500.html`, `robots.txt`, `sitemap.xml`
+  - `apps/admin-backend/` (API service)
+
+2. Runtime versions
+- Node.js: 20 LTS or newer.
+- PHP: 8.1+ (needed for `payment/webmoney/*.php`).
+
+3. Required modules
+- Apache modules: `mod_rewrite`, `mod_headers`, `mod_expires`, `mod_deflate`.
+- Node packages: run `npm ci` in project root.
+- Admin API packages: run `npm ci --workspace @gptishka/admin-backend`.
+
+4. Environment variables
+- Create `.env` in project root from `.env.example`.
+- Create `apps/admin-backend/.env` from `apps/admin-backend/.env.example`.
+- Fill all production keys:
+  - Enot: `ENOT_API_KEY`, `ENOT_SHOP_ID`, `ENOT_WEBHOOK_SECRET`
+  - SMTP: `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM=info@gptishka.shop`
+  - JWT secrets, DB url, APP/ADMIN URLs
+  - Optional WebMoney keys if PHP flow is used
+
+5. Build and start
+- Build admin API:
+  - `npm run build:admin:api`
+- Start storefront:
+  - `npm run start`
+- Start admin API:
+  - `npm run start --workspace @gptishka/admin-backend`
+- Use PM2/systemd for process autostart and restart.
+
+6. Database
+- Run migrations for admin API:
+  - `npm run prisma:deploy --workspace @gptishka/admin-backend`
+- Optional seed:
+  - `npm run seed:admin`
+
+7. SSL and domain
+- In REG.RU panel, issue and enable SSL for domain and subdomain (`gptishka.shop`, `admin-api.gptishka.shop`).
+- Point DNS records to server IP.
+- Keep HTTPS redirect enabled (already in `.htaccess`).
+
+8. Webhook
+- Configure Enot webhook URL:
+  - `https://admin-api.gptishka.shop/api/public/webhook/payment`
+- Ensure signature header is enabled and secret matches `ENOT_WEBHOOK_SECRET`.
+
+9. CRON
+- If cleanup/maintenance is needed, add cron tasks in REG.RU panel.
+- Recommended: health/reconcile check every 5 minutes (custom script if used).
+
+10. Final smoke test
+- Open main site and admin panel over HTTPS.
+- Create test order, apply promo, pay via Enot.
+- Verify webhook marks order `PAID`.
+- Verify email is sent from `info@gptishka.shop`.
+- Verify activation page opens with `order_id`.

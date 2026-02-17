@@ -1,0 +1,747 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="GPTишка: продление и активация ChatGPT Plus." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="GPTishka" />
+  <meta property="og:title" content="Продлить / Активировать - GPTишка" />
+  <meta property="og:description" content="GPTишка: продление и активация ChatGPT Plus." />
+  <meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
+  <meta property="og:url" content="https://gptishka.shop/redeem-start.html" />
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <title>Продлить / Активировать - GPTишка</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/logo.min.css">
+  <link rel="stylesheet" href="/assets/css/sections.min.css">
+  <link rel="stylesheet" href="/assets/css/theme.min.css">
+
+  <style>
+    .redeem-page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 20px 0 0;
+    }
+
+    .redeem-card {
+      background: #fff;
+      border: 1px solid rgba(25, 34, 51, 0.08);
+      border-radius: 24px;
+      box-shadow: 0 18px 44px rgba(25, 34, 51, 0.08);
+      padding: 26px;
+    }
+
+    .redeem-title {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 44px);
+      line-height: 1.08;
+      font-weight: 800;
+      color: #1f2937;
+    }
+
+    .redeem-subtitle {
+      margin: 10px 0 0;
+      font-size: 16px;
+      line-height: 1.45;
+      color: #5c6778;
+    }
+
+    .redeem-grid {
+      margin-top: 18px;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr;
+    }
+
+    .redeem-block {
+      background: #fbfaf6;
+      border: 1px solid rgba(25, 34, 51, 0.08);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .redeem-label {
+      margin: 0 0 8px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .redeem-order-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      border: 1px solid rgba(25, 34, 51, 0.1);
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .redeem-order-id {
+      min-width: 0;
+      font-size: 14px;
+      color: #253041;
+      font-weight: 700;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      max-width: 760px;
+    }
+
+    .redeem-guide {
+      margin: 0 0 10px;
+      border: 1px solid rgba(25, 34, 51, 0.1);
+      border-radius: 12px;
+      background: #fff;
+      padding: 10px 12px;
+      color: #3a4556;
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .redeem-guide summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .redeem-guide ol {
+      margin: 8px 0 0 18px;
+      padding: 0;
+    }
+
+    .redeem-guide a {
+      color: #1f8f7f;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .redeem-input {
+      width: 100%;
+      min-height: 150px;
+      resize: vertical;
+      border: 1px solid rgba(25, 34, 51, 0.14);
+      border-radius: 14px;
+      background: #fff;
+      padding: 12px 14px;
+      font: inherit;
+      line-height: 1.45;
+      color: #1f2937;
+      outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .redeem-input:focus {
+      border-color: #1f8f7f;
+      box-shadow: 0 0 0 3px rgba(31, 143, 127, 0.14);
+    }
+
+    .redeem-input.masked {
+      color: transparent;
+      text-shadow: 0 0 6px rgba(31, 41, 55, 0.7);
+      caret-color: #1f2937;
+    }
+
+    .redeem-meta {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: #667288;
+    }
+
+    .redeem-actions {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .redeem-actions .full {
+      grid-column: 1 / -1;
+    }
+
+    .redeem-btn {
+      border: 1px solid rgba(25, 34, 51, 0.14);
+      background: #fff;
+      color: #243246;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      transition: background .15s ease, color .15s ease, border-color .15s ease, transform .1s ease;
+    }
+
+    .redeem-btn:hover {
+      background: #f7f8fa;
+      border-color: rgba(25, 34, 51, 0.2);
+    }
+
+    .redeem-btn:active {
+      transform: translateY(1px);
+    }
+
+    .redeem-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .redeem-btn-primary {
+      background: #1f8f7f;
+      border-color: #1f8f7f;
+      color: #fff;
+    }
+
+    .redeem-btn-primary:hover {
+      background: #177a6c;
+      border-color: #177a6c;
+      color: #fff;
+    }
+
+    .redeem-status {
+      margin-top: 12px;
+      border: 1px solid rgba(25, 34, 51, 0.11);
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 14px;
+      color: #334154;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .redeem-status.pending { border-color: rgba(186, 131, 25, 0.35); background: #fff8e9; color: #9a6700; }
+    .redeem-status.success { border-color: rgba(17, 120, 90, 0.35); background: #eaf7f3; color: #0f7a5d; }
+    .redeem-status.error { border-color: rgba(178, 60, 60, 0.35); background: #ffefef; color: #b33f3f; }
+
+    .redeem-spinner {
+      width: 13px;
+      height: 13px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      display: none;
+      animation: redeem-spin .8s linear infinite;
+    }
+
+    .redeem-faq {
+      margin-top: 12px;
+      border: 1px solid rgba(25, 34, 51, 0.08);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #fff;
+      color: #5e6a7d;
+      font-size: 14px;
+    }
+
+    .redeem-btn.loading {
+      pointer-events: none;
+    }
+
+    .redeem-btn.loading::after {
+      content: "";
+      width: 12px;
+      height: 12px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: redeem-spin .8s linear infinite;
+    }
+
+    @keyframes redeem-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 860px) {
+      .redeem-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .redeem-actions .full {
+        grid-column: auto;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .redeem-page {
+        padding-top: 14px;
+      }
+
+      .redeem-card {
+        padding: 16px;
+        border-radius: 18px;
+      }
+
+      .redeem-guide,
+      .redeem-block {
+        border-radius: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-overlay"></div>
+
+  <header>
+    <div class="nav">
+      <a href="/index.html" class="logo-link">
+        <img loading="lazy" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTишка" class="logo-img">
+      </a>
+
+      <nav>
+        <a href="/index.html">Главная</a>
+        <a href="/about.html">О сервисе</a>
+        <a href="/reviews.html">Отзывы</a>
+        <a href="/guarantee.html">Гарантия</a>
+        <a href="/contact.html">Связь с нами</a>
+        <a href="/index.html#faq">Вопросы и ответы</a>
+      </nav>
+
+      <div class="lang-switch" id="langSwitch">
+        <div class="lang-current" id="langCurrent">
+          <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
+          <span>Русский</span>
+          <span class="arrow">▾</span>
+        </div>
+
+        <div class="lang-dropdown">
+          <div class="lang-item" data-lang="ru">
+            <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
+            <span>Русский</span>
+          </div>
+          <div class="lang-item" data-lang="en">
+            <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
+            <span>English</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page redeem-page">
+    <section class="redeem-card">
+      <h1 class="redeem-title">Продлить / Активировать</h1>
+      <p class="redeem-subtitle">После оплаты вставьте токен аккаунта и нажмите «Активировать».</p>
+
+      <div class="redeem-grid">
+        <section class="redeem-block">
+          <p class="redeem-label">Order ID</p>
+          <div class="redeem-order-row">
+            <span id="orderId" class="redeem-order-id">-</span>
+            <button id="copyOrderIdBtn" type="button" class="redeem-btn">Скопировать</button>
+          </div>
+        </section>
+
+        <section class="redeem-block">
+          <p class="redeem-label">Токен аккаунта</p>
+          <details class="redeem-guide" open>
+            <summary>Где взять токен аккаунта</summary>
+            <ol>
+              <li>Войдите через браузер в аккаунт ChatGPT (если ещё не вошли — просто авторизуйтесь).</li>
+              <li>Откройте ссылку <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>
+              <li>Скопируйте все содержимое и вставьте его в поле «Токен аккаунта».</li>
+            </ol>
+          </details>
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+            <button id="toggleMaskBtn" type="button" class="redeem-btn">Показать</button>
+            <button id="pasteBtn" type="button" class="redeem-btn">Вставить</button>
+            <button id="clearBtn" type="button" class="redeem-btn">Очистить</button>
+          </div>
+
+          <textarea id="tokenInput" class="redeem-input masked" placeholder="Токен аккаунта" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
+
+          <div class="redeem-meta">
+            <span id="tokenInfo">Символов: 0</span>
+            <span id="tokenWarn">Мы не сохраняем токен и используем его только для оплаты.</span>
+          </div>
+        </section>
+      </div>
+
+      <section id="actionsRow" class="redeem-actions">
+        <button id="checkBtn" type="button" class="redeem-btn">Проверить статус</button>
+        <button id="retryNewKeyBtn" type="button" class="redeem-btn">Сменить ключ и повторить</button>
+        <button id="startBtn" type="button" class="redeem-btn redeem-btn-primary full" disabled>Активировать</button>
+        <button id="stopPollingBtn" type="button" class="redeem-btn full" style="display:none">Остановить проверку</button>
+      </section>
+
+      <section id="statusBox" class="redeem-status">
+        <span id="statusText">Ожидаю действия.</span>
+        <span id="statusSpinner" class="redeem-spinner" aria-hidden="true"></span>
+        <span id="taskWrap" style="display:none">Task: <strong id="taskIdValue"></strong></span>
+        <button id="copyTaskBtn" type="button" class="redeem-btn" style="display:none">Скопировать Task</button>
+      </section>
+
+      <section class="redeem-faq">
+        Ошибка? Проверьте оплату, корректность <strong>order_id</strong> и попробуйте снова.
+      </section>
+    </section>
+  </main>
+
+  <footer>
+    <a class="footer-link" href="/oferta.html">Публичная оферта</a> · <a class="footer-link" href="/politika.html">Политика конфиденциальности</a> · <a class="footer-link" href="/refund.html">Условия возврата</a>
+    <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
+  </footer>
+
+  <script src="/assets/js/app.min.js" defer></script>
+  <script>
+    const langSwitch = document.getElementById("langSwitch");
+    const langCurrent = document.getElementById("langCurrent");
+
+    langCurrent.addEventListener("click", () => {
+      langSwitch.classList.toggle("open");
+    });
+
+    document.querySelectorAll(".lang-item").forEach(item => {
+      item.addEventListener("click", () => {
+        const lang = item.dataset.lang;
+        if (lang === "en") window.location.href = "/en/redeem-start.html" + window.location.search;
+        if (lang === "ru") window.location.href = "/redeem-start.html" + window.location.search;
+      });
+    });
+
+    document.addEventListener("click", e => {
+      if (!langSwitch.contains(e.target)) langSwitch.classList.remove("open");
+    });
+  </script>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const orderId = String(params.get('order_id') || params.get('orderId') || '').trim();
+
+    const orderIdEl = document.getElementById('orderId');
+    const copyOrderIdBtn = document.getElementById('copyOrderIdBtn');
+    const tokenInput = document.getElementById('tokenInput');
+    const tokenInfo = document.getElementById('tokenInfo');
+    const tokenWarn = document.getElementById('tokenWarn');
+    const toggleMaskBtn = document.getElementById('toggleMaskBtn');
+    const pasteBtn = document.getElementById('pasteBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const actionsRow = document.getElementById('actionsRow');
+
+    const startBtn = document.getElementById('startBtn');
+    const checkBtn = document.getElementById('checkBtn');
+    const retryNewKeyBtn = document.getElementById('retryNewKeyBtn');
+    const stopPollingBtn = document.getElementById('stopPollingBtn');
+
+    const statusBox = document.getElementById('statusBox');
+    const statusText = document.getElementById('statusText');
+    const statusSpinner = document.getElementById('statusSpinner');
+    const taskWrap = document.getElementById('taskWrap');
+    const taskIdValue = document.getElementById('taskIdValue');
+    const copyTaskBtn = document.getElementById('copyTaskBtn');
+
+    const POLL_INTERVAL_MS = 2000;
+    const POLL_MAX_MS = 30000;
+    const RETRY_COOLDOWN_MS = 20000;
+
+    let currentTaskId = '';
+    let pollTimer = null;
+    let pollStartedAt = 0;
+    let lastToken = '';
+    let isRetryRunning = false;
+    let lastRetryAt = 0;
+    let isMasked = true;
+
+    if (!orderId) {
+      setStatus('error', 'Не указан order_id в ссылке.', false);
+      startBtn.disabled = true;
+      checkBtn.disabled = true;
+      retryNewKeyBtn.disabled = true;
+    } else {
+      orderIdEl.textContent = orderId;
+      try { localStorage.setItem('gptishka_activation_order_id', orderId); } catch (_) {}
+      loadActivation();
+    }
+
+    updateTokenMeta();
+
+    tokenInput.addEventListener('input', () => {
+      startBtn.disabled = !orderId || !String(tokenInput.value || '').trim();
+      updateTokenMeta();
+    });
+
+    toggleMaskBtn.addEventListener('click', () => {
+      isMasked = !isMasked;
+      tokenInput.classList.toggle('masked', isMasked);
+      toggleMaskBtn.textContent = isMasked ? 'Показать' : 'Скрыть';
+    });
+
+    pasteBtn.addEventListener('click', async () => {
+      try {
+        const clipboard = await navigator.clipboard.readText();
+        if (clipboard) {
+          tokenInput.value = clipboard;
+          startBtn.disabled = !orderId || !String(tokenInput.value || '').trim();
+          updateTokenMeta();
+          setStatus('success', 'Токен вставлен', false);
+        }
+      } catch {
+        setStatus('error', 'Не удалось вставить из буфера обмена', false);
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      tokenInput.value = '';
+      startBtn.disabled = true;
+      updateTokenMeta();
+      setStatus('pending', 'Поле очищено', false);
+    });
+
+    copyOrderIdBtn.addEventListener('click', () => copyText(orderId, 'Order ID скопирован'));
+    copyTaskBtn.addEventListener('click', () => copyText(currentTaskId, 'Task ID скопирован'));
+
+    startBtn.addEventListener('click', async () => {
+      const token = String(tokenInput.value || '').trim();
+      if (!token) return;
+      lastToken = token;
+      setButtonLoading(startBtn, true);
+      try {
+        setStatus('pending', 'Запрос отправлен...', true);
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setStatus('error', payload?.message || 'Не удалось запустить активацию', false);
+          return;
+        }
+        currentTaskId = String(payload.taskId || '');
+        renderTask(currentTaskId);
+        setStatus('pending', `В обработке. Task: ${currentTaskId}`, true);
+        startPolling();
+      } catch {
+        setStatus('error', 'Ошибка сети при запуске активации', false);
+      } finally {
+        setButtonLoading(startBtn, false);
+      }
+    });
+
+    checkBtn.addEventListener('click', async () => {
+      if (!currentTaskId) {
+        setStatus('pending', 'Сначала запустите активацию', false);
+        return;
+      }
+      setButtonLoading(checkBtn, true);
+      await checkTaskStatus();
+      setButtonLoading(checkBtn, false);
+    });
+
+    retryNewKeyBtn.addEventListener('click', async () => {
+      if (isRetryRunning) return;
+      const now = Date.now();
+      const remain = RETRY_COOLDOWN_MS - (now - lastRetryAt);
+      if (remain > 0) {
+        setStatus('error', `Слишком часто. Повторите через ${Math.ceil(remain / 1000)} сек.`, false);
+        return;
+      }
+
+      const token = String(tokenInput.value || '').trim();
+      if (!token) {
+        setStatus('error', 'Введите токен', false);
+        return;
+      }
+
+      lastRetryAt = now;
+      lastToken = token;
+      isRetryRunning = true;
+      setButtonLoading(retryNewKeyBtn, true);
+      try {
+        setStatus('pending', 'Берем новый ключ и перезапускаем...', true);
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/restart-with-new-key`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setStatus('error', payload?.message || 'Не удалось перезапустить', false);
+          return;
+        }
+        currentTaskId = String(payload.taskId || '');
+        renderTask(currentTaskId);
+        setStatus('pending', `В обработке. Task: ${currentTaskId}`, true);
+        startPolling();
+      } catch {
+        setStatus('error', 'Ошибка сети при перезапуске', false);
+      } finally {
+        isRetryRunning = false;
+        setButtonLoading(retryNewKeyBtn, false);
+      }
+    });
+
+    stopPollingBtn.addEventListener('click', () => {
+      stopPolling();
+      setStatus('pending', 'Автопроверка остановлена', false);
+    });
+
+    async function loadActivation() {
+      try {
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation`);
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setStatus('error', payload?.message || 'Не удалось загрузить статус активации', false);
+          return;
+        }
+        currentTaskId = String(payload.taskId || '');
+        renderTask(currentTaskId);
+        if (currentTaskId) {
+          setStatus('pending', `В обработке. Task: ${currentTaskId}`, true);
+          startPolling();
+          return;
+        }
+        setStatus('pending', 'Ожидаю действия.', false);
+      } catch {
+        setStatus('error', 'Ошибка сети при загрузке активации', false);
+      }
+    }
+
+    function startPolling() {
+      stopPolling();
+      stopPollingBtn.style.display = 'inline-flex';
+      pollStartedAt = Date.now();
+      pollTimer = setInterval(async () => {
+        const done = await checkTaskStatus();
+        const timeout = Date.now() - pollStartedAt >= POLL_MAX_MS;
+        if (done || timeout) {
+          stopPolling();
+          if (!done && lastToken) {
+            const restarted = await restartActivation();
+            if (restarted) {
+              setStatus('pending', `В обработке. Task: ${currentTaskId}`, true);
+              startPolling();
+            } else {
+              setStatus('error', 'Запрос не может обработаться. Попробуйте сменить ключ.', false);
+            }
+          }
+        }
+      }, POLL_INTERVAL_MS);
+    }
+
+    function stopPolling() {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+      stopPollingBtn.style.display = 'none';
+    }
+
+    async function checkTaskStatus() {
+      try {
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/task/${encodeURIComponent(currentTaskId)}`);
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setStatus('error', payload?.message || 'Не удалось получить статус', false);
+          return true;
+        }
+
+        if (payload.pending) {
+          setStatus('pending', `В обработке. Task: ${currentTaskId}`, true);
+          return false;
+        }
+
+        if (payload.success) {
+          setStatus('success', `Успешно. Task: ${currentTaskId}`, false);
+          hideActionButtons();
+          return true;
+        }
+
+        setStatus('error', payload?.message || 'Запрос не может обработаться', false);
+        return true;
+      } catch {
+        setStatus('error', 'Ошибка сети при проверке статуса', false);
+        return false;
+      }
+    }
+
+    async function restartActivation() {
+      try {
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: lastToken }),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) return false;
+        const nextTask = String(payload.taskId || '').trim();
+        if (!nextTask) return false;
+        currentTaskId = nextTask;
+        renderTask(currentTaskId);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function renderTask(taskId) {
+      const value = String(taskId || '').trim();
+      if (!value) {
+        taskWrap.style.display = 'none';
+        copyTaskBtn.style.display = 'none';
+        taskIdValue.textContent = '';
+        return;
+      }
+      taskIdValue.textContent = value;
+      taskWrap.style.display = 'inline-flex';
+      copyTaskBtn.style.display = 'inline-flex';
+    }
+
+    function hideActionButtons() {
+      stopPolling();
+      actionsRow.style.display = 'none';
+    }
+
+    function updateTokenMeta() {
+      const length = String(tokenInput.value || '').trim().length;
+      tokenInfo.textContent = `Символов: ${length}`;
+      tokenWarn.textContent = 'Мы не сохраняем токен и используем его только для оплаты.';
+      tokenWarn.className = '';
+    }
+
+    function setStatus(tone, text, loading) {
+      statusBox.className = `redeem-status ${tone}`;
+      statusText.textContent = text;
+      statusSpinner.style.display = loading ? 'inline-block' : 'none';
+    }
+
+    function setButtonLoading(btn, loading) {
+      btn.classList.toggle('loading', Boolean(loading));
+      btn.disabled = Boolean(loading);
+      if (btn === startBtn && !loading) {
+        btn.disabled = !orderId || !String(tokenInput.value || '').trim();
+      }
+    }
+
+    async function copyText(value, okMessage) {
+      const text = String(value || '').trim();
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        setStatus('success', okMessage, false);
+      } catch {
+        setStatus('error', 'Не удалось скопировать', false);
+      }
+    }
+  </script>
+</body>
+</html>

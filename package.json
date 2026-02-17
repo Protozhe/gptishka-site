@@ -1,0 +1,30 @@
+{
+  "name": "gptishka-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GPTishka site with live sales and online ticker",
+  "main": "server.js",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "start": "node server.js",
+    "start:storefront": "node server.js",
+    "dev:admin:api": "npm run dev --workspace @gptishka/admin-backend",
+    "dev:admin:ui": "npm run dev --workspace @gptishka/admin-ui",
+    "build:admin:api": "npm run build --workspace @gptishka/admin-backend",
+    "build:admin:ui": "npm run build --workspace @gptishka/admin-ui",
+    "seed:admin": "npm run seed --workspace @gptishka/admin-backend",
+    "migrate:admin": "npm run prisma:migrate --workspace @gptishka/admin-backend",
+    "deploy:admin:init": "npm run prisma:deploy --workspace @gptishka/admin-backend && npm run seed --workspace @gptishka/admin-backend",
+    "bootstrap:admin:user": "npm run bootstrap:user --workspace @gptishka/admin-backend"
+  },
+  "dependencies": {
+    "compression": "^1.8.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "sqlite3": "^5.1.7"
+  }
+}

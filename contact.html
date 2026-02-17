@@ -1,0 +1,139 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="GPTишка: безопасная активация и продление ChatGPT Plus с поддержкой и гарантией." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="GPTishka" />
+<meta property="og:title" content="GPTишка - ChatGPT Plus" />
+<meta property="og:description" content="GPTишка: безопасная активация и продление ChatGPT Plus с поддержкой и гарантией." />
+<meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
+<meta property="og:url" content="https://gptishka.shop/contact.html" />
+<link rel="icon" href="/favicon.ico" sizes="any">
+<title>Связь с нами — GPTишка</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/logo.min.css">
+<link rel="stylesheet" href="/assets/css/sections.min.css">
+<link rel="stylesheet" href="/assets/css/theme.min.css">
+
+<!-- GOOGLE FONTS -->
+</head>
+
+<body>
+  <div class="page-overlay"></div>
+
+  <header>
+    <div class="nav">
+      <a href="/index.html" class="logo-link">
+        <img loading="lazy" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTишка" class="logo-img">
+      </a>
+
+                        <nav>
+        <a href="/index.html">Главная</a>
+        <a href="/about.html">О сервисе</a>
+        <a href="/reviews.html">Отзывы</a>
+        <a href="/guarantee.html">Гарантия</a>
+        <a href="/contact.html" class="active">Связь с нами</a>
+        <a href="/index.html#faq">Вопросы и ответы</a>
+      </nav>
+
+
+      <div class="lang-switch" id="langSwitch">
+        <div class="lang-current" id="langCurrent">
+          <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="RU">
+          <span>Русский</span>
+          <span class="arrow">▾</span>
+        </div>
+
+        <div class="lang-dropdown">
+          <div class="lang-item" data-lang="ru">
+            <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="RU">
+            <span>Русский</span>
+          </div>
+          <div class="lang-item" data-lang="en">
+            <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="EN">
+            <span>English</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="contact">
+      <h1>Связь с нами</h1>
+
+      <p>
+        Если возникли вопросы по тарифам, оплате или активации — напишите нам в Telegram или на почту.
+        Отвечаем быстро и помогаем довести всё до результата.
+      </p>
+
+      <p>
+        Чтобы мы сразу разобрались, можно отправить: вашу почту (если указывали при покупке),
+        скрин/номер заказа и кратко описать ситуацию.
+      </p>
+
+      <div class="contact-card">
+        <div class="contact-links">
+          <a class="tg-link" href="mailto:support@gptishka.shop">support@gptishka.shop</a>
+          <a class="tg-link" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener">GPTishka telegram</a>
+        </div>
+
+        <a class="btn" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener">
+          Открыть Telegram
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+  <a class="footer-link" href="oferta.html">Публичная оферта</a> · <a class="footer-link" href="politika.html">Политика конфиденциальности</a> · <a class="footer-link" href="refund.html">Условия возврата</a>
+  <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
+</footer>
+
+  <script src="/assets/js/app.min.js" defer></script>
+
+  <script>
+    const langSwitch = document.getElementById("langSwitch");
+    const langCurrent = document.getElementById("langCurrent");
+
+    if (langSwitch && langCurrent) {
+      langCurrent.addEventListener("click", () => {
+        langSwitch.classList.toggle("open");
+      });
+
+      document.querySelectorAll(".lang-item").forEach(item => {
+        item.addEventListener("click", () => {
+          const lang = item.dataset.lang;
+          const path = window.location.pathname;
+
+          if (lang === "en") {
+            window.location.href = path.startsWith("/en/") ? path : "/en" + path;
+          }
+          if (lang === "ru") {
+            const ruPath = path.replace(/^\/en/, "");
+            window.location.href = ruPath === "" ? "/" : ruPath;
+          }
+        });
+      });
+
+      document.addEventListener("click", e => {
+        if (!langSwitch.contains(e.target)) {
+          langSwitch.classList.remove("open");
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

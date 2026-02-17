@@ -1,0 +1,15 @@
+{
+  "items": [
+    {
+      "id": "eb6ae924-2455-430d-9a70-695443b11f59",
+      "code": "TEST-BACKUP-CDK-0001",
+      "productKey": "chatgpt-plus-1m",
+      "status": "unused",
+      "orderId": null,
+      "email": null,
+      "createdAt": "2026-02-15T22:37:38.767Z",
+      "updatedAt": "2026-02-15T22:37:38.767Z",
+      "assignedAt": null
+    }
+  ]
+}
