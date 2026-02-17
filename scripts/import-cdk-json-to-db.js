@@ -65,15 +65,33 @@ async function main() {
     return;
   }
 
+  // Only keep orderId if the order exists; legacy JSON may contain stale ids.
+  const candidateOrderIds = Array.from(
+    new Set(
+      items
+        .map((x) => (x && x.orderId ? String(x.orderId).trim() : ""))
+        .filter(Boolean)
+    )
+  );
+  const existingOrders = candidateOrderIds.length
+    ? await prisma.order.findMany({
+        where: { id: { in: candidateOrderIds } },
+        select: { id: true },
+      })
+    : [];
+  const existingOrderIdSet = new Set(existingOrders.map((o) => o.id));
+
   const rows = [];
   for (const x of items) {
     const keyValue = normalizeCode(x.code);
     if (!keyValue) continue;
+    const rawOrderId = x.orderId ? String(x.orderId).trim() : "";
+    const safeOrderId = rawOrderId && existingOrderIdSet.has(rawOrderId) ? rawOrderId : null;
     rows.push({
       productKey: normalizeProductKey(x.productKey || "chatgpt"),
       keyValue,
       status: String(x.status || "unused") === "used" ? "used" : "available",
-      orderId: x.orderId ? String(x.orderId) : null,
+      orderId: safeOrderId,
       email: x.email ? String(x.email).trim().toLowerCase() : null,
       usedAt: x.assignedAt ? new Date(String(x.assignedAt)) : null,
     });
