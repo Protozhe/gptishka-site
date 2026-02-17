@@ -39,8 +39,14 @@ npm run build:admin:api
 npm run build:admin:ui
 rsync -a --delete apps/admin-ui/dist/ admin/
 
-pm2 restart gptishka-admin-api --update-env
-pm2 restart gptishka-storefront --update-env
+# Ensure PM2 apps (and their PORTs) match repo config on every deploy.
+# This prevents port drift (e.g., storefront accidentally binding admin port).
+if [ -f ecosystem.config.js ]; then
+  pm2 startOrReload ecosystem.config.js --update-env
+else
+  pm2 restart gptishka-admin-api --update-env
+  pm2 restart gptishka-storefront --update-env
+fi
 nginx -t
 systemctl reload nginx
 pm2 save
