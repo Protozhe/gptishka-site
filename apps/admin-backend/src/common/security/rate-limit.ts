@@ -15,6 +15,22 @@ export const authRateLimit = rateLimit({
   legacyHeaders: false,
 });
 
+export const authLoginRateLimit = rateLimit({
+  windowMs: env.RATE_LIMIT_WINDOW_MS,
+  max: env.AUTH_RATE_LIMIT_MAX,
+  // Count only failed attempts so normal work in admin UI does not block login.
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+export const authSessionRateLimit = rateLimit({
+  windowMs: env.RATE_LIMIT_WINDOW_MS,
+  max: Math.max(env.AUTH_RATE_LIMIT_MAX * 6, 60),
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 export const checkoutCreateRateLimit = rateLimit({
   windowMs: 60_000,
   max: 20,
