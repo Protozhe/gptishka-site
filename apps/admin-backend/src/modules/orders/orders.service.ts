@@ -10,6 +10,8 @@ import { paymentWebhookService } from "../payments/payment-webhook.service";
 import { activationStore } from "./activation.store";
 import { deliverProduct } from "./delivery.service";
 
+const MAX_CLIENT_TOKEN_LENGTH = 500_000;
+
 export const ordersService = {
   async list(params: any) {
     const result = await ordersRepository.list(params);
@@ -185,9 +187,9 @@ export const ordersService = {
     if (!stored?.cdk) {
       throw new AppError("Activation key is not issued yet", 409);
     }
-    const safeToken = String(token || "").trim();
+    const safeToken = normalizeClientTokenInput(token);
     if (!safeToken) throw new AppError("Token is required", 400);
-    if (safeToken.length > 20_000) throw new AppError("Token is too long", 400);
+    if (safeToken.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
 
     const createResponse = await fetch("https://receipt-api.nitro.xin/stocks/public/outstock", {
       method: "POST",
@@ -244,9 +246,9 @@ export const ordersService = {
       throw new AppError("Try current key first before requesting a new one", 409);
     }
 
-    const safeToken = String(token || "").trim();
+    const safeToken = normalizeClientTokenInput(token);
     if (!safeToken) throw new AppError("Token is required", 400);
-    if (safeToken.length > 20_000) throw new AppError("Token is too long", 400);
+    if (safeToken.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
 
     const now = Date.now();
     const lastUpdated = current?.updatedAt ? Date.parse(current.updatedAt) : 0;
@@ -480,6 +482,28 @@ async function fetchActivationTaskPayload(taskId: string) {
     task_id?: string;
     cdk?: string;
   };
+}
+
+function normalizeClientTokenInput(input: string) {
+  const raw = String(input || "").trim();
+  if (!raw) return "";
+  if (!raw.startsWith("{")) return raw;
+
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const sessionToken = typeof parsed.sessionToken === "string" ? parsed.sessionToken.trim() : "";
+    if (sessionToken) return sessionToken;
+
+    const accessToken = typeof parsed.accessToken === "string" ? parsed.accessToken.trim() : "";
+    if (accessToken) return accessToken;
+
+    const token = typeof parsed.token === "string" ? parsed.token.trim() : "";
+    if (token) return token;
+  } catch {
+    // Keep original input if it's not valid JSON.
+  }
+
+  return raw;
 }
 
 function updateActivationFromProviderPayload(orderId: string, taskId: string, payload: {

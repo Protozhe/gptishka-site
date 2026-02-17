@@ -510,7 +510,7 @@
     copyTaskBtn.addEventListener('click', () => copyText(currentTaskId, 'Task ID скопирован'));
 
     startBtn.addEventListener('click', async () => {
-      const token = String(tokenInput.value || '').trim();
+      const token = getTokenForSubmit();
       if (!token) return;
       lastToken = token;
       setButtonLoading(startBtn, true);
@@ -556,7 +556,7 @@
         return;
       }
 
-      const token = String(tokenInput.value || '').trim();
+      const token = getTokenForSubmit();
       if (!token) {
         setStatus('error', 'Введите токен', false);
         return;
@@ -712,10 +712,44 @@
     }
 
     function updateTokenMeta() {
-      const length = String(tokenInput.value || '').trim().length;
+      const raw = String(tokenInput.value || '').trim();
+      const token = extractTokenFromInput(raw);
+      const length = token.length;
       tokenInfo.textContent = `Символов: ${length}`;
-      tokenWarn.textContent = 'Мы не сохраняем токен и используем его только для оплаты.';
+      if (raw.startsWith('{') && token && token !== raw) {
+        tokenWarn.textContent = 'Обнаружен JSON: будет использован извлеченный токен.';
+      } else {
+        tokenWarn.textContent = 'Мы не сохраняем токен и используем его только для оплаты.';
+      }
       tokenWarn.className = '';
+    }
+
+    function getTokenForSubmit() {
+      const raw = String(tokenInput.value || '').trim();
+      const token = extractTokenFromInput(raw);
+      return String(token || '').trim();
+    }
+
+    function extractTokenFromInput(raw) {
+      const value = String(raw || '').trim();
+      if (!value || !value.startsWith('{')) return value;
+
+      try {
+        const parsed = JSON.parse(value);
+        if (typeof parsed?.sessionToken === 'string' && parsed.sessionToken.trim()) {
+          return parsed.sessionToken.trim();
+        }
+        if (typeof parsed?.accessToken === 'string' && parsed.accessToken.trim()) {
+          return parsed.accessToken.trim();
+        }
+        if (typeof parsed?.token === 'string' && parsed.token.trim()) {
+          return parsed.token.trim();
+        }
+      } catch (_) {
+        return value;
+      }
+
+      return value;
     }
 
     function setStatus(tone, text, loading) {
