@@ -58,12 +58,6 @@ async function main() {
   }
 
   const prisma = new PrismaClient();
-  const existingCount = await prisma.licenseKey.count();
-  if (existingCount > 0) {
-    console.log("license_keys already has data, skipping JSON import. count=", existingCount);
-    await prisma.$disconnect();
-    return;
-  }
 
   // Only keep orderId if the order exists; legacy JSON may contain stale ids.
   const candidateOrderIds = Array.from(
@@ -115,8 +109,15 @@ async function main() {
 
   fs.mkdirSync(backupDir, { recursive: true });
   const backupPath = path.join(backupDir, `cdk-keys.json.${nowStamp()}.bak`);
-  fs.renameSync(jsonPath, backupPath);
-  console.log("Imported into Postgres:", inserted.count, "Backed up JSON to:", backupPath);
+  // If the source is a snapshot, keep it and just copy; otherwise move it out of the project/runtime dir.
+  const isSnapshot = String(jsonPath).includes("/snapshots/");
+  if (isSnapshot) {
+    fs.copyFileSync(jsonPath, backupPath);
+    console.log("Imported into Postgres:", inserted.count, "Copied JSON to:", backupPath);
+  } else {
+    fs.renameSync(jsonPath, backupPath);
+    console.log("Imported into Postgres:", inserted.count, "Moved JSON to:", backupPath);
+  }
 }
 
 main().catch((err) => {

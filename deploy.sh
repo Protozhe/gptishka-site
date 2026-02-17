@@ -3,6 +3,7 @@ set -euo pipefail
 
 APP_DIR="/var/www/gptishka-new"
 ADMIN_ENV_FILE="$APP_DIR/apps/admin-backend/.env"
+RUNTIME_DIR="/var/lib/gptishka-runtime"
 
 cd "$APP_DIR"
 
@@ -24,7 +25,15 @@ npm run prisma:deploy --workspace @gptishka/admin-backend
 npm run prisma:generate --workspace @gptishka/admin-backend
 
 # One-time migration: import legacy JSON pool into Postgres (then move JSON to /var/backups).
-node scripts/import-cdk-json-to-db.js "$APP_DIR" "$APP_DIR/data/cdk-keys.json" "$ADMIN_ENV_FILE" "/var/backups/gptishka" || true
+# git reset --hard can remove previously-tracked JSON, so also check runtime snapshots.
+LEGACY_JSON="$APP_DIR/data/cdk-keys.json"
+if [ ! -f "$LEGACY_JSON" ] && [ -f "$RUNTIME_DIR/cdk-keys.json" ]; then
+  LEGACY_JSON="$RUNTIME_DIR/cdk-keys.json"
+fi
+if [ ! -f "$LEGACY_JSON" ] && [ -d "$RUNTIME_DIR/snapshots" ]; then
+  LEGACY_JSON="$(ls -1t "$RUNTIME_DIR"/snapshots/cdk-keys-*.json 2>/dev/null | head -n 1 || true)"
+fi
+node scripts/import-cdk-json-to-db.js "$APP_DIR" "$LEGACY_JSON" "$ADMIN_ENV_FILE" "/var/backups/gptishka" || true
 
 npm run build:admin:api
 npm run build:admin:ui
