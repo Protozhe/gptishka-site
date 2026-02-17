@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import { canonicalProductKey } from "../../common/utils/product-key";
 
 export type CdkStatus = "unused" | "used";
 
@@ -40,6 +41,23 @@ function readFile(): CdkFile {
     const raw = fs.readFileSync(filePath, "utf8").replace(/^\uFEFF/, "");
     const parsed = JSON.parse(raw) as CdkFile;
     if (!Array.isArray(parsed?.items)) return { items: [] };
+    // Self-heal productKey drift (e.g. `chatgpt-plus-1m` -> `chatgpt-plus`).
+    let changed = 0;
+    for (const item of parsed.items) {
+      const next = normalizeProductKey(item.productKey);
+      if (next && next !== item.productKey) {
+        item.productKey = next;
+        item.updatedAt = nowIso();
+        changed += 1;
+      }
+    }
+    if (changed > 0) {
+      try {
+        writeFileAtomic(parsed, "bootstrap", { normalizedProductKeys: true, changed });
+      } catch {
+        // If filesystem is read-only/immutable, keep serving from memory.
+      }
+    }
     return parsed;
   } catch {
     // Keep service alive even if file is broken: restore from latest backup if possible.
@@ -146,7 +164,8 @@ function normalizeProductKey(value: string) {
     .replace(/-+/g, "-")
     .replace(/^-+/, "")
     .replace(/-+$/, "");
-  return normalized || "chatgpt";
+  const canonical = canonicalProductKey(normalized || "chatgpt");
+  return canonical || "chatgpt";
 }
 
 function nowIso() {
