@@ -19,7 +19,13 @@ import "./styles/index.css";
 
 const queryClient = new QueryClient();
 const routerBaseEnv = import.meta.env.VITE_ADMIN_BASE_PATH as string | undefined;
-const routerBase = routerBaseEnv && routerBaseEnv !== "/" ? routerBaseEnv : undefined;
+const normalizedRouterBase = String(routerBaseEnv || "").trim();
+const routerBase =
+  normalizedRouterBase && normalizedRouterBase !== "/"
+    ? normalizedRouterBase
+    : import.meta.env.PROD
+      ? "/admin"
+      : undefined;
 
 class RootErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; errorText: string }> {
   constructor(props: { children: React.ReactNode }) {
