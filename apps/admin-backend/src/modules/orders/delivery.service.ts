@@ -1,6 +1,7 @@
 import { Order } from "@prisma/client";
 import { prisma } from "../../config/prisma";
 import { activationStore } from "./activation.store";
+import { canonicalProductKey } from "../../common/utils/product-key";
 
 export async function deliverProduct(order: Order) {
   activationStore.ensure();
@@ -27,7 +28,7 @@ export async function deliverProduct(order: Order) {
     .trim()
     .toLowerCase();
   const productId = String(firstItem?.product?.id || "").trim().toLowerCase();
-  const productKey = productSlug || productId;
+  const productKey = canonicalProductKey(productSlug || productId);
 
   if (!productKey) {
     console.warn(`[delivery] product key not resolved for order=${order.id}`);
