@@ -4,6 +4,8 @@ import { env } from "../../config/env";
 export const globalRateLimit = rateLimit({
   windowMs: env.RATE_LIMIT_WINDOW_MS,
   max: env.RATE_LIMIT_MAX,
+  // Admin auth has its own dedicated limits; do not let global traffic block login/refresh.
+  skip: (req) => String(req.path || "").startsWith("/api/admin/auth/"),
   standardHeaders: true,
   legacyHeaders: false,
 });
