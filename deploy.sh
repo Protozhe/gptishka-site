@@ -46,7 +46,7 @@ fi
 
 git fetch origin main
 git reset --hard origin/main
-npm install
+npm install --include=dev
 npm run prisma:generate --workspace @gptishka/admin-backend
 npm run build:admin:api
 npm run build:admin:ui
