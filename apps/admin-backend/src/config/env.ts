@@ -21,6 +21,18 @@ if (!process.env.JWT_ACCESS_SECRET && process.env.JWT_SECRET) {
 if (!process.env.JWT_REFRESH_SECRET && process.env.JWT_SECRET) {
   process.env.JWT_REFRESH_SECRET = process.env.JWT_SECRET;
 }
+if (!process.env.JWT_ACCESS_SECRET && process.env.SESSION_SECRET) {
+  process.env.JWT_ACCESS_SECRET = process.env.SESSION_SECRET;
+}
+if (!process.env.JWT_REFRESH_SECRET && process.env.SESSION_SECRET) {
+  process.env.JWT_REFRESH_SECRET = process.env.SESSION_SECRET;
+}
+if (!process.env.ADMIN_UI_URL && process.env.FRONTEND_URL) {
+  process.env.ADMIN_UI_URL = process.env.FRONTEND_URL;
+}
+if (!process.env.APP_URL && process.env.API_URL) {
+  process.env.APP_URL = process.env.API_URL;
+}
 if (!process.env.ENOT_API_KEY && process.env.PAYMENT_SECRET) {
   process.env.ENOT_API_KEY = process.env.PAYMENT_SECRET;
 }
@@ -45,9 +57,13 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(4100),
   APP_URL: z.string().url(),
   ADMIN_UI_URL: z.string().url(),
+  ADMIN_UI_URLS: z.string().optional().default(""),
+  FRONTEND_URL: z.string().optional().default(""),
+  API_URL: z.string().optional().default(""),
   DATABASE_URL: z.string().min(1),
   JWT_ACCESS_SECRET: z.string().min(16),
   JWT_REFRESH_SECRET: z.string().min(16),
+  SESSION_SECRET: z.string().optional().default(""),
   JWT_SECRET: z.string().optional().default(""),
   JWT_ACCESS_TTL: z.string().default("15m"),
   JWT_REFRESH_TTL_DAYS: z.coerce.number().int().min(1).default(30),

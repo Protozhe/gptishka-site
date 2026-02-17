@@ -7,8 +7,19 @@ RUNTIME_CDK="$RUNTIME_DIR/cdk-keys.json"
 APP_CDK="$APP_DIR/data/cdk-keys.json"
 APP_CDK_LEGACY="$APP_DIR/apps/admin-backend/data/cdk-keys.json"
 RUNTIME_SNAPSHOT_DIR="$RUNTIME_DIR/snapshots"
+ADMIN_ENV_FILE="$APP_DIR/apps/admin-backend/.env"
 
 cd "$APP_DIR"
+
+if [ ! -f "$ADMIN_ENV_FILE" ]; then
+  echo "ERROR: missing $ADMIN_ENV_FILE"
+  exit 1
+fi
+
+if grep -Eq '^(PAYMENT_SECRET|PAYMENT_SHOP_ID|ENOT_API_KEY|ENOT_SHOP_ID)=replace_me' "$ADMIN_ENV_FILE"; then
+  echo "ERROR: placeholder payment credentials detected in $ADMIN_ENV_FILE"
+  exit 1
+fi
 
 json_items_count() {
   local file="$1"

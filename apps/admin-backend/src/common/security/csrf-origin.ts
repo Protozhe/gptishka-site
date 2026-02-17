@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { env } from "../../config/env";
 import { AppError } from "../errors/app-error";
+import { getAllowedOrigins as getConfiguredAllowedOrigins } from "./origins";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
@@ -8,7 +8,7 @@ export function verifyAdminOrigin(req: Request, _res: Response, next: NextFuncti
   if (!req.path.startsWith("/api/admin/")) return next();
   if (SAFE_METHODS.has(String(req.method || "").toUpperCase())) return next();
 
-  const allowedOrigins = getAllowedOrigins();
+  const allowedOrigins = getConfiguredAllowedOrigins();
   const origin = normalizeOrigin(String(req.headers.origin || ""));
   const refererOrigin = getRefererOrigin(String(req.headers.referer || ""));
   const requestOrigin = getRequestOrigin(req);
@@ -18,37 +18,6 @@ export function verifyAdminOrigin(req: Request, _res: Response, next: NextFuncti
   if (!origin && !refererOrigin && requestOrigin && allowedOrigins.has(requestOrigin)) return next();
 
   return next(new AppError("CSRF origin check failed", 403));
-}
-
-function getAllowedOrigins() {
-  const origins = new Set<string>();
-  const primary = normalizeOrigin(env.ADMIN_UI_URL);
-  const app = normalizeOrigin(env.APP_URL);
-  if (primary) origins.add(primary);
-  if (app) origins.add(app);
-
-  // Local development often serves admin via Vite (:5173) or storefront proxy (:3000).
-  if (env.NODE_ENV !== "production") {
-    [
-      "http://localhost:3000",
-      "http://127.0.0.1:3000",
-      "http://localhost:5173",
-      "http://127.0.0.1:5173",
-    ]
-      .map(normalizeOrigin)
-      .filter(Boolean)
-      .forEach((item) => origins.add(item));
-  }
-
-  return origins;
-}
-
-function normalizeOrigin(value: string) {
-  try {
-    return new URL(value).origin.toLowerCase();
-  } catch {
-    return "";
-  }
 }
 
 function getRefererOrigin(referer: string) {
@@ -67,4 +36,12 @@ function getRequestOrigin(req: Request) {
   const host = String(req.headers["x-forwarded-host"] || req.headers.host || "").trim();
   if (!host) return "";
   return normalizeOrigin(`${protocol}://${host}`);
+}
+
+function normalizeOrigin(value: string) {
+  try {
+    return new URL(value).origin.toLowerCase();
+  } catch {
+    return "";
+  }
 }
