@@ -11,3 +11,8 @@ uploads/*
 includes/config.local.php
 apps/admin-backend/.env
 apps/admin-ui/.env
+admin/assets/
+admin/index.html
+apps/admin-ui/tsconfig.tsbuildinfo
+apps/admin-backend/data/backups/
+apps/admin-ui/.env.production
