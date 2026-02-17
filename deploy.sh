@@ -22,6 +22,10 @@ npm install --include=dev
 # Production-safe DB migrations (no reset, no drop).
 npm run prisma:deploy --workspace @gptishka/admin-backend
 npm run prisma:generate --workspace @gptishka/admin-backend
+
+# One-time migration: import legacy JSON pool into Postgres (then move JSON to /var/backups).
+node scripts/import-cdk-json-to-db.js "$APP_DIR" "$APP_DIR/data/cdk-keys.json" "$ADMIN_ENV_FILE" "/var/backups/gptishka" || true
+
 npm run build:admin:api
 npm run build:admin:ui
 rsync -a --delete apps/admin-ui/dist/ admin/
