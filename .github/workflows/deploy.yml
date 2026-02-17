@@ -25,5 +25,7 @@ jobs:
           script: |
             set -e
             cd /var/www/gptishka-new
+            git fetch origin main
+            git reset --hard origin/main
             chmod +x deploy.sh
             ./deploy.sh
