@@ -51,3 +51,19 @@ export const activationRateLimit = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+// Activation page polls status frequently (every ~2s), so reads must be lenient.
+export const activationReadRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 180,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Writes (start/restart) should remain strict to prevent abuse.
+export const activationWriteRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 12,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
