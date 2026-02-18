@@ -7,6 +7,8 @@ export type ActivationRecord = {
   email: string;
   productKey: string;
   cdk: string;
+  // Some upstream providers bind tasks to a device id; keep it stable per order activation.
+  deviceId?: string | null;
   status: "issued" | "processing" | "success" | "failed";
   taskId?: string | null;
   attempts?: number;

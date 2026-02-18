@@ -9,6 +9,7 @@ import { env } from "../../config/env";
 import { paymentWebhookService } from "../payments/payment-webhook.service";
 import { activationStore } from "./activation.store";
 import { deliverProduct } from "./delivery.service";
+import crypto from "crypto";
 
 const MAX_CLIENT_TOKEN_LENGTH = 500_000;
 
@@ -191,11 +192,13 @@ export const ordersService = {
     if (!safeToken) throw new AppError("Token is required", 400);
     if (safeToken.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
 
+    const deviceId = String(stored.deviceId || "").trim() || crypto.randomUUID();
+
     const createResponse = await fetch("https://receipt-api.nitro.xin/stocks/public/outstock", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Device-Id": "web",
+        "X-Device-Id": deviceId,
       },
       body: JSON.stringify({
         cdk: stored.cdk,
@@ -214,6 +217,7 @@ export const ordersService = {
     if (stored) {
       activationStore.upsert({
         ...stored,
+        deviceId,
         status: "processing",
         taskId,
         attempts: Math.max(0, Number(stored.attempts || 0)) + 1,
@@ -289,7 +293,8 @@ export const ordersService = {
   async getActivationTask(orderId: string, taskId: string) {
     assertOrderId(orderId);
     await this.getActivation(orderId);
-    const payload = await fetchActivationTaskPayload(taskId);
+    const stored = activationStore.findByOrderId(orderId);
+    const payload = await fetchActivationTaskPayload(taskId, stored?.deviceId || null);
     updateActivationFromProviderPayload(orderId, taskId, payload);
     return {
       pending: Boolean(payload.pending),
@@ -320,7 +325,7 @@ export const ordersService = {
     }
 
     if (activation?.taskId && options?.forceCheck) {
-      const payload = await fetchActivationTaskPayload(activation.taskId);
+      const payload = await fetchActivationTaskPayload(activation.taskId, activation.deviceId || null);
       updateActivationFromProviderPayload(id, activation.taskId, payload);
       activation = activationStore.findByOrderId(id) || activation;
     }
@@ -465,10 +470,13 @@ export const ordersService = {
   },
 };
 
-async function fetchActivationTaskPayload(taskId: string) {
+async function fetchActivationTaskPayload(taskId: string, deviceId?: string | null) {
+  const headers: Record<string, string> = { Accept: "application/json" };
+  const did = String(deviceId || "").trim();
+  if (did) headers["X-Device-Id"] = did;
   const response = await fetch(`https://receipt-api.nitro.xin/stocks/public/outstock/${encodeURIComponent(taskId)}`, {
     method: "GET",
-    headers: { Accept: "application/json" },
+    headers,
   });
   if (!response.ok) {
     const details = await response.text().catch(() => "");
