@@ -34,7 +34,6 @@
         <a href="/en/reviews.html">Reviews</a>
         <a href="/en/guarantee.html">Guarantee</a>
         <a href="/en/contact.html">Contact us</a>
-        <a href="/en/index.html#faq">FAQ</a>
       </nav>
 
       <div class="header-tools">
@@ -123,87 +122,44 @@
       </div>
     </section>
 
-    <section class="faq" id="faq">
+    <section class="faq" id="contacts">
       <div class="faq-header">
-        <h2>FAQ</h2>
-        <p>Quick answers to the most common questions</p>
+        <h2>Support contacts</h2>
+        <p>Message us and we'll help with payment and activation</p>
       </div>
 
       <div class="faq-layout">
         <div class="faq-list">
-          <div class="faq-item">
-            <button class="faq-question">
-              What is a token, and is it safe?
-              <span class="faq-icon">+</span>
-            </button>
-            <div class="faq-answer">
-              <p>
-                Payment via the link is only possible with a token.<br><br>
-                We do not see your login or password - the token is used only to process the subscription payment.
-              </p>
+          <div class="faq-item" style="cursor:default;">
+            <div style="display:flex; gap:12px; align-items:center; padding:14px 12px;">
+              <img loading="lazy" decoding="async" src="/assets/img/mail.png" alt="Email" style="width:22px;height:22px;">
+              <div>
+                <div style="font-size:12px; color:#6b7280; font-weight:700; letter-spacing:0.04em;">Email</div>
+                <a href="mailto:support@gptishka.shop" style="display:inline-block; font-weight:800; color:#1f2937; text-decoration:none;">support@gptishka.shop</a>
+              </div>
             </div>
           </div>
 
-          <div class="faq-item">
-            <button class="faq-question">
-              What do I receive after payment?
-              <span class="faq-icon">+</span>
-            </button>
-            <div class="faq-answer">
-              <p>
-                If you purchased renewal or activation, it will be applied to your account.<br><br>
-                After payment you'll be taken to an instruction page with your token.<br><br>
-                If you bought a ready account, the details will be sent to your email automatically.
-              </p>
+          <div class="faq-item" style="cursor:default;">
+            <div style="display:flex; gap:12px; align-items:center; padding:14px 12px;">
+              <img loading="lazy" decoding="async" src="/assets/img/telegram.png" alt="Telegram" style="width:22px;height:22px;">
+              <div>
+                <div style="font-size:12px; color:#6b7280; font-weight:700; letter-spacing:0.04em;">Telegram</div>
+                <a href="https://t.me/aimarket_gpt" target="_blank" rel="noopener noreferrer" style="display:inline-block; font-weight:800; color:#1f2937; text-decoration:none;">GPTishka telegram</a>
+              </div>
             </div>
           </div>
 
-          <div class="faq-item">
-            <button class="faq-question">
-              What guarantee do you provide?
-              <span class="faq-icon">+</span>
-            </button>
-            <div class="faq-answer">
-              <p>
-                We provide a guarantee for the full subscription period.
-              </p>
-            </div>
-          </div>
-
-          <div class="faq-item">
-            <button class="faq-question">
-              What payment methods do you accept?
-              <span class="faq-icon">+</span>
-            </button>
-            <div class="faq-answer">
-              <p>
-                Instant payments, RU/CIS bank cards
-              </p>
+          <div class="faq-item" style="cursor:default;">
+            <div style="display:flex; gap:12px; align-items:center; padding:14px 12px;">
+              <img loading="lazy" decoding="async" src="/assets/img/vk.png" alt="VK" style="width:22px;height:22px;">
+              <div>
+                <div style="font-size:12px; color:#6b7280; font-weight:700; letter-spacing:0.04em;">VK</div>
+                <a href="https://vk.com/gptishka" target="_blank" rel="noopener noreferrer" style="display:inline-block; font-weight:800; color:#1f2937; text-decoration:none;">vk.com/gptishka</a>
+              </div>
             </div>
           </div>
         </div>
-
-        <aside class="faq-sticky">
-          <h3>Still have questions?</h3>
-          <p>
-            Message us - we'll reply quickly and help you choose the right plan.
-          </p>
-          <a class="faq-chat-btn" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener noreferrer">Open chat</a>
-          <div style="display:flex; gap:10px; margin-top:10px; align-items:center; flex-wrap:wrap;">
-            <a href="mailto:support@gptishka.shop" title="Email" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;">
-              <img loading="lazy" decoding="async" src="/assets/img/mail.png" alt="Email" style="width:20px;height:20px;">
-              <span style="font-weight:700;color:#1f2937;">support@gptishka.shop</span>
-            </a>
-            <a href="https://t.me/aimarket_gpt" target="_blank" rel="noopener noreferrer" title="Telegram" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;">
-              <img loading="lazy" decoding="async" src="/assets/img/telegram.png" alt="Telegram" style="width:20px;height:20px;">
-              <span style="font-weight:700;color:#1f2937;">GPTishka telegram</span>
-            </a>
-            <a href="https://vk.com/gptishka" target="_blank" rel="noopener noreferrer" title="VK" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;">
-              <img loading="lazy" decoding="async" src="/assets/img/vk.png" alt="VK" style="width:20px;height:20px;">
-              <span style="font-weight:700;color:#1f2937;">vk.com/gptishka</span>
-            </a>
-          </div>
-        </aside>
       </div>
     </section>
   </main>
@@ -214,14 +170,6 @@
   </footer>
 
   <script src="/assets/js/app.min.js" defer></script>
-  <script>
-    document.querySelectorAll(".faq-question").forEach(btn => {
-      btn.addEventListener("click", () => {
-        btn.parentElement.classList.toggle("active");
-      });
-    });
-  </script>
-
   <script>
     const langSwitch = document.getElementById("langSwitch");
     const langCurrent = document.getElementById("langCurrent");
