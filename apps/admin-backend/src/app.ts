@@ -24,8 +24,9 @@ import { verifyAdminOrigin } from "./common/security/csrf-origin";
 
 export function createApp() {
   const app = express();
-  // Must be boolean true for express-rate-limit X-Forwarded-For validation.
-  app.set("trust proxy", true);
+  // We're behind a single reverse proxy (nginx). Trust exactly 1 hop.
+  // `true` is considered permissive by express-rate-limit and will throw.
+  app.set("trust proxy", 1);
 
   applySecurity(app);
   app.use(globalRateLimit);
