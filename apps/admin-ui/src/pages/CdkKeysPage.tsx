@@ -106,7 +106,7 @@ function ProductColumn({ product, search }: { product: ProductItem; search: stri
           productKey,
           text,
         })
-      ).data as { inserted: number; skipped: number },
+      ).data as { inserted: number; moved?: number; skipped: number },
     onSuccess: () => {
       setText("");
       setError("");
@@ -193,7 +193,9 @@ function ProductColumn({ product, search }: { product: ProductItem; search: stri
           </button>
           {importMutation.data ? (
             <span className="text-xs text-emerald-600">
-              {TEXT.added}: {importMutation.data.inserted}, {TEXT.skipped}: {importMutation.data.skipped}
+              {TEXT.added}: {importMutation.data.inserted}
+              {typeof importMutation.data.moved === "number" ? `, Перенесено: ${importMutation.data.moved}` : ""}
+              , {TEXT.skipped}: {importMutation.data.skipped}
             </span>
           ) : null}
         </div>

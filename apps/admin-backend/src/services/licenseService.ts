@@ -56,32 +56,51 @@ export const licenseService = {
     if (!pk) throw new Error("productKey is required");
     if (unique.length === 0) return { inserted: 0, skipped: 0 };
 
-    // createMany doesn't return per-row info; count inserted by attempting and comparing.
-    const before = await prisma.licenseKey.count({ where: { productKey: pk } });
+    // If the product exists by slug, keep a stable FK for future audits/queries.
+    const product = await prisma.product.findUnique({
+      where: { slug: pk },
+      select: { id: true },
+    });
 
-    await prisma.licenseKey.createMany({
+    // Insert new keys; duplicates are skipped due to UNIQUE(key_value).
+    const created = await prisma.licenseKey.createMany({
       data: unique.map((kv) => ({
         productKey: pk,
+        productId: product?.id || null,
         keyValue: kv,
         status: "available",
       })),
       skipDuplicates: true,
     });
 
-    const after = await prisma.licenseKey.count({ where: { productKey: pk } });
-    const inserted = Math.max(0, after - before);
-    const skipped = Math.max(0, unique.length - inserted);
+    // If a key already exists under a different pool but is still unused, "claim" it into this product.
+    // This prevents the "Added 0, Skipped N" case after product slug changes or historical pooling.
+    const claimed = await prisma.licenseKey.updateMany({
+      where: {
+        keyValue: { in: unique },
+        status: "available",
+        NOT: { productKey: pk },
+      },
+      data: {
+        productKey: pk,
+        productId: product?.id || null,
+      },
+    });
+
+    const inserted = created.count;
+    const moved = claimed.count;
+    const skipped = Math.max(0, unique.length - inserted - moved);
 
     await prisma.licenseKeyAuditLog.create({
       data: {
         keyId: null,
         action: "import",
         userId: actor?.userId || null,
-        meta: asJson({ productKey: pk, inserted, skipped }),
+        meta: asJson({ productKey: pk, inserted, moved, skipped }),
       },
     });
 
-    return { inserted, skipped };
+    return { inserted, moved, skipped };
   },
 
   async getKeysByProduct(productKey: string, params?: { status?: LicenseKeyStatus; q?: string; page?: number; limit?: number }) {
