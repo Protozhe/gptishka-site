@@ -630,12 +630,18 @@
       stopPolling();
       stopPollingBtn.style.display = 'inline-flex';
       pollStartedAt = Date.now();
+      let restartAttempts = 0;
       pollTimer = setInterval(async () => {
         const done = await checkTaskStatus();
         const timeout = Date.now() - pollStartedAt >= POLL_MAX_MS;
         if (done || timeout) {
           stopPolling();
           if (!done && lastToken) {
+            restartAttempts += 1;
+            if (restartAttempts > 3) {
+              setStatus('error', 'Слишком долго. Попробуйте «Сменить ключ и повторить».', false);
+              return;
+            }
             const restarted = await restartActivation();
             if (restarted) {
               setStatus('pending', `В обработке. Task: ${currentTaskId}`, true);
@@ -666,7 +672,8 @@
         }
 
         if (payload.pending) {
-          setStatus('pending', `В обработке. Task: ${currentTaskId}`, true);
+          const msg = String(payload?.message || '').trim();
+          setStatus('pending', `В обработке. Task: ${currentTaskId}${msg ? `. ${msg}` : ''}`, true);
           return false;
         }
 
