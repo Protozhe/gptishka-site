@@ -457,6 +457,7 @@
     let pollTimer = null;
     let pollStartedAt = 0;
     let lastToken = '';
+    let restartAttempts = 0;
     let isRetryRunning = false;
     let lastRetryAt = 0;
     let isMasked = true;
@@ -513,6 +514,7 @@
       const token = getTokenForSubmit();
       if (!token) return;
       lastToken = token;
+      restartAttempts = 0;
       setButtonLoading(startBtn, true);
       try {
         setStatus('pending', 'Запрос отправлен...', true);
@@ -574,6 +576,7 @@
 
       lastRetryAt = now;
       lastToken = token;
+      restartAttempts = 0;
       isRetryRunning = true;
       setButtonLoading(retryNewKeyBtn, true);
       try {
@@ -630,7 +633,6 @@
       stopPolling();
       stopPollingBtn.style.display = 'inline-flex';
       pollStartedAt = Date.now();
-      let restartAttempts = 0;
       pollTimer = setInterval(async () => {
         const done = await checkTaskStatus();
         const timeout = Date.now() - pollStartedAt >= POLL_MAX_MS;
@@ -645,6 +647,7 @@
             const restarted = await restartActivation();
             if (restarted) {
               setStatus('pending', `В обработке. Task: ${currentTaskId}`, true);
+              // Continue polling without resetting restartAttempts.
               startPolling();
             } else {
               setStatus('error', 'Запрос не может обработаться. Попробуйте сменить ключ.', false);
