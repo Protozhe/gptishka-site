@@ -54,6 +54,13 @@ export const startOrderActivation = asyncHandler(async (req: Request, res: Respo
   res.json(data);
 });
 
+export const validateOrderActivationToken = asyncHandler(async (req: Request, res: Response) => {
+  const orderId = String(req.params.orderId || "");
+  const token = String((req.body as any)?.token || "");
+  const data = await ordersService.validateActivationToken(orderId, token);
+  res.json(data);
+});
+
 export const restartOrderActivationWithNewKey = asyncHandler(async (req: Request, res: Response) => {
   const orderId = String(req.params.orderId || "");
   const token = String((req.body as any)?.token || "");

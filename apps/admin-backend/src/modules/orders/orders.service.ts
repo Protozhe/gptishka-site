@@ -250,6 +250,58 @@ export const ordersService = {
     return { taskId };
   },
 
+  async validateActivationToken(orderId: string, token: string) {
+    assertOrderId(orderId);
+    await this.getActivation(orderId);
+
+    const stored = activationStore.findByOrderId(orderId);
+    if (!stored?.cdk) {
+      throw new AppError("Activation key is not issued yet", 409);
+    }
+
+    const tokenInfo = parseClientTokenInput(token);
+    const tokenMeta = buildTokenMeta(tokenInfo);
+    const reasons: string[] = [];
+
+    if (!tokenInfo.raw) reasons.push("Token is required");
+    if (tokenInfo.raw && tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) reasons.push("Token is too long");
+
+    if (tokenInfo.raw.startsWith("{")) {
+      if (!tokenInfo.json) {
+        reasons.push("Token JSON is invalid");
+      } else if (tokenInfo.extracted === tokenInfo.raw) {
+        reasons.push("Token JSON does not include accessToken/sessionToken/token");
+      }
+    }
+
+    const jwt = tryDecodeJwtPayload(tokenInfo.extracted || "");
+    if (jwt?.exp) {
+      const expMs = Number(jwt.exp) * 1000;
+      if (Number.isFinite(expMs) && expMs < Date.now() + 30_000) {
+        reasons.push("Token is expired");
+      }
+    }
+
+    // Sanity: ensure we actually have a DB-issued CDK for this order/product.
+    const issued = await prisma.licenseKey.findFirst({
+      where: { orderId, productKey: stored.productKey, status: "used" },
+      select: { id: true },
+    });
+    if (!issued) {
+      reasons.push("Activation key is not issued yet");
+    }
+
+    return {
+      ok: reasons.length === 0,
+      reasons,
+      token: {
+        kind: tokenMeta.kind,
+        length: tokenMeta.length,
+        jwt: jwt?.exp || jwt?.iat ? { exp: jwt.exp || null, iat: jwt.iat || null } : null,
+      },
+    };
+  },
+
   async restartActivationWithNewKey(orderId: string, token: string) {
     assertOrderId(orderId);
     const order = await prisma.order.findUnique({ where: { id: orderId } });
@@ -372,6 +424,13 @@ export const ordersService = {
             attempts: Number(activation.attempts || 0),
             lastProviderMessage: activation.lastProviderMessage || null,
             lastProviderCheckedAt: activation.lastProviderCheckedAt || null,
+            tokenMeta: activation.tokenMeta
+              ? {
+                  kind: activation.tokenMeta.kind,
+                  length: activation.tokenMeta.length,
+                  fingerprint: activation.tokenMeta.fingerprint,
+                }
+              : null,
             updatedAt: activation.updatedAt,
           }
         : null,
@@ -582,6 +641,31 @@ function buildTokenMeta(tokenInfo: { raw: string; extracted: string; json: Recor
   // Don't store raw token; store a short fingerprint for debugging correlation only.
   const fp = crypto.createHash("sha256").update(String(tokenInfo.extracted || "")).digest("hex").slice(0, 16);
   return { kind, length: Number(String(tokenInfo.raw || "").length), fingerprint: fp };
+}
+
+function tryDecodeJwtPayload(token: string): { exp?: number; iat?: number } | null {
+  const t = String(token || "").trim();
+  const parts = t.split(".");
+  if (parts.length !== 3) return null;
+  const payload = parts[1] || "";
+  if (!payload) return null;
+
+  try {
+    const json = Buffer.from(base64UrlToBase64(payload), "base64").toString("utf8");
+    const parsed = JSON.parse(json) as any;
+    const exp = typeof parsed?.exp === "number" ? parsed.exp : undefined;
+    const iat = typeof parsed?.iat === "number" ? parsed.iat : undefined;
+    if (!exp && !iat) return null;
+    return { exp, iat };
+  } catch {
+    return null;
+  }
+}
+
+function base64UrlToBase64(value: string) {
+  const s = String(value || "").replace(/-/g, "+").replace(/_/g, "/");
+  const pad = s.length % 4 === 0 ? "" : "=".repeat(4 - (s.length % 4));
+  return s + pad;
 }
 
 function updateActivationFromProviderPayload(orderId: string, taskId: string, payload: {

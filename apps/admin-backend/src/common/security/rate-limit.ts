@@ -84,6 +84,15 @@ export const activationReadRateLimit = rateLimit({
   handler: withScope("activation-read"),
 });
 
+// Token validation happens on input changes; keep it reasonably high but separate from polling reads.
+export const activationValidateRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: withScope("activation-validate"),
+});
+
 // Writes (start/restart) should remain strict to prevent abuse.
 export const activationWriteRateLimit = rateLimit({
   windowMs: 60_000,

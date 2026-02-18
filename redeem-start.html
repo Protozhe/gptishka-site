@@ -159,6 +159,11 @@
       color: #667288;
     }
 
+    .redeem-meta .warn {
+      color: #b42318;
+      font-weight: 700;
+    }
+
     .redeem-actions {
       margin-top: 14px;
       display: grid;
@@ -453,6 +458,7 @@
     // Provider processing may take a few minutes. Don't auto-restart tasks on short timeouts.
     const POLL_MAX_MS = 5 * 60 * 1000;
     const RETRY_COOLDOWN_MS = 20000;
+    const TOKEN_VALIDATE_DEBOUNCE_MS = 600;
 
     let currentTaskId = '';
     let pollTimer = null;
@@ -462,6 +468,21 @@
     let isRetryRunning = false;
     let lastRetryAt = 0;
     let isMasked = true;
+    let validateTimer = null;
+    let tokenValidatedOk = false;
+    let lastValidateReason = '';
+
+    const pollPauseKey = orderId ? `gptishka_activation_poll_paused:${orderId}` : '';
+
+    function isPollPaused() {
+      if (!pollPauseKey) return false;
+      try { return localStorage.getItem(pollPauseKey) === '1'; } catch (_) { return false; }
+    }
+
+    function setPollPaused(paused) {
+      if (!pollPauseKey) return;
+      try { localStorage.setItem(pollPauseKey, paused ? '1' : '0'); } catch (_) {}
+    }
 
     if (!orderId) {
       setStatus('error', 'Не указан order_id в ссылке.', false);
@@ -475,10 +496,11 @@
     }
 
     updateTokenMeta();
+    scheduleValidateToken();
 
     tokenInput.addEventListener('input', () => {
-      startBtn.disabled = !orderId || !String(tokenInput.value || '').trim();
       updateTokenMeta();
+      scheduleValidateToken();
     });
 
     toggleMaskBtn.addEventListener('click', () => {
@@ -492,8 +514,8 @@
         const clipboard = await navigator.clipboard.readText();
         if (clipboard) {
           tokenInput.value = clipboard;
-          startBtn.disabled = !orderId || !String(tokenInput.value || '').trim();
           updateTokenMeta();
+          scheduleValidateToken();
           setStatus('success', 'Токен вставлен', false);
         }
       } catch {
@@ -503,8 +525,8 @@
 
     clearBtn.addEventListener('click', () => {
       tokenInput.value = '';
-      startBtn.disabled = true;
       updateTokenMeta();
+      scheduleValidateToken();
       setStatus('pending', 'Поле очищено', false);
     });
 
@@ -514,6 +536,12 @@
     startBtn.addEventListener('click', async () => {
       const token = getTokenForSubmit();
       if (!token) return;
+
+      // Don't start if token is clearly invalid/expired.
+      const validated = await validateTokenNow();
+      if (!validated) return;
+
+      setPollPaused(false);
       lastToken = token;
       restartAttempts = 0;
       setButtonLoading(startBtn, true);
@@ -575,6 +603,10 @@
         return;
       }
 
+      const validated = await validateTokenNow();
+      if (!validated) return;
+
+      setPollPaused(false);
       lastRetryAt = now;
       lastToken = token;
       restartAttempts = 0;
@@ -606,6 +638,7 @@
 
     stopPollingBtn.addEventListener('click', () => {
       stopPolling();
+      setPollPaused(true);
       setStatus('pending', 'Автопроверка остановлена', false);
     });
 
@@ -620,8 +653,12 @@
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
         if (currentTaskId) {
-          setStatus('pending', `В обработке. Task: ${currentTaskId}`, true);
-          startPolling();
+          if (isPollPaused()) {
+            setStatus('pending', `Есть активная проверка. Task: ${currentTaskId}. Автопроверка остановлена.`, false);
+          } else {
+            setStatus('pending', `В обработке. Task: ${currentTaskId}`, true);
+            startPolling();
+          }
           return;
         }
         setStatus('pending', 'Ожидаю действия.', false);
@@ -632,6 +669,7 @@
 
     function startPolling() {
       stopPolling();
+      setPollPaused(false);
       stopPollingBtn.style.display = 'inline-flex';
       pollStartedAt = Date.now();
       pollTimer = setInterval(async () => {
@@ -733,6 +771,74 @@
       tokenWarn.className = '';
     }
 
+    function updateStartButtonState() {
+      const hasValue = Boolean(orderId && String(tokenInput.value || '').trim());
+      startBtn.disabled = !hasValue || !tokenValidatedOk;
+    }
+
+    function scheduleValidateToken() {
+      tokenValidatedOk = false;
+      lastValidateReason = '';
+      updateStartButtonState();
+
+      if (validateTimer) clearTimeout(validateTimer);
+      validateTimer = setTimeout(() => {
+        validateTokenNow();
+      }, TOKEN_VALIDATE_DEBOUNCE_MS);
+    }
+
+    async function validateTokenNow() {
+      const token = getTokenForSubmit();
+      if (!orderId || !token) {
+        tokenValidatedOk = false;
+        lastValidateReason = 'Введите токен';
+        tokenWarn.textContent = lastValidateReason;
+        tokenWarn.className = 'warn';
+        updateStartButtonState();
+        return false;
+      }
+
+      try {
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/validate-token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          tokenValidatedOk = false;
+          lastValidateReason = payload?.message || 'Не удалось проверить токен';
+          tokenWarn.textContent = lastValidateReason;
+          tokenWarn.className = 'warn';
+          updateStartButtonState();
+          return false;
+        }
+
+        const ok = Boolean(payload?.ok);
+        const reasons = Array.isArray(payload?.reasons) ? payload.reasons : [];
+        tokenValidatedOk = ok;
+        lastValidateReason = reasons.join('; ');
+
+        if (ok) {
+          tokenWarn.textContent = 'Токен выглядит корректным по формату (без сохранения).';
+          tokenWarn.className = '';
+        } else {
+          tokenWarn.textContent = lastValidateReason || 'Токен не подходит';
+          tokenWarn.className = 'warn';
+        }
+
+        updateStartButtonState();
+        return ok;
+      } catch {
+        tokenValidatedOk = false;
+        lastValidateReason = 'Ошибка сети при проверке токена';
+        tokenWarn.textContent = lastValidateReason;
+        tokenWarn.className = 'warn';
+        updateStartButtonState();
+        return false;
+      }
+    }
+
     function getTokenForSubmit() {
       // Send raw input to backend; backend handles JSON vs token formats and retries safely.
       return String(tokenInput.value || '').trim();
@@ -770,7 +876,7 @@
       btn.classList.toggle('loading', Boolean(loading));
       btn.disabled = Boolean(loading);
       if (btn === startBtn && !loading) {
-        btn.disabled = !orderId || !String(tokenInput.value || '').trim();
+        updateStartButtonState();
       }
     }
 

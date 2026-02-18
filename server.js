@@ -527,6 +527,32 @@ function createApp() {
     }
   });
 
+  app.post("/api/orders/:orderId/activation/validate-token", async (req, res) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+    try {
+      const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
+      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation/validate-token`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(req.body || {}),
+        signal: controller.signal,
+      });
+      const body = await response.text();
+      clearTimeout(timeout);
+      if (!response.ok) {
+        return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "Activation validate failed" }));
+      }
+      return res.status(response.status).type("application/json").send(body);
+    } catch (_) {
+      clearTimeout(timeout);
+      return res.status(502).json({ error: "Order API unavailable" });
+    }
+  });
+
   app.post("/api/orders/:orderId/activation/start", async (req, res) => {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 20000);
