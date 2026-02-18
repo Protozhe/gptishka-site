@@ -20,11 +20,9 @@ function normalizeProductKey(value) {
     .replace(/^-+/, "")
     .replace(/-+$/, "");
 
-  if (!key) return "chatgpt";
-  if (key === "chatgpt-plus" || key.startsWith("chatgpt-plus-")) return "chatgpt-plus";
-  if (key === "chatgpt-go" || key.startsWith("chatgpt-go-")) return "chatgpt-go";
-  if (key === "chatgpt" || key.startsWith("chatgpt-")) return "chatgpt";
-  return key;
+  // Do NOT collapse similar products into a shared pool.
+  // Keys must remain attached to the exact productKey they were imported into.
+  return key || "chatgpt";
 }
 
 function nowStamp() {

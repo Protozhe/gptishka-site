@@ -34,6 +34,8 @@ if [ ! -f "$LEGACY_JSON" ] && [ -d "$RUNTIME_DIR/snapshots" ]; then
   LEGACY_JSON="$(ls -1t "$RUNTIME_DIR"/snapshots/cdk-keys-*.json 2>/dev/null | head -n 1 || true)"
 fi
 node scripts/import-cdk-json-to-db.js "$APP_DIR" "$LEGACY_JSON" "$ADMIN_ENV_FILE" "/var/backups/gptishka" || true
+# Keep legacy pooled keys consistent: attach reserved/used keys to the actual product from the order.
+node scripts/backfill-license-keys-by-order.js "$APP_DIR" "$ADMIN_ENV_FILE" || true
 
 npm run build:admin:api
 npm run build:admin:ui

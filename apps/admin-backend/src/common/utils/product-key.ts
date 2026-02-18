@@ -10,24 +10,11 @@ function normalizeProductKey(value: string) {
 }
 
 /**
- * Canonicalizes product keys used for CDK pools.
+ * Normalizes product keys used for CDK pools.
  *
- * Production uses product slugs like `chatgpt-plus-1m`, but keys are stored under
- * base pools like `chatgpt-plus`. This prevents "paid but no CDK issued" cases.
+ * Important: Do NOT collapse similar products into a shared pool (e.g. 1 month vs 1 year).
+ * Each product must have its own independent key pool.
  */
 export function canonicalProductKey(value: string) {
-  const key = normalizeProductKey(value);
-  if (!key) return "";
-
-  if (key === "chatgpt-plus") return "chatgpt-plus";
-  if (key.startsWith("chatgpt-plus-")) return "chatgpt-plus";
-
-  if (key === "chatgpt-go") return "chatgpt-go";
-  if (key.startsWith("chatgpt-go-")) return "chatgpt-go";
-
-  if (key === "chatgpt") return "chatgpt";
-  if (key.startsWith("chatgpt-")) return "chatgpt";
-
-  return key;
+  return normalizeProductKey(value) || "";
 }
-
