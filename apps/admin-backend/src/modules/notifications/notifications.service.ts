@@ -32,7 +32,7 @@ export async function sendOrderPaidEmail(
   // If SMTP is enabled, this URL will still work for legacy orders without a secret.
   const activationUrl = `${siteOrigin}/redeem-start.html?order_id=${encodeURIComponent(payload.orderId)}`;
   const successUrl = `${siteOrigin}/success.html?order_id=${encodeURIComponent(payload.orderId)}`;
-  const supportEmail = "info@gptishka.shop";
+  const supportEmail = "support@gptishka.shop";
   const fromAddress = resolveFromAddress();
   const amountLabel = `${Number(payload.amount).toLocaleString("ru-RU", {
     minimumFractionDigits: 2,
@@ -104,7 +104,7 @@ function resolveSiteOrigin() {
 function resolveFromAddress() {
   const raw = String(env.SMTP_FROM || "").trim();
   if (!raw || raw.endsWith("@gptishka.local")) {
-    return "info@gptishka.shop";
+    return "support@gptishka.shop";
   }
   return raw;
 }
