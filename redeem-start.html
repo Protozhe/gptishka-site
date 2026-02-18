@@ -450,7 +450,8 @@
     const copyTaskBtn = document.getElementById('copyTaskBtn');
 
     const POLL_INTERVAL_MS = 2000;
-    const POLL_MAX_MS = 30000;
+    // Provider processing may take a few minutes. Don't auto-restart tasks on short timeouts.
+    const POLL_MAX_MS = 5 * 60 * 1000;
     const RETRY_COOLDOWN_MS = 20000;
 
     let currentTaskId = '';
@@ -638,20 +639,8 @@
         const timeout = Date.now() - pollStartedAt >= POLL_MAX_MS;
         if (done || timeout) {
           stopPolling();
-          if (!done && lastToken) {
-            restartAttempts += 1;
-            if (restartAttempts > 3) {
-              setStatus('error', 'Слишком долго. Попробуйте «Сменить ключ и повторить».', false);
-              return;
-            }
-            const restarted = await restartActivation();
-            if (restarted) {
-              setStatus('pending', `В обработке. Task: ${currentTaskId}`, true);
-              // Continue polling without resetting restartAttempts.
-              startPolling();
-            } else {
-              setStatus('error', 'Запрос не может обработаться. Попробуйте сменить ключ.', false);
-            }
+          if (!done && timeout) {
+            setStatus('pending', `Все еще в обработке. Task: ${currentTaskId}. Нажмите «Проверить статус» позже или «Сменить ключ и повторить».`, false);
           }
         }
       }, POLL_INTERVAL_MS);
