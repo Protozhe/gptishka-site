@@ -498,8 +498,22 @@ async function fetchActivationTaskPayload(taskId: string, deviceId?: string | nu
 function normalizeClientTokenInput(input: string) {
   const raw = String(input || "").trim();
   if (!raw) return "";
-  // Keep JSON payload intact: upstream activation expects full session JSON copied
-  // from chatgpt.com/api/auth/session, not a derived field.
+  if (!raw.startsWith("{")) return raw;
+
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const sessionToken = typeof parsed.sessionToken === "string" ? parsed.sessionToken.trim() : "";
+    if (sessionToken) return sessionToken;
+
+    const accessToken = typeof parsed.accessToken === "string" ? parsed.accessToken.trim() : "";
+    if (accessToken) return accessToken;
+
+    const token = typeof parsed.token === "string" ? parsed.token.trim() : "";
+    if (token) return token;
+  } catch {
+    // Keep original input if it's not valid JSON.
+  }
+
   return raw;
 }
 
