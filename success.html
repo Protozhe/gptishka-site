@@ -82,6 +82,7 @@
   <script>
     const params = new URLSearchParams(window.location.search);
     const orderId = String(params.get("order_id") || params.get("orderId") || "").trim();
+    const linkToken = String(params.get("t") || "").trim();
     const LAST_PAID_ORDER_KEY = "gptishka_last_paid_order_id";
     const CART_STORAGE_KEYS = [
       "gptishka_cart_v1",
@@ -104,6 +105,7 @@
       orderIdEl.textContent = orderId;
       try {
         localStorage.setItem("gptishka_activation_order_id", orderId);
+        if (linkToken) localStorage.setItem(`gptishka_activation_order_token:${orderId}`, linkToken);
       } catch (_) {
         // Ignore storage write errors.
       }
@@ -143,7 +145,10 @@
           statusEl.className = "status paid";
           statusEl.textContent = "Оплачено. Переводим на страницу активации...";
           setTimeout(() => {
-            window.location.href = `/redeem-start.html?order_id=${encodeURIComponent(id)}`;
+            const url = new URL("/redeem-start.html", window.location.origin);
+            url.searchParams.set("order_id", id);
+            if (linkToken) url.searchParams.set("t", linkToken);
+            window.location.href = url.toString();
           }, 1200);
           return true;
         }

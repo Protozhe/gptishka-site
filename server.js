@@ -510,7 +510,9 @@ function createApp() {
     const timeout = setTimeout(() => controller.abort(), 12000);
     try {
       const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation`, {
+      const qs = String(req.url || "").includes("?") ? String(req.url || "").split("?")[1] : "";
+      const suffix = qs ? `?${qs}` : "";
+      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation${suffix}`, {
         method: "GET",
         headers: { Accept: "application/json" },
         signal: controller.signal,
@@ -532,7 +534,9 @@ function createApp() {
     const timeout = setTimeout(() => controller.abort(), 12000);
     try {
       const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation/validate-token`, {
+      const qs = String(req.url || "").includes("?") ? String(req.url || "").split("?")[1] : "";
+      const suffix = qs ? `?${qs}` : "";
+      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation/validate-token${suffix}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -558,7 +562,9 @@ function createApp() {
     const timeout = setTimeout(() => controller.abort(), 20000);
     try {
       const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation/start`, {
+      const qs = String(req.url || "").includes("?") ? String(req.url || "").split("?")[1] : "";
+      const suffix = qs ? `?${qs}` : "";
+      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation/start${suffix}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -584,7 +590,9 @@ function createApp() {
     const timeout = setTimeout(() => controller.abort(), 20000);
     try {
       const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation/restart-with-new-key`, {
+      const qs = String(req.url || "").includes("?") ? String(req.url || "").split("?")[1] : "";
+      const suffix = qs ? `?${qs}` : "";
+      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation/restart-with-new-key${suffix}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -611,7 +619,9 @@ function createApp() {
     try {
       const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
       const taskId = encodeURIComponent(String(req.params.taskId || "").trim());
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation/task/${taskId}`, {
+      const qs = String(req.url || "").includes("?") ? String(req.url || "").split("?")[1] : "";
+      const suffix = qs ? `?${qs}` : "";
+      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation/task/${taskId}${suffix}`, {
         method: "GET",
         headers: { Accept: "application/json" },
         signal: controller.signal,

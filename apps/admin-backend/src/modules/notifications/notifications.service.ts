@@ -28,6 +28,8 @@ export async function sendOrderPaidEmail(
   }
 
   const siteOrigin = resolveSiteOrigin();
+  // Activation access is protected by a link secret. For emails, the storefront success redirect includes it.
+  // If SMTP is enabled, this URL will still work for legacy orders without a secret.
   const activationUrl = `${siteOrigin}/redeem-start.html?order_id=${encodeURIComponent(payload.orderId)}`;
   const successUrl = `${siteOrigin}/success.html?order_id=${encodeURIComponent(payload.orderId)}`;
   const supportEmail = "info@gptishka.shop";

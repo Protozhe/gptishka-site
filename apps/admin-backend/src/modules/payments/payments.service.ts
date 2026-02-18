@@ -3,6 +3,16 @@ import { prisma } from "../../config/prisma";
 import { getPaymentProvider, getProviderByCode } from "./payment.factory";
 import { writeAuditLog } from "../audit/audit.service";
 import { AppError } from "../../common/errors/app-error";
+import crypto from "crypto";
+
+function sha256Hex(value: string) {
+  return crypto.createHash("sha256").update(String(value || "")).digest("hex");
+}
+
+function generateRedeemToken() {
+  // Short, URL-safe, unguessable.
+  return crypto.randomBytes(24).toString("hex");
+}
 
 export const paymentsService = {
   computeDiscount(
@@ -157,11 +167,15 @@ export const paymentsService = {
       throw new AppError("Order total is below minimal payable amount", 400);
     }
 
+    const redeemToken = generateRedeemToken();
+    const redeemTokenHash = sha256Hex(redeemToken);
+
     const order = await prisma.$transaction(async tx => {
       const created = await tx.order.create({
         data: {
           email: input.email,
           status: OrderStatus.PENDING,
+          redeemTokenHash,
           subtotalAmount: subtotal,
           discountAmount,
           totalAmount: total,
@@ -198,6 +212,7 @@ export const paymentsService = {
         planId: product.id,
         quantity: input.quantity,
         email: input.email,
+        redeemToken,
         promoCode: promo?.code || null,
         promo: promo?.code || null,
         partnerId: promo?.partnerId || null,
@@ -273,6 +288,7 @@ export const paymentsService = {
 
     return {
       orderId: order.id,
+      redeemToken,
       paymentId: payment.id,
       basePrice: subtotal,
       discountAmount,

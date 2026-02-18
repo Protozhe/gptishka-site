@@ -43,35 +43,41 @@ export const reconcilePublicOrderStatus = asyncHandler(async (req: Request, res:
 });
 
 export const getOrderActivation = asyncHandler(async (req: Request, res: Response) => {
-  const data = await ordersService.getActivation(String(req.params.orderId || ""));
+  const orderId = String(req.params.orderId || "");
+  const orderToken = String((req.query as any)?.t || "");
+  const data = await ordersService.getActivation(orderId, orderToken);
   res.json(data);
 });
 
 export const startOrderActivation = asyncHandler(async (req: Request, res: Response) => {
   const orderId = String(req.params.orderId || "");
   const token = String((req.body as any)?.token || "");
-  const data = await ordersService.startActivation(orderId, token);
+  const orderToken = String((req.body as any)?.orderToken || (req.body as any)?.t || (req.query as any)?.t || "");
+  const data = await ordersService.startActivation(orderId, token, orderToken);
   res.json(data);
 });
 
 export const validateOrderActivationToken = asyncHandler(async (req: Request, res: Response) => {
   const orderId = String(req.params.orderId || "");
   const token = String((req.body as any)?.token || "");
-  const data = await ordersService.validateActivationToken(orderId, token);
+  const orderToken = String((req.body as any)?.orderToken || (req.body as any)?.t || (req.query as any)?.t || "");
+  const data = await ordersService.validateActivationToken(orderId, token, orderToken);
   res.json(data);
 });
 
 export const restartOrderActivationWithNewKey = asyncHandler(async (req: Request, res: Response) => {
   const orderId = String(req.params.orderId || "");
   const token = String((req.body as any)?.token || "");
-  const data = await ordersService.restartActivationWithNewKey(orderId, token);
+  const orderToken = String((req.body as any)?.orderToken || (req.body as any)?.t || (req.query as any)?.t || "");
+  const data = await ordersService.restartActivationWithNewKey(orderId, token, orderToken);
   res.json(data);
 });
 
 export const getOrderActivationTask = asyncHandler(async (req: Request, res: Response) => {
   const orderId = String(req.params.orderId || "");
   const taskId = String(req.params.taskId || "");
-  const data = await ordersService.getActivationTask(orderId, taskId);
+  const orderToken = String((req.query as any)?.t || "");
+  const data = await ordersService.getActivationTask(orderId, taskId, orderToken);
   res.json(data);
 });
 

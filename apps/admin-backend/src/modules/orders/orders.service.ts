@@ -150,11 +150,8 @@ export const ordersService = {
     return this.getPublicStatus(id);
   },
 
-  async getActivation(orderId: string) {
-    assertOrderId(orderId);
-    const order = await prisma.order.findUnique({ where: { id: orderId } });
-    if (!order) throw new AppError("Order not found", 404);
-    if (order.status !== OrderStatus.PAID) throw new AppError("Order is not paid yet", 409);
+  async getActivation(orderId: string, orderToken?: string) {
+    const order = await assertPaidOrderAccess(orderId, orderToken);
 
     const activation = activationStore.findByOrderId(orderId);
     if (!activation) {
@@ -182,8 +179,8 @@ export const ordersService = {
     };
   },
 
-  async startActivation(orderId: string, token: string) {
-    await this.getActivation(orderId);
+  async startActivation(orderId: string, token: string, orderToken?: string) {
+    await this.getActivation(orderId, orderToken);
     const stored = activationStore.findByOrderId(orderId);
     if (!stored?.cdk) {
       throw new AppError("Activation key is not issued yet", 409);
@@ -250,9 +247,8 @@ export const ordersService = {
     return { taskId };
   },
 
-  async validateActivationToken(orderId: string, token: string) {
-    assertOrderId(orderId);
-    await this.getActivation(orderId);
+  async validateActivationToken(orderId: string, token: string, orderToken?: string) {
+    await this.getActivation(orderId, orderToken);
 
     const stored = activationStore.findByOrderId(orderId);
     if (!stored?.cdk) {
@@ -302,13 +298,10 @@ export const ordersService = {
     };
   },
 
-  async restartActivationWithNewKey(orderId: string, token: string) {
-    assertOrderId(orderId);
-    const order = await prisma.order.findUnique({ where: { id: orderId } });
-    if (!order) throw new AppError("Order not found", 404);
-    if (order.status !== OrderStatus.PAID) throw new AppError("Order is not paid yet", 409);
+  async restartActivationWithNewKey(orderId: string, token: string, orderToken?: string) {
+    const order = await assertPaidOrderAccess(orderId, orderToken);
 
-    await this.getActivation(orderId);
+    await this.getActivation(orderId, orderToken);
     const current = activationStore.findByOrderId(orderId);
     if (current?.status === "success") {
       throw new AppError("Activation is already completed", 409);
@@ -362,9 +355,9 @@ export const ordersService = {
     return this.startActivation(orderId, safeToken);
   },
 
-  async getActivationTask(orderId: string, taskId: string) {
+  async getActivationTask(orderId: string, taskId: string, orderToken?: string) {
     assertOrderId(orderId);
-    await this.getActivation(orderId);
+    await this.getActivation(orderId, orderToken);
     const stored = activationStore.findByOrderId(orderId);
     const payload = await fetchActivationTaskPayload(taskId, stored?.deviceId || null);
     updateActivationFromProviderPayload(orderId, taskId, payload);
@@ -548,6 +541,23 @@ export const ordersService = {
     return paymentsService.refund(id, actor);
   },
 };
+
+async function assertPaidOrderAccess(orderId: string, orderToken?: string) {
+  assertOrderId(orderId);
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  if (!order) throw new AppError("Order not found", 404);
+  if (order.status !== OrderStatus.PAID) throw new AppError("Order is not paid yet", 409);
+
+  const expected = String(order.redeemTokenHash || "").trim();
+  if (expected) {
+    const provided = String(orderToken || "").trim();
+    if (!provided) throw new AppError("Activation link token is required", 401);
+    const providedHash = crypto.createHash("sha256").update(provided).digest("hex");
+    if (providedHash !== expected) throw new AppError("Invalid activation link token", 403);
+  }
+
+  return order;
+}
 
 async function fetchActivationTaskPayload(taskId: string, deviceId?: string | null) {
   const headers: Record<string, string> = { Accept: "application/json" };

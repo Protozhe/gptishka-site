@@ -431,6 +431,7 @@
   <script>
     const params = new URLSearchParams(window.location.search);
     const orderId = String(params.get('order_id') || params.get('orderId') || '').trim();
+    let orderLinkToken = String(params.get('t') || '').trim();
 
     const orderIdEl = document.getElementById('orderId');
     const copyOrderIdBtn = document.getElementById('copyOrderIdBtn');
@@ -472,6 +473,9 @@
     let tokenValidatedOk = false;
     let lastValidateReason = '';
 
+    // By default, allow retry only after explicit failure or pending timeout.
+    retryNewKeyBtn.disabled = true;
+
     const pollPauseKey = orderId ? `gptishka_activation_poll_paused:${orderId}` : '';
 
     function isPollPaused() {
@@ -485,13 +489,31 @@
     }
 
     if (!orderId) {
+      // Allow returning if the client closed the window but is in the same browser.
+      try {
+        const lastId = String(localStorage.getItem('gptishka_activation_order_id') || '').trim();
+        const lastToken = lastId ? String(localStorage.getItem(`gptishka_activation_order_token:${lastId}`) || '').trim() : '';
+        if (lastId && lastToken) {
+          const url = new URL('/redeem-start.html', window.location.origin);
+          url.searchParams.set('order_id', lastId);
+          url.searchParams.set('t', lastToken);
+          window.location.replace(url.toString());
+        }
+      } catch (_) {}
+
       setStatus('error', 'Не указан order_id в ссылке.', false);
       startBtn.disabled = true;
       checkBtn.disabled = true;
       retryNewKeyBtn.disabled = true;
     } else {
       orderIdEl.textContent = orderId;
-      try { localStorage.setItem('gptishka_activation_order_id', orderId); } catch (_) {}
+      try {
+        localStorage.setItem('gptishka_activation_order_id', orderId);
+        if (!orderLinkToken) {
+          orderLinkToken = String(localStorage.getItem(`gptishka_activation_order_token:${orderId}`) || '').trim();
+        }
+        if (orderLinkToken) localStorage.setItem(`gptishka_activation_order_token:${orderId}`, orderLinkToken);
+      } catch (_) {}
       loadActivation();
     }
 
@@ -550,7 +572,7 @@
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/start`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token }),
+          body: JSON.stringify({ token, orderToken: orderLinkToken }),
         });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
@@ -617,7 +639,7 @@
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/restart-with-new-key`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token }),
+          body: JSON.stringify({ token, orderToken: orderLinkToken }),
         });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
@@ -644,7 +666,8 @@
 
     async function loadActivation() {
       try {
-        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation`);
+        const suffix = orderLinkToken ? `?t=${encodeURIComponent(orderLinkToken)}` : '';
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation${suffix}`);
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
           setStatus('error', payload?.message || 'Не удалось загрузить статус активации', false);
@@ -679,6 +702,7 @@
           stopPolling();
           if (!done && timeout) {
             setStatus('pending', `Все еще в обработке. Task: ${currentTaskId}. Нажмите «Проверить статус» позже или «Сменить ключ и повторить».`, false);
+            retryNewKeyBtn.disabled = false;
           }
         }
       }, POLL_INTERVAL_MS);
@@ -694,7 +718,8 @@
 
     async function checkTaskStatus() {
       try {
-        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/task/${encodeURIComponent(currentTaskId)}`);
+        const suffix = orderLinkToken ? `?t=${encodeURIComponent(orderLinkToken)}` : '';
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/task/${encodeURIComponent(currentTaskId)}${suffix}`);
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
           setStatus('error', payload?.message || 'Не удалось получить статус', false);
@@ -704,6 +729,7 @@
         if (payload.pending) {
           const msg = String(payload?.message || '').trim();
           setStatus('pending', `В обработке. Task: ${currentTaskId}${msg ? `. ${msg}` : ''}`, true);
+          retryNewKeyBtn.disabled = true;
           return false;
         }
 
@@ -714,6 +740,7 @@
         }
 
         setStatus('error', payload?.message || 'Запрос не может обработаться', false);
+        retryNewKeyBtn.disabled = false;
         return true;
       } catch {
         setStatus('error', 'Ошибка сети при проверке статуса', false);
@@ -802,7 +829,7 @@
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/validate-token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token }),
+          body: JSON.stringify({ token, orderToken: orderLinkToken }),
         });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {

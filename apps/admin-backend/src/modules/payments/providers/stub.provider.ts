@@ -6,7 +6,9 @@ export class StubProvider implements PaymentProvider {
 
   async createPayment(input: PaymentCreateInput) {
     const successUrl = new URL(env.PAYMENT_SUCCESS_URL);
-    successUrl.searchParams.set("orderId", input.orderId);
+    successUrl.searchParams.set("order_id", input.orderId);
+    const redeemToken = typeof input.metadata?.redeemToken === "string" ? input.metadata.redeemToken.trim() : "";
+    if (redeemToken) successUrl.searchParams.set("t", redeemToken);
     successUrl.searchParams.set("mock", "1");
     return {
       provider: this.code,

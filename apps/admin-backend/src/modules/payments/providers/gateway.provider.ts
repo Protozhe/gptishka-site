@@ -42,6 +42,15 @@ export class GatewayProvider implements PaymentProvider {
     successUrl.searchParams.set("order_id", input.orderId);
     const failUrl = new URL(env.PAYMENT_FAIL_URL);
     failUrl.searchParams.set("order_id", input.orderId);
+    const redeemToken = typeof input.metadata?.redeemToken === "string" ? input.metadata.redeemToken.trim() : "";
+    if (redeemToken) {
+      successUrl.searchParams.set("t", redeemToken);
+      failUrl.searchParams.set("t", redeemToken);
+    }
+
+    const customFields = { ...(input.metadata || {}) } as any;
+    // Do not store link secrets in payment provider metadata.
+    delete customFields.redeemToken;
 
     const payload = {
       shop_id: shopId,
@@ -49,7 +58,7 @@ export class GatewayProvider implements PaymentProvider {
       amount: Number(input.amount.toFixed(2)),
       currency: String(input.currency || "RUB").toUpperCase(),
       email: String(input.metadata?.email || "").trim() || undefined,
-      custom_fields: input.metadata || {},
+      custom_fields: customFields,
       success_url: successUrl.toString(),
       fail_url: failUrl.toString(),
       hook_url: env.PAYMENT_WEBHOOK_URL,

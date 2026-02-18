@@ -144,6 +144,7 @@ model Order {
   id            String       @id @default(cuid())
   email         String
   status        OrderStatus  @default(PENDING)
+  redeemTokenHash String?    @map("redeem_token_hash")
   paymentMethod String?
   paymentId     String?
   country       String?
