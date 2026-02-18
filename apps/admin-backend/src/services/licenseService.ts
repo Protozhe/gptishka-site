@@ -54,13 +54,27 @@ export const licenseService = {
     const unique = Array.from(new Set(normalized));
 
     if (!pk) throw new Error("productKey is required");
-    if (unique.length === 0) return { inserted: 0, skipped: 0 };
+    if (unique.length === 0) return { inserted: 0, skipped: 0, conflicts: 0, conflictsByProductKey: {} as Record<string, number> };
 
     // If the product exists by slug, keep a stable FK for future audits/queries.
     const product = await prisma.product.findUnique({
       where: { slug: pk },
       select: { id: true },
     });
+
+    // Detect conflicts: the same key already exists under another productKey.
+    const existing = await prisma.licenseKey.findMany({
+      where: { keyValue: { in: unique } },
+      select: { productKey: true },
+    });
+    const conflictsByProductKey: Record<string, number> = {};
+    let conflicts = 0;
+    for (const row of existing) {
+      if (row.productKey !== pk) {
+        conflicts++;
+        conflictsByProductKey[row.productKey] = (conflictsByProductKey[row.productKey] || 0) + 1;
+      }
+    }
 
     // Insert new keys; duplicates are skipped due to UNIQUE(key_value).
     const created = await prisma.licenseKey.createMany({
@@ -73,34 +87,19 @@ export const licenseService = {
       skipDuplicates: true,
     });
 
-    // If a key already exists under a different pool but is still unused, "claim" it into this product.
-    // This prevents the "Added 0, Skipped N" case after product slug changes or historical pooling.
-    const claimed = await prisma.licenseKey.updateMany({
-      where: {
-        keyValue: { in: unique },
-        status: "available",
-        NOT: { productKey: pk },
-      },
-      data: {
-        productKey: pk,
-        productId: product?.id || null,
-      },
-    });
-
     const inserted = created.count;
-    const moved = claimed.count;
-    const skipped = Math.max(0, unique.length - inserted - moved);
+    const skipped = Math.max(0, unique.length - inserted);
 
     await prisma.licenseKeyAuditLog.create({
       data: {
         keyId: null,
         action: "import",
         userId: actor?.userId || null,
-        meta: asJson({ productKey: pk, inserted, moved, skipped }),
+        meta: asJson({ productKey: pk, inserted, skipped, conflicts, conflictsByProductKey }),
       },
     });
 
-    return { inserted, moved, skipped };
+    return { inserted, skipped, conflicts, conflictsByProductKey };
   },
 
   async getKeysByProduct(productKey: string, params?: { status?: LicenseKeyStatus; q?: string; page?: number; limit?: number }) {

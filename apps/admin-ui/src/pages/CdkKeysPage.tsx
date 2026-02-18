@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from "react";
+﻿import { FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
@@ -30,33 +30,33 @@ type CdkListResponse = {
 };
 
 const TEXT = {
-  title: "CDK ключи по товарам",
-  subtitle: "У каждого товара свой отдельный пул ключей. Выдача при оплате идет строго по товару заказа.",
-  searchPlaceholder: "Поиск по коду / email / orderId",
-  loading: "Загружаем...",
-  empty: "Ключей пока нет",
-  fillKeys: "Введите хотя бы один CDK ключ",
-  importFailed: "Не удалось загрузить ключи",
-  returnFailed: "Не удалось вернуть ключ",
-  deleteFailed: "Не удалось удалить ключ",
-  importBtn: "Загрузить ключи",
-  added: "Добавлено",
-  skipped: "Пропущено",
-  unused: "Неиспользованные",
-  used: "Использованные",
-  status: "Статус",
-  user: "Email клиента",
-  order: "ID сделки",
-  assigned: "Дата/время выдачи",
-  created: "Добавлен",
-  actions: "Действия",
-  returnToUnused: "Вернуть",
-  remove: "Удалить",
-  unusedItem: "Неиспользован",
-  usedItem: "Использован",
+  title: "CDK РєР»СЋС‡Рё РїРѕ С‚РѕРІР°СЂР°Рј",
+  subtitle: "РЈ РєР°Р¶РґРѕРіРѕ С‚РѕРІР°СЂР° СЃРІРѕР№ РѕС‚РґРµР»СЊРЅС‹Р№ РїСѓР» РєР»СЋС‡РµР№. Р’С‹РґР°С‡Р° РїСЂРё РѕРїР»Р°С‚Рµ РёРґРµС‚ СЃС‚СЂРѕРіРѕ РїРѕ С‚РѕРІР°СЂСѓ Р·Р°РєР°Р·Р°.",
+  searchPlaceholder: "РџРѕРёСЃРє РїРѕ РєРѕРґСѓ / email / orderId",
+  loading: "Р—Р°РіСЂСѓР¶Р°РµРј...",
+  empty: "РљР»СЋС‡РµР№ РїРѕРєР° РЅРµС‚",
+  fillKeys: "Р’РІРµРґРёС‚Рµ С…РѕС‚СЏ Р±С‹ РѕРґРёРЅ CDK РєР»СЋС‡",
+  importFailed: "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РєР»СЋС‡Рё",
+  returnFailed: "РќРµ СѓРґР°Р»РѕСЃСЊ РІРµСЂРЅСѓС‚СЊ РєР»СЋС‡",
+  deleteFailed: "РќРµ СѓРґР°Р»РѕСЃСЊ СѓРґР°Р»РёС‚СЊ РєР»СЋС‡",
+  importBtn: "Р—Р°РіСЂСѓР·РёС‚СЊ РєР»СЋС‡Рё",
+  added: "Р”РѕР±Р°РІР»РµРЅРѕ",
+  skipped: "РџСЂРѕРїСѓС‰РµРЅРѕ",
+  unused: "РќРµРёСЃРїРѕР»СЊР·РѕРІР°РЅРЅС‹Рµ",
+  used: "РСЃРїРѕР»СЊР·РѕРІР°РЅРЅС‹Рµ",
+  status: "РЎС‚Р°С‚СѓСЃ",
+  user: "Email РєР»РёРµРЅС‚Р°",
+  order: "ID СЃРґРµР»РєРё",
+  assigned: "Р”Р°С‚Р°/РІСЂРµРјСЏ РІС‹РґР°С‡Рё",
+  created: "Р”РѕР±Р°РІР»РµРЅ",
+  actions: "Р”РµР№СЃС‚РІРёСЏ",
+  returnToUnused: "Р’РµСЂРЅСѓС‚СЊ",
+  remove: "РЈРґР°Р»РёС‚СЊ",
+  unusedItem: "РќРµРёСЃРїРѕР»СЊР·РѕРІР°РЅ",
+  usedItem: "РСЃРїРѕР»СЊР·РѕРІР°РЅ",
   textareaPlaceholder:
-    "Вставьте CDK ключи (по одному в строке)\nПример: 69742FA2-47A4-48C5-A7CC-71F334688FE7",
-  noProducts: "Товары не найдены. Сначала создайте товары в разделе «Товары».",
+    "Р’СЃС‚Р°РІСЊС‚Рµ CDK РєР»СЋС‡Рё (РїРѕ РѕРґРЅРѕРјСѓ РІ СЃС‚СЂРѕРєРµ)\nРџСЂРёРјРµСЂ: 69742FA2-47A4-48C5-A7CC-71F334688FE7",
+  noProducts: "РўРѕРІР°СЂС‹ РЅРµ РЅР°Р№РґРµРЅС‹. РЎРЅР°С‡Р°Р»Р° СЃРѕР·РґР°Р№С‚Рµ С‚РѕРІР°СЂС‹ РІ СЂР°Р·РґРµР»Рµ В«РўРѕРІР°СЂС‹В».",
 };
 
 function ProductColumn({ product, search }: { product: ProductItem; search: string }) {
@@ -106,7 +106,7 @@ function ProductColumn({ product, search }: { product: ProductItem; search: stri
           productKey,
           text,
         })
-      ).data as { inserted: number; moved?: number; skipped: number },
+      ).data as { inserted: number; skipped: number; conflicts?: number; conflictsByProductKey?: Record<string, number> },
     onSuccess: () => {
       setText("");
       setError("");
@@ -159,7 +159,7 @@ function ProductColumn({ product, search }: { product: ProductItem; search: stri
   };
 
   const onDeleteUnused = (id: string) => {
-    if (!window.confirm("Удалить ключ? Это действие нельзя отменить.")) return;
+    if (!window.confirm("РЈРґР°Р»РёС‚СЊ РєР»СЋС‡? Р­С‚Рѕ РґРµР№СЃС‚РІРёРµ РЅРµР»СЊР·СЏ РѕС‚РјРµРЅРёС‚СЊ.")) return;
     setDeletingId(id);
     deleteMutation.mutate(id);
   };
@@ -194,8 +194,7 @@ function ProductColumn({ product, search }: { product: ProductItem; search: stri
           {importMutation.data ? (
             <span className="text-xs text-emerald-600">
               {TEXT.added}: {importMutation.data.inserted}
-              {typeof importMutation.data.moved === "number" ? `, Перенесено: ${importMutation.data.moved}` : ""}
-              , {TEXT.skipped}: {importMutation.data.skipped}
+              , {TEXT.skipped}: {importMutation.data.skipped}{typeof importMutation.data.conflicts === "number" && importMutation.data.conflicts > 0 ? `, Конфликты: ${importMutation.data.conflicts}` : ""}
             </span>
           ) : null}
         </div>
@@ -356,3 +355,4 @@ function normalizeProductKey(value: string) {
     .replace(/-+$/, "");
   return normalized || "chatgpt";
 }
+

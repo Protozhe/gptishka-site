@@ -102,6 +102,8 @@ const envSchema = z.object({
   PAYMENT_WEBHOOK_SIGNATURE_HEADER: z.string().default("x-api-sha256-signature"),
   PAYMENT_WEBHOOK_IP_ALLOWLIST: z.string().default(""),
   STORAGE_DRIVER: z.enum(["local"]).default("local"),
+  // Some upstream providers bind tasks to a device id. Use a stable value.
+  ACTIVATION_DEVICE_ID: z.string().optional().default("web"),
 });
 
 const parsed = envSchema.safeParse(process.env);

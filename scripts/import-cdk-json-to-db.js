@@ -56,6 +56,13 @@ async function main() {
   }
 
   const prisma = new PrismaClient();
+  const force = String(process.env.FORCE_LEGACY_IMPORT || "").trim() === "1";
+  const existingCount = await prisma.licenseKey.count().catch(() => 0);
+  if (!force && existingCount > 0) {
+    console.log("Skipping legacy JSON import: license_keys already has", existingCount, "rows. Set FORCE_LEGACY_IMPORT=1 to override.");
+    await prisma.$disconnect();
+    return;
+  }
 
   // Only keep orderId if the order exists; legacy JSON may contain stale ids.
   const candidateOrderIds = Array.from(

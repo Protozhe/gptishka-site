@@ -188,29 +188,42 @@ export const ordersService = {
     if (!stored?.cdk) {
       throw new AppError("Activation key is not issued yet", 409);
     }
-    const safeToken = normalizeClientTokenInput(token);
-    if (!safeToken) throw new AppError("Token is required", 400);
-    if (safeToken.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
+    const tokenInfo = parseClientTokenInput(token);
+    if (!tokenInfo.raw) throw new AppError("Token is required", 400);
+    if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
 
-    const deviceId = String(stored.deviceId || "").trim() || crypto.randomUUID();
+    // Upstream provider appears to bind tasks to a device id; keep it stable.
+    const deviceId = String(env.ACTIVATION_DEVICE_ID || "web").trim() || "web";
 
-    const createResponse = await fetch("https://receipt-api.nitro.xin/stocks/public/outstock", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Device-Id": deviceId,
-      },
-      body: JSON.stringify({
-        cdk: stored.cdk,
-        user: safeToken,
-      }),
-    });
+    const userCandidates = buildUpstreamUserCandidates(tokenInfo);
 
-    if (!createResponse.ok) {
-      const details = await createResponse.text().catch(() => "");
+    let createResponse: Response | null = null;
+    let lastBody = "";
+    for (const candidate of userCandidates) {
+      createResponse = await fetch("https://receipt-api.nitro.xin/stocks/public/outstock", {
+        method: "POST",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+          "X-Device-Id": deviceId,
+        },
+        body: JSON.stringify({
+          cdk: stored.cdk,
+          user: candidate,
+        }),
+      });
+
+      if (createResponse.ok) break;
+      // Some upstream failures return empty body; keep best-effort diagnostics.
+      lastBody = await createResponse.text().catch(() => "");
+      // If token was JSON, try alternate shapes on 400 only.
+      if (createResponse.status !== 400) break;
+    }
+
+    if (!createResponse || !createResponse.ok) {
       throw new AppError("Activation start failed", 502, {
-        upstreamStatus: createResponse.status,
-        upstreamBody: String(details || "").slice(0, 2000),
+        upstreamStatus: createResponse?.status || 0,
+        upstreamBody: String(lastBody || "").slice(0, 2000),
       });
     }
 
@@ -496,25 +509,60 @@ async function fetchActivationTaskPayload(taskId: string, deviceId?: string | nu
 }
 
 function normalizeClientTokenInput(input: string) {
+  // Backwards-compatible wrapper.
+  return parseClientTokenInput(input).extracted || parseClientTokenInput(input).raw;
+}
+
+function parseClientTokenInput(input: string) {
   const raw = String(input || "").trim();
-  if (!raw) return "";
-  if (!raw.startsWith("{")) return raw;
+  if (!raw) return { raw: "", extracted: "", json: null as Record<string, unknown> | null };
+  if (!raw.startsWith("{")) return { raw, extracted: raw, json: null as Record<string, unknown> | null };
 
   try {
     const parsed = JSON.parse(raw) as Record<string, unknown>;
-    const sessionToken = typeof parsed.sessionToken === "string" ? parsed.sessionToken.trim() : "";
-    if (sessionToken) return sessionToken;
-
     const accessToken = typeof parsed.accessToken === "string" ? parsed.accessToken.trim() : "";
-    if (accessToken) return accessToken;
-
+    const sessionToken = typeof parsed.sessionToken === "string" ? parsed.sessionToken.trim() : "";
     const token = typeof parsed.token === "string" ? parsed.token.trim() : "";
-    if (token) return token;
+    const extracted = accessToken || sessionToken || token || raw;
+    return { raw, extracted, json: parsed };
   } catch {
-    // Keep original input if it's not valid JSON.
+    return { raw, extracted: raw, json: null as Record<string, unknown> | null };
   }
+}
 
-  return raw;
+function buildUpstreamUserCandidates(tokenInfo: { raw: string; extracted: string; json: Record<string, unknown> | null }) {
+  const out: any[] = [];
+
+  // If client pasted ChatGPT session JSON, upstream providers may expect either:
+  // 1) user: <object>
+  // 2) user: "<json string>"
+  // 3) user: "<short token string>"
+  if (tokenInfo.json) {
+    out.push(tokenInfo.json);
+    out.push(tokenInfo.raw);
+  }
+  if (tokenInfo.extracted && tokenInfo.extracted !== tokenInfo.raw) out.push(tokenInfo.extracted);
+  if (tokenInfo.raw) out.push(tokenInfo.raw);
+
+  // De-dupe while preserving order.
+  const seen = new Set<string>();
+  const unique: any[] = [];
+  for (const v of out) {
+    const key = typeof v === "string" ? `s:${v}` : `j:${safeStableJsonKey(v)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(v);
+  }
+  return unique;
+}
+
+function safeStableJsonKey(value: unknown) {
+  try {
+    // Do not include secrets in error details/logs; this is only for in-memory de-dupe.
+    return JSON.stringify(Object.keys(value as any).sort());
+  } catch {
+    return "json";
+  }
 }
 
 function updateActivationFromProviderPayload(orderId: string, taskId: string, payload: {

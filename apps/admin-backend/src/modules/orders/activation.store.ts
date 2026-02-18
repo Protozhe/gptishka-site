@@ -25,8 +25,15 @@ type ActivationStoreData = {
 };
 
 function resolveDataDir() {
-  const fromModule = path.resolve(__dirname, "../../../../../data");
-  if (fs.existsSync(fromModule)) return fromModule;
+  const fromEnv = String(process.env.GPTISHKA_RUNTIME_DIR || process.env.RUNTIME_DIR || "").trim();
+  if (fromEnv) return path.resolve(fromEnv);
+
+  // Production-safe default: keep runtime state outside the git working tree.
+  // On our Ubuntu hosts this path is persistent across deploys.
+  const linuxDefault = "/var/lib/gptishka-runtime";
+  if (process.platform === "linux" && fs.existsSync(linuxDefault)) return linuxDefault;
+
+  // Dev fallback.
   return path.resolve(process.cwd(), "data");
 }
 
