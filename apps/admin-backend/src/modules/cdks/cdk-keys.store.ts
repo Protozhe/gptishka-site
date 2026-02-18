@@ -74,9 +74,14 @@ export const cdkKeysStore = {
     };
   },
 
-  async assignNextUnused(input: { productKey?: string; orderId: string; email: string }) {
+  async assignNextUnused(input: { productKey?: string; orderId: string; email: string; excludeCode?: string }) {
     const productKey = String(input.productKey || "chatgpt");
-    const reserved = await licenseService.reserveKey(productKey, { orderId: input.orderId, email: input.email });
+    const reserved = await licenseService.reserveKey(
+      productKey,
+      { orderId: input.orderId, email: input.email },
+      undefined,
+      { excludeKeyValue: input.excludeCode }
+    );
     return reserved ? mapRow(reserved) : null;
   },
 

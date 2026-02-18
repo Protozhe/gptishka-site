@@ -7,6 +7,12 @@ export type ActivationRecord = {
   email: string;
   productKey: string;
   cdk: string;
+  // Safe debug info (never store raw tokens).
+  tokenMeta?: {
+    kind: "raw" | "json_accessToken" | "json_sessionToken" | "json_token" | "json_unknown";
+    length: number;
+    fingerprint: string; // sha256(extracted).slice(0, 16)
+  } | null;
   // Some upstream providers bind tasks to a device id; keep it stable per order activation.
   deviceId?: string | null;
   status: "issued" | "processing" | "success" | "failed";
@@ -89,11 +95,12 @@ export const activationStore = {
     return data.items.slice();
   },
 
-  async reserveCdkForOrder(input: { productKey: string; orderId: string; email: string }) {
+  async reserveCdkForOrder(input: { productKey: string; orderId: string; email: string; excludeCdk?: string }) {
     const reserved = await cdkKeysStore.assignNextUnused({
       productKey: input.productKey,
       orderId: input.orderId,
       email: input.email,
+      excludeCode: input.excludeCdk,
     });
     return reserved?.code || null;
   },

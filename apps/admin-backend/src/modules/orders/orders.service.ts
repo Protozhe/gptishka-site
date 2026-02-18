@@ -196,6 +196,7 @@ export const ordersService = {
     const deviceId = String(env.ACTIVATION_DEVICE_ID || "web").trim() || "web";
 
     const userCandidates = buildUpstreamUserCandidates(tokenInfo);
+    const tokenMeta = buildTokenMeta(tokenInfo);
 
     let createResponse: Response | null = null;
     let lastBody = "";
@@ -234,6 +235,7 @@ export const ordersService = {
       activationStore.upsert({
         ...stored,
         deviceId,
+        tokenMeta,
         status: "processing",
         taskId,
         attempts: Math.max(0, Number(stored.attempts || 0)) + 1,
@@ -281,6 +283,7 @@ export const ordersService = {
       productKey,
       orderId: order.id,
       email: order.email,
+      excludeCdk: current?.cdk || undefined,
     });
     if (!nextCdk) {
       throw new AppError("No unused CDK key available", 409);
@@ -292,6 +295,7 @@ export const ordersService = {
       email: order.email,
       productKey,
       cdk: nextCdk,
+      tokenMeta: buildTokenMeta(parseClientTokenInput(token)),
       status: "issued",
       taskId: null,
       attempts: Math.max(0, Number(current?.attempts || 0)),
@@ -563,6 +567,21 @@ function safeStableJsonKey(value: unknown) {
   } catch {
     return "json";
   }
+}
+
+function buildTokenMeta(tokenInfo: { raw: string; extracted: string; json: Record<string, unknown> | null }) {
+  const kind = (() => {
+    if (!tokenInfo.json) return "raw" as const;
+    const parsed = tokenInfo.json as any;
+    if (typeof parsed?.accessToken === "string" && parsed.accessToken.trim()) return "json_accessToken" as const;
+    if (typeof parsed?.sessionToken === "string" && parsed.sessionToken.trim()) return "json_sessionToken" as const;
+    if (typeof parsed?.token === "string" && parsed.token.trim()) return "json_token" as const;
+    return "json_unknown" as const;
+  })();
+
+  // Don't store raw token; store a short fingerprint for debugging correlation only.
+  const fp = crypto.createHash("sha256").update(String(tokenInfo.extracted || "")).digest("hex").slice(0, 16);
+  return { kind, length: Number(String(tokenInfo.raw || "").length), fingerprint: fp };
 }
 
 function updateActivationFromProviderPayload(orderId: string, taskId: string, payload: {

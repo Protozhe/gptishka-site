@@ -155,7 +155,12 @@ export const licenseService = {
     return { items, total, page, limit, stats: { unused, used, byProduct } };
   },
 
-  async reserveKey(productKey: string, input: { orderId: string; email?: string }, actor?: { userId?: string }) {
+  async reserveKey(
+    productKey: string,
+    input: { orderId: string; email?: string },
+    actor?: { userId?: string },
+    opts?: { excludeKeyValue?: string }
+  ) {
     const pk = canonicalProductKey(productKey);
     const orderId = String(input.orderId || "").trim();
     if (!pk) throw new Error("productKey is required");
@@ -163,13 +168,16 @@ export const licenseService = {
 
     const email = normalizeEmail(input.email);
     const ts = now();
+    const exclude = normalizeKeyValue(String(opts?.excludeKeyValue || ""));
 
     // Postgres atomic pick: FOR UPDATE SKIP LOCKED.
     const rows = await prisma.$transaction(async (tx) => {
       const picked = await tx.$queryRaw<{ id: string }[]>`
         SELECT id
         FROM license_keys
-        WHERE product_key = ${pk} AND status = 'available'
+        WHERE product_key = ${pk}
+          AND status = 'available'
+          AND (${exclude} = '' OR key_value <> ${exclude})
         FOR UPDATE SKIP LOCKED
         LIMIT 1
       `;
