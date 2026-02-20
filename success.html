@@ -1,9 +1,14 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/avif" href="/favicon.avif">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Оплата обрабатывается - GPTишка</title>
+  <title>������ �������������� - GPT����</title>
   <style>
     :root {
       color-scheme: light;
@@ -64,18 +69,31 @@
     }
     .btn.primary { background: #1a8f7b; border-color: #1a8f7b; color: #fff; }
   </style>
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106915056', 'ym');
+
+    ym(106915056, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+</script>
+<!-- /Yandex.Metrika counter -->
 </head>
 <body>
+<noscript><div><img src="https://mc.yandex.ru/watch/106915056" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
   <section class="card">
-    <h1>Оплата обрабатывается</h1>
-    <p>Проверяем платеж через webhook. Обычно это занимает до 30 секунд.</p>
-    <div class="meta">Заказ: <strong id="orderId">-</strong></div>
+    <h1>������ ��������������</h1>
+    <p>��������� ������ ����� webhook. ������ ��� �������� �� 30 ������.</p>
+    <div class="meta">�����: <strong id="orderId">-</strong></div>
     <div class="meta">Email: <strong id="emailMasked">-</strong></div>
-    <div class="meta">Сумма: <strong id="amount">-</strong></div>
-    <div class="status pending" id="statusText">Ожидаем подтверждение платежа...</div>
+    <div class="meta">�����: <strong id="amount">-</strong></div>
+    <div class="status pending" id="statusText">������� ������������� �������...</div>
     <div class="actions">
-      <a class="btn primary" href="/">На главную</a>
-      <a class="btn" href="/cart.html">Вернуться в корзину</a>
+      <a class="btn primary" href="/">�� �������</a>
+      <a class="btn" href="/cart.html">��������� � �������</a>
     </div>
   </section>
 
@@ -98,9 +116,9 @@
     const statusEl = document.getElementById("statusText");
 
     if (!orderId) {
-      orderIdEl.textContent = "не найден";
+      orderIdEl.textContent = "�� ������";
       statusEl.className = "status failed";
-      statusEl.textContent = "Не удалось определить order_id. Откройте оплату заново.";
+      statusEl.textContent = "�� ������� ���������� order_id. �������� ������ ������.";
     } else {
       orderIdEl.textContent = orderId;
       try {
@@ -124,7 +142,7 @@
       }
 
       statusEl.className = "status pending";
-      statusEl.textContent = "Платеж еще в обработке. Обновите страницу через несколько секунд.";
+      statusEl.textContent = "������ ��� � ���������. �������� �������� ����� ��������� ������.";
     }
 
     async function requestStatus(id) {
@@ -143,7 +161,7 @@
         if (status === "PAID") {
           handlePaidOrder(id);
           statusEl.className = "status paid";
-          statusEl.textContent = "Оплачено. Переводим на страницу активации...";
+          statusEl.textContent = "��������. ��������� �� �������� ���������...";
           setTimeout(() => {
             const url = new URL("/redeem-start.html", window.location.origin);
             url.searchParams.set("order_id", id);
@@ -155,12 +173,12 @@
 
         if (status === "FAILED" || status === "REFUNDED") {
           statusEl.className = "status failed";
-          statusEl.textContent = status === "REFUNDED" ? "Платеж возвращен." : "Оплата не подтверждена.";
+          statusEl.textContent = status === "REFUNDED" ? "������ ���������." : "������ �� ������������.";
           return true;
         }
 
         statusEl.className = "status pending";
-        statusEl.textContent = "Ожидаем подтверждение платежа...";
+        statusEl.textContent = "������� ������������� �������...";
         return false;
       } catch (_) {
         return false;

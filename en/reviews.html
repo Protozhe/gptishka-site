@@ -11,23 +11,76 @@
 <meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
 <meta property="og:url" content="https://gptishka.shop/en/reviews.html" />
 <link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/avif" href="/favicon.avif">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/favicon.png">
 <link rel="canonical" href="https://gptishka.shop/en/reviews.html">
 <link rel="alternate" hreflang="ru" href="https://gptishka.shop/reviews.html">
 <link rel="alternate" hreflang="en" href="https://gptishka.shop/en/reviews.html">
 <link rel="alternate" hreflang="x-default" href="https://gptishka.shop/">
 
-<title>Reviews — GPTishka</title>
+<title>Reviews � GPTishka</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/logo.min.css">
 <link rel="stylesheet" href="/assets/css/sections.min.css">
 <link rel="stylesheet" href="/assets/css/theme.min.css">
+<style>
+  .telegram-reviews-note {
+    margin-bottom: 14px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .telegram-reviews-feed {
+    max-height: min(72vh, 980px);
+    overflow-y: auto;
+    display: grid;
+    gap: 12px;
+    padding-right: 6px;
+  }
+  .telegram-reviews-feed::-webkit-scrollbar {
+    width: 8px;
+  }
+  .telegram-reviews-feed::-webkit-scrollbar-thumb {
+    background: rgba(15, 122, 103, 0.4);
+    border-radius: 999px;
+  }
+  .telegram-review-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .telegram-reviews-empty {
+    padding: 16px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--muted);
+  }
+</style>
 
 <!-- GOOGLE FONTS -->
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106915056', 'ym');
+
+    ym(106915056, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+</script>
+<!-- /Yandex.Metrika counter -->
 </head>
 
 <body>
+<noscript><div><img src="https://mc.yandex.ru/watch/106915056" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
   <div class="page-overlay"></div>
 
   <header>
@@ -51,13 +104,13 @@
         <div class="lang-current" id="langCurrent">
           <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="EN">
           <span>English</span>
-          <span class="arrow">▾</span>
+          <span class="arrow">?</span>
         </div>
 
         <div class="lang-dropdown">
           <div class="lang-item" data-lang="ru">
             <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="RU">
-            <span>Русский</span>
+            <span>�������</span>
           </div>
           <div class="lang-item" data-lang="en">
             <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="EN">
@@ -73,38 +126,79 @@
     <section class="reviews">
       <div class="reviews-header">
         <h1>Reviews</h1>
-        <button class="btn secondary" id="leaveReview">Leave a review</button>
+        <a class="btn secondary" href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">Leave a review</a>
       </div>
-
-      <div class="reviews-list">
-        <div class="review">
-          <div class="review-header">
-            <div class="avatar">G</div>
-            <div>
-              <div class="review-name">GPTishka</div>
-              <div class="review-date">19.01.2026</div>
-            </div>
-          </div>
-          <div class="review-text">
-            Thanks for your feedback — we’re doing our best for you!
-          </div>
-        </div>
+      <p class="telegram-reviews-note">
+        Reviews are loaded automatically from Telegram channel
+        <a href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">@otzivigptishkashop</a>.
+        The list is scrollable when there are many posts.
+      </p>
+      <div class="telegram-reviews-feed" id="telegramReviewsFeed">
+        <div class="telegram-reviews-empty">Loading Telegram reviews...</div>
       </div>
     </section>
   </main>
 
   <footer>
-  <a class="footer-link" href="../oferta.html">Public offer</a> · <a class="footer-link" href="../politika.html">Privacy policy</a> · <a class="footer-link" href="refund.html">Refund policy</a>
-  <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
+  <a class="footer-link" href="../oferta.html">Public offer</a> � <a class="footer-link" href="../politika.html">Privacy policy</a> � <a class="footer-link" href="refund.html">Refund policy</a>
+  <span class="footer-copy">� 2026 GPTishka. ��� ����� ��������, ����������� ���������.</span>
 </footer>
 
   <script>
-    document.getElementById("leaveReview").addEventListener("click", () => {
-      alert(
-        "Reviews can be left after a purchase.\n\n" +
-        "After payment, you’ll be able to leave a review in Telegram."
-      );
-    });
+    (() => {
+      const feed = document.getElementById("telegramReviewsFeed");
+      if (!feed) return;
+
+      const formatDate = iso => {
+        if (!iso) return "";
+        const dt = new Date(iso);
+        if (Number.isNaN(dt.getTime())) return "";
+        return dt.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+      };
+
+      const escapeHtml = value =>
+        String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+
+      fetch("/api/reviews/telegram?limit=30", { headers: { Accept: "application/json" } })
+        .then(res => (res.ok ? res.json() : Promise.reject(new Error("reviews fetch failed"))))
+        .then(payload => {
+          const items = Array.isArray(payload?.items) ? payload.items : [];
+          if (!items.length) {
+            feed.innerHTML = '<div class="telegram-reviews-empty">No reviews are available yet. Open channel: <a href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">@otzivigptishkashop</a>.</div>';
+            return;
+          }
+
+          feed.innerHTML = items
+            .map(item => {
+              const text = item.text ? escapeHtml(item.text) : "Telegram post (without text)";
+              const date = formatDate(item.date);
+              const views = item.views ? ` · 👁 ${escapeHtml(item.views)}` : "";
+              const url = escapeHtml(item.url || "https://t.me/otzivigptishkashop");
+              return `
+                <article class="review">
+                  <div class="review-header">
+                    <div class="avatar">TG</div>
+                    <div>
+                      <div class="review-name">Telegram</div>
+                      <div class="review-date">${date}${views}</div>
+                    </div>
+                  </div>
+                  <div class="review-text">${text}</div>
+                  <a class="telegram-review-link" href="${url}" target="_blank" rel="noopener noreferrer">Open post</a>
+                </article>
+              `;
+            })
+            .join("");
+        })
+        .catch(() => {
+          feed.innerHTML = '<div class="telegram-reviews-empty">Unable to load reviews right now. Open channel: <a href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">@otzivigptishkashop</a>.</div>';
+        });
+    })();
   </script>
 
   <script src="/assets/js/app.min.js" defer></script>
@@ -143,6 +237,9 @@
 
 </body>
 </html>
+
+
+
 
 
 

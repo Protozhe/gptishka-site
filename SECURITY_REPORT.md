@@ -109,3 +109,90 @@
 - Add partner email in schema and strict self-referral block by buyer email.
 - Add optional device fingerprint for anti-fraud and abuse analytics.
 - Add 2FA for OWNER/ADMIN accounts in admin panel.
+
+---
+
+## Infrastructure Hardening Status (Server, 2026-02-19)
+
+### Confirmed State
+- **Service stack**: `nginx` + `pm2-root` + `postgresql@16-main` + `fail2ban`.
+- **PM2 autostart**: restored and verified after reboot (`gptishka-storefront`, `gptishka-admin-api` online).
+- **Ports**:
+  - public: `22`, `80`, `443` only
+  - internal app ports `4000/4100`: denied from outside by UFW
+  - PostgreSQL listens on localhost only (`127.0.0.1`/`::1`).
+- **Nginx hardening**:
+  - TLS: `TLSv1.2 TLSv1.3`
+  - security headers enabled
+  - rate-limit headers present
+  - HSTS enabled
+- **Fail2ban** active jails:
+  - `sshd`
+  - `nginx-http-auth`
+  - `nginx-botsearch`
+- **Availability**:
+  - `https://gptishka.shop` -> `200`
+  - `https://admin-api.gptishka.shop` -> `200`
+
+### Important Operational Note
+- `pm2-root.service` is configured as `Type=oneshot`.
+- After manual `pm2 kill`, use:
+  - `systemctl restart pm2-root`
+  - not only `systemctl start pm2-root` (service can stay `active (exited)` without re-running `ExecStart`).
+
+## Verification Commands (Runbook)
+
+```bash
+pm2 list
+ss -lntp | egrep ':4000|:4100|:5432'
+curl -I https://gptishka.shop
+curl -I https://admin-api.gptishka.shop
+fail2ban-client status
+ufw status verbose
+systemctl status nginx --no-pager
+systemctl status pm2-root --no-pager
+```
+
+## Weekly Checklist
+
+```bash
+# 1) Service health
+pm2 list
+systemctl is-active nginx pm2-root fail2ban postgresql
+
+# 2) Perimeter
+ufw status verbose
+fail2ban-client status sshd
+fail2ban-client status nginx-botsearch
+
+# 3) Public response check
+curl -I https://gptishka.shop
+curl -I https://admin-api.gptishka.shop
+
+# 4) Error spikes (last 200 lines)
+tail -n 200 /var/log/nginx/error.log
+```
+
+## Monthly Checklist
+
+```bash
+# 1) Package updates (security first)
+apt update
+apt list --upgradable
+
+# 2) TLS and nginx config sanity
+nginx -t
+grep -n "ssl_protocols\\|ssl_prefer_server_ciphers" /etc/nginx/nginx.conf
+
+# 3) Backup verification
+ls -lah /var/backups/gptishka | tail -n 20
+test -x /usr/local/bin/gptishka-backup.sh && echo "backup script: OK"
+```
+
+## Residual Risks / Next Steps
+- Keep password SSH login temporarily only if required by your ops process; migrate to SSH keys when ready.
+- Add dedicated Nginx location rules to hard-drop scanner paths (`/wp-admin`, `/wp-login.php`, `/.env`, `/.git`) if not yet enabled in active site configs.
+- Add alerting on:
+  - repeated `502` from Nginx
+  - fail2ban ban bursts
+  - low disk space (`/`, backups partition).
