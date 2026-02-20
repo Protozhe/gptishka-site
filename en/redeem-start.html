@@ -11,8 +11,6 @@
   <meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
   <meta property="og:url" content="https://gptishka.shop/en/redeem-start.html" />
   <link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="icon" type="image/avif" href="/favicon.avif">
-<link rel="shortcut icon" href="/favicon.ico">
   <title>Extend / Activate - GPTishka</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -303,49 +301,36 @@
       }
     }
   </style>
-<!-- Yandex.Metrika counter -->
-<script type="text/javascript">
-    (function(m,e,t,r,i,k,a){
-        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-        m[i].l=1*new Date();
-        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106915056', 'ym');
-
-    ym(106915056, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
-</script>
-<!-- /Yandex.Metrika counter -->
 </head>
 <body>
-<noscript><div><img src="https://mc.yandex.ru/watch/106915056" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
   <div class="page-overlay"></div>
 
   <header>
     <div class="nav">
       <a href="/index.html" class="logo-link">
-        <img loading="lazy" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPT����" class="logo-img">
+        <img loading="lazy" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTишка" class="logo-img">
       </a>
 
       <nav>
-        <a href="/index.html">�������</a>
-        <a href="/about.html">� �������</a>
-        <a href="/reviews.html">������</a>
-        <a href="/guarantee.html">��������</a>
-        <a href="/contact.html">����� � ����</a>
-        <a href="/index.html#faq">������� � ������</a>
+        <a href="/index.html">Главная</a>
+        <a href="/about.html">О сервисе</a>
+        <a href="/reviews.html">Отзывы</a>
+        <a href="/guarantee.html">Гарантия</a>
+        <a href="/contact.html">Связь с нами</a>
+        <a href="/index.html#faq">Вопросы и ответы</a>
       </nav>
 
       <div class="lang-switch" id="langSwitch">
         <div class="lang-current" id="langCurrent">
           <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
           <span>English</span>
-          <span class="arrow">?</span>
+          <span class="arrow">▾</span>
         </div>
 
         <div class="lang-dropdown">
           <div class="lang-item" data-lang="ru">
             <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
-            <span>�������</span>
+            <span>Русский</span>
           </div>
           <div class="lang-item" data-lang="en">
             <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
@@ -359,7 +344,7 @@
   <main class="page redeem-page">
     <section class="redeem-card">
       <h1 class="redeem-title">Extend / Activate</h1>
-      <p class="redeem-subtitle">After payment, paste your account token and click �Activate�.</p>
+      <p class="redeem-subtitle">After payment, paste your account token and click “Activate”.</p>
 
       <div class="redeem-grid">
         <section class="redeem-block">
@@ -377,7 +362,7 @@
             <ol>
               <li>Sign in to ChatGPT in your browser.</li>
               <li>Open <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>
-              <li>Copy the full content and paste it into the �Account token� field.</li>
+              <li>Copy the full content and paste it into the “Account token” field.</li>
               <li>How it works / video instruction: <a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">watch</a></li>
             </ol>
           </details>
@@ -418,8 +403,8 @@
   </main>
 
   <footer>
-    <a class="footer-link" href="/oferta.html">��������� ������</a> � <a class="footer-link" href="/politika.html">�������� ������������������</a> � <a class="footer-link" href="/refund.html">������� ��������</a>
-    <span class="footer-copy">� 2026 GPTishka. ��� ����� ��������, ����������� ���������.</span>
+    <a class="footer-link" href="/oferta.html">Публичная оферта</a> · <a class="footer-link" href="/politika.html">Политика конфиденциальности</a> · <a class="footer-link" href="/refund.html">Условия возврата</a>
+    <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
   </footer>
 
   <script src="/assets/js/app.min.js" defer></script>
@@ -717,7 +702,7 @@
         if (done || timeout) {
           stopPolling();
           if (!done && timeout) {
-            setStatus('pending', `Still processing. Task: ${currentTaskId}. Click �Check status� later or �Change key and retry�.`, false);
+            setStatus('pending', `Still processing. Task: ${currentTaskId}. Click “Check status” later or “Change key and retry”.`, false);
             retryNewKeyBtn.disabled = false;
           }
         }
@@ -936,4 +921,3 @@
   </script>
 </body>
 </html>
-

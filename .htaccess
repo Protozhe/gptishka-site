@@ -42,11 +42,6 @@ ServerSignature Off
   AddOutputFilterByType DEFLATE image/svg+xml
 </IfModule>
 
-<IfModule mod_mime.c>
-  AddType image/avif .avif
-  AddType image/x-icon .ico
-</IfModule>
-
 <IfModule mod_expires.c>
   ExpiresActive On
   ExpiresDefault "access plus 1 hour"

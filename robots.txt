@@ -6,6 +6,4 @@ Disallow: /includes/
 Disallow: /backups/
 Disallow: /data/
 
-Host: gptishka.shop
 Sitemap: https://gptishka.shop/sitemap.xml
-Sitemap: https://www.gptishka.shop/sitemap.xml
