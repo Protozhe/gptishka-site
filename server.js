@@ -137,11 +137,19 @@ function parseTelegramEmbedPost(html, channel, postId) {
   const textMatch = content.match(/<div class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
   const viewsMatch = content.match(/<span class="tgme_widget_message_views">([\s\S]*?)<\/span>/i);
   const authorMatch = content.match(/<span dir="auto">([^<]+)<\/span><\/a>&nbsp;in&nbsp;<a class="tgme_widget_message_owner_name"/i);
+  const authorPhotoMatch = content.match(/<i class="tgme_widget_message_user_photo[^"]*"[^>]*>\s*<img src="([^"]+)"/i);
+  const bubbleStart = content.indexOf('class="tgme_widget_message_bubble"');
+  const bubbleContent = bubbleStart >= 0 ? content.slice(bubbleStart) : "";
+  const mediaImageMatch =
+    bubbleContent.match(/class="tgme_widget_message_(?!user_photo)[^"]*(?:photo|image|media|video)[^"]*"[\s\S]*?<img src="([^"]+)"/i) ||
+    bubbleContent.match(/class="tgme_widget_message_(?!user_photo)[^"]*(?:photo|image|media|video)[^"]*"[^>]*style="[^"]*background-image:\s*url\(['"]?([^'")]+)['"]?\)/i);
 
   const textRaw = textMatch ? textMatch[1].replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]*>/g, "") : "";
   const text = normalizeText(decodeHtmlEntities(textRaw));
   const views = normalizeText(decodeHtmlEntities(viewsMatch ? viewsMatch[1].replace(/<[^>]*>/g, "") : ""));
   const author = normalizeText(decodeHtmlEntities(authorMatch ? authorMatch[1] : ""));
+  const authorPhotoUrl = normalizeText(String(authorPhotoMatch ? authorPhotoMatch[1] : ""));
+  const imageUrl = normalizeText(String(mediaImageMatch ? mediaImageMatch[1] : ""));
 
   return {
     id: postId,
@@ -151,6 +159,8 @@ function parseTelegramEmbedPost(html, channel, postId) {
     text,
     views,
     author: author || "Telegram",
+    authorPhotoUrl,
+    imageUrl,
   };
 }
 

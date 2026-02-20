@@ -51,6 +51,22 @@
     font-size: 13px;
     font-weight: 700;
   }
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+  }
+  .telegram-review-image {
+    width: 100%;
+    max-height: 420px;
+    margin-top: 10px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #f6f8fb;
+  }
   .telegram-reviews-empty {
     padding: 16px;
     border: 1px dashed var(--border);
@@ -166,13 +182,14 @@
               return `
                 <article class="review">
                   <div class="review-header">
-                    <div class="avatar">TG</div>
+                    <div class="avatar">${item.authorPhotoUrl ? `<img src="${escapeHtml(item.authorPhotoUrl)}" alt="${author}" loading="lazy" decoding="async">` : "TG"}</div>
                     <div>
                       <div class="review-name">${author}</div>
                       <div class="review-date">${date}${views}</div>
                     </div>
                   </div>
                   <div class="review-text">${text}</div>
+                  ${item.imageUrl ? `<img class="telegram-review-image" src="${escapeHtml(item.imageUrl)}" alt="Review image" loading="lazy" decoding="async">` : ""}
                   <a class="telegram-review-link" href="${url}" target="_blank" rel="noopener noreferrer">Open post</a>
                 </article>
               `;
