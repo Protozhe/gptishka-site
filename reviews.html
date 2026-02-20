@@ -22,6 +22,42 @@
 <link rel="stylesheet" href="/assets/css/logo.min.css">
 <link rel="stylesheet" href="/assets/css/sections.min.css">
 <link rel="stylesheet" href="/assets/css/theme.min.css">
+<style>
+  .telegram-reviews-note {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .telegram-reviews-feed {
+    max-height: min(72vh, 980px);
+    overflow-y: auto;
+    display: grid;
+    gap: 12px;
+    padding-right: 6px;
+  }
+  .telegram-reviews-feed::-webkit-scrollbar {
+    width: 8px;
+  }
+  .telegram-reviews-feed::-webkit-scrollbar-thumb {
+    background: rgba(15, 122, 103, 0.4);
+    border-radius: 999px;
+  }
+  .telegram-review-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .telegram-reviews-empty {
+    padding: 16px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--muted);
+  }
+</style>
 
 <!-- GOOGLE FONTS -->
 </head>
@@ -72,20 +108,13 @@
       <h1>Отзывы</h1>
       <a class="btn secondary" href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">Оставить отзыв</a>
     </div>
-
-    <div class="reviews-list">
-      <div class="review">
-        <div class="review-header">
-          <div class="avatar">G</div>
-          <div>
-            <div class="review-name">GPTишка</div>
-            <div class="review-date">19.01.2026</div>
-          </div>
-        </div>
-        <div class="review-text">
-          Спасибо за ваши отзывы, мы стараемся для вас!
-        </div>
-      </div>
+    <p class="telegram-reviews-note">
+      Отзывы подгружаются автоматически из Telegram-канала
+      <a href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">@otzivigptishkashop</a>.
+      При большом количестве отзывов блок прокручивается.
+    </p>
+    <div class="telegram-reviews-feed" id="telegramReviewsFeed">
+      <div class="telegram-reviews-empty">Загружаем отзывы из Telegram...</div>
     </div>
   </section>
 </main>
@@ -95,6 +124,63 @@
   <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
 </footer>
 
+<script>
+(() => {
+  const feed = document.getElementById("telegramReviewsFeed");
+  if (!feed) return;
+
+  const formatDate = iso => {
+    if (!iso) return "";
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleDateString("ru-RU", { year: "numeric", month: "short", day: "numeric" });
+  };
+
+  const escapeHtml = value =>
+    String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+  fetch("/api/reviews/telegram?limit=20", { headers: { Accept: "application/json" } })
+    .then(response => (response.ok ? response.json() : Promise.reject(new Error("reviews api failed"))))
+    .then(payload => {
+      const items = Array.isArray(payload?.items) ? payload.items : [];
+      if (!items.length) {
+        feed.innerHTML = '<div class="telegram-reviews-empty">Пока нет отзывов. Откройте канал: <a href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">@otzivigptishkashop</a>.</div>';
+        return;
+      }
+
+      feed.innerHTML = items
+        .map(item => {
+          const author = escapeHtml(item.author || "Telegram");
+          const text = escapeHtml(item.text || "");
+          const date = formatDate(item.date);
+          const views = item.views ? ` · 👁 ${escapeHtml(item.views)}` : "";
+          const url = escapeHtml(item.url || "https://t.me/otzivigptishkashop");
+          return `
+            <article class="review">
+              <div class="review-header">
+                <div class="avatar">TG</div>
+                <div>
+                  <div class="review-name">${author}</div>
+                  <div class="review-date">${date}${views}</div>
+                </div>
+              </div>
+              <div class="review-text">${text}</div>
+              <a class="telegram-review-link" href="${url}" target="_blank" rel="noopener noreferrer">Открыть пост</a>
+            </article>
+          `;
+        })
+        .join("");
+    })
+    .catch(() => {
+      feed.innerHTML = '<div class="telegram-reviews-empty">Не удалось загрузить отзывы. Проверьте канал: <a href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">@otzivigptishkashop</a>.</div>';
+    });
+})();
+</script>
 <script src="/assets/js/app.min.js" defer></script>
 <script>
     const langSwitch = document.getElementById("langSwitch");

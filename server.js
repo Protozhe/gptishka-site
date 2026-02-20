@@ -15,9 +15,29 @@ const SEED_DEMO_STATS = String(
   process.env.SEED_DEMO_STATS || (String(process.env.NODE_ENV || "").toLowerCase() === "production" ? "false" : "true")
 ).toLowerCase() === "true";
 const IS_PRODUCTION = String(process.env.NODE_ENV || "").toLowerCase() === "production";
+const TELEGRAM_REVIEWS_CHANNEL_RAW = String(process.env.TELEGRAM_REVIEWS_CHANNEL || "otzivigptishkashop").trim();
+const TELEGRAM_REVIEWS_CHANNEL = /^[a-zA-Z0-9_]{5,64}$/.test(TELEGRAM_REVIEWS_CHANNEL_RAW)
+  ? TELEGRAM_REVIEWS_CHANNEL_RAW
+  : "otzivigptishkashop";
+const TELEGRAM_REVIEWS_CACHE_MS = Number(process.env.TELEGRAM_REVIEWS_CACHE_MS || 120000);
+const TELEGRAM_REVIEWS_MAX_LIMIT = 30;
+const TELEGRAM_REVIEWS_SCAN_MAX_ID = Number(process.env.TELEGRAM_REVIEWS_SCAN_MAX_ID || 600);
+const TELEGRAM_REVIEWS_MISS_STREAK = Number(process.env.TELEGRAM_REVIEWS_MISS_STREAK || 25);
+const TELEGRAM_FETCH_HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+  "Accept-Language": "en-US,en;q=0.9",
+};
 
 const dataDir = path.join(__dirname, "data");
 const dbPath = path.join(dataDir, "stats.sqlite");
+
+let telegramReviewsCache = {
+  channel: TELEGRAM_REVIEWS_CHANNEL,
+  fetchedAt: 0,
+  latestPostId: 0,
+  items: [],
+};
 
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
@@ -78,6 +98,123 @@ function logInfo(message) {
 function logError(message, error) {
   const suffix = error && error.message ? `: ${error.message}` : "";
   process.stderr.write(`[storefront] ${message}${suffix}\n`);
+}
+
+function decodeHtmlEntities(input) {
+  return String(input || "")
+    .replace(/&#(\d+);/g, (_, dec) => {
+      const code = Number.parseInt(dec, 10);
+      return Number.isFinite(code) ? String.fromCodePoint(code) : _;
+    })
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => {
+      const code = Number.parseInt(hex, 16);
+      return Number.isFinite(code) ? String.fromCodePoint(code) : _;
+    })
+    .replace(/&nbsp;/g, " ")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
+
+function normalizeText(input) {
+  return String(input || "")
+    .replace(/\r/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function parseTelegramEmbedPost(html, channel, postId) {
+  const content = String(html || "");
+  const postPath = `${channel}/${postId}`;
+  const exists = content.includes(`data-post="${postPath}"`) && !/tgme_widget_message_error/i.test(content);
+  if (!exists) {
+    return null;
+  }
+
+  const datetimeMatch = content.match(/<time[^>]+datetime="([^"]+)"/i);
+  const textMatch = content.match(/<div class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
+  const viewsMatch = content.match(/<span class="tgme_widget_message_views">([\s\S]*?)<\/span>/i);
+  const authorMatch = content.match(/<span dir="auto">([^<]+)<\/span><\/a>&nbsp;in&nbsp;<a class="tgme_widget_message_owner_name"/i);
+
+  const textRaw = textMatch ? textMatch[1].replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]*>/g, "") : "";
+  const text = normalizeText(decodeHtmlEntities(textRaw));
+  const views = normalizeText(decodeHtmlEntities(viewsMatch ? viewsMatch[1].replace(/<[^>]*>/g, "") : ""));
+  const author = normalizeText(decodeHtmlEntities(authorMatch ? authorMatch[1] : ""));
+
+  return {
+    id: postId,
+    postId,
+    url: `https://t.me/${postPath}`,
+    date: datetimeMatch ? String(datetimeMatch[1]) : "",
+    text,
+    views,
+    author: author || "Telegram",
+  };
+}
+
+async function fetchTelegramEmbedPost(channel, postId) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch(`https://t.me/${channel}/${postId}?embed=1`, {
+      headers: TELEGRAM_FETCH_HEADERS,
+      signal: controller.signal,
+    });
+    const html = await response.text();
+    return parseTelegramEmbedPost(html, channel, postId);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function findLatestTelegramPostId(channel, hint = 0) {
+  let latestId = 0;
+  let missStreak = 0;
+  const startId = Math.max(1, hint > 0 ? hint - 10 : 1);
+  const maxId = Math.max(1, TELEGRAM_REVIEWS_SCAN_MAX_ID);
+
+  for (let postId = startId; postId <= maxId; postId += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const post = await fetchTelegramEmbedPost(channel, postId);
+    if (post) {
+      latestId = postId;
+      missStreak = 0;
+    } else if (latestId > 0) {
+      missStreak += 1;
+      if (missStreak >= Math.max(5, TELEGRAM_REVIEWS_MISS_STREAK)) {
+        break;
+      }
+    }
+  }
+
+  return latestId;
+}
+
+async function collectTelegramReviews(channel, limit) {
+  const hint = telegramReviewsCache.channel === channel ? telegramReviewsCache.latestPostId : 0;
+  const latestId = await findLatestTelegramPostId(channel, hint);
+  if (!latestId) return [];
+
+  const items = [];
+  let currentId = latestId;
+  let misses = 0;
+  const maxMisses = Math.max(limit * 2, 20);
+
+  while (currentId > 0 && items.length < limit && misses < maxMisses) {
+    // eslint-disable-next-line no-await-in-loop
+    const post = await fetchTelegramEmbedPost(channel, currentId);
+    if (post && post.text) {
+      items.push(post);
+      misses = 0;
+    } else {
+      misses += 1;
+    }
+    currentId -= 1;
+  }
+
+  return { latestId, items };
 }
 
 async function initDb() {
@@ -656,6 +793,55 @@ function createApp() {
       });
     } catch (_) {
       res.status(500).json({ error: "Failed to load stats" });
+    }
+  });
+
+  app.get("/api/reviews/telegram", async (req, res) => {
+    const requestedLimit = Number.parseInt(String(req.query?.limit || "12"), 10);
+    const limit = Number.isFinite(requestedLimit)
+      ? Math.max(1, Math.min(requestedLimit, TELEGRAM_REVIEWS_MAX_LIMIT))
+      : 12;
+    const now = Date.now();
+
+    if (
+      telegramReviewsCache.channel === TELEGRAM_REVIEWS_CHANNEL &&
+      telegramReviewsCache.fetchedAt > 0 &&
+      now - telegramReviewsCache.fetchedAt < TELEGRAM_REVIEWS_CACHE_MS
+    ) {
+      return res.json({
+        source: `https://t.me/${TELEGRAM_REVIEWS_CHANNEL}`,
+        fetchedAt: new Date(telegramReviewsCache.fetchedAt).toISOString(),
+        cached: true,
+        items: telegramReviewsCache.items.slice(0, limit),
+      });
+    }
+
+    try {
+      const result = await collectTelegramReviews(TELEGRAM_REVIEWS_CHANNEL, TELEGRAM_REVIEWS_MAX_LIMIT);
+      const items = Array.isArray(result?.items) ? result.items : [];
+      telegramReviewsCache = {
+        channel: TELEGRAM_REVIEWS_CHANNEL,
+        fetchedAt: now,
+        latestPostId: Number(result?.latestId || 0),
+        items,
+      };
+      return res.json({
+        source: `https://t.me/${TELEGRAM_REVIEWS_CHANNEL}`,
+        fetchedAt: new Date(now).toISOString(),
+        cached: false,
+        items: items.slice(0, limit),
+      });
+    } catch (_error) {
+      if (telegramReviewsCache.items.length) {
+        return res.json({
+          source: `https://t.me/${TELEGRAM_REVIEWS_CHANNEL}`,
+          fetchedAt: new Date(telegramReviewsCache.fetchedAt).toISOString(),
+          cached: true,
+          stale: true,
+          items: telegramReviewsCache.items.slice(0, limit),
+        });
+      }
+      return res.status(502).json({ error: "Telegram reviews unavailable" });
     }
   });
 
