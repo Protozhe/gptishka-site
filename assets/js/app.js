@@ -154,6 +154,8 @@ document.querySelectorAll("a[href]").forEach(link => {
         multiCartCheckout: "Сейчас оплата доступна по одному товару. Оплатите позиции по отдельности.",
       };
   const PROMO_CODE_KEY = "gptishka_cart_promo_v1";
+  const PROMO_CODE_TS_KEY = "gptishka_cart_promo_ts_v1";
+  const PROMO_TTL_MS = 30 * 60 * 1000;
   let clickTimer = null;
   let activePromoCode = "";
   let promoValidationState = "idle"; // idle | checking | valid | invalid
@@ -551,12 +553,49 @@ document.querySelectorAll("a[href]").forEach(link => {
   }
 
   function savePromoCode(code) {
+    const normalized = String(code || "").trim().toUpperCase();
     try {
-      if (code) localStorage.setItem(PROMO_CODE_KEY, code);
-      else localStorage.removeItem(PROMO_CODE_KEY);
+      if (normalized) {
+        localStorage.setItem(PROMO_CODE_KEY, normalized);
+        localStorage.setItem(PROMO_CODE_TS_KEY, String(Date.now()));
+      } else {
+        localStorage.removeItem(PROMO_CODE_KEY);
+        localStorage.removeItem(PROMO_CODE_TS_KEY);
+      }
     } catch (_) {
       // Ignore storage write errors.
     }
+  }
+
+  function loadPromoTimestamp() {
+    try {
+      const raw = Number(localStorage.getItem(PROMO_CODE_TS_KEY) || 0);
+      return Number.isFinite(raw) && raw > 0 ? raw : 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  function hasCartItems() {
+    return loadCart().some(row => row && row.lineId && row.product && toInt(row.qty) > 0);
+  }
+
+  function isPromoExpiredForUnpaidCart() {
+    if (!activePromoCode) return false;
+    if (!hasCartItems()) return false;
+    const savedAt = loadPromoTimestamp();
+    if (!savedAt) return false;
+    return Date.now() - savedAt >= PROMO_TTL_MS;
+  }
+
+  function clearPromoCodeState() {
+    activePromoCode = "";
+    promoValidationState = "idle";
+    promoDiscountAmount = 0;
+    promoValidationContextKey = "";
+    savePromoCode("");
+    if (headerCartPromoInputEl) headerCartPromoInputEl.value = "";
+    if (cartPromoInputEl) cartPromoInputEl.value = "";
   }
 
   function calculateDiscount(total, code) {
@@ -770,6 +809,7 @@ document.querySelectorAll("a[href]").forEach(link => {
     });
     if (!nextItem) return;
     saveCart([nextItem]);
+    clearPromoCodeState();
     renderCart();
   }
 
@@ -928,6 +968,10 @@ document.querySelectorAll("a[href]").forEach(link => {
   }
 
   function renderCart() {
+    if (isPromoExpiredForUnpaidCart()) {
+      clearPromoCodeState();
+    }
+
     const rows = loadCart().filter(row => row && row.lineId && row.product && toInt(row.qty) > 0);
     const first = rows[0];
     const firstQty = first ? Math.max(1, toInt(first.qty) || 1) : 0;
@@ -1153,6 +1197,12 @@ document.querySelectorAll("a[href]").forEach(link => {
   }
 
   activePromoCode = loadPromoCode();
+  if (activePromoCode && !loadPromoTimestamp()) {
+    savePromoCode(activePromoCode);
+  }
+  if (isPromoExpiredForUnpaidCart()) {
+    clearPromoCodeState();
+  }
   if (headerCartPromoInputEl) headerCartPromoInputEl.value = activePromoCode;
   if (cartPromoInputEl) cartPromoInputEl.value = activePromoCode;
   if (activePromoCode) {
@@ -1248,15 +1298,16 @@ document.querySelectorAll("a[href]").forEach(link => {
   });
 
   window.addEventListener("gptishka:cart-cleared", () => {
-    activePromoCode = "";
-    promoValidationState = "idle";
-    promoDiscountAmount = 0;
-    promoValidationContextKey = "";
-    if (headerCartPromoInputEl) headerCartPromoInputEl.value = "";
-    if (cartPromoInputEl) cartPromoInputEl.value = "";
+    clearPromoCodeState();
     renderCart();
     syncCards();
   });
+
+  window.setInterval(() => {
+    if (!isPromoExpiredForUnpaidCart()) return;
+    clearPromoCodeState();
+    renderCart();
+  }, 60 * 1000);
 
   window.addEventListener("hashchange", () => {
     alignToHashTarget("smooth");
