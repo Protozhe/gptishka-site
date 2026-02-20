@@ -509,8 +509,9 @@ document.querySelectorAll("a[href]").forEach(link => {
 
   function saveCart(cart) {
     const rows = Array.isArray(cart) ? cart.map(row => normalizeCartRow(row)).filter(Boolean) : [];
+    const singleRowCart = rows.length ? [rows[rows.length - 1]] : [];
     try {
-      localStorage.setItem(CART_KEY, JSON.stringify(rows));
+      localStorage.setItem(CART_KEY, JSON.stringify(singleRowCart));
     } catch (_) {
       // Ignore storage write errors.
     }
@@ -756,21 +757,19 @@ document.querySelectorAll("a[href]").forEach(link => {
   function addCartLot(item, qty) {
     if (!item || !item.product) return;
     const normalizedQty = 1;
-    const cart = loadCart();
-    cart.push(
-      normalizeCartRow({
-        lineId: "lot_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 10),
-        product: item.product,
-        productId: item.productId,
-        title: item.title,
-        term: item.term,
-        sub: item.sub,
-        price: item.price,
-        currency: item.currency || "RUB",
-        qty: normalizedQty,
-      })
-    );
-    saveCart(cart);
+    const nextItem = normalizeCartRow({
+      lineId: "lot_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 10),
+      product: item.product,
+      productId: item.productId,
+      title: item.title,
+      term: item.term,
+      sub: item.sub,
+      price: item.price,
+      currency: item.currency || "RUB",
+      qty: normalizedQty,
+    });
+    if (!nextItem) return;
+    saveCart([nextItem]);
     renderCart();
   }
 
