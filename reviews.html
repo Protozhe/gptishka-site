@@ -144,6 +144,9 @@
 (() => {
   const feed = document.getElementById("telegramReviewsFeed");
   if (!feed) return;
+  const REVIEWS_CACHE_KEY = "gptishka_reviews_cache_v1";
+  const REVIEWS_CACHE_TS_KEY = "gptishka_reviews_cache_ts_v1";
+  const REVIEWS_CACHE_TTL_MS = 3 * 60 * 60 * 1000;
 
   const formatDate = iso => {
     if (!iso) return "";
@@ -160,41 +163,83 @@
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
 
+  const renderItems = items => {
+    if (!Array.isArray(items) || !items.length) {
+      feed.innerHTML = '<div class="telegram-reviews-empty">Пока нет отзывов. Откройте канал: <a href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">@otzivigptishkashop</a>.</div>';
+      return;
+    }
+
+    feed.innerHTML = items
+      .map(item => {
+        const author = escapeHtml(item.author || "Telegram");
+        const text = escapeHtml(item.text || "");
+        const date = formatDate(item.date);
+        const views = item.views ? ` · 👁 ${escapeHtml(item.views)}` : "";
+        const url = escapeHtml(item.url || "https://t.me/otzivigptishkashop");
+        return `
+          <article class="review">
+            <div class="review-header">
+              <div class="avatar">${item.authorPhotoUrl ? `<img src="${escapeHtml(item.authorPhotoUrl)}" alt="${author}" loading="lazy" decoding="async">` : "TG"}</div>
+              <div>
+                <div class="review-name">${author}</div>
+                <div class="review-date">${date}${views}</div>
+              </div>
+            </div>
+            <div class="review-text">${text}</div>
+            ${item.imageUrl ? `<img class="telegram-review-image" src="${escapeHtml(item.imageUrl)}" alt="Фото отзыва" loading="lazy" decoding="async">` : ""}
+            <a class="telegram-review-link" href="${url}" target="_blank" rel="noopener noreferrer">Открыть пост</a>
+          </article>
+        `;
+      })
+      .join("");
+  };
+
+  const getCache = () => {
+    try {
+      const raw = localStorage.getItem(REVIEWS_CACHE_KEY);
+      const ts = Number(localStorage.getItem(REVIEWS_CACHE_TS_KEY) || 0);
+      const items = JSON.parse(raw || "[]");
+      if (!Array.isArray(items) || !items.length) return { items: [], fresh: false };
+      return { items, fresh: Date.now() - ts < REVIEWS_CACHE_TTL_MS };
+    } catch (_) {
+      return { items: [], fresh: false };
+    }
+  };
+
+  const saveCache = items => {
+    try {
+      localStorage.setItem(REVIEWS_CACHE_KEY, JSON.stringify(items));
+      localStorage.setItem(REVIEWS_CACHE_TS_KEY, String(Date.now()));
+    } catch (_) {
+      // ignore
+    }
+  };
+
+  const cached = getCache();
+  if (cached.items.length) {
+    renderItems(cached.items);
+  }
+  if (cached.fresh) {
+    return;
+  }
+
   fetch("/api/reviews/telegram?limit=20", { headers: { Accept: "application/json" } })
     .then(response => (response.ok ? response.json() : Promise.reject(new Error("reviews api failed"))))
     .then(payload => {
       const items = Array.isArray(payload?.items) ? payload.items : [];
       if (!items.length) {
-        feed.innerHTML = '<div class="telegram-reviews-empty">Пока нет отзывов. Откройте канал: <a href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">@otzivigptishkashop</a>.</div>';
+        if (!cached.items.length) {
+          feed.innerHTML = '<div class="telegram-reviews-empty">Пока нет отзывов. Откройте канал: <a href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">@otzivigptishkashop</a>.</div>';
+        }
         return;
       }
-
-      feed.innerHTML = items
-        .map(item => {
-          const author = escapeHtml(item.author || "Telegram");
-          const text = escapeHtml(item.text || "");
-          const date = formatDate(item.date);
-          const views = item.views ? ` · 👁 ${escapeHtml(item.views)}` : "";
-          const url = escapeHtml(item.url || "https://t.me/otzivigptishkashop");
-          return `
-            <article class="review">
-              <div class="review-header">
-                <div class="avatar">${item.authorPhotoUrl ? `<img src="${escapeHtml(item.authorPhotoUrl)}" alt="${author}" loading="lazy" decoding="async">` : "TG"}</div>
-                <div>
-                  <div class="review-name">${author}</div>
-                  <div class="review-date">${date}${views}</div>
-                </div>
-              </div>
-              <div class="review-text">${text}</div>
-              ${item.imageUrl ? `<img class="telegram-review-image" src="${escapeHtml(item.imageUrl)}" alt="Фото отзыва" loading="lazy" decoding="async">` : ""}
-              <a class="telegram-review-link" href="${url}" target="_blank" rel="noopener noreferrer">Открыть пост</a>
-            </article>
-          `;
-        })
-        .join("");
+      saveCache(items);
+      renderItems(items);
     })
     .catch(() => {
-      feed.innerHTML = '<div class="telegram-reviews-empty">Не удалось загрузить отзывы. Проверьте канал: <a href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">@otzivigptishkashop</a>.</div>';
+      if (!cached.items.length) {
+        feed.innerHTML = '<div class="telegram-reviews-empty">Не удалось загрузить отзывы. Проверьте канал: <a href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">@otzivigptishkashop</a>.</div>';
+      }
     });
 })();
 </script>

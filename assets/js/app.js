@@ -1271,6 +1271,60 @@ document.querySelectorAll("a[href]").forEach(link => {
   };
 })();
 
+// Prefetch Telegram reviews in background and cache for 3 hours.
+(() => {
+  const REVIEWS_CACHE_KEY = "gptishka_reviews_cache_v1";
+  const REVIEWS_CACHE_TS_KEY = "gptishka_reviews_cache_ts_v1";
+  const REVIEWS_CACHE_TTL_MS = 3 * 60 * 60 * 1000;
+  const REVIEWS_CACHE_LIMIT = 20;
+  const REVIEWS_API_URL = "/api/reviews/telegram?limit=" + REVIEWS_CACHE_LIMIT;
+
+  function getCacheInfo() {
+    try {
+      const raw = localStorage.getItem(REVIEWS_CACHE_KEY);
+      const ts = Number(localStorage.getItem(REVIEWS_CACHE_TS_KEY) || 0);
+      const items = JSON.parse(raw || "[]");
+      const hasItems = Array.isArray(items) && items.length > 0;
+      return {
+        hasItems,
+        isFresh: hasItems && Date.now() - ts < REVIEWS_CACHE_TTL_MS,
+      };
+    } catch (_) {
+      return { hasItems: false, isFresh: false };
+    }
+  }
+
+  function storeCache(items) {
+    try {
+      localStorage.setItem(REVIEWS_CACHE_KEY, JSON.stringify(items));
+      localStorage.setItem(REVIEWS_CACHE_TS_KEY, String(Date.now()));
+    } catch (_) {
+      // Ignore storage errors.
+    }
+  }
+
+  function prefetchReviews() {
+    const cache = getCacheInfo();
+    if (cache.isFresh) return;
+
+    fetch(REVIEWS_API_URL, { headers: { Accept: "application/json" }, cache: "no-store" })
+      .then(response => (response.ok ? response.json() : Promise.reject(new Error("reviews api failed"))))
+      .then(payload => {
+        const items = Array.isArray(payload?.items) ? payload.items : [];
+        if (items.length) storeCache(items);
+      })
+      .catch(() => {
+        // Silent fail: reviews page will keep old cache/fallback.
+      });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", prefetchReviews);
+  } else {
+    prefetchReviews();
+  }
+})();
+
 // Persist selected product for the payment page (fallback if query params are lost).
 document.addEventListener("click", e => {
   const a = e.target.closest && e.target.closest("a.buy-btn");
