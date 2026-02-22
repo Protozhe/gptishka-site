@@ -23,6 +23,8 @@ const TELEGRAM_REVIEWS_CACHE_MS = Number(process.env.TELEGRAM_REVIEWS_CACHE_MS |
 const TELEGRAM_REVIEWS_MAX_LIMIT = 30;
 const TELEGRAM_REVIEWS_SCAN_MAX_ID = Number(process.env.TELEGRAM_REVIEWS_SCAN_MAX_ID || 600);
 const TELEGRAM_REVIEWS_MISS_STREAK = Number(process.env.TELEGRAM_REVIEWS_MISS_STREAK || 25);
+const SUPPORT_WIDGET_CSS_HREF = "/assets/css/support-widget.css";
+const SUPPORT_WIDGET_JS_SRC = "/assets/js/support-widget.js";
 const TELEGRAM_FETCH_HEADERS = {
   "User-Agent":
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
@@ -38,6 +40,40 @@ let telegramReviewsCache = {
   latestPostId: 0,
   items: [],
 };
+
+function getRootRelativePath(inputPath) {
+  if (!inputPath || inputPath === "/") return "index.html";
+  if (inputPath === "/en") return path.join("en", "index.html");
+  return inputPath.replace(/^\/+/, "");
+}
+
+function shouldInjectSupportWidget(reqPath) {
+  if (!reqPath) return false;
+  if (reqPath.startsWith("/api/")) return false;
+  if (reqPath.startsWith("/admin")) return false;
+  if (reqPath === "/" || reqPath === "/en") return true;
+  return path.extname(reqPath).toLowerCase() === ".html";
+}
+
+function injectSupportWidgetAssets(html) {
+  let output = String(html || "");
+
+  if (!output.includes(SUPPORT_WIDGET_CSS_HREF)) {
+    output = output.replace(
+      /<\/head>/i,
+      `  <link rel="stylesheet" href="${SUPPORT_WIDGET_CSS_HREF}" />\n</head>`
+    );
+  }
+
+  if (!output.includes(SUPPORT_WIDGET_JS_SRC)) {
+    output = output.replace(
+      /<\/body>/i,
+      `  <script src="${SUPPORT_WIDGET_JS_SRC}" defer></script>\n</body>`
+    );
+  }
+
+  return output;
+}
 
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
@@ -343,6 +379,50 @@ function createApp() {
     })
   );
   app.use(express.json({ limit: "256kb" }));
+  app.get("/favicon.ico", (_req, res) => {
+    const primaryIcon = path.join(__dirname, "favicon.ico");
+    const fallbackIcon = path.join(__dirname, "assets", "img", "favicon.ico");
+    const iconPath = fs.existsSync(primaryIcon) ? primaryIcon : fallbackIcon;
+
+    if (!fs.existsSync(iconPath)) {
+      return res.status(404).end();
+    }
+
+    return res.sendFile(iconPath);
+  });
+
+  app.get("/robots.txt", (_req, res) => {
+    return res.sendFile(path.join(__dirname, "robots.txt"));
+  });
+
+  app.get("/sitemap.xml", (_req, res) => {
+    res.type("application/xml");
+    return res.sendFile(path.join(__dirname, "sitemap.xml"));
+  });
+
+  app.get("*", (req, res, next) => {
+    if (req.method !== "GET" && req.method !== "HEAD") return next();
+    if (!shouldInjectSupportWidget(req.path)) return next();
+
+    const relativePath = getRootRelativePath(req.path);
+    const fullPath = path.resolve(__dirname, relativePath);
+    const rootPath = path.resolve(__dirname) + path.sep;
+
+    if (!fullPath.startsWith(rootPath)) return next();
+    if (!fs.existsSync(fullPath)) return next();
+    if (path.extname(fullPath).toLowerCase() !== ".html") return next();
+
+    // Keep verification files untouched.
+    const baseName = path.basename(fullPath).toLowerCase();
+    if (baseName.startsWith("google") || baseName.startsWith("yandex_")) return next();
+
+    fs.readFile(fullPath, "utf8", (readError, rawHtml) => {
+      if (readError) return next();
+      res.type("html");
+      return res.send(injectSupportWidgetAssets(rawHtml));
+    });
+  });
+
   app.use(
     express.static(__dirname, {
       dotfiles: "ignore",

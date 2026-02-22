@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -64,8 +64,34 @@
     }
     .btn.primary { background: #1a8f7b; border-color: #1a8f7b; color: #fff; }
   </style>
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+  (function(m,e,t,r,i,k,a){
+      m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+      m[i].l=1*new Date();
+      for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+      k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+  })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106915056', 'ym');
+
+  ym(106915056, 'init', {
+    ssr: true,
+    webvisor: true,
+    clickmap: true,
+    ecommerce: 'dataLayer',
+    referrer: document.referrer,
+    url: location.href,
+    accurateTrackBounce: true,
+    trackLinks: true
+  });
+</script>
+<!-- /Yandex.Metrika counter -->
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="shortcut icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" href="/assets/img/logo.png" />
+<link rel="stylesheet" href="/assets/css/support-widget.css" />
 </head>
 <body>
+<noscript><div><img src="https://mc.yandex.ru/watch/106915056" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
   <section class="card">
     <h1>Оплата обрабатывается</h1>
     <p>Проверяем платеж через webhook. Обычно это занимает до 30 секунд.</p>
@@ -210,5 +236,6 @@
       return new Promise(resolve => setTimeout(resolve, ms));
     }
   </script>
+<script src="/assets/js/support-widget.js" defer></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
@@ -301,8 +301,31 @@
       }
     }
   </style>
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+  (function(m,e,t,r,i,k,a){
+      m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+      m[i].l=1*new Date();
+      for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+      k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+  })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106915056', 'ym');
+
+  ym(106915056, 'init', {
+    ssr: true,
+    webvisor: true,
+    clickmap: true,
+    ecommerce: 'dataLayer',
+    referrer: document.referrer,
+    url: location.href,
+    accurateTrackBounce: true,
+    trackLinks: true
+  });
+</script>
+<!-- /Yandex.Metrika counter -->
+<link rel="stylesheet" href="/assets/css/support-widget.css" />
 </head>
 <body>
+<noscript><div><img src="https://mc.yandex.ru/watch/106915056" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
   <div class="page-overlay"></div>
 
   <header>
@@ -461,6 +484,14 @@
     const POLL_MAX_MS = 5 * 60 * 1000;
     const RETRY_COOLDOWN_MS = 20000;
     const TOKEN_VALIDATE_DEBOUNCE_MS = 600;
+    const LAST_PAID_ORDER_KEY = 'gptishka_last_paid_order_id';
+    const CART_STORAGE_KEYS = [
+      'gptishka_cart_v1',
+      'gptishka_card_qty_v1',
+      'selected_cart',
+      'gptishka_cart_promo_v1',
+      'selected_product',
+    ];
 
     let currentTaskId = '';
     let pollTimer = null;
@@ -674,6 +705,7 @@
           setStatus('error', payload?.message || 'Не удалось загрузить статус активации', false);
           return;
         }
+        handlePaidOrder(orderId);
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
         if (currentTaskId) {
@@ -688,6 +720,31 @@
         setStatus('pending', 'Ожидаю действия.', false);
       } catch {
         setStatus('error', 'Ошибка сети при загрузке активации', false);
+      }
+    }
+
+    function handlePaidOrder(id) {
+      const normalizedId = String(id || '').trim();
+      if (!normalizedId) return;
+
+      try {
+        const lastPaid = String(localStorage.getItem(LAST_PAID_ORDER_KEY) || '').trim();
+        if (lastPaid === normalizedId) return;
+
+        CART_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+        localStorage.setItem(LAST_PAID_ORDER_KEY, normalizedId);
+      } catch (_) {
+        // Ignore storage write errors.
+      }
+
+      notifyCartCleared();
+    }
+
+    function notifyCartCleared() {
+      try {
+        window.dispatchEvent(new CustomEvent('gptishka:cart-cleared'));
+      } catch (_) {
+        // Ignore event dispatch failures.
       }
     }
 
@@ -919,5 +976,6 @@
       }
     }
   </script>
+<script src="/assets/js/support-widget.js" defer></script>
 </body>
 </html>
