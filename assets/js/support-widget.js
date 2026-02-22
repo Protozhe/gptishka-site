@@ -4,6 +4,28 @@
   var STORAGE_CLOSE_KEY = "gptishka_support_widget_closed_until";
   var STORAGE_CLICK_KEY = "gptishka_support_widget_clicked_until";
   var WIDGET_ID = "gptishka-support-widget";
+  var FORCE_SHOW_QUERY_KEY = "supportWidget";
+
+  function clearSuppressState() {
+    try {
+      window.localStorage.removeItem(STORAGE_CLOSE_KEY);
+      window.localStorage.removeItem(STORAGE_CLICK_KEY);
+    } catch (_e) {
+      // localStorage may be blocked in privacy mode.
+    }
+  }
+
+  function hasForceShowFlag() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var value = params.get(FORCE_SHOW_QUERY_KEY);
+      if (!value) return false;
+      value = String(value).toLowerCase();
+      return value === "1" || value === "true" || value === "on";
+    } catch (_e) {
+      return false;
+    }
+  }
 
   function readUntil(key) {
     try {
@@ -72,21 +94,56 @@
     return root;
   }
 
-  function showWidget() {
-    if (shouldSuppress()) return;
+  function showWidget(forceShow) {
+    if (!forceShow && shouldSuppress()) return;
     var widget = createWidget();
     if (!widget) return;
 
     document.body.appendChild(widget);
-    window.requestAnimationFrame(function () {
+    var activated = false;
+    var activate = function () {
+      if (activated) return;
+      activated = true;
       widget.classList.add("is-visible");
-    });
+    };
+    if (typeof window.requestAnimationFrame === "function") {
+      window.requestAnimationFrame(activate);
+    }
+    window.setTimeout(activate, 60);
   }
 
   function initSupportWidget() {
     if (!document.body) return;
-    if (shouldSuppress()) return;
-    window.setTimeout(showWidget, SHOW_DELAY_MS);
+    var forceShow = hasForceShowFlag();
+    if (forceShow) {
+      clearSuppressState();
+    } else if (shouldSuppress()) {
+      return;
+    }
+    window.setTimeout(function () {
+      showWidget(forceShow);
+    }, forceShow ? 300 : SHOW_DELAY_MS);
+  }
+
+  window.gptishkaSupportWidget = {
+    showNow: function () {
+      showWidget(true);
+    },
+    resetSuppress: function () {
+      clearSuppressState();
+    },
+    getSuppressState: function () {
+      return {
+        closeUntil: readUntil(STORAGE_CLOSE_KEY),
+        clickUntil: readUntil(STORAGE_CLICK_KEY)
+      };
+    }
+  };
+  Object.freeze(window.gptishkaSupportWidget);
+
+  if (hasForceShowFlag()) {
+    // Helps to debug quickly in browser console.
+    window.console.info("[support-widget] force show mode is enabled via ?supportWidget=1");
   }
 
   if (document.readyState === "loading") {
