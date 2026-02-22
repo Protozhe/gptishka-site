@@ -81,7 +81,7 @@
     root.setAttribute("aria-label", "Виджет поддержки");
     root.innerHTML =
       '<button class="support-widget__fab" type="button" aria-label="Открыть поддержку">' +
-        '<span class="support-widget__fab-icon" aria-hidden="true">✈</span>' +
+        '<span class="support-widget__fab-icon" aria-hidden="true">💬</span>' +
       '</button>' +
       '<div class="support-widget__panel">' +
         '<button class="support-widget__close" type="button" aria-label="Закрыть">×</button>' +
