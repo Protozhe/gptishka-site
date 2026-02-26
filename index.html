@@ -82,6 +82,81 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
     font-weight: 800;
     letter-spacing: 0.04em;
   }
+  .seo-guides {
+    max-width: 1200px;
+  }
+  .seo-guides-header {
+    margin-bottom: 22px;
+  }
+  .seo-guides-title,
+  .seo-guides .how-title {
+    margin: 0;
+    font-family: "Space Grotesk", "Manrope", sans-serif;
+    font-size: clamp(1.55rem, 3vw, 2.2rem);
+    letter-spacing: -0.02em;
+    line-height: 1.14;
+    color: var(--text);
+  }
+  .seo-guides-subtitle,
+  .seo-guides-header > div {
+    margin: 8px 0 0;
+    font-size: 14px;
+    color: #5c6778;
+    line-height: 1.55;
+  }
+  .seo-guides-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .seo-guides-card {
+    padding: 24px 20px 20px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.54);
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.62), rgba(248, 239, 225, 0.38)),
+      var(--glass-noise);
+    background-size: auto, 14px 14px, 20px 20px;
+    box-shadow: 0 10px 24px rgba(31, 39, 49, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px) saturate(126%);
+    -webkit-backdrop-filter: blur(12px) saturate(126%);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .seo-guides-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 30px rgba(31, 39, 49, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+  .seo-guides-card h3 {
+    margin: 0 0 8px;
+    font-family: "Space Grotesk", "Manrope", sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+  }
+  .seo-guides-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  .seo-guides-card a {
+    color: var(--link);
+    text-decoration-thickness: 1.25px;
+    text-underline-offset: 3px;
+  }
+  .seo-guides-card a:hover {
+    color: var(--link-hover);
+  }
+  @media (max-width: 1100px) {
+    .seo-guides-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 760px) {
+    .seo-guides-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>
 
 <!-- GOOGLE FONTS -->
@@ -218,28 +293,28 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
 
 </section>
 
-<section class="how" aria-labelledby="seo-guides-title">
-  <div class="how-header">
+<section class="how seo-guides" aria-labelledby="seo-guides-title">
+  <div class="seo-guides-header">
     <h2 id="seo-guides-title" class="how-title">Полезные материалы по ChatGPT Plus</h2>
     <div style="margin-top:8px; font-size:14px; color:#5c6778;">
       Подробные инструкции по покупке, оплате и подключению без передачи пароля.
     </div>
   </div>
 
-  <div class="how-grid">
-    <article class="how-card">
+  <div class="seo-guides-grid">
+    <article class="seo-guides-card">
       <h3><a href="/chatgpt-plus-kupit.html">Купить ChatGPT Plus в России</a></h3>
       <p>Как выбрать формат подключения, что входит в услугу и на что смотреть перед оплатой.</p>
     </article>
-    <article class="how-card">
+    <article class="seo-guides-card">
       <h3><a href="/chatgpt-plus-cena.html">Цена ChatGPT Plus в России</a></h3>
       <p>Из чего складывается стоимость, как сравнить варианты и какой тариф подходит под вашу задачу.</p>
     </article>
-    <article class="how-card">
+    <article class="seo-guides-card">
       <h3><a href="/kak-oplatit-chatgpt-v-rossii.html">Как оплатить ChatGPT в России</a></h3>
       <p>Пошаговый процесс оплаты, проверка заказа и действия, если платёж не прошёл с первого раза.</p>
     </article>
-    <article class="how-card">
+    <article class="seo-guides-card">
       <h3><a href="/podklyuchenie-chatgpt-online.html">Подключение ChatGPT онлайн</a></h3>
       <p>Как проходит активация по токену и какие шаги проверить после подключения подписки.</p>
     </article>
@@ -377,4 +452,3 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
 <script src="/assets/js/support-widget.js" defer></script>
 </body>
 </html>
-
