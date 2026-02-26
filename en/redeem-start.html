@@ -271,37 +271,48 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
       font-size: 14px;
     }
 
-    .redeem-review-reward {
-      margin-top: 12px;
-      border: 1px solid rgba(17, 120, 90, 0.28);
-      border-radius: 12px;
-      padding: 12px;
-      background: #f0fbf6;
-      color: #18473e;
+    .redeem-review-reward[hidden] {
+      display: none !important;
     }
 
-    .redeem-review-reward h3 {
+    .redeem-review-reward {
+      position: fixed;
+      inset: 0;
+      z-index: 1200;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background: rgba(22, 30, 42, 0.52);
+      backdrop-filter: blur(2px);
+    }
+
+    .redeem-review-card {
+      width: min(560px, 100%);
+      border: 1px solid rgba(17, 120, 90, 0.28);
+      border-radius: 16px;
+      padding: 18px;
+      background: #f0fbf6;
+      color: #18473e;
+      box-shadow: 0 20px 50px rgba(17, 28, 42, 0.25);
+    }
+
+    .redeem-review-card h3 {
       margin: 0 0 8px;
-      font-size: 17px;
+      font-size: 20px;
       color: #0f7a5d;
     }
 
-    .redeem-review-reward p {
+    .redeem-review-card p {
       margin: 0;
       font-size: 14px;
-      line-height: 1.45;
+      line-height: 1.5;
     }
 
     .redeem-review-links {
-      margin-top: 10px;
+      margin-top: 14px;
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
-    }
-
-    .redeem-review-note {
-      margin-top: 8px !important;
-      color: #2f5f54;
     }
 
     .redeem-btn.loading {
@@ -466,14 +477,14 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
         <button id="copyTaskBtn" type="button" class="redeem-btn" style="display:none">Copy Task</button>
       </section>
 
-      <section id="reviewRewardBox" class="redeem-review-reward" hidden>
-        <h3>Leave a review and get a 10% promo code</h3>
-        <p>After successful activation, leave a Telegram review. We will send you a 10% promo code for your next purchase.</p>
-        <div class="redeem-review-links">
-          <a class="redeem-btn redeem-btn-primary" href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">Leave a Telegram review</a>
-          <a class="redeem-btn" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener noreferrer">Contact support</a>
+      <section id="reviewRewardBox" class="redeem-review-reward" hidden aria-modal="true" role="dialog" aria-live="polite">
+        <div class="redeem-review-card">
+          <h3>Your plan has been successfully activated</h3>
+          <p>Thank you for your purchase. Leave a Telegram review and get a 10% promo code for your next order.</p>
+          <div class="redeem-review-links">
+            <a class="redeem-btn redeem-btn-primary" href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">Leave a review</a>
+          </div>
         </div>
-        <p class="redeem-review-note">Send a screenshot of your review to support to receive the 10% promo code.</p>
       </section>
 
       <section class="redeem-faq">
@@ -571,10 +582,22 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
       try { localStorage.setItem(pollPauseKey, paused ? '1' : '0'); } catch (_) {}
     }
 
+    function setReviewRewardOpen(open) {
+      if (!reviewRewardBox) return;
+      reviewRewardBox.hidden = !open;
+      document.body.style.overflow = open ? 'hidden' : '';
+    }
+
     function showReviewReward() {
-      if (reviewRewardBox) reviewRewardBox.hidden = false;
+      setReviewRewardOpen(true);
       if (!reviewRewardReadyKey) return;
       try { localStorage.setItem(reviewRewardReadyKey, '1'); } catch (_) {}
+    }
+
+    function dismissReviewReward() {
+      setReviewRewardOpen(false);
+      if (!reviewRewardReadyKey) return;
+      try { localStorage.setItem(reviewRewardReadyKey, '0'); } catch (_) {}
     }
 
     function restoreReviewReward() {
@@ -587,6 +610,18 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
     }
 
     restoreReviewReward();
+
+    if (reviewRewardBox) {
+      reviewRewardBox.addEventListener('click', (event) => {
+        if (event.target === reviewRewardBox) dismissReviewReward();
+      });
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && reviewRewardBox && !reviewRewardBox.hidden) {
+        dismissReviewReward();
+      }
+    });
 
     if (!orderId) {
       // Allow returning if the client closed the window but is in the same browser.
