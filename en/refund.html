@@ -106,7 +106,7 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
       <p class="intro">
         The Seller is responsible for timely delivery of the digital product after payment confirmation.
         This page explains the claim flow, review timeline, and refund conditions.
-        Full legal terms are also available in the <a href="../oferta.html" class="footer-link">public offer</a>.
+        Full legal terms are also available in the <a href="/en/oferta.html" class="footer-link">public offer</a>.
       </p>
 
       <div class="grid">
@@ -180,8 +180,8 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
   </main>
 
   <footer>
-  <a class="footer-link" href="../oferta.html">Public offer</a> · <a class="footer-link" href="../politika.html">Privacy policy</a> · <a class="footer-link" href="refund.html">Refund policy</a>
-  <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
+  <a class="footer-link" href="/en/oferta.html">Public offer</a> · <a class="footer-link" href="/en/politika.html">Privacy policy</a> · <a class="footer-link" href="/en/refund.html">Refund policy</a>
+  <span class="footer-copy">© 2026 GPTishka. All rights reserved.</span>
 </footer>
 
   <script src="/assets/js/app.min.js" defer></script>
@@ -204,7 +204,7 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
         }
 
         if (lang === "ru") {
-          const ruPath = path.replace(/^\\/en/, "");
+          const ruPath = path.replace(/^\/en/, "");
           window.location.href = ruPath === "" ? "/" : ruPath;
         }
       });
