@@ -857,13 +857,8 @@ main.page {
 }
 
 .how-grid::before {
-  content: "";
-  position: absolute;
-  top: 28px;
-  left: 14%;
-  right: 14%;
-  height: 2px;
-  background: linear-gradient(90deg, rgba(19, 138, 120, 0.5), rgba(231, 125, 79, 0.5));
+  content: none;
+  display: none;
 }
 
 .how-card {
