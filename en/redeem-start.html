@@ -271,6 +271,39 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
       font-size: 14px;
     }
 
+    .redeem-review-reward {
+      margin-top: 12px;
+      border: 1px solid rgba(17, 120, 90, 0.28);
+      border-radius: 12px;
+      padding: 12px;
+      background: #f0fbf6;
+      color: #18473e;
+    }
+
+    .redeem-review-reward h3 {
+      margin: 0 0 8px;
+      font-size: 17px;
+      color: #0f7a5d;
+    }
+
+    .redeem-review-reward p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .redeem-review-links {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .redeem-review-note {
+      margin-top: 8px !important;
+      color: #2f5f54;
+    }
+
     .redeem-btn.loading {
       pointer-events: none;
     }
@@ -433,6 +466,16 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
         <button id="copyTaskBtn" type="button" class="redeem-btn" style="display:none">Copy Task</button>
       </section>
 
+      <section id="reviewRewardBox" class="redeem-review-reward" hidden>
+        <h3>Leave a review and get a 10% promo code</h3>
+        <p>After successful activation, leave a Telegram review. We will send you a 10% promo code for your next purchase.</p>
+        <div class="redeem-review-links">
+          <a class="redeem-btn redeem-btn-primary" href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">Leave a Telegram review</a>
+          <a class="redeem-btn" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener noreferrer">Contact support</a>
+        </div>
+        <p class="redeem-review-note">Send a screenshot of your review to support to receive the 10% promo code.</p>
+      </section>
+
       <section class="redeem-faq">
         Error? Check payment, <strong>order_id</strong> and try again.
       </section>
@@ -492,6 +535,7 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
     const taskWrap = document.getElementById('taskWrap');
     const taskIdValue = document.getElementById('taskIdValue');
     const copyTaskBtn = document.getElementById('copyTaskBtn');
+    const reviewRewardBox = document.getElementById('reviewRewardBox');
 
     const POLL_INTERVAL_MS = 2000;
     // Provider processing may take a few minutes. Don't auto-restart tasks on short timeouts.
@@ -515,6 +559,7 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
     retryNewKeyBtn.disabled = true;
 
     const pollPauseKey = orderId ? `gptishka_activation_poll_paused:${orderId}` : '';
+    const reviewRewardReadyKey = orderId ? `gptishka_review_reward_ready:${orderId}` : '';
 
     function isPollPaused() {
       if (!pollPauseKey) return false;
@@ -525,6 +570,23 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
       if (!pollPauseKey) return;
       try { localStorage.setItem(pollPauseKey, paused ? '1' : '0'); } catch (_) {}
     }
+
+    function showReviewReward() {
+      if (reviewRewardBox) reviewRewardBox.hidden = false;
+      if (!reviewRewardReadyKey) return;
+      try { localStorage.setItem(reviewRewardReadyKey, '1'); } catch (_) {}
+    }
+
+    function restoreReviewReward() {
+      if (!reviewRewardReadyKey) return;
+      try {
+        if (localStorage.getItem(reviewRewardReadyKey) === '1') {
+          showReviewReward();
+        }
+      } catch (_) {}
+    }
+
+    restoreReviewReward();
 
     if (!orderId) {
       // Allow returning if the client closed the window but is in the same browser.
@@ -711,6 +773,15 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
           setStatus('error', payload?.message || 'Failed to load activation status', false);
           return;
         }
+        const activationStatus = String(payload?.status || '').trim().toLowerCase();
+        if (activationStatus === 'success') {
+          currentTaskId = String(payload.taskId || '');
+          renderTask(currentTaskId);
+          setStatus('success', currentTaskId ? `Success. Task: ${currentTaskId}` : 'Activation completed successfully.', false);
+          hideActionButtons();
+          showReviewReward();
+          return;
+        }
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
         if (currentTaskId) {
@@ -774,6 +845,7 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
         if (payload.success) {
           setStatus('success', `Success. Task: ${currentTaskId}`, false);
           hideActionButtons();
+          showReviewReward();
           return true;
         }
 
