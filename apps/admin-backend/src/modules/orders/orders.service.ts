@@ -12,6 +12,7 @@ import { deliverProduct } from "./delivery.service";
 import crypto from "crypto";
 
 const MAX_CLIENT_TOKEN_LENGTH = 500_000;
+const MAX_ACTIVATION_START_ATTEMPTS = 3;
 
 export const ordersService = {
   async list(params: any) {
@@ -30,6 +31,8 @@ export const ordersService = {
               status: activation.status,
               verificationState: activation.verificationState || "unknown",
               taskId: activation.taskId || null,
+              attempts: Number(activation.attempts || 0),
+              tokenBound: Boolean(String(activation.tokenMeta?.fingerprint || "").trim()),
               lastProviderMessage: activation.lastProviderMessage || null,
               lastProviderCheckedAt: activation.lastProviderCheckedAt || null,
             }
@@ -194,6 +197,24 @@ export const ordersService = {
 
     const userCandidates = buildUpstreamUserCandidates(tokenInfo);
     const tokenMeta = buildTokenMeta(tokenInfo);
+    const attempts = Math.max(0, Number(stored.attempts || 0));
+
+    if (stored.status === "success") {
+      throw new AppError("Activation is already completed", 409);
+    }
+    if (isTokenBoundToAnotherFingerprint(stored.tokenMeta, tokenMeta)) {
+      throw new AppError("Order is already bound to another token", 409);
+    }
+    if (stored.status === "processing" && String(stored.taskId || "").trim()) {
+      // Idempotent behavior for repeated clicks with the same token.
+      return { taskId: String(stored.taskId || ""), reused: true };
+    }
+    if (stored.status === "failed" && attempts > 0) {
+      throw new AppError("Previous activation attempt failed. Request a new key and retry.", 409);
+    }
+    if (attempts >= MAX_ACTIVATION_START_ATTEMPTS) {
+      throw new AppError("Activation attempts limit reached. Contact support.", 429);
+    }
 
     let createResponse: Response | null = null;
     let lastBody = "";
@@ -235,7 +256,7 @@ export const ordersService = {
         tokenMeta,
         status: "processing",
         taskId,
-        attempts: Math.max(0, Number(stored.attempts || 0)) + 1,
+        attempts: attempts + 1,
         verificationState: "pending",
         lastProviderMessage: "Activation request sent",
         lastProviderCheckedAt: new Date().toISOString(),
@@ -313,9 +334,17 @@ export const ordersService = {
       throw new AppError("Try current key first before requesting a new one", 409);
     }
 
-    const safeToken = normalizeClientTokenInput(token);
+    const tokenInfo = parseClientTokenInput(token);
+    const safeToken = tokenInfo.extracted || tokenInfo.raw;
     if (!safeToken) throw new AppError("Token is required", 400);
-    if (safeToken.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
+    if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
+    const nextTokenMeta = buildTokenMeta(tokenInfo);
+    if (isTokenBoundToAnotherFingerprint(current?.tokenMeta, nextTokenMeta)) {
+      throw new AppError("Order is already bound to another token", 409);
+    }
+    if (Math.max(0, Number(current?.attempts || 0)) >= MAX_ACTIVATION_START_ATTEMPTS) {
+      throw new AppError("Activation attempts limit reached. Contact support.", 429);
+    }
 
     const now = Date.now();
     const lastUpdated = current?.updatedAt ? Date.parse(current.updatedAt) : 0;
@@ -340,7 +369,7 @@ export const ordersService = {
       email: order.email,
       productKey,
       cdk: nextCdk,
-      tokenMeta: buildTokenMeta(parseClientTokenInput(token)),
+      tokenMeta: current?.tokenMeta || nextTokenMeta,
       status: "issued",
       taskId: null,
       attempts: Math.max(0, Number(current?.attempts || 0)),
@@ -352,7 +381,7 @@ export const ordersService = {
       updatedAt: nowIso,
     });
 
-    return this.startActivation(orderId, safeToken);
+    return this.startActivation(orderId, safeToken, orderToken);
   },
 
   async getActivationTask(orderId: string, taskId: string, orderToken?: string) {
@@ -728,6 +757,16 @@ function buildTokenMeta(tokenInfo: { raw: string; extracted: string; json: Recor
   // Don't store raw token; store a short fingerprint for debugging correlation only.
   const fp = crypto.createHash("sha256").update(String(tokenInfo.extracted || "")).digest("hex").slice(0, 16);
   return { kind, length: Number(String(tokenInfo.raw || "").length), fingerprint: fp };
+}
+
+function isTokenBoundToAnotherFingerprint(
+  current: { fingerprint?: string } | null | undefined,
+  next: { fingerprint?: string } | null | undefined
+) {
+  const currentFp = String(current?.fingerprint || "").trim();
+  const nextFp = String(next?.fingerprint || "").trim();
+  if (!currentFp || !nextFp) return false;
+  return currentFp !== nextFp;
 }
 
 function tryDecodeJwtPayload(token: string): { exp?: number; iat?: number } | null {

@@ -945,6 +945,7 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
           currentTaskId = String(payload.taskId || '');
           renderTask(currentTaskId);
           setStatus('success', currentTaskId ? `Успешно. Task: ${currentTaskId}` : 'Подключение успешно завершено.', false);
+          clearActivationResumeStorage();
           hideActionButtons();
           showReviewReward();
           return;
@@ -1036,6 +1037,7 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
 
         if (payload.success) {
           setStatus('success', `Успешно. Task: ${currentTaskId}`, false);
+          clearActivationResumeStorage();
           hideActionButtons();
           showReviewReward();
           return true;
@@ -1085,6 +1087,21 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
     function hideActionButtons() {
       stopPolling();
       actionsRow.style.display = 'none';
+    }
+
+    function clearActivationResumeStorage() {
+      try {
+        const lastStoredOrderId = String(localStorage.getItem('gptishka_activation_order_id') || '').trim();
+        const targetOrderId = String(orderId || lastStoredOrderId || '').trim();
+        if (targetOrderId) {
+          localStorage.removeItem(`gptishka_activation_order_token:${targetOrderId}`);
+          localStorage.removeItem(`gptishka_activation_poll_paused:${targetOrderId}`);
+        }
+        localStorage.removeItem('gptishka_activation_order_id');
+        localStorage.removeItem('gptishka_activation_resume_url');
+      } catch (_) {
+        // Ignore storage cleanup errors.
+      }
     }
 
     function updateTokenMeta() {

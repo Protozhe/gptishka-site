@@ -118,6 +118,9 @@ export default function OrdersPage() {
                       <div className="text-xs leading-5">
                         <div className="font-semibold">{o.activation.status}</div>
                         <div className="text-slate-500">{o.activation.verificationState || "unknown"}</div>
+                        <div className="text-slate-500">token: {o.activation.tokenBound ? "bound" : "missing"}</div>
+                        <div className="text-slate-500">attempts: {Number(o.activation.attempts || 0)} / 3</div>
+                        {o.activation.taskId ? <div className="text-slate-400">task: {String(o.activation.taskId)}</div> : null}
                         {o.activation.lastProviderCheckedAt ? (
                           <div className="text-slate-400">{fmtDate(o.activation.lastProviderCheckedAt)}</div>
                         ) : null}

@@ -20,9 +20,94 @@ document.addEventListener("DOMContentLoaded", () => {
 
   onScroll();
   window.addEventListener("scroll", onScroll, { passive: true });
+
+  initActivationResumeShortcut();
 });
 
-// "Resume activation" floating shortcut intentionally disabled by product request.
+const ACTIVATION_LAST_ORDER_ID_KEY = "gptishka_activation_order_id";
+const ACTIVATION_ORDER_TOKEN_PREFIX = "gptishka_activation_order_token:";
+const ACTIVATION_RESUME_URL_KEY = "gptishka_activation_resume_url";
+
+function persistActivationResumeContext(orderId, token, activationUrl) {
+  const safeOrderId = String(orderId || "").trim();
+  let safeToken = String(token || "").trim();
+  const safeActivationUrl = String(activationUrl || "").trim();
+  if (!safeOrderId) return;
+
+  if (!safeToken && safeActivationUrl) {
+    try {
+      const parsed = new URL(safeActivationUrl, window.location.origin);
+      safeToken = String(parsed.searchParams.get("t") || "").trim();
+    } catch (_) {
+      // Ignore malformed activation URL.
+    }
+  }
+  if (!safeToken) return;
+
+  try {
+    localStorage.setItem(ACTIVATION_LAST_ORDER_ID_KEY, safeOrderId);
+    localStorage.setItem(`${ACTIVATION_ORDER_TOKEN_PREFIX}${safeOrderId}`, safeToken);
+    localStorage.setItem(
+      ACTIVATION_RESUME_URL_KEY,
+      buildActivationResumeUrl(safeOrderId, safeToken)
+    );
+  } catch (_) {
+    // Ignore storage write errors.
+  }
+}
+
+function buildActivationResumeUrl(orderId, token) {
+  const isEnPage = window.location.pathname.startsWith("/en/");
+  const path = isEnPage ? "/en/redeem-start.html" : "/redeem-start.html";
+  const url = new URL(path, window.location.origin);
+  url.searchParams.set("order_id", String(orderId || "").trim());
+  url.searchParams.set("t", String(token || "").trim());
+  return url.toString();
+}
+
+function initActivationResumeShortcut() {
+  const path = String(window.location.pathname || "").toLowerCase();
+  if (path.includes("redeem-start.html") || path.includes("success.html")) return;
+  const isEnPage = path.startsWith("/en/");
+
+  let orderId = "";
+  let orderToken = "";
+  try {
+    orderId = String(localStorage.getItem(ACTIVATION_LAST_ORDER_ID_KEY) || "").trim();
+    orderToken = orderId
+      ? String(localStorage.getItem(`${ACTIVATION_ORDER_TOKEN_PREFIX}${orderId}`) || "").trim()
+      : "";
+  } catch (_) {
+    return;
+  }
+  if (!orderId || !orderToken) return;
+
+  const anchor = document.createElement("a");
+  anchor.href = buildActivationResumeUrl(orderId, orderToken);
+  anchor.className = "gptishka-resume-activation";
+  anchor.textContent = isEnPage ? "Resume activation" : "Продолжить активацию";
+  anchor.setAttribute("aria-label", isEnPage ? "Resume order activation" : "Продолжить активацию заказа");
+  anchor.style.cssText = [
+    "position:fixed",
+    "right:14px",
+    "bottom:14px",
+    "z-index:1200",
+    "display:inline-flex",
+    "align-items:center",
+    "justify-content:center",
+    "min-height:44px",
+    "padding:10px 14px",
+    "border-radius:999px",
+    "border:1px solid rgba(0,0,0,0.12)",
+    "background:#1a8f7b",
+    "color:#fff",
+    "font:700 13px/1 Manrope,Arial,sans-serif",
+    "text-decoration:none",
+    "box-shadow:0 12px 28px rgba(26,143,123,0.35)",
+  ].join(";");
+
+  document.body.appendChild(anchor);
+}
   
 document.querySelectorAll("a[href]").forEach(link => {
     const href = link.getAttribute("href");
@@ -451,6 +536,12 @@ document.querySelectorAll("a[href]").forEach(link => {
     if (!response.ok || !data.pay_url) {
       throw new Error(data?.message || "Checkout init failed");
     }
+
+    persistActivationResumeContext(
+      String(data.order_id || ""),
+      String(data.activation_token || ""),
+      String(data.activation_url || "")
+    );
 
     const checkoutUrl = String(data.pay_url);
     window.location.href = checkoutUrl;

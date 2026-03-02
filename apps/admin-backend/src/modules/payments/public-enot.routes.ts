@@ -34,9 +34,17 @@ publicEnotRouter.post(
       throw new AppError("Failed to create Enot payment URL", 502);
     }
 
+    const activationUrl = new URL("/redeem-start.html", `${req.protocol}://${req.get("host")}`);
+    activationUrl.searchParams.set("order_id", created.orderId);
+    if (created.redeemToken) {
+      activationUrl.searchParams.set("t", created.redeemToken);
+    }
+
     return res.status(201).json({
       order_id: created.orderId,
       pay_url: created.checkoutUrl,
+      activation_url: activationUrl.toString(),
+      activation_token: created.redeemToken,
       amount: created.finalPrice,
       base_amount: created.basePrice,
       discount: created.discountAmount,
