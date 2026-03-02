@@ -18,6 +18,8 @@ export type ActivationRecord = {
   status: "issued" | "processing" | "success" | "failed";
   taskId?: string | null;
   attempts?: number;
+  tokenValidationAttempts?: number;
+  lastTokenValidatedAt?: string | null;
   verificationState?: "unknown" | "pending" | "success" | "failed";
   lastProviderMessage?: string | null;
   lastProviderCheckedAt?: string | null;

@@ -32,6 +32,9 @@ export const ordersService = {
               verificationState: activation.verificationState || "unknown",
               taskId: activation.taskId || null,
               attempts: Number(activation.attempts || 0),
+              tokenSeen: Boolean(String(activation.lastTokenValidatedAt || "").trim()),
+              tokenValidationAttempts: Number(activation.tokenValidationAttempts || 0),
+              lastTokenValidatedAt: activation.lastTokenValidatedAt || null,
               tokenBound: Boolean(String(activation.tokenMeta?.fingerprint || "").trim()),
               lastProviderMessage: activation.lastProviderMessage || null,
               lastProviderCheckedAt: activation.lastProviderCheckedAt || null,
@@ -279,9 +282,11 @@ export const ordersService = {
     const tokenInfo = parseClientTokenInput(token);
     const tokenMeta = buildTokenMeta(tokenInfo);
     const reasons: string[] = [];
+    const nowIso = new Date().toISOString();
 
     if (!tokenInfo.raw) reasons.push("Token is required");
     if (tokenInfo.raw && tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) reasons.push("Token is too long");
+    if (isTokenBoundToAnotherFingerprint(stored.tokenMeta, tokenMeta)) reasons.push("Order is already bound to another token");
 
     if (tokenInfo.raw.startsWith("{")) {
       if (!tokenInfo.json) {
@@ -306,6 +311,15 @@ export const ordersService = {
     });
     if (!issued) {
       reasons.push("Activation key is not issued yet");
+    }
+
+    if (tokenInfo.raw) {
+      activationStore.upsert({
+        ...stored,
+        lastTokenValidatedAt: nowIso,
+        tokenValidationAttempts: Math.max(0, Number(stored.tokenValidationAttempts || 0)) + 1,
+        updatedAt: nowIso,
+      });
     }
 
     return {
@@ -373,6 +387,8 @@ export const ordersService = {
       status: "issued",
       taskId: null,
       attempts: Math.max(0, Number(current?.attempts || 0)),
+      tokenValidationAttempts: Math.max(0, Number(current?.tokenValidationAttempts || 0)),
+      lastTokenValidatedAt: current?.lastTokenValidatedAt || null,
       verificationState: "unknown",
       lastProviderMessage: "New key issued. Waiting for activation start",
       lastProviderCheckedAt: nowIso,
@@ -463,6 +479,9 @@ export const ordersService = {
             verificationState: activation.verificationState || "unknown",
             taskId: activation.taskId || null,
             attempts: Number(activation.attempts || 0),
+            tokenSeen: Boolean(String(activation.lastTokenValidatedAt || "").trim()),
+            tokenValidationAttempts: Number(activation.tokenValidationAttempts || 0),
+            lastTokenValidatedAt: activation.lastTokenValidatedAt || null,
             lastProviderMessage: activation.lastProviderMessage || null,
             lastProviderCheckedAt: activation.lastProviderCheckedAt || null,
             tokenMeta: activation.tokenMeta
