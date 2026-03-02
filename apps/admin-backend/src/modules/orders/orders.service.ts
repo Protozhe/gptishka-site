@@ -790,15 +790,14 @@ function updateActivationFromProviderCdkPayload(orderId: string, productId: stri
 
   const nowIso = new Date().toISOString();
   const used = Boolean(payload?.used);
+  const hasTask = Boolean(String(stored.taskId || "").trim());
   const nextStatus = used ? "success" : stored.status;
-  const nextVerificationState = used
-    ? "success"
-    : stored.verificationState === "success"
-    ? "success"
-    : "pending";
+  const nextVerificationState = used ? "success" : hasTask ? "pending" : "unknown";
   const providerMessage = used
     ? `Provider check: CDK is marked as used (${productId})`
-    : `Provider check: CDK is not used yet (${productId})`;
+    : hasTask
+    ? `Provider check: CDK is not used yet (${productId})`
+    : `Provider check: CDK is not used yet (${productId}). Activation has not been started (task is missing)`;
 
   activationStore.upsert({
     ...stored,

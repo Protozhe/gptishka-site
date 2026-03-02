@@ -56,6 +56,8 @@ export default function OrdersPage() {
           ? "Провайдер вернул ошибку активации"
           : certaintyCode === "ACTIVATION_IN_PROGRESS"
           ? "Активация в обработке"
+          : certaintyCode === "ACTIVATION_UNCONFIRMED"
+          ? "Активация не запущена или не подтверждена"
           : "Проверка активации завершена";
       const providerMessage = String(data?.activation?.lastProviderMessage || "").trim();
       setCheckMessage(providerMessage ? `${certaintyLabel}. ${providerMessage}` : certaintyLabel);
