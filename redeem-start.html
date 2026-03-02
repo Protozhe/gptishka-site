@@ -677,6 +677,8 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
     const RETRY_COOLDOWN_MS = 20000;
     const TOKEN_VALIDATE_DEBOUNCE_MS = 600;
     const LAST_PAID_ORDER_KEY = 'gptishka_last_paid_order_id';
+    const ACTIVATION_RESUME_SAVED_AT_KEY = 'gptishka_activation_saved_at';
+    const ACTIVATION_RESUME_TTL_MS = 60 * 60 * 1000;
     const CART_STORAGE_KEYS = [
       'gptishka_cart_v1',
       'gptishka_card_qty_v1',
@@ -742,6 +744,27 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
 
     restoreReviewReward();
 
+    function readStoredActivationResumeContext() {
+      try {
+        const savedAt = Number(localStorage.getItem(ACTIVATION_RESUME_SAVED_AT_KEY) || '0');
+        if (!Number.isFinite(savedAt) || savedAt <= 0 || Date.now() - savedAt > ACTIVATION_RESUME_TTL_MS) {
+          clearActivationResumeStorage();
+          return { orderId: '', token: '' };
+        }
+
+        const lastId = String(localStorage.getItem('gptishka_activation_order_id') || '').trim();
+        const lastToken = lastId ? String(localStorage.getItem(`gptishka_activation_order_token:${lastId}`) || '').trim() : '';
+        if (!lastId || !lastToken) {
+          clearActivationResumeStorage();
+          return { orderId: '', token: '' };
+        }
+
+        return { orderId: lastId, token: lastToken };
+      } catch (_) {
+        return { orderId: '', token: '' };
+      }
+    }
+
     if (reviewRewardBox) {
       reviewRewardBox.addEventListener('click', (event) => {
         if (event.target === reviewRewardBox) dismissReviewReward();
@@ -757,8 +780,7 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
     if (!orderId) {
       // Allow returning if the client closed the window but is in the same browser.
       try {
-        const lastId = String(localStorage.getItem('gptishka_activation_order_id') || '').trim();
-        const lastToken = lastId ? String(localStorage.getItem(`gptishka_activation_order_token:${lastId}`) || '').trim() : '';
+        const { orderId: lastId, token: lastToken } = readStoredActivationResumeContext();
         if (lastId && lastToken) {
           const url = new URL('/redeem-start.html', window.location.origin);
           url.searchParams.set('order_id', lastId);
@@ -775,8 +797,10 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
       orderIdEl.textContent = orderId;
       try {
         localStorage.setItem('gptishka_activation_order_id', orderId);
+        localStorage.setItem(ACTIVATION_RESUME_SAVED_AT_KEY, String(Date.now()));
         if (!orderLinkToken) {
-          orderLinkToken = String(localStorage.getItem(`gptishka_activation_order_token:${orderId}`) || '').trim();
+          const stored = readStoredActivationResumeContext();
+          orderLinkToken = stored.orderId === orderId ? stored.token : '';
         }
         if (orderLinkToken) localStorage.setItem(`gptishka_activation_order_token:${orderId}`, orderLinkToken);
       } catch (_) {}
@@ -1099,6 +1123,7 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
         }
         localStorage.removeItem('gptishka_activation_order_id');
         localStorage.removeItem('gptishka_activation_resume_url');
+        localStorage.removeItem(ACTIVATION_RESUME_SAVED_AT_KEY);
       } catch (_) {
         // Ignore storage cleanup errors.
       }

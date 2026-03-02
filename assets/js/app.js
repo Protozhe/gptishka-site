@@ -27,6 +27,46 @@ document.addEventListener("DOMContentLoaded", () => {
 const ACTIVATION_LAST_ORDER_ID_KEY = "gptishka_activation_order_id";
 const ACTIVATION_ORDER_TOKEN_PREFIX = "gptishka_activation_order_token:";
 const ACTIVATION_RESUME_URL_KEY = "gptishka_activation_resume_url";
+const ACTIVATION_RESUME_SAVED_AT_KEY = "gptishka_activation_saved_at";
+const ACTIVATION_RESUME_TTL_MS = 60 * 60 * 1000;
+
+function clearStoredActivationResumeContext(orderId) {
+  const safeOrderId = String(orderId || "").trim();
+  try {
+    const lastOrderId = safeOrderId || String(localStorage.getItem(ACTIVATION_LAST_ORDER_ID_KEY) || "").trim();
+    if (lastOrderId) {
+      localStorage.removeItem(`${ACTIVATION_ORDER_TOKEN_PREFIX}${lastOrderId}`);
+    }
+    localStorage.removeItem(ACTIVATION_LAST_ORDER_ID_KEY);
+    localStorage.removeItem(ACTIVATION_RESUME_URL_KEY);
+    localStorage.removeItem(ACTIVATION_RESUME_SAVED_AT_KEY);
+  } catch (_) {
+    // Ignore storage cleanup errors.
+  }
+}
+
+function readStoredActivationResumeContext() {
+  try {
+    const savedAt = Number(localStorage.getItem(ACTIVATION_RESUME_SAVED_AT_KEY) || "0");
+    if (!Number.isFinite(savedAt) || savedAt <= 0 || Date.now() - savedAt > ACTIVATION_RESUME_TTL_MS) {
+      clearStoredActivationResumeContext();
+      return { orderId: "", token: "" };
+    }
+
+    const orderId = String(localStorage.getItem(ACTIVATION_LAST_ORDER_ID_KEY) || "").trim();
+    const token = orderId
+      ? String(localStorage.getItem(`${ACTIVATION_ORDER_TOKEN_PREFIX}${orderId}`) || "").trim()
+      : "";
+    if (!orderId || !token) {
+      clearStoredActivationResumeContext(orderId);
+      return { orderId: "", token: "" };
+    }
+
+    return { orderId, token };
+  } catch (_) {
+    return { orderId: "", token: "" };
+  }
+}
 
 function persistActivationResumeContext(orderId, token, activationUrl) {
   const safeOrderId = String(orderId || "").trim();
@@ -47,6 +87,7 @@ function persistActivationResumeContext(orderId, token, activationUrl) {
   try {
     localStorage.setItem(ACTIVATION_LAST_ORDER_ID_KEY, safeOrderId);
     localStorage.setItem(`${ACTIVATION_ORDER_TOKEN_PREFIX}${safeOrderId}`, safeToken);
+    localStorage.setItem(ACTIVATION_RESUME_SAVED_AT_KEY, String(Date.now()));
     localStorage.setItem(
       ACTIVATION_RESUME_URL_KEY,
       buildActivationResumeUrl(safeOrderId, safeToken)
@@ -70,16 +111,7 @@ function initActivationResumeShortcut() {
   if (path.includes("redeem-start.html") || path.includes("success.html")) return;
   const isEnPage = path.startsWith("/en/");
 
-  let orderId = "";
-  let orderToken = "";
-  try {
-    orderId = String(localStorage.getItem(ACTIVATION_LAST_ORDER_ID_KEY) || "").trim();
-    orderToken = orderId
-      ? String(localStorage.getItem(`${ACTIVATION_ORDER_TOKEN_PREFIX}${orderId}`) || "").trim()
-      : "";
-  } catch (_) {
-    return;
-  }
+  const { orderId, token: orderToken } = readStoredActivationResumeContext();
   if (!orderId || !orderToken) return;
 
   const anchor = document.createElement("a");

@@ -88,6 +88,12 @@ export const getOrderActivationProof = asyncHandler(async (req: Request, res: Re
   res.json(data);
 });
 
+export const getOrderActivationToken = asyncHandler(async (req: Request, res: Response) => {
+  const orderId = String(req.params.id || "");
+  const data = await ordersService.getActivationClientToken(orderId, actor(req));
+  res.json(data);
+});
+
 export const updateOrderStatus = asyncHandler(async (req: Request, res: Response) => {
   const data = await ordersService.updateStatus(String(req.params.id), req.body.status, actor(req));
   res.json(data);

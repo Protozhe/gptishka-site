@@ -20,6 +20,11 @@ export type ActivationRecord = {
   attempts?: number;
   tokenValidationAttempts?: number;
   lastTokenValidatedAt?: string | null;
+  clientTokenCiphertext?: string | null;
+  clientTokenIv?: string | null;
+  clientTokenAuthTag?: string | null;
+  clientTokenStoredAt?: string | null;
+  clientTokenExpiresAt?: string | null;
   verificationState?: "unknown" | "pending" | "success" | "failed";
   lastProviderMessage?: string | null;
   lastProviderCheckedAt?: string | null;

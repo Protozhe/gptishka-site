@@ -104,6 +104,8 @@ const envSchema = z.object({
   STORAGE_DRIVER: z.enum(["local"]).default("local"),
   // Some upstream providers bind tasks to a device id. Use a stable value.
   ACTIVATION_DEVICE_ID: z.string().optional().default("web"),
+  ACTIVATION_TOKEN_ENCRYPTION_KEY: z.string().optional().default(""),
+  ACTIVATION_STORED_TOKEN_TTL_HOURS: z.coerce.number().int().min(1).max(24 * 30).default(24 * 7),
 });
 
 const parsed = envSchema.safeParse(process.env);

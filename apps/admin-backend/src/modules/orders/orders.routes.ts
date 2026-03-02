@@ -5,6 +5,7 @@ import {
   createOrder,
   exportOrdersCsv,
   getOrderActivationProof,
+  getOrderActivationToken,
   getOrder,
   listOrders,
   manualConfirmOrder,
@@ -26,6 +27,7 @@ ordersRouter.use(requireAuth);
 ordersRouter.get("/", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateQuery(ordersQuerySchema), listOrders);
 ordersRouter.get("/export/csv", allowRoles(["OWNER", "ADMIN"]), validateQuery(ordersQuerySchema), exportOrdersCsv);
 ordersRouter.get("/:id/activation-proof", allowRoles(["OWNER", "ADMIN", "MANAGER", "SUPPORT"]), getOrderActivationProof);
+ordersRouter.get("/:id/activation-token", allowRoles(["OWNER", "ADMIN", "SUPPORT"]), getOrderActivationToken);
 ordersRouter.get("/:id", allowRoles(["OWNER", "ADMIN", "MANAGER"]), getOrder);
 ordersRouter.patch("/:id/status", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateBody(updateOrderStatusSchema), updateOrderStatus);
 ordersRouter.post("/:id/manual-confirm", allowRoles(["OWNER", "ADMIN"]), validateBody(manualConfirmSchema), manualConfirmOrder);

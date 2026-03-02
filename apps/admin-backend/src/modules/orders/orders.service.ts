@@ -7,12 +7,125 @@ import { sendOrderPaidEmail, sendTelegramNotification } from "../notifications/n
 import { paymentsService } from "../payments/payments.service";
 import { env } from "../../config/env";
 import { paymentWebhookService } from "../payments/payment-webhook.service";
-import { activationStore } from "./activation.store";
+import { activationStore, type ActivationRecord } from "./activation.store";
 import { deliverProduct } from "./delivery.service";
 import crypto from "crypto";
+import fs from "fs";
+import path from "path";
 
 const MAX_CLIENT_TOKEN_LENGTH = 500_000;
 const MAX_ACTIVATION_START_ATTEMPTS = 3;
+const STORED_CLIENT_TOKEN_TTL_MS = Math.max(60_000, Number(env.ACTIVATION_STORED_TOKEN_TTL_HOURS || 24) * 60 * 60 * 1000);
+const activationOrderLocks = new Map<string, Promise<void>>();
+const ORDER_FILE_LOCK_TIMEOUT_MS = 45_000;
+const ORDER_FILE_LOCK_STALE_MS = 2 * 60 * 1000;
+const ORDER_FILE_LOCK_POLL_MS = 120;
+const activationLockDir = path.join(resolveRuntimeDir(), "order-locks");
+
+async function withActivationOrderLock<T>(orderId: string, job: () => Promise<T>) {
+  const key = String(orderId || "").trim() || "__empty_order__";
+  const previous = activationOrderLocks.get(key) || Promise.resolve();
+
+  let release: () => void = () => {};
+  const wait = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  const slot = previous.then(() => wait);
+  activationOrderLocks.set(key, slot);
+  await previous;
+  let releaseFileLock: () => void = () => {};
+
+  try {
+    releaseFileLock = await acquireActivationOrderFileLock(key);
+    return await job();
+  } finally {
+    try {
+      releaseFileLock();
+      release();
+    } finally {
+      if (activationOrderLocks.get(key) === slot) {
+        activationOrderLocks.delete(key);
+      }
+    }
+  }
+}
+
+function normalizeActivationRecordForRead(record: ActivationRecord | null | undefined) {
+  if (!record) return null;
+  const cleaned = cleanupExpiredStoredClientToken(record);
+  if (cleaned.changed) {
+    activationStore.upsert(cleaned.record);
+    return cleaned.record;
+  }
+  return record;
+}
+
+async function acquireActivationOrderFileLock(orderId: string) {
+  fs.mkdirSync(activationLockDir, { recursive: true });
+  const lockPath = path.join(activationLockDir, `${orderLockFileKey(orderId)}.lock`);
+  const startedAt = Date.now();
+
+  while (true) {
+    try {
+      const fd = fs.openSync(lockPath, "wx");
+      const payload = JSON.stringify({ pid: process.pid, at: new Date().toISOString(), orderId });
+      try {
+        fs.writeFileSync(fd, payload, "utf8");
+      } finally {
+        fs.closeSync(fd);
+      }
+
+      let released = false;
+      return () => {
+        if (released) return;
+        released = true;
+        try {
+          fs.unlinkSync(lockPath);
+        } catch (error: any) {
+          if (String(error?.code || "") !== "ENOENT") {
+            // Ignore best-effort lock cleanup errors.
+          }
+        }
+      };
+    } catch (error: any) {
+      const code = String(error?.code || "");
+      if (code !== "EEXIST") throw error;
+
+      try {
+        const stat = fs.statSync(lockPath);
+        if (Date.now() - Number(stat.mtimeMs || 0) > ORDER_FILE_LOCK_STALE_MS) {
+          fs.unlinkSync(lockPath);
+          continue;
+        }
+      } catch {
+        // Lock file disappeared between checks; retry immediately.
+      }
+
+      if (Date.now() - startedAt > ORDER_FILE_LOCK_TIMEOUT_MS) {
+        throw new AppError("Activation is busy. Please retry in a few seconds.", 429);
+      }
+
+      await sleep(ORDER_FILE_LOCK_POLL_MS + Math.floor(Math.random() * 60));
+    }
+  }
+}
+
+function orderLockFileKey(orderId: string) {
+  return crypto.createHash("sha1").update(String(orderId || "").trim()).digest("hex");
+}
+
+function resolveRuntimeDir() {
+  const fromEnv = String(process.env.GPTISHKA_RUNTIME_DIR || process.env.RUNTIME_DIR || "").trim();
+  if (fromEnv) return path.resolve(fromEnv);
+  const linuxDefault = "/var/lib/gptishka-runtime";
+  if (process.platform === "linux" && fs.existsSync(linuxDefault)) return linuxDefault;
+  return path.resolve(process.cwd(), "data");
+}
+
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
 
 export const ordersService = {
   async list(params: any) {
@@ -20,6 +133,8 @@ export const ordersService = {
     const activationByOrder = new Map(
       activationStore
         .list()
+        .map((item) => normalizeActivationRecordForRead(item))
+        .filter((item): item is ActivationRecord => Boolean(item))
         .map((item) => [String(item.orderId || ""), item] as const)
     );
     const items = result.items.map((order: any) => {
@@ -35,6 +150,9 @@ export const ordersService = {
               tokenSeen: Boolean(String(activation.lastTokenValidatedAt || "").trim()),
               tokenValidationAttempts: Number(activation.tokenValidationAttempts || 0),
               lastTokenValidatedAt: activation.lastTokenValidatedAt || null,
+              tokenStored: hasStoredClientToken(activation),
+              tokenStoredAt: activation.clientTokenStoredAt || null,
+              tokenExpiresAt: activation.clientTokenExpiresAt || null,
               tokenBound: Boolean(String(activation.tokenMeta?.fingerprint || "").trim()),
               lastProviderMessage: activation.lastProviderMessage || null,
               lastProviderCheckedAt: activation.lastProviderCheckedAt || null,
@@ -159,16 +277,16 @@ export const ordersService = {
   async getActivation(orderId: string, orderToken?: string) {
     const order = await assertPaidOrderAccess(orderId, orderToken);
 
-    const activation = activationStore.findByOrderId(orderId);
+    const activation = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
     if (!activation) {
       await this.reconcilePublicStatus(orderId);
     }
 
-    let current = activationStore.findByOrderId(orderId);
+    let current = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
     if (!current) {
       // Fallback for orders paid before keys were uploaded/imported.
       await deliverProduct(order);
-      current = activationStore.findByOrderId(orderId);
+      current = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
     }
     if (!current) {
       throw new AppError("Activation key is not issued yet", 409);
@@ -186,95 +304,13 @@ export const ordersService = {
   },
 
   async startActivation(orderId: string, token: string, orderToken?: string) {
-    await this.getActivation(orderId, orderToken);
-    const stored = activationStore.findByOrderId(orderId);
-    if (!stored?.cdk) {
-      throw new AppError("Activation key is not issued yet", 409);
-    }
-    const tokenInfo = parseClientTokenInput(token);
-    if (!tokenInfo.raw) throw new AppError("Token is required", 400);
-    if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
-
-    // Upstream provider appears to bind tasks to a device id; keep it stable.
-    const deviceId = String(env.ACTIVATION_DEVICE_ID || "web").trim() || "web";
-
-    const userCandidates = buildUpstreamUserCandidates(tokenInfo);
-    const tokenMeta = buildTokenMeta(tokenInfo);
-    const attempts = Math.max(0, Number(stored.attempts || 0));
-
-    if (stored.status === "success") {
-      throw new AppError("Activation is already completed", 409);
-    }
-    if (isTokenBoundToAnotherFingerprint(stored.tokenMeta, tokenMeta)) {
-      throw new AppError("Order is already bound to another token", 409);
-    }
-    if (stored.status === "processing" && String(stored.taskId || "").trim()) {
-      // Idempotent behavior for repeated clicks with the same token.
-      return { taskId: String(stored.taskId || ""), reused: true };
-    }
-    if (stored.status === "failed" && attempts > 0) {
-      throw new AppError("Previous activation attempt failed. Request a new key and retry.", 409);
-    }
-    if (attempts >= MAX_ACTIVATION_START_ATTEMPTS) {
-      throw new AppError("Activation attempts limit reached. Contact support.", 429);
-    }
-
-    let createResponse: Response | null = null;
-    let lastBody = "";
-    for (const candidate of userCandidates) {
-      createResponse = await fetch("https://receipt-api.nitro.xin/stocks/public/outstock", {
-        method: "POST",
-        headers: {
-          Accept: "application/json, text/plain, */*",
-          "Content-Type": "application/json",
-          "X-Device-Id": deviceId,
-        },
-        body: JSON.stringify({
-          cdk: stored.cdk,
-          user: candidate,
-        }),
-      });
-
-      if (createResponse.ok) break;
-      // Some upstream failures return empty body; keep best-effort diagnostics.
-      lastBody = await createResponse.text().catch(() => "");
-      // If token was JSON, try alternate shapes on 400 only.
-      if (createResponse.status !== 400) break;
-    }
-
-    if (!createResponse || !createResponse.ok) {
-      throw new AppError("Activation start failed", 502, {
-        upstreamStatus: createResponse?.status || 0,
-        upstreamBody: String(lastBody || "").slice(0, 2000),
-      });
-    }
-
-    const taskId = String((await createResponse.text()).trim() || "");
-    if (!taskId) throw new AppError("Activation task id is empty", 502);
-
-    if (stored) {
-      activationStore.upsert({
-        ...stored,
-        deviceId,
-        tokenMeta,
-        status: "processing",
-        taskId,
-        attempts: attempts + 1,
-        verificationState: "pending",
-        lastProviderMessage: "Activation request sent",
-        lastProviderCheckedAt: new Date().toISOString(),
-        lastProviderPayload: null,
-        updatedAt: new Date().toISOString(),
-      });
-    }
-
-    return { taskId };
+    return withActivationOrderLock(orderId, async () => startActivationUnsafe(orderId, token, orderToken));
   },
 
   async validateActivationToken(orderId: string, token: string, orderToken?: string) {
     await this.getActivation(orderId, orderToken);
 
-    const stored = activationStore.findByOrderId(orderId);
+    const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
     if (!stored?.cdk) {
       throw new AppError("Activation key is not issued yet", 409);
     }
@@ -314,10 +350,13 @@ export const ordersService = {
     }
 
     if (tokenInfo.raw) {
+      const latest = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
+      const storagePatch = buildStoredClientTokenPatch(tokenInfo.raw);
       activationStore.upsert({
-        ...stored,
+        ...latest,
+        ...storagePatch,
         lastTokenValidatedAt: nowIso,
-        tokenValidationAttempts: Math.max(0, Number(stored.tokenValidationAttempts || 0)) + 1,
+        tokenValidationAttempts: Math.max(0, Number(latest.tokenValidationAttempts || 0)) + 1,
         updatedAt: nowIso,
       });
     }
@@ -334,76 +373,83 @@ export const ordersService = {
   },
 
   async restartActivationWithNewKey(orderId: string, token: string, orderToken?: string) {
-    const order = await assertPaidOrderAccess(orderId, orderToken);
+    return withActivationOrderLock(orderId, async () => {
+      const order = await assertPaidOrderAccess(orderId, orderToken);
 
-    await this.getActivation(orderId, orderToken);
-    const current = activationStore.findByOrderId(orderId);
-    if (current?.status === "success") {
-      throw new AppError("Activation is already completed", 409);
-    }
-    if (current?.status === "processing") {
-      throw new AppError("Activation is still processing", 409);
-    }
-    if (current?.status === "issued") {
-      throw new AppError("Try current key first before requesting a new one", 409);
-    }
+      await this.getActivation(orderId, orderToken);
+      const current = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
+      if (current?.status === "success") {
+        throw new AppError("Activation is already completed", 409);
+      }
+      if (current?.status === "processing") {
+        throw new AppError("Activation is still processing", 409);
+      }
+      if (current?.status === "issued") {
+        throw new AppError("Try current key first before requesting a new key", 409);
+      }
 
-    const tokenInfo = parseClientTokenInput(token);
-    const safeToken = tokenInfo.extracted || tokenInfo.raw;
-    if (!safeToken) throw new AppError("Token is required", 400);
-    if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
-    const nextTokenMeta = buildTokenMeta(tokenInfo);
-    if (isTokenBoundToAnotherFingerprint(current?.tokenMeta, nextTokenMeta)) {
-      throw new AppError("Order is already bound to another token", 409);
-    }
-    if (Math.max(0, Number(current?.attempts || 0)) >= MAX_ACTIVATION_START_ATTEMPTS) {
-      throw new AppError("Activation attempts limit reached. Contact support.", 429);
-    }
+      const tokenInfo = parseClientTokenInput(token);
+      const safeToken = tokenInfo.extracted || tokenInfo.raw;
+      if (!safeToken) throw new AppError("Token is required", 400);
+      if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
+      const nextTokenMeta = buildTokenMeta(tokenInfo);
+      if (isTokenBoundToAnotherFingerprint(current?.tokenMeta, nextTokenMeta)) {
+        throw new AppError("Order is already bound to another token", 409);
+      }
+      if (Math.max(0, Number(current?.attempts || 0)) >= MAX_ACTIVATION_START_ATTEMPTS) {
+        throw new AppError("Activation attempts limit reached. Contact support.", 429);
+      }
 
-    const now = Date.now();
-    const lastUpdated = current?.updatedAt ? Date.parse(current.updatedAt) : 0;
-    if (lastUpdated && Number.isFinite(lastUpdated) && now - lastUpdated < 20_000) {
-      throw new AppError("Retry is allowed no more than once every 20 seconds", 429);
-    }
-    const productKey = String(current?.productKey || "chatgpt");
+      const now = Date.now();
+      const lastUpdated = current?.updatedAt ? Date.parse(current.updatedAt) : 0;
+      if (lastUpdated && Number.isFinite(lastUpdated) && now - lastUpdated < 20_000) {
+        throw new AppError("Retry is allowed no more than once every 20 seconds", 429);
+      }
+      const productKey = String(current?.productKey || "chatgpt");
 
-    const nextCdk = await activationStore.reserveCdkForOrder({
-      productKey,
-      orderId: order.id,
-      email: order.email,
-      excludeCdk: current?.cdk || undefined,
+      const nextCdk = await activationStore.reserveCdkForOrder({
+        productKey,
+        orderId: order.id,
+        email: order.email,
+        excludeCdk: current?.cdk || undefined,
+      });
+      if (!nextCdk) {
+        throw new AppError("No unused CDK key available", 409);
+      }
+
+      const nowIso = new Date().toISOString();
+      activationStore.upsert({
+        orderId: order.id,
+        email: order.email,
+        productKey,
+        cdk: nextCdk,
+        tokenMeta: current?.tokenMeta || nextTokenMeta,
+        status: "issued",
+        taskId: null,
+        attempts: Math.max(0, Number(current?.attempts || 0)),
+        tokenValidationAttempts: Math.max(0, Number(current?.tokenValidationAttempts || 0)),
+        lastTokenValidatedAt: current?.lastTokenValidatedAt || null,
+        clientTokenCiphertext: current?.clientTokenCiphertext || null,
+        clientTokenIv: current?.clientTokenIv || null,
+        clientTokenAuthTag: current?.clientTokenAuthTag || null,
+        clientTokenStoredAt: current?.clientTokenStoredAt || null,
+        clientTokenExpiresAt: current?.clientTokenExpiresAt || null,
+        verificationState: "unknown",
+        lastProviderMessage: "New key issued. Waiting for activation start",
+        lastProviderCheckedAt: nowIso,
+        lastProviderPayload: null,
+        issuedAt: nowIso,
+        updatedAt: nowIso,
+      });
+
+      return startActivationUnsafe(orderId, safeToken, orderToken);
     });
-    if (!nextCdk) {
-      throw new AppError("No unused CDK key available", 409);
-    }
-
-    const nowIso = new Date().toISOString();
-    activationStore.upsert({
-      orderId: order.id,
-      email: order.email,
-      productKey,
-      cdk: nextCdk,
-      tokenMeta: current?.tokenMeta || nextTokenMeta,
-      status: "issued",
-      taskId: null,
-      attempts: Math.max(0, Number(current?.attempts || 0)),
-      tokenValidationAttempts: Math.max(0, Number(current?.tokenValidationAttempts || 0)),
-      lastTokenValidatedAt: current?.lastTokenValidatedAt || null,
-      verificationState: "unknown",
-      lastProviderMessage: "New key issued. Waiting for activation start",
-      lastProviderCheckedAt: nowIso,
-      lastProviderPayload: null,
-      issuedAt: nowIso,
-      updatedAt: nowIso,
-    });
-
-    return this.startActivation(orderId, safeToken, orderToken);
   },
 
   async getActivationTask(orderId: string, taskId: string, orderToken?: string) {
     assertOrderId(orderId);
     await this.getActivation(orderId, orderToken);
-    const stored = activationStore.findByOrderId(orderId);
+    const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
     const payload = await fetchActivationTaskPayload(taskId, stored?.deviceId || null);
     updateActivationFromProviderPayload(orderId, taskId, payload);
     return {
@@ -411,6 +457,44 @@ export const ordersService = {
       success: Boolean(payload.success),
       message: payload.message || "",
       task_id: String(payload.task_id || taskId),
+    };
+  },
+
+  async getActivationClientToken(
+    orderId: string,
+    actor?: { userId?: string; ip?: string; userAgent?: string }
+  ) {
+    assertOrderId(orderId);
+    const current = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
+    if (!current) throw new AppError("Activation data is not found for this order", 404);
+
+    const cleaned = cleanupExpiredStoredClientToken(current);
+    if (cleaned.changed) {
+      activationStore.upsert(cleaned.record);
+    }
+
+    const token = decryptStoredClientToken(cleaned.record);
+    if (!token) throw new AppError("Client token is not stored or expired", 404);
+
+    await writeAuditLog({
+      userId: actor?.userId,
+      entityType: "order",
+      entityId: orderId,
+      action: "activation_token_view",
+      before: {
+        tokenStoredAt: cleaned.record.clientTokenStoredAt || null,
+        tokenExpiresAt: cleaned.record.clientTokenExpiresAt || null,
+      },
+      after: { revealed: true },
+      ip: actor?.ip,
+      userAgent: actor?.userAgent,
+    });
+
+    return {
+      orderId,
+      token,
+      storedAt: cleaned.record.clientTokenStoredAt || null,
+      expiresAt: cleaned.record.clientTokenExpiresAt || null,
     };
   },
 
@@ -428,10 +512,10 @@ export const ordersService = {
     });
     if (!order) throw new AppError("Order not found", 404);
 
-    let activation = activationStore.findByOrderId(id);
+    let activation = normalizeActivationRecordForRead(activationStore.findByOrderId(id));
     if (!activation && order.status === OrderStatus.PAID) {
       await deliverProduct(order);
-      activation = activationStore.findByOrderId(id);
+      activation = normalizeActivationRecordForRead(activationStore.findByOrderId(id));
     }
 
     if (activation && options?.forceCheck) {
@@ -456,7 +540,7 @@ export const ordersService = {
       } else {
         updateActivationProviderCheckError(id, "Activation key is missing");
       }
-      activation = activationStore.findByOrderId(id) || activation;
+      activation = normalizeActivationRecordForRead(activationStore.findByOrderId(id)) || activation;
     }
 
     const product = order.items[0]?.product;
@@ -482,6 +566,9 @@ export const ordersService = {
             tokenSeen: Boolean(String(activation.lastTokenValidatedAt || "").trim()),
             tokenValidationAttempts: Number(activation.tokenValidationAttempts || 0),
             lastTokenValidatedAt: activation.lastTokenValidatedAt || null,
+            tokenStored: hasStoredClientToken(activation),
+            tokenStoredAt: activation.clientTokenStoredAt || null,
+            tokenExpiresAt: activation.clientTokenExpiresAt || null,
             lastProviderMessage: activation.lastProviderMessage || null,
             lastProviderCheckedAt: activation.lastProviderCheckedAt || null,
             tokenMeta: activation.tokenMeta
@@ -624,6 +711,189 @@ async function assertPaidOrderAccess(orderId: string, orderToken?: string) {
   }
 
   return order;
+}
+
+async function startActivationUnsafe(orderId: string, token: string, orderToken?: string) {
+  await ordersService.getActivation(orderId, orderToken);
+  const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
+  if (!stored?.cdk) {
+    throw new AppError("Activation key is not issued yet", 409);
+  }
+  const tokenInfo = parseClientTokenInput(token);
+  if (!tokenInfo.raw) throw new AppError("Token is required", 400);
+  if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
+  const storagePatch = buildStoredClientTokenPatch(tokenInfo.raw);
+
+  // Upstream provider appears to bind tasks to a device id; keep it stable.
+  const deviceId = String(env.ACTIVATION_DEVICE_ID || "web").trim() || "web";
+
+  const userCandidates = buildUpstreamUserCandidates(tokenInfo);
+  const tokenMeta = buildTokenMeta(tokenInfo);
+  const attempts = Math.max(0, Number(stored.attempts || 0));
+
+  if (stored.status === "success") {
+    throw new AppError("Activation is already completed", 409);
+  }
+  if (isTokenBoundToAnotherFingerprint(stored.tokenMeta, tokenMeta)) {
+    throw new AppError("Order is already bound to another token", 409);
+  }
+  if (stored.status === "processing" && String(stored.taskId || "").trim()) {
+    // Idempotent behavior for repeated clicks with the same token.
+    return { taskId: String(stored.taskId || ""), reused: true };
+  }
+  if (stored.status === "failed" && attempts > 0) {
+    throw new AppError("Previous activation attempt failed. Request a new key and retry.", 409);
+  }
+  if (attempts >= MAX_ACTIVATION_START_ATTEMPTS) {
+    throw new AppError("Activation attempts limit reached. Contact support.", 429);
+  }
+
+  let createResponse: Response | null = null;
+  let lastBody = "";
+  for (const candidate of userCandidates) {
+    createResponse = await fetch("https://receipt-api.nitro.xin/stocks/public/outstock", {
+      method: "POST",
+      headers: {
+        Accept: "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "X-Device-Id": deviceId,
+      },
+      body: JSON.stringify({
+        cdk: stored.cdk,
+        user: candidate,
+      }),
+    });
+
+    if (createResponse.ok) break;
+    // Some upstream failures return empty body; keep best-effort diagnostics.
+    lastBody = await createResponse.text().catch(() => "");
+    // If token was JSON, try alternate shapes on 400 only.
+    if (createResponse.status !== 400) break;
+  }
+
+  if (!createResponse || !createResponse.ok) {
+    throw new AppError("Activation start failed", 502, {
+      upstreamStatus: createResponse?.status || 0,
+      upstreamBody: String(lastBody || "").slice(0, 2000),
+    });
+  }
+
+  const taskId = String((await createResponse.text()).trim() || "");
+  if (!taskId) throw new AppError("Activation task id is empty", 502);
+
+  const latest = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
+  activationStore.upsert({
+    ...latest,
+    ...storagePatch,
+    deviceId,
+    tokenMeta,
+    status: "processing",
+    taskId,
+    attempts: attempts + 1,
+    verificationState: "pending",
+    lastProviderMessage: "Activation request sent",
+    lastProviderCheckedAt: new Date().toISOString(),
+    lastProviderPayload: null,
+    updatedAt: new Date().toISOString(),
+  });
+
+  return { taskId };
+}
+
+function buildStoredClientTokenPatch(token: string) {
+  const raw = String(token || "").trim();
+  if (!raw) {
+    return {
+      clientTokenCiphertext: null,
+      clientTokenIv: null,
+      clientTokenAuthTag: null,
+      clientTokenStoredAt: null,
+      clientTokenExpiresAt: null,
+    };
+  }
+
+  const encrypted = encryptClientToken(raw);
+  const now = Date.now();
+  return {
+    ...encrypted,
+    clientTokenStoredAt: new Date(now).toISOString(),
+    clientTokenExpiresAt: new Date(now + STORED_CLIENT_TOKEN_TTL_MS).toISOString(),
+  };
+}
+
+function hasStoredClientToken(record: ActivationRecord | null | undefined) {
+  if (!record) return false;
+  if (isStoredClientTokenExpired(record)) return false;
+  return Boolean(
+    String(record.clientTokenCiphertext || "").trim() &&
+      String(record.clientTokenIv || "").trim() &&
+      String(record.clientTokenAuthTag || "").trim()
+  );
+}
+
+function cleanupExpiredStoredClientToken(record: ActivationRecord) {
+  if (!isStoredClientTokenExpired(record)) {
+    return { changed: false, record };
+  }
+  const next = {
+    ...record,
+    clientTokenCiphertext: null,
+    clientTokenIv: null,
+    clientTokenAuthTag: null,
+    clientTokenStoredAt: null,
+    clientTokenExpiresAt: null,
+  };
+  return { changed: true, record: next };
+}
+
+function isStoredClientTokenExpired(record: ActivationRecord | null | undefined) {
+  const expiresAt = Date.parse(String(record?.clientTokenExpiresAt || ""));
+  if (!Number.isFinite(expiresAt) || expiresAt <= 0) return false;
+  return Date.now() > expiresAt;
+}
+
+function decryptStoredClientToken(record: ActivationRecord | null | undefined) {
+  if (!record) return "";
+  if (isStoredClientTokenExpired(record)) return "";
+  const ciphertext = String(record.clientTokenCiphertext || "").trim();
+  const iv = String(record.clientTokenIv || "").trim();
+  const tag = String(record.clientTokenAuthTag || "").trim();
+  if (!ciphertext || !iv || !tag) return "";
+
+  try {
+    const key = deriveClientTokenEncryptionKey();
+    const decipher = crypto.createDecipheriv("aes-256-gcm", key, Buffer.from(iv, "base64"));
+    decipher.setAuthTag(Buffer.from(tag, "base64"));
+    const plain = Buffer.concat([
+      decipher.update(Buffer.from(ciphertext, "base64")),
+      decipher.final(),
+    ]).toString("utf8");
+    return String(plain || "").trim();
+  } catch {
+    return "";
+  }
+}
+
+function encryptClientToken(raw: string) {
+  const token = String(raw || "").trim();
+  const key = deriveClientTokenEncryptionKey();
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
+  const ciphertext = Buffer.concat([cipher.update(token, "utf8"), cipher.final()]);
+  const tag = cipher.getAuthTag();
+
+  return {
+    clientTokenCiphertext: ciphertext.toString("base64"),
+    clientTokenIv: iv.toString("base64"),
+    clientTokenAuthTag: tag.toString("base64"),
+  };
+}
+
+function deriveClientTokenEncryptionKey() {
+  const baseSecret = String(env.ACTIVATION_TOKEN_ENCRYPTION_KEY || env.JWT_ACCESS_SECRET || "").trim();
+  if (!baseSecret) throw new AppError("Activation token encryption key is not configured", 500);
+  // Context-separated key derivation to avoid raw secret reuse across domains.
+  return crypto.createHash("sha256").update(`gptishka:activation-token:v1:${baseSecret}`).digest();
 }
 
 async function fetchActivationTaskPayload(taskId: string, deviceId?: string | null) {
@@ -820,13 +1090,23 @@ function updateActivationFromProviderPayload(orderId: string, taskId: string, pa
   task_id?: string;
   cdk?: string;
 }) {
-  const stored = activationStore.findByOrderId(orderId);
+  const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
   if (!stored) return;
   const nowIso = new Date().toISOString();
   const nextStatus = payload.pending ? "processing" : payload.success ? "success" : "failed";
   const verificationState = payload.pending ? "pending" : payload.success ? "success" : "failed";
+  const shouldDropStoredToken = Boolean(payload.success);
   activationStore.upsert({
     ...stored,
+    ...(shouldDropStoredToken
+      ? {
+          clientTokenCiphertext: null,
+          clientTokenIv: null,
+          clientTokenAuthTag: null,
+          clientTokenStoredAt: null,
+          clientTokenExpiresAt: null,
+        }
+      : {}),
     status: nextStatus,
     verificationState,
     taskId: String(payload.task_id || taskId),
@@ -843,7 +1123,7 @@ function updateActivationFromProviderPayload(orderId: string, taskId: string, pa
 }
 
 function updateActivationFromProviderCdkPayload(orderId: string, productId: string, payload: ActivationCdkCheckPayload) {
-  const stored = activationStore.findByOrderId(orderId);
+  const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
   if (!stored) return;
 
   const nowIso = new Date().toISOString();
@@ -859,6 +1139,15 @@ function updateActivationFromProviderCdkPayload(orderId: string, productId: stri
 
   activationStore.upsert({
     ...stored,
+    ...(used
+      ? {
+          clientTokenCiphertext: null,
+          clientTokenIv: null,
+          clientTokenAuthTag: null,
+          clientTokenStoredAt: null,
+          clientTokenExpiresAt: null,
+        }
+      : {}),
     status: nextStatus,
     verificationState: nextVerificationState,
     lastProviderMessage: providerMessage,
@@ -874,7 +1163,7 @@ function updateActivationFromProviderCdkPayload(orderId: string, productId: stri
 }
 
 function updateActivationProviderCheckError(orderId: string, error: unknown) {
-  const stored = activationStore.findByOrderId(orderId);
+  const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
   if (!stored) return;
 
   const nowIso = new Date().toISOString();
