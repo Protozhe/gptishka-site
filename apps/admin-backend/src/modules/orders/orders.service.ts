@@ -389,9 +389,28 @@ export const ordersService = {
       activation = activationStore.findByOrderId(id);
     }
 
-    if (activation?.taskId && options?.forceCheck) {
-      const payload = await fetchActivationTaskPayload(activation.taskId, activation.deviceId || null);
-      updateActivationFromProviderPayload(id, activation.taskId, payload);
+    if (activation && options?.forceCheck) {
+      if (activation.taskId) {
+        try {
+          const payload = await fetchActivationTaskPayload(activation.taskId, activation.deviceId || null);
+          updateActivationFromProviderPayload(id, activation.taskId, payload);
+        } catch (error) {
+          updateActivationProviderCheckError(id, error);
+        }
+      } else if (activation.cdk) {
+        const productCandidates = deriveActivationProviderProductCandidates({
+          productSlug: String(order.items[0]?.product?.slug || ""),
+          productKey: String(activation.productKey || ""),
+        });
+        try {
+          const checked = await fetchActivationCdkCheckPayload(activation.cdk, productCandidates);
+          updateActivationFromProviderCdkPayload(id, checked.productId, checked.payload);
+        } catch (error) {
+          updateActivationProviderCheckError(id, error);
+        }
+      } else {
+        updateActivationProviderCheckError(id, "Activation key is missing");
+      }
       activation = activationStore.findByOrderId(id) || activation;
     }
 
@@ -581,6 +600,64 @@ async function fetchActivationTaskPayload(taskId: string, deviceId?: string | nu
   };
 }
 
+type ActivationCdkCheckPayload = {
+  used?: boolean;
+  app_name?: string;
+  app_product_name?: string;
+  [key: string]: unknown;
+};
+
+async function fetchActivationCdkCheckPayload(cdk: string, productCandidates: string[]) {
+  const candidates = Array.from(new Set((productCandidates || []).map((value) => String(value || "").trim()).filter(Boolean)));
+  if (candidates.length === 0) {
+    throw new AppError("Activation provider product is not resolved", 502);
+  }
+
+  let lastError: unknown = null;
+  for (const productId of candidates) {
+    try {
+      const payload = await fetchActivationCdkCheckPayloadByProduct(cdk, productId);
+      return { productId, payload };
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  if (lastError) throw lastError;
+  throw new AppError("Activation cdk check failed", 502);
+}
+
+async function fetchActivationCdkCheckPayloadByProduct(cdk: string, productId: string) {
+  const response = await fetch("https://receipt-api.nitro.xin/cdks/public/check", {
+    method: "POST",
+    headers: {
+      Accept: "application/json, text/plain, */*",
+      "Content-Type": "application/json",
+      "X-Product-ID": productId,
+    },
+    body: JSON.stringify({ code: cdk }),
+  });
+
+  const raw = await response.text().catch(() => "");
+  if (!response.ok) {
+    throw new AppError("Activation cdk check request failed", 502, {
+      providerStatus: response.status,
+      providerBody: String(raw || "").slice(0, 2000),
+      productId,
+    });
+  }
+
+  if (!raw) return {} as ActivationCdkCheckPayload;
+  try {
+    return JSON.parse(raw) as ActivationCdkCheckPayload;
+  } catch {
+    throw new AppError("Activation cdk check payload is invalid", 502, {
+      providerBody: String(raw || "").slice(0, 2000),
+      productId,
+    });
+  }
+}
+
 function normalizeClientTokenInput(input: string) {
   // Backwards-compatible wrapper.
   return parseClientTokenInput(input).extracted || parseClientTokenInput(input).raw;
@@ -705,6 +782,105 @@ function updateActivationFromProviderPayload(orderId: string, taskId: string, pa
     },
     updatedAt: nowIso,
   });
+}
+
+function updateActivationFromProviderCdkPayload(orderId: string, productId: string, payload: ActivationCdkCheckPayload) {
+  const stored = activationStore.findByOrderId(orderId);
+  if (!stored) return;
+
+  const nowIso = new Date().toISOString();
+  const used = Boolean(payload?.used);
+  const nextStatus = used ? "success" : stored.status;
+  const nextVerificationState = used
+    ? "success"
+    : stored.verificationState === "success"
+    ? "success"
+    : "pending";
+  const providerMessage = used
+    ? `Provider check: CDK is marked as used (${productId})`
+    : `Provider check: CDK is not used yet (${productId})`;
+
+  activationStore.upsert({
+    ...stored,
+    status: nextStatus,
+    verificationState: nextVerificationState,
+    lastProviderMessage: providerMessage,
+    lastProviderCheckedAt: nowIso,
+    lastProviderPayload: {
+      source: "cdks/public/check",
+      product_id: productId,
+      used,
+      ...payload,
+    },
+    updatedAt: nowIso,
+  });
+}
+
+function updateActivationProviderCheckError(orderId: string, error: unknown) {
+  const stored = activationStore.findByOrderId(orderId);
+  if (!stored) return;
+
+  const nowIso = new Date().toISOString();
+  const message = summarizeProviderCheckError(error);
+  activationStore.upsert({
+    ...stored,
+    lastProviderMessage: message,
+    lastProviderCheckedAt: nowIso,
+    lastProviderPayload: {
+      source: "provider-check-error",
+      message,
+    },
+    updatedAt: nowIso,
+  });
+}
+
+function summarizeProviderCheckError(error: unknown) {
+  if (error instanceof AppError) {
+    const details = stringifyErrorDetails(error.details);
+    return details ? `${error.message}: ${details}` : error.message;
+  }
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  return "Provider check failed";
+}
+
+function stringifyErrorDetails(details: unknown) {
+  if (typeof details === "string") return details;
+  if (details == null) return "";
+  try {
+    return JSON.stringify(details);
+  } catch {
+    return "";
+  }
+}
+
+function deriveActivationProviderProductCandidates(input: { productSlug?: string; productKey?: string }) {
+  const candidates: string[] = [];
+  const add = (value: string) => {
+    const normalized = normalizeProviderProductId(value);
+    if (!normalized || candidates.includes(normalized)) return;
+    candidates.push(normalized);
+  };
+
+  const values = [input.productSlug, input.productKey].map((value) => String(value || "").trim().toLowerCase());
+  for (const value of values) {
+    if (!value) continue;
+    add(value);
+    if (value.includes("chatgpt")) add("chatgpt");
+    if (value.includes("claude")) add("claude");
+    if (value.includes("grok")) add("grok");
+    if (value.includes("discord")) add("discord");
+  }
+
+  if (candidates.length === 0) candidates.push("chatgpt");
+  return candidates;
+}
+
+function normalizeProviderProductId(value: string) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, "");
 }
 
 function deriveActivationCertainty(
