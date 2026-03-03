@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="GPTishka site map: key sections, legal pages, and useful guides." />
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://gptishka.shop/en/site-map.html">
+<link rel="alternate" hreflang="ru" href="https://gptishka.shop/site-map.html">
+<link rel="alternate" hreflang="en" href="https://gptishka.shop/en/site-map.html">
+<link rel="alternate" hreflang="x-default" href="https://gptishka.shop/">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/assets/img/logo.png">
+<title>Site Map — GPTishka</title>
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "GPTishka Site Map",
+    "url": "https://gptishka.shop/en/site-map.html",
+    "inLanguage": "en"
+  }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/logo.min.css">
+<link rel="stylesheet" href="/assets/css/sections.min.css">
+<link rel="stylesheet" href="/assets/css/theme.min.css">
+<link rel="stylesheet" href="/assets/css/support-widget.css">
+<style>
+  .site-map-list {
+    margin: 18px 0 0;
+    padding-left: 18px;
+    display: grid;
+    gap: 8px;
+  }
+  .site-map-list a {
+    font-weight: 600;
+    color: var(--link);
+  }
+  .site-map-list a:hover {
+    color: var(--link-hover);
+  }
+</style>
+</head>
+<body>
+  <div class="page-overlay"></div>
+  <header>
+    <div class="nav">
+      <a href="/en/index.html" class="logo-link">
+        <img loading="lazy" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTishka" class="logo-img">
+      </a>
+      <nav>
+        <a href="/en/index.html">Home</a>
+        <a href="/en/about.html">About</a>
+        <a href="/en/reviews.html">Reviews</a>
+        <a href="/en/guarantee.html">Guarantee</a>
+        <a href="/en/contact.html">Contact us</a>
+        <a href="/en/index.html#faq">FAQ</a>
+      </nav>
+      <div class="lang-switch" id="langSwitch">
+        <div class="lang-current" id="langCurrent">
+          <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
+          <span>English</span>
+          <span class="arrow">▾</span>
+        </div>
+        <div class="lang-dropdown">
+          <div class="lang-item" data-lang="ru">
+            <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
+            <span>Русский</span>
+          </div>
+          <div class="lang-item" data-lang="en">
+            <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
+            <span>English</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="container">
+      <h1>Site map</h1>
+      <p>Main pages for fast navigation and clearer search engine crawling.</p>
+
+      <h2>Main sections</h2>
+      <ul class="site-map-list">
+        <li><a href="/en/index.html">Home</a></li>
+        <li><a href="/en/about.html">About</a></li>
+        <li><a href="/en/reviews.html">Reviews</a></li>
+        <li><a href="/en/guarantee.html">Guarantee</a></li>
+        <li><a href="/en/contact.html">Contact</a></li>
+      </ul>
+
+      <h2>Purchase and activation</h2>
+      <ul class="site-map-list">
+        <li><a href="/en/index.html#pricing">Plans</a></li>
+        <li><a href="/en/payment.html">Payment</a></li>
+        <li><a href="/en/cart.html">Cart</a></li>
+        <li><a href="/en/redeem-start.html">Order activation</a></li>
+      </ul>
+
+      <h2>Legal pages</h2>
+      <ul class="site-map-list">
+        <li><a href="/en/oferta.html">Public offer</a></li>
+        <li><a href="/en/politika.html">Privacy policy</a></li>
+        <li><a href="/en/refund.html">Refund policy</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <a class="footer-link" href="/en/oferta.html">Public offer</a> · <a class="footer-link" href="/en/politika.html">Privacy policy</a> · <a class="footer-link" href="/en/refund.html">Refund policy</a> · <a class="footer-link" href="/en/site-map.html">Site map</a>
+    <span class="footer-copy">© 2026 GPTishka. All rights reserved.</span>
+  </footer>
+
+  <script src="/assets/js/app.min.js" defer></script>
+  <script>
+    const langSwitch = document.getElementById("langSwitch");
+    const langCurrent = document.getElementById("langCurrent");
+
+    langCurrent.addEventListener("click", () => {
+      langSwitch.classList.toggle("open");
+    });
+
+    document.querySelectorAll(".lang-item").forEach(item => {
+      item.addEventListener("click", () => {
+        const lang = item.dataset.lang;
+        if (lang === "en") window.location.href = "/en/site-map.html";
+        if (lang === "ru") window.location.href = "/site-map.html";
+      });
+    });
+
+    document.addEventListener("click", e => {
+      if (!langSwitch.contains(e.target)) {
+        langSwitch.classList.remove("open");
+      }
+    });
+  </script>
+  <script src="/assets/js/support-widget.js" defer></script>
+</body>
+</html>
