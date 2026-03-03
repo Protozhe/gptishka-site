@@ -3,6 +3,7 @@ import { prisma } from "../../config/prisma";
 import { getPaymentProvider, getProviderByCode } from "./payment.factory";
 import { writeAuditLog } from "../audit/audit.service";
 import { AppError } from "../../common/errors/app-error";
+import { WELCOME_PROMO_CODE } from "../promocodes/welcome-promo.service";
 import crypto from "crypto";
 
 function sha256Hex(value: string) {
@@ -146,6 +147,21 @@ export const paymentsService = {
       }
       if (String(found.ownerLabel || "").trim().toLowerCase() === String(input.email || "").trim().toLowerCase()) {
         throw new AppError("Self-referral promo usage is not allowed", 400);
+      }
+      if (found.code === WELCOME_PROMO_CODE) {
+        const hasPaidOrder = await prisma.order.findFirst({
+          where: {
+            email: {
+              equals: String(input.email || "").trim(),
+              mode: "insensitive",
+            },
+            status: OrderStatus.PAID,
+          },
+          select: { id: true },
+        });
+        if (hasPaidOrder) {
+          throw new AppError("WELCOME34 is available only for first paid order", 400);
+        }
       }
 
       promo = {
