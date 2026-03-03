@@ -149,12 +149,10 @@ export const paymentsService = {
         throw new AppError("Self-referral promo usage is not allowed", 400);
       }
       if (found.code === WELCOME_PROMO_CODE) {
+        const normalizedEmail = String(input.email || "").trim().toLowerCase();
         const hasPaidOrder = await prisma.order.findFirst({
           where: {
-            email: {
-              equals: String(input.email || "").trim(),
-              mode: "insensitive",
-            },
+            email: normalizedEmail,
             status: OrderStatus.PAID,
           },
           select: { id: true },
