@@ -55,7 +55,7 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/logo.min.css">
 <link rel="stylesheet" href="/assets/css/sections.min.css">
 <link rel="stylesheet" href="/assets/css/theme.min.css">
@@ -81,9 +81,8 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
 </script>
 <!-- /Yandex.Metrika counter -->
 <link rel="stylesheet" href="/assets/css/support-widget.css" />
-<link rel="stylesheet" href="/assets/css/premium-index.css" />
 </head>
-<body class="premium-home">
+<body>
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
   <div class="page-overlay"></div>
   <header>
@@ -125,23 +124,16 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
   </header>
 
   <main class="page">
-    <div class="hero" data-reveal>
+    <div class="hero">
       <h1>ChatGPT Plus Activation</h1>
       <p>Activate, renew, or buy ready-made accounts with an active subscription</p>
-      <div class="hero-pricing" aria-label="Pricing">
-        <span class="hero-pricing__label">from</span>
-        <strong class="hero-pricing__value">990 &#8381;</strong>
-        <span class="hero-pricing__note">per activation</span>
-      </div>
-      <div class="hero-actions">
-        <a href="/en/index.html#pricing" class="btn">View plans</a>
-      </div>
+      <a href="/en/index.html#pricing" class="btn">View plans</a>
       <div class="features">
         No credential sharing · Automated · Secure · No delays · Subscription-wide guarantee
       </div>
     </div>
 
-    <section class="how" data-reveal>
+    <section class="how">
       <div class="how-header">
         <div class="how-title">
           How it works
@@ -181,7 +173,7 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
       </div>
     </section>
 
-    <section class="pricing" id="pricing" data-reveal>
+    <section class="pricing" id="pricing">
       <div class="pricing-header">
         <h2>Choose a plan</h2>
         <p>Activation / Renewal or purchase of a ready-made subscription account</p>
@@ -194,7 +186,7 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
       </div>
     </section>
 
-    <section class="faq" id="faq" data-reveal>
+    <section class="faq" id="faq">
       <div class="faq-header">
         <h2>FAQ</h2>
         <p>Quick answers to the most common questions</p>
@@ -306,39 +298,6 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
         langSwitch.classList.remove("open");
       }
     });
-  </script>
-  <script>
-    (function () {
-      const revealItems = Array.from(document.querySelectorAll("[data-reveal]"));
-      if (!revealItems.length) return;
-
-      const reducedMotion =
-        typeof window.matchMedia === "function" &&
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      document.body.classList.add("reveal-ready");
-
-      if (reducedMotion || !("IntersectionObserver" in window)) {
-        revealItems.forEach((el) => el.classList.add("is-visible"));
-        return;
-      }
-
-      const observer = new IntersectionObserver(
-        (entries, io) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-            entry.target.classList.add("is-visible");
-            io.unobserve(entry.target);
-          });
-        },
-        { threshold: 0.16, rootMargin: "0px 0px -8% 0px" }
-      );
-
-      revealItems.forEach((el, idx) => {
-        el.style.transitionDelay = Math.min(idx * 60, 240) + "ms";
-        observer.observe(el);
-      });
-    })();
   </script>
 <script src="/assets/js/support-widget.js" defer></script>
 </body>

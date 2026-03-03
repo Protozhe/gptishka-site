@@ -55,189 +55,75 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/logo.min.css">
 <link rel="stylesheet" href="/assets/css/sections.min.css">
 <link rel="stylesheet" href="/assets/css/theme.min.css">
 <style>
   .seo-guides {
     max-width: 1200px;
-    position: relative;
-    overflow: hidden;
-    isolation: isolate;
-  }
-  .seo-guides::before,
-  .seo-guides::after {
-    content: "";
-    position: absolute;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
-  }
-  .seo-guides::before {
-    width: 420px;
-    height: 420px;
-    top: -220px;
-    right: -140px;
-    background: radial-gradient(circle, rgba(19, 138, 120, 0.16), rgba(19, 138, 120, 0) 70%);
-  }
-  .seo-guides::after {
-    width: 360px;
-    height: 360px;
-    left: -140px;
-    bottom: -180px;
-    background: radial-gradient(circle, rgba(231, 125, 79, 0.14), rgba(231, 125, 79, 0) 72%);
-  }
-  .seo-guides > * {
-    position: relative;
-    z-index: 1;
   }
   .seo-guides-header {
-    margin-bottom: 24px;
-    display: grid;
-    gap: 10px;
-    max-width: 880px;
-  }
-  .seo-guides-kicker {
-    display: inline-flex;
-    align-items: center;
-    width: fit-content;
-    padding: 6px 12px;
-    border-radius: 999px;
-    border: 1px solid rgba(19, 138, 120, 0.22);
-    background: rgba(19, 138, 120, 0.08);
-    color: #0f5c52;
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    margin-bottom: 22px;
   }
   .seo-guides-title,
   .seo-guides .how-title {
     margin: 0;
     font-family: "Space Grotesk", "Manrope", sans-serif;
-    font-size: clamp(1.65rem, 3.2vw, 2.35rem);
+    font-size: clamp(1.55rem, 3vw, 2.2rem);
     letter-spacing: -0.02em;
-    line-height: 1.12;
+    line-height: 1.14;
     color: var(--text);
   }
-  .seo-guides-subtitle {
-    margin: 0;
-    font-size: 15px;
+  .seo-guides-subtitle,
+  .seo-guides-header > div {
+    margin: 8px 0 0;
+    font-size: 14px;
     color: #5c6778;
-    line-height: 1.65;
-    max-width: 760px;
-  }
-  .seo-guides-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .seo-guides-meta-item {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 700;
-    color: #2f3d47;
-    background: rgba(255, 255, 255, 0.74);
-    border: 1px solid rgba(255, 255, 255, 0.76);
-    box-shadow: 0 3px 10px rgba(31, 39, 49, 0.06);
+    line-height: 1.55;
   }
   .seo-guides-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
   }
   .seo-guides-card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    min-height: 228px;
-    padding: 22px 20px 18px;
-    border-radius: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    padding: 24px 20px 20px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.54);
     background:
-      linear-gradient(145deg, rgba(255, 255, 255, 0.68), rgba(248, 239, 225, 0.4)),
+      linear-gradient(145deg, rgba(255, 255, 255, 0.62), rgba(248, 239, 225, 0.38)),
       var(--glass-noise);
     background-size: auto, 14px 14px, 20px 20px;
-    box-shadow: 0 10px 22px rgba(31, 39, 49, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.87);
-    backdrop-filter: blur(13px) saturate(128%);
-    -webkit-backdrop-filter: blur(13px) saturate(128%);
-    transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
-  }
-  .seo-guides-card::before {
-    content: "";
-    position: absolute;
-    left: 16px;
-    right: 16px;
-    top: 0;
-    height: 1px;
-    background: linear-gradient(90deg, rgba(19, 138, 120, 0.06), rgba(19, 138, 120, 0.36), rgba(231, 125, 79, 0.26));
-  }
-  .seo-guides-card-tag {
-    display: inline-flex;
-    align-items: center;
-    width: fit-content;
-    margin-bottom: 12px;
-    padding: 5px 10px;
-    border-radius: 999px;
-    background: rgba(19, 138, 120, 0.1);
-    border: 1px solid rgba(19, 138, 120, 0.16);
-    color: #0f6a5e;
-    font-size: 12px;
-    font-weight: 700;
+    box-shadow: 0 10px 24px rgba(31, 39, 49, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px) saturate(126%);
+    -webkit-backdrop-filter: blur(12px) saturate(126%);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
   }
   .seo-guides-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(19, 138, 120, 0.18);
-    box-shadow: 0 16px 30px rgba(31, 39, 49, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.92);
-  }
-  .seo-guides-card:hover .seo-guides-card-tag {
-    background: rgba(19, 138, 120, 0.16);
-    border-color: rgba(19, 138, 120, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 14px 30px rgba(31, 39, 49, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   }
   .seo-guides-card h3 {
-    margin: 0 0 10px;
+    margin: 0 0 8px;
     font-family: "Space Grotesk", "Manrope", sans-serif;
-    font-size: 1.14rem;
-    line-height: 1.32;
+    font-size: 1.1rem;
+    line-height: 1.35;
     letter-spacing: -0.01em;
   }
   .seo-guides-card p {
     margin: 0;
     color: var(--muted);
-    font-size: 0.96rem;
+    font-size: 0.95rem;
     line-height: 1.6;
   }
-  .seo-guides-card h3 a {
-    color: var(--text);
-    text-decoration: none;
-    border-bottom: 1px solid rgba(31, 39, 49, 0.22);
-    transition: color 0.2s ease, border-color 0.2s ease;
+  .seo-guides-card a {
+    color: var(--link);
+    text-decoration-thickness: 1.25px;
+    text-underline-offset: 3px;
   }
-  .seo-guides-card h3 a:hover {
+  .seo-guides-card a:hover {
     color: var(--link-hover);
-    border-color: rgba(19, 138, 120, 0.4);
-  }
-  .seo-guides-more {
-    margin-top: auto;
-    padding-top: 14px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    width: fit-content;
-    color: #1f8f7f;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    transition: color 0.2s ease, transform 0.2s ease;
-  }
-  .seo-guides-more:hover {
-    color: #157567;
-    transform: translateX(2px);
   }
   @media (max-width: 1100px) {
     .seo-guides-grid {
@@ -245,19 +131,8 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
     }
   }
   @media (max-width: 760px) {
-    .seo-guides-header {
-      gap: 9px;
-    }
-    .seo-guides-subtitle {
-      font-size: 14px;
-      line-height: 1.58;
-    }
     .seo-guides-grid {
       grid-template-columns: 1fr;
-      gap: 14px;
-    }
-    .seo-guides-card {
-      min-height: 0;
     }
   }
 </style>
@@ -285,9 +160,8 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
 </script>
 <!-- /Yandex.Metrika counter -->
 <link rel="stylesheet" href="/assets/css/support-widget.css" />
-<link rel="stylesheet" href="/assets/css/premium-index.css" />
 </head>
-<body class="premium-home">
+<body>
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <div class="page-overlay"></div>
     <header>
@@ -330,23 +204,16 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
       </header>
       
       <main class="page">
-<div class="hero" data-reveal>
+<div class="hero">
   <h1>Премиальное подключение ChatGPT</h1>
   <p>Подключение, продление или готовые аккаунты с активной подпиской</p>
-  <div class="hero-pricing" aria-label="Стоимость">
-    <span class="hero-pricing__label">&#1086;&#1090;</span>
-    <strong class="hero-pricing__value">990 &#8381;</strong>
-    <span class="hero-pricing__note">&#1079;&#1072; &#1072;&#1082;&#1090;&#1080;&#1074;&#1072;&#1094;&#1080;&#1102;</span>
-  </div>
-  <div class="hero-actions">
-    <a href="index.html#pricing" class="btn">Открыть тарифы</a>
-  </div>
+  <a href="index.html#pricing" class="btn">Открыть тарифы</a>
   <div class="features">
     Без передачи учётных данных · Автоматизировано · Безопасно · Без задержек · С гарантией на весь период подписки
   </div>
 </div>
 
-<section class="how" data-reveal>
+<section class="how">
 
     <div class="how-header">
       <div class="how-title">
@@ -389,7 +256,7 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
     </div>
   </section>
   
-  <section class="pricing" id="pricing" data-reveal>
+  <section class="pricing" id="pricing">
     <div class="pricing-header">
       <h2>Выберите тариф</h2>
       <p>Активация / Продление или покупка готового аккаунта с подпиской</p>
@@ -403,49 +270,35 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
 
 </section>
 
-<section class="how seo-guides" aria-labelledby="seo-guides-title" data-reveal>
+<section class="how seo-guides" aria-labelledby="seo-guides-title">
   <div class="seo-guides-header">
-    <div class="seo-guides-kicker">База знаний</div>
     <h2 id="seo-guides-title" class="how-title">Полезные материалы по ChatGPT Plus</h2>
-    <p class="seo-guides-subtitle">
+    <div style="margin-top:8px; font-size:14px; color:#5c6778;">
       Подробные инструкции по покупке, оплате и подключению без передачи пароля.
-    </p>
-    <div class="seo-guides-meta">
-      <span class="seo-guides-meta-item">4 материала</span>
-      <span class="seo-guides-meta-item">Пошаговые инструкции</span>
-      <span class="seo-guides-meta-item">Обновлено в 2026</span>
     </div>
   </div>
 
   <div class="seo-guides-grid">
     <article class="seo-guides-card">
-      <span class="seo-guides-card-tag">Покупка</span>
       <h3><a href="/chatgpt-plus-kupit.html">Купить ChatGPT Plus в России</a></h3>
       <p>Как выбрать формат подключения, что входит в услугу и на что смотреть перед оплатой.</p>
-      <a class="seo-guides-more" href="/chatgpt-plus-kupit.html">Открыть материал &rarr;</a>
     </article>
     <article class="seo-guides-card">
-      <span class="seo-guides-card-tag">Цена</span>
       <h3><a href="/chatgpt-plus-cena.html">Цена ChatGPT Plus в России</a></h3>
       <p>Из чего складывается стоимость, как сравнить варианты и какой тариф подходит под вашу задачу.</p>
-      <a class="seo-guides-more" href="/chatgpt-plus-cena.html">Открыть материал &rarr;</a>
     </article>
     <article class="seo-guides-card">
-      <span class="seo-guides-card-tag">Оплата</span>
       <h3><a href="/kak-oplatit-chatgpt-v-rossii.html">Как оплатить ChatGPT в России</a></h3>
       <p>Пошаговый процесс оплаты, проверка заказа и действия, если платёж не прошёл с первого раза.</p>
-      <a class="seo-guides-more" href="/kak-oplatit-chatgpt-v-rossii.html">Открыть материал &rarr;</a>
     </article>
     <article class="seo-guides-card">
-      <span class="seo-guides-card-tag">Подключение</span>
       <h3><a href="/podklyuchenie-chatgpt-online.html">Подключение ChatGPT онлайн</a></h3>
       <p>Как проходит активация по токену и какие шаги проверить после подключения подписки.</p>
-      <a class="seo-guides-more" href="/podklyuchenie-chatgpt-online.html">Открыть материал &rarr;</a>
     </article>
   </div>
 </section>
           
-<section class="faq" id="faq" data-reveal>
+<section class="faq" id="faq">
     <div class="faq-header">
       <h2>Вопросы и ответы</h2>
       <p>Короткие ответы на самые частые вопросы</p>
@@ -538,7 +391,7 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
       });
     });
   </script>
-  <script>
+<script>
     const langSwitch = document.getElementById("langSwitch");
     const langCurrent = document.getElementById("langCurrent");
   
@@ -568,39 +421,6 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
         langSwitch.classList.remove("open");
       }
     });
-  </script>
-<script>
-    (function () {
-      const revealItems = Array.from(document.querySelectorAll("[data-reveal]"));
-      if (!revealItems.length) return;
-
-      const reducedMotion =
-        typeof window.matchMedia === "function" &&
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      document.body.classList.add("reveal-ready");
-
-      if (reducedMotion || !("IntersectionObserver" in window)) {
-        revealItems.forEach((el) => el.classList.add("is-visible"));
-        return;
-      }
-
-      const observer = new IntersectionObserver(
-        (entries, io) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-            entry.target.classList.add("is-visible");
-            io.unobserve(entry.target);
-          });
-        },
-        { threshold: 0.16, rootMargin: "0px 0px -8% 0px" }
-      );
-
-      revealItems.forEach((el, idx) => {
-        el.style.transitionDelay = Math.min(idx * 60, 240) + "ms";
-        observer.observe(el);
-      });
-    })();
   </script>
   
     
