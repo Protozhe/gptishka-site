@@ -190,6 +190,7 @@ document.querySelectorAll("a[href]").forEach(link => {
   const cartPromoInputEl = document.getElementById("cartPromoInput");
   const cartPromoApplyEl = document.getElementById("cartPromoApply");
   const cartPromoMsgEl = document.getElementById("cartPromoMsg");
+  const heroPromoApplyButtons = Array.from(document.querySelectorAll("[data-hero-promo-code]"));
   const headerCartEmailInputEl = document.getElementById("headerCartEmailInput");
   const cartEmailInputEl = document.getElementById("cartEmailInput");
   const isEnPage =
@@ -233,6 +234,7 @@ document.querySelectorAll("a[href]").forEach(link => {
         checkoutError: "Failed to start checkout. Please try again.",
         checkoutProductMissing: "The selected item is outdated in cart. Please re-add it from pricing.",
         multiCartCheckout: "Checkout is currently available one item at a time. Please pay items separately.",
+        promoHeroApplied: "WELCOME34 applied",
       }
     : {
         promo10: "Скидка 10%",
@@ -269,6 +271,7 @@ document.querySelectorAll("a[href]").forEach(link => {
         checkoutError: "Не удалось начать оплату. Попробуйте снова.",
         checkoutProductMissing: "Товар в корзине устарел. Добавьте его заново из тарифов.",
         multiCartCheckout: "Сейчас оплата доступна по одному товару. Оплатите позиции по отдельности.",
+        promoHeroApplied: "WELCOME34 применен",
       };
   const PROMO_CODE_KEY = "gptishka_cart_promo_v1";
   const PROMO_CODE_TS_KEY = "gptishka_cart_promo_ts_v1";
@@ -278,6 +281,13 @@ document.querySelectorAll("a[href]").forEach(link => {
   let promoValidationState = "idle"; // idle | checking | valid | invalid
   let promoDiscountAmount = 0;
   let promoValidationContextKey = "";
+
+  function normalizePromoCodeInput(value) {
+    const raw = String(value || "").trim().toUpperCase();
+    if (!raw) return "";
+    const firstToken = raw.split(/[\s,;+|]+/).filter(Boolean)[0] || "";
+    return firstToken.slice(0, 40);
+  }
 
   function toInt(value) {
     const parsed = Number.parseInt(String(value || "").replace(/[^\d-]/g, ""), 10);
@@ -669,14 +679,14 @@ document.querySelectorAll("a[href]").forEach(link => {
 
   function loadPromoCode() {
     try {
-      return String(localStorage.getItem(PROMO_CODE_KEY) || "").trim().toUpperCase();
+      return normalizePromoCodeInput(localStorage.getItem(PROMO_CODE_KEY) || "");
     } catch (_) {
       return "";
     }
   }
 
   function savePromoCode(code) {
-    const normalized = String(code || "").trim().toUpperCase();
+    const normalized = normalizePromoCodeInput(code);
     try {
       if (normalized) {
         localStorage.setItem(PROMO_CODE_KEY, normalized);
@@ -730,7 +740,7 @@ document.querySelectorAll("a[href]").forEach(link => {
   }
 
   async function validatePromoCodeViaBackend(code) {
-    const normalized = String(code || "").trim().toUpperCase();
+    const normalized = normalizePromoCodeInput(code);
     if (!normalized) {
       promoValidationState = "idle";
       promoDiscountAmount = 0;
@@ -932,8 +942,24 @@ document.querySelectorAll("a[href]").forEach(link => {
     });
     if (!nextItem) return;
     saveCart([nextItem]);
-    clearPromoCodeState();
     renderCart();
+  }
+
+  function applyHeroPromoCode(code, sourceBtn) {
+    const normalized = normalizePromoCodeInput(code);
+    if (!normalized) return;
+
+    activePromoCode = normalized;
+    savePromoCode(activePromoCode);
+    if (headerCartPromoInputEl) headerCartPromoInputEl.value = activePromoCode;
+    if (cartPromoInputEl) cartPromoInputEl.value = activePromoCode;
+    validatePromoCodeViaBackend(activePromoCode);
+    persistCartSelection(undefined, activePromoCode);
+
+    if (sourceBtn) {
+      sourceBtn.classList.add("is-applied");
+      sourceBtn.textContent = TEXT.promoHeroApplied;
+    }
   }
 
   function setLotQty(lineId, qty) {
@@ -1243,7 +1269,7 @@ document.querySelectorAll("a[href]").forEach(link => {
     }
 
     if (headerCartPromoApplyEl && (e.target === headerCartPromoApplyEl || e.target.closest("#headerCartPromoApply"))) {
-      const raw = String(headerCartPromoInputEl ? headerCartPromoInputEl.value : "").trim().toUpperCase();
+      const raw = normalizePromoCodeInput(headerCartPromoInputEl ? headerCartPromoInputEl.value : "");
       activePromoCode = raw;
       savePromoCode(activePromoCode);
       if (cartPromoInputEl && cartPromoInputEl.value !== activePromoCode) cartPromoInputEl.value = activePromoCode;
@@ -1252,7 +1278,7 @@ document.querySelectorAll("a[href]").forEach(link => {
     }
 
     if (cartPromoApplyEl && (e.target === cartPromoApplyEl || e.target.closest("#cartPromoApply"))) {
-      const raw = String(cartPromoInputEl ? cartPromoInputEl.value : "").trim().toUpperCase();
+      const raw = normalizePromoCodeInput(cartPromoInputEl ? cartPromoInputEl.value : "");
       activePromoCode = raw;
       savePromoCode(activePromoCode);
       if (headerCartPromoInputEl && headerCartPromoInputEl.value !== activePromoCode) headerCartPromoInputEl.value = activePromoCode;
@@ -1366,13 +1392,14 @@ document.querySelectorAll("a[href]").forEach(link => {
 
   if (headerCartPromoInputEl) {
     headerCartPromoInputEl.addEventListener("input", () => {
-      const value = String(headerCartPromoInputEl.value || "").trim().toUpperCase();
+      const value = normalizePromoCodeInput(headerCartPromoInputEl.value || "");
+      if (headerCartPromoInputEl.value !== value) headerCartPromoInputEl.value = value;
       if (cartPromoInputEl && cartPromoInputEl.value !== value) cartPromoInputEl.value = value;
     });
     headerCartPromoInputEl.addEventListener("keydown", (e) => {
       if (e.key !== "Enter") return;
       e.preventDefault();
-      activePromoCode = String(headerCartPromoInputEl.value || "").trim().toUpperCase();
+      activePromoCode = normalizePromoCodeInput(headerCartPromoInputEl.value || "");
       savePromoCode(activePromoCode);
       if (cartPromoInputEl && cartPromoInputEl.value !== activePromoCode) cartPromoInputEl.value = activePromoCode;
       validatePromoCodeViaBackend(activePromoCode);
@@ -1381,18 +1408,32 @@ document.querySelectorAll("a[href]").forEach(link => {
 
   if (cartPromoInputEl) {
     cartPromoInputEl.addEventListener("input", () => {
-      const value = String(cartPromoInputEl.value || "").trim().toUpperCase();
+      const value = normalizePromoCodeInput(cartPromoInputEl.value || "");
+      if (cartPromoInputEl.value !== value) cartPromoInputEl.value = value;
       if (headerCartPromoInputEl && headerCartPromoInputEl.value !== value) headerCartPromoInputEl.value = value;
     });
     cartPromoInputEl.addEventListener("keydown", (e) => {
       if (e.key !== "Enter") return;
       e.preventDefault();
-      activePromoCode = String(cartPromoInputEl.value || "").trim().toUpperCase();
+      activePromoCode = normalizePromoCodeInput(cartPromoInputEl.value || "");
       savePromoCode(activePromoCode);
       if (headerCartPromoInputEl && headerCartPromoInputEl.value !== activePromoCode) headerCartPromoInputEl.value = activePromoCode;
       validatePromoCodeViaBackend(activePromoCode);
     });
   }
+
+  heroPromoApplyButtons.forEach(btn => {
+    btn.addEventListener("click", (event) => {
+      event.preventDefault();
+      const code = btn.getAttribute("data-hero-promo-code") || "";
+      applyHeroPromoCode(code, btn);
+
+      const pricingEl = document.getElementById("pricing");
+      if (pricingEl) {
+        pricingEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  });
 
   [headerCartEmailInputEl, cartEmailInputEl].forEach(inputEl => {
     if (!inputEl) return;
