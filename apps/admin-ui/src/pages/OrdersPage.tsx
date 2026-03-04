@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { api } from "../lib/api";
@@ -10,12 +10,12 @@ function getCheckErrorMessage(error: unknown) {
     const payload = error.response?.data as Record<string, unknown> | undefined;
     const message = String(payload?.message || payload?.error || "").trim();
     if (message) return message;
-    if (status === 401) return "РЎРµСЃСЃРёСЏ РёСЃС‚РµРєР»Р°. Р’РѕР№РґРёС‚Рµ РІ Р°РґРјРёРЅРєСѓ Р·Р°РЅРѕРІРѕ.";
-    if (status === 403) return "РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РїСЂР°РІ РґР»СЏ РїСЂРѕРІРµСЂРєРё Р°РєС‚РёРІР°С†РёРё.";
+    if (status === 401) return "Сессия истекла. Войдите в админку заново.";
+    if (status === 403) return "Недостаточно прав для проверки активации.";
   }
 
   if (error instanceof Error && error.message) return error.message;
-  return "РќРµ СѓРґР°Р»РѕСЃСЊ РїСЂРѕРІРµСЂРёС‚СЊ Р°РєС‚РёРІР°С†РёСЋ. РџСЂРѕРІРµСЂСЊС‚Рµ РїРѕРґРєР»СЋС‡РµРЅРёРµ Рє API.";
+  return "Не удалось проверить активацию. Проверьте подключение к API.";
 }
 
 export default function OrdersPage() {
@@ -23,7 +23,9 @@ export default function OrdersPage() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
   const [checkMessage, setCheckMessage] = useState<string | null>(null);
-  const [tokenDialog, setTokenDialog] = useState<null | { orderId: string; token: string; storedAt: string | null; expiresAt: string | null }>(null);
+  const [tokenDialog, setTokenDialog] = useState<null | { orderId: string; token: string; storedAt: string | null; expiresAt: string | null }>(
+    null
+  );
 
   const params = useMemo(() => ({ page: 1, limit: 100, q, status: status || undefined }), [q, status]);
 
@@ -45,21 +47,21 @@ export default function OrdersPage() {
   const checkActivation = useMutation({
     mutationFn: async (id: string) => (await api.get(`/orders/${id}/activation-proof`, { params: { forceCheck: 1 } })).data,
     onMutate: (id: string) => {
-      setCheckMessage(`РџСЂРѕРІРµСЂСЏРµРј Р°РєС‚РёРІР°С†РёСЋ РґР»СЏ Р·Р°РєР°Р·Р° ${id.slice(0, 10)}...`);
+      setCheckMessage(`Проверяем активацию для заказа ${id.slice(0, 10)}...`);
     },
     onSuccess: (data: any) => {
       qc.invalidateQueries({ queryKey: ["orders"] });
       const certaintyCode = String(data?.certainty?.code || "");
       const certaintyLabel =
         certaintyCode === "ACTIVATED_CONFIRMED_PROVIDER"
-          ? "РђРєС‚РёРІР°С†РёСЏ РїРѕРґС‚РІРµСЂР¶РґРµРЅР° РїСЂРѕРІР°Р№РґРµСЂРѕРј"
+          ? "Активация подтверждена провайдером"
           : certaintyCode === "ACTIVATION_FAILED"
-          ? "РџСЂРѕРІР°Р№РґРµСЂ РІРµСЂРЅСѓР» РѕС€РёР±РєСѓ Р°РєС‚РёРІР°С†РёРё"
+          ? "Провайдер вернул ошибку активации"
           : certaintyCode === "ACTIVATION_IN_PROGRESS"
-          ? "РђРєС‚РёРІР°С†РёСЏ РІ РѕР±СЂР°Р±РѕС‚РєРµ"
+          ? "Активация в обработке"
           : certaintyCode === "ACTIVATION_UNCONFIRMED"
-          ? "РђРєС‚РёРІР°С†РёСЏ РЅРµ Р·Р°РїСѓС‰РµРЅР° РёР»Рё РЅРµ РїРѕРґС‚РІРµСЂР¶РґРµРЅР°"
-          : "РџСЂРѕРІРµСЂРєР° Р°РєС‚РёРІР°С†РёРё Р·Р°РІРµСЂС€РµРЅР°";
+          ? "Активация не запущена или не подтверждена"
+          : "Проверка активации завершена";
       const providerMessage = String(data?.activation?.lastProviderMessage || "").trim();
       setCheckMessage(providerMessage ? `${certaintyLabel}. ${providerMessage}` : certaintyLabel);
     },
@@ -71,7 +73,7 @@ export default function OrdersPage() {
   const readActivationToken = useMutation({
     mutationFn: async (id: string) => (await api.get(`/orders/${id}/activation-token`)).data,
     onMutate: (id: string) => {
-      setCheckMessage(`Р—Р°РіСЂСѓР¶Р°РµРј С‚РѕРєРµРЅ РєР»РёРµРЅС‚Р° РґР»СЏ Р·Р°РєР°Р·Р° ${id.slice(0, 10)}...`);
+      setCheckMessage(`Загружаем токен клиента для заказа ${id.slice(0, 10)}...`);
     },
     onSuccess: (data: any) => {
       const token = String(data?.token || "");
@@ -81,7 +83,7 @@ export default function OrdersPage() {
         storedAt: data?.storedAt ? String(data.storedAt) : null,
         expiresAt: data?.expiresAt ? String(data.expiresAt) : null,
       });
-      setCheckMessage("РўРѕРєРµРЅ РєР»РёРµРЅС‚Р° Р·Р°РіСЂСѓР¶РµРЅ");
+      setCheckMessage("Токен клиента загружен");
     },
     onError: (error: unknown) => {
       setCheckMessage(getCheckErrorMessage(error));
@@ -92,25 +94,25 @@ export default function OrdersPage() {
     if (!tokenDialog?.token) return;
     try {
       await navigator.clipboard.writeText(tokenDialog.token);
-      setCheckMessage("РўРѕРєРµРЅ СЃРєРѕРїРёСЂРѕРІР°РЅ РІ Р±СѓС„РµСЂ РѕР±РјРµРЅР°");
+      setCheckMessage("Токен скопирован в буфер обмена");
     } catch {
-      setCheckMessage("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРєРѕРїРёСЂРѕРІР°С‚СЊ С‚РѕРєРµРЅ");
+      setCheckMessage("Не удалось скопировать токен");
     }
   }
 
   return (
     <div className="space-y-4">
       <section className="card p-4 flex flex-wrap items-center gap-2">
-        <input className="input max-w-sm" value={q} placeholder="РџРѕРёСЃРє РїРѕ email / payment id" onChange={(e) => setQ(e.target.value)} />
+        <input className="input max-w-sm" value={q} placeholder="Поиск по email / payment id" onChange={(e) => setQ(e.target.value)} />
         <select className="input max-w-40" value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="">Р’СЃРµ СЃС‚Р°С‚СѓСЃС‹</option>
+          <option value="">Все статусы</option>
           <option value="PENDING">PENDING</option>
           <option value="PAID">PAID</option>
           <option value="FAILED">FAILED</option>
           <option value="REFUNDED">REFUNDED</option>
         </select>
         <a className="btn-secondary" href={`${(import.meta.env.VITE_ADMIN_API_URL || "/api/admin")}/orders/export/csv`}>
-          Р­РєСЃРїРѕСЂС‚ CSV
+          Экспорт CSV
         </a>
         {checkMessage ? (
           <div className={`basis-full text-sm ${checkActivation.isError ? "text-rose-600" : "text-slate-600 dark:text-slate-300"}`}>
@@ -124,13 +126,13 @@ export default function OrdersPage() {
           <table className="min-w-full text-sm">
             <thead className="bg-slate-100 text-left dark:bg-slate-800">
               <tr>
-                <th className="px-4 py-3">Р—Р°РєР°Р·</th>
-                <th className="px-4 py-3">РџРѕРєСѓРїР°С‚РµР»СЊ</th>
-                <th className="px-4 py-3">РЎСѓРјРјР°</th>
-                <th className="px-4 py-3">РџСЂРѕРјРѕРєРѕРґ</th>
-                <th className="px-4 py-3">РЎС‚Р°С‚СѓСЃ</th>
-                <th className="px-4 py-3">РђРєС‚РёРІР°С†РёСЏ</th>
-                <th className="px-4 py-3">Р”РµР№СЃС‚РІРёСЏ</th>
+                <th className="px-4 py-3">Заказ</th>
+                <th className="px-4 py-3">Покупатель</th>
+                <th className="px-4 py-3">Сумма</th>
+                <th className="px-4 py-3">Промокод</th>
+                <th className="px-4 py-3">Статус</th>
+                <th className="px-4 py-3">Активация</th>
+                <th className="px-4 py-3">Действия</th>
               </tr>
             </thead>
             <tbody>
@@ -173,7 +175,7 @@ export default function OrdersPage() {
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">
                       <button className="btn-secondary" onClick={() => checkActivation.mutate(o.id)} disabled={checkActivation.isPending}>
-                        {checkActivation.isPending && checkActivation.variables === o.id ? "РџСЂРѕРІРµСЂСЏРµРј..." : "РџСЂРѕРІРµСЂРёС‚СЊ Р°РєС‚РёРІР°С†РёСЋ"}
+                        {checkActivation.isPending && checkActivation.variables === o.id ? "Проверяем..." : "Проверить активацию"}
                       </button>
                       <button
                         className="btn-secondary"
@@ -183,13 +185,13 @@ export default function OrdersPage() {
                         {readActivationToken.isPending && readActivationToken.variables === o.id ? "Загружаем..." : "Токен клиента"}
                       </button>
                       <button className="btn-secondary" onClick={() => patch.mutate({ id: o.id, status: "PAID" })}>
-                        РћС‚РјРµС‚РёС‚СЊ РѕРїР»Р°С‡РµРЅРЅС‹Рј
+                        Отметить оплаченным
                       </button>
                       <button className="btn-secondary" onClick={() => patch.mutate({ id: o.id, status: "FAILED" })}>
-                        РћС‚РјРµС‚РёС‚СЊ РєР°Рє РѕС€РёР±РєР°
+                        Отметить как ошибка
                       </button>
                       <button className="btn-secondary" onClick={() => refund.mutate(o.id)}>
-                        Р’РѕР·РІСЂР°С‚
+                        Возврат
                       </button>
                     </div>
                   </td>

@@ -153,6 +153,31 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
       if (!langSwitch.contains(e.target)) langSwitch.classList.remove("open");
     });
   </script>
+  <script>
+    (function () {
+      const counterId = 106969126;
+      const goalId = "cart_checkout_click";
+      const checkoutBtn = document.getElementById("cartCheckoutBtn");
+      if (!checkoutBtn) return;
+
+      let lastGoalAt = 0;
+      checkoutBtn.addEventListener("click", function () {
+        if (checkoutBtn.getAttribute("aria-disabled") === "true") return;
+        const now = Date.now();
+        if (now - lastGoalAt < 1200) return;
+        lastGoalAt = now;
+
+        try {
+          if (typeof window.ym === "function") {
+            window.ym(counterId, "reachGoal", goalId, {
+              page: "/en/cart.html",
+              lang: "en",
+            });
+          }
+        } catch (_) {}
+      });
+    })();
+  </script>
 <script src="/assets/js/support-widget.js" defer></script>
 </body>
 </html>

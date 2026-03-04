@@ -199,77 +199,18 @@ export const ordersService = {
     assertOrderId(id);
     const order = await prisma.order.findUnique({
       where: { id },
-      include: {
-        payments: { orderBy: { createdAt: "desc" }, take: 1 },
+      select: {
+        id: true,
+        status: true,
+        payments: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: { providerRef: true },
+        },
       },
     });
     if (!order) throw new AppError("Order not found", 404);
-
-    if (order.status === OrderStatus.PAID || order.status === OrderStatus.FAILED || order.status === OrderStatus.REFUNDED) {
-      return this.getPublicStatus(id);
-    }
-
-    const payment = order.payments[0];
-    if (!payment?.providerRef) {
-      return this.getPublicStatus(id);
-    }
-
-    const apiKey = env.ENOT_API_KEY || env.PAYMENT_SECRET;
-    const shopId = env.ENOT_SHOP_ID || env.PAYMENT_SHOP_ID;
-    if (!apiKey || !shopId) {
-      return this.getPublicStatus(id);
-    }
-
-    try {
-      const invoiceInfoUrl = new URL("/invoice/info", env.PAYMENT_API_BASE_URL);
-      invoiceInfoUrl.searchParams.set("shop_id", String(shopId));
-      invoiceInfoUrl.searchParams.set("invoice_id", String(payment.providerRef));
-
-      const response = await fetch(invoiceInfoUrl.toString(), {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "x-api-key": apiKey,
-        },
-      });
-      if (!response.ok) {
-        return this.getPublicStatus(id);
-      }
-
-      const payload = (await response.json()) as {
-        status_check?: boolean;
-        data?: {
-          invoice_id?: string;
-          order_id?: string;
-          shop_id?: string;
-          status?: string;
-          currency?: string;
-          invoice_amount?: number | string;
-          amount?: number | string;
-        };
-      };
-
-      const info = payload?.data;
-      if (!payload?.status_check || !info) {
-        return this.getPublicStatus(id);
-      }
-      if (String(info.shop_id || "") !== String(shopId)) {
-        return this.getPublicStatus(id);
-      }
-      if (String(info.order_id || "") !== String(order.id)) {
-        return this.getPublicStatus(id);
-      }
-
-      await paymentWebhookService.handle({
-        invoice_id: String(info.invoice_id || payment.providerRef),
-        order_id: String(order.id),
-        status: String(info.status || "").toLowerCase(),
-        amount: info.invoice_amount ?? info.amount ?? undefined,
-        currency: info.currency || undefined,
-      });
-    } catch {
-      // Keep current order status if provider API is temporarily unavailable.
-    }
+    await tryReconcilePendingOrderPayment(id, order);
 
     return this.getPublicStatus(id);
   },
@@ -700,7 +641,6 @@ async function assertPaidOrderAccess(orderId: string, orderToken?: string) {
   assertOrderId(orderId);
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) throw new AppError("Order not found", 404);
-  if (order.status !== OrderStatus.PAID) throw new AppError("Order is not paid yet", 409);
 
   const expected = String(order.redeemTokenHash || "").trim();
   if (expected) {
@@ -710,7 +650,94 @@ async function assertPaidOrderAccess(orderId: string, orderToken?: string) {
     if (providedHash !== expected) throw new AppError("Invalid activation link token", 403);
   }
 
+  if (order.status !== OrderStatus.PAID) {
+    if (order.status === OrderStatus.PENDING) {
+      await tryReconcilePendingOrderPayment(order.id);
+    }
+
+    const refreshed = await prisma.order.findUnique({ where: { id: order.id } });
+    if (!refreshed) throw new AppError("Order not found", 404);
+    if (refreshed.status !== OrderStatus.PAID) throw new AppError("Order is not paid yet", 409);
+    return refreshed;
+  }
+
   return order;
+}
+
+type PendingPaymentProbeOrder = {
+  id: string;
+  status: OrderStatus;
+  payments: Array<{ providerRef: string | null }>;
+};
+
+async function tryReconcilePendingOrderPayment(orderId: string, cachedOrder?: PendingPaymentProbeOrder) {
+  const order =
+    cachedOrder ||
+    (await prisma.order.findUnique({
+      where: { id: orderId },
+      select: {
+        id: true,
+        status: true,
+        payments: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: { providerRef: true },
+        },
+      },
+    }));
+  if (!order) return;
+  if (order.status !== OrderStatus.PENDING) return;
+
+  const payment = order.payments[0];
+  const providerRef = String(payment?.providerRef || "").trim();
+  if (!providerRef) return;
+
+  const apiKey = env.ENOT_API_KEY || env.PAYMENT_SECRET;
+  const shopId = env.ENOT_SHOP_ID || env.PAYMENT_SHOP_ID;
+  if (!apiKey || !shopId) return;
+
+  try {
+    const invoiceInfoUrl = new URL("/invoice/info", env.PAYMENT_API_BASE_URL);
+    invoiceInfoUrl.searchParams.set("shop_id", String(shopId));
+    invoiceInfoUrl.searchParams.set("invoice_id", providerRef);
+
+    const response = await fetch(invoiceInfoUrl.toString(), {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "x-api-key": apiKey,
+      },
+    });
+    if (!response.ok) return;
+
+    const payload = (await response.json()) as {
+      status_check?: boolean;
+      data?: {
+        invoice_id?: string;
+        order_id?: string;
+        shop_id?: string;
+        status?: string;
+        currency?: string;
+        invoice_amount?: number | string;
+        amount?: number | string;
+      };
+    };
+
+    const info = payload?.data;
+    if (!payload?.status_check || !info) return;
+    if (String(info.shop_id || "") !== String(shopId)) return;
+    if (String(info.order_id || "") !== String(order.id)) return;
+
+    await paymentWebhookService.handle({
+      invoice_id: String(info.invoice_id || providerRef),
+      order_id: String(order.id),
+      status: String(info.status || "").toLowerCase(),
+      amount: info.invoice_amount ?? info.amount ?? undefined,
+      currency: info.currency || undefined,
+    });
+  } catch {
+    // Keep current order status if provider API is temporarily unavailable.
+  }
 }
 
 async function startActivationUnsafe(orderId: string, token: string, orderToken?: string) {

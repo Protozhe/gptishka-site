@@ -334,6 +334,40 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
       text-transform: uppercase;
     }
 
+    .redeem-review-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .redeem-review-close {
+      width: 34px;
+      height: 34px;
+      border: 1px solid rgba(24, 51, 69, 0.14);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.86);
+      color: #41576b;
+      font-size: 21px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background .16s ease, border-color .16s ease, color .16s ease, transform .12s ease;
+    }
+
+    .redeem-review-close:hover {
+      background: #fff;
+      border-color: rgba(24, 51, 69, 0.22);
+      color: #223748;
+      transform: translateY(-1px);
+    }
+
+    .redeem-review-close:active {
+      transform: translateY(0);
+    }
+
     .redeem-review-head {
       margin-top: 12px;
       display: flex;
@@ -382,7 +416,9 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
     }
 
     .redeem-review-links {
-      margin-top: 18px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(24, 51, 69, 0.12);
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
@@ -475,6 +511,11 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
       .redeem-review-mark {
         width: 30px;
         height: 30px;
+      }
+
+      .redeem-review-close {
+        width: 32px;
+        height: 32px;
       }
     }
   </style>
@@ -598,7 +639,10 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
 
       <section id="reviewRewardBox" class="redeem-review-reward" hidden aria-modal="true" role="dialog" aria-live="polite">
         <div class="redeem-review-card">
-          <span class="redeem-review-badge">Бонус 10% на следующий заказ</span>
+          <div class="redeem-review-top">
+            <span class="redeem-review-badge">Бонус 10% на следующий заказ</span>
+            <button id="reviewRewardCloseBtn" type="button" class="redeem-review-close" aria-label="Закрыть сообщение" title="Закрыть">&times;</button>
+          </div>
           <div class="redeem-review-head">
             <span class="redeem-review-mark" aria-hidden="true">✓</span>
             <h3>Ваш тариф успешно активирован</h3>
@@ -670,6 +714,7 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
     const taskIdValue = document.getElementById('taskIdValue');
     const copyTaskBtn = document.getElementById('copyTaskBtn');
     const reviewRewardBox = document.getElementById('reviewRewardBox');
+    const reviewRewardCloseBtn = document.getElementById('reviewRewardCloseBtn');
 
     const POLL_INTERVAL_MS = 2000;
     // Provider processing may take a few minutes. Don't auto-restart tasks on short timeouts.
@@ -768,6 +813,12 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
     if (reviewRewardBox) {
       reviewRewardBox.addEventListener('click', (event) => {
         if (event.target === reviewRewardBox) dismissReviewReward();
+      });
+    }
+
+    if (reviewRewardCloseBtn) {
+      reviewRewardCloseBtn.addEventListener('click', () => {
+        dismissReviewReward();
       });
     }
 
