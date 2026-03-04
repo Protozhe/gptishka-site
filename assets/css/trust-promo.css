@@ -51,6 +51,69 @@
   font-size: 0.88rem;
 }
 
+/* Surrounding hero scene background */
+body {
+  background:
+    radial-gradient(1200px 760px at 12% -12%, rgba(250, 253, 255, 0.98) 0%, rgba(242, 246, 252, 0.74) 48%, transparent 78%),
+    radial-gradient(1180px 720px at 90% -8%, rgba(228, 238, 247, 0.72) 0%, rgba(222, 233, 245, 0.46) 52%, transparent 82%),
+    linear-gradient(170deg, #edf2f8 0%, #e8eef5 38%, #dde5ee 100%);
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: -22%;
+  pointer-events: none;
+}
+
+body::before {
+  z-index: -1;
+  background:
+    radial-gradient(circle at 16% 34%, rgba(164, 238, 222, 0.32), transparent 44%),
+    radial-gradient(circle at 78% 18%, rgba(250, 253, 255, 0.72), transparent 40%),
+    radial-gradient(circle at 52% 76%, rgba(160, 196, 226, 0.3), transparent 46%);
+  filter: blur(78px);
+  opacity: 0.76;
+  animation: pageAmbientDrift 30s ease-in-out infinite alternate;
+}
+
+body::after {
+  z-index: -2;
+  background:
+    radial-gradient(circle at 66% 30%, rgba(165, 216, 245, 0.24), transparent 42%),
+    radial-gradient(circle at 34% 78%, rgba(236, 244, 252, 0.54), transparent 48%),
+    radial-gradient(circle at 88% 82%, rgba(182, 238, 226, 0.22), transparent 40%);
+  filter: blur(92px);
+  opacity: 0.66;
+  animation: pageAmbientDriftAlt 36s ease-in-out infinite alternate;
+}
+
+main.page {
+  position: relative;
+  isolation: isolate;
+}
+
+main.page::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: min(1240px, 96vw);
+  height: clamp(360px, 58vw, 760px);
+  transform: translateX(-50%);
+  border-radius: 44px;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(100% 80% at 50% 8%, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0.12) 52%, transparent 80%),
+    radial-gradient(68% 64% at 24% 32%, rgba(177, 233, 220, 0.24) 0%, transparent 70%),
+    radial-gradient(64% 60% at 78% 26%, rgba(170, 206, 236, 0.2) 0%, transparent 68%);
+  filter: blur(20px);
+  opacity: 0.8;
+  animation: heroSceneGlow 22s ease-in-out infinite alternate;
+}
+
 /* Premium hero redesign */
 .hero {
   position: relative;
@@ -289,6 +352,41 @@
   }
 }
 
+@keyframes pageAmbientDrift {
+  0% {
+    transform: translate3d(-3%, -2%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(2%, 3%, 0) scale(1.06);
+  }
+  100% {
+    transform: translate3d(3%, -1%, 0) scale(1.03);
+  }
+}
+
+@keyframes pageAmbientDriftAlt {
+  0% {
+    transform: translate3d(2%, -2%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-2%, 2%, 0) scale(1.05);
+  }
+  100% {
+    transform: translate3d(-3%, -1%, 0) scale(1.02);
+  }
+}
+
+@keyframes heroSceneGlow {
+  0% {
+    opacity: 0.74;
+    transform: translateX(-50%) scale(1);
+  }
+  100% {
+    opacity: 0.9;
+    transform: translateX(-50%) scale(1.03);
+  }
+}
+
 @keyframes heroGlossShift {
   0% {
     opacity: 0.72;
@@ -301,6 +399,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after,
+  main.page::before,
   .hero::before,
   .hero-promo-inline::before {
     animation: none !important;
