@@ -991,6 +991,8 @@ main.page {
   margin-bottom: 18px;
   display: grid;
   gap: 8px;
+  text-align: center;
+  justify-items: center;
 }
 
 .activation-video__title {
@@ -1003,7 +1005,8 @@ main.page {
 
 .activation-video__subtitle {
   margin: 0;
-  max-width: 760px;
+  max-width: 780px;
+  text-align: center;
   color: var(--muted);
   line-height: 1.6;
 }
@@ -1011,6 +1014,8 @@ main.page {
 .activation-video__frame {
   position: relative;
   overflow: hidden;
+  max-width: 860px;
+  margin: 0 auto;
   border-radius: calc(var(--radius-lg) - 8px);
   border: 1px solid rgba(255, 255, 255, 0.62);
   background: linear-gradient(150deg, rgba(255, 255, 255, 0.48), rgba(248, 239, 225, 0.3));
@@ -1030,6 +1035,7 @@ main.page {
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: contain;
+  max-height: 484px;
   background: #11181f;
 }
 
@@ -1951,6 +1957,14 @@ html.is-leaving .page-overlay {
 
   .activation-video__meta {
     font-size: 12px;
+  }
+
+  .activation-video__frame {
+    max-width: 100%;
+  }
+
+  .activation-video__media {
+    max-height: none;
   }
 
   .features {
