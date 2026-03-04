@@ -437,26 +437,66 @@ function createApp() {
     })
   );
 
+  function buildForwardedFor(req) {
+    const existing = String(req.headers["x-forwarded-for"] || "").trim();
+    const ip = String(req.headers["x-real-ip"] || req.ip || req.socket?.remoteAddress || "")
+      .replace("::ffff:", "")
+      .trim();
+
+    if (!existing) return ip;
+    if (!ip) return existing;
+
+    const parts = existing.split(",").map(part => part.trim()).filter(Boolean);
+    if (parts.includes(ip)) return existing;
+    return `${existing}, ${ip}`;
+  }
+
+  function buildAdminProxyHeaders(req, options = {}) {
+    const method = String(options.method || req.method || "GET").toUpperCase();
+    const headers = {
+      Accept: req.headers.accept || "application/json",
+    };
+
+    if (req.headers.authorization) {
+      headers.Authorization = req.headers.authorization;
+    }
+    if (req.headers.cookie) {
+      headers.Cookie = req.headers.cookie;
+    }
+
+    const forwardedFor = buildForwardedFor(req);
+    if (forwardedFor) {
+      headers["X-Forwarded-For"] = forwardedFor;
+    }
+    const realIp = String(req.headers["x-real-ip"] || req.ip || "").replace("::ffff:", "").trim();
+    if (realIp) {
+      headers["X-Real-IP"] = realIp;
+    }
+    const forwardedProto = String(req.headers["x-forwarded-proto"] || req.protocol || "").trim();
+    if (forwardedProto) {
+      headers["X-Forwarded-Proto"] = forwardedProto;
+    }
+    const forwardedHost = String(req.headers.host || "").trim();
+    if (forwardedHost) {
+      headers["X-Forwarded-Host"] = forwardedHost;
+    }
+
+    if (options.forceJson || (method !== "GET" && method !== "HEAD")) {
+      headers["Content-Type"] = "application/json";
+    } else if (req.headers["content-type"]) {
+      headers["Content-Type"] = req.headers["content-type"];
+    }
+
+    return headers;
+  }
+
   async function proxyToAdminBackend(req, res, targetPath) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
     try {
       const targetUrl = `${ADMIN_BACKEND_URL}${targetPath}`;
-      const headers = {
-        Accept: req.headers.accept || "application/json",
-      };
-
-      if (req.headers.authorization) {
-        headers.Authorization = req.headers.authorization;
-      }
-      if (req.headers.cookie) {
-        headers.Cookie = req.headers.cookie;
-      }
-      if (req.headers["content-type"]) {
-        headers["Content-Type"] = req.headers["content-type"];
-      }
-
       const method = String(req.method || "GET").toUpperCase();
+      const headers = buildAdminProxyHeaders(req, { method });
       const response = await fetch(targetUrl, {
         method,
         headers,
@@ -542,7 +582,7 @@ function createApp() {
 
     try {
       const response = await fetch(`${ADMIN_BACKEND_URL}/api/public/products?lang=${lang}`, {
-        headers: { Accept: "application/json" },
+        headers: buildAdminProxyHeaders(req, { method: "GET" }),
         signal: controller.signal,
       });
 
@@ -567,10 +607,7 @@ function createApp() {
     try {
       const response = await fetch(`${ADMIN_BACKEND_URL}/api/public/create-order`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
         body: JSON.stringify(req.body || {}),
         signal: controller.signal,
       });
@@ -600,10 +637,7 @@ function createApp() {
     try {
       const response = await fetch(`${ADMIN_BACKEND_URL}/api/public/orders/create`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
         body: JSON.stringify(req.body || {}),
         signal: controller.signal,
       });
@@ -629,10 +663,7 @@ function createApp() {
     try {
       const response = await fetch(`${ADMIN_BACKEND_URL}/api/promo/validate`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
         body: JSON.stringify(req.body || {}),
         signal: controller.signal,
       });
@@ -658,10 +689,7 @@ function createApp() {
     try {
       const response = await fetch(`${ADMIN_BACKEND_URL}/api/payments/enot/create`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
         body: JSON.stringify(req.body || {}),
         signal: controller.signal,
       });
@@ -688,7 +716,7 @@ function createApp() {
       const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
       const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}`, {
         method: "GET",
-        headers: { Accept: "application/json" },
+        headers: buildAdminProxyHeaders(req, { method: "GET" }),
         signal: controller.signal,
       });
 
@@ -714,7 +742,7 @@ function createApp() {
       const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
       const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/reconcile`, {
         method: "GET",
-        headers: { Accept: "application/json" },
+        headers: buildAdminProxyHeaders(req, { method: "GET" }),
         signal: controller.signal,
       });
 
@@ -741,7 +769,7 @@ function createApp() {
       const suffix = qs ? `?${qs}` : "";
       const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation${suffix}`, {
         method: "GET",
-        headers: { Accept: "application/json" },
+        headers: buildAdminProxyHeaders(req, { method: "GET" }),
         signal: controller.signal,
       });
       const body = await response.text();
@@ -765,10 +793,7 @@ function createApp() {
       const suffix = qs ? `?${qs}` : "";
       const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation/validate-token${suffix}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
         body: JSON.stringify(req.body || {}),
         signal: controller.signal,
       });
@@ -793,10 +818,7 @@ function createApp() {
       const suffix = qs ? `?${qs}` : "";
       const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation/start${suffix}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
         body: JSON.stringify(req.body || {}),
         signal: controller.signal,
       });
@@ -821,10 +843,7 @@ function createApp() {
       const suffix = qs ? `?${qs}` : "";
       const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation/restart-with-new-key${suffix}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
         body: JSON.stringify(req.body || {}),
         signal: controller.signal,
       });
@@ -850,7 +869,7 @@ function createApp() {
       const suffix = qs ? `?${qs}` : "";
       const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation/task/${taskId}${suffix}`, {
         method: "GET",
-        headers: { Accept: "application/json" },
+        headers: buildAdminProxyHeaders(req, { method: "GET" }),
         signal: controller.signal,
       });
       const body = await response.text();
