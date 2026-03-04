@@ -1122,18 +1122,8 @@ function updateActivationFromProviderPayload(orderId: string, taskId: string, pa
   const nowIso = new Date().toISOString();
   const nextStatus = payload.pending ? "processing" : payload.success ? "success" : "failed";
   const verificationState = payload.pending ? "pending" : payload.success ? "success" : "failed";
-  const shouldDropStoredToken = Boolean(payload.success);
   activationStore.upsert({
     ...stored,
-    ...(shouldDropStoredToken
-      ? {
-          clientTokenCiphertext: null,
-          clientTokenIv: null,
-          clientTokenAuthTag: null,
-          clientTokenStoredAt: null,
-          clientTokenExpiresAt: null,
-        }
-      : {}),
     status: nextStatus,
     verificationState,
     taskId: String(payload.task_id || taskId),
@@ -1166,15 +1156,6 @@ function updateActivationFromProviderCdkPayload(orderId: string, productId: stri
 
   activationStore.upsert({
     ...stored,
-    ...(used
-      ? {
-          clientTokenCiphertext: null,
-          clientTokenIv: null,
-          clientTokenAuthTag: null,
-          clientTokenStoredAt: null,
-          clientTokenExpiresAt: null,
-        }
-      : {}),
     status: nextStatus,
     verificationState: nextVerificationState,
     lastProviderMessage: providerMessage,
