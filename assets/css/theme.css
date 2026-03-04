@@ -1009,6 +1009,7 @@ main.page {
   text-align: center;
   color: var(--muted);
   line-height: 1.6;
+  text-wrap: balance;
 }
 
 .activation-video__frame {
@@ -1948,11 +1949,16 @@ html.is-leaving .page-overlay {
 
   .activation-video {
     margin-bottom: 56px;
-    padding: 18px 16px;
+    padding: 16px 12px;
   }
 
   .activation-video__title {
     font-size: clamp(1.45rem, 7vw, 1.9rem);
+  }
+
+  .activation-video__subtitle {
+    font-size: 13px;
+    line-height: 1.45;
   }
 
   .activation-video__meta {
@@ -1960,11 +1966,14 @@ html.is-leaving .page-overlay {
   }
 
   .activation-video__frame {
+    width: min(100%, 420px);
     max-width: 100%;
+    margin: 0 auto;
+    border-radius: 14px;
   }
 
   .activation-video__media {
-    max-height: none;
+    max-height: 236px;
   }
 
   .features {
