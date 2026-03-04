@@ -136,7 +136,11 @@ export default function OrdersPage() {
               </tr>
             </thead>
             <tbody>
-              {(orders.data?.items || []).map((o: any) => (
+              {(orders.data?.items || []).map((o: any) => {
+                const tokenValidationAttempts = Number(o.activation?.tokenValidationAttempts || 0);
+                const hasRepeatedTokenInput = tokenValidationAttempts > 1;
+
+                return (
                 <tr className="border-t border-slate-200 dark:border-slate-800" key={o.id}>
                   <td className="px-4 py-3">
                     <div className="font-semibold">{o.id.slice(0, 10)}...</div>
@@ -155,7 +159,11 @@ export default function OrdersPage() {
                           token: {o.activation.tokenBound ? "bound" : o.activation.tokenSeen ? "entered" : "missing"}
                         </div>
                         <div className="text-slate-500">stored token: {o.activation.tokenStored ? "yes" : "no"}</div>
-                        <div className="text-slate-500">validations: {Number(o.activation.tokenValidationAttempts || 0)}</div>
+                        <div className={`text-slate-500 ${hasRepeatedTokenInput ? "font-semibold text-amber-700" : ""}`}>
+                          token input:{" "}
+                          {hasRepeatedTokenInput ? `repeated (${tokenValidationAttempts}x)` : tokenValidationAttempts === 1 ? "single" : "none"}
+                        </div>
+                        <div className="text-slate-500">validations: {tokenValidationAttempts}</div>
                         <div className="text-slate-500">attempts: {Number(o.activation.attempts || 0)} / 3</div>
                         {o.activation.lastTokenValidatedAt ? (
                           <div className="text-slate-400">token seen: {fmtDate(o.activation.lastTokenValidatedAt)}</div>
@@ -196,7 +204,8 @@ export default function OrdersPage() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

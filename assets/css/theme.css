@@ -968,6 +968,78 @@ main.page {
   gap: 20px;
 }
 
+.activation-video {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto 84px;
+  padding: clamp(20px, 3vw, 36px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background: var(--glass-fill);
+  box-shadow: var(--glass-shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  transition: transform 0.28s ease, box-shadow 0.28s ease;
+}
+
+.activation-video:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(31, 39, 49, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+.activation-video__header {
+  margin-bottom: 18px;
+  display: grid;
+  gap: 8px;
+}
+
+.activation-video__title {
+  margin: 0;
+  font-family: "Space Grotesk", "Manrope", sans-serif;
+  font-size: clamp(1.65rem, 3vw, 2.15rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.activation-video__subtitle {
+  margin: 0;
+  max-width: 760px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.activation-video__frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: calc(var(--radius-lg) - 8px);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.48), rgba(248, 239, 225, 0.3));
+  box-shadow: 0 12px 28px rgba(31, 39, 49, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+.activation-video__frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(31, 39, 49, 0) 72%, rgba(31, 39, 49, 0.09) 100%);
+}
+
+.activation-video__media {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  background: #11181f;
+}
+
+.activation-video__meta {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .price-card {
   position: relative;
   display: flex;
@@ -1866,6 +1938,19 @@ html.is-leaving .page-overlay {
   .hero {
     margin-bottom: 56px;
     padding: 26px 20px;
+  }
+
+  .activation-video {
+    margin-bottom: 56px;
+    padding: 18px 16px;
+  }
+
+  .activation-video__title {
+    font-size: clamp(1.45rem, 7vw, 1.9rem);
+  }
+
+  .activation-video__meta {
+    font-size: 12px;
   }
 
   .features {
