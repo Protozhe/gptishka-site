@@ -19,10 +19,11 @@ const TELEGRAM_REVIEWS_CHANNEL_RAW = String(process.env.TELEGRAM_REVIEWS_CHANNEL
 const TELEGRAM_REVIEWS_CHANNEL = /^[a-zA-Z0-9_]{5,64}$/.test(TELEGRAM_REVIEWS_CHANNEL_RAW)
   ? TELEGRAM_REVIEWS_CHANNEL_RAW
   : "otzivigptishkashop";
-const TELEGRAM_REVIEWS_CACHE_MS = Number(process.env.TELEGRAM_REVIEWS_CACHE_MS || 120000);
+const TELEGRAM_REVIEWS_CACHE_MS = Number(process.env.TELEGRAM_REVIEWS_CACHE_MS || 600000);
 const TELEGRAM_REVIEWS_MAX_LIMIT = 30;
 const TELEGRAM_REVIEWS_SCAN_MAX_ID = Number(process.env.TELEGRAM_REVIEWS_SCAN_MAX_ID || 600);
-const TELEGRAM_REVIEWS_MISS_STREAK = Number(process.env.TELEGRAM_REVIEWS_MISS_STREAK || 25);
+const TELEGRAM_REVIEWS_HINT_WINDOW = Number(process.env.TELEGRAM_REVIEWS_HINT_WINDOW || 30);
+const TELEGRAM_REVIEWS_TOP_STEP = Number(process.env.TELEGRAM_REVIEWS_TOP_STEP || 20);
 const TELEGRAM_FETCH_HEADERS = {
   "User-Agent":
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
@@ -38,6 +39,7 @@ let telegramReviewsCache = {
   latestPostId: 0,
   items: [],
 };
+let telegramReviewsRefreshPromise = null;
 
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
@@ -180,32 +182,59 @@ async function fetchTelegramEmbedPost(channel, postId) {
 }
 
 async function findLatestTelegramPostId(channel, hint = 0) {
-  let latestId = 0;
-  let missStreak = 0;
-  const startId = Math.max(1, hint > 0 ? hint - 10 : 1);
   const maxId = Math.max(1, TELEGRAM_REVIEWS_SCAN_MAX_ID);
-
-  for (let postId = startId; postId <= maxId; postId += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    const post = await fetchTelegramEmbedPost(channel, postId);
-    if (post) {
-      latestId = postId;
-      missStreak = 0;
-    } else if (latestId > 0) {
-      missStreak += 1;
-      if (missStreak >= Math.max(5, TELEGRAM_REVIEWS_MISS_STREAK)) {
-        break;
-      }
+  const safeHint = Number.isFinite(hint) ? Math.max(0, Math.min(maxId, hint)) : 0;
+  const hintWindow = Math.max(10, TELEGRAM_REVIEWS_HINT_WINDOW);
+  if (safeHint > 0) {
+    const from = Math.min(maxId, safeHint + Math.floor(hintWindow / 2));
+    const to = Math.max(1, safeHint - hintWindow);
+    for (let postId = from; postId >= to; postId -= 1) {
+      // eslint-disable-next-line no-await-in-loop
+      const post = await fetchTelegramEmbedPost(channel, postId);
+      if (post) return postId;
     }
   }
 
-  return latestId;
+  const step = Math.max(5, TELEGRAM_REVIEWS_TOP_STEP);
+  const offsets = [...new Set([0, Math.floor(step / 4), Math.floor(step / 2), Math.floor((step * 3) / 4)])]
+    .map(value => Math.max(0, Math.min(step - 1, value)));
+  let candidate = 0;
+
+  for (const offset of offsets) {
+    const startFrom = maxId - offset;
+    for (let postId = startFrom; postId >= 1; postId -= step) {
+      // eslint-disable-next-line no-await-in-loop
+      const post = await fetchTelegramEmbedPost(channel, postId);
+      if (post) {
+        candidate = postId;
+        break;
+      }
+    }
+    if (candidate) break;
+  }
+
+  if (!candidate) {
+    return 0;
+  }
+
+  const upperBound = Math.min(maxId, candidate + step - 1);
+  for (let postId = upperBound; postId > candidate; postId -= 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const post = await fetchTelegramEmbedPost(channel, postId);
+    if (post) {
+      return postId;
+    }
+  }
+
+  return candidate;
 }
 
 async function collectTelegramReviews(channel, limit) {
   const hint = telegramReviewsCache.channel === channel ? telegramReviewsCache.latestPostId : 0;
   const latestId = await findLatestTelegramPostId(channel, hint);
-  if (!latestId) return [];
+  if (!latestId) {
+    return { latestId: 0, items: [] };
+  }
 
   const items = [];
   let currentId = latestId;
@@ -225,6 +254,19 @@ async function collectTelegramReviews(channel, limit) {
   }
 
   return { latestId, items };
+}
+
+async function refreshTelegramReviewsCache() {
+  const result = await collectTelegramReviews(TELEGRAM_REVIEWS_CHANNEL, TELEGRAM_REVIEWS_MAX_LIMIT);
+  const items = Array.isArray(result?.items) ? result.items : [];
+  const now = Date.now();
+  telegramReviewsCache = {
+    channel: TELEGRAM_REVIEWS_CHANNEL,
+    fetchedAt: now,
+    latestPostId: Number(result?.latestId || 0),
+    items,
+  };
+  return telegramReviewsCache;
 }
 
 async function initDb() {
@@ -868,19 +910,17 @@ function createApp() {
     }
 
     try {
-      const result = await collectTelegramReviews(TELEGRAM_REVIEWS_CHANNEL, TELEGRAM_REVIEWS_MAX_LIMIT);
-      const items = Array.isArray(result?.items) ? result.items : [];
-      telegramReviewsCache = {
-        channel: TELEGRAM_REVIEWS_CHANNEL,
-        fetchedAt: now,
-        latestPostId: Number(result?.latestId || 0),
-        items,
-      };
+      if (!telegramReviewsRefreshPromise) {
+        telegramReviewsRefreshPromise = refreshTelegramReviewsCache().finally(() => {
+          telegramReviewsRefreshPromise = null;
+        });
+      }
+      await telegramReviewsRefreshPromise;
       return res.json({
         source: `https://t.me/${TELEGRAM_REVIEWS_CHANNEL}`,
-        fetchedAt: new Date(now).toISOString(),
+        fetchedAt: new Date(telegramReviewsCache.fetchedAt || now).toISOString(),
         cached: false,
-        items: items.slice(0, limit),
+        items: telegramReviewsCache.items.slice(0, limit),
       });
     } catch (_error) {
       if (telegramReviewsCache.items.length) {
