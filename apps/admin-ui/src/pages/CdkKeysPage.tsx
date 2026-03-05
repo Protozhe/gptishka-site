@@ -159,7 +159,7 @@ function ProductColumn({ product, search }: { product: ProductItem; search: stri
   };
 
   const onDeleteUnused = (id: string) => {
-    if (!window.confirm("РЈРґР°Р»РёС‚СЊ РєР»СЋС‡? Р­С‚Рѕ РґРµР№СЃС‚РІРёРµ РЅРµР»СЊР·СЏ РѕС‚РјРµРЅРёС‚СЊ.")) return;
+    if (!window.confirm("Удалить ключ? Это действие нельзя отменить.")) return;
     setDeletingId(id);
     deleteMutation.mutate(id);
   };

@@ -35,7 +35,7 @@ body::before {
     radial-gradient(circle at 14% 26%, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0) 54%),
     radial-gradient(circle at 86% 18%, rgba(198, 220, 244, 0.4) 0%, rgba(198, 220, 244, 0) 52%),
     radial-gradient(circle at 44% 78%, rgba(160, 226, 210, 0.3) 0%, rgba(160, 226, 210, 0) 48%);
-  filter: blur(120px);
+  filter: blur(96px);
   opacity: 0.56;
   animation: premiumBodyGlowA 28s ease-in-out infinite alternate;
 }
@@ -46,7 +46,7 @@ body::after {
     radial-gradient(circle at 72% 68%, rgba(120, 170, 255, 0.22) 0%, rgba(120, 170, 255, 0) 46%),
     radial-gradient(circle at 22% 76%, rgba(120, 220, 200, 0.2) 0%, rgba(120, 220, 200, 0) 42%),
     radial-gradient(circle at 54% 12%, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0) 56%);
-  filter: blur(136px);
+  filter: blur(108px);
   opacity: 0.5;
   animation: premiumBodyGlowB 34s ease-in-out infinite alternate;
 }
@@ -76,7 +76,7 @@ main.page::before {
     radial-gradient(84% 70% at 48% 8%, rgba(255, 255, 255, 0.58) 0%, rgba(255, 255, 255, 0) 74%),
     radial-gradient(58% 56% at 20% 36%, rgba(120, 220, 200, 0.18) 0%, rgba(120, 220, 200, 0) 70%),
     radial-gradient(60% 56% at 82% 26%, rgba(120, 170, 255, 0.16) 0%, rgba(120, 170, 255, 0) 70%);
-  filter: blur(80px);
+  filter: blur(70px);
   opacity: 0.58;
   animation: premiumPageHazeA 24s ease-in-out infinite alternate;
 }
@@ -89,7 +89,7 @@ main.page::after {
     radial-gradient(68% 64% at 50% 44%, rgba(236, 243, 252, 0.5) 0%, rgba(236, 243, 252, 0) 74%),
     radial-gradient(50% 58% at 72% 74%, rgba(120, 220, 200, 0.14) 0%, rgba(120, 220, 200, 0) 68%),
     radial-gradient(48% 54% at 24% 70%, rgba(120, 170, 255, 0.12) 0%, rgba(120, 170, 255, 0) 70%);
-  filter: blur(96px);
+  filter: blur(80px);
   opacity: 0.46;
   animation: premiumPageHazeB 30s ease-in-out infinite alternate;
 }
@@ -312,19 +312,44 @@ footer {
   }
 }
 
+@media (max-width: 1100px) {
+  body::before,
+  body::after,
+  main.page::before,
+  main.page::after {
+    animation: none;
+  }
+
+  body::before {
+    opacity: 0.44;
+  }
+
+  body::after {
+    opacity: 0.4;
+  }
+
+  main.page::before {
+    opacity: 0.5;
+  }
+
+  main.page::after {
+    opacity: 0.4;
+  }
+}
+
 @media (max-width: 760px) {
   main.page::before {
     width: min(1180px, 102vw);
     top: -14px;
     height: clamp(320px, 92vw, 580px);
-    filter: blur(62px);
+    filter: blur(50px);
   }
 
   main.page::after {
     width: min(1120px, 100vw);
     top: 74px;
     height: clamp(300px, 84vw, 520px);
-    filter: blur(72px);
+    filter: blur(56px);
   }
 
   .seo-article {
