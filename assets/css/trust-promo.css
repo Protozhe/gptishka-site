@@ -54,39 +54,39 @@
 /* Surrounding hero scene background */
 body {
   background:
-    radial-gradient(1200px 760px at 12% -12%, rgba(250, 253, 255, 0.98) 0%, rgba(242, 246, 252, 0.74) 48%, transparent 78%),
-    radial-gradient(1180px 720px at 90% -8%, rgba(228, 238, 247, 0.72) 0%, rgba(222, 233, 245, 0.46) 52%, transparent 82%),
-    linear-gradient(170deg, #edf2f8 0%, #e8eef5 38%, #dde5ee 100%);
+    radial-gradient(160% 120% at 50% -20%, rgba(248, 251, 255, 0.98) 0%, rgba(240, 245, 251, 0.86) 44%, rgba(231, 238, 247, 0.92) 100%),
+    linear-gradient(170deg, #eef3f8 0%, #e7edf5 48%, #dee6ef 100%);
 }
 
 body::before,
 body::after {
   content: "";
   position: fixed;
-  inset: -22%;
+  inset: -26%;
   pointer-events: none;
+  will-change: transform, opacity;
 }
 
 body::before {
   z-index: -1;
   background:
-    radial-gradient(circle at 16% 34%, rgba(164, 238, 222, 0.32), transparent 44%),
-    radial-gradient(circle at 78% 18%, rgba(250, 253, 255, 0.72), transparent 40%),
-    radial-gradient(circle at 52% 76%, rgba(160, 196, 226, 0.3), transparent 46%);
-  filter: blur(78px);
-  opacity: 0.76;
-  animation: pageAmbientDrift 30s ease-in-out infinite alternate;
+    radial-gradient(circle at 14% 26%, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0) 54%),
+    radial-gradient(circle at 86% 18%, rgba(198, 220, 244, 0.4) 0%, rgba(198, 220, 244, 0) 52%),
+    radial-gradient(circle at 44% 78%, rgba(160, 226, 210, 0.3) 0%, rgba(160, 226, 210, 0) 48%);
+  filter: blur(124px);
+  opacity: 0.62;
+  animation: pageAmbientFloatA 28s ease-in-out infinite alternate;
 }
 
 body::after {
   z-index: -2;
   background:
-    radial-gradient(circle at 66% 30%, rgba(165, 216, 245, 0.24), transparent 42%),
-    radial-gradient(circle at 34% 78%, rgba(236, 244, 252, 0.54), transparent 48%),
-    radial-gradient(circle at 88% 82%, rgba(182, 238, 226, 0.22), transparent 40%);
-  filter: blur(92px);
-  opacity: 0.66;
-  animation: pageAmbientDriftAlt 36s ease-in-out infinite alternate;
+    radial-gradient(circle at 72% 68%, rgba(120, 170, 255, 0.22) 0%, rgba(120, 170, 255, 0) 46%),
+    radial-gradient(circle at 22% 76%, rgba(120, 220, 200, 0.2) 0%, rgba(120, 220, 200, 0) 42%),
+    radial-gradient(circle at 54% 12%, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0) 56%);
+  filter: blur(138px);
+  opacity: 0.56;
+  animation: pageAmbientFloatB 34s ease-in-out infinite alternate;
 }
 
 main.page {
@@ -94,24 +94,42 @@ main.page {
   isolation: isolate;
 }
 
-main.page::before {
+main.page::before,
+main.page::after {
   content: "";
   position: absolute;
   left: 50%;
-  top: 8px;
-  width: min(1240px, 96vw);
-  height: clamp(360px, 58vw, 760px);
-  transform: translateX(-50%);
-  border-radius: 44px;
+  width: min(1300px, 98vw);
   pointer-events: none;
   z-index: -1;
+  border-radius: 56px;
+  will-change: transform, opacity;
+}
+
+main.page::before {
+  top: -34px;
+  height: clamp(420px, 62vw, 860px);
+  transform: translateX(-50%);
   background:
-    radial-gradient(100% 80% at 50% 8%, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0.12) 52%, transparent 80%),
-    radial-gradient(68% 64% at 24% 32%, rgba(177, 233, 220, 0.24) 0%, transparent 70%),
-    radial-gradient(64% 60% at 78% 26%, rgba(170, 206, 236, 0.2) 0%, transparent 68%);
-  filter: blur(20px);
-  opacity: 0.8;
-  animation: heroSceneGlow 22s ease-in-out infinite alternate;
+    radial-gradient(84% 70% at 48% 8%, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0) 74%),
+    radial-gradient(58% 56% at 20% 36%, rgba(120, 220, 200, 0.2) 0%, rgba(120, 220, 200, 0) 70%),
+    radial-gradient(60% 56% at 82% 26%, rgba(120, 170, 255, 0.18) 0%, rgba(120, 170, 255, 0) 70%);
+  filter: blur(86px);
+  opacity: 0.68;
+  animation: heroSceneHazeA 22s ease-in-out infinite alternate;
+}
+
+main.page::after {
+  top: 96px;
+  height: clamp(360px, 54vw, 760px);
+  transform: translateX(-50%);
+  background:
+    radial-gradient(68% 64% at 50% 44%, rgba(236, 243, 252, 0.56) 0%, rgba(236, 243, 252, 0) 74%),
+    radial-gradient(50% 58% at 72% 74%, rgba(120, 220, 200, 0.16) 0%, rgba(120, 220, 200, 0) 68%),
+    radial-gradient(48% 54% at 24% 70%, rgba(120, 170, 255, 0.14) 0%, rgba(120, 170, 255, 0) 70%);
+  filter: blur(104px);
+  opacity: 0.54;
+  animation: heroSceneHazeB 30s ease-in-out infinite alternate;
 }
 
 /* Premium hero redesign */
@@ -127,48 +145,58 @@ main.page::before {
   align-items: center;
   text-align: center;
   border-radius: clamp(28px, 4vw, 36px);
-  border: 1px solid rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.58);
   background:
-    linear-gradient(155deg, rgba(255, 255, 255, 0.58), rgba(250, 253, 255, 0.38) 46%, rgba(244, 250, 252, 0.44) 100%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.62));
-  backdrop-filter: blur(20px) saturate(138%);
-  -webkit-backdrop-filter: blur(20px) saturate(138%);
+    linear-gradient(155deg, rgba(255, 255, 255, 0.44), rgba(249, 252, 255, 0.3) 48%, rgba(244, 250, 252, 0.32) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.52));
+  backdrop-filter: blur(24px) saturate(136%);
+  -webkit-backdrop-filter: blur(24px) saturate(136%);
   box-shadow:
-    0 34px 78px rgba(15, 23, 42, 0.14),
-    0 12px 32px rgba(15, 23, 42, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.88);
+    0 36px 84px rgba(15, 23, 42, 0.15),
+    0 12px 30px rgba(15, 23, 42, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+}
+
+.hero:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 40px 92px rgba(15, 23, 42, 0.16),
+    0 14px 34px rgba(15, 23, 42, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
 }
 
 .hero::before {
   content: "";
   position: absolute;
-  inset: -22% -12%;
+  inset: -24% -12%;
   pointer-events: none;
   z-index: 0;
   background:
     radial-gradient(48% 44% at 24% 34%, rgba(120, 220, 200, 0.2) 0%, rgba(120, 220, 200, 0) 72%),
-    radial-gradient(40% 38% at 72% 22%, rgba(120, 170, 255, 0.18) 0%, rgba(120, 170, 255, 0) 74%);
-  filter: blur(56px);
-  opacity: 0.3;
+    radial-gradient(42% 40% at 74% 22%, rgba(120, 170, 255, 0.18) 0%, rgba(120, 170, 255, 0) 74%),
+    radial-gradient(56% 32% at 50% 92%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 82%);
+  filter: blur(74px);
+  opacity: 0.34;
   mix-blend-mode: soft-light;
   transform-origin: 50% 50%;
-  animation: heroAmbientBlobA 18s ease-in-out infinite alternate;
+  animation: heroUnderlightFlow 18s ease-in-out infinite alternate;
 }
 
 .hero::after {
   content: "";
   position: absolute;
-  inset: -20% -10%;
+  inset: 0;
   pointer-events: none;
   z-index: 1;
   background:
-    radial-gradient(44% 40% at 68% 78%, rgba(120, 220, 200, 0.16) 0%, rgba(120, 220, 200, 0) 74%),
-    radial-gradient(62% 28% at 50% 6%, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 80%),
-    linear-gradient(125deg, rgba(255, 255, 255, 0.18) 8%, rgba(255, 255, 255, 0) 42%);
-  filter: blur(68px);
-  opacity: 0.24;
-  mix-blend-mode: screen;
-  animation: heroAmbientBlobB 22s ease-in-out infinite alternate;
+    radial-gradient(78% 56% at 50% 30%, rgba(120, 220, 200, 0.14) 0%, rgba(120, 170, 255, 0.12) 44%, rgba(255, 255, 255, 0) 78%),
+    linear-gradient(118deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.12) 28%, rgba(255, 255, 255, 0) 56%),
+    radial-gradient(88% 40% at 50% 0%, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0) 80%);
+  background-size: 180% 180%, 100% 100%, 100% 100%;
+  background-position: 0% 42%, 0 0, 0 0;
+  opacity: 0.42;
+  animation: heroSpecularSweep 26s ease-in-out infinite alternate;
 }
 
 .hero > * {
@@ -229,6 +257,7 @@ main.page::before {
 .hero-promo-inline {
   position: relative;
   z-index: 2;
+  overflow: hidden;
   isolation: isolate;
   margin: 26px auto 0;
   width: min(720px, 100%);
@@ -238,14 +267,14 @@ main.page::before {
   align-items: center;
   gap: 12px;
   border-radius: 22px;
-  border: 0;
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.5), rgba(250, 252, 255, 0.3) 52%, rgba(245, 250, 253, 0.34) 100%);
-  backdrop-filter: blur(14px) saturate(135%);
-  -webkit-backdrop-filter: blur(14px) saturate(135%);
+  border: 1px solid rgba(255, 255, 255, 0.44);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.36), rgba(249, 252, 255, 0.22) 52%, rgba(244, 250, 253, 0.26) 100%);
+  backdrop-filter: blur(18px) saturate(132%);
+  -webkit-backdrop-filter: blur(18px) saturate(132%);
   box-shadow:
     0 14px 30px rgba(15, 23, 42, 0.11),
-    inset 0 1px 0 rgba(255, 255, 255, 0.86);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .hero-promo-inline::before {
@@ -253,26 +282,26 @@ main.page::before {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(130deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.08) 38%, rgba(255, 255, 255, 0) 66%);
+  background: linear-gradient(130deg, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.1) 38%, rgba(255, 255, 255, 0) 66%);
   pointer-events: none;
   opacity: 0.34;
-  animation: heroSpecularShift 26s ease-in-out infinite alternate;
+  animation: promoSpecularDrift 24s ease-in-out infinite alternate;
 }
 
 .hero-promo-inline::after {
   content: "";
   position: absolute;
-  inset: -24% -14%;
+  inset: -28% -16%;
   border-radius: inherit;
   background:
-    radial-gradient(circle at 24% 34%, rgba(120, 220, 200, 0.2) 0%, rgba(120, 220, 200, 0) 68%),
+    radial-gradient(circle at 24% 34%, rgba(120, 220, 200, 0.18) 0%, rgba(120, 220, 200, 0) 68%),
     radial-gradient(circle at 78% 70%, rgba(120, 170, 255, 0.16) 0%, rgba(120, 170, 255, 0) 70%);
-  filter: blur(50px);
-  opacity: 0.22;
+  filter: blur(64px);
+  opacity: 0.24;
   mix-blend-mode: soft-light;
   pointer-events: none;
   z-index: 0;
-  animation: heroPromoAmbient 16s ease-in-out infinite alternate;
+  animation: promoAmbientPulse 16s ease-in-out infinite alternate;
 }
 
 .hero-promo-inline > * {
@@ -284,7 +313,7 @@ main.page::before {
   transform: translateY(-1px);
   box-shadow:
     0 18px 36px rgba(15, 23, 42, 0.13),
-    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+    inset 0 1px 0 rgba(255, 255, 255, 0.84);
 }
 
 .hero-promo-inline__text {
@@ -361,31 +390,19 @@ main.page::before {
   box-shadow: 0 6px 12px rgba(19, 138, 120, 0.14);
 }
 
-@keyframes heroAmbientBlobA {
-  0% {
-    transform: translate3d(-4%, -3%, 0) rotate(-1.2deg) scale(1);
-  }
-  50% {
-    transform: translate3d(2%, 1%, 0) rotate(0.8deg) scale(1.05);
-  }
-  100% {
-    transform: translate3d(4%, 2%, 0) rotate(1.6deg) scale(1.08);
-  }
-}
-
-@keyframes pageAmbientDrift {
+@keyframes pageAmbientFloatA {
   0% {
     transform: translate3d(-3%, -2%, 0) scale(1);
   }
   50% {
-    transform: translate3d(2%, 3%, 0) scale(1.06);
+    transform: translate3d(2%, 2%, 0) scale(1.04);
   }
   100% {
     transform: translate3d(3%, -1%, 0) scale(1.03);
   }
 }
 
-@keyframes pageAmbientDriftAlt {
+@keyframes pageAmbientFloatB {
   0% {
     transform: translate3d(2%, -2%, 0) scale(1);
   }
@@ -393,45 +410,74 @@ main.page::before {
     transform: translate3d(-2%, 2%, 0) scale(1.05);
   }
   100% {
-    transform: translate3d(-3%, -1%, 0) scale(1.02);
+    transform: translate3d(-3%, -1%, 0) scale(1.03);
   }
 }
 
-@keyframes heroSceneGlow {
+@keyframes heroSceneHazeA {
   0% {
-    opacity: 0.74;
+    opacity: 0.56;
     transform: translateX(-50%) scale(1);
   }
   100% {
-    opacity: 0.9;
-    transform: translateX(-50%) scale(1.03);
+    opacity: 0.68;
+    transform: translateX(-50%) scale(1.04);
   }
 }
 
-@keyframes heroAmbientBlobB {
+@keyframes heroSceneHazeB {
   0% {
-    transform: translate3d(3%, -2%, 0) rotate(0.8deg) scale(1);
-  }
-  50% {
-    transform: translate3d(-2%, 2%, 0) rotate(-0.8deg) scale(1.04);
+    opacity: 0.42;
+    transform: translateX(-50%) scale(1);
   }
   100% {
-    transform: translate3d(-4%, -1%, 0) rotate(-1.4deg) scale(1.07);
+    opacity: 0.54;
+    transform: translateX(-50%) scale(1.05);
   }
 }
 
-@keyframes heroSpecularShift {
+@keyframes heroUnderlightFlow {
   0% {
-    opacity: 0.22;
-    transform: translateX(-2%);
+    transform: translate3d(-3%, -2%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(1%, 2%, 0) scale(1.05);
+  }
+  100% {
+    transform: translate3d(3%, 1%, 0) scale(1.07);
+  }
+}
+
+@keyframes heroSpecularSweep {
+  0% {
+    opacity: 0.34;
+    transform: translateX(-1.5%);
+    background-position: 0% 42%, 0 0, 0 0;
+  }
+  50% {
+    opacity: 0.4;
+    transform: translateX(0%);
+    background-position: 52% 50%, 0 0, 0 0;
+  }
+  100% {
+    opacity: 0.46;
+    transform: translateX(1.5%);
+    background-position: 100% 58%, 0 0, 0 0;
+  }
+}
+
+@keyframes promoSpecularDrift {
+  0% {
+    opacity: 0.28;
+    transform: translateX(-1.5%);
   }
   100% {
     opacity: 0.38;
-    transform: translateX(2%);
+    transform: translateX(1.5%);
   }
 }
 
-@keyframes heroPromoAmbient {
+@keyframes promoAmbientPulse {
   0% {
     transform: translate3d(-2%, -1%, 0) scale(1);
   }
@@ -444,6 +490,7 @@ main.page::before {
   body::before,
   body::after,
   main.page::before,
+  main.page::after,
   .hero::before,
   .hero::after,
   .hero-promo-inline::before,
@@ -460,6 +507,20 @@ main.page::before {
 }
 
 @media (max-width: 760px) {
+  main.page::before {
+    width: min(1200px, 102vw);
+    top: -20px;
+    height: clamp(340px, 96vw, 620px);
+    filter: blur(66px);
+  }
+
+  main.page::after {
+    width: min(1140px, 100vw);
+    top: 86px;
+    height: clamp(320px, 88vw, 560px);
+    filter: blur(74px);
+  }
+
   .hero {
     margin: 18px auto 54px;
     padding: 30px 16px 28px;
