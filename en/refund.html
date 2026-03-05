@@ -1,20 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Top.Mail.Ru counter -->
-<script type="text/javascript">
-var _tmr = window._tmr || (window._tmr = []);
-_tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
-(function (d, w, id) {
-  if (d.getElementById(id)) return;
-  var ts = d.createElement("script"); ts.type = "text/javascript"; ts.async = true; ts.id = id;
-  ts.src = "https://top-fwz1.mail.ru/js/code.js";
-  var f = function () {var s = d.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ts, s);};
-  if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); }
-})(document, window, "tmr-code");
-</script>
-<noscript><div><img src="https://top-fwz1.mail.ru/counter?id=3744660;js=na" style="position:absolute;left:-9999px;" alt="Top.Mail.Ru" /></div></noscript>
-<!-- /Top.Mail.Ru counter -->
+<script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="GPTishka: secure activation and renewal of ChatGPT Plus with support and guarantee." />
@@ -34,31 +21,9 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/logo.min.css">
-<link rel="stylesheet" href="/assets/css/sections.min.css">
 <link rel="stylesheet" href="/assets/css/theme.min.css">
 <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260305a" />
-<!-- Yandex.Metrika counter -->
-<script type="text/javascript">
-  (function(m,e,t,r,i,k,a){
-      m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-      m[i].l=1*new Date();
-      for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-      k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-  })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106969126', 'ym');
-
-  ym(106969126, 'init', {
-    ssr: true,
-    webvisor: true,
-    clickmap: true,
-    ecommerce: 'dataLayer',
-    referrer: document.referrer,
-    url: location.href,
-    accurateTrackBounce: true,
-    trackLinks: true
-  });
-</script>
-<!-- /Yandex.Metrika counter -->
-<link rel="stylesheet" href="/assets/css/support-widget.css" />
+<link rel="stylesheet" href="/assets/css/support-widget.css?v=20260305a" />
 </head>
 <body>
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
@@ -185,42 +150,14 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
   <span class="footer-copy">© 2026 GPTishka. All rights reserved.</span>
 </footer>
 
-  <script src="/assets/js/app.min.js" defer></script>
-  <script>
-    const langSwitch = document.getElementById("langSwitch");
-    const langCurrent = document.getElementById("langCurrent");
-
-    // open / close dropdown
-    langCurrent.addEventListener("click", () => {
-      langSwitch.classList.toggle("open");
-    });
-
-    document.querySelectorAll(".lang-item").forEach(item => {
-      item.addEventListener("click", () => {
-        const lang = item.dataset.lang;
-        const path = window.location.pathname;
-
-        if (lang === "en") {
-          window.location.href = path.startsWith("/en/") ? path : "/en" + path;
-        }
-
-        if (lang === "ru") {
-          const ruPath = path.replace(/^\/en/, "");
-          window.location.href = ruPath === "" ? "/" : ruPath;
-        }
-      });
-    });
-
-    // close on outside click
-    document.addEventListener("click", e => {
-      if (!langSwitch.contains(e.target)) {
-        langSwitch.classList.remove("open");
-      }
-    });
-  </script>
-<script src="/assets/js/support-widget.js" defer></script>
+  <script src="/assets/js/app.min.js?v=20260305a" defer></script>
+  <script src="/assets/js/support-widget.js?v=20260305a" defer></script>
 </body>
 </html>
+
+
+
+
 
 
 

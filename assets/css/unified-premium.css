@@ -196,21 +196,6 @@ header.is-scrolled {
   background: linear-gradient(150deg, rgba(248, 255, 253, 0.76), rgba(239, 249, 246, 0.5)), var(--glass-noise);
 }
 
-.hero,
-.features {
-  background-image: none;
-}
-
-.hero::before {
-  background-image: none;
-}
-
-.hero::after {
-  background: radial-gradient(46% 42% at 78% 14%, rgba(120, 170, 255, 0.18), transparent 74%);
-  filter: blur(8px);
-  opacity: 0.86;
-}
-
 .hero p,
 .pricing-header p,
 .faq-header p,

@@ -5,6 +5,14 @@
   var STORAGE_CLICK_KEY = "gptishka_support_widget_clicked_until";
   var WIDGET_ID = "gptishka-support-widget";
   var FORCE_SHOW_QUERY_KEY = "supportWidget";
+  var HIDE_PATHS = [
+    "/404.html",
+    "/500.html",
+    "/fail.html",
+    "/success.html",
+    "/en/fail.html",
+    "/en/success.html"
+  ];
 
   function readUntil(key) {
     try {
@@ -61,6 +69,12 @@
     return readUntil(STORAGE_CLICK_KEY) > Date.now();
   }
 
+  function shouldSkipPage() {
+    var currentPath = String(window.location.pathname || "").toLowerCase();
+    if (!currentPath) return false;
+    return HIDE_PATHS.indexOf(currentPath) !== -1;
+  }
+
   function removeWidget(root) {
     root.classList.remove("is-open");
     root.classList.remove("is-visible");
@@ -81,7 +95,11 @@
     root.setAttribute("aria-label", "Виджет поддержки");
     root.innerHTML =
       '<button class="support-widget__fab" type="button" aria-label="Открыть поддержку">' +
-        '<span class="support-widget__fab-icon" aria-hidden="true">💬</span>' +
+        '<span class="support-widget__fab-icon" aria-hidden="true">' +
+          '<svg viewBox="0 0 24 24" width="22" height="22" focusable="false" aria-hidden="true">' +
+            '<path fill="currentColor" d="M12 3c-4.96 0-9 3.58-9 8 0 2.2.99 4.22 2.63 5.67L4.5 21l4.88-2.2c.84.19 1.72.29 2.62.29 4.96 0 9-3.58 9-8s-4.04-8-9-8zm0 14.09c-.84 0-1.66-.1-2.43-.3l-.71-.18-2.18.98.5-2.08-.48-.44C5.45 14.01 5 12.99 5 11c0-3.31 3.14-6 7-6s7 2.69 7 6-3.14 6.09-7 6.09z"/>' +
+          '</svg>' +
+        '</span>' +
       '</button>' +
       '<div class="support-widget__panel">' +
         '<button class="support-widget__close" type="button" aria-label="Закрыть">×</button>' +
@@ -133,6 +151,7 @@
 
   function initSupportWidget() {
     if (!document.body) return;
+    if (shouldSkipPage()) return;
 
     var forceShow = hasForceShowFlag();
     clearLegacyCloseSuppress();

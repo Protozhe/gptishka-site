@@ -55,9 +55,15 @@
 }
 
 .support-widget__fab-icon {
-  font-size: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
   transform: translateY(-1px);
+}
+
+.support-widget__fab-icon svg {
+  display: block;
 }
 
 .support-widget__panel {

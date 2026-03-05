@@ -25,10 +25,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/logo.min.css">
-<link rel="stylesheet" href="/assets/css/sections.min.css">
 <link rel="stylesheet" href="/assets/css/theme.min.css">
 <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260305a" />
-<link rel="stylesheet" href="/assets/css/support-widget.css">
+<link rel="stylesheet" href="/assets/css/support-widget.css?v=20260305a">
 <style>
   .site-map-list {
     margin: 18px 0 0;
@@ -116,30 +115,11 @@
     <span class="footer-copy">© 2026 GPTishka. All rights reserved.</span>
   </footer>
 
-  <script src="/assets/js/app.min.js" defer></script>
-  <script>
-    const langSwitch = document.getElementById("langSwitch");
-    const langCurrent = document.getElementById("langCurrent");
-
-    langCurrent.addEventListener("click", () => {
-      langSwitch.classList.toggle("open");
-    });
-
-    document.querySelectorAll(".lang-item").forEach(item => {
-      item.addEventListener("click", () => {
-        const lang = item.dataset.lang;
-        if (lang === "en") window.location.href = "/en/site-map.html";
-        if (lang === "ru") window.location.href = "/site-map.html";
-      });
-    });
-
-    document.addEventListener("click", e => {
-      if (!langSwitch.contains(e.target)) {
-        langSwitch.classList.remove("open");
-      }
-    });
-  </script>
-  <script src="/assets/js/support-widget.js" defer></script>
+  <script src="/assets/js/app.min.js?v=20260305a" defer></script>
+  <script src="/assets/js/support-widget.js?v=20260305a" defer></script>
 </body>
 </html>
+
+
+
 

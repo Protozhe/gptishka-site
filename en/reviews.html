@@ -1,20 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Top.Mail.Ru counter -->
-<script type="text/javascript">
-var _tmr = window._tmr || (window._tmr = []);
-_tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
-(function (d, w, id) {
-  if (d.getElementById(id)) return;
-  var ts = d.createElement("script"); ts.type = "text/javascript"; ts.async = true; ts.id = id;
-  ts.src = "https://top-fwz1.mail.ru/js/code.js";
-  var f = function () {var s = d.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ts, s);};
-  if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); }
-})(document, window, "tmr-code");
-</script>
-<noscript><div><img src="https://top-fwz1.mail.ru/counter?id=3744660;js=na" style="position:absolute;left:-9999px;" alt="Top.Mail.Ru" /></div></noscript>
-<!-- /Top.Mail.Ru counter -->
+<script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="GPTishka: secure activation and renewal of ChatGPT Plus with support and guarantee." />
@@ -35,7 +22,6 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/logo.min.css">
-<link rel="stylesheet" href="/assets/css/sections.min.css">
 <link rel="stylesheet" href="/assets/css/theme.min.css">
 <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260305a" />
 <style>
@@ -92,28 +78,7 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
 </style>
 
 <!-- GOOGLE FONTS -->
-<!-- Yandex.Metrika counter -->
-<script type="text/javascript">
-  (function(m,e,t,r,i,k,a){
-      m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-      m[i].l=1*new Date();
-      for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-      k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-  })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106969126', 'ym');
-
-  ym(106969126, 'init', {
-    ssr: true,
-    webvisor: true,
-    clickmap: true,
-    ecommerce: 'dataLayer',
-    referrer: document.referrer,
-    url: location.href,
-    accurateTrackBounce: true,
-    trackLinks: true
-  });
-</script>
-<!-- /Yandex.Metrika counter -->
-<link rel="stylesheet" href="/assets/css/support-widget.css" />
+<link rel="stylesheet" href="/assets/css/support-widget.css?v=20260305a" />
 </head>
 <body>
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
@@ -180,147 +145,13 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
   <span class="footer-copy">© 2026 GPTishka. All rights reserved.</span>
 </footer>
 
-  <script>
-    (() => {
-      const feed = document.getElementById("telegramReviewsFeed");
-      if (!feed) return;
-      const REVIEWS_CACHE_KEY = "gptishka_reviews_cache_v1";
-      const REVIEWS_CACHE_TS_KEY = "gptishka_reviews_cache_ts_v1";
-      const REVIEWS_CACHE_TTL_MS = 3 * 60 * 60 * 1000;
-
-      const formatDate = iso => {
-        if (!iso) return "";
-        const date = new Date(iso);
-        if (Number.isNaN(date.getTime())) return "";
-        return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-      };
-
-      const escapeHtml = value =>
-        String(value || "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#39;");
-
-      const renderItems = items => {
-        if (!Array.isArray(items) || !items.length) {
-          feed.innerHTML = '<div class="telegram-reviews-empty">No reviews yet. Open channel: <a href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">@otzivigptishkashop</a>.</div>';
-          return;
-        }
-
-        feed.innerHTML = items
-          .map(item => {
-            const author = escapeHtml(item.author || "Telegram");
-            const text = escapeHtml(item.text || "");
-            const date = formatDate(item.date);
-            const views = item.views ? ` · 👁 ${escapeHtml(item.views)}` : "";
-            const url = escapeHtml(item.url || "https://t.me/otzivigptishkashop");
-            return `
-              <article class="review">
-                <div class="review-header">
-                  <div class="avatar">${item.authorPhotoUrl ? `<img src="${escapeHtml(item.authorPhotoUrl)}" alt="${author}" loading="lazy" decoding="async">` : "TG"}</div>
-                  <div>
-                    <div class="review-name">${author}</div>
-                    <div class="review-date">${date}${views}</div>
-                  </div>
-                </div>
-                <div class="review-text">${text}</div>
-                ${item.imageUrl ? `<img class="telegram-review-image" src="${escapeHtml(item.imageUrl)}" alt="Review image" loading="lazy" decoding="async">` : ""}
-                <a class="telegram-review-link" href="${url}" target="_blank" rel="noopener noreferrer">Open post</a>
-              </article>
-            `;
-          })
-          .join("");
-      };
-
-      const getCache = () => {
-        try {
-          const raw = localStorage.getItem(REVIEWS_CACHE_KEY);
-          const ts = Number(localStorage.getItem(REVIEWS_CACHE_TS_KEY) || 0);
-          const items = JSON.parse(raw || "[]");
-          if (!Array.isArray(items) || !items.length) return { items: [], fresh: false };
-          return { items, fresh: Date.now() - ts < REVIEWS_CACHE_TTL_MS };
-        } catch (_) {
-          return { items: [], fresh: false };
-        }
-      };
-
-      const saveCache = items => {
-        try {
-          localStorage.setItem(REVIEWS_CACHE_KEY, JSON.stringify(items));
-          localStorage.setItem(REVIEWS_CACHE_TS_KEY, String(Date.now()));
-        } catch (_) {
-          // ignore
-        }
-      };
-
-      const cached = getCache();
-      if (cached.items.length) {
-        renderItems(cached.items);
-      }
-      if (cached.fresh) {
-        return;
-      }
-
-      fetch("/api/reviews/telegram?limit=20", { headers: { Accept: "application/json" } })
-        .then(response => (response.ok ? response.json() : Promise.reject(new Error("reviews api failed"))))
-        .then(payload => {
-          const items = Array.isArray(payload?.items) ? payload.items : [];
-          if (!items.length) {
-            if (!cached.items.length) {
-              feed.innerHTML = '<div class="telegram-reviews-empty">No reviews yet. Open channel: <a href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">@otzivigptishkashop</a>.</div>';
-            }
-            return;
-          }
-          saveCache(items);
-          renderItems(items);
-        })
-        .catch(() => {
-          if (!cached.items.length) {
-            feed.innerHTML = '<div class="telegram-reviews-empty">Unable to load reviews right now. Open channel: <a href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">@otzivigptishkashop</a>.</div>';
-          }
-        });
-    })();
-  </script>
-
-  <script src="/assets/js/app.min.js" defer></script>
-
-  <script>
-    const langSwitch = document.getElementById("langSwitch");
-    const langCurrent = document.getElementById("langCurrent");
-
-    // open / close dropdown
-    langCurrent.addEventListener("click", () => {
-      langSwitch.classList.toggle("open");
-    });
-
-    // language switch
-    document.querySelectorAll(".lang-item").forEach(item => {
-      item.addEventListener("click", () => {
-        const lang = item.dataset.lang;
-
-        if (lang === "en") {
-          window.location.href = "/en/index.html";
-        }
-
-        if (lang === "ru") {
-          window.location.href = "/index.html";
-        }
-      });
-    });
-
-    // close on outside click
-    document.addEventListener("click", e => {
-      if (!langSwitch.contains(e.target)) {
-        langSwitch.classList.remove("open");
-      }
-    });
-  </script>
-
-<script src="/assets/js/support-widget.js" defer></script>
+  <script src="/assets/js/support-widget.js?v=20260305a" defer></script>
 </body>
 </html>
+
+
+
+
 
 
 

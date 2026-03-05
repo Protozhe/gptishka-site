@@ -21,8 +21,71 @@ document.addEventListener("DOMContentLoaded", () => {
   onScroll();
   window.addEventListener("scroll", onScroll, { passive: true });
 
+  initFaqAccordions();
+  initLanguageSwitch();
   initActivationResumeShortcut();
 });
+
+function initFaqAccordions() {
+  const questions = Array.from(document.querySelectorAll(".faq-question"));
+  if (!questions.length) return;
+  questions.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const item = btn.parentElement;
+      if (item) item.classList.toggle("active");
+    });
+  });
+}
+
+function resolveLangTargetPath(targetLang) {
+  const path = String(window.location.pathname || "/").trim();
+  const cleanPath = path === "/" ? "/index.html" : path;
+  const isEnPath = cleanPath.startsWith("/en/");
+
+  if (targetLang === "en") {
+    if (isEnPath) return cleanPath;
+    return `/en${cleanPath}`;
+  }
+
+  if (targetLang === "ru") {
+    if (!isEnPath) return cleanPath;
+    const ruPath = cleanPath.replace(/^\/en/, "");
+    return ruPath || "/index.html";
+  }
+
+  return cleanPath;
+}
+
+function initLanguageSwitch() {
+  const langSwitch = document.getElementById("langSwitch");
+  const langCurrent = document.getElementById("langCurrent");
+  if (!langSwitch || !langCurrent) return;
+
+  const langItems = Array.from(langSwitch.querySelectorAll(".lang-item[data-lang]"));
+  if (!langItems.length) return;
+
+  langCurrent.addEventListener("click", () => {
+    langSwitch.classList.toggle("open");
+  });
+
+  langItems.forEach(item => {
+    item.addEventListener("click", () => {
+      const lang = String(item.dataset.lang || "").toLowerCase();
+      if (lang !== "ru" && lang !== "en") return;
+      const targetPath = resolveLangTargetPath(lang);
+      const targetUrl = new URL(targetPath, window.location.origin);
+      targetUrl.search = "";
+      targetUrl.hash = "";
+      window.location.href = targetUrl.toString();
+    });
+  });
+
+  document.addEventListener("click", e => {
+    if (!langSwitch.contains(e.target)) {
+      langSwitch.classList.remove("open");
+    }
+  });
+}
 
 const ACTIVATION_LAST_ORDER_ID_KEY = "gptishka_activation_order_id";
 const ACTIVATION_ORDER_TOKEN_PREFIX = "gptishka_activation_order_token:";
@@ -1604,6 +1667,10 @@ document.addEventListener("click", e => {
 
 // Live ticker with purchases and online count.
 (() => {
+  // Disabled by default: ticker bar is hidden in CSS, so polling would be wasted traffic.
+  const ENABLE_LIVE_TICKER = false;
+  if (!ENABLE_LIVE_TICKER) return;
+
   const API_STATS_URL = "/api/stats";
   const API_HEARTBEAT_URL = "/api/heartbeat";
   const STATS_REFRESH_MS = 15000;
