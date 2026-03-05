@@ -24,6 +24,8 @@ const TELEGRAM_REVIEWS_MAX_LIMIT = 30;
 const TELEGRAM_REVIEWS_SCAN_MAX_ID = Number(process.env.TELEGRAM_REVIEWS_SCAN_MAX_ID || 600);
 const TELEGRAM_REVIEWS_HINT_WINDOW = Number(process.env.TELEGRAM_REVIEWS_HINT_WINDOW || 30);
 const TELEGRAM_REVIEWS_TOP_STEP = Number(process.env.TELEGRAM_REVIEWS_TOP_STEP || 20);
+const TELEGRAM_REVIEWS_FETCH_TIMEOUT_MS = Number(process.env.TELEGRAM_REVIEWS_FETCH_TIMEOUT_MS || 2500);
+const TELEGRAM_REVIEWS_REFRESH_TIMEOUT_MS = Number(process.env.TELEGRAM_REVIEWS_REFRESH_TIMEOUT_MS || 9000);
 const TELEGRAM_FETCH_HEADERS = {
   "User-Agent":
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
@@ -168,7 +170,7 @@ function parseTelegramEmbedPost(html, channel, postId) {
 
 async function fetchTelegramEmbedPost(channel, postId) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
+  const timeout = setTimeout(() => controller.abort(), Math.max(800, TELEGRAM_REVIEWS_FETCH_TIMEOUT_MS));
   try {
     const response = await fetch(`https://t.me/${channel}/${postId}?embed=1`, {
       headers: TELEGRAM_FETCH_HEADERS,
@@ -181,7 +183,7 @@ async function fetchTelegramEmbedPost(channel, postId) {
   }
 }
 
-async function findLatestTelegramPostId(channel, hint = 0) {
+async function findLatestTelegramPostId(channel, hint = 0, deadlineTs = 0) {
   const maxId = Math.max(1, TELEGRAM_REVIEWS_SCAN_MAX_ID);
   const safeHint = Number.isFinite(hint) ? Math.max(0, Math.min(maxId, hint)) : 0;
   const hintWindow = Math.max(10, TELEGRAM_REVIEWS_HINT_WINDOW);
@@ -189,6 +191,7 @@ async function findLatestTelegramPostId(channel, hint = 0) {
     const from = Math.min(maxId, safeHint + Math.floor(hintWindow / 2));
     const to = Math.max(1, safeHint - hintWindow);
     for (let postId = from; postId >= to; postId -= 1) {
+      if (deadlineTs > 0 && Date.now() > deadlineTs) return 0;
       // eslint-disable-next-line no-await-in-loop
       const post = await fetchTelegramEmbedPost(channel, postId);
       if (post) return postId;
@@ -203,6 +206,7 @@ async function findLatestTelegramPostId(channel, hint = 0) {
   for (const offset of offsets) {
     const startFrom = maxId - offset;
     for (let postId = startFrom; postId >= 1; postId -= step) {
+      if (deadlineTs > 0 && Date.now() > deadlineTs) return candidate;
       // eslint-disable-next-line no-await-in-loop
       const post = await fetchTelegramEmbedPost(channel, postId);
       if (post) {
@@ -219,6 +223,7 @@ async function findLatestTelegramPostId(channel, hint = 0) {
 
   const upperBound = Math.min(maxId, candidate + step - 1);
   for (let postId = upperBound; postId > candidate; postId -= 1) {
+    if (deadlineTs > 0 && Date.now() > deadlineTs) break;
     // eslint-disable-next-line no-await-in-loop
     const post = await fetchTelegramEmbedPost(channel, postId);
     if (post) {
@@ -229,9 +234,9 @@ async function findLatestTelegramPostId(channel, hint = 0) {
   return candidate;
 }
 
-async function collectTelegramReviews(channel, limit) {
+async function collectTelegramReviews(channel, limit, deadlineTs = 0) {
   const hint = telegramReviewsCache.channel === channel ? telegramReviewsCache.latestPostId : 0;
-  const latestId = await findLatestTelegramPostId(channel, hint);
+  const latestId = await findLatestTelegramPostId(channel, hint, deadlineTs);
   if (!latestId) {
     return { latestId: 0, items: [] };
   }
@@ -242,6 +247,7 @@ async function collectTelegramReviews(channel, limit) {
   const maxMisses = Math.max(limit * 2, 20);
 
   while (currentId > 0 && items.length < limit && misses < maxMisses) {
+    if (deadlineTs > 0 && Date.now() > deadlineTs) break;
     // eslint-disable-next-line no-await-in-loop
     const post = await fetchTelegramEmbedPost(channel, currentId);
     if (post && post.text) {
@@ -256,8 +262,12 @@ async function collectTelegramReviews(channel, limit) {
   return { latestId, items };
 }
 
-async function refreshTelegramReviewsCache() {
-  const result = await collectTelegramReviews(TELEGRAM_REVIEWS_CHANNEL, TELEGRAM_REVIEWS_MAX_LIMIT);
+async function refreshTelegramReviewsCache(deadlineTs = 0) {
+  const result = await collectTelegramReviews(
+    TELEGRAM_REVIEWS_CHANNEL,
+    TELEGRAM_REVIEWS_MAX_LIMIT,
+    deadlineTs
+  );
   const items = Array.isArray(result?.items) ? result.items : [];
   const now = Date.now();
   telegramReviewsCache = {
@@ -909,9 +919,27 @@ function createApp() {
       });
     }
 
-    try {
+    // Return stale cache immediately to keep page responsive, then refresh in background.
+    if (telegramReviewsCache.items.length) {
       if (!telegramReviewsRefreshPromise) {
-        telegramReviewsRefreshPromise = refreshTelegramReviewsCache().finally(() => {
+        const staleRefreshDeadline = Date.now() + Math.max(3000, TELEGRAM_REVIEWS_REFRESH_TIMEOUT_MS);
+        telegramReviewsRefreshPromise = refreshTelegramReviewsCache(staleRefreshDeadline).finally(() => {
+          telegramReviewsRefreshPromise = null;
+        });
+      }
+      return res.json({
+        source: `https://t.me/${TELEGRAM_REVIEWS_CHANNEL}`,
+        fetchedAt: new Date(telegramReviewsCache.fetchedAt).toISOString(),
+        cached: true,
+        stale: true,
+        items: telegramReviewsCache.items.slice(0, limit),
+      });
+    }
+
+    try {
+      const refreshDeadline = Date.now() + Math.max(3000, TELEGRAM_REVIEWS_REFRESH_TIMEOUT_MS);
+      if (!telegramReviewsRefreshPromise) {
+        telegramReviewsRefreshPromise = refreshTelegramReviewsCache(refreshDeadline).finally(() => {
           telegramReviewsRefreshPromise = null;
         });
       }
