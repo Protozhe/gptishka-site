@@ -303,6 +303,7 @@ document.querySelectorAll("a[href]").forEach(link => {
         emailPlaceholder: "Email for order details",
         invalidEmail: "Please enter a valid email",
         checkoutError: "Failed to start checkout. Please try again.",
+        lavaUnavailable: "Lava is temporarily unavailable. Please choose Enot.io.",
         checkoutProductMissing: "The selected item is outdated in cart. Please re-add it from pricing.",
         multiCartCheckout: "Checkout is currently available one item at a time. Please pay items separately.",
         promoHeroApplied: "WELCOME34 applied",
@@ -341,6 +342,7 @@ document.querySelectorAll("a[href]").forEach(link => {
         emailPlaceholder: "Email для получения данных заказа",
         invalidEmail: "Введите корректный email",
         checkoutError: "Не удалось начать оплату. Попробуйте снова.",
+        lavaUnavailable: "Lava временно недоступна. Выберите Enot.io.",
         checkoutProductMissing: "Товар в корзине устарел. Добавьте его заново из тарифов.",
         multiCartCheckout: "Сейчас оплата доступна по одному товару. Оплатите позиции по отдельности.",
         promoHeroApplied: "WELCOME34 применен",
@@ -459,8 +461,8 @@ document.querySelectorAll("a[href]").forEach(link => {
     if (!row) return;
 
     if (!cartPaymentModalEl || !cartPaymentModalOptions.length) {
-      startBackendCheckout(row, row.qty, activePromoCode, getSelectedPaymentMethod()).catch(() => {
-        alert(TEXT.checkoutError);
+      startBackendCheckout(row, row.qty, activePromoCode, getSelectedPaymentMethod()).catch(error => {
+        alert(resolveCheckoutErrorMessage(error));
       });
       return;
     }
@@ -481,13 +483,22 @@ document.querySelectorAll("a[href]").forEach(link => {
 
     checkoutInProgress = true;
     startBackendCheckout(pendingRow, pendingRow.qty, checkoutPendingPromoCode, selectedMethod)
-      .catch(() => {
-        alert(TEXT.checkoutError);
+      .catch(error => {
+        alert(resolveCheckoutErrorMessage(error));
       })
       .finally(() => {
         checkoutInProgress = false;
         resetPendingCheckout();
       });
+  }
+
+  function resolveCheckoutErrorMessage(error) {
+    const raw = String(error && error.message ? error.message : "").trim();
+    if (!raw) return TEXT.checkoutError;
+    if (/lava payment gateway is not configured/i.test(raw) || /lava webhook secret is not configured/i.test(raw)) {
+      return TEXT.lavaUnavailable;
+    }
+    return raw;
   }
 
   function toInt(value) {
@@ -796,7 +807,11 @@ document.querySelectorAll("a[href]").forEach(link => {
 
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.pay_url) {
-      throw new Error(data?.message || "Checkout init failed");
+      const rawError = String(data?.message || data?.error || "").trim();
+      if (selectedPaymentMethod === "lava" && /not configured/i.test(rawError)) {
+        throw new Error(TEXT.lavaUnavailable);
+      }
+      throw new Error(rawError || TEXT.checkoutError);
     }
 
     persistActivationResumeContext(
