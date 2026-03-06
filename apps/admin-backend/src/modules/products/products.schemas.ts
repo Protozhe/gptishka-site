@@ -38,6 +38,11 @@ const productBody = z.object({
 export const createProductSchema = productBody;
 export const updateProductSchema = productBody.partial();
 
+export const translateRuToEnSchema = z.object({
+  title: z.string().min(1).max(150),
+  description: z.string().min(1).max(5000),
+});
+
 export const bulkPriceSchema = z.object({
   productIds: z.array(z.string().min(10)).min(1),
   mode: z.enum(["set", "percent"]),

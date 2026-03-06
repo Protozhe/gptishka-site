@@ -429,6 +429,13 @@ document.querySelectorAll("a[href]").forEach(link => {
     return "";
   }
 
+  function parseDescriptionLines(description) {
+    return String(description || "")
+      .split(/\r?\n/)
+      .map(v => v.trim())
+      .filter(Boolean);
+  }
+
   function buildProductCard(item, index) {
     const product = String(item.product || item.id || "product_" + index).trim();
     const title = String(item.title || "Product").trim();
@@ -438,7 +445,7 @@ document.querySelectorAll("a[href]").forEach(link => {
     const displayTags = tags.filter(tag => !String(tag).startsWith("badge:"));
     const term = category || (displayTags[0] ? displayTags[0].toUpperCase() : "DIGITAL");
     const sub = displayTags.length ? displayTags.slice(0, 3).join(" • ") : description.slice(0, 90);
-    const topHighlights = isEnPage
+    const topHighlightsDefault = isEnPage
       ? [
           "⚡ Fast responses",
           "🧠 Help with tasks of any complexity",
@@ -453,6 +460,11 @@ document.querySelectorAll("a[href]").forEach(link => {
           "💼 Полезен для работы и бизнеса",
           "🛠 Универсальный инструмент",
         ];
+    const descriptionLines = parseDescriptionLines(description);
+    const hasStructuredHighlights = descriptionLines.length >= 3;
+    const topHighlights = hasStructuredHighlights
+      ? [...descriptionLines, ...topHighlightsDefault].slice(0, 5)
+      : topHighlightsDefault;
     const topHighlightsHtml = topHighlights
       .map(line => '<div class="sub-top-line">' + escapeHtml(line) + "</div>")
       .join("");
@@ -472,7 +484,12 @@ document.querySelectorAll("a[href]").forEach(link => {
     const badge = badgeType
       ? '<span class="badge ' + escapeHtml(badgeType) + '">' + escapeHtml(badgeLabelByType[badgeType] || TEXT.badgeBest) + "</span>"
       : "";
-    const features = (description ? description.split(/\r?\n|[.;]/).map(v => v.trim()).filter(Boolean) : [])
+    const featureSource = hasStructuredHighlights
+      ? descriptionLines.slice(5)
+      : description
+        ? description.split(/\r?\n|[.;]/).map(v => v.trim()).filter(Boolean)
+        : [];
+    const features = featureSource
       .slice(0, 5)
       .map(v => {
         const normalized = String(v || "").toLowerCase();

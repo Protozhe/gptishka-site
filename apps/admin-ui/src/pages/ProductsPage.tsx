@@ -66,7 +66,7 @@ function getRequestErrorMessage(error: unknown, fallback: string): string {
   if (axios.isAxiosError(error)) {
     const status = error.response?.status;
     if (status === 403) return "Недостаточно прав для изменения товаров. Нужна роль ADMIN, OWNER или MANAGER.";
-    if (status === 422) return "Проверьте обязательные поля формы (включая English title/description).";
+    if (status === 422) return "Проверьте обязательные поля формы.";
     if (status === 401) return "Сессия истекла. Войдите в админку заново.";
   }
 
@@ -128,6 +128,11 @@ export default function ProductsPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["products"] }),
   });
 
+  const autoTranslate = useMutation({
+    mutationFn: async (payload: { title: string; description: string }) =>
+      (await api.post("/products/translate/ru-en", payload)).data as { titleEn: string; descriptionEn: string; provider: string },
+  });
+
   function resetForm() {
     setEditingId(null);
     setTitle("");
@@ -168,9 +173,9 @@ export default function ProductsPage() {
     setFormError(null);
 
     const cleanTitle = title.trim();
-    const cleanTitleEn = titleEn.trim();
+    let cleanTitleEn = titleEn.trim();
     const cleanDescription = description.trim();
-    const cleanDescriptionEn = descriptionEn.trim();
+    let cleanDescriptionEn = descriptionEn.trim();
     const normalizedPrice = Number(String(price).replace(",", "."));
 
     if (cleanTitle.length < 3) {
@@ -181,6 +186,22 @@ export default function ProductsPage() {
     if (cleanDescription.length < 10) {
       setFormError("Описание должно быть не короче 10 символов.");
       return;
+    }
+
+    if (cleanTitleEn.length < 3 || cleanDescriptionEn.length < 10) {
+      try {
+        const translated = await autoTranslate.mutateAsync({
+          title: cleanTitle,
+          description: cleanDescription,
+        });
+        cleanTitleEn = String(translated?.titleEn || "").trim();
+        cleanDescriptionEn = String(translated?.descriptionEn || "").trim();
+        setTitleEn(cleanTitleEn);
+        setDescriptionEn(cleanDescriptionEn);
+      } catch {
+        setFormError("Не удалось выполнить автоперевод RU -> EN. Заполните English поля вручную или повторите позже.");
+        return;
+      }
     }
 
     if (cleanTitleEn.length < 3) {
@@ -231,6 +252,32 @@ export default function ProductsPage() {
     resetForm();
   }
 
+  async function onAutoTranslateClick() {
+    setFormError(null);
+    const cleanTitle = title.trim();
+    const cleanDescription = description.trim();
+
+    if (cleanTitle.length < 3) {
+      setFormError("Сначала заполните название на русском (минимум 3 символа).");
+      return;
+    }
+    if (cleanDescription.length < 10) {
+      setFormError("Сначала заполните описание на русском (минимум 10 символов).");
+      return;
+    }
+
+    try {
+      const translated = await autoTranslate.mutateAsync({
+        title: cleanTitle,
+        description: cleanDescription,
+      });
+      setTitleEn(String(translated?.titleEn || "").trim());
+      setDescriptionEn(String(translated?.descriptionEn || "").trim());
+    } catch {
+      setFormError("Не удалось выполнить автоперевод RU -> EN. Повторите позже.");
+    }
+  }
+
   const isSaving = createProduct.isPending || updateProduct.isPending;
   const saveError = createProduct.error || updateProduct.error;
   const saveErrorMessage = saveError
@@ -242,7 +289,7 @@ export default function ProductsPage() {
       <section className="card p-4">
         <form className="grid gap-2 md:grid-cols-4" onSubmit={onSubmitProductForm}>
           <input className="input" placeholder="Название товара (RU)" value={title} onChange={(e) => setTitle(e.target.value)} />
-          <input className="input" placeholder="Product title (EN) *" value={titleEn} onChange={(e) => setTitleEn(e.target.value)} />
+          <input className="input" placeholder="Product title (EN)" value={titleEn} onChange={(e) => setTitleEn(e.target.value)} />
           <input className="input" placeholder="Цена (RUB)" value={price} onChange={(e) => setPrice(e.target.value)} />
           <select className="input" value={badge} onChange={(e) => setBadge(e.target.value as BadgeType)}>
             <option value="none">Без плашки</option>
@@ -267,10 +314,14 @@ export default function ProductsPage() {
           />
           <textarea
             className="input md:col-span-2 min-h-24"
-            placeholder="Product description (EN) *"
+            placeholder="Product description (EN)"
             value={descriptionEn}
             onChange={(e) => setDescriptionEn(e.target.value)}
           />
+
+          <button className="btn-secondary md:col-span-4" type="button" onClick={onAutoTranslateClick} disabled={autoTranslate.isPending || isSaving}>
+            {autoTranslate.isPending ? "Переводим RU -> EN..." : "Автоперевод RU -> EN"}
+          </button>
 
           {editingId && (
             <button className="btn-secondary md:col-span-4" type="button" onClick={resetForm}>

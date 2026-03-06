@@ -76,3 +76,10 @@ export const uploadProductImage = asyncHandler(async (req: Request, res: Respons
   const image = await productsService.addImage(String(req.params.id), url, actor(req));
   res.status(201).json(image);
 });
+
+export const translateRuToEn = asyncHandler(async (req: Request, res: Response) => {
+  const title = String(req.body?.title || "");
+  const description = String(req.body?.description || "");
+  const translated = await productsService.translateRuToEn(title, description);
+  res.json(translated);
+});

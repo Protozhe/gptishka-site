@@ -196,6 +196,62 @@ header.is-scrolled {
   background: linear-gradient(150deg, rgba(248, 255, 253, 0.76), rgba(239, 249, 246, 0.5)), var(--glass-noise);
 }
 
+/* Keep product cards visually stable when admin changes long texts. */
+.pricing-grid {
+  align-items: stretch;
+}
+
+.price-card {
+  height: 100%;
+}
+
+.price-card h3 {
+  min-height: calc(1.25em * 2);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.term {
+  min-height: 1.2em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub.sub-top-list {
+  min-height: calc(1.45em * 5 + 24px);
+}
+
+.sub.sub-top-list .sub-top-line {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+}
+
+.price-card ul {
+  min-height: calc(1.45em * 5 + 32px);
+}
+
+.price-card ul li {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+}
+
+@media (max-width: 760px) {
+  .sub.sub-top-list {
+    min-height: calc(1.45em * 4 + 18px);
+  }
+
+  .price-card ul {
+    min-height: calc(1.45em * 4 + 24px);
+  }
+}
+
 .hero p,
 .pricing-header p,
 .faq-header p,

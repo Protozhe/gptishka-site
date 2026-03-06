@@ -3,6 +3,92 @@ import { AppError } from "../../common/errors/app-error";
 import { productsRepository } from "./products.repository";
 import { writeAuditLog } from "../audit/audit.service";
 
+const TRANSLATE_ENDPOINT = "https://translate.googleapis.com/translate_a/single";
+const TRANSLATE_TIMEOUT_MS = 7000;
+
+function normalizeTranslationText(value: string): string {
+  return String(value || "")
+    .replace(/\r/g, "")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function parseGoogleTranslateResponse(payload: any): string {
+  if (!Array.isArray(payload) || !Array.isArray(payload[0])) {
+    return "";
+  }
+
+  return payload[0]
+    .map((chunk: any) => (Array.isArray(chunk) ? String(chunk[0] || "") : ""))
+    .join("")
+    .trim();
+}
+
+async function translateTextRuToEn(text: string): Promise<string> {
+  const source = normalizeTranslationText(text);
+  if (!source) return "";
+
+  const hasCyrillic = /[А-Яа-яЁё]/.test(source);
+  if (!hasCyrillic) return source;
+
+  const url = new URL(TRANSLATE_ENDPOINT);
+  url.searchParams.set("client", "gtx");
+  url.searchParams.set("sl", "ru");
+  url.searchParams.set("tl", "en");
+  url.searchParams.set("dt", "t");
+  url.searchParams.set("q", source);
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), TRANSLATE_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      signal: controller.signal,
+      headers: {
+        Accept: "application/json,text/plain,*/*",
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Translation upstream responded with ${response.status}`);
+    }
+
+    const payload = await response.json();
+    const translated = normalizeTranslationText(parseGoogleTranslateResponse(payload));
+    if (!translated) {
+      throw new Error("Empty translation response");
+    }
+
+    return translated;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function translateMultilineRuToEn(text: string): Promise<string> {
+  const source = String(text || "").replace(/\r/g, "").trim();
+  if (!source) return "";
+
+  const lines = source.split("\n");
+  if (lines.length <= 1) {
+    return translateTextRuToEn(source);
+  }
+
+  const translatedLines = await Promise.all(
+    lines.map(async (line) => {
+      const trimmed = line.trim();
+      if (!trimmed) return "";
+      return translateTextRuToEn(trimmed);
+    })
+  );
+
+  return normalizeTranslationText(translatedLines.join("\n"));
+}
+
 export const productsService = {
   async getUniqueSlug(baseSlug: string, excludeId?: string) {
     let slug = baseSlug;
@@ -160,5 +246,25 @@ export const productsService = {
     });
 
     return image;
+  },
+
+  async translateRuToEn(titleRu: string, descriptionRu: string) {
+    const cleanTitle = String(titleRu || "").trim();
+    const cleanDescription = String(descriptionRu || "").trim();
+
+    if (!cleanTitle || !cleanDescription) {
+      throw new AppError("Both title and description are required for translation", 400);
+    }
+
+    const [titleEn, descriptionEn] = await Promise.all([
+      translateTextRuToEn(cleanTitle),
+      translateMultilineRuToEn(cleanDescription),
+    ]);
+
+    return {
+      titleEn: titleEn || cleanTitle,
+      descriptionEn: descriptionEn || cleanDescription,
+      provider: "google-translate-gtx",
+    };
   },
 };
