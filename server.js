@@ -676,12 +676,18 @@ function createApp() {
     }
   });
 
-  app.post("/api/payments/enot/create", async (req, res) => {
+  app.post("/api/payments/:provider/create", async (req, res) => {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
 
     try {
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/payments/enot/create`, {
+      const provider = String(req.params.provider || "").trim().toLowerCase();
+      if (!/^[a-z0-9_-]{2,20}$/.test(provider)) {
+        clearTimeout(timeout);
+        return res.status(400).json({ error: "Invalid payment provider" });
+      }
+
+      const response = await fetch(`${ADMIN_BACKEND_URL}/api/payments/${encodeURIComponent(provider)}/create`, {
         method: "POST",
         headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
         body: JSON.stringify(req.body || {}),

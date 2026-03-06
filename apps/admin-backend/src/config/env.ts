@@ -51,6 +51,12 @@ if (!process.env.ENOT_WEBHOOK_SECRET && process.env.WEBHOOK_SECRET) {
 if (!process.env.WEBHOOK_SECRET && process.env.ENOT_WEBHOOK_SECRET) {
   process.env.WEBHOOK_SECRET = process.env.ENOT_WEBHOOK_SECRET;
 }
+if (!process.env.LAVA_WEBHOOK_SECRET && process.env.LAVA_ADDITIONAL_SECRET) {
+  process.env.LAVA_WEBHOOK_SECRET = process.env.LAVA_ADDITIONAL_SECRET;
+}
+if (!process.env.LAVA_ADDITIONAL_SECRET && process.env.LAVA_WEBHOOK_SECRET) {
+  process.env.LAVA_ADDITIONAL_SECRET = process.env.LAVA_WEBHOOK_SECRET;
+}
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -101,6 +107,16 @@ const envSchema = z.object({
   PAYMENT_WEBHOOK_URL: z.string().url().default("https://admin-api.gptishka.shop/api/public/webhook/payment"),
   PAYMENT_WEBHOOK_SIGNATURE_HEADER: z.string().default("x-api-sha256-signature"),
   PAYMENT_WEBHOOK_IP_ALLOWLIST: z.string().default(""),
+  LAVA_SHOP_ID: z.string().default(""),
+  LAVA_SECRET_KEY: z.string().default(""),
+  LAVA_ADDITIONAL_SECRET: z.string().default(""),
+  LAVA_WEBHOOK_SECRET: z.string().default(""),
+  LAVA_API_BASE_URL: z.string().url().default("https://api.lava.ru"),
+  LAVA_CREATE_PATH: z.string().default("/business/invoice/create"),
+  LAVA_STATUS_PATH: z.string().default("/business/invoice/status"),
+  LAVA_WEBHOOK_URL: z.string().url().default("https://admin-api.gptishka.shop/api/public/webhook/lava"),
+  LAVA_WEBHOOK_SIGNATURE_HEADER: z.string().default("authorization"),
+  LAVA_WEBHOOK_IP_ALLOWLIST: z.string().default(""),
   STORAGE_DRIVER: z.enum(["local"]).default("local"),
   // Some upstream providers bind tasks to a device id. Use a stable value.
   ACTIVATION_DEVICE_ID: z.string().optional().default("web"),

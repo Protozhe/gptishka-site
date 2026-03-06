@@ -1,6 +1,11 @@
 import { Currency, DiscountType, OrderStatus, PartnerEarningStatus, PaymentStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../config/prisma";
-import { getPaymentProvider, getProviderByCode } from "./payment.factory";
+import {
+  getPaymentProvider,
+  getProviderByCode,
+  normalizePaymentMethodCode,
+  resolveProviderCodeByPaymentMethod,
+} from "./payment.factory";
 import { writeAuditLog } from "../audit/audit.service";
 import { AppError } from "../../common/errors/app-error";
 import { WELCOME_PROMO_CODE } from "../promocodes/welcome-promo.service";
@@ -184,6 +189,9 @@ export const paymentsService = {
     const redeemToken = generateRedeemToken();
     const redeemTokenHash = sha256Hex(redeemToken);
 
+    const selectedProviderCode = resolveProviderCodeByPaymentMethod(input.paymentMethod);
+    const selectedPaymentMethod = normalizePaymentMethodCode(input.paymentMethod, selectedProviderCode);
+
     const order = await prisma.$transaction(async tx => {
       const created = await tx.order.create({
         data: {
@@ -196,7 +204,7 @@ export const paymentsService = {
           currency: product.currency,
           ip: input.ip,
           country: input.country,
-          paymentMethod: input.paymentMethod || null,
+          paymentMethod: selectedPaymentMethod,
           promoCodeId: promo?.id || null,
           promoCodeSnapshot: promo?.code || null,
           partnerId: promo?.partnerId || null,
@@ -215,7 +223,7 @@ export const paymentsService = {
       return created;
     });
 
-    const provider = getPaymentProvider();
+    const provider = input.paymentMethod ? getProviderByCode(selectedProviderCode) : getPaymentProvider();
     const paymentResponse = await provider.createPayment({
       orderId: order.id,
       amount: total,

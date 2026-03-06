@@ -302,6 +302,57 @@ a:hover {
   background: rgba(255, 255, 255, 0.9);
 }
 
+.cart-payment-methods {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 8px;
+}
+
+.cart-payment-methods__title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--premium-muted);
+}
+
+.cart-payment-method {
+  position: relative;
+}
+
+.cart-payment-method input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cart-payment-method__card {
+  display: grid;
+  gap: 2px;
+  min-height: 56px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(196, 210, 226, 0.86);
+  background: rgba(255, 255, 255, 0.8);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.cart-payment-method__name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--premium-text);
+}
+
+.cart-payment-method__desc {
+  font-size: 12px;
+  color: var(--premium-muted);
+}
+
+.cart-payment-method.is-active .cart-payment-method__card {
+  border-color: rgba(20, 133, 118, 0.52);
+  box-shadow: 0 8px 20px rgba(19, 138, 120, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  transform: translateY(-1px);
+}
+
 footer {
   border-top-color: rgba(215, 225, 237, 0.86);
   color: var(--premium-muted);
@@ -411,5 +462,10 @@ footer {
   .seo-article {
     margin-top: 14px;
     border-radius: 22px;
+  }
+
+  .cart-payment-method__card {
+    min-height: 52px;
+    padding: 10px 11px;
   }
 }

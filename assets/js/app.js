@@ -256,6 +256,7 @@ document.querySelectorAll("a[href]").forEach(link => {
   const heroPromoApplyButtons = Array.from(document.querySelectorAll("[data-hero-promo-code]"));
   const headerCartEmailInputEl = document.getElementById("headerCartEmailInput");
   const cartEmailInputEl = document.getElementById("cartEmailInput");
+  const cartPaymentMethodsEl = document.getElementById("cartPaymentMethods");
   const isEnPage =
     String(document.documentElement.lang || "").toLowerCase().startsWith("en") ||
     window.location.pathname.startsWith("/en/");
@@ -298,6 +299,7 @@ document.querySelectorAll("a[href]").forEach(link => {
         checkoutProductMissing: "The selected item is outdated in cart. Please re-add it from pricing.",
         multiCartCheckout: "Checkout is currently available one item at a time. Please pay items separately.",
         promoHeroApplied: "WELCOME34 applied",
+        paymentMethodRequired: "Select a payment method",
       }
     : {
         promo10: "Скидка 10%",
@@ -335,12 +337,17 @@ document.querySelectorAll("a[href]").forEach(link => {
         checkoutProductMissing: "Товар в корзине устарел. Добавьте его заново из тарифов.",
         multiCartCheckout: "Сейчас оплата доступна по одному товару. Оплатите позиции по отдельности.",
         promoHeroApplied: "WELCOME34 применен",
+        paymentMethodRequired: "Выберите способ оплаты",
       };
   const PROMO_CODE_KEY = "gptishka_cart_promo_v1";
   const PROMO_CODE_TS_KEY = "gptishka_cart_promo_ts_v1";
+  const PAYMENT_METHOD_KEY = "gptishka_checkout_payment_method_v1";
+  const DEFAULT_PAYMENT_METHOD = "enot";
+  const AVAILABLE_PAYMENT_METHODS = new Set(["enot", "lava"]);
   const PROMO_TTL_MS = 30 * 60 * 1000;
   let clickTimer = null;
   let activePromoCode = "";
+  let activePaymentMethod = DEFAULT_PAYMENT_METHOD;
   let promoValidationState = "idle"; // idle | checking | valid | invalid
   let promoDiscountAmount = 0;
   let promoValidationContextKey = "";
@@ -350,6 +357,52 @@ document.querySelectorAll("a[href]").forEach(link => {
     if (!raw) return "";
     const firstToken = raw.split(/[\s,;+|]+/).filter(Boolean)[0] || "";
     return firstToken.slice(0, 40);
+  }
+
+  function normalizePaymentMethod(value) {
+    const method = String(value || "").trim().toLowerCase();
+    return AVAILABLE_PAYMENT_METHODS.has(method) ? method : DEFAULT_PAYMENT_METHOD;
+  }
+
+  function loadPaymentMethod() {
+    try {
+      return normalizePaymentMethod(localStorage.getItem(PAYMENT_METHOD_KEY) || DEFAULT_PAYMENT_METHOD);
+    } catch (_) {
+      return DEFAULT_PAYMENT_METHOD;
+    }
+  }
+
+  function savePaymentMethod(value) {
+    const normalized = normalizePaymentMethod(value);
+    activePaymentMethod = normalized;
+    try {
+      localStorage.setItem(PAYMENT_METHOD_KEY, normalized);
+    } catch (_) {
+      // Ignore storage write errors.
+    }
+    return normalized;
+  }
+
+  function getSelectedPaymentMethod() {
+    if (!cartPaymentMethodsEl) return activePaymentMethod;
+    const checked = cartPaymentMethodsEl.querySelector('input[name="cartPaymentMethod"]:checked');
+    const selected = normalizePaymentMethod(checked ? checked.value : activePaymentMethod);
+    return savePaymentMethod(selected);
+  }
+
+  function syncPaymentMethodUi() {
+    if (!cartPaymentMethodsEl) return;
+    const selected = normalizePaymentMethod(activePaymentMethod);
+
+    const options = Array.from(cartPaymentMethodsEl.querySelectorAll("[data-payment-method-option]"));
+    options.forEach(option => {
+      const input = option.querySelector('input[name="cartPaymentMethod"]');
+      if (!input) return;
+      const optionMethod = normalizePaymentMethod(input.value);
+      const isActive = optionMethod === selected;
+      input.checked = isActive;
+      option.classList.toggle("is-active", isActive);
+    });
   }
 
   function toInt(value) {
@@ -627,13 +680,14 @@ document.querySelectorAll("a[href]").forEach(link => {
     return email;
   }
 
-  async function startBackendCheckout(item, qty, promoCode) {
+  async function startBackendCheckout(item, qty, promoCode, paymentMethod) {
     const checkoutItem = await ensureCheckoutItemProductId(item);
     if (!checkoutItem || !checkoutItem.productId) {
       throw new Error(TEXT.checkoutProductMissing);
     }
 
-    persistCartSelection(undefined, promoCode || "");
+    const selectedPaymentMethod = normalizePaymentMethod(paymentMethod || getSelectedPaymentMethod());
+    persistCartSelection(undefined, promoCode || "", selectedPaymentMethod);
 
     const email = getCheckoutEmail();
     if (!email) {
@@ -646,9 +700,10 @@ document.querySelectorAll("a[href]").forEach(link => {
       plan_id: checkoutItem.productId,
       qty: 1,
       promo_code: promoCode || undefined,
+      payment_method: selectedPaymentMethod,
     };
 
-    const response = await fetch("/api/payments/enot/create", {
+    const response = await fetch("/api/payments/" + encodeURIComponent(selectedPaymentMethod) + "/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -1034,7 +1089,7 @@ document.querySelectorAll("a[href]").forEach(link => {
     if (headerCartPromoInputEl) headerCartPromoInputEl.value = activePromoCode;
     if (cartPromoInputEl) cartPromoInputEl.value = activePromoCode;
     validatePromoCodeViaBackend(activePromoCode);
-    persistCartSelection(undefined, activePromoCode);
+    persistCartSelection(undefined, activePromoCode, activePaymentMethod);
 
     if (sourceBtn) {
       sourceBtn.classList.add("is-applied");
@@ -1295,10 +1350,11 @@ document.querySelectorAll("a[href]").forEach(link => {
       .join("");
   }
 
-  function persistCartSelection(overrideTotal, promoCode) {
+  function persistCartSelection(overrideTotal, promoCode, paymentMethod) {
     const rows = loadCart().filter(row => row && row.lineId && row.product && toInt(row.qty) > 0);
     if (!rows.length) return;
 
+    const selectedPaymentMethod = normalizePaymentMethod(paymentMethod || activePaymentMethod);
     const total = overrideTotal !== undefined
       ? Math.max(0, toAmount(overrideTotal))
       : rows.reduce((sum, row) => sum + Math.max(0, toAmount(row.price)) * Math.max(1, toInt(row.qty)), 0);
@@ -1309,6 +1365,7 @@ document.querySelectorAll("a[href]").forEach(link => {
           items: rows,
           total,
           promoCode: promoCode || null,
+          paymentMethod: selectedPaymentMethod,
           currency: "RUB",
         })
       );
@@ -1327,7 +1384,7 @@ document.querySelectorAll("a[href]").forEach(link => {
 
       const qty = Math.max(1, getCardQty(item.product) || 1);
       addCartLot(item, qty);
-      persistCartSelection(undefined, activePromoCode);
+      persistCartSelection(undefined, activePromoCode, activePaymentMethod);
       window.location.href = cartPagePath;
       return;
     }
@@ -1377,7 +1434,7 @@ document.querySelectorAll("a[href]").forEach(link => {
       }
 
       const row = rows[0];
-      startBackendCheckout(row, row.qty, activePromoCode).catch(() => {
+      startBackendCheckout(row, row.qty, activePromoCode, getSelectedPaymentMethod()).catch(() => {
         alert(TEXT.checkoutError);
       });
       return;
@@ -1419,13 +1476,15 @@ document.querySelectorAll("a[href]").forEach(link => {
       }
 
       const row = rows[0];
-      startBackendCheckout(row, row.qty, activePromoCode).catch(() => {
+      startBackendCheckout(row, row.qty, activePromoCode, getSelectedPaymentMethod()).catch(() => {
         alert(TEXT.checkoutError);
       });
     });
   }
 
   activePromoCode = loadPromoCode();
+  activePaymentMethod = loadPaymentMethod();
+  syncPaymentMethodUi();
   if (activePromoCode && !loadPromoTimestamp()) {
     savePromoCode(activePromoCode);
   }
@@ -1499,6 +1558,15 @@ document.querySelectorAll("a[href]").forEach(link => {
       savePromoCode(activePromoCode);
       if (headerCartPromoInputEl && headerCartPromoInputEl.value !== activePromoCode) headerCartPromoInputEl.value = activePromoCode;
       validatePromoCodeViaBackend(activePromoCode);
+    });
+  }
+
+  if (cartPaymentMethodsEl) {
+    cartPaymentMethodsEl.addEventListener("change", event => {
+      const target = event.target;
+      if (!target || target.name !== "cartPaymentMethod") return;
+      savePaymentMethod(target.value);
+      syncPaymentMethodUi();
     });
   }
 

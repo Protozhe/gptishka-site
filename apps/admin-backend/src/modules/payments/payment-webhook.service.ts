@@ -1,4 +1,5 @@
 import { OrderStatus, PartnerEarningStatus, PaymentStatus } from "@prisma/client";
+import crypto from "crypto";
 import { prisma } from "../../config/prisma";
 import { AppError } from "../../common/errors/app-error";
 import { sendOrderPaidEmail, sendTelegramNotification } from "../notifications/notifications.service";
@@ -8,6 +9,7 @@ import { env } from "../../config/env";
 type WebhookPayload = {
   paymentId?: string;
   payment_id?: string;
+  invoiceId?: string;
   invoice_id?: string;
   id?: string;
   orderId?: string;
@@ -15,24 +17,69 @@ type WebhookPayload = {
   status?: string;
   event?: string;
   amount?: number | string;
+  sum?: number | string;
   currency?: string;
+  data?: Record<string, unknown>;
   [k: string]: unknown;
 };
 
 function toStatus(payload: WebhookPayload): "success" | "failed" | "processing" | "refunded" {
-  const statusRaw = String(payload.status || payload.event || "").toLowerCase();
-  if (["success", "succeeded", "paid", "payment.success"].includes(statusRaw)) return "success";
-  if (["fail", "failed", "error", "expired", "cancelled", "canceled", "payment.failed", "payment.expired"].includes(statusRaw))
+  const statusRaw = String(payload.status || payload.event || "").toLowerCase().trim();
+  if (["success", "succeeded", "paid", "completed", "done", "payment.success"].includes(statusRaw)) return "success";
+  if (
+    [
+      "fail",
+      "failed",
+      "error",
+      "expired",
+      "cancelled",
+      "canceled",
+      "rejected",
+      "payment.failed",
+      "payment.expired",
+    ].includes(statusRaw)
+  )
     return "failed";
   if (["refund", "refunded", "chargeback", "reversed", "payment.refunded", "payment.chargeback"].includes(statusRaw)) return "refunded";
   return "processing";
 }
 
+function normalizeWebhookPayload(rawPayload: WebhookPayload): WebhookPayload {
+  const nested = rawPayload?.data && typeof rawPayload.data === "object" ? (rawPayload.data as Record<string, unknown>) : {};
+  return {
+    ...rawPayload,
+    paymentId: firstString(rawPayload.paymentId, rawPayload.payment_id, rawPayload.invoiceId, rawPayload.invoice_id, rawPayload.id, nested.paymentId, nested.payment_id, nested.invoiceId, nested.invoice_id, nested.id),
+    orderId: firstString(rawPayload.orderId, rawPayload.order_id, nested.orderId, nested.order_id),
+    status: firstString(rawPayload.status, rawPayload.event, nested.status, nested.event),
+    amount: firstNumberLike(rawPayload.amount, rawPayload.sum, nested.amount, nested.sum),
+    currency: firstString(rawPayload.currency, nested.currency),
+  };
+}
+
+function firstString(...values: unknown[]) {
+  for (const value of values) {
+    const normalized = String(value || "").trim();
+    if (normalized) return normalized;
+  }
+  return "";
+}
+
+function firstNumberLike(...values: unknown[]): number | string | undefined {
+  for (const value of values) {
+    if (value === null || value === undefined || value === "") continue;
+    if (typeof value === "number" || typeof value === "string") {
+      return value;
+    }
+  }
+  return undefined;
+}
+
 export const paymentWebhookService = {
   async handle(rawPayload: WebhookPayload) {
-    const paymentRef = String(rawPayload.paymentId || rawPayload.payment_id || rawPayload.invoice_id || rawPayload.id || "").trim();
-    const orderId = String(rawPayload.orderId || rawPayload.order_id || "").trim();
-    const mapped = toStatus(rawPayload);
+    const payload = normalizeWebhookPayload(rawPayload);
+    const paymentRef = String(payload.paymentId || payload.payment_id || payload.invoiceId || payload.invoice_id || payload.id || "").trim();
+    const orderId = String(payload.orderId || payload.order_id || "").trim();
+    const mapped = toStatus(payload);
 
     if (!paymentRef && !orderId) {
       throw new AppError("Invalid webhook payload", 400);
@@ -98,7 +145,7 @@ export const paymentWebhookService = {
     }
 
     if (mapped === "success") {
-      const reportedAmount = parseAmount(rawPayload.amount);
+      const reportedAmount = parseAmount(payload.amount);
       if (reportedAmount === null) {
         throw new AppError("Webhook amount is required for successful payment", 400);
       }
@@ -108,8 +155,8 @@ export const paymentWebhookService = {
         throw new AppError("Webhook amount mismatch", 409);
       }
 
-      if (rawPayload.currency) {
-        const incomingCurrency = String(rawPayload.currency).toUpperCase();
+      if (payload.currency) {
+        const incomingCurrency = String(payload.currency).toUpperCase();
         const expectedCurrency = String(order.currency).toUpperCase();
         if (incomingCurrency !== expectedCurrency) {
           throw new AppError("Webhook currency mismatch", 409);
@@ -117,7 +164,8 @@ export const paymentWebhookService = {
       }
 
       // Additional S2S verification with payment provider API.
-      await verifyGatewayInvoice({
+      await verifyPaymentWithProvider({
+        provider: targetPayment.provider,
         paymentRef: paymentRef || String(targetPayment.providerRef || ""),
         orderId: order.id,
         expectedAmount,
@@ -278,4 +326,97 @@ async function verifyGatewayInvoice(input: {
   if (providerCurrency && providerCurrency !== input.expectedCurrency) {
     throw new AppError("Payment provider currency mismatch", 409);
   }
+}
+
+async function verifyPaymentWithProvider(input: {
+  provider: string;
+  paymentRef: string;
+  orderId: string;
+  expectedAmount: number;
+  expectedCurrency: string;
+}) {
+  const provider = String(input.provider || "").trim().toLowerCase();
+  if (provider === "gateway") {
+    await verifyGatewayInvoice(input);
+    return;
+  }
+  if (provider === "lava") {
+    await verifyLavaInvoice(input);
+    return;
+  }
+}
+
+type LavaStatusResponse = {
+  status_check?: boolean;
+  data?: {
+    id?: string | number;
+    invoiceId?: string | number;
+    invoice_id?: string | number;
+    orderId?: string;
+    order_id?: string;
+    status?: string;
+    amount?: number | string;
+    sum?: number | string;
+    currency?: string;
+  };
+};
+
+async function verifyLavaInvoice(input: {
+  paymentRef: string;
+  orderId: string;
+  expectedAmount: number;
+  expectedCurrency: string;
+}) {
+  const paymentRef = String(input.paymentRef || "").trim();
+  if (!paymentRef) throw new AppError("Missing payment reference for provider verification", 409);
+
+  const secretKey = String(env.LAVA_SECRET_KEY || "").trim();
+  const shopId = String(env.LAVA_SHOP_ID || "").trim();
+  if (!secretKey || !shopId) throw new AppError("Lava provider credentials are not configured", 500);
+
+  const payload = {
+    shopId,
+    orderId: String(input.orderId),
+    invoiceId: paymentRef,
+  };
+  const signature = signLavaPayload(payload, secretKey);
+
+  const response = await fetch(new URL(env.LAVA_STATUS_PATH, env.LAVA_API_BASE_URL).toString(), {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Signature: signature,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new AppError("Payment provider verification failed", 409);
+  }
+
+  const data = (await response.json()) as LavaStatusResponse;
+  const info = data?.data;
+  if (!data?.status_check || !info) throw new AppError("Payment provider verification failed", 409);
+
+  const infoOrderId = String(info.orderId || info.order_id || "").trim();
+  if (infoOrderId && infoOrderId !== String(input.orderId)) {
+    throw new AppError("Payment provider order mismatch", 409);
+  }
+  const status = String(info.status || "").toLowerCase();
+  if (!["success", "succeeded", "paid", "completed", "done"].includes(status)) {
+    throw new AppError("Payment is not confirmed by provider", 409);
+  }
+
+  const providerAmount = parseAmount(info.amount ?? info.sum);
+  if (providerAmount === null || Math.abs(providerAmount - input.expectedAmount) > 0.01) {
+    throw new AppError("Payment provider amount mismatch", 409);
+  }
+  const providerCurrency = String(info.currency || "").toUpperCase();
+  if (providerCurrency && providerCurrency !== input.expectedCurrency) {
+    throw new AppError("Payment provider currency mismatch", 409);
+  }
+}
+
+function signLavaPayload(payload: unknown, secret: string) {
+  return crypto.createHmac("sha256", secret).update(JSON.stringify(payload), "utf8").digest("hex");
 }

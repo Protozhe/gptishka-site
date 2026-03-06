@@ -14,11 +14,11 @@ import { usersRouter } from "./modules/users/users.routes";
 import { promoCodesRouter } from "./modules/promocodes/promocodes.routes";
 import { errorHandler, notFoundHandler } from "./common/errors/error-handler";
 import { publicOrdersRouter } from "./modules/orders/public-orders.routes";
-import { allowWebhookIp, verifyWebhookSignature } from "./common/security/webhook-security";
+import { allowLavaWebhookIp, allowWebhookIp, verifyLavaWebhookSignature, verifyWebhookSignature } from "./common/security/webhook-security";
 import { handlePaymentWebhook } from "./modules/payments/payment-webhook.controller";
 import { publicPromoCodesRouter } from "./modules/promocodes/public-promocodes.routes";
 import { partnerEarningsRouter, partnersRouter } from "./modules/partners/partners.routes";
-import { publicEnotRouter } from "./modules/payments/public-enot.routes";
+import { publicPaymentsRouter } from "./modules/payments/public-payments.routes";
 import { cdkKeysRouter } from "./modules/cdks/cdks.routes";
 import { verifyAdminOrigin } from "./common/security/csrf-origin";
 
@@ -30,9 +30,12 @@ export function createApp() {
 
   applySecurity(app);
   app.use(globalRateLimit);
-  const webhookStack = [allowWebhookIp, express.raw({ type: "application/json" }), verifyWebhookSignature, handlePaymentWebhook] as const;
-  app.post("/api/public/webhook/payment", ...webhookStack);
-  app.post("/api/webhooks/payment", ...webhookStack);
+  const enotWebhookStack = [allowWebhookIp, express.raw({ type: "application/json" }), verifyWebhookSignature, handlePaymentWebhook] as const;
+  const lavaWebhookStack = [allowLavaWebhookIp, express.raw({ type: "application/json" }), verifyLavaWebhookSignature, handlePaymentWebhook] as const;
+  app.post("/api/public/webhook/payment", ...enotWebhookStack);
+  app.post("/api/webhooks/payment", ...enotWebhookStack);
+  app.post("/api/public/webhook/lava", ...lavaWebhookStack);
+  app.post("/api/webhooks/lava", ...lavaWebhookStack);
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ extended: true }));
   app.use(attachRequestMeta);
@@ -53,7 +56,7 @@ export function createApp() {
   app.use("/api/admin/products", productsRouter);
   app.use("/api/public", publicProductsRouter);
   app.use("/api/public", publicOrdersRouter);
-  app.use("/api/payments/enot", publicEnotRouter);
+  app.use("/api/payments", publicPaymentsRouter);
   app.use("/api", publicOrdersRouter);
   app.use("/api", publicPromoCodesRouter);
   app.use("/api/admin/orders", ordersRouter);

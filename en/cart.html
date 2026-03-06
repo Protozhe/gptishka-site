@@ -1,4 +1,4 @@
-Ôªø<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
@@ -49,13 +49,13 @@
         <div class="lang-current" id="langCurrent">
           <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
           <span>English</span>
-          <span class="arrow">‚ñæ</span>
+          <span class="arrow">?</span>
         </div>
 
         <div class="lang-dropdown">
           <div class="lang-item" data-lang="ru">
             <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
-            <span>–†—É—Å—Å–∫–∏–π</span>
+            <span>–ÛÒÒÍËÈ</span>
           </div>
           <div class="lang-item" data-lang="en">
             <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
@@ -88,6 +88,23 @@
         <div class="cart-email">
           <input type="email" id="cartEmailInput" placeholder="Email for order details" autocomplete="email" />
         </div>
+        <div class="cart-payment-methods" id="cartPaymentMethods" role="radiogroup" aria-label="Payment method">
+          <div class="cart-payment-methods__title">Payment method</div>
+          <label class="cart-payment-method" data-payment-method-option>
+            <input type="radio" name="cartPaymentMethod" value="enot" checked />
+            <span class="cart-payment-method__card">
+              <span class="cart-payment-method__name">Enot.io</span>
+              <span class="cart-payment-method__desc">SBP and bank cards</span>
+            </span>
+          </label>
+          <label class="cart-payment-method" data-payment-method-option>
+            <input type="radio" name="cartPaymentMethod" value="lava" />
+            <span class="cart-payment-method__card">
+              <span class="cart-payment-method__name">Lava</span>
+              <span class="cart-payment-method__desc">SBP and bank cards</span>
+            </span>
+          </label>
+        </div>
         <div class="cart-total">Total: <strong id="cartTotal">0 RUB</strong></div>
         <button type="button" class="btn" id="cartCheckoutBtn" aria-disabled="true">Pay cart</button>
       </div>
@@ -95,11 +112,11 @@
   </main>
 
   <footer>
-    <a class="footer-link" href="/en/oferta.html">Public offer</a> ¬∑ <a class="footer-link" href="/en/politika.html">Privacy policy</a> ¬∑ <a class="footer-link" href="/en/refund.html">Refund policy</a>
-    <span class="footer-copy">¬© 2026 GPTishka. All rights reserved.</span>
+    <a class="footer-link" href="/en/oferta.html">Public offer</a> ∑ <a class="footer-link" href="/en/politika.html">Privacy policy</a> ∑ <a class="footer-link" href="/en/refund.html">Refund policy</a>
+    <span class="footer-copy">© 2026 GPTishka. All rights reserved.</span>
   </footer>
 
-  <script src="/assets/js/app.min.js?v=20260305a" defer></script>
+  <script src="/assets/js/app.min.js?v=20260306a" defer></script>
   <script>
     (function () {
       const counterId = 106969126;

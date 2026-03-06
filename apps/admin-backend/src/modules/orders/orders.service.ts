@@ -210,7 +210,7 @@ export const ordersService = {
         payments: {
           orderBy: { createdAt: "desc" },
           take: 1,
-          select: { providerRef: true },
+          select: { providerRef: true, provider: true },
         },
       },
     });
@@ -672,7 +672,7 @@ async function assertPaidOrderAccess(orderId: string, orderToken?: string) {
 type PendingPaymentProbeOrder = {
   id: string;
   status: OrderStatus;
-  payments: Array<{ providerRef: string | null }>;
+  payments: Array<{ providerRef: string | null; provider: string }>;
 };
 
 async function tryReconcilePendingOrderPayment(orderId: string, cachedOrder?: PendingPaymentProbeOrder) {
@@ -686,7 +686,7 @@ async function tryReconcilePendingOrderPayment(orderId: string, cachedOrder?: Pe
         payments: {
           orderBy: { createdAt: "desc" },
           take: 1,
-          select: { providerRef: true },
+          select: { providerRef: true, provider: true },
         },
       },
     }));
@@ -695,54 +695,136 @@ async function tryReconcilePendingOrderPayment(orderId: string, cachedOrder?: Pe
 
   const payment = order.payments[0];
   const providerRef = String(payment?.providerRef || "").trim();
+  const providerCode = String(payment?.provider || "").trim().toLowerCase();
   if (!providerRef) return;
 
-  const apiKey = env.ENOT_API_KEY || env.PAYMENT_SECRET;
-  const shopId = env.ENOT_SHOP_ID || env.PAYMENT_SHOP_ID;
-  if (!apiKey || !shopId) return;
-
   try {
-    const invoiceInfoUrl = new URL("/invoice/info", env.PAYMENT_API_BASE_URL);
-    invoiceInfoUrl.searchParams.set("shop_id", String(shopId));
-    invoiceInfoUrl.searchParams.set("invoice_id", providerRef);
+    if (providerCode === "lava") {
+      const status = await probeLavaInvoiceStatus(order.id, providerRef);
+      if (!status) return;
+      await paymentWebhookService.handle({
+        invoice_id: status.invoiceId,
+        order_id: status.orderId || String(order.id),
+        status: status.status,
+        amount: status.amount ?? undefined,
+        currency: status.currency || undefined,
+      });
+      return;
+    }
 
-    const response = await fetch(invoiceInfoUrl.toString(), {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        "x-api-key": apiKey,
-      },
-    });
-    if (!response.ok) return;
-
-    const payload = (await response.json()) as {
-      status_check?: boolean;
-      data?: {
-        invoice_id?: string;
-        order_id?: string;
-        shop_id?: string;
-        status?: string;
-        currency?: string;
-        invoice_amount?: number | string;
-        amount?: number | string;
-      };
-    };
-
-    const info = payload?.data;
-    if (!payload?.status_check || !info) return;
-    if (String(info.shop_id || "") !== String(shopId)) return;
-    if (String(info.order_id || "") !== String(order.id)) return;
-
+    const status = await probeGatewayInvoiceStatus(order.id, providerRef);
+    if (!status) return;
     await paymentWebhookService.handle({
-      invoice_id: String(info.invoice_id || providerRef),
-      order_id: String(order.id),
-      status: String(info.status || "").toLowerCase(),
-      amount: info.invoice_amount ?? info.amount ?? undefined,
-      currency: info.currency || undefined,
+      invoice_id: status.invoiceId,
+      order_id: status.orderId || String(order.id),
+      status: status.status,
+      amount: status.amount ?? undefined,
+      currency: status.currency || undefined,
     });
   } catch {
     // Keep current order status if provider API is temporarily unavailable.
   }
+}
+
+async function probeGatewayInvoiceStatus(orderId: string, providerRef: string) {
+  const apiKey = env.ENOT_API_KEY || env.PAYMENT_SECRET;
+  const shopId = env.ENOT_SHOP_ID || env.PAYMENT_SHOP_ID;
+  if (!apiKey || !shopId) return null;
+
+  const invoiceInfoUrl = new URL("/invoice/info", env.PAYMENT_API_BASE_URL);
+  invoiceInfoUrl.searchParams.set("shop_id", String(shopId));
+  invoiceInfoUrl.searchParams.set("invoice_id", providerRef);
+
+  const response = await fetch(invoiceInfoUrl.toString(), {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "x-api-key": apiKey,
+    },
+  });
+  if (!response.ok) return null;
+
+  const payload = (await response.json()) as {
+    status_check?: boolean;
+    data?: {
+      invoice_id?: string;
+      order_id?: string;
+      shop_id?: string;
+      status?: string;
+      currency?: string;
+      invoice_amount?: number | string;
+      amount?: number | string;
+    };
+  };
+
+  const info = payload?.data;
+  if (!payload?.status_check || !info) return null;
+  if (String(info.shop_id || "") !== String(shopId)) return null;
+  if (String(info.order_id || "") !== String(orderId)) return null;
+
+  return {
+    invoiceId: String(info.invoice_id || providerRef),
+    orderId: String(info.order_id || orderId),
+    status: String(info.status || "").toLowerCase(),
+    amount: info.invoice_amount ?? info.amount ?? null,
+    currency: info.currency || "",
+  };
+}
+
+async function probeLavaInvoiceStatus(orderId: string, providerRef: string) {
+  const secretKey = String(env.LAVA_SECRET_KEY || "").trim();
+  const shopId = String(env.LAVA_SHOP_ID || "").trim();
+  if (!secretKey || !shopId) return null;
+
+  const payload = {
+    shopId,
+    orderId: String(orderId),
+    invoiceId: String(providerRef),
+  };
+  const signature = signLavaPayload(payload, secretKey);
+
+  const response = await fetch(new URL(env.LAVA_STATUS_PATH, env.LAVA_API_BASE_URL).toString(), {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Signature: signature,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) return null;
+
+  const raw = (await response.json()) as {
+    status_check?: boolean;
+    data?: {
+      id?: string | number;
+      invoiceId?: string | number;
+      invoice_id?: string | number;
+      orderId?: string;
+      order_id?: string;
+      status?: string;
+      amount?: number | string;
+      sum?: number | string;
+      currency?: string;
+    };
+  };
+  const data = raw?.data;
+  if (!raw?.status_check || !data) return null;
+
+  const responseOrderId = String(data.orderId || data.order_id || "").trim();
+  if (responseOrderId && responseOrderId !== String(orderId)) return null;
+
+  return {
+    invoiceId: String(data.invoiceId || data.invoice_id || data.id || providerRef),
+    orderId: responseOrderId || String(orderId),
+    status: String(data.status || "").toLowerCase(),
+    amount: data.amount ?? data.sum ?? null,
+    currency: String(data.currency || "").trim(),
+  };
+}
+
+function signLavaPayload(payload: unknown, secret: string) {
+  return crypto.createHmac("sha256", secret).update(JSON.stringify(payload), "utf8").digest("hex");
 }
 
 async function startActivationUnsafe(orderId: string, token: string, orderToken?: string) {
