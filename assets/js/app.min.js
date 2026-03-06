@@ -461,9 +461,13 @@ document.querySelectorAll("a[href]").forEach(link => {
     if (!row) return;
 
     if (!cartPaymentModalEl || !cartPaymentModalOptions.length) {
-      startBackendCheckout(row, row.qty, activePromoCode, getSelectedPaymentMethod()).catch(error => {
-        alert(resolveCheckoutErrorMessage(error));
-      });
+      persistCartSelection(undefined, activePromoCode, activePaymentMethod);
+      const currentPath = String(window.location.pathname || "").trim();
+      if (currentPath !== cartPagePath) {
+        window.location.href = cartPagePath;
+        return;
+      }
+      alert(TEXT.checkoutError);
       return;
     }
 
