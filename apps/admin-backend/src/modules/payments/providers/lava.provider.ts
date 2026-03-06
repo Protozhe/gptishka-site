@@ -63,7 +63,6 @@ export class LavaProvider implements PaymentProvider {
       failUrl: failUrl.toString(),
       expire: 60 * 30,
       comment: String(input.description || "").trim().slice(0, 240) || undefined,
-      includeService: false,
     };
     const signature = signLavaPayload(payload, secretKey);
 
