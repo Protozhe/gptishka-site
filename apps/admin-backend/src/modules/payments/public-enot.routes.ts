@@ -15,6 +15,21 @@ const createEnotPaymentSchema = z.object({
 
 export const publicEnotRouter = Router();
 
+function resolvePublicOrigin(req: any) {
+  const forwardedHost = String(req.get("x-forwarded-host") || "")
+    .split(",")[0]
+    .trim();
+  const host = forwardedHost || String(req.get("host") || "").trim();
+  if (!host) return "";
+
+  const forwardedProto = String(req.get("x-forwarded-proto") || "")
+    .split(",")[0]
+    .trim()
+    .toLowerCase();
+  const protocol = forwardedProto || String(req.protocol || "https").trim().toLowerCase();
+  return `${protocol}://${host}`;
+}
+
 publicEnotRouter.post(
   "/create",
   checkoutCreateRateLimit,
@@ -34,7 +49,8 @@ publicEnotRouter.post(
       throw new AppError("Failed to create Enot payment URL", 502);
     }
 
-    const activationUrl = new URL("/redeem-start.html", `${req.protocol}://${req.get("host")}`);
+    const publicOrigin = resolvePublicOrigin(req) || `${req.protocol}://${req.get("host")}`;
+    const activationUrl = new URL("/redeem-start.html", publicOrigin);
     activationUrl.searchParams.set("order_id", created.orderId);
     if (created.redeemToken) {
       activationUrl.searchParams.set("t", created.redeemToken);

@@ -21,6 +21,21 @@ function normalizePublicPaymentMethod(input: string) {
   return raw;
 }
 
+function resolvePublicOrigin(req: any) {
+  const forwardedHost = String(req.get("x-forwarded-host") || "")
+    .split(",")[0]
+    .trim();
+  const host = forwardedHost || String(req.get("host") || "").trim();
+  if (!host) return "";
+
+  const forwardedProto = String(req.get("x-forwarded-proto") || "")
+    .split(",")[0]
+    .trim()
+    .toLowerCase();
+  const protocol = forwardedProto || String(req.protocol || "https").trim().toLowerCase();
+  return `${protocol}://${host}`;
+}
+
 export const publicPaymentsRouter = Router();
 
 publicPaymentsRouter.post(
@@ -47,7 +62,8 @@ publicPaymentsRouter.post(
       throw new AppError("Failed to create payment URL", 502);
     }
 
-    const activationUrl = new URL("/redeem-start.html", `${req.protocol}://${req.get("host")}`);
+    const publicOrigin = resolvePublicOrigin(req) || `${req.protocol}://${req.get("host")}`;
+    const activationUrl = new URL("/redeem-start.html", publicOrigin);
     activationUrl.searchParams.set("order_id", created.orderId);
     if (created.redeemToken) {
       activationUrl.searchParams.set("t", created.redeemToken);
