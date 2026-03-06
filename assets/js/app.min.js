@@ -598,26 +598,25 @@ document.querySelectorAll("a[href]").forEach(link => {
     const displayTags = tags.filter(tag => !String(tag).startsWith("badge:"));
     const term = category || (displayTags[0] ? displayTags[0].toUpperCase() : "DIGITAL");
     const sub = displayTags.length ? displayTags.slice(0, 3).join(" • ") : description.slice(0, 90);
-    const topHighlightsDefault = isEnPage
-      ? [
-          "⚡ Fast responses",
-          "🧠 Help with tasks of any complexity",
-          "🌍 Works in multiple languages",
-          "💼 Useful for work and business",
-          "🛠 Universal tool",
-        ]
-      : [
-          "⚡ Мгновенные ответы",
-          "🧠 Помощь в задачах любой сложности",
-          "🌍 Работает на разных языках",
-          "💼 Полезен для работы и бизнеса",
-          "🛠 Универсальный инструмент",
-        ];
     const descriptionLines = parseDescriptionLines(description);
-    const hasStructuredHighlights = descriptionLines.length >= 3;
+    const hasStructuredHighlights = descriptionLines.length > 0;
     const topHighlights = hasStructuredHighlights
-      ? [...descriptionLines, ...topHighlightsDefault].slice(0, 5)
-      : topHighlightsDefault;
+      ? descriptionLines.slice(0, 5)
+      : (isEnPage
+          ? [
+              "⚡ Fast responses",
+              "🧠 Help with tasks of any complexity",
+              "🌍 Works in multiple languages",
+              "💼 Useful for work and business",
+              "🛠 Universal tool",
+            ]
+          : [
+              "⚡ Мгновенные ответы",
+              "🧠 Помощь в задачах любой сложности",
+              "🌍 Работает на разных языках",
+              "💼 Полезен для работы и бизнеса",
+              "🛠 Универсальный инструмент",
+            ]);
     const topHighlightsHtml = topHighlights
       .map(line => '<div class="sub-top-line">' + escapeHtml(line) + "</div>")
       .join("");
