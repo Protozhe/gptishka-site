@@ -593,33 +593,20 @@ document.querySelectorAll("a[href]").forEach(link => {
     const product = String(item.product || item.id || "product_" + index).trim();
     const title = String(item.title || "Product").trim();
     const description = String(item.description || "").trim();
+    const descriptionLines = parseDescriptionLines(description);
+    const durationLineRegex = /^(срок|duration)\s*:/i;
+    const durationLine = descriptionLines.find(line => durationLineRegex.test(line)) || "";
+    const nonDurationLines = descriptionLines.filter(line => !durationLineRegex.test(line));
     const category = String(item.category || "").trim();
     const tags = Array.isArray(item.tags) ? item.tags.filter(Boolean) : [];
     const displayTags = tags.filter(tag => !String(tag).startsWith("badge:"));
     const term = category || (displayTags[0] ? displayTags[0].toUpperCase() : "DIGITAL");
-    const sub = displayTags.length ? displayTags.slice(0, 3).join(" • ") : description.slice(0, 90);
-    const descriptionLines = parseDescriptionLines(description);
-    const hasStructuredHighlights = descriptionLines.length > 0;
-    const topHighlights = hasStructuredHighlights
-      ? descriptionLines.slice(0, 5)
-      : (isEnPage
-          ? [
-              "⚡ Fast responses",
-              "🧠 Help with tasks of any complexity",
-              "🌍 Works in multiple languages",
-              "💼 Useful for work and business",
-              "🛠 Universal tool",
-            ]
-          : [
-              "⚡ Мгновенные ответы",
-              "🧠 Помощь в задачах любой сложности",
-              "🌍 Работает на разных языках",
-              "💼 Полезен для работы и бизнеса",
-              "🛠 Универсальный инструмент",
-            ]);
+    const sub = displayTags.length ? displayTags.slice(0, 3).join(" • ") : String(nonDurationLines[0] || description).slice(0, 90);
+    const topHighlights = nonDurationLines.slice(0, 5);
     const topHighlightsHtml = topHighlights
       .map(line => '<div class="sub-top-line">' + escapeHtml(line) + "</div>")
       .join("");
+    const topHighlightsBlock = topHighlights.length ? '<div class="sub sub-top-list">' + topHighlightsHtml + "</div>" : "";
     const price = Math.max(0, toAmount(item.price));
     const currency = String(item.currency || "RUB").toUpperCase();
     const badgeType = resolveBadge(item.badge, tags);
@@ -636,13 +623,9 @@ document.querySelectorAll("a[href]").forEach(link => {
     const badge = badgeType
       ? '<span class="badge ' + escapeHtml(badgeType) + '">' + escapeHtml(badgeLabelByType[badgeType] || TEXT.badgeBest) + "</span>"
       : "";
-    const featureSource = hasStructuredHighlights
-      ? descriptionLines.slice(5)
-      : description
-        ? description.split(/\r?\n|[.;]/).map(v => v.trim()).filter(Boolean)
-        : [];
+    const featureSource = nonDurationLines.slice(5);
     const features = featureSource
-      .slice(0, 5)
+      .slice(0, 3)
       .map(v => {
         const normalized = String(v || "").toLowerCase();
         const isDuration = normalized.startsWith("продолжительность") || normalized.startsWith("duration");
@@ -650,10 +633,8 @@ document.querySelectorAll("a[href]").forEach(link => {
         return '<li class="' + liClass + '">&#10003; ' + escapeHtml(v) + "</li>";
       })
       .join("");
-    const list = features ||
-      "<li>&#10003; " + escapeHtml(TEXT.metaAuto) + "</li>" +
-      "<li>&#10003; " + escapeHtml(TEXT.metaSecure) + "</li>" +
-      "<li>&#10003; " + escapeHtml(TEXT.metaSupport) + "</li>";
+    const list = features ? '<ul class="price-card-features">' + features + "</ul>" : "";
+    const durationMarkup = durationLine ? '<div class="price-duration">&#10003; ' + escapeHtml(durationLine) + "</div>" : "";
 
     return (
       '<div class="price-card' + (badgeType === "best" ? " featured" : "") + '"' +
@@ -667,9 +648,10 @@ document.querySelectorAll("a[href]").forEach(link => {
       badge +
       "<h3>" + escapeHtml(title) + "</h3>" +
       '<div class="term">' + escapeHtml(term) + "</div>" +
-      '<div class="sub sub-top-list">' + topHighlightsHtml + "</div>" +
+      topHighlightsBlock +
       '<div class="price">' + escapeHtml(formatPriceByCurrency(price, currency)) + "</div>" +
-      "<ul>" + list + "</ul>" +
+      durationMarkup +
+      list +
       '<div class="price-actions">' +
       '<button type="button" class="buy-btn pay-now-btn" data-product="' + escapeHtml(product) + '" data-sub="' + escapeHtml(sub) + '" data-title="' + escapeHtml(title) + '" data-term="' + escapeHtml(term) + '" data-price="' + escapeHtml(price) + '" data-currency="' + escapeHtml(currency) + '">' + escapeHtml(TEXT.payNow) + "</button>" +
       "</div>" +

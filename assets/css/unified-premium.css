@@ -221,7 +221,7 @@ header.is-scrolled {
 }
 
 .sub.sub-top-list {
-  min-height: calc(1.45em * 5 + 24px);
+  min-height: 0;
 }
 
 .sub.sub-top-list .sub-top-line {
@@ -231,24 +231,40 @@ header.is-scrolled {
   overflow: hidden;
 }
 
-.price-card ul {
-  min-height: calc(1.45em * 5 + 32px);
+.price-card .price-card-features {
+  min-height: 0;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
 }
 
-.price-card ul li {
+.price-card .price-card-features li {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
   overflow: hidden;
 }
 
+.price-card .price-duration {
+  margin: -2px 0 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--premium-text);
+}
+
+.price-card .price-actions {
+  margin-top: 6px;
+}
+
+.price-card .buy-btn {
+  margin-top: 0;
+}
+
 @media (max-width: 760px) {
   .sub.sub-top-list {
-    min-height: calc(1.45em * 4 + 18px);
-  }
-
-  .price-card ul {
-    min-height: calc(1.45em * 4 + 24px);
+    min-height: 0;
   }
 }
 
