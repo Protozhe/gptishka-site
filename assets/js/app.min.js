@@ -257,6 +257,13 @@ document.querySelectorAll("a[href]").forEach(link => {
   const headerCartEmailInputEl = document.getElementById("headerCartEmailInput");
   const cartEmailInputEl = document.getElementById("cartEmailInput");
   const cartPaymentMethodsEl = document.getElementById("cartPaymentMethods");
+  const cartPaymentModalEl = document.getElementById("cartPaymentModal");
+  const cartPaymentModalOptions = Array.from(
+    document.querySelectorAll("[data-payment-method-modal-option]")
+  );
+  const cartPaymentModalCloseButtons = Array.from(
+    document.querySelectorAll("[data-payment-modal-close]")
+  );
   const isEnPage =
     String(document.documentElement.lang || "").toLowerCase().startsWith("en") ||
     window.location.pathname.startsWith("/en/");
@@ -351,6 +358,9 @@ document.querySelectorAll("a[href]").forEach(link => {
   let promoValidationState = "idle"; // idle | checking | valid | invalid
   let promoDiscountAmount = 0;
   let promoValidationContextKey = "";
+  let checkoutPendingRow = null;
+  let checkoutPendingPromoCode = "";
+  let checkoutInProgress = false;
 
   function normalizePromoCodeInput(value) {
     const raw = String(value || "").trim().toUpperCase();
@@ -391,18 +401,93 @@ document.querySelectorAll("a[href]").forEach(link => {
   }
 
   function syncPaymentMethodUi() {
-    if (!cartPaymentMethodsEl) return;
     const selected = normalizePaymentMethod(activePaymentMethod);
 
-    const options = Array.from(cartPaymentMethodsEl.querySelectorAll("[data-payment-method-option]"));
-    options.forEach(option => {
-      const input = option.querySelector('input[name="cartPaymentMethod"]');
-      if (!input) return;
-      const optionMethod = normalizePaymentMethod(input.value);
+    if (cartPaymentMethodsEl) {
+      const options = Array.from(cartPaymentMethodsEl.querySelectorAll("[data-payment-method-option]"));
+      options.forEach(option => {
+        const input = option.querySelector('input[name="cartPaymentMethod"]');
+        if (!input) return;
+        const optionMethod = normalizePaymentMethod(input.value);
+        const isActive = optionMethod === selected;
+        input.checked = isActive;
+        option.classList.toggle("is-active", isActive);
+      });
+    }
+
+    cartPaymentModalOptions.forEach(option => {
+      const optionMethod = normalizePaymentMethod(option.getAttribute("data-payment-method-modal-option") || "");
       const isActive = optionMethod === selected;
-      input.checked = isActive;
       option.classList.toggle("is-active", isActive);
+      option.setAttribute("aria-pressed", isActive ? "true" : "false");
     });
+  }
+
+  function closePaymentMethodModal() {
+    if (!cartPaymentModalEl) return;
+    cartPaymentModalEl.hidden = true;
+    cartPaymentModalEl.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("is-payment-modal-open");
+  }
+
+  function openPaymentMethodModal() {
+    if (!cartPaymentModalEl) return;
+    syncPaymentMethodUi();
+    cartPaymentModalEl.hidden = false;
+    cartPaymentModalEl.setAttribute("aria-hidden", "false");
+    document.body.classList.add("is-payment-modal-open");
+  }
+
+  function resetPendingCheckout() {
+    checkoutPendingRow = null;
+    checkoutPendingPromoCode = "";
+  }
+
+  function prepareCheckoutRow() {
+    const rows = loadCart().filter(row => row && row.lineId && row.product && toInt(row.qty) > 0);
+    if (!rows.length) return null;
+    if (rows.length !== 1) {
+      alert(TEXT.multiCartCheckout);
+      return null;
+    }
+    return rows[0];
+  }
+
+  function beginCheckoutFlow() {
+    if (checkoutInProgress) return;
+    const row = prepareCheckoutRow();
+    if (!row) return;
+
+    if (!cartPaymentModalEl || !cartPaymentModalOptions.length) {
+      startBackendCheckout(row, row.qty, activePromoCode, getSelectedPaymentMethod()).catch(() => {
+        alert(TEXT.checkoutError);
+      });
+      return;
+    }
+
+    checkoutPendingRow = row;
+    checkoutPendingPromoCode = activePromoCode;
+    openPaymentMethodModal();
+  }
+
+  function startCheckoutWithMethod(method) {
+    if (checkoutInProgress) return;
+    const pendingRow = checkoutPendingRow;
+    if (!pendingRow) return;
+
+    const selectedMethod = savePaymentMethod(method);
+    syncPaymentMethodUi();
+    closePaymentMethodModal();
+
+    checkoutInProgress = true;
+    startBackendCheckout(pendingRow, pendingRow.qty, checkoutPendingPromoCode, selectedMethod)
+      .catch(() => {
+        alert(TEXT.checkoutError);
+      })
+      .finally(() => {
+        checkoutInProgress = false;
+        resetPendingCheckout();
+      });
   }
 
   function toInt(value) {
@@ -1425,18 +1510,7 @@ document.querySelectorAll("a[href]").forEach(link => {
 
     if (headerCartPanelCheckoutBtnEl && (e.target === headerCartPanelCheckoutBtnEl || e.target.closest("#headerCartPanelCheckoutBtn"))) {
       if (headerCartPanelCheckoutBtnEl.getAttribute("aria-disabled") === "true") return;
-      const rows = loadCart().filter(row => row && row.lineId && row.product && toInt(row.qty) > 0);
-      if (!rows.length) return;
-
-      if (rows.length !== 1) {
-        alert(TEXT.multiCartCheckout);
-        return;
-      }
-
-      const row = rows[0];
-      startBackendCheckout(row, row.qty, activePromoCode, getSelectedPaymentMethod()).catch(() => {
-        alert(TEXT.checkoutError);
-      });
+      beginCheckoutFlow();
       return;
     }
 
@@ -1463,22 +1537,7 @@ document.querySelectorAll("a[href]").forEach(link => {
         return;
       }
 
-      const rows = loadCart().filter(row => row && row.lineId && row.product && toInt(row.qty) > 0);
-      if (!rows.length) {
-        e.preventDefault();
-        return;
-      }
-
-      if (rows.length !== 1) {
-        e.preventDefault();
-        alert(TEXT.multiCartCheckout);
-        return;
-      }
-
-      const row = rows[0];
-      startBackendCheckout(row, row.qty, activePromoCode, getSelectedPaymentMethod()).catch(() => {
-        alert(TEXT.checkoutError);
-      });
+      beginCheckoutFlow();
     });
   }
 
@@ -1570,6 +1629,21 @@ document.querySelectorAll("a[href]").forEach(link => {
     });
   }
 
+  cartPaymentModalOptions.forEach(option => {
+    option.addEventListener("click", () => {
+      const method = option.getAttribute("data-payment-method-modal-option");
+      if (!method) return;
+      startCheckoutWithMethod(method);
+    });
+  });
+
+  cartPaymentModalCloseButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      resetPendingCheckout();
+      closePaymentMethodModal();
+    });
+  });
+
   heroPromoApplyButtons.forEach(btn => {
     btn.addEventListener("click", (event) => {
       event.preventDefault();
@@ -1606,7 +1680,10 @@ document.querySelectorAll("a[href]").forEach(link => {
   });
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeHeaderCartPanel();
+    if (e.key !== "Escape") return;
+    closeHeaderCartPanel();
+    resetPendingCheckout();
+    closePaymentMethodModal();
   });
 
   window.addEventListener("gptishka:cart-cleared", () => {

@@ -88,27 +88,50 @@
         <div class="cart-email">
           <input type="email" id="cartEmailInput" placeholder="Email для получения данных заказа" autocomplete="email" />
         </div>
-        <div class="cart-payment-methods" id="cartPaymentMethods" role="radiogroup" aria-label="Способ оплаты">
-          <div class="cart-payment-methods__title">Способ оплаты</div>
-          <label class="cart-payment-method" data-payment-method-option>
-            <input type="radio" name="cartPaymentMethod" value="enot" checked />
-            <span class="cart-payment-method__card">
-              <span class="cart-payment-method__name">Enot.io</span>
-              <span class="cart-payment-method__desc">СБП и карты РФ/СНГ</span>
-            </span>
-          </label>
-          <label class="cart-payment-method" data-payment-method-option>
-            <input type="radio" name="cartPaymentMethod" value="lava" />
-            <span class="cart-payment-method__card">
-              <span class="cart-payment-method__name">Lava</span>
-              <span class="cart-payment-method__desc">СБП и банковские карты</span>
-            </span>
-          </label>
-        </div>
         <div class="cart-total">Итого: <strong id="cartTotal">0 RUB</strong></div>
         <button type="button" class="btn" id="cartCheckoutBtn" aria-disabled="true">Оплатить корзину</button>
       </div>
     </section>
+
+    <div class="payment-method-modal" id="cartPaymentModal" hidden aria-hidden="true">
+      <div class="payment-method-modal__backdrop" data-payment-modal-close></div>
+      <div class="payment-method-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="paymentMethodModalTitle">
+        <button type="button" class="payment-method-modal__close" aria-label="Закрыть" data-payment-modal-close>×</button>
+        <h3 class="payment-method-modal__title" id="paymentMethodModalTitle">Выберите способ оплаты</h3>
+        <p class="payment-method-modal__subtitle">После выбора откроется страница платежной системы.</p>
+        <div class="payment-method-modal__list">
+          <button
+            type="button"
+            class="payment-method-modal__option"
+            data-payment-method-modal-option="enot"
+            aria-pressed="false"
+          >
+            <span class="payment-method-modal__icon">
+              <img src="/assets/img/payment-enot.svg" alt="Enot.io" loading="lazy" decoding="async" />
+            </span>
+            <span class="payment-method-modal__text">
+              <span class="payment-method-modal__name">Enot.io</span>
+              <span class="payment-method-modal__hint">СБП и карты РФ/СНГ</span>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="payment-method-modal__option"
+            data-payment-method-modal-option="lava"
+            aria-pressed="false"
+          >
+            <span class="payment-method-modal__icon">
+              <img src="/assets/img/payment-lava.svg" alt="Lava" loading="lazy" decoding="async" />
+            </span>
+            <span class="payment-method-modal__text">
+              <span class="payment-method-modal__name">Lava</span>
+              <span class="payment-method-modal__hint">СБП и банковские карты</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <footer>
