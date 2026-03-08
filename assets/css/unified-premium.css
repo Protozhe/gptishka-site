@@ -1055,63 +1055,99 @@ body.is-product-modal-open {
 }
 
 .payment-method-modal__dialog {
-  width: min(780px, 100%);
-  padding: 28px;
-  border-radius: 28px;
-  border: 1px solid rgba(192, 209, 226, 0.9);
+  width: min(820px, 100%);
+  padding: 30px 28px 24px;
+  border-radius: 24px;
+  border: 1px solid rgba(186, 200, 216, 0.9);
   background:
-    radial-gradient(120% 110% at 0% 0%, rgba(22, 163, 148, 0.08), transparent 58%),
-    radial-gradient(100% 120% at 100% 0%, rgba(59, 130, 246, 0.07), transparent 62%),
-    linear-gradient(162deg, rgba(255, 255, 255, 0.97), rgba(244, 250, 255, 0.93));
-  box-shadow: 0 28px 64px rgba(11, 23, 38, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.97);
+    radial-gradient(120% 120% at 0% 0%, rgba(14, 165, 233, 0.07), transparent 56%),
+    radial-gradient(100% 120% at 100% 0%, rgba(15, 23, 42, 0.08), transparent 64%),
+    linear-gradient(162deg, rgba(255, 255, 255, 0.97), rgba(245, 249, 253, 0.94));
+  box-shadow: 0 30px 68px rgba(11, 23, 38, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px) saturate(122%);
+  -webkit-backdrop-filter: blur(12px) saturate(122%);
 }
 
 .payment-method-modal__title {
-  font-size: clamp(30px, 4vw, 38px);
+  font-size: clamp(28px, 3.6vw, 36px);
+  letter-spacing: -0.02em;
 }
 
 .payment-method-modal__subtitle {
   margin-top: 10px;
   font-size: 15px;
+  color: #5f6e80;
 }
 
 .payment-method-modal__list {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
 }
 
 .payment-method-modal__option {
-  grid-template-columns: 80px 1fr;
-  min-height: 108px;
-  padding: 18px 20px;
-  border-radius: 20px;
-  border-color: rgba(191, 209, 227, 0.88);
-  background: linear-gradient(156deg, rgba(255, 255, 255, 0.9), rgba(242, 249, 255, 0.78));
+  position: relative;
+  grid-template-columns: 72px 1fr;
+  min-height: 104px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(152, 168, 186, 0.34);
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.9), rgba(243, 248, 253, 0.78));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all .25s ease;
+}
+
+.payment-method-modal__option::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(255, 255, 255, 0.72);
+  transition: all .25s ease;
 }
 
 .payment-method-modal__option:hover {
-  transform: translateY(-3px);
-  border-color: rgba(19, 138, 120, 0.5);
+  transform: translateY(-2px);
+  border-color: rgba(15, 23, 42, 0.34);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
 }
 
 .payment-method-modal__option.is-active {
-  border-color: rgba(19, 138, 120, 0.62);
-  box-shadow: 0 14px 26px rgba(19, 138, 120, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.98);
+  border-color: rgba(15, 23, 42, 0.42);
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.98), rgba(247, 251, 255, 0.92));
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.14), 0 0 20px rgba(15, 23, 42, 0.14);
+}
+
+.payment-method-modal__option.is-active::after {
+  border-color: rgba(15, 23, 42, 0.65);
+  background: #0f172a;
+  box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.12);
 }
 
 .payment-method-modal__logo {
-  width: 72px;
-  height: 72px;
+  width: 64px;
+  height: 64px;
   object-fit: contain;
   display: block;
   filter: drop-shadow(0 6px 10px rgba(13, 36, 64, 0.12));
 }
 
 .payment-method-modal__name {
-  font-size: 20px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #0f172a;
 }
 
 .payment-method-modal__hint {
-  font-size: 14px;
+  font-size: 13px;
+  color: #607084;
 }
 
 footer {
@@ -1292,26 +1328,36 @@ footer {
 
   .payment-method-modal__dialog {
     padding: 20px 16px 16px;
-    border-radius: 20px;
+    border-radius: 18px;
   }
 
   .payment-method-modal__title {
-    font-size: 21px;
+    font-size: 23px;
     padding-right: 28px;
   }
 
   .payment-method-modal__list {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .payment-method-modal__option {
-    grid-template-columns: 64px 1fr;
-    min-height: 92px;
+    grid-template-columns: 56px 1fr;
+    min-height: 88px;
     padding: 14px 12px;
+    border-radius: 14px;
   }
 
   .payment-method-modal__logo {
-    width: 58px;
-    height: 58px;
+    width: 50px;
+    height: 50px;
+  }
+
+  .payment-method-modal__name {
+    font-size: 16px;
+  }
+
+  .payment-method-modal__hint {
+    font-size: 12px;
   }
 }
