@@ -567,6 +567,45 @@ document.querySelectorAll("a[href]").forEach(link => {
     return raw;
   }
 
+  function mapCheckoutValidationField(fieldName) {
+    const key = String(fieldName || "").trim().toLowerCase();
+    if (!key) return "";
+    if (key === "email") return isEnPage ? "Email" : "Email";
+    if (key === "plan_id" || key === "planid" || key === "product_id" || key === "productid") {
+      return isEnPage ? "Product" : "Товар";
+    }
+    if (key === "payment_method" || key === "paymentmethod") {
+      return isEnPage ? "Payment method" : "Способ оплаты";
+    }
+    if (key === "promo_code" || key === "promocode") {
+      return isEnPage ? "Promo code" : "Промокод";
+    }
+    return fieldName;
+  }
+
+  function extractCheckoutApiErrorMessage(payload) {
+    if (!payload || typeof payload !== "object") return "";
+
+    const message = String(payload.message || payload.error || "").trim();
+    const details = payload.details && typeof payload.details === "object" ? payload.details : null;
+    const fieldErrors = details && details.fieldErrors && typeof details.fieldErrors === "object" ? details.fieldErrors : null;
+
+    if (fieldErrors) {
+      const invalidFields = Object.keys(fieldErrors).filter(key => {
+        const value = fieldErrors[key];
+        return Array.isArray(value) ? value.some(Boolean) : Boolean(value);
+      });
+      if (invalidFields.length) {
+        const labels = invalidFields.map(mapCheckoutValidationField).filter(Boolean);
+        if (labels.length) {
+          return isEnPage ? `Invalid fields: ${labels.join(", ")}` : `Проверьте поля: ${labels.join(", ")}`;
+        }
+      }
+    }
+
+    return message;
+  }
+
   function toInt(value) {
     const parsed = Number.parseInt(String(value || "").replace(/[^\d-]/g, ""), 10);
     return Number.isFinite(parsed) ? parsed : 0;
@@ -1358,12 +1397,21 @@ document.querySelectorAll("a[href]").forEach(link => {
       return;
     }
 
+    const productId = String(checkoutItem.productId || "").trim();
+    const normalizedPromoCode = normalizePromoCodeInput(promoCode || "");
+
     const payload = {
       email,
-      plan_id: checkoutItem.productId,
+      plan_id: productId,
+      planId: productId,
+      product_id: productId,
+      productId: productId,
       qty: 1,
-      promo_code: promoCode || undefined,
+      quantity: 1,
+      promo_code: normalizedPromoCode || undefined,
+      promoCode: normalizedPromoCode || undefined,
       payment_method: selectedPaymentMethod,
+      paymentMethod: selectedPaymentMethod,
     };
 
     const response = await fetch("/api/payments/" + encodeURIComponent(selectedPaymentMethod) + "/create", {
@@ -1372,9 +1420,16 @@ document.querySelectorAll("a[href]").forEach(link => {
       body: JSON.stringify(payload),
     });
 
-    const data = await response.json().catch(() => ({}));
+    const raw = await response.text();
+    const data = safeParse(raw, {});
     if (!response.ok || !data.pay_url) {
-      const rawError = String(data?.message || data?.error || "").trim();
+      let rawError = extractCheckoutApiErrorMessage(data);
+      if (!rawError) {
+        const plain = String(raw || "").replace(/\s+/g, " ").trim();
+        if (plain && plain.length <= 220 && !/^<!doctype/i.test(plain)) {
+          rawError = plain;
+        }
+      }
       if (selectedPaymentMethod === "lava" && /not configured/i.test(rawError)) {
         throw new Error(TEXT.lavaUnavailable);
       }

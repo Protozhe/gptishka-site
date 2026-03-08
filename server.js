@@ -837,21 +837,64 @@ function createApp() {
     }
   });
 
+  function normalizePublicPaymentProvider(raw) {
+    const provider = String(raw || "").trim().toLowerCase();
+    if (provider === "enot.io") return "enot";
+    if (provider === "gateway") return "enot";
+    return provider;
+  }
+
+  function pickFirstString(values, fallback = "") {
+    for (const value of values) {
+      if (value == null) continue;
+      const normalized = String(value).trim();
+      if (normalized) return normalized;
+    }
+    return fallback;
+  }
+
+  function normalizeCheckoutCreatePayload(payload, provider) {
+    const source = payload && typeof payload === "object" ? payload : {};
+    const planId = pickFirstString([
+      source.plan_id,
+      source.planId,
+      source.product_id,
+      source.productId,
+      source.id,
+      source.product,
+    ]);
+    const promoCode = pickFirstString([source.promo_code, source.promoCode, source.promo], "");
+    const qtyRaw = Number(source.qty ?? source.quantity ?? 1);
+    const qty = Number.isFinite(qtyRaw) && qtyRaw > 0 ? Math.floor(qtyRaw) : 1;
+
+    return {
+      email: pickFirstString([source.email, source.customer_email, source.customerEmail, source.mail], "").toLowerCase(),
+      plan_id: planId,
+      qty: Math.max(1, qty),
+      promo_code: promoCode || undefined,
+      payment_method: normalizePublicPaymentProvider(
+        pickFirstString([source.payment_method, source.paymentMethod, source.method, provider], provider)
+      ),
+    };
+  }
+
   app.post("/api/payments/:provider/create", async (req, res) => {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
 
     try {
-      const provider = String(req.params.provider || "").trim().toLowerCase();
+      const provider = normalizePublicPaymentProvider(req.params.provider);
       if (!/^[a-z0-9_-]{2,20}$/.test(provider)) {
         clearTimeout(timeout);
         return res.status(400).json({ error: "Invalid payment provider" });
       }
 
+      const normalizedPayload = normalizeCheckoutCreatePayload(req.body || {}, provider);
+
       const response = await fetch(`${ADMIN_BACKEND_URL}/api/payments/${encodeURIComponent(provider)}/create`, {
         method: "POST",
         headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
-        body: JSON.stringify(req.body || {}),
+        body: JSON.stringify(normalizedPayload),
         signal: controller.signal,
       });
 

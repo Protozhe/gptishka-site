@@ -8,19 +8,29 @@ import { checkoutCreateRateLimit } from "../../common/security/rate-limit";
 
 const createPaymentSchema = z.object({
   email: z.preprocess((value) => String(value || "").trim().toLowerCase(), z.string().email()),
-  plan_id: z.preprocess((value) => String(value || "").trim(), z.string()),
+  plan_id: z.preprocess((value) => String(value || "").trim(), z.string().optional()),
+  planId: z.preprocess((value) => String(value || "").trim(), z.string().optional()),
+  product_id: z.preprocess((value) => String(value || "").trim(), z.string().optional()),
+  productId: z.preprocess((value) => String(value || "").trim(), z.string().optional()),
   promo_code: z.preprocess((value) => {
     const normalized = String(value || "").trim();
     return normalized ? normalized : undefined;
   }, z.string().max(40).optional()),
+  promoCode: z.preprocess((value) => {
+    const normalized = String(value || "").trim();
+    return normalized ? normalized : undefined;
+  }, z.string().max(40).optional()),
   qty: z.coerce.number().int().min(1).max(100).optional(),
-  payment_method: z.string().trim().optional(),
+  quantity: z.coerce.number().int().min(1).max(100).optional(),
+  payment_method: z.preprocess((value) => String(value || "").trim().toLowerCase(), z.string().optional()),
+  paymentMethod: z.preprocess((value) => String(value || "").trim().toLowerCase(), z.string().optional()),
 });
 
 const allowedPublicPaymentMethods = new Set(["enot", "lava"]);
 
 function normalizePublicPaymentMethod(input: string) {
   const raw = String(input || "").trim().toLowerCase();
+  if (raw === "enot.io") return "enot";
   if (raw === "gateway") return "enot";
   return raw;
 }
@@ -53,12 +63,24 @@ publicPaymentsRouter.post(
     }
 
     const body = req.body as z.infer<typeof createPaymentSchema>;
+    const productId = String(body.plan_id || body.planId || body.product_id || body.productId || "").trim();
+    if (!productId) {
+      throw new AppError("Validation failed", 422, {
+        formErrors: [],
+        fieldErrors: {
+          plan_id: ["Product id is required"],
+        },
+      });
+    }
+    const promoCode = String(body.promo_code || body.promoCode || "").trim() || undefined;
+    const paymentMethod = normalizePublicPaymentMethod(String(body.payment_method || body.paymentMethod || provider));
+
     const created = await paymentsService.createOrderWithPayment({
       email: body.email,
-      productId: body.plan_id,
+      productId,
       quantity: 1,
-      paymentMethod: provider,
-      promoCode: body.promo_code,
+      paymentMethod,
+      promoCode,
       ip: req.ip,
     });
 
@@ -82,7 +104,7 @@ publicPaymentsRouter.post(
       base_amount: created.basePrice,
       discount: created.discountAmount,
       promo_code: created.promoCode,
-      payment_method: provider,
+      payment_method: paymentMethod,
     });
   })
 );
