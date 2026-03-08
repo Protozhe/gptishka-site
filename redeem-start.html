@@ -168,21 +168,31 @@
 
     .redeem-manual-hint {
       margin: 12px 0 0;
-      color: #4b5563;
+      padding: 13px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(203, 213, 225, 0.92);
+      background: linear-gradient(150deg, rgba(255, 255, 255, 0.92), rgba(249, 251, 253, 0.82));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.96);
+      color: #3f4e5e;
       font-size: 14px;
-      line-height: 1.45;
+      line-height: 1.5;
     }
 
     .redeem-manual-hint.is-alert {
-      font-size: clamp(18px, 2.5vw, 26px);
-      line-height: 1.3;
+      border-color: rgba(245, 158, 11, 0.42);
+      background: linear-gradient(145deg, rgba(255, 248, 235, 0.95), rgba(255, 243, 225, 0.86));
+      box-shadow: 0 10px 22px rgba(180, 83, 9, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.96);
+      font-size: clamp(18px, 2.4vw, 24px);
+      line-height: 1.32;
       font-weight: 800;
       color: #9a3412;
     }
 
     .redeem-manual-hint.is-ok {
+      border-color: rgba(22, 163, 74, 0.32);
+      background: linear-gradient(150deg, rgba(236, 253, 245, 0.92), rgba(240, 253, 250, 0.78));
       font-size: 15px;
-      line-height: 1.45;
+      line-height: 1.5;
       font-weight: 600;
       color: #0f7a5d;
     }
@@ -639,6 +649,10 @@
             Ссылка для получения кода:
             <a id="manualCodeLink" href="https://t.me/gptishkasupp" target="_blank" rel="noopener noreferrer">получить код</a>
           </p>
+          <p id="manualEmailLinkRow" class="redeem-manual-code-row" style="display:none">
+            Если удобнее, получите код по почте:
+            <a id="manualEmailLink" href="mailto:support@gptishka.shop">support@gptishka.shop</a>
+          </p>
           <a
             id="manualSupportBtn"
             class="redeem-btn redeem-btn-primary"
@@ -714,6 +728,8 @@
     const manualCredentialsHint = document.getElementById('manualCredentialsHint');
     const manualCodeLinkRow = document.getElementById('manualCodeLinkRow');
     const manualCodeLink = document.getElementById('manualCodeLink');
+    const manualEmailLinkRow = document.getElementById('manualEmailLinkRow');
+    const manualEmailLink = document.getElementById('manualEmailLink');
     const manualSupportBtn = document.getElementById('manualSupportBtn');
     const copyLoginBtn = document.getElementById('copyLoginBtn');
     const copyPasswordBtn = document.getElementById('copyPasswordBtn');
@@ -818,6 +834,8 @@
       const login = String(credentials?.login || '').trim();
       const password = String(credentials?.password || '').trim();
       const supportUrl = String(payload?.supportUrl || 'https://t.me/gptishkasupp').trim();
+      const supportEmailRaw = String(payload?.supportEmail || payload?.support_email || payload?.emailSupport || '').trim();
+      const supportEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supportEmailRaw) ? supportEmailRaw.toLowerCase() : '';
       const defaultMessage = 'Свободные данные для входа сейчас отсутствуют. Напишите в поддержку или ожидайте письмо с данными на email.';
       const message = String(payload?.message || '').trim() || defaultMessage;
 
@@ -836,6 +854,15 @@
       if (manualCodeLinkRow) {
         manualCodeLinkRow.style.display = hasCredentials ? 'none' : 'block';
       }
+      if (manualEmailLink) {
+        manualEmailLink.textContent = supportEmail || 'support@gptishka.shop';
+        manualEmailLink.href = supportEmail
+          ? `mailto:${supportEmail}?subject=${encodeURIComponent(`Получение кода по заказу ${orderId}`)}`
+          : 'mailto:support@gptishka.shop';
+      }
+      if (manualEmailLinkRow) {
+        manualEmailLinkRow.style.display = hasCredentials && supportEmail ? 'block' : 'none';
+      }
       if (manualSupportBtn) {
         manualSupportBtn.href = supportUrl || 'https://t.me/gptishkasupp';
         manualSupportBtn.style.display = hasCredentials ? 'none' : 'inline-flex';
@@ -844,7 +871,7 @@
       if (hasCredentials) {
         setStatus('success', 'Данные для входа готовы. Скопируйте логин и пароль ниже.', false);
       } else {
-        setStatus('pending', message, false);
+        setStatus('pending', 'Ожидаем выдачу данных. Актуальная информация указана в блоке выше.', false);
       }
     }
 

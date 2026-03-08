@@ -28,6 +28,14 @@ const ORDER_FILE_LOCK_TIMEOUT_MS = 45_000;
 const ORDER_FILE_LOCK_STALE_MS = 2 * 60 * 1000;
 const ORDER_FILE_LOCK_POLL_MS = 120;
 const activationLockDir = path.join(resolveRuntimeDir(), "order-locks");
+const DEFAULT_SUPPORT_URL = "https://t.me/gptishkasupp";
+const DEFAULT_SUPPORT_EMAIL = "support@gptishka.shop";
+
+function resolveSupportEmail() {
+  const raw = String(env.SMTP_FROM || "").trim();
+  const emailMatch = raw.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  return String(emailMatch?.[0] || DEFAULT_SUPPORT_EMAIL).toLowerCase();
+}
 
 async function withActivationOrderLock<T>(orderId: string, job: () => Promise<T>) {
   const key = String(orderId || "").trim() || "__empty_order__";
@@ -231,6 +239,7 @@ export const ordersService = {
     if (deliveryType === "credentials") {
       await deliverProduct(order);
       const assigned = manualCredentialsStore.findByOrderId(order.id);
+      const supportEmail = resolveSupportEmail();
       if (assigned && String(assigned.productId || "").trim() === String(firstItem?.productId || "").trim()) {
         return {
           orderId: order.id,
@@ -240,7 +249,8 @@ export const ordersService = {
             login: assigned.login,
             password: assigned.password,
           },
-          supportUrl: "https://t.me/gptishkasupp",
+          supportUrl: DEFAULT_SUPPORT_URL,
+          supportEmail,
           message: "Данные для входа доступны ниже.",
         };
       }
@@ -249,7 +259,8 @@ export const ordersService = {
         orderId: order.id,
         deliveryMode: "credentials",
         status: "pending_manual",
-        supportUrl: "https://t.me/gptishkasupp",
+        supportUrl: DEFAULT_SUPPORT_URL,
+        supportEmail,
         message:
           "Свободные данные для входа сейчас отсутствуют. Напишите в поддержку или ожидайте письмо с данными на email.",
       };
