@@ -304,7 +304,7 @@ document.querySelectorAll("a[href]").forEach(link => {
     String(document.documentElement.lang || "").toLowerCase().startsWith("en") ||
     window.location.pathname.startsWith("/en/");
   const numberLocale = isEnPage ? "en-US" : "ru-RU";
-  const cartPagePath = isEnPage ? "/en/cart.html" : "/cart.html";
+  const checkoutLandingPath = isEnPage ? "/en/index.html#pricing" : "/index.html#pricing";
   const TEXT = isEnPage
     ? {
         promo10: "10% discount",
@@ -349,6 +349,10 @@ document.querySelectorAll("a[href]").forEach(link => {
         previewPay: "Pay for this plan",
         previewClose: "Close",
         previewNoDetails: "Details will appear here shortly.",
+        cardPromoPlaceholder: "Promo code",
+        previewEmailLabel: "Email for order details",
+        previewPromoLabel: "Promo code",
+        previewPromoApply: "Apply",
       }
     : {
         promo10: "Скидка 10%",
@@ -393,6 +397,10 @@ document.querySelectorAll("a[href]").forEach(link => {
         previewPay: "Оплатить этот тариф",
         previewClose: "Закрыть",
         previewNoDetails: "Описание появится в ближайшее время.",
+        cardPromoPlaceholder: "Промокод",
+        previewEmailLabel: "Email для получения данных заказа",
+        previewPromoLabel: "Промокод",
+        previewPromoApply: "Применить",
       };
   const PROMO_CODE_KEY = "gptishka_cart_promo_v1";
   const PROMO_CODE_TS_KEY = "gptishka_cart_promo_ts_v1";
@@ -412,6 +420,10 @@ document.querySelectorAll("a[href]").forEach(link => {
   let productPreviewModalEl = null;
   let productPreviewContentEl = null;
   let productPreviewPayBtnEl = null;
+  let productPreviewEmailInputEl = null;
+  let productPreviewPromoInputEl = null;
+  let productPreviewPromoApplyBtnEl = null;
+  let productPreviewPromoMsgEl = null;
   let previewItem = null;
 
   function normalizePromoCodeInput(value) {
@@ -513,8 +525,8 @@ document.querySelectorAll("a[href]").forEach(link => {
     if (!cartPaymentModalEl || !cartPaymentModalOptions.length) {
       persistCartSelection(undefined, activePromoCode, activePaymentMethod);
       const currentPath = String(window.location.pathname || "").trim();
-      if (currentPath !== cartPagePath) {
-        window.location.href = cartPagePath;
+      if (currentPath !== checkoutLandingPath) {
+        window.location.href = checkoutLandingPath;
         return;
       }
       alert(TEXT.checkoutError);
@@ -597,6 +609,43 @@ document.querySelectorAll("a[href]").forEach(link => {
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
+  }
+
+  function getCardPromoInput(card) {
+    if (!card) return null;
+    return card.querySelector("[data-card-promo-input]");
+  }
+
+  function syncCardPromoInputs(code) {
+    const normalized = normalizePromoCodeInput(code);
+    cards.forEach(card => {
+      const input = getCardPromoInput(card);
+      if (!input) return;
+      if (document.activeElement === input) return;
+      input.value = normalized;
+    });
+  }
+
+  function setActivePromoCode(code) {
+    const normalized = normalizePromoCodeInput(code);
+    activePromoCode = normalized;
+    savePromoCode(normalized);
+    if (headerCartPromoInputEl) headerCartPromoInputEl.value = normalized;
+    if (cartPromoInputEl) cartPromoInputEl.value = normalized;
+    syncCardPromoInputs(normalized);
+
+    if (productPreviewPromoInputEl && document.activeElement !== productPreviewPromoInputEl) {
+      productPreviewPromoInputEl.value = normalized;
+    }
+    if (productPreviewPromoMsgEl) {
+      productPreviewPromoMsgEl.textContent = normalized ? TEXT.promoAccepted : "";
+    }
+  }
+
+  function getCardPromoCode(card) {
+    const input = getCardPromoInput(card);
+    if (!input) return normalizePromoCodeInput(activePromoCode);
+    return normalizePromoCodeInput(input.value || activePromoCode);
   }
 
   function sanitizeMediaUrl(value) {
@@ -778,15 +827,40 @@ document.querySelectorAll("a[href]").forEach(link => {
     productPreviewModalEl.hidden = true;
     productPreviewModalEl.setAttribute("aria-hidden", "true");
     document.body.classList.remove("is-product-modal-open");
+    productPreviewEmailInputEl = null;
+    productPreviewPromoInputEl = null;
+    productPreviewPromoApplyBtnEl = null;
+    productPreviewPromoMsgEl = null;
     previewItem = null;
   }
 
   function continueCheckoutFromPreview() {
-    if (!previewItem) return;
-    addCartLot(previewItem, 1);
-    persistCartSelection(undefined, activePromoCode, activePaymentMethod);
+    if (!previewItem || checkoutInProgress) return;
+
+    const promoFromModal = normalizePromoCodeInput(
+      productPreviewPromoInputEl ? productPreviewPromoInputEl.value : (previewItem.promoCode || activePromoCode)
+    );
+    setActivePromoCode(promoFromModal);
+
+    if (!cartPaymentModalEl || !cartPaymentModalOptions.length) {
+      const directItem = previewItem;
+      closeProductPreviewModal();
+      checkoutInProgress = true;
+      startBackendCheckout(directItem, 1, promoFromModal, activePaymentMethod)
+        .catch(error => {
+          alert(resolveCheckoutErrorMessage(error));
+        })
+        .finally(() => {
+          checkoutInProgress = false;
+          resetPendingCheckout();
+        });
+      return;
+    }
+
+    checkoutPendingRow = previewItem;
+    checkoutPendingPromoCode = promoFromModal;
     closeProductPreviewModal();
-    window.location.href = cartPagePath;
+    openPaymentMethodModal();
   }
 
   function ensureProductPreviewModal() {
@@ -846,6 +920,16 @@ document.querySelectorAll("a[href]").forEach(link => {
       '<div class="product-preview-modal__price">' + escapeHtml(formatPriceByCurrency(item.price, item.currency)) + "</div>",
       "</div>",
       mediaMarkup,
+      '<section class="product-preview-modal__checkout">',
+      '<label class="product-preview-modal__field-label" for="productPreviewEmailInput">' + escapeHtml(TEXT.previewEmailLabel) + "</label>",
+      '<input type="email" class="product-preview-modal__field-input" id="productPreviewEmailInput" placeholder="' + escapeHtml(TEXT.emailPlaceholder) + '" autocomplete="email" />',
+      '<label class="product-preview-modal__field-label" for="productPreviewPromoInput">' + escapeHtml(TEXT.previewPromoLabel) + "</label>",
+      '<div class="product-preview-modal__promo-row">',
+      '<input type="text" class="product-preview-modal__field-input" id="productPreviewPromoInput" placeholder="' + escapeHtml(TEXT.cardPromoPlaceholder) + '" autocomplete="off" inputmode="text" maxlength="40" />',
+      '<button type="button" class="product-preview-modal__promo-apply" id="productPreviewPromoApplyBtn">' + escapeHtml(TEXT.previewPromoApply) + "</button>",
+      "</div>",
+      '<p class="product-preview-modal__promo-msg" id="productPreviewPromoMsg"></p>',
+      "</section>",
       '<section class="product-preview-modal__section">',
       '<h4 class="product-preview-modal__section-title">' + escapeHtml(TEXT.previewIncluded) + "</h4>",
       buildPreviewDescriptionMarkup(model.lines),
@@ -859,6 +943,44 @@ document.querySelectorAll("a[href]").forEach(link => {
       mediaUrl: item.mediaUrl || model.mediaUrl,
       mediaCaption: item.mediaCaption || model.mediaCaption,
     };
+
+    productPreviewEmailInputEl = document.getElementById("productPreviewEmailInput");
+    productPreviewPromoInputEl = document.getElementById("productPreviewPromoInput");
+    productPreviewPromoApplyBtnEl = document.getElementById("productPreviewPromoApplyBtn");
+    productPreviewPromoMsgEl = document.getElementById("productPreviewPromoMsg");
+
+    const storedEmail = String(localStorage.getItem("checkout_email") || "").trim().toLowerCase();
+    if (productPreviewEmailInputEl) {
+      productPreviewEmailInputEl.value = storedEmail;
+      productPreviewEmailInputEl.addEventListener("input", () => {
+        const value = String(productPreviewEmailInputEl.value || "").trim().toLowerCase();
+        if (!isValidEmail(value)) return;
+        localStorage.setItem("checkout_email", value);
+      });
+    }
+
+    const cardPromoCode = normalizePromoCodeInput(item.promoCode || "");
+    const effectivePromo = cardPromoCode || normalizePromoCodeInput(activePromoCode);
+    if (productPreviewPromoInputEl) {
+      productPreviewPromoInputEl.value = effectivePromo;
+      productPreviewPromoInputEl.addEventListener("input", () => {
+        const value = normalizePromoCodeInput(productPreviewPromoInputEl.value || "");
+        if (productPreviewPromoInputEl.value !== value) productPreviewPromoInputEl.value = value;
+      });
+      productPreviewPromoInputEl.addEventListener("keydown", e => {
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        setActivePromoCode(productPreviewPromoInputEl.value || "");
+      });
+    }
+    if (productPreviewPromoApplyBtnEl) {
+      productPreviewPromoApplyBtnEl.addEventListener("click", () => {
+        setActivePromoCode(productPreviewPromoInputEl ? productPreviewPromoInputEl.value : "");
+      });
+    }
+    if (productPreviewPromoMsgEl) {
+      productPreviewPromoMsgEl.textContent = effectivePromo ? TEXT.promoAccepted : "";
+    }
 
     productPreviewModalEl.hidden = false;
     productPreviewModalEl.setAttribute("aria-hidden", "false");
@@ -935,6 +1057,9 @@ document.querySelectorAll("a[href]").forEach(link => {
       list +
       '<div class="price-actions">' +
       '<button type="button" class="buy-btn pay-now-btn" data-product="' + escapeHtml(product) + '" data-sub="' + escapeHtml(sub) + '" data-title="' + escapeHtml(title) + '" data-term="' + escapeHtml(term) + '" data-price="' + escapeHtml(price) + '" data-currency="' + escapeHtml(currency) + '">' + escapeHtml(TEXT.payNow) + "</button>" +
+      '<div class="price-card-promo">' +
+      '<input type="text" class="price-card-promo__input" data-card-promo-input placeholder="' + escapeHtml(TEXT.cardPromoPlaceholder) + '" autocomplete="off" inputmode="text" maxlength="40">' +
+      "</div>" +
       "</div>" +
       '<div class="meta"><span>&#10003; ' + escapeHtml(TEXT.metaAuto) + "</span><span>&#10003; " + escapeHtml(TEXT.metaSecure) + "</span><span>&#10003; " + escapeHtml(TEXT.metaSupport) + "</span></div>" +
       "</div>"
@@ -963,11 +1088,13 @@ document.querySelectorAll("a[href]").forEach(link => {
       pricingGridEl.innerHTML = items.map((item, idx) => buildProductCard(item, idx)).join("");
       refreshCards();
       syncCards();
+      syncCardPromoInputs(activePromoCode);
       renderCart();
       alignToHashTarget("auto");
     } catch (_) {
       refreshCards();
       syncCards();
+      syncCardPromoInputs(activePromoCode);
       renderCart();
       alignToHashTarget("auto");
     }
@@ -1009,6 +1136,9 @@ document.querySelectorAll("a[href]").forEach(link => {
     if (cartEmailInputEl && !String(cartEmailInputEl.value || "").trim()) {
       cartEmailInputEl.value = stored;
     }
+    if (productPreviewEmailInputEl && !String(productPreviewEmailInputEl.value || "").trim()) {
+      productPreviewEmailInputEl.value = stored;
+    }
   }
 
   function markEmailInvalid(inputEl) {
@@ -1020,6 +1150,7 @@ document.querySelectorAll("a[href]").forEach(link => {
 
   function pickEmailCandidate() {
     const values = [
+      String(productPreviewEmailInputEl ? productPreviewEmailInputEl.value : "").trim().toLowerCase(),
       String(headerCartEmailInputEl ? headerCartEmailInputEl.value : "").trim().toLowerCase(),
       String(cartEmailInputEl ? cartEmailInputEl.value : "").trim().toLowerCase(),
       String(localStorage.getItem("checkout_email") || "").trim().toLowerCase(),
@@ -1030,6 +1161,7 @@ document.querySelectorAll("a[href]").forEach(link => {
   function getCheckoutEmail() {
     const email = pickEmailCandidate();
     if (!isValidEmail(email)) {
+      markEmailInvalid(productPreviewEmailInputEl);
       markEmailInvalid(headerCartEmailInputEl);
       markEmailInvalid(cartEmailInputEl);
       alert(TEXT.invalidEmail);
@@ -1037,6 +1169,7 @@ document.querySelectorAll("a[href]").forEach(link => {
     }
 
     localStorage.setItem("checkout_email", email);
+    if (productPreviewEmailInputEl) productPreviewEmailInputEl.value = email;
     if (headerCartEmailInputEl) headerCartEmailInputEl.value = email;
     if (cartEmailInputEl) cartEmailInputEl.value = email;
     return email;
@@ -1049,7 +1182,6 @@ document.querySelectorAll("a[href]").forEach(link => {
     }
 
     const selectedPaymentMethod = normalizePaymentMethod(paymentMethod || getSelectedPaymentMethod());
-    persistCartSelection(undefined, promoCode || "", selectedPaymentMethod);
 
     const email = getCheckoutEmail();
     if (!email) {
@@ -1096,6 +1228,16 @@ document.querySelectorAll("a[href]").forEach(link => {
       return parsed && typeof parsed === "object" ? parsed : fallback;
     } catch (_) {
       return fallback;
+    }
+  }
+
+  function clearLegacyCartArtifacts() {
+    try {
+      localStorage.removeItem(CART_KEY);
+      localStorage.removeItem(CARD_QTY_KEY);
+      localStorage.removeItem(CART_SELECTION_KEY);
+    } catch (_) {
+      // Ignore storage cleanup errors.
     }
   }
 
@@ -1314,6 +1456,7 @@ document.querySelectorAll("a[href]").forEach(link => {
       title: String(card.getAttribute("data-title") || (h3 ? h3.innerText : "")).replace(/\s+/g, " ").trim(),
       term: String(card.getAttribute("data-term") || (term ? term.innerText : "")).replace(/\s+/g, " ").trim(),
       sub: String(card.getAttribute("data-sub") || (sub ? sub.innerText : "")).replace(/\s+/g, " ").trim(),
+      promoCode: getCardPromoCode(card),
       description: String(card.getAttribute("data-description") || "").trim(),
       mediaType: String(card.getAttribute("data-media-type") || "").trim().toLowerCase(),
       mediaUrl: String(card.getAttribute("data-media-url") || "").trim(),
@@ -1384,16 +1527,7 @@ document.querySelectorAll("a[href]").forEach(link => {
       cardLookup.byProduct.get(normalizeLookup(item.product)) ||
       cardLookup.byTitle.get(normalizeLookup(item.title));
     if (directCardId) {
-      const resolved = { ...item, productId: directCardId };
-      const cart = loadCart().map(row => {
-        if (!row) return row;
-        if (row.lineId === item.lineId || normalizeLookup(row.product) === normalizeLookup(item.product)) {
-          return { ...row, productId: directCardId };
-        }
-        return row;
-      });
-      saveCart(cart);
-      return resolved;
+      return { ...item, productId: directCardId };
     }
 
     try {
@@ -1401,7 +1535,6 @@ document.querySelectorAll("a[href]").forEach(link => {
       if (!response.ok) return item;
       const payload = await response.json();
       const items = Array.isArray(payload?.items) ? payload.items : [];
-      reconcileCartProductIds(items);
       const lookup = buildProductLookup(items);
       const resolvedId =
         lookup.byProduct.get(normalizeLookup(item.product)) ||
@@ -1461,12 +1594,7 @@ document.querySelectorAll("a[href]").forEach(link => {
     const normalized = normalizePromoCodeInput(code);
     if (!normalized) return;
 
-    activePromoCode = normalized;
-    savePromoCode(activePromoCode);
-    if (headerCartPromoInputEl) headerCartPromoInputEl.value = activePromoCode;
-    if (cartPromoInputEl) cartPromoInputEl.value = activePromoCode;
-    validatePromoCodeViaBackend(activePromoCode);
-    persistCartSelection(undefined, activePromoCode, activePaymentMethod);
+    setActivePromoCode(normalized);
 
     if (sourceBtn) {
       sourceBtn.classList.add("is-applied");
@@ -1641,13 +1769,9 @@ document.querySelectorAll("a[href]").forEach(link => {
         ? [activePromoCode, String(first.productId || ""), firstQty].join("|")
         : "";
     if (nextPromoContextKey !== promoValidationContextKey) {
-      if (activePromoCode && first && first.productId) {
-        validatePromoCodeViaBackend(activePromoCode);
-      } else {
-        promoValidationState = activePromoCode ? "invalid" : "idle";
-        promoDiscountAmount = 0;
-        promoValidationContextKey = "";
-      }
+      promoValidationState = "idle";
+      promoDiscountAmount = 0;
+      promoValidationContextKey = "";
     }
 
     let total = 0;
@@ -1758,6 +1882,8 @@ document.querySelectorAll("a[href]").forEach(link => {
       const card = payNowBtn.closest(".price-card");
       const item = getCardItem(card);
       if (!item) return;
+      const promoCode = getCardPromoCode(card);
+      item.promoCode = promoCode;
       openProductPreviewModal(item);
       return;
     }
@@ -1768,6 +1894,8 @@ document.querySelectorAll("a[href]").forEach(link => {
       if (!interactive) {
         const item = getCardItem(priceCard);
         if (item) {
+          const promoCode = getCardPromoCode(priceCard);
+          item.promoCode = promoCode;
           openProductPreviewModal(item);
           return;
         }
@@ -1793,19 +1921,15 @@ document.querySelectorAll("a[href]").forEach(link => {
 
     if (headerCartPromoApplyEl && (e.target === headerCartPromoApplyEl || e.target.closest("#headerCartPromoApply"))) {
       const raw = normalizePromoCodeInput(headerCartPromoInputEl ? headerCartPromoInputEl.value : "");
-      activePromoCode = raw;
-      savePromoCode(activePromoCode);
+      setActivePromoCode(raw);
       if (cartPromoInputEl && cartPromoInputEl.value !== activePromoCode) cartPromoInputEl.value = activePromoCode;
-      validatePromoCodeViaBackend(activePromoCode);
       return;
     }
 
     if (cartPromoApplyEl && (e.target === cartPromoApplyEl || e.target.closest("#cartPromoApply"))) {
       const raw = normalizePromoCodeInput(cartPromoInputEl ? cartPromoInputEl.value : "");
-      activePromoCode = raw;
-      savePromoCode(activePromoCode);
+      setActivePromoCode(raw);
       if (headerCartPromoInputEl && headerCartPromoInputEl.value !== activePromoCode) headerCartPromoInputEl.value = activePromoCode;
-      validatePromoCodeViaBackend(activePromoCode);
       return;
     }
 
@@ -1853,13 +1977,11 @@ document.querySelectorAll("a[href]").forEach(link => {
   }
   if (headerCartPromoInputEl) headerCartPromoInputEl.value = activePromoCode;
   if (cartPromoInputEl) cartPromoInputEl.value = activePromoCode;
-  if (activePromoCode) {
-    validatePromoCodeViaBackend(activePromoCode);
-  }
+  syncCardPromoInputs(activePromoCode);
   syncCheckoutEmailInputs();
+  clearLegacyCartArtifacts();
 
   loadPricingCards();
-  renderCart();
 
   if (headerCartEl) {
     headerCartEl.addEventListener("click", (e) => {
@@ -1868,7 +1990,7 @@ document.querySelectorAll("a[href]").forEach(link => {
       if (clickTimer) {
         clearTimeout(clickTimer);
         clickTimer = null;
-        window.location.href = cartPagePath;
+        window.location.href = checkoutLandingPath;
         return;
       }
 
@@ -1885,7 +2007,7 @@ document.querySelectorAll("a[href]").forEach(link => {
   if (headerCartPanelLinkEl) {
     headerCartPanelLinkEl.addEventListener("click", e => {
       e.preventDefault();
-      window.location.href = cartPagePath;
+      window.location.href = checkoutLandingPath;
     });
   }
 
@@ -1898,10 +2020,8 @@ document.querySelectorAll("a[href]").forEach(link => {
     headerCartPromoInputEl.addEventListener("keydown", (e) => {
       if (e.key !== "Enter") return;
       e.preventDefault();
-      activePromoCode = normalizePromoCodeInput(headerCartPromoInputEl.value || "");
-      savePromoCode(activePromoCode);
+      setActivePromoCode(normalizePromoCodeInput(headerCartPromoInputEl.value || ""));
       if (cartPromoInputEl && cartPromoInputEl.value !== activePromoCode) cartPromoInputEl.value = activePromoCode;
-      validatePromoCodeViaBackend(activePromoCode);
     });
   }
 
@@ -1914,12 +2034,29 @@ document.querySelectorAll("a[href]").forEach(link => {
     cartPromoInputEl.addEventListener("keydown", (e) => {
       if (e.key !== "Enter") return;
       e.preventDefault();
-      activePromoCode = normalizePromoCodeInput(cartPromoInputEl.value || "");
-      savePromoCode(activePromoCode);
+      setActivePromoCode(normalizePromoCodeInput(cartPromoInputEl.value || ""));
       if (headerCartPromoInputEl && headerCartPromoInputEl.value !== activePromoCode) headerCartPromoInputEl.value = activePromoCode;
-      validatePromoCodeViaBackend(activePromoCode);
     });
   }
+
+  document.addEventListener("input", e => {
+    const target = e.target;
+    if (!target || typeof target.closest !== "function") return;
+    const input = target.closest("[data-card-promo-input]");
+    if (!input) return;
+    const value = normalizePromoCodeInput(input.value || "");
+    if (input.value !== value) input.value = value;
+  });
+
+  document.addEventListener("keydown", e => {
+    if (e.key !== "Enter") return;
+    const target = e.target;
+    if (!target || typeof target.closest !== "function") return;
+    const input = target.closest("[data-card-promo-input]");
+    if (!input) return;
+    e.preventDefault();
+    setActivePromoCode(input.value || "");
+  });
 
   if (cartPaymentMethodsEl) {
     cartPaymentMethodsEl.addEventListener("change", event => {
