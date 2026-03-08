@@ -15,6 +15,7 @@ import UsersPage from "./pages/UsersPage";
 import PartnersPage from "./pages/PartnersPage";
 import PartnerEarningsPage from "./pages/PartnerEarningsPage";
 import CdkKeysPage from "./pages/CdkKeysPage";
+import StorefrontTickerPage from "./pages/StorefrontTickerPage";
 import "./styles/index.css";
 
 const queryClient = new QueryClient();
@@ -65,6 +66,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                   <Route index element={<DashboardPage />} />
                   <Route path="products" element={<ProductsPage />} />
                   <Route path="orders" element={<OrdersPage />} />
+                  <Route path="storefront" element={<StorefrontTickerPage />} />
                   <Route path="audit" element={<AuditPage />} />
                   <Route path="promocodes" element={<PromoCodesPage />} />
                   <Route path="partners" element={<PartnersPage />} />

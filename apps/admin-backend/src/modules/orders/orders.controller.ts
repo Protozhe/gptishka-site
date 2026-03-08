@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../../common/http/async-handler";
 import { ordersService } from "./orders.service";
+import { storefrontTickerService } from "./storefront-ticker.service";
 
 function actor(req: Request) {
   return {
@@ -107,6 +108,20 @@ export const manualConfirmOrder = asyncHandler(async (req: Request, res: Respons
 export const refundOrder = asyncHandler(async (req: Request, res: Response) => {
   const data = await ordersService.refund(String(req.params.id), actor(req));
   res.json(data);
+});
+
+export const getStorefrontTickerSettings = asyncHandler(async (_req: Request, res: Response) => {
+  const data = await storefrontTickerService.getAdminSettingsView();
+  res.json(data);
+});
+
+export const updateStorefrontTickerSettings = asyncHandler(async (req: Request, res: Response) => {
+  const body = req.body as { hiddenEmails?: string[]; hiddenOrderIds?: string[] };
+  const settings = await storefrontTickerService.updateSettings({
+    hiddenEmails: body.hiddenEmails,
+    hiddenOrderIds: body.hiddenOrderIds,
+  });
+  res.json({ settings });
 });
 
 export const exportOrdersCsv = asyncHandler(async (req: Request, res: Response) => {

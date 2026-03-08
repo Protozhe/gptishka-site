@@ -28,3 +28,12 @@ export const createOrderSchema = z.object({
   country: z.string().max(2).optional(),
   promoCode: z.string().min(2).max(40).optional(),
 });
+
+export const storefrontTickerSettingsSchema = z
+  .object({
+    hiddenEmails: z.array(z.string().trim().min(3).max(320)).max(500).optional(),
+    hiddenOrderIds: z.array(z.string().trim().min(6).max(120)).max(1000).optional(),
+  })
+  .refine((payload) => payload.hiddenEmails !== undefined || payload.hiddenOrderIds !== undefined, {
+    message: "At least one field must be provided",
+  });

@@ -4,18 +4,21 @@ import { validateBody, validateQuery } from "../../common/middleware/validation"
 import {
   createOrder,
   exportOrdersCsv,
+  getStorefrontTickerSettings,
   getOrderActivationProof,
   getOrderActivationToken,
   getOrder,
   listOrders,
   manualConfirmOrder,
   refundOrder,
+  updateStorefrontTickerSettings,
   updateOrderStatus,
 } from "./orders.controller";
 import {
   createOrderSchema,
   manualConfirmSchema,
   ordersQuerySchema,
+  storefrontTickerSettingsSchema,
   updateOrderStatusSchema,
 } from "./orders.schemas";
 
@@ -26,6 +29,13 @@ ordersRouter.post("/checkout", validateBody(createOrderSchema), createOrder);
 ordersRouter.use(requireAuth);
 ordersRouter.get("/", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateQuery(ordersQuerySchema), listOrders);
 ordersRouter.get("/export/csv", allowRoles(["OWNER", "ADMIN"]), validateQuery(ordersQuerySchema), exportOrdersCsv);
+ordersRouter.get("/storefront/ticker-settings", allowRoles(["OWNER", "ADMIN", "MANAGER"]), getStorefrontTickerSettings);
+ordersRouter.patch(
+  "/storefront/ticker-settings",
+  allowRoles(["OWNER", "ADMIN"]),
+  validateBody(storefrontTickerSettingsSchema),
+  updateStorefrontTickerSettings
+);
 ordersRouter.get("/:id/activation-proof", allowRoles(["OWNER", "ADMIN", "MANAGER", "SUPPORT"]), getOrderActivationProof);
 ordersRouter.get("/:id/activation-token", allowRoles(["OWNER", "ADMIN", "SUPPORT"]), getOrderActivationToken);
 ordersRouter.get("/:id", allowRoles(["OWNER", "ADMIN", "MANAGER"]), getOrder);

@@ -1,4 +1,4 @@
-﻿import { HandCoins, KeyRound, LayoutDashboard, Package, ScrollText, ShoppingCart, TicketPercent, Users, Wallet } from "lucide-react";
+import { HandCoins, KeyRound, LayoutDashboard, Megaphone, Package, ScrollText, ShoppingCart, TicketPercent, Users, Wallet } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { useAuth } from "../hooks/useAuth";
@@ -7,6 +7,7 @@ const TEXT = {
   dashboard: "\u0414\u0430\u0448\u0431\u043e\u0440\u0434",
   products: "\u0422\u043e\u0432\u0430\u0440\u044b",
   orders: "\u0417\u0430\u043a\u0430\u0437\u044b",
+  storefront: "\u041f\u043b\u0430\u0448\u043a\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u043e\u0432",
   audit: "\u0410\u0443\u0434\u0438\u0442",
   promo: "\u041f\u0440\u043e\u043c\u043e\u043a\u043e\u0434\u044b",
   partners: "\u041f\u0430\u0440\u0442\u043d\u0435\u0440\u044b",
@@ -23,6 +24,7 @@ const nav = [
   { to: "/", label: TEXT.dashboard, icon: LayoutDashboard },
   { to: "/products", label: TEXT.products, icon: Package },
   { to: "/orders", label: TEXT.orders, icon: ShoppingCart },
+  { to: "/storefront", label: TEXT.storefront, icon: Megaphone },
   { to: "/audit", label: TEXT.audit, icon: ScrollText },
   { to: "/promocodes", label: TEXT.promo, icon: TicketPercent },
   { to: "/partners", label: TEXT.partners, icon: HandCoins },
@@ -67,7 +69,9 @@ export function AdminLayout() {
 
         <div className="mt-10 rounded-2xl bg-slate-100 p-3 text-xs dark:bg-slate-900">
           <div className="font-semibold">{user?.email}</div>
-          <div className="mt-1 text-slate-500">{TEXT.role}: {user?.role}</div>
+          <div className="mt-1 text-slate-500">
+            {TEXT.role}: {user?.role}
+          </div>
         </div>
       </aside>
 
