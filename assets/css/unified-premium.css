@@ -217,6 +217,32 @@ header.is-scrolled {
   background: rgba(255, 255, 255, 0.52);
 }
 
+@media (min-width: 1101px) {
+  .nav {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 18px;
+    row-gap: 12px;
+  }
+
+  .nav > nav {
+    justify-self: center;
+    width: max-content;
+    max-width: 100%;
+  }
+
+  .nav > .lang-switch,
+  .nav > .header-tools {
+    justify-self: end;
+    margin-left: 0;
+  }
+
+  .nav > .header-tools .lang-switch {
+    margin-left: 0;
+  }
+}
+
 .lang-current,
 .lang-dropdown,
 .header-cart-panel,
