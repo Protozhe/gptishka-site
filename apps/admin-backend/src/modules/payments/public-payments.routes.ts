@@ -8,7 +8,7 @@ import { checkoutCreateRateLimit } from "../../common/security/rate-limit";
 
 const createPaymentSchema = z.object({
   email: z.preprocess((value) => String(value || "").trim().toLowerCase(), z.string().email()),
-  plan_id: z.preprocess((value) => String(value || "").trim(), z.string().min(1)),
+  plan_id: z.preprocess((value) => String(value || "").trim(), z.string()),
   promo_code: z.preprocess((value) => {
     const normalized = String(value || "").trim();
     return normalized ? normalized : undefined;
