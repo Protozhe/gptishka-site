@@ -28,6 +28,7 @@ type Product = {
   images?: ProductImage[];
   isActive: boolean;
   deliveryType?: ProductDeliveryType;
+  deliveryMethod?: 1 | 2 | "1" | "2";
 };
 
 type ManualCredential = {
@@ -134,12 +135,25 @@ function withBadgeTag(tags: string[] = [], badge: BadgeType): string[] {
 }
 
 function resolveDeliveryType(item: Product): ProductDeliveryType {
+  const fromMethod = String(item.deliveryMethod || "").trim();
+  if (fromMethod === "2") return "credentials";
+  if (fromMethod === "1") return "activation";
+
   const fromItem = String(item.deliveryType || "").trim().toLowerCase();
   if (fromItem === "credentials") return "credentials";
   const hasCredentialsTag = (item.tags || [])
     .map((tag) => String(tag || "").trim().toLowerCase())
     .some((tag) => tag === "delivery:credentials");
   return hasCredentialsTag ? "credentials" : "activation";
+}
+
+function deliveryMethodNumber(deliveryType: ProductDeliveryType): 1 | 2 {
+  return deliveryType === "credentials" ? 2 : 1;
+}
+
+function deliveryMethodLabel(deliveryType: ProductDeliveryType): string {
+  if (deliveryType === "credentials") return "Метод 2: Логин и пароль";
+  return "Метод 1: Активация по ключу";
 }
 
 function buildTags(title: string, badge: BadgeType): string[] {
@@ -413,6 +427,7 @@ export default function ProductsPage() {
           price: normalizedPrice,
           tags: withBadgeTag(editingTags, badge),
           deliveryType,
+          deliveryMethod: deliveryMethodNumber(deliveryType),
         },
       });
       resetForm();
@@ -432,6 +447,7 @@ export default function ProductsPage() {
       stock: null,
       isActive: true,
       deliveryType,
+      deliveryMethod: deliveryMethodNumber(deliveryType),
     });
 
     resetForm();
@@ -549,12 +565,22 @@ export default function ProductsPage() {
             <option value="pro">Pro</option>
           </select>
           <select className="input" value={deliveryType} onChange={(e) => setDeliveryType(e.target.value as ProductDeliveryType)}>
-            <option value="activation">Активация по токену</option>
-            <option value="credentials">Выдача логин/пароль</option>
+            <option value="activation">Метод 1: Активация по ключу</option>
+            <option value="credentials">Метод 2: Выдача логин/пароль</option>
           </select>
           <button className="btn-primary" type="submit" disabled={isSaving}>
             {isSaving ? "Сохраняем..." : editingId ? "Сохранить изменения" : "Добавить товар"}
           </button>
+
+          <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+            <div className="font-semibold">Текущий режим выдачи: {deliveryMethodLabel(deliveryType)}</div>
+            <div>
+              Метод 1: после оплаты клиент проходит активацию ключом на странице активации.
+            </div>
+            <div>
+              Метод 2: после оплаты клиент получает логин/пароль из вашего пула. Если пул пустой, показывается сообщение обратиться в поддержку.
+            </div>
+          </div>
 
           <textarea
             className="input md:col-span-2 min-h-24"
@@ -776,7 +802,7 @@ export default function ProductsPage() {
                     </td>
                     <td className="px-4 py-3">{item.category}</td>
                     <td className="px-4 py-3">{money(Number(item.price), item.currency)}</td>
-                    <td className="px-4 py-3">{itemDeliveryType === "credentials" ? "Логин/пароль" : "Активация"}</td>
+                    <td className="px-4 py-3">{deliveryMethodLabel(itemDeliveryType)}</td>
                     <td className="px-4 py-3">{badgeLabel(itemBadge)}</td>
                     <td className="px-4 py-3">
                       <span className={`badge ${item.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-700"}`}>

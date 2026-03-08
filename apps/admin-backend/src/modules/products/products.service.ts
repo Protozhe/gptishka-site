@@ -1,6 +1,6 @@
 import slugify from "../../common/utils/slugify";
 import { AppError } from "../../common/errors/app-error";
-import { applyProductDeliveryTypeTag } from "../../common/utils/product-delivery";
+import { applyProductDeliveryTypeTag, methodToDeliveryType } from "../../common/utils/product-delivery";
 import { productsRepository } from "./products.repository";
 import { writeAuditLog } from "../audit/audit.service";
 import { manualCredentialsStore, type ManualCredentialStatus } from "./manual-credentials.store";
@@ -141,7 +141,9 @@ export const productsService = {
 
   async create(input: any, actor?: { userId?: string; ip?: string; userAgent?: string }) {
     const uniqueSlug = await this.getUniqueSlug(slugify(input.title));
-    const nextTags = applyProductDeliveryTypeTag(input.tags ?? [], input.deliveryType);
+    const requestedDeliveryType =
+      input.deliveryType !== undefined ? input.deliveryType : methodToDeliveryType(input.deliveryMethod);
+    const nextTags = applyProductDeliveryTypeTag(input.tags ?? [], requestedDeliveryType);
 
     const created = await productsRepository.create({
       slug: uniqueSlug,
@@ -175,9 +177,15 @@ export const productsService = {
     const before = await productsRepository.findById(id);
     if (!before) throw new AppError("Product not found", 404);
     const nextSlug = input.title ? await this.getUniqueSlug(slugify(input.title), id) : undefined;
+    const requestedDeliveryType =
+      input.deliveryType !== undefined
+        ? input.deliveryType
+        : input.deliveryMethod !== undefined
+        ? methodToDeliveryType(input.deliveryMethod)
+        : undefined;
     const tagsForUpdate =
-      input.tags !== undefined || input.deliveryType !== undefined
-        ? applyProductDeliveryTypeTag(input.tags !== undefined ? input.tags : before.tags, input.deliveryType)
+      input.tags !== undefined || requestedDeliveryType !== undefined
+        ? applyProductDeliveryTypeTag(input.tags !== undefined ? input.tags : before.tags, requestedDeliveryType)
         : undefined;
 
     const updated = await productsRepository.update(id, {

@@ -1,7 +1,7 @@
 ﻿import { Request, Response } from "express";
 import { asyncHandler } from "../../common/http/async-handler";
 import { AppError } from "../../common/errors/app-error";
-import { resolveProductDeliveryType } from "../../common/utils/product-delivery";
+import { deliveryTypeToMethod, resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { productsService } from "./products.service";
 import { saveProductImage } from "../files/files.service";
 
@@ -14,9 +14,11 @@ function actor(req: Request) {
 }
 
 function withDeliveryType<T extends { tags?: string[] }>(item: T) {
+  const deliveryType = resolveProductDeliveryType(item?.tags);
   return {
     ...item,
-    deliveryType: resolveProductDeliveryType(item?.tags),
+    deliveryType,
+    deliveryMethod: deliveryTypeToMethod(deliveryType),
   };
 }
 

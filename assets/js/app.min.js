@@ -718,7 +718,11 @@ document.querySelectorAll("a[href]").forEach(link => {
     return "";
   }
 
-  function resolveDeliveryType(itemDeliveryType, tags) {
+  function resolveDeliveryType(itemDeliveryType, itemDeliveryMethod, tags) {
+    const methodRaw = String(itemDeliveryMethod || "").trim();
+    if (methodRaw === "2") return "credentials";
+    if (methodRaw === "1") return "activation";
+
     const fromItem = String(itemDeliveryType || "").trim().toLowerCase();
     if (fromItem === "credentials" || fromItem === "manual") return "credentials";
     if (fromItem === "activation" || fromItem === "token") return "activation";
@@ -1176,7 +1180,7 @@ document.querySelectorAll("a[href]").forEach(link => {
     const topHighlightsBlock = topHighlights.length ? '<div class="sub sub-top-list">' + topHighlightsHtml + "</div>" : "";
     const price = Math.max(0, toAmount(item.price));
     const currency = String(item.currency || "RUB").toUpperCase();
-    const deliveryType = resolveDeliveryType(item.deliveryType, tags);
+    const deliveryType = resolveDeliveryType(item.deliveryType, item.deliveryMethod, tags);
     const badgeType = resolveBadge(item.badge, tags);
     const badgeLabelByType = {
       best: TEXT.badgeBest,

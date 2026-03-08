@@ -1,4 +1,5 @@
 export type ProductDeliveryType = "activation" | "credentials";
+export type ProductDeliveryMethod = 1 | 2;
 
 const DELIVERY_TAG_PREFIX = "delivery:";
 
@@ -32,3 +33,14 @@ export function applyProductDeliveryTypeTag(
   return cleaned;
 }
 
+export function deliveryTypeToMethod(deliveryType: ProductDeliveryType | null | undefined): ProductDeliveryMethod {
+  return normalizeDeliveryType(String(deliveryType || "activation")) === "credentials" ? 2 : 1;
+}
+
+export function methodToDeliveryType(value: unknown): ProductDeliveryType {
+  const raw = String(value ?? "").trim().toLowerCase();
+  if (raw === "2" || raw === "credentials" || raw === "manual" || raw === "login_password" || raw === "login-password") {
+    return "credentials";
+  }
+  return "activation";
+}

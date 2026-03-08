@@ -34,6 +34,7 @@ const productBody = z.object({
   stock: z.coerce.number().int().min(0).nullable().optional(),
   isActive: z.boolean().default(true),
   deliveryType: z.enum(["activation", "credentials"]).default("activation"),
+  deliveryMethod: z.union([z.literal(1), z.literal(2), z.literal("1"), z.literal("2")]).optional(),
 });
 
 export const createProductSchema = productBody;

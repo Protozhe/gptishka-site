@@ -1,7 +1,7 @@
 ﻿import { Currency } from "@prisma/client";
 import { Router } from "express";
 import { asyncHandler } from "../../common/http/async-handler";
-import { resolveProductDeliveryType } from "../../common/utils/product-delivery";
+import { deliveryTypeToMethod, resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { toRub } from "../../common/utils/fx";
 import { prisma } from "../../config/prisma";
 
@@ -53,19 +53,23 @@ publicProductsRouter.get(
     });
 
     res.json({
-      items: items.map(item => ({
-        id: item.id,
-        product: item.slug,
-        title: lang === "en" ? item.titleEn || item.title : item.title,
-        description: lang === "en" ? item.descriptionEn || item.description : item.description,
-        price: toRub(Number(item.price), item.currency),
-        oldPrice: item.oldPrice ? toRub(Number(item.oldPrice), item.currency) : null,
-        currency: Currency.RUB,
-        category: localizedCategory(item.category, lang),
-        tags: item.tags,
-        badge: resolveBadge(item.tags),
-        deliveryType: resolveProductDeliveryType(item.tags),
-      })),
+      items: items.map(item => {
+        const deliveryType = resolveProductDeliveryType(item.tags);
+        return {
+          id: item.id,
+          product: item.slug,
+          title: lang === "en" ? item.titleEn || item.title : item.title,
+          description: lang === "en" ? item.descriptionEn || item.description : item.description,
+          price: toRub(Number(item.price), item.currency),
+          oldPrice: item.oldPrice ? toRub(Number(item.oldPrice), item.currency) : null,
+          currency: Currency.RUB,
+          category: localizedCategory(item.category, lang),
+          tags: item.tags,
+          badge: resolveBadge(item.tags),
+          deliveryType,
+          deliveryMethod: deliveryTypeToMethod(deliveryType),
+        };
+      }),
     });
   })
 );
