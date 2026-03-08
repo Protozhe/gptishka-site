@@ -289,7 +289,6 @@ document.querySelectorAll("a[href]").forEach(link => {
   const cartPromoInputEl = document.getElementById("cartPromoInput");
   const cartPromoApplyEl = document.getElementById("cartPromoApply");
   const cartPromoMsgEl = document.getElementById("cartPromoMsg");
-  const heroPromoApplyButtons = Array.from(document.querySelectorAll("[data-hero-promo-code]"));
   const headerCartEmailInputEl = document.getElementById("headerCartEmailInput");
   const cartEmailInputEl = document.getElementById("cartEmailInput");
   const cartPaymentMethodsEl = document.getElementById("cartPaymentMethods");
@@ -342,7 +341,6 @@ document.querySelectorAll("a[href]").forEach(link => {
         lavaUnavailable: "Lava is temporarily unavailable. Please choose Enot.io.",
         checkoutProductMissing: "The selected item is outdated in cart. Please re-add it from pricing.",
         multiCartCheckout: "Checkout is currently available one item at a time. Please pay items separately.",
-        promoHeroApplied: "WELCOME34 applied",
         paymentMethodRequired: "Select a payment method",
         previewTitle: "Plan details",
         previewIncluded: "What's included",
@@ -390,7 +388,6 @@ document.querySelectorAll("a[href]").forEach(link => {
         lavaUnavailable: "Lava временно недоступна. Выберите Enot.io.",
         checkoutProductMissing: "Товар в корзине устарел. Добавьте его заново из тарифов.",
         multiCartCheckout: "Сейчас оплата доступна по одному товару. Оплатите позиции по отдельности.",
-        promoHeroApplied: "WELCOME34 применен",
         paymentMethodRequired: "Выберите способ оплаты",
         previewTitle: "Детали тарифа",
         previewIncluded: "Что входит",
@@ -1590,18 +1587,6 @@ document.querySelectorAll("a[href]").forEach(link => {
     renderCart();
   }
 
-  function applyHeroPromoCode(code, sourceBtn) {
-    const normalized = normalizePromoCodeInput(code);
-    if (!normalized) return;
-
-    setActivePromoCode(normalized);
-
-    if (sourceBtn) {
-      sourceBtn.classList.add("is-applied");
-      sourceBtn.textContent = TEXT.promoHeroApplied;
-    }
-  }
-
   function setLotQty(lineId, qty) {
     const normalizedLineId = String(lineId || "").trim();
     if (!normalizedLineId) return;
@@ -2079,19 +2064,6 @@ document.querySelectorAll("a[href]").forEach(link => {
     btn.addEventListener("click", () => {
       resetPendingCheckout();
       closePaymentMethodModal();
-    });
-  });
-
-  heroPromoApplyButtons.forEach(btn => {
-    btn.addEventListener("click", (event) => {
-      event.preventDefault();
-      const code = btn.getAttribute("data-hero-promo-code") || "";
-      applyHeroPromoCode(code, btn);
-
-      const pricingEl = document.getElementById("pricing");
-      if (pricingEl) {
-        pricingEl.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
     });
   });
 
