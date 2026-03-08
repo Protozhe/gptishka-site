@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initFaqAccordions();
   initLanguageSwitch();
   initActivationResumeShortcut();
+  initReviewsSecurityBanner();
 });
 
 function initFaqAccordions() {
@@ -35,6 +36,41 @@ function initFaqAccordions() {
       if (item) item.classList.toggle("active");
     });
   });
+}
+
+function initReviewsSecurityBanner() {
+  const currentPath = String(window.location.pathname || "").toLowerCase();
+  if (!currentPath.endsWith("/reviews.html") && !currentPath.endsWith("reviews.html")) return;
+
+  const reviewsSection = document.querySelector(".reviews");
+  if (!reviewsSection || reviewsSection.querySelector(".reviews-security-banner")) return;
+  const isEnPage = currentPath.startsWith("/en/");
+
+  const title = isEnPage
+    ? "For client privacy, we fully mask personal emails in activation logs."
+    : "В целях безопасности личных данных клиентов email в ленте активаций маскируется полностью.";
+  const note = isEnPage
+    ? "Do not share tokens, session keys, or payment screenshots in private messages. Use only official support contacts from the website."
+    : "Не передавайте токены, сессионные ключи и чеки в личные сообщения. Используйте только официальные контакты поддержки с сайта.";
+  const catLabel = isEnPage ? "Sad kitten" : "Грустный котёнок";
+
+  const banner = document.createElement("aside");
+  banner.className = "reviews-security-banner";
+  banner.setAttribute("role", "note");
+  banner.innerHTML = [
+    `<div class="reviews-security-banner__cat" aria-label="${catLabel}">😿</div>`,
+    '<div class="reviews-security-banner__body">',
+    `  <p class="reviews-security-banner__title">${title}</p>`,
+    `  <p class="reviews-security-banner__text">${note}</p>`,
+    "</div>",
+  ].join("");
+
+  const header = reviewsSection.querySelector(".reviews-header");
+  if (header && header.parentNode) {
+    header.insertAdjacentElement("afterend", banner);
+    return;
+  }
+  reviewsSection.prepend(banner);
 }
 
 function resolveLangTargetPath(targetLang) {
@@ -1827,20 +1863,50 @@ document.addEventListener("click", e => {
   }
 }, true);
 
-// Live ticker with purchases and online count.
+// Live ticker with masked activation events and split counters.
 (() => {
-  // Disabled by default: ticker bar is hidden in CSS, so polling would be wasted traffic.
-  const ENABLE_LIVE_TICKER = false;
-  if (!ENABLE_LIVE_TICKER) return;
-
   const API_STATS_URL = "/api/stats";
   const API_HEARTBEAT_URL = "/api/heartbeat";
   const STATS_REFRESH_MS = 15000;
   const HEARTBEAT_MS = 20000;
   const SESSION_KEY = "gptishka_session_id";
 
+  const pathname = String(window.location.pathname || "/").toLowerCase();
+  const isMainPage =
+    pathname === "/" ||
+    pathname === "/index.html" ||
+    pathname === "/en/" ||
+    pathname === "/en/index.html";
+  if (!isMainPage) return;
+
+  const isEnPage = pathname.startsWith("/en/");
+  const numberLocale = isEnPage ? "en-US" : "ru-RU";
+  const TEXT = isEnPage
+    ? {
+        privacyLead: "Privacy mode: customer emails are shown only in masked format.",
+        totalLabel: "Activations",
+        realLabel: "Confirmed",
+        systemLabel: "Service",
+        onlineLabel: "Online",
+        realPrefix: "Confirmed activation",
+        systemPrefix: "Service event",
+        emptyTicker: "Activation feed is updating...",
+      }
+    : {
+        privacyLead: "Режим приватности: email клиентов показывается только в маске.",
+        totalLabel: "Активации",
+        realLabel: "Подтвержденные",
+        systemLabel: "Сервисные",
+        onlineLabel: "Онлайн",
+        realPrefix: "Подтвержденная активация",
+        systemPrefix: "Сервисное событие",
+        emptyTicker: "Лента активаций обновляется...",
+      };
+
   let tickerTrack = null;
-  let salesValueEl = null;
+  let totalValueEl = null;
+  let realValueEl = null;
+  let systemValueEl = null;
   let onlineValueEl = null;
   let isInitialized = false;
 
@@ -1881,32 +1947,63 @@ document.addEventListener("click", e => {
     ticker.setAttribute("aria-live", "polite");
     ticker.innerHTML = [
       '<div class="site-ticker__marquee">',
+      `  <span class="site-ticker__lead">${escapeHtml(TEXT.privacyLead)}</span>`,
       '  <div class="site-ticker__track" id="siteTickerTrack"></div>',
       "</div>",
       '<div class="site-ticker__stats">',
-      '  <span class="site-ticker__stat"><span class="site-ticker__stat-label">Sales:</span> <strong id="siteTickerSales">0</strong></span>',
+      `  <span class="site-ticker__stat"><span class="site-ticker__stat-label">${escapeHtml(TEXT.totalLabel)}:</span> <strong id="siteTickerSales">0</strong></span>`,
       '  <span class="site-ticker__dot"></span>',
-      '  <span class="site-ticker__stat"><span class="site-ticker__stat-label">Online:</span> <strong id="siteTickerOnline">0</strong></span>',
+      `  <span class="site-ticker__stat"><span class="site-ticker__stat-label">${escapeHtml(TEXT.realLabel)}:</span> <strong id="siteTickerReal">0</strong></span>`,
+      '  <span class="site-ticker__dot"></span>',
+      `  <span class="site-ticker__stat"><span class="site-ticker__stat-label">${escapeHtml(TEXT.systemLabel)}:</span> <strong id="siteTickerSystem">0</strong></span>`,
+      '  <span class="site-ticker__dot"></span>',
+      `  <span class="site-ticker__stat"><span class="site-ticker__stat-label">${escapeHtml(TEXT.onlineLabel)}:</span> <strong id="siteTickerOnline">0</strong></span>`,
       "</div>",
     ].join("");
 
     header.insertBefore(ticker, header.firstChild);
 
     tickerTrack = document.getElementById("siteTickerTrack");
-    salesValueEl = document.getElementById("siteTickerSales");
+    totalValueEl = document.getElementById("siteTickerSales");
+    realValueEl = document.getElementById("siteTickerReal");
+    systemValueEl = document.getElementById("siteTickerSystem");
     onlineValueEl = document.getElementById("siteTickerOnline");
   }
 
-  function renderTicker(lastBuyers) {
+  function normalizeTickerEntries(stats) {
+    if (Array.isArray(stats?.tickerEntries) && stats.tickerEntries.length) {
+      return stats.tickerEntries
+        .map(entry => {
+          const email = String(entry?.email || "").trim();
+          if (!email) return null;
+          const source = String(entry?.source || "real").toLowerCase() === "system" ? "system" : "real";
+          return { email, source };
+        })
+        .filter(Boolean);
+    }
+
+    if (Array.isArray(stats?.lastBuyers) && stats.lastBuyers.length) {
+      return stats.lastBuyers
+        .map(email => String(email || "").trim())
+        .filter(Boolean)
+        .map(email => ({ email, source: "real" }));
+    }
+
+    return [];
+  }
+
+  function renderTicker(entries) {
     if (!tickerTrack) return;
 
-    const buyers = Array.isArray(lastBuyers) ? lastBuyers.filter(Boolean) : [];
-    const fallback = ["No recent subscriptions yet"];
-    const baseItems = (buyers.length ? buyers : fallback).map(email => {
+    const safeEntries = entries.length
+      ? entries
+      : [{ email: TEXT.emptyTicker, source: "real" }];
+    const baseItems = safeEntries.map(entry => {
+      const isSystem = entry.source === "system";
+      const itemClass = isSystem ? "site-ticker__item site-ticker__item--system" : "site-ticker__item site-ticker__item--real";
+      const prefix = isSystem ? TEXT.systemPrefix : TEXT.realPrefix;
       return (
-        '<span class="site-ticker__item">🔥 ' +
-        escapeHtml(email) +
-        " subscribed</span>"
+        `<span class="${itemClass}"><span class="site-ticker__item-prefix">${escapeHtml(prefix)}:</span> ${escapeHtml(entry.email)}</span>`
       );
     });
 
@@ -1926,7 +2023,19 @@ document.addEventListener("click", e => {
   function formatNumber(value) {
     const num = Number(value || 0);
     if (!Number.isFinite(num)) return "0";
-    return num.toLocaleString();
+    return num.toLocaleString(numberLocale);
+  }
+
+  function renderCounters(stats) {
+    const total = Number(stats?.sales || 0);
+    const real = Number(stats?.realSales || 0);
+    const system = Number(stats?.systemSales || 0);
+    const online = Number(stats?.online || 0);
+
+    if (totalValueEl) totalValueEl.textContent = formatNumber(total);
+    if (realValueEl) realValueEl.textContent = formatNumber(real);
+    if (systemValueEl) systemValueEl.textContent = formatNumber(system);
+    if (onlineValueEl) onlineValueEl.textContent = formatNumber(online);
   }
 
   async function fetchAndRenderStats() {
@@ -1934,10 +2043,8 @@ document.addEventListener("click", e => {
       const response = await fetch(API_STATS_URL, { cache: "no-store" });
       if (!response.ok) return;
       const stats = await response.json();
-
-      if (salesValueEl) salesValueEl.textContent = formatNumber(stats.sales);
-      if (onlineValueEl) onlineValueEl.textContent = formatNumber(stats.online);
-      renderTicker(stats.lastBuyers);
+      renderCounters(stats);
+      renderTicker(normalizeTickerEntries(stats));
     } catch (_) {
       // Keep last successful values if API is unavailable.
     }

@@ -114,9 +114,46 @@ header.is-scrolled {
   background: linear-gradient(90deg, rgba(19, 138, 120, 0.07), rgba(120, 170, 255, 0.07));
 }
 
+#siteTicker {
+  display: grid !important;
+}
+
+.site-ticker__marquee {
+  display: grid;
+  gap: 2px;
+}
+
+.site-ticker__lead {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  font-size: 11px;
+  letter-spacing: 0.01em;
+  color: #4d637d;
+  white-space: nowrap;
+}
+
+.site-ticker__item {
+  font-size: 13px;
+  letter-spacing: 0.005em;
+}
+
+.site-ticker__item-prefix {
+  font-weight: 700;
+}
+
+.site-ticker__item--real .site-ticker__item-prefix {
+  color: #0f6f63;
+}
+
+.site-ticker__item--system .site-ticker__item-prefix {
+  color: #8a5b1a;
+}
+
 .site-ticker__stats {
   border-color: rgba(219, 228, 240, 0.92);
   background: rgba(255, 255, 255, 0.86);
+  gap: 8px;
 }
 
 .nav > nav a {
@@ -170,6 +207,47 @@ header.is-scrolled {
 .reviews:hover,
 .activation-video:hover {
   box-shadow: 0 22px 52px rgba(15, 23, 42, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.reviews-security-banner {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border: 1px solid rgba(198, 212, 228, 0.86);
+  border-radius: 16px;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.9), rgba(244, 250, 255, 0.72)),
+    var(--glass-noise);
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  align-items: start;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.reviews-security-banner__cat {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  border: 1px solid rgba(197, 213, 231, 0.88);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.94), rgba(240, 247, 255, 0.8));
+}
+
+.reviews-security-banner__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: #223247;
+}
+
+.reviews-security-banner__text {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #5a6c82;
 }
 
 .price-card,
@@ -593,6 +671,26 @@ footer {
 }
 
 @media (max-width: 760px) {
+  .site-ticker__lead {
+    display: none;
+  }
+
+  .site-ticker__stats {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .reviews-security-banner {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .reviews-security-banner__cat {
+    width: 38px;
+    height: 38px;
+    font-size: 22px;
+  }
+
   main.page::before {
     width: min(1180px, 102vw);
     top: -14px;

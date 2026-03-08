@@ -11,8 +11,17 @@ const PORT = Number(process.env.PORT || 3000);
 const ONLINE_TTL_SECONDS = Number(process.env.ONLINE_TTL_SECONDS || 45);
 const ONLINE_TTL_MS = ONLINE_TTL_SECONDS * 1000;
 const ADMIN_BACKEND_URL = String(process.env.ADMIN_BACKEND_URL || "http://localhost:4100").replace(/\/$/, "");
+const ENABLE_SYSTEM_ACTIVATIONS =
+  String(process.env.ENABLE_SYSTEM_ACTIVATIONS || "true").toLowerCase() === "true";
+const SYSTEM_ACTIVATIONS_PER_DAY = Math.max(
+  0,
+  Number(process.env.SYSTEM_ACTIVATIONS_PER_DAY || 15)
+);
+const INCLUDE_LEGACY_PURCHASES =
+  String(process.env.INCLUDE_LEGACY_PURCHASES || "false").toLowerCase() === "true";
+const TICKER_EVENT_LIMIT = 12;
 const SEED_DEMO_STATS = String(
-  process.env.SEED_DEMO_STATS || (String(process.env.NODE_ENV || "").toLowerCase() === "production" ? "false" : "true")
+  process.env.SEED_DEMO_STATS || "false"
 ).toLowerCase() === "true";
 const IS_PRODUCTION = String(process.env.NODE_ENV || "").toLowerCase() === "production";
 const TELEGRAM_REVIEWS_CHANNEL_RAW = String(process.env.TELEGRAM_REVIEWS_CHANNEL || "otzivigptishkashop").trim();
@@ -80,15 +89,72 @@ function all(sql, params = []) {
   });
 }
 
-function maskEmail(email) {
-  const atIndex = email.indexOf("@");
-  if (atIndex <= 1) return "***" + email.slice(atIndex);
+function createSeededRandom(seedValue) {
+  let state = 2166136261;
+  for (const char of String(seedValue || "")) {
+    state ^= char.charCodeAt(0);
+    state = Math.imul(state, 16777619);
+  }
+  return () => {
+    state = Math.imul(state ^ (state >>> 15), 2246822507);
+    state = Math.imul(state ^ (state >>> 13), 3266489909);
+    state ^= state >>> 16;
+    return (state >>> 0) / 4294967296;
+  };
+}
 
-  const local = email.slice(0, atIndex);
-  const domain = email.slice(atIndex);
-  const first = local[0];
-  const last = local[local.length - 1];
-  return `${first}***${last}${domain}`;
+function buildSystemEmail(dayKey, index) {
+  const rng = createSeededRandom(`${dayKey}:${index}`);
+  const names = [
+    "alex",
+    "maria",
+    "roman",
+    "anna",
+    "nikita",
+    "sofia",
+    "pavel",
+    "mila",
+    "daniil",
+    "liza",
+    "sergey",
+    "irina",
+    "maksim",
+    "alina",
+    "egor",
+  ];
+  const suffixes = ["dev", "plus", "user", "pro", "vip", "acc", "buy", "tok"];
+  const providers = ["gmail", "mail", "yandex", "outlook", "proton", "inbox"];
+  const zones = ["ru", "com", "net", "org"];
+
+  const name = names[Math.floor(rng() * names.length)];
+  const suffix = suffixes[Math.floor(rng() * suffixes.length)];
+  const number = String(100 + Math.floor(rng() * 900));
+  const provider = providers[Math.floor(rng() * providers.length)];
+  const zone = zones[Math.floor(rng() * zones.length)];
+  return `${name}.${suffix}${number}@${provider}.${zone}`;
+}
+
+function maskEmail(email) {
+  const safe = String(email || "").trim().toLowerCase();
+  const atIndex = safe.indexOf("@");
+  if (atIndex < 1) return "***@*****";
+
+  const localRaw = safe.slice(0, atIndex).replace(/[^a-z0-9._+-]/gi, "");
+  const local = localRaw || "user";
+  const domainRaw = safe.slice(atIndex + 1);
+  const domainParts = domainRaw.split(".").filter(Boolean);
+  const topLevel = domainParts.length > 1 ? domainParts[domainParts.length - 1] : "";
+
+  const visiblePrefixLimit = Math.min(
+    local.length > 2 ? (Math.random() < 0.5 ? 1 : 2) : 1,
+    Math.max(1, local.length - 1)
+  );
+  const visiblePrefix = local.slice(0, visiblePrefixLimit);
+  const tailChar = local.slice(-1);
+  const localMask = `${visiblePrefix}${"*".repeat(2 + Math.floor(Math.random() * 2))}${tailChar}`;
+  const providerMaskLength = Math.max(5, Math.min(10, (domainParts[0] || "").length || 5));
+  const providerMask = "*".repeat(providerMaskLength);
+  return topLevel ? `${localMask}@${providerMask}.${topLevel}` : `${localMask}@${providerMask}`;
 }
 
 function isValidEmail(email) {
@@ -289,6 +355,16 @@ async function initDb() {
   `);
 
   await run(`
+    CREATE TABLE IF NOT EXISTS activation_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL,
+      source TEXT NOT NULL DEFAULT 'real',
+      order_id TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await run(`
     CREATE TABLE IF NOT EXISTS online_sessions (
       session_id TEXT PRIMARY KEY,
       path TEXT,
@@ -302,9 +378,70 @@ async function initDb() {
   `);
 
   await run(`
+    CREATE INDEX IF NOT EXISTS idx_activation_events_created_at
+    ON activation_events (created_at DESC)
+  `);
+
+  await run(`
+    CREATE INDEX IF NOT EXISTS idx_activation_events_source_created_at
+    ON activation_events (source, created_at DESC)
+  `);
+
+  await run(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_activation_events_order_id
+    ON activation_events (order_id)
+    WHERE order_id IS NOT NULL
+  `);
+
+  await run(`
     CREATE INDEX IF NOT EXISTS idx_online_last_seen
     ON online_sessions (last_seen)
   `);
+}
+
+async function ensureSystemActivationEvents() {
+  if (!ENABLE_SYSTEM_ACTIVATIONS || SYSTEM_ACTIVATIONS_PER_DAY <= 0) return;
+  try {
+    const now = new Date();
+    const todayKey = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, "0"),
+      String(now.getDate()).padStart(2, "0"),
+    ].join("-");
+    const minutesSinceStart = now.getHours() * 60 + now.getMinutes();
+    const spanMinutes = Math.max(10, minutesSinceStart);
+
+    const existingRows = await all(
+      `
+      SELECT order_id
+      FROM activation_events
+      WHERE source = 'system'
+        AND date(created_at, 'localtime') = date('now', 'localtime')
+      `
+    );
+    const existingOrderIds = new Set(
+      existingRows
+        .map(row => String(row?.order_id || "").trim())
+        .filter(Boolean)
+    );
+
+    for (let i = 1; i <= SYSTEM_ACTIVATIONS_PER_DAY; i += 1) {
+      const orderId = `system-${todayKey}-${String(i).padStart(2, "0")}`;
+      if (existingOrderIds.has(orderId)) continue;
+
+      const email = buildSystemEmail(todayKey, i);
+      const offsetMinutes = Math.floor((spanMinutes * i) / (SYSTEM_ACTIVATIONS_PER_DAY + 1));
+      await run(
+        `
+        INSERT INTO activation_events (email, source, order_id, created_at)
+        VALUES (?, 'system', ?, datetime('now', 'localtime', ?))
+        `,
+        [email, orderId, `-${offsetMinutes} minutes`]
+      );
+    }
+  } catch (error) {
+    logError("System activation generation skipped", error);
+  }
 }
 
 async function seedDemoDataIfEmpty() {
@@ -329,18 +466,21 @@ async function seedDemoDataIfEmpty() {
     "maria.novikova@mail.ru",
   ];
 
-  const minDemoSales = 45;
+  const minDemoSales = 30;
   const minDemoOnline = 12;
 
-  const salesRow = await get("SELECT COUNT(*) AS count FROM purchases");
+  const salesRow = await get("SELECT COUNT(*) AS count FROM activation_events");
   const salesCount = Number(salesRow?.count || 0);
   const missingSales = Math.max(0, minDemoSales - salesCount);
 
   for (let i = 0; i < missingSales; i += 1) {
     const email = demoEmails[(salesCount + i) % demoEmails.length];
     await run(
-      "INSERT INTO purchases (email, created_at) VALUES (?, datetime('now', ?))",
-      [email, `-${(i + 1) * 7} minutes`]
+      `
+      INSERT INTO activation_events (email, source, order_id, created_at)
+      VALUES (?, 'system', ?, datetime('now', ?))
+      `,
+      [email, `seed-system-${String(i + 1).padStart(3, "0")}`, `-${(i + 1) * 7} minutes`]
     );
   }
 
@@ -550,18 +690,39 @@ function createApp() {
 
   app.post("/api/purchases", async (req, res) => {
     const email = String(req.body?.email || "").trim().toLowerCase();
+    const orderId = String(req.body?.orderId || req.body?.order_id || "")
+      .trim()
+      .slice(0, 160);
     if (!isValidEmail(email)) {
       return res.status(400).json({ error: "Invalid email" });
     }
+    if (!orderId || !/^[a-zA-Z0-9._:-]{4,160}$/.test(orderId)) {
+      return res.status(400).json({ error: "Invalid orderId" });
+    }
 
     try {
-      const result = await run(
-        "INSERT INTO purchases (email, created_at) VALUES (?, datetime('now'))",
-        [email]
+      await run(
+        `
+        INSERT INTO activation_events (email, source, order_id, created_at)
+        VALUES (?, 'real', ?, datetime('now'))
+        ON CONFLICT(order_id)
+        DO UPDATE SET
+          email = excluded.email,
+          source = 'real',
+          created_at = datetime('now')
+        `,
+        [email, orderId]
       );
+      const row = await get(
+        "SELECT id FROM activation_events WHERE order_id = ? LIMIT 1",
+        [orderId]
+      );
+      const id = Number(row?.id || 0) || null;
+
       res.status(201).json({
-        id: result.lastID,
+        id,
         email: maskEmail(email),
+        source: "real",
       });
     } catch (_) {
       res.status(500).json({ error: "Failed to create purchase" });
@@ -888,17 +1049,63 @@ function createApp() {
 
     try {
       await run("DELETE FROM online_sessions WHERE last_seen < ?", [cutoff]);
+      await ensureSystemActivationEvents();
 
-      const salesRow = await get("SELECT COUNT(*) AS sales FROM purchases");
-      const onlineRow = await get("SELECT COUNT(*) AS online FROM online_sessions");
-      const buyerRows = await all(
-        "SELECT email FROM purchases ORDER BY datetime(created_at) DESC LIMIT 12"
+      const realRow = await get(
+        "SELECT COUNT(*) AS count FROM activation_events WHERE source = 'real'"
       );
+      const systemRow = await get(
+        "SELECT COUNT(*) AS count FROM activation_events WHERE source = 'system'"
+      );
+      const onlineRow = await get("SELECT COUNT(*) AS online FROM online_sessions");
+      const legacyRealSales = INCLUDE_LEGACY_PURCHASES
+        ? Number((await get("SELECT COUNT(*) AS count FROM purchases"))?.count || 0)
+        : 0;
+      let realSales = Number(realRow?.count || 0) + legacyRealSales;
+      let systemSales = Number(systemRow?.count || 0);
+      let buyerRows;
+
+      if (INCLUDE_LEGACY_PURCHASES) {
+        buyerRows = await all(
+          `
+          SELECT email, source, created_at
+          FROM (
+            SELECT email, source, created_at
+            FROM activation_events
+            UNION ALL
+            SELECT email, 'real' AS source, created_at
+            FROM purchases
+          )
+          ORDER BY datetime(created_at) DESC
+          LIMIT ${TICKER_EVENT_LIMIT}
+          `
+        );
+      } else {
+        buyerRows = await all(
+          `
+          SELECT email, source, created_at
+          FROM activation_events
+          ORDER BY datetime(created_at) DESC
+          LIMIT ${TICKER_EVENT_LIMIT}
+          `
+        );
+      }
+
+      const tickerEntries = buyerRows.map(row => {
+        const source = String(row?.source || "real").toLowerCase() === "system" ? "system" : "real";
+        return {
+          source,
+          email: maskEmail(String(row?.email || "")),
+        };
+      });
 
       res.json({
-        sales: Number(salesRow?.sales || 0),
+        sales: realSales + systemSales,
+        realSales,
+        systemSales,
         online: Number(onlineRow?.online || 0),
-        lastBuyers: buyerRows.map(row => maskEmail(row.email)),
+        lastBuyers: tickerEntries.map(item => item.email),
+        tickerEntries,
       });
     } catch (_) {
       res.status(500).json({ error: "Failed to load stats" });
@@ -1024,6 +1231,7 @@ async function startServer(port = PORT) {
   if (SEED_DEMO_STATS) {
     await seedDemoDataIfEmpty();
   }
+  await ensureSystemActivationEvents();
   const app = createApp();
 
   return new Promise(resolve => {
