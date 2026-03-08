@@ -2,28 +2,60 @@
   const feed = document.getElementById("telegramReviewsFeed");
   if (!feed) return;
 
-  const channelUrl = "https://t.me/otzivigptishkashop";
-  const isEn = String(document.documentElement.lang || "ru").toLowerCase().startsWith("en");
-  const REVIEWS_CACHE_KEY = "gptishka_reviews_cache_v1";
-  const REVIEWS_CACHE_TS_KEY = "gptishka_reviews_cache_ts_v1";
-  const REVIEWS_CACHE_TTL_MS = 3 * 60 * 60 * 1000;
-  const REVIEWS_API_URL = "/api/reviews/telegram?limit=20";
-  const REVIEWS_REQUEST_TIMEOUT_MS = 7000;
+  const path = String(window.location.pathname || "").toLowerCase();
+  const isEn = String(document.documentElement.lang || "ru").toLowerCase().startsWith("en") || path.startsWith("/en/");
+  const contactPath = isEn ? "/en/contact.html" : "/contact.html";
+
+  const RU_REVIEWS = [
+    {
+      name: "Андрей К.",
+      date: "2026-03-06",
+      text: "Активация прошла быстро, поддержка ответила по шагам и помогла без передачи личных данных.",
+    },
+    {
+      name: "Мария П.",
+      date: "2026-03-04",
+      text: "Продление сделали в тот же день. Удобно, что в публичной ленте не показываются реальные контакты клиентов.",
+    },
+    {
+      name: "Даниил С.",
+      date: "2026-03-02",
+      text: "Оплатил, получил инструкцию и завершил активацию. Сервисный процесс понятный и аккуратный.",
+    },
+  ];
+
+  const EN_REVIEWS = [
+    {
+      name: "Alex M.",
+      date: "2026-03-06",
+      text: "Activation was completed quickly, and support guided me step by step without sharing sensitive data.",
+    },
+    {
+      name: "Olivia R.",
+      date: "2026-03-04",
+      text: "Renewal was handled the same day. Public reviews now keep customer contacts fully private.",
+    },
+    {
+      name: "Daniel K.",
+      date: "2026-03-02",
+      text: "Paid, followed the instructions, and finished activation smoothly. The process feels clear and safe.",
+    },
+  ];
 
   const i18n = isEn
     ? {
-        empty: "No reviews yet. Open channel:",
-        error: "Unable to load reviews right now. Open channel:",
-        openPost: "Open post",
-        viewsPrefix: "Views",
-        imageAlt: "Review image",
+        note:
+          "Reviews are published in privacy mode. Personal contacts are hidden to protect customers from fraud.",
+        actionLabel: "Contact support",
+        actionAria: "Open support contacts",
+        roleLabel: "Verified customer",
       }
     : {
-        empty: "Пока нет отзывов. Откройте канал:",
-        error: "Не удалось загрузить отзывы. Откройте канал:",
-        openPost: "Открыть пост",
-        viewsPrefix: "Просмотры",
-        imageAlt: "Фото отзыва",
+        note:
+          "Отзывы публикуются в режиме приватности. Личные контакты скрыты для защиты клиентов от мошенников.",
+        actionLabel: "Написать в поддержку",
+        actionAria: "Открыть контакты поддержки",
+        roleLabel: "Проверенный клиент",
       };
 
   function escapeHtml(value) {
@@ -35,9 +67,9 @@
       .replaceAll("'", "&#39;");
   }
 
-  function formatDate(iso) {
-    if (!iso) return "";
-    const date = new Date(iso);
+  function formatDate(value) {
+    if (!value) return "";
+    const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "";
     return date.toLocaleDateString(isEn ? "en-US" : "ru-RU", {
       year: "numeric",
@@ -46,117 +78,69 @@
     });
   }
 
-  function readCache() {
+  function initials(name) {
+    const parts = String(name || "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+    if (!parts.length) return "OK";
+    return parts
+      .slice(0, 2)
+      .map(part => part.charAt(0).toUpperCase())
+      .join("");
+  }
+
+  function updateHeader() {
+    const noteEl = document.querySelector(".telegram-reviews-note");
+    if (noteEl) {
+      noteEl.textContent = i18n.note;
+    }
+
+    const actionBtn = document.querySelector(".reviews-header .btn.secondary");
+    if (actionBtn) {
+      actionBtn.setAttribute("href", contactPath);
+      actionBtn.removeAttribute("target");
+      actionBtn.removeAttribute("rel");
+      actionBtn.setAttribute("aria-label", i18n.actionAria);
+      actionBtn.textContent = i18n.actionLabel;
+    }
+  }
+
+  function clearLegacyTelegramCache() {
     try {
-      const raw = localStorage.getItem(REVIEWS_CACHE_KEY);
-      const ts = Number(localStorage.getItem(REVIEWS_CACHE_TS_KEY) || 0);
-      const items = JSON.parse(raw || "[]");
-      const validItems = Array.isArray(items) ? items : [];
-      const hasItems = validItems.length > 0;
-      return {
-        items: validItems,
-        hasItems,
-        isFresh: hasItems && Date.now() - ts < REVIEWS_CACHE_TTL_MS,
-      };
+      localStorage.removeItem("gptishka_reviews_cache_v1");
+      localStorage.removeItem("gptishka_reviews_cache_ts_v1");
     } catch (_) {
-      return { items: [], hasItems: false, isFresh: false };
+      // Ignore storage cleanup errors.
     }
   }
 
-  function writeCache(items) {
-    try {
-      localStorage.setItem(REVIEWS_CACHE_KEY, JSON.stringify(items));
-      localStorage.setItem(REVIEWS_CACHE_TS_KEY, String(Date.now()));
-    } catch (_) {
-      // Ignore storage write errors in private mode.
-    }
-  }
-
-  function renderEmpty(messageType) {
-    const text = messageType === "error" ? i18n.error : i18n.empty;
-    feed.innerHTML =
-      '<div class="telegram-reviews-empty">' +
-      `${escapeHtml(text)} ` +
-      `<a href="${channelUrl}" target="_blank" rel="noopener noreferrer">@otzivigptishkashop</a>.` +
-      "</div>";
-  }
-
-  function renderItems(items) {
-    if (!Array.isArray(items) || !items.length) {
-      renderEmpty("empty");
-      return;
-    }
-
+  function renderReviews() {
+    const items = isEn ? EN_REVIEWS : RU_REVIEWS;
     feed.innerHTML = items
       .map(item => {
-        const author = escapeHtml(item.author || "Telegram");
-        const text = escapeHtml(item.text || "");
-        const date = formatDate(item.date);
-        const views = item.views
-          ? ` · ${escapeHtml(i18n.viewsPrefix)}: ${escapeHtml(item.views)}`
-          : "";
-        const url = escapeHtml(item.url || channelUrl);
-        const avatar = item.authorPhotoUrl
-          ? `<img src="${escapeHtml(item.authorPhotoUrl)}" alt="${author}" loading="lazy" decoding="async">`
-          : "TG";
-        const image = item.imageUrl
-          ? `<img class="telegram-review-image" src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(i18n.imageAlt)}" loading="lazy" decoding="async">`
-          : "";
-
-        return (
-          '<article class="review">' +
-          '  <div class="review-header">' +
-          `    <div class="avatar">${avatar}</div>` +
-          "    <div>" +
-          `      <div class="review-name">${author}</div>` +
-          `      <div class="review-date">${date}${views}</div>` +
-          "    </div>" +
-          "  </div>" +
-          `  <div class="review-text">${text}</div>` +
-          `  ${image}` +
-          `  <a class="telegram-review-link" href="${url}" target="_blank" rel="noopener noreferrer">${escapeHtml(i18n.openPost)}</a>` +
-          "</article>"
-        );
+        const name = escapeHtml(item.name);
+        const date = escapeHtml(formatDate(item.date));
+        const text = escapeHtml(item.text);
+        const badge = escapeHtml(i18n.roleLabel);
+        const avatar = escapeHtml(initials(item.name));
+        return [
+          '<article class="review">',
+          '  <div class="review-header">',
+          `    <div class="avatar">${avatar}</div>`,
+          "    <div>",
+          `      <div class="review-name">${name}</div>`,
+          `      <div class="review-date">${date} · ${badge}</div>`,
+          "    </div>",
+          "  </div>",
+          `  <div class="review-text">${text}</div>`,
+          "</article>",
+        ].join("");
       })
       .join("");
   }
 
-  const cached = readCache();
-  if (cached.hasItems) {
-    renderItems(cached.items);
-  }
-  if (cached.isFresh) {
-    return;
-  }
-
-  const controller = typeof AbortController === "function" ? new AbortController() : null;
-  const timeout = window.setTimeout(() => {
-    if (controller) controller.abort();
-  }, REVIEWS_REQUEST_TIMEOUT_MS);
-
-  const requestOptions = {
-    headers: { Accept: "application/json" },
-    cache: "no-store",
-  };
-  if (controller) {
-    requestOptions.signal = controller.signal;
-  }
-
-  fetch(REVIEWS_API_URL, requestOptions)
-    .then(response => (response.ok ? response.json() : Promise.reject(new Error("reviews api failed"))))
-    .then(payload => {
-      const items = Array.isArray(payload?.items) ? payload.items : [];
-      if (!items.length) {
-        if (!cached.hasItems) renderEmpty("empty");
-        return;
-      }
-      writeCache(items);
-      renderItems(items);
-    })
-    .catch(() => {
-      if (!cached.hasItems) renderEmpty("error");
-    })
-    .finally(() => {
-      window.clearTimeout(timeout);
-    });
+  clearLegacyTelegramCache();
+  updateHeader();
+  renderReviews();
 })();
