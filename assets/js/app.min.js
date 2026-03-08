@@ -1687,16 +1687,21 @@ document.querySelectorAll("a[href]").forEach(link => {
     if (changed) saveCart(next);
   }
 
+  function isValidCheckoutProductId(value) {
+    return /^[a-z0-9]{10,}$/i.test(String(value || "").trim());
+  }
+
   async function ensureCheckoutItemProductId(item) {
     if (!item) return null;
-    if (item.productId) return item;
+    const currentId = String(item.productId || "").trim();
+    if (isValidCheckoutProductId(currentId)) return { ...item, productId: currentId };
 
     const cardItems = cards.map(card => getCardItem(card)).filter(Boolean);
     const cardLookup = buildProductLookup(cardItems);
     const directCardId =
       cardLookup.byProduct.get(normalizeLookup(item.product)) ||
       cardLookup.byTitle.get(normalizeLookup(item.title));
-    if (directCardId) {
+    if (isValidCheckoutProductId(directCardId)) {
       return { ...item, productId: directCardId };
     }
 
@@ -1709,7 +1714,7 @@ document.querySelectorAll("a[href]").forEach(link => {
       const resolvedId =
         lookup.byProduct.get(normalizeLookup(item.product)) ||
         lookup.byTitle.get(normalizeLookup(item.title));
-      return resolvedId ? { ...item, productId: resolvedId } : item;
+      return isValidCheckoutProductId(resolvedId) ? { ...item, productId: resolvedId } : item;
     } catch (_) {
       return item;
     }

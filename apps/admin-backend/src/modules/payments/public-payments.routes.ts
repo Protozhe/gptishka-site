@@ -7,10 +7,14 @@ import { paymentsService } from "./payments.service";
 import { checkoutCreateRateLimit } from "../../common/security/rate-limit";
 
 const createPaymentSchema = z.object({
-  email: z.string().email(),
-  plan_id: z.string().min(10),
-  promo_code: z.string().min(2).max(40).optional(),
+  email: z.preprocess((value) => String(value || "").trim().toLowerCase(), z.string().email()),
+  plan_id: z.preprocess((value) => String(value || "").trim(), z.string().min(1)),
+  promo_code: z.preprocess((value) => {
+    const normalized = String(value || "").trim();
+    return normalized ? normalized : undefined;
+  }, z.string().max(40).optional()),
   qty: z.coerce.number().int().min(1).max(100).optional(),
+  payment_method: z.string().trim().optional(),
 });
 
 const allowedPublicPaymentMethods = new Set(["enot", "lava"]);
