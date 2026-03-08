@@ -5,6 +5,13 @@ import { api } from "../lib/api";
 import { money } from "../lib/format";
 
 type BadgeType = "none" | "best" | "new" | "hit" | "sale" | "popular" | "limited" | "gift" | "pro";
+type MediaType = "none" | "image" | "video";
+
+type ProductImage = {
+  id: string;
+  url: string;
+  isMain?: boolean;
+};
 
 type Product = {
   id: string;
@@ -17,8 +24,84 @@ type Product = {
   currency: string;
   category: string;
   tags: string[];
+  images?: ProductImage[];
   isActive: boolean;
 };
+
+const MEDIA_LINE_RE = /^media\s*:\s*(image|video)\s*:\s*(.+)$/i;
+const MEDIA_CAPTION_RE = /^media-caption\s*:\s*(.+)$/i;
+
+function parseDescriptionWithMedia(value: string): {
+  cleanDescription: string;
+  mediaType: MediaType;
+  mediaUrl: string;
+  mediaCaption: string;
+} {
+  const lines = String(value || "").replace(/\r/g, "").split("\n");
+  const cleanLines: string[] = [];
+  let mediaType: MediaType = "none";
+  let mediaUrl = "";
+  let mediaCaption = "";
+
+  lines.forEach((line) => {
+    const trimmed = String(line || "").trim();
+    if (!trimmed) {
+      cleanLines.push("");
+      return;
+    }
+
+    const mediaMatch = trimmed.match(MEDIA_LINE_RE);
+    if (mediaMatch) {
+      if (!mediaUrl) {
+        mediaType = String(mediaMatch[1] || "").toLowerCase() === "video" ? "video" : "image";
+        mediaUrl = String(mediaMatch[2] || "").trim();
+      }
+      return;
+    }
+
+    const captionMatch = trimmed.match(MEDIA_CAPTION_RE);
+    if (captionMatch) {
+      if (!mediaCaption) mediaCaption = String(captionMatch[1] || "").trim();
+      return;
+    }
+
+    cleanLines.push(line);
+  });
+
+  const cleanDescription = cleanLines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  return { cleanDescription, mediaType, mediaUrl, mediaCaption };
+}
+
+function composeDescriptionWithMedia(baseDescription: string, mediaType: MediaType, mediaUrl: string, mediaCaption: string): string {
+  const cleanBase = parseDescriptionWithMedia(baseDescription).cleanDescription;
+  const normalizedUrl = String(mediaUrl || "").trim();
+  const normalizedCaption = String(mediaCaption || "").trim();
+  const hasMedia = mediaType !== "none" && normalizedUrl.length > 0;
+
+  if (!hasMedia) return cleanBase;
+
+  const chunks = [cleanBase].filter(Boolean);
+  chunks.push(`media:${mediaType}:${normalizedUrl}`);
+  if (normalizedCaption) {
+    chunks.push(`media-caption:${normalizedCaption}`);
+  }
+  return chunks.join("\n\n").trim();
+}
+
+function absolutizeMediaUrl(url: string): string {
+  const raw = String(url || "").trim();
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith("/")) return `${window.location.origin}${raw}`;
+  return raw;
+}
+
+function inferMediaTypeFromUrl(url: string): MediaType {
+  const source = String(url || "").trim().toLowerCase();
+  if (!source) return "none";
+  if (/(\.mp4|\.webm|youtube\.com|youtu\.be|vimeo\.com)/i.test(source)) return "video";
+  return "image";
+}
 
 function getBadgeFromTags(tags: string[] = []): BadgeType {
   const list = Array.isArray(tags) ? tags : [];
@@ -86,6 +169,12 @@ export default function ProductsPage() {
   const [descriptionEn, setDescriptionEn] = useState("");
   const [badge, setBadge] = useState<BadgeType>("none");
   const [editingTags, setEditingTags] = useState<string[]>([]);
+  const [mediaType, setMediaType] = useState<MediaType>("none");
+  const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaCaption, setMediaCaption] = useState("");
+  const [editingImages, setEditingImages] = useState<ProductImage[]>([]);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
   const params = useMemo(
@@ -133,6 +222,14 @@ export default function ProductsPage() {
       (await api.post("/products/translate/ru-en", payload)).data as { titleEn: string; descriptionEn: string; provider: string },
   });
 
+  const uploadProductImage = useMutation({
+    mutationFn: async ({ id, file }: { id: string; file: File }) => {
+      const formData = new FormData();
+      formData.append("image", file);
+      return (await api.post(`/products/${id}/images`, formData, { headers: { "Content-Type": "multipart/form-data" } })).data as ProductImage;
+    },
+  });
+
   function resetForm() {
     setEditingId(null);
     setTitle("");
@@ -142,6 +239,12 @@ export default function ProductsPage() {
     setDescriptionEn("");
     setBadge("none");
     setEditingTags([]);
+    setMediaType("none");
+    setMediaUrl("");
+    setMediaCaption("");
+    setEditingImages([]);
+    setUploadFile(null);
+    setUploadMessage(null);
     setFormError(null);
   }
 
@@ -157,14 +260,28 @@ export default function ProductsPage() {
   }
 
   function onEdit(item: Product) {
+    const parsedRu = parseDescriptionWithMedia(item.description || "");
+    const parsedEn = parseDescriptionWithMedia(item.descriptionEn || "");
+    const preferredMedia = parsedRu.mediaUrl
+      ? parsedRu
+      : parsedEn.mediaUrl
+        ? parsedEn
+        : { mediaType: "none" as MediaType, mediaUrl: "", mediaCaption: "" };
+
     setEditingId(item.id);
     setTitle(item.title || "");
     setTitleEn(item.titleEn || "");
     setPrice(String(item.price ?? ""));
-    setDescription(item.description || "");
-    setDescriptionEn(item.descriptionEn || "");
+    setDescription(parsedRu.cleanDescription || "");
+    setDescriptionEn(parsedEn.cleanDescription || "");
     setBadge(getBadgeFromTags(item.tags || []));
     setEditingTags(Array.isArray(item.tags) ? item.tags : []);
+    setMediaType(preferredMedia.mediaType || "none");
+    setMediaUrl(preferredMedia.mediaUrl || "");
+    setMediaCaption(preferredMedia.mediaCaption || "");
+    setEditingImages(Array.isArray(item.images) ? item.images : []);
+    setUploadFile(null);
+    setUploadMessage(null);
     setFormError(null);
   }
 
@@ -174,9 +291,12 @@ export default function ProductsPage() {
 
     const cleanTitle = title.trim();
     let cleanTitleEn = titleEn.trim();
-    const cleanDescription = description.trim();
-    let cleanDescriptionEn = descriptionEn.trim();
+    const cleanDescription = parseDescriptionWithMedia(description).cleanDescription.trim();
+    let cleanDescriptionEn = parseDescriptionWithMedia(descriptionEn).cleanDescription.trim();
     const normalizedPrice = Number(String(price).replace(",", "."));
+    const normalizedMediaType = mediaType === "image" || mediaType === "video" ? mediaType : "none";
+    const normalizedMediaUrl = String(mediaUrl || "").trim();
+    const normalizedMediaCaption = String(mediaCaption || "").trim();
 
     if (cleanTitle.length < 3) {
       setFormError("Название должно быть не короче 3 символов.");
@@ -195,7 +315,7 @@ export default function ProductsPage() {
           description: cleanDescription,
         });
         cleanTitleEn = String(translated?.titleEn || "").trim();
-        cleanDescriptionEn = String(translated?.descriptionEn || "").trim();
+        cleanDescriptionEn = parseDescriptionWithMedia(String(translated?.descriptionEn || "")).cleanDescription.trim();
         setTitleEn(cleanTitleEn);
         setDescriptionEn(cleanDescriptionEn);
       } catch {
@@ -219,14 +339,17 @@ export default function ProductsPage() {
       return;
     }
 
+    const finalDescriptionRu = composeDescriptionWithMedia(cleanDescription, normalizedMediaType, normalizedMediaUrl, normalizedMediaCaption);
+    const finalDescriptionEn = composeDescriptionWithMedia(cleanDescriptionEn, normalizedMediaType, normalizedMediaUrl, normalizedMediaCaption);
+
     if (editingId) {
       await updateProduct.mutateAsync({
         id: editingId,
         payload: {
           title: cleanTitle,
           titleEn: cleanTitleEn,
-          description: cleanDescription,
-          descriptionEn: cleanDescriptionEn,
+          description: finalDescriptionRu,
+          descriptionEn: finalDescriptionEn,
           price: normalizedPrice,
           tags: withBadgeTag(editingTags, badge),
         },
@@ -238,8 +361,8 @@ export default function ProductsPage() {
     await createProduct.mutateAsync({
       title: cleanTitle,
       titleEn: cleanTitleEn,
-      description: cleanDescription,
-      descriptionEn: cleanDescriptionEn,
+      description: finalDescriptionRu,
+      descriptionEn: finalDescriptionEn,
       price: normalizedPrice,
       oldPrice: null,
       currency: "RUB",
@@ -255,7 +378,7 @@ export default function ProductsPage() {
   async function onAutoTranslateClick() {
     setFormError(null);
     const cleanTitle = title.trim();
-    const cleanDescription = description.trim();
+    const cleanDescription = parseDescriptionWithMedia(description).cleanDescription.trim();
 
     if (cleanTitle.length < 3) {
       setFormError("Сначала заполните название на русском (минимум 3 символа).");
@@ -272,9 +395,35 @@ export default function ProductsPage() {
         description: cleanDescription,
       });
       setTitleEn(String(translated?.titleEn || "").trim());
-      setDescriptionEn(String(translated?.descriptionEn || "").trim());
+      setDescriptionEn(parseDescriptionWithMedia(String(translated?.descriptionEn || "")).cleanDescription.trim());
     } catch {
       setFormError("Не удалось выполнить автоперевод RU -> EN. Повторите позже.");
+    }
+  }
+
+  async function onUploadImageClick() {
+    setUploadMessage(null);
+    if (!editingId) {
+      setUploadMessage("Сначала выберите товар через «Редактировать». ");
+      return;
+    }
+    if (!uploadFile) {
+      setUploadMessage("Выберите файл изображения.");
+      return;
+    }
+
+    try {
+      const uploaded = await uploadProductImage.mutateAsync({ id: editingId, file: uploadFile });
+      setEditingImages((prev) => [uploaded, ...prev.filter((item) => item.id !== uploaded.id)]);
+      if (!String(mediaUrl || "").trim()) {
+        setMediaType("image");
+        setMediaUrl(uploaded.url);
+      }
+      setUploadFile(null);
+      setUploadMessage("Фото загружено. Можно сразу использовать в всплывающем окне.");
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    } catch (error) {
+      setUploadMessage(getRequestErrorMessage(error, "Не удалось загрузить изображение."));
     }
   }
 
@@ -318,6 +467,92 @@ export default function ProductsPage() {
             value={descriptionEn}
             onChange={(e) => setDescriptionEn(e.target.value)}
           />
+
+          <select className="input md:col-span-1" value={mediaType} onChange={(e) => setMediaType(e.target.value as MediaType)}>
+            <option value="none">Без медиа</option>
+            <option value="image">Фото</option>
+            <option value="video">Видео</option>
+          </select>
+          <input
+            className="input md:col-span-2"
+            placeholder="Ссылка на медиа (https://... или /uploads/...)"
+            value={mediaUrl}
+            onChange={(e) => {
+              const nextUrl = e.target.value;
+              setMediaUrl(nextUrl);
+              if (mediaType === "none" && String(nextUrl || "").trim()) {
+                setMediaType(inferMediaTypeFromUrl(nextUrl));
+              }
+            }}
+          />
+          <input
+            className="input md:col-span-1"
+            placeholder="Подпись к медиа (опционально)"
+            value={mediaCaption}
+            onChange={(e) => setMediaCaption(e.target.value)}
+          />
+
+          {mediaType !== "none" && String(mediaUrl || "").trim() && (
+            <div className="md:col-span-4 rounded-xl border border-slate-200 bg-white p-3 text-sm dark:border-slate-800 dark:bg-slate-900">
+              <div className="mb-2 font-semibold text-slate-700 dark:text-slate-200">Предпросмотр медиа для всплывающего окна</div>
+              {mediaType === "image" ? (
+                <img
+                  src={absolutizeMediaUrl(mediaUrl)}
+                  alt="Media preview"
+                  className="max-h-60 w-auto rounded-lg border border-slate-200 object-contain dark:border-slate-700"
+                />
+              ) : (
+                <a className="text-cyan-700 underline dark:text-cyan-300" href={absolutizeMediaUrl(mediaUrl)} target="_blank" rel="noreferrer">
+                  Открыть видео-ссылку
+                </a>
+              )}
+              {mediaCaption && <div className="mt-2 text-slate-500">{mediaCaption}</div>}
+            </div>
+          )}
+
+          {editingId && (
+            <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
+              <div className="mb-2 text-sm font-semibold">Загрузка фото для всплывающего окна</div>
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setUploadFile(file);
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={onUploadImageClick}
+                  disabled={!uploadFile || uploadProductImage.isPending}
+                >
+                  {uploadProductImage.isPending ? "Загружаем..." : "Загрузить фото"}
+                </button>
+              </div>
+              {uploadMessage && <div className="mt-2 text-xs text-slate-600 dark:text-slate-300">{uploadMessage}</div>}
+              {editingImages.length > 0 && (
+                <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {editingImages.map((image) => (
+                    <div key={image.id} className="rounded-lg border border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-950">
+                      <img src={absolutizeMediaUrl(image.url)} alt="Product" className="h-24 w-full rounded object-cover" />
+                      <button
+                        type="button"
+                        className="btn-secondary mt-2 w-full"
+                        onClick={() => {
+                          setMediaType("image");
+                          setMediaUrl(image.url);
+                        }}
+                      >
+                        Использовать в окне
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <button className="btn-secondary md:col-span-4" type="button" onClick={onAutoTranslateClick} disabled={autoTranslate.isPending || isSaving}>
             {autoTranslate.isPending ? "Переводим RU -> EN..." : "Автоперевод RU -> EN"}

@@ -344,6 +344,11 @@ document.querySelectorAll("a[href]").forEach(link => {
         multiCartCheckout: "Checkout is currently available one item at a time. Please pay items separately.",
         promoHeroApplied: "WELCOME34 applied",
         paymentMethodRequired: "Select a payment method",
+        previewTitle: "Plan details",
+        previewIncluded: "What's included",
+        previewPay: "Pay for this plan",
+        previewClose: "Close",
+        previewNoDetails: "Details will appear here shortly.",
       }
     : {
         promo10: "Скидка 10%",
@@ -383,6 +388,11 @@ document.querySelectorAll("a[href]").forEach(link => {
         multiCartCheckout: "Сейчас оплата доступна по одному товару. Оплатите позиции по отдельности.",
         promoHeroApplied: "WELCOME34 применен",
         paymentMethodRequired: "Выберите способ оплаты",
+        previewTitle: "Детали тарифа",
+        previewIncluded: "Что входит",
+        previewPay: "Оплатить этот тариф",
+        previewClose: "Закрыть",
+        previewNoDetails: "Описание появится в ближайшее время.",
       };
   const PROMO_CODE_KEY = "gptishka_cart_promo_v1";
   const PROMO_CODE_TS_KEY = "gptishka_cart_promo_ts_v1";
@@ -399,6 +409,10 @@ document.querySelectorAll("a[href]").forEach(link => {
   let checkoutPendingRow = null;
   let checkoutPendingPromoCode = "";
   let checkoutInProgress = false;
+  let productPreviewModalEl = null;
+  let productPreviewContentEl = null;
+  let productPreviewPayBtnEl = null;
+  let previewItem = null;
 
   function normalizePromoCodeInput(value) {
     const raw = String(value || "").trim().toUpperCase();
@@ -585,6 +599,51 @@ document.querySelectorAll("a[href]").forEach(link => {
       .replaceAll("'", "&#39;");
   }
 
+  function sanitizeMediaUrl(value) {
+    const raw = String(value || "").trim();
+    if (!raw) return "";
+    if (raw.startsWith("/")) return raw;
+
+    try {
+      const parsed = new URL(raw, window.location.origin);
+      if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+        return parsed.toString();
+      }
+    } catch (_) {
+      return "";
+    }
+
+    return "";
+  }
+
+  function resolveYoutubeEmbedUrl(value) {
+    const safeUrl = sanitizeMediaUrl(value);
+    if (!safeUrl) return "";
+
+    try {
+      const parsed = new URL(safeUrl, window.location.origin);
+      const hostname = parsed.hostname.replace(/^www\./i, "").toLowerCase();
+      let videoId = "";
+
+      if (hostname === "youtu.be") {
+        videoId = parsed.pathname.replace(/\//g, "").trim();
+      } else if (hostname.endsWith("youtube.com")) {
+        if (parsed.pathname === "/watch") {
+          videoId = String(parsed.searchParams.get("v") || "").trim();
+        } else if (parsed.pathname.startsWith("/shorts/")) {
+          videoId = parsed.pathname.split("/")[2] || "";
+        } else if (parsed.pathname.startsWith("/embed/")) {
+          videoId = parsed.pathname.split("/")[2] || "";
+        }
+      }
+
+      if (!videoId) return "";
+      return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?rel=0&modestbranding=1`;
+    } catch (_) {
+      return "";
+    }
+  }
+
   function alignToHashTarget(behavior = "auto") {
     const hash = String(window.location.hash || "").trim();
     if (!hash || hash === "#") return;
@@ -625,11 +684,193 @@ document.querySelectorAll("a[href]").forEach(link => {
       .filter(Boolean);
   }
 
+  function parseDescriptionModel(description) {
+    const lines = parseDescriptionLines(description);
+    const visibleLines = [];
+    let mediaType = "";
+    let mediaUrl = "";
+    let mediaCaption = "";
+
+    lines.forEach(line => {
+      const mediaMatch = line.match(/^media\s*:\s*(image|video)\s*:\s*(.+)$/i);
+      if (mediaMatch) {
+        if (!mediaUrl) {
+          mediaType = String(mediaMatch[1] || "").toLowerCase();
+          mediaUrl = String(mediaMatch[2] || "").trim();
+        }
+        return;
+      }
+
+      const captionMatch = line.match(/^media-caption\s*:\s*(.+)$/i);
+      if (captionMatch) {
+        if (!mediaCaption) mediaCaption = String(captionMatch[1] || "").trim();
+        return;
+      }
+
+      visibleLines.push(line);
+    });
+
+    return {
+      lines: visibleLines,
+      mediaType,
+      mediaUrl,
+      mediaCaption,
+      plainText: visibleLines.join("\n"),
+    };
+  }
+
+  function buildPreviewMediaMarkup(type, url, caption, title) {
+    const mediaType = String(type || "").trim().toLowerCase();
+    const mediaUrl = sanitizeMediaUrl(url);
+    const mediaCaption = String(caption || "").trim();
+    if (!mediaUrl || (mediaType !== "image" && mediaType !== "video")) return "";
+
+    const captionHtml = mediaCaption
+      ? '<p class="product-preview-modal__media-caption">' + escapeHtml(mediaCaption) + "</p>"
+      : "";
+
+    if (mediaType === "video") {
+      const youtubeEmbedUrl = resolveYoutubeEmbedUrl(mediaUrl);
+      if (youtubeEmbedUrl) {
+        return (
+          '<figure class="product-preview-modal__media product-preview-modal__media--video">' +
+          '<div class="product-preview-modal__video-frame">' +
+          '<iframe src="' + escapeHtml(youtubeEmbedUrl) + '" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="' + escapeHtml(title || TEXT.previewTitle) + '"></iframe>' +
+          "</div>" +
+          captionHtml +
+          "</figure>"
+        );
+      }
+
+      return (
+        '<figure class="product-preview-modal__media product-preview-modal__media--video">' +
+        '<video controls preload="metadata" playsinline>' +
+        '<source src="' + escapeHtml(mediaUrl) + '">' +
+        "</video>" +
+        captionHtml +
+        "</figure>"
+      );
+    }
+
+    return (
+      '<figure class="product-preview-modal__media product-preview-modal__media--image">' +
+      '<img src="' + escapeHtml(mediaUrl) + '" alt="' + escapeHtml(mediaCaption || title || TEXT.previewTitle) + '" loading="lazy" decoding="async">' +
+      captionHtml +
+      "</figure>"
+    );
+  }
+
+  function buildPreviewDescriptionMarkup(lines) {
+    const safeLines = Array.isArray(lines) ? lines.filter(Boolean) : [];
+    if (!safeLines.length) {
+      return '<p class="product-preview-modal__empty">' + escapeHtml(TEXT.previewNoDetails) + "</p>";
+    }
+
+    return (
+      '<ul class="product-preview-modal__list">' +
+      safeLines.map(line => '<li>' + escapeHtml(line) + "</li>").join("") +
+      "</ul>"
+    );
+  }
+
+  function closeProductPreviewModal() {
+    if (!productPreviewModalEl) return;
+    productPreviewModalEl.hidden = true;
+    productPreviewModalEl.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("is-product-modal-open");
+    previewItem = null;
+  }
+
+  function continueCheckoutFromPreview() {
+    if (!previewItem) return;
+    addCartLot(previewItem, 1);
+    persistCartSelection(undefined, activePromoCode, activePaymentMethod);
+    closeProductPreviewModal();
+    window.location.href = cartPagePath;
+  }
+
+  function ensureProductPreviewModal() {
+    if (productPreviewModalEl) return;
+
+    productPreviewModalEl = document.getElementById("productPreviewModal");
+    if (!productPreviewModalEl) {
+      const modal = document.createElement("div");
+      modal.id = "productPreviewModal";
+      modal.className = "product-preview-modal";
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      modal.innerHTML = [
+        '<div class="product-preview-modal__backdrop" data-product-preview-close></div>',
+        '<div class="product-preview-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="productPreviewModalTitle">',
+        '  <button type="button" class="product-preview-modal__close" aria-label="' + escapeHtml(TEXT.previewClose) + '" data-product-preview-close>&times;</button>',
+        '  <div class="product-preview-modal__content" id="productPreviewContent"></div>',
+        '  <div class="product-preview-modal__actions">',
+        '    <button type="button" class="btn product-preview-modal__pay" id="productPreviewPayBtn">' + escapeHtml(TEXT.previewPay) + "</button>",
+        "  </div>",
+        "</div>",
+      ].join("");
+      document.body.appendChild(modal);
+      productPreviewModalEl = modal;
+    }
+
+    productPreviewContentEl = document.getElementById("productPreviewContent");
+    productPreviewPayBtnEl = document.getElementById("productPreviewPayBtn");
+
+    const closeButtons = Array.from(productPreviewModalEl.querySelectorAll("[data-product-preview-close]"));
+    closeButtons.forEach(btn => {
+      btn.addEventListener("click", closeProductPreviewModal);
+    });
+
+    if (productPreviewPayBtnEl) {
+      productPreviewPayBtnEl.addEventListener("click", continueCheckoutFromPreview);
+    }
+  }
+
+  function openProductPreviewModal(item) {
+    if (!item) return;
+    ensureProductPreviewModal();
+    if (!productPreviewModalEl || !productPreviewContentEl) return;
+
+    const model = parseDescriptionModel(item.description || "");
+    const mediaMarkup = buildPreviewMediaMarkup(
+      item.mediaType || model.mediaType,
+      item.mediaUrl || model.mediaUrl,
+      item.mediaCaption || model.mediaCaption,
+      item.title || item.product
+    );
+
+    productPreviewContentEl.innerHTML = [
+      '<div class="product-preview-modal__head">',
+      item.term ? '<div class="product-preview-modal__term">' + escapeHtml(item.term) + "</div>" : "",
+      '<h3 class="product-preview-modal__title" id="productPreviewModalTitle">' + escapeHtml(item.title || item.product || TEXT.previewTitle) + "</h3>",
+      '<div class="product-preview-modal__price">' + escapeHtml(formatPriceByCurrency(item.price, item.currency)) + "</div>",
+      "</div>",
+      mediaMarkup,
+      '<section class="product-preview-modal__section">',
+      '<h4 class="product-preview-modal__section-title">' + escapeHtml(TEXT.previewIncluded) + "</h4>",
+      buildPreviewDescriptionMarkup(model.lines),
+      "</section>",
+    ].join("");
+
+    previewItem = {
+      ...item,
+      description: model.plainText,
+      mediaType: item.mediaType || model.mediaType,
+      mediaUrl: item.mediaUrl || model.mediaUrl,
+      mediaCaption: item.mediaCaption || model.mediaCaption,
+    };
+
+    productPreviewModalEl.hidden = false;
+    productPreviewModalEl.setAttribute("aria-hidden", "false");
+    document.body.classList.add("is-product-modal-open");
+  }
+
   function buildProductCard(item, index) {
     const product = String(item.product || item.id || "product_" + index).trim();
     const title = String(item.title || "Product").trim();
     const description = String(item.description || "").trim();
-    const descriptionLines = parseDescriptionLines(description);
+    const descriptionModel = parseDescriptionModel(description);
+    const descriptionLines = descriptionModel.lines;
     const durationLineRegex = /^(срок|duration)\s*:/i;
     const durationLine = descriptionLines.find(line => durationLineRegex.test(line)) || "";
     const nonDurationLines = descriptionLines.filter(line => !durationLineRegex.test(line));
@@ -679,6 +920,10 @@ document.querySelectorAll("a[href]").forEach(link => {
       ' data-title="' + escapeHtml(title) + '"' +
       ' data-sub="' + escapeHtml(sub) + '"' +
       ' data-term="' + escapeHtml(term) + '"' +
+      ' data-description="' + escapeHtml(descriptionModel.plainText) + '"' +
+      ' data-media-type="' + escapeHtml(descriptionModel.mediaType) + '"' +
+      ' data-media-url="' + escapeHtml(descriptionModel.mediaUrl) + '"' +
+      ' data-media-caption="' + escapeHtml(descriptionModel.mediaCaption) + '"' +
       ' data-price="' + escapeHtml(price) + '"' +
       ' data-currency="' + escapeHtml(currency) + '">' +
       badge +
@@ -1069,9 +1314,20 @@ document.querySelectorAll("a[href]").forEach(link => {
       title: String(card.getAttribute("data-title") || (h3 ? h3.innerText : "")).replace(/\s+/g, " ").trim(),
       term: String(card.getAttribute("data-term") || (term ? term.innerText : "")).replace(/\s+/g, " ").trim(),
       sub: String(card.getAttribute("data-sub") || (sub ? sub.innerText : "")).replace(/\s+/g, " ").trim(),
+      description: String(card.getAttribute("data-description") || "").trim(),
+      mediaType: String(card.getAttribute("data-media-type") || "").trim().toLowerCase(),
+      mediaUrl: String(card.getAttribute("data-media-url") || "").trim(),
+      mediaCaption: String(card.getAttribute("data-media-caption") || "").trim(),
       price: toAmount(card.getAttribute("data-price") || (priceNode ? priceNode.innerText : "")),
       currency: String(card.getAttribute("data-currency") || "RUB").trim() || "RUB",
     };
+
+    if (!item.description) {
+      const topLines = Array.from(card.querySelectorAll(".sub-top-line"))
+        .map(line => String(line.textContent || "").trim())
+        .filter(Boolean);
+      item.description = topLines.join("\n");
+    }
 
     return item;
   }
@@ -1502,11 +1758,20 @@ document.querySelectorAll("a[href]").forEach(link => {
       const card = payNowBtn.closest(".price-card");
       const item = getCardItem(card);
       if (!item) return;
+      openProductPreviewModal(item);
+      return;
+    }
 
-      const qty = Math.max(1, getCardQty(item.product) || 1);
-      addCartLot(item, qty);
-      persistCartSelection(undefined, activePromoCode, activePaymentMethod);
-      window.location.href = cartPagePath;
+    const priceCard = e.target.closest && e.target.closest(".price-card[data-product]");
+    if (priceCard && pricingGridEl && pricingGridEl.contains(priceCard)) {
+      const interactive = e.target.closest("button, a, input, textarea, select, label");
+      if (!interactive) {
+        const item = getCardItem(priceCard);
+        if (item) {
+          openProductPreviewModal(item);
+          return;
+        }
+      }
       return;
     }
 
@@ -1720,6 +1985,7 @@ document.querySelectorAll("a[href]").forEach(link => {
     closeHeaderCartPanel();
     resetPendingCheckout();
     closePaymentMethodModal();
+    closeProductPreviewModal();
   });
 
   window.addEventListener("gptishka:cart-cleared", () => {

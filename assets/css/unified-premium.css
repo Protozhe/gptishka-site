@@ -535,6 +535,198 @@ body.is-payment-modal-open {
   overflow: hidden;
 }
 
+body.is-product-modal-open {
+  overflow: hidden;
+}
+
+.product-preview-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.product-preview-modal[hidden] {
+  display: none !important;
+}
+
+.product-preview-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 13, 22, 0.44);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+
+.product-preview-modal__dialog {
+  position: relative;
+  width: min(760px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  border-radius: 26px;
+  border: 1px solid rgba(198, 212, 228, 0.9);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(245, 250, 255, 0.9));
+  box-shadow: 0 30px 62px rgba(11, 23, 38, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(10px) saturate(132%);
+  -webkit-backdrop-filter: blur(10px) saturate(132%);
+  padding: 24px;
+}
+
+.product-preview-modal__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(176, 192, 210, 0.76);
+  background: rgba(255, 255, 255, 0.92);
+  color: #334155;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.product-preview-modal__content {
+  display: grid;
+  gap: 18px;
+}
+
+.product-preview-modal__head {
+  display: grid;
+  gap: 8px;
+}
+
+.product-preview-modal__term {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(20, 133, 118, 0.34);
+  background: rgba(20, 133, 118, 0.08);
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.product-preview-modal__title {
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(26px, 3.2vw, 34px);
+  line-height: 1.15;
+}
+
+.product-preview-modal__price {
+  color: #0f172a;
+  font-size: clamp(30px, 4.2vw, 42px);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.product-preview-modal__section {
+  display: grid;
+  gap: 10px;
+}
+
+.product-preview-modal__section-title {
+  margin: 0;
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.product-preview-modal__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.product-preview-modal__list li {
+  position: relative;
+  padding-left: 18px;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.product-preview-modal__list li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #148576;
+  font-weight: 700;
+}
+
+.product-preview-modal__empty {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.product-preview-modal__media {
+  margin: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(201, 214, 229, 0.88);
+  background: rgba(246, 251, 255, 0.86);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+.product-preview-modal__media img {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  object-fit: cover;
+}
+
+.product-preview-modal__media video {
+  display: block;
+  width: 100%;
+  max-height: 420px;
+  background: #0f172a;
+}
+
+.product-preview-modal__video-frame {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  background: #0f172a;
+}
+
+.product-preview-modal__video-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.product-preview-modal__media-caption {
+  margin: 0;
+  padding: 10px 12px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.product-preview-modal__actions {
+  margin-top: 16px;
+  display: grid;
+}
+
+.product-preview-modal__pay {
+  width: 100%;
+  min-height: 48px;
+  font-size: 15px;
+}
+
 .payment-method-modal {
   position: fixed;
   inset: 0;
@@ -811,6 +1003,28 @@ footer {
 
   .payment-method-modal {
     padding: 14px;
+  }
+
+  .product-preview-modal {
+    padding: 14px;
+  }
+
+  .product-preview-modal__dialog {
+    max-height: calc(100vh - 28px);
+    border-radius: 20px;
+    padding: 18px;
+  }
+
+  .product-preview-modal__title {
+    font-size: clamp(22px, 7vw, 30px);
+  }
+
+  .product-preview-modal__price {
+    font-size: clamp(26px, 9vw, 34px);
+  }
+
+  .product-preview-modal__media img {
+    max-height: 260px;
   }
 
   .payment-method-modal__dialog {
