@@ -2,12 +2,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
+type ProductDeliveryType = "activation" | "credentials";
 type CdkStatus = "unused" | "used";
+type CredentialStatus = "available" | "assigned";
 
 type ProductItem = {
   id: string;
   slug: string;
   title: string;
+  tags?: string[];
+  deliveryType?: ProductDeliveryType;
+  deliveryMethod?: 1 | 2 | "1" | "2";
 };
 
 type ProductListResponse = {
@@ -29,17 +34,39 @@ type CdkListResponse = {
   items: CdkRow[];
 };
 
+type CredentialRow = {
+  id: string;
+  login: string;
+  password: string;
+  status: CredentialStatus;
+  orderId: string | null;
+  email: string | null;
+  createdAt: string;
+  updatedAt: string;
+  assignedAt: string | null;
+};
+
+type CredentialListResponse = {
+  items: CredentialRow[];
+  stats?: {
+    total: number;
+    available: number;
+    assigned: number;
+  };
+};
+
 const TEXT = {
   title: "CDK ключи по товарам",
-  subtitle: "У каждого товара свой отдельный пул ключей. Выдача при оплате идет строго по товару заказа.",
-  searchPlaceholder: "Поиск по коду / email / orderId",
+  subtitle: "Для метода 1 храните CDK-ключи, для метода 2 храните пары логин/пароль.",
+  searchPlaceholder: "Поиск по коду / логину / email / orderId",
   loading: "Загружаем...",
-  empty: "Ключей пока нет",
+  empty: "Записей пока нет",
   fillKeys: "Введите хотя бы один CDK ключ",
-  importFailed: "Не удалось загрузить ключи",
+  fillCredentials: "Введите хотя бы одну пару login:password",
+  importFailed: "Не удалось загрузить данные",
   returnFailed: "Не удалось вернуть ключ",
-  deleteFailed: "Не удалось удалить ключ",
-  importBtn: "Загрузить ключи",
+  deleteFailed: "Не удалось удалить запись",
+  importBtn: "Загрузить",
   added: "Добавлено",
   skipped: "Пропущено",
   unused: "Неиспользованные",
@@ -54,18 +81,206 @@ const TEXT = {
   remove: "Удалить",
   unusedItem: "Неиспользован",
   usedItem: "Использован",
+  unusedCredentials: "Свободные",
+  usedCredentials: "Выданные",
+  availableItem: "Свободен",
+  assignedItem: "Выдан",
+  login: "Логин",
+  password: "Пароль",
+  modeActivation: "Метод 1: CDK-активация",
+  modeCredentials: "Метод 2: Логин/пароль",
+  show: "Развернуть",
+  hide: "Свернуть",
   textareaPlaceholder:
     "Вставьте CDK ключи (по одному в строке)\nПример: 69742FA2-47A4-48C5-A7CC-71F334688FE7",
+  credentialsPlaceholder: "Вставьте пары login:password (по одной в строке)\nПример: user@mail.ru:Pass123",
   noProducts: "Товары не найдены. Сначала создайте товары в разделе «Товары».",
 };
 
-function ProductColumn({ product, search }: { product: ProductItem; search: string }) {
+function resolveDeliveryType(product: ProductItem): ProductDeliveryType {
+  const fromMethod = String(product.deliveryMethod || "").trim();
+  if (fromMethod === "2") return "credentials";
+  if (fromMethod === "1") return "activation";
+
+  const fromType = String(product.deliveryType || "")
+    .trim()
+    .toLowerCase();
+  if (fromType === "credentials") return "credentials";
+  if (fromType === "activation") return "activation";
+
+  const hasCredentialsTag = (Array.isArray(product.tags) ? product.tags : [])
+    .map((tag) => String(tag || "").trim().toLowerCase())
+    .some((tag) => tag === "delivery:credentials");
+
+  return hasCredentialsTag ? "credentials" : "activation";
+}
+
+function CurtainBlock({
+  title,
+  count,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  count: number;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="card overflow-hidden">
+      <button
+        type="button"
+        className="flex w-full items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 text-left text-sm font-semibold transition hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900"
+        onClick={onToggle}
+      >
+        <span>
+          {title} ({count})
+        </span>
+        <span className="text-xs font-medium text-slate-500">{open ? TEXT.hide : TEXT.show}</span>
+      </button>
+      {open ? <div>{children}</div> : null}
+    </section>
+  );
+}
+
+function ActivationTable({
+  items,
+  loading,
+  onReturn,
+  returningId,
+  onDelete,
+  deletingId,
+}: {
+  items: CdkRow[];
+  loading: boolean;
+  onReturn?: (id: string) => void;
+  returningId?: string;
+  onDelete?: (id: string) => void;
+  deletingId?: string;
+}) {
+  return (
+    <div className="max-h-[360px] overflow-auto">
+      <table className="min-w-full text-sm">
+        <thead className="bg-slate-100 text-left dark:bg-slate-800">
+          <tr>
+            <th className="px-4 py-3">CDK</th>
+            <th className="px-4 py-3">{TEXT.status}</th>
+            <th className="px-4 py-3">{TEXT.user}</th>
+            <th className="px-4 py-3">{TEXT.order}</th>
+            <th className="px-4 py-3">{TEXT.assigned}</th>
+            <th className="px-4 py-3">{TEXT.created}</th>
+            <th className="px-4 py-3">{TEXT.actions}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((item) => (
+            <tr className="border-t border-slate-200 dark:border-slate-800" key={item.id}>
+              <td className="px-4 py-3 font-semibold">{item.code}</td>
+              <td className="px-4 py-3">{item.status === "unused" ? TEXT.unusedItem : TEXT.usedItem}</td>
+              <td className="px-4 py-3">{item.email || "-"}</td>
+              <td className="px-4 py-3">{item.orderId || "-"}</td>
+              <td className="px-4 py-3">{item.assignedAt ? new Date(item.assignedAt).toLocaleString("ru-RU") : "-"}</td>
+              <td className="px-4 py-3">{new Date(item.createdAt).toLocaleString("ru-RU")}</td>
+              <td className="px-4 py-3">
+                <div className="flex flex-wrap gap-2">
+                  {item.status === "used" && onReturn ? (
+                    <button className="btn-secondary" type="button" onClick={() => onReturn(item.id)} disabled={returningId === item.id}>
+                      {returningId === item.id ? `${TEXT.returnToUnused}...` : TEXT.returnToUnused}
+                    </button>
+                  ) : null}
+                  {item.status === "unused" && onDelete ? (
+                    <button className="btn-secondary" type="button" onClick={() => onDelete(item.id)} disabled={deletingId === item.id}>
+                      {deletingId === item.id ? `${TEXT.remove}...` : TEXT.remove}
+                    </button>
+                  ) : null}
+                </div>
+              </td>
+            </tr>
+          ))}
+          {!loading && !items.length ? (
+            <tr>
+              <td className="px-4 py-6 text-slate-500" colSpan={7}>
+                {TEXT.empty}
+              </td>
+            </tr>
+          ) : null}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function CredentialsTable({
+  items,
+  loading,
+  onDelete,
+  deletingId,
+}: {
+  items: CredentialRow[];
+  loading: boolean;
+  onDelete?: (id: string) => void;
+  deletingId?: string;
+}) {
+  return (
+    <div className="max-h-[360px] overflow-auto">
+      <table className="min-w-full text-sm">
+        <thead className="bg-slate-100 text-left dark:bg-slate-800">
+          <tr>
+            <th className="px-4 py-3">{TEXT.login}</th>
+            <th className="px-4 py-3">{TEXT.password}</th>
+            <th className="px-4 py-3">{TEXT.status}</th>
+            <th className="px-4 py-3">{TEXT.user}</th>
+            <th className="px-4 py-3">{TEXT.order}</th>
+            <th className="px-4 py-3">{TEXT.assigned}</th>
+            <th className="px-4 py-3">{TEXT.created}</th>
+            <th className="px-4 py-3">{TEXT.actions}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((item) => (
+            <tr className="border-t border-slate-200 dark:border-slate-800" key={item.id}>
+              <td className="px-4 py-3 font-mono">{item.login}</td>
+              <td className="px-4 py-3 font-mono">{item.password}</td>
+              <td className="px-4 py-3">{item.status === "available" ? TEXT.availableItem : TEXT.assignedItem}</td>
+              <td className="px-4 py-3">{item.email || "-"}</td>
+              <td className="px-4 py-3">{item.orderId || "-"}</td>
+              <td className="px-4 py-3">{item.assignedAt ? new Date(item.assignedAt).toLocaleString("ru-RU") : "-"}</td>
+              <td className="px-4 py-3">{new Date(item.createdAt).toLocaleString("ru-RU")}</td>
+              <td className="px-4 py-3">
+                {item.status === "available" && onDelete ? (
+                  <button className="btn-secondary" type="button" onClick={() => onDelete(item.id)} disabled={deletingId === item.id}>
+                    {deletingId === item.id ? `${TEXT.remove}...` : TEXT.remove}
+                  </button>
+                ) : (
+                  <span className="text-slate-400">-</span>
+                )}
+              </td>
+            </tr>
+          ))}
+          {!loading && !items.length ? (
+            <tr>
+              <td className="px-4 py-6 text-slate-500" colSpan={8}>
+                {TEXT.empty}
+              </td>
+            </tr>
+          ) : null}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ActivationProductColumn({ product, search }: { product: ProductItem; search: string }) {
   const qc = useQueryClient();
   const productKey = normalizeProductKey(product.slug);
   const [text, setText] = useState("");
   const [error, setError] = useState("");
   const [returningId, setReturningId] = useState("");
   const [deletingId, setDeletingId] = useState("");
+  const [showUnused, setShowUnused] = useState(true);
+  const [showUsed, setShowUsed] = useState(false);
 
   const unusedQuery = useQuery<CdkListResponse>({
     queryKey: ["cdks", productKey, "unused", search],
@@ -174,6 +389,7 @@ function ProductColumn({ product, search }: { product: ProductItem; search: stri
         <div>
           <h3 className="text-base font-semibold">{product.title}</h3>
           <p className="text-xs text-slate-500">productKey: {productKey}</p>
+          <p className="text-xs text-emerald-700 dark:text-emerald-400">{TEXT.modeActivation}</p>
         </div>
         <div className="text-xs text-slate-600">
           {TEXT.unused}: <b>{unusedItems.length}</b> | {TEXT.used}: <b>{usedItems.length}</b>
@@ -193,8 +409,10 @@ function ProductColumn({ product, search }: { product: ProductItem; search: stri
           </button>
           {importMutation.data ? (
             <span className="text-xs text-emerald-600">
-              {TEXT.added}: {importMutation.data.inserted}
-              , {TEXT.skipped}: {importMutation.data.skipped}{typeof importMutation.data.conflicts === "number" && importMutation.data.conflicts > 0 ? `, Конфликты: ${importMutation.data.conflicts}` : ""}
+              {TEXT.added}: {importMutation.data.inserted}, {TEXT.skipped}: {importMutation.data.skipped}
+              {typeof importMutation.data.conflicts === "number" && importMutation.data.conflicts > 0
+                ? `, Конфликты: ${importMutation.data.conflicts}`
+                : ""}
             </span>
           ) : null}
         </div>
@@ -203,95 +421,191 @@ function ProductColumn({ product, search }: { product: ProductItem; search: stri
       {error ? <div className="text-sm text-rose-600">{error}</div> : null}
 
       <div className="grid gap-3">
-        <TableBlock
-          title={`${TEXT.unused} (${unusedItems.length})`}
-          items={unusedItems}
-          loading={loading}
-          onDelete={onDeleteUnused}
-          deletingId={deletingId}
-        />
-        <TableBlock
-          title={`${TEXT.used} (${usedItems.length})`}
-          items={usedItems}
-          loading={loading}
-          onReturn={onReturnToUnused}
-          returningId={returningId}
-        />
+        <CurtainBlock
+          title={TEXT.unused}
+          count={unusedItems.length}
+          open={showUnused}
+          onToggle={() => setShowUnused((value) => !value)}
+        >
+          <ActivationTable
+            items={unusedItems}
+            loading={loading}
+            onDelete={onDeleteUnused}
+            deletingId={deletingId}
+          />
+        </CurtainBlock>
+
+        <CurtainBlock
+          title={TEXT.used}
+          count={usedItems.length}
+          open={showUsed}
+          onToggle={() => setShowUsed((value) => !value)}
+        >
+          <ActivationTable
+            items={usedItems}
+            loading={loading}
+            onReturn={onReturnToUnused}
+            returningId={returningId}
+          />
+        </CurtainBlock>
       </div>
     </section>
   );
 }
 
-function TableBlock({
-  title,
-  items,
-  loading,
-  onReturn,
-  returningId,
-  onDelete,
-  deletingId,
-}: {
-  title: string;
-  items: CdkRow[];
-  loading: boolean;
-  onReturn?: (id: string) => void;
-  returningId?: string;
-  onDelete?: (id: string) => void;
-  deletingId?: string;
-}) {
+function CredentialsProductColumn({ product, search }: { product: ProductItem; search: string }) {
+  const qc = useQueryClient();
+  const [text, setText] = useState("");
+  const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState("");
+  const [showUnused, setShowUnused] = useState(true);
+  const [showUsed, setShowUsed] = useState(false);
+
+  const availableQuery = useQuery<CredentialListResponse>({
+    queryKey: ["product-credentials-cdk", product.id, "available", search],
+    queryFn: async () =>
+      (
+        await api.get(`/products/${product.id}/credentials`, {
+          params: {
+            status: "available",
+            q: search || undefined,
+          },
+        })
+      ).data,
+  });
+
+  const assignedQuery = useQuery<CredentialListResponse>({
+    queryKey: ["product-credentials-cdk", product.id, "assigned", search],
+    queryFn: async () =>
+      (
+        await api.get(`/products/${product.id}/credentials`, {
+          params: {
+            status: "assigned",
+            q: search || undefined,
+          },
+        })
+      ).data,
+  });
+
+  const importMutation = useMutation({
+    mutationFn: async () =>
+      (
+        await api.post(`/products/${product.id}/credentials/import`, {
+          text,
+        })
+      ).data as { inserted: number; skipped: number },
+    onSuccess: () => {
+      setText("");
+      setError("");
+      qc.invalidateQueries({ queryKey: ["product-credentials-cdk", product.id] });
+    },
+    onError: (err: any) => {
+      setError(err?.response?.data?.message || TEXT.importFailed);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => api.delete(`/products/${product.id}/credentials/${id}`),
+    onSuccess: () => {
+      setDeletingId("");
+      setError("");
+      qc.invalidateQueries({ queryKey: ["product-credentials-cdk", product.id] });
+    },
+    onError: (err: any) => {
+      setDeletingId("");
+      setError(err?.response?.data?.message || TEXT.deleteFailed);
+    },
+  });
+
+  const onImport = (e: FormEvent) => {
+    e.preventDefault();
+    if (!text.trim()) {
+      setError(TEXT.fillCredentials);
+      return;
+    }
+    setError("");
+    importMutation.mutate();
+  };
+
+  const onDeleteAvailable = (id: string) => {
+    if (!window.confirm("Удалить запись? Это действие нельзя отменить.")) return;
+    setDeletingId(id);
+    deleteMutation.mutate(id);
+  };
+
+  const availableItems = availableQuery.data?.items || [];
+  const assignedItems = assignedQuery.data?.items || [];
+  const loading = availableQuery.isLoading || assignedQuery.isLoading;
+
   return (
-    <section className="card overflow-hidden">
-      <div className="border-b border-slate-200 px-4 py-3 text-sm font-semibold dark:border-slate-800">{title}</div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead className="bg-slate-100 text-left dark:bg-slate-800">
-            <tr>
-              <th className="px-4 py-3">CDK</th>
-              <th className="px-4 py-3">{TEXT.status}</th>
-              <th className="px-4 py-3">{TEXT.user}</th>
-              <th className="px-4 py-3">{TEXT.order}</th>
-              <th className="px-4 py-3">{TEXT.assigned}</th>
-              <th className="px-4 py-3">{TEXT.created}</th>
-              <th className="px-4 py-3">{TEXT.actions}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item) => (
-              <tr className="border-t border-slate-200 dark:border-slate-800" key={item.id}>
-                <td className="px-4 py-3 font-semibold">{item.code}</td>
-                <td className="px-4 py-3">{item.status === "unused" ? TEXT.unusedItem : TEXT.usedItem}</td>
-                <td className="px-4 py-3">{item.email || "-"}</td>
-                <td className="px-4 py-3">{item.orderId || "-"}</td>
-                <td className="px-4 py-3">{item.assignedAt ? new Date(item.assignedAt).toLocaleString("ru-RU") : "-"}</td>
-                <td className="px-4 py-3">{new Date(item.createdAt).toLocaleString("ru-RU")}</td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap gap-2">
-                    {item.status === "used" && onReturn ? (
-                      <button className="btn-secondary" type="button" onClick={() => onReturn(item.id)} disabled={returningId === item.id}>
-                        {returningId === item.id ? `${TEXT.returnToUnused}...` : TEXT.returnToUnused}
-                      </button>
-                    ) : null}
-                    {item.status === "unused" && onDelete ? (
-                      <button className="btn-secondary" type="button" onClick={() => onDelete(item.id)} disabled={deletingId === item.id}>
-                        {deletingId === item.id ? `${TEXT.remove}...` : TEXT.remove}
-                      </button>
-                    ) : null}
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {!loading && !items.length ? (
-              <tr>
-                <td className="px-4 py-6 text-slate-500" colSpan={7}>
-                  {TEXT.empty}
-                </td>
-              </tr>
-            ) : null}
-          </tbody>
-        </table>
+    <section className="card p-4 space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-base font-semibold">{product.title}</h3>
+          <p className="text-xs text-slate-500">productId: {product.id}</p>
+          <p className="text-xs text-indigo-700 dark:text-indigo-400">{TEXT.modeCredentials}</p>
+        </div>
+        <div className="text-xs text-slate-600">
+          {TEXT.unusedCredentials}: <b>{availableItems.length}</b> | {TEXT.usedCredentials}: <b>{assignedItems.length}</b>
+        </div>
+      </div>
+
+      <form onSubmit={onImport} className="space-y-2">
+        <textarea
+          className="input min-h-[120px]"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={TEXT.credentialsPlaceholder}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <button className="btn-primary" disabled={importMutation.isPending}>
+            {importMutation.isPending ? TEXT.loading : TEXT.importBtn}
+          </button>
+          {importMutation.data ? (
+            <span className="text-xs text-emerald-600">
+              {TEXT.added}: {importMutation.data.inserted}, {TEXT.skipped}: {importMutation.data.skipped}
+            </span>
+          ) : null}
+        </div>
+      </form>
+
+      {error ? <div className="text-sm text-rose-600">{error}</div> : null}
+
+      <div className="grid gap-3">
+        <CurtainBlock
+          title={TEXT.unusedCredentials}
+          count={availableItems.length}
+          open={showUnused}
+          onToggle={() => setShowUnused((value) => !value)}
+        >
+          <CredentialsTable
+            items={availableItems}
+            loading={loading}
+            onDelete={onDeleteAvailable}
+            deletingId={deletingId}
+          />
+        </CurtainBlock>
+
+        <CurtainBlock
+          title={TEXT.usedCredentials}
+          count={assignedItems.length}
+          open={showUsed}
+          onToggle={() => setShowUsed((value) => !value)}
+        >
+          <CredentialsTable items={assignedItems} loading={loading} />
+        </CurtainBlock>
       </div>
     </section>
   );
+}
+
+function ProductColumn({ product, search }: { product: ProductItem; search: string }) {
+  const deliveryType = resolveDeliveryType(product);
+  if (deliveryType === "credentials") {
+    return <CredentialsProductColumn product={product} search={search} />;
+  }
+
+  return <ActivationProductColumn product={product} search={search} />;
 }
 
 export default function CdkKeysPage() {
@@ -321,6 +635,9 @@ export default function CdkKeysPage() {
         id: item.id,
         slug: normalizeProductKey(item.slug),
         title: item.title,
+        tags: Array.isArray(item.tags) ? item.tags : [],
+        deliveryType: item.deliveryType,
+        deliveryMethod: item.deliveryMethod,
       }));
   }, [productsQuery.data]);
 
@@ -355,4 +672,3 @@ function normalizeProductKey(value: string) {
     .replace(/-+$/, "");
   return normalized || "chatgpt";
 }
-
