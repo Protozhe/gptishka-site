@@ -225,6 +225,12 @@ header.is-scrolled {
   border-color: rgba(255, 255, 255, 0.72);
 }
 
+.nav > .lang-switch {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+}
+
 .lang-current {
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(247, 252, 255, 0.52));
 }
