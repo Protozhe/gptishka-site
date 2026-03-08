@@ -1,6 +1,7 @@
 ﻿import { Currency } from "@prisma/client";
 import { Router } from "express";
 import { asyncHandler } from "../../common/http/async-handler";
+import { resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { toRub } from "../../common/utils/fx";
 import { prisma } from "../../config/prisma";
 
@@ -63,6 +64,7 @@ publicProductsRouter.get(
         category: localizedCategory(item.category, lang),
         tags: item.tags,
         badge: resolveBadge(item.tags),
+        deliveryType: resolveProductDeliveryType(item.tags),
       })),
     });
   })

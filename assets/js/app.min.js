@@ -345,6 +345,7 @@ document.querySelectorAll("a[href]").forEach(link => {
         previewTitle: "Plan details",
         previewIncluded: "What's included",
         previewPay: "Pay for this plan",
+        previewPayWithAmount: amountLabel => `Pay (${amountLabel})`,
         previewClose: "Close",
         previewNoDetails: "Details will appear here shortly.",
         cardPromoPlaceholder: "Promo code",
@@ -392,6 +393,7 @@ document.querySelectorAll("a[href]").forEach(link => {
         previewTitle: "Детали тарифа",
         previewIncluded: "Что входит",
         previewPay: "Оплатить этот тариф",
+        previewPayWithAmount: amountLabel => `Оплатить (${amountLabel})`,
         previewClose: "Закрыть",
         previewNoDetails: "Описание появится в ближайшее время.",
         cardPromoPlaceholder: "Промокод",
@@ -421,6 +423,7 @@ document.querySelectorAll("a[href]").forEach(link => {
   let productPreviewPromoInputEl = null;
   let productPreviewPromoApplyBtnEl = null;
   let productPreviewPromoMsgEl = null;
+  let productPreviewPriceEl = null;
   let previewItem = null;
 
   function normalizePromoCodeInput(value) {
@@ -608,8 +611,9 @@ document.querySelectorAll("a[href]").forEach(link => {
       .replaceAll("'", "&#39;");
   }
 
-  function setActivePromoCode(code) {
+  function setActivePromoCode(code, options = {}) {
     const normalized = normalizePromoCodeInput(code);
+    const skipValidation = Boolean(options && options.skipValidation);
     activePromoCode = normalized;
     savePromoCode(normalized);
     if (headerCartPromoInputEl) headerCartPromoInputEl.value = normalized;
@@ -618,9 +622,18 @@ document.querySelectorAll("a[href]").forEach(link => {
     if (productPreviewPromoInputEl && document.activeElement !== productPreviewPromoInputEl) {
       productPreviewPromoInputEl.value = normalized;
     }
-    if (productPreviewPromoMsgEl) {
-      productPreviewPromoMsgEl.textContent = normalized ? TEXT.promoAccepted : "";
+
+    if (skipValidation) return;
+
+    if (!normalized) {
+      promoValidationState = "idle";
+      promoDiscountAmount = 0;
+      promoValidationContextKey = "";
+      renderCart();
+      return;
     }
+
+    void validatePromoCodeViaBackend(normalized);
   }
 
   function getCardPromoCode(card) {
@@ -703,6 +716,22 @@ document.querySelectorAll("a[href]").forEach(link => {
       }
     }
     return "";
+  }
+
+  function resolveDeliveryType(itemDeliveryType, tags) {
+    const fromItem = String(itemDeliveryType || "").trim().toLowerCase();
+    if (fromItem === "credentials" || fromItem === "manual") return "credentials";
+    if (fromItem === "activation" || fromItem === "token") return "activation";
+    if (Array.isArray(tags)) {
+      const fromTags = tags
+        .map(tag => String(tag || "").trim().toLowerCase())
+        .find(tag => tag.startsWith("delivery:"));
+      if (fromTags) {
+        const value = fromTags.split(":")[1] || "";
+        if (value === "credentials" || value === "manual") return "credentials";
+      }
+    }
+    return "activation";
   }
 
   function parseDescriptionLines(description) {
@@ -801,6 +830,158 @@ document.querySelectorAll("a[href]").forEach(link => {
     );
   }
 
+  function renderProductPreviewPrice(basePrice, finalPrice, currency) {
+    if (!productPreviewPriceEl) return;
+    const baseAmount = Math.max(0, toAmount(basePrice));
+    const finalAmount = Math.max(0, toAmount(finalPrice));
+    const baseLabel = formatPriceByCurrency(baseAmount, currency);
+    const finalLabel = formatPriceByCurrency(finalAmount, currency);
+    const hasDiscount = finalAmount < baseAmount - 0.000001;
+
+    if (!hasDiscount) {
+      productPreviewPriceEl.textContent = baseLabel;
+      return;
+    }
+
+    productPreviewPriceEl.innerHTML =
+      '<span class="product-preview-modal__price-old">' +
+      escapeHtml(baseLabel) +
+      '</span><span class="product-preview-modal__price-current">' +
+      escapeHtml(finalLabel) +
+      "</span>";
+  }
+
+  function renderProductCardPrice(productId, basePrice, finalPrice, currency) {
+    const targetProductId = String(productId || "").trim();
+    if (!targetProductId) return;
+
+    if (!cards || !cards.length) refreshCards();
+    const card = cards.find(node => String(node.getAttribute("data-product-id") || "").trim() === targetProductId);
+    if (!card) return;
+
+    const priceEl = card.querySelector(".price");
+    if (!priceEl) return;
+
+    const baseAmount = Math.max(0, toAmount(basePrice));
+    const finalAmount = Math.max(0, toAmount(finalPrice));
+    const baseLabel = formatPriceByCurrency(baseAmount, currency);
+    const finalLabel = formatPriceByCurrency(finalAmount, currency);
+    const hasDiscount = finalAmount < baseAmount - 0.000001;
+
+    card.classList.toggle("has-promo-price", hasDiscount);
+    if (!hasDiscount) {
+      priceEl.textContent = baseLabel;
+      return;
+    }
+
+    priceEl.innerHTML =
+      '<span class="price-card__price-old">' +
+      escapeHtml(baseLabel) +
+      '</span><span class="price-card__price-current">' +
+      escapeHtml(finalLabel) +
+      "</span>";
+  }
+
+  function renderProductPreviewPayButton(finalPrice, currency) {
+    if (!productPreviewPayBtnEl) return;
+    const amountLabel = formatPriceByCurrency(Math.max(0, toAmount(finalPrice)), currency);
+    productPreviewPayBtnEl.textContent = TEXT.previewPayWithAmount(amountLabel);
+  }
+
+  async function applyPreviewPromoCode(code) {
+    if (!previewItem) return;
+    const normalized = normalizePromoCodeInput(code);
+    const productId = String(previewItem.productId || "").trim();
+    const basePrice = Math.max(0, toAmount(previewItem.price));
+    const currency = String(previewItem.currency || "RUB").trim() || "RUB";
+
+    setActivePromoCode(normalized, { skipValidation: true });
+
+    if (!normalized) {
+      promoValidationState = "idle";
+      promoDiscountAmount = 0;
+      promoValidationContextKey = "";
+      renderProductPreviewPrice(basePrice, basePrice, currency);
+      renderProductPreviewPayButton(basePrice, currency);
+      renderProductCardPrice(productId, basePrice, basePrice, currency);
+      if (productPreviewPromoMsgEl) {
+        productPreviewPromoMsgEl.textContent = "";
+        applyPromoMessageState(productPreviewPromoMsgEl, "idle");
+      }
+      renderCart();
+      return;
+    }
+
+    if (!productId) {
+      renderProductPreviewPrice(basePrice, basePrice, currency);
+      renderProductPreviewPayButton(basePrice, currency);
+      if (productPreviewPromoMsgEl) {
+        productPreviewPromoMsgEl.textContent = TEXT.promoAccepted + ". " + formatPriceByCurrency(basePrice, currency);
+        applyPromoMessageState(productPreviewPromoMsgEl, "valid");
+      }
+      renderCart();
+      return;
+    }
+
+    if (productPreviewPromoMsgEl) {
+      productPreviewPromoMsgEl.textContent = TEXT.promoChecking;
+      applyPromoMessageState(productPreviewPromoMsgEl, "checking");
+    }
+
+    try {
+      const response = await fetch("/api/promo/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: normalized,
+          productId,
+          quantity: 1,
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      const isValid = Boolean(response.ok && payload && payload.valid);
+      if (isValid) {
+        const discountAmount = Math.max(0, toAmount(payload.discountAmount));
+        const finalPrice = Math.max(0, toAmount(payload.finalPrice || basePrice - discountAmount));
+        promoValidationState = "valid";
+        promoDiscountAmount = discountAmount;
+        promoValidationContextKey = [normalized, productId, "1"].join("|");
+        renderProductPreviewPrice(basePrice, finalPrice, currency);
+        renderProductPreviewPayButton(finalPrice, currency);
+        renderProductCardPrice(productId, basePrice, finalPrice, currency);
+        if (productPreviewPromoMsgEl) {
+          productPreviewPromoMsgEl.textContent =
+            TEXT.promoAccepted + (discountAmount > 0 ? " (-" + formatRub(discountAmount) + ")" : "") + ". " + formatPriceByCurrency(finalPrice, currency);
+          applyPromoMessageState(productPreviewPromoMsgEl, "valid");
+        }
+      } else {
+        promoValidationState = "invalid";
+        promoDiscountAmount = 0;
+        promoValidationContextKey = [normalized, productId, "1"].join("|");
+        renderProductPreviewPrice(basePrice, basePrice, currency);
+        renderProductPreviewPayButton(basePrice, currency);
+        renderProductCardPrice(productId, basePrice, basePrice, currency);
+        if (productPreviewPromoMsgEl) {
+          productPreviewPromoMsgEl.textContent = TEXT.promoInvalid;
+          applyPromoMessageState(productPreviewPromoMsgEl, "invalid");
+        }
+      }
+    } catch (_) {
+      promoValidationState = "invalid";
+      promoDiscountAmount = 0;
+      promoValidationContextKey = [normalized, productId, "1"].join("|");
+      renderProductPreviewPrice(basePrice, basePrice, currency);
+      renderProductPreviewPayButton(basePrice, currency);
+      renderProductCardPrice(productId, basePrice, basePrice, currency);
+      if (productPreviewPromoMsgEl) {
+        productPreviewPromoMsgEl.textContent = TEXT.promoInvalid;
+        applyPromoMessageState(productPreviewPromoMsgEl, "invalid");
+      }
+    }
+
+    renderCart();
+  }
+
   function closeProductPreviewModal() {
     if (!productPreviewModalEl) return;
     productPreviewModalEl.hidden = true;
@@ -810,6 +991,7 @@ document.querySelectorAll("a[href]").forEach(link => {
     productPreviewPromoInputEl = null;
     productPreviewPromoApplyBtnEl = null;
     productPreviewPromoMsgEl = null;
+    productPreviewPriceEl = null;
     previewItem = null;
   }
 
@@ -819,7 +1001,7 @@ document.querySelectorAll("a[href]").forEach(link => {
     const promoFromModal = normalizePromoCodeInput(
       productPreviewPromoInputEl ? productPreviewPromoInputEl.value : (previewItem.promoCode || activePromoCode)
     );
-    setActivePromoCode(promoFromModal);
+    setActivePromoCode(promoFromModal, { skipValidation: true });
 
     if (!cartPaymentModalEl || !cartPaymentModalOptions.length) {
       const directItem = previewItem;
@@ -896,7 +1078,7 @@ document.querySelectorAll("a[href]").forEach(link => {
       '<div class="product-preview-modal__head">',
       item.term ? '<div class="product-preview-modal__term">' + escapeHtml(item.term) + "</div>" : "",
       '<h3 class="product-preview-modal__title" id="productPreviewModalTitle">' + escapeHtml(item.title || item.product || TEXT.previewTitle) + "</h3>",
-      '<div class="product-preview-modal__price">' + escapeHtml(formatPriceByCurrency(item.price, item.currency)) + "</div>",
+      '<div class="product-preview-modal__price" id="productPreviewPrice">' + escapeHtml(formatPriceByCurrency(item.price, item.currency)) + "</div>",
       "</div>",
       mediaMarkup,
       '<section class="product-preview-modal__checkout">',
@@ -921,12 +1103,14 @@ document.querySelectorAll("a[href]").forEach(link => {
       mediaType: item.mediaType || model.mediaType,
       mediaUrl: item.mediaUrl || model.mediaUrl,
       mediaCaption: item.mediaCaption || model.mediaCaption,
+      deliveryType: item.deliveryType || "activation",
     };
 
     productPreviewEmailInputEl = document.getElementById("productPreviewEmailInput");
     productPreviewPromoInputEl = document.getElementById("productPreviewPromoInput");
     productPreviewPromoApplyBtnEl = document.getElementById("productPreviewPromoApplyBtn");
     productPreviewPromoMsgEl = document.getElementById("productPreviewPromoMsg");
+    productPreviewPriceEl = document.getElementById("productPreviewPrice");
 
     const storedEmail = String(localStorage.getItem("checkout_email") || "").trim().toLowerCase();
     if (productPreviewEmailInputEl) {
@@ -949,16 +1133,21 @@ document.querySelectorAll("a[href]").forEach(link => {
       productPreviewPromoInputEl.addEventListener("keydown", e => {
         if (e.key !== "Enter") return;
         e.preventDefault();
-        setActivePromoCode(productPreviewPromoInputEl.value || "");
+        applyPreviewPromoCode(productPreviewPromoInputEl.value || "");
       });
     }
     if (productPreviewPromoApplyBtnEl) {
       productPreviewPromoApplyBtnEl.addEventListener("click", () => {
-        setActivePromoCode(productPreviewPromoInputEl ? productPreviewPromoInputEl.value : "");
+        applyPreviewPromoCode(productPreviewPromoInputEl ? productPreviewPromoInputEl.value : "");
       });
     }
-    if (productPreviewPromoMsgEl) {
-      productPreviewPromoMsgEl.textContent = effectivePromo ? TEXT.promoAccepted : "";
+    renderProductPreviewPrice(previewItem.price, previewItem.price, previewItem.currency);
+    renderProductPreviewPayButton(previewItem.price, previewItem.currency);
+    if (effectivePromo) {
+      applyPreviewPromoCode(effectivePromo);
+    } else if (productPreviewPromoMsgEl) {
+      productPreviewPromoMsgEl.textContent = "";
+      applyPromoMessageState(productPreviewPromoMsgEl, "idle");
     }
 
     productPreviewModalEl.hidden = false;
@@ -987,6 +1176,7 @@ document.querySelectorAll("a[href]").forEach(link => {
     const topHighlightsBlock = topHighlights.length ? '<div class="sub sub-top-list">' + topHighlightsHtml + "</div>" : "";
     const price = Math.max(0, toAmount(item.price));
     const currency = String(item.currency || "RUB").toUpperCase();
+    const deliveryType = resolveDeliveryType(item.deliveryType, tags);
     const badgeType = resolveBadge(item.badge, tags);
     const badgeLabelByType = {
       best: TEXT.badgeBest,
@@ -1026,7 +1216,8 @@ document.querySelectorAll("a[href]").forEach(link => {
       ' data-media-url="' + escapeHtml(descriptionModel.mediaUrl) + '"' +
       ' data-media-caption="' + escapeHtml(descriptionModel.mediaCaption) + '"' +
       ' data-price="' + escapeHtml(price) + '"' +
-      ' data-currency="' + escapeHtml(currency) + '">' +
+      ' data-currency="' + escapeHtml(currency) + '"' +
+      ' data-delivery-type="' + escapeHtml(deliveryType) + '">' +
       badge +
       "<h3>" + escapeHtml(title) + "</h3>" +
       '<div class="term">' + escapeHtml(term) + "</div>" +
@@ -1437,6 +1628,7 @@ document.querySelectorAll("a[href]").forEach(link => {
       mediaCaption: String(card.getAttribute("data-media-caption") || "").trim(),
       price: toAmount(card.getAttribute("data-price") || (priceNode ? priceNode.innerText : "")),
       currency: String(card.getAttribute("data-currency") || "RUB").trim() || "RUB",
+      deliveryType: String(card.getAttribute("data-delivery-type") || "activation").trim() || "activation",
     };
 
     if (!item.description) {

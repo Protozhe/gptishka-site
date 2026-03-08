@@ -4,8 +4,11 @@ import { allowRoles, requireAuth } from "../auth/auth.middleware";
 import {
   bulkPriceUpdate,
   createProduct,
+  deleteProductCredential,
   deleteProduct,
   getProduct,
+  importProductCredentials,
+  listProductCredentials,
   listProducts,
   patchProductStatus,
   translateRuToEn,
@@ -15,6 +18,8 @@ import {
 import {
   bulkPriceSchema,
   createProductSchema,
+  importProductCredentialsSchema,
+  productCredentialsQuerySchema,
   productQuerySchema,
   statusPatchSchema,
   translateRuToEnSchema,
@@ -34,4 +39,7 @@ productsRouter.put("/:id", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateBo
 productsRouter.patch("/:id/status", allowRoles(["OWNER", "ADMIN"]), validateBody(statusPatchSchema), patchProductStatus);
 productsRouter.patch("/bulk/price", allowRoles(["OWNER", "ADMIN"]), validateBody(bulkPriceSchema), bulkPriceUpdate);
 productsRouter.post("/:id/images", allowRoles(["OWNER", "ADMIN"]), imageUpload.single("image"), uploadProductImage);
+productsRouter.get("/:id/credentials", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateQuery(productCredentialsQuerySchema), listProductCredentials);
+productsRouter.post("/:id/credentials/import", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateBody(importProductCredentialsSchema), importProductCredentials);
+productsRouter.delete("/:id/credentials/:credentialId", allowRoles(["OWNER", "ADMIN", "MANAGER"]), deleteProductCredential);
 productsRouter.delete("/:id", allowRoles(["OWNER", "ADMIN"]), deleteProduct);

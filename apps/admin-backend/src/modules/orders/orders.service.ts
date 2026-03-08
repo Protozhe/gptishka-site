@@ -9,6 +9,8 @@ import { env } from "../../config/env";
 import { paymentWebhookService } from "../payments/payment-webhook.service";
 import { activationStore, type ActivationRecord } from "./activation.store";
 import { deliverProduct } from "./delivery.service";
+import { resolveProductDeliveryType } from "../../common/utils/product-delivery";
+import { manualCredentialsStore } from "../products/manual-credentials.store";
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
@@ -222,6 +224,36 @@ export const ordersService = {
 
   async getActivation(orderId: string, orderToken?: string) {
     const order = await assertPaidOrderAccess(orderId, orderToken);
+    const fullOrder = await getOrderWithFirstItem(order.id);
+    const firstItem = fullOrder?.items?.[0];
+    const deliveryType = resolveProductDeliveryType(firstItem?.product?.tags || []);
+
+    if (deliveryType === "credentials") {
+      await deliverProduct(order);
+      const assigned = manualCredentialsStore.findByOrderId(order.id);
+      if (assigned && String(assigned.productId || "").trim() === String(firstItem?.productId || "").trim()) {
+        return {
+          orderId: order.id,
+          deliveryMode: "credentials",
+          status: "credentials_ready",
+          credentials: {
+            login: assigned.login,
+            password: assigned.password,
+          },
+          supportUrl: "https://t.me/gptishkasupp",
+          message: "Данные для входа доступны ниже.",
+        };
+      }
+
+      return {
+        orderId: order.id,
+        deliveryMode: "credentials",
+        status: "pending_manual",
+        supportUrl: "https://t.me/gptishkasupp",
+        message:
+          "Свободные данные для входа сейчас отсутствуют. Напишите в поддержку или ожидайте письмо с данными на email.",
+      };
+    }
 
     const activation = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
     if (!activation) {
@@ -250,11 +282,18 @@ export const ordersService = {
   },
 
   async startActivation(orderId: string, token: string, orderToken?: string) {
+    const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
+    if (String(activationInfo?.deliveryMode || "") === "credentials") {
+      throw new AppError("This product is delivered via login/password. Token activation is not required.", 409);
+    }
     return withActivationOrderLock(orderId, async () => startActivationUnsafe(orderId, token, orderToken));
   },
 
   async validateActivationToken(orderId: string, token: string, orderToken?: string) {
-    await this.getActivation(orderId, orderToken);
+    const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
+    if (String(activationInfo?.deliveryMode || "") === "credentials") {
+      throw new AppError("This product is delivered via login/password. Token activation is not required.", 409);
+    }
 
     const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
     if (!stored?.cdk) {
@@ -322,7 +361,10 @@ export const ordersService = {
     return withActivationOrderLock(orderId, async () => {
       const order = await assertPaidOrderAccess(orderId, orderToken);
 
-      await this.getActivation(orderId, orderToken);
+      const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
+      if (String(activationInfo?.deliveryMode || "") === "credentials") {
+        throw new AppError("This product is delivered via login/password. Token activation is not required.", 409);
+      }
       const current = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
       if (current?.status === "success") {
         throw new AppError("Activation is already completed", 409);
@@ -394,7 +436,10 @@ export const ordersService = {
 
   async getActivationTask(orderId: string, taskId: string, orderToken?: string) {
     assertOrderId(orderId);
-    await this.getActivation(orderId, orderToken);
+    const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
+    if (String(activationInfo?.deliveryMode || "") === "credentials") {
+      throw new AppError("This product is delivered via login/password. Token activation is not required.", 409);
+    }
     const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
     const payload = await fetchActivationTaskPayload(taskId, stored?.deviceId || null);
     updateActivationFromProviderPayload(orderId, taskId, payload);
@@ -457,6 +502,58 @@ export const ordersService = {
       },
     });
     if (!order) throw new AppError("Order not found", 404);
+    const product = order.items[0]?.product;
+    const deliveryType = resolveProductDeliveryType(product?.tags || []);
+
+    if (deliveryType === "credentials") {
+      if (order.status === OrderStatus.PAID) {
+        await deliverProduct(order);
+      }
+      const assigned = manualCredentialsStore.findByOrderId(id);
+      const hasCredentials = Boolean(
+        assigned &&
+          String(assigned.productId || "").trim() === String(order.items[0]?.productId || "").trim()
+      );
+      const certainty =
+        order.status !== OrderStatus.PAID
+          ? {
+              code: "ORDER_NOT_PAID",
+              label: "Заказ не оплачен",
+            }
+          : hasCredentials
+          ? {
+              code: "CREDENTIALS_READY",
+              label: "Логин и пароль выданы",
+            }
+          : {
+              code: "CREDENTIALS_PENDING",
+              label: "Ожидает ручной выдачи",
+            };
+
+      return {
+        orderId: order.id,
+        orderStatus: order.status,
+        emailMasked: maskEmail(order.email),
+        deliveryMode: "credentials",
+        product: product
+          ? {
+              id: product.id,
+              slug: product.slug,
+              title: product.title,
+            }
+          : null,
+        activation: null,
+        credentials: hasCredentials
+          ? {
+              login: assigned!.login,
+              password: assigned!.password,
+              assignedAt: assigned!.assignedAt,
+            }
+          : null,
+        certainty,
+        isActivatedConfirmed: hasCredentials,
+      };
+    }
 
     let activation = normalizeActivationRecordForRead(activationStore.findByOrderId(id));
     if (!activation && order.status === OrderStatus.PAID) {
@@ -489,7 +586,6 @@ export const ordersService = {
       activation = normalizeActivationRecordForRead(activationStore.findByOrderId(id)) || activation;
     }
 
-    const product = order.items[0]?.product;
     const certainty = deriveActivationCertainty(order.status, activation?.status, activation?.verificationState);
 
     return {
@@ -576,6 +672,9 @@ export const ordersService = {
         currency: order.currency,
       });
       await sendTelegramNotification(`Order paid: ${order.id}, ${order.email}, ${order.totalAmount} ${order.currency}`);
+      if (order.status !== OrderStatus.PAID) {
+        await deliverProduct(order as any);
+      }
     }
 
     await writeAuditLog({
@@ -622,6 +721,7 @@ export const ordersService = {
       amount: Number(order.totalAmount),
       currency: order.currency,
     });
+    await deliverProduct(order as any);
 
     await writeAuditLog({
       userId: actor?.userId,
@@ -667,6 +767,19 @@ async function assertPaidOrderAccess(orderId: string, orderToken?: string) {
   }
 
   return order;
+}
+
+async function getOrderWithFirstItem(orderId: string) {
+  return prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      items: {
+        include: { product: true },
+        orderBy: { id: "asc" },
+        take: 1,
+      },
+    },
+  });
 }
 
 type PendingPaymentProbeOrder = {

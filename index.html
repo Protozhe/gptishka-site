@@ -68,7 +68,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/logo.min.css">
 <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2">
-<link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260308f" />
+<link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260308h" />
 <link rel="stylesheet" href="/assets/css/trust-promo.css?v=20260305g">
 
 <!-- GOOGLE FONTS -->
@@ -231,13 +231,43 @@
     </div>
   </section>
 </main>
-  
+
+<div class="payment-method-modal" id="cartPaymentModal" hidden aria-hidden="true">
+  <button
+    type="button"
+    class="payment-method-modal__backdrop"
+    data-payment-modal-close
+    aria-label="Закрыть выбор способа оплаты"
+  ></button>
+  <div class="payment-method-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="paymentMethodModalTitle">
+    <button type="button" class="payment-method-modal__close" data-payment-modal-close aria-label="Закрыть">&times;</button>
+    <h3 class="payment-method-modal__title" id="paymentMethodModalTitle">Выберите способ оплаты</h3>
+    <p class="payment-method-modal__subtitle">После выбора вы перейдете к безопасной странице оплаты.</p>
+    <div class="payment-method-modal__list">
+      <button type="button" class="payment-method-modal__option is-active" data-payment-method-modal-option="enot" aria-pressed="true">
+        <span class="payment-method-modal__icon" aria-hidden="true">E</span>
+        <span class="payment-method-modal__text">
+          <span class="payment-method-modal__name">Enot.io</span>
+          <span class="payment-method-modal__hint">СБП и карты РФ/СНГ</span>
+        </span>
+      </button>
+      <button type="button" class="payment-method-modal__option" data-payment-method-modal-option="lava" aria-pressed="false">
+        <span class="payment-method-modal__icon" aria-hidden="true">L</span>
+        <span class="payment-method-modal__text">
+          <span class="payment-method-modal__name">Lava</span>
+          <span class="payment-method-modal__hint">СБП и банковские карты</span>
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
 
 <footer>
   <a class="footer-link" href="oferta.html">Публичная оферта</a> · <a class="footer-link" href="politika.html">Политика конфиденциальности</a> · <a class="footer-link" href="refund.html">Условия возврата</a>
   <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
 </footer>
-<script src="/assets/js/app.min.js?v=20260308h" defer></script>
+<script src="/assets/js/app.min.js?v=20260308k" defer></script>
 <script src="/assets/js/support-widget.js?v=20260305a" defer></script>
 </body>
 </html>

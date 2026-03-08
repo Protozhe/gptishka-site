@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="/assets/css/logo.min.css">
   
   <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2">
-<link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260308d" />
+<link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260308g" />
 
   <style>
     .redeem-page {
@@ -164,6 +164,13 @@
     .redeem-meta .warn {
       color: #b42318;
       font-weight: 700;
+    }
+
+    .redeem-manual-hint {
+      margin: 10px 0 0;
+      color: #4b5563;
+      font-size: 14px;
+      line-height: 1.45;
     }
 
     .redeem-actions {
@@ -553,7 +560,7 @@
   <main class="page redeem-page">
     <section class="redeem-card">
       <h1 class="redeem-title">Extend / Activate</h1>
-      <p class="redeem-subtitle">After payment, paste your account token and click "Activate".</p>
+      <p class="redeem-subtitle">After payment, complete your order delivery using the instructions below.</p>
 
       <div class="redeem-grid">
         <section class="redeem-block">
@@ -564,7 +571,7 @@
           </div>
         </section>
 
-        <section class="redeem-block">
+        <section class="redeem-block" id="tokenBlock">
           <p class="redeem-label">Account token</p>
           <details class="redeem-guide" open>
             <summary>Where to get the account token</summary>
@@ -588,6 +595,27 @@
             <span id="tokenInfo">Chars: 0</span>
             <span id="tokenWarn">We do not store the token. It is used only for activation.</span>
           </div>
+        </section>
+
+        <section class="redeem-block" id="manualCredentialsBlock" style="display:none">
+          <p class="redeem-label">Login details</p>
+          <div class="redeem-order-row">
+            <span id="manualLoginValue" class="redeem-order-id">-</span>
+            <button id="copyLoginBtn" type="button" class="redeem-btn">Copy login</button>
+          </div>
+          <div class="redeem-order-row" style="margin-top:8px;">
+            <span id="manualPasswordValue" class="redeem-order-id">-</span>
+            <button id="copyPasswordBtn" type="button" class="redeem-btn">Copy password</button>
+          </div>
+          <p id="manualCredentialsHint" class="redeem-manual-hint"></p>
+          <a
+            id="manualSupportBtn"
+            class="redeem-btn redeem-btn-primary"
+            href="https://t.me/gptishkasupp"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="display:none; margin-top:8px;"
+          >Contact support</a>
         </section>
       </div>
 
@@ -632,7 +660,7 @@
     <span class="footer-copy">© 2026 GPTishka. All rights reserved.</span>
   </footer>
 
-  <script src="/assets/js/app.min.js?v=20260305a" defer></script>
+  <script src="/assets/js/app.min.js?v=20260308i" defer></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const orderId = String(params.get('order_id') || params.get('orderId') || '').trim();
@@ -640,6 +668,7 @@
 
     const orderIdEl = document.getElementById('orderId');
     const copyOrderIdBtn = document.getElementById('copyOrderIdBtn');
+    const tokenBlock = document.getElementById('tokenBlock');
     const tokenInput = document.getElementById('tokenInput');
     const tokenInfo = document.getElementById('tokenInfo');
     const tokenWarn = document.getElementById('tokenWarn');
@@ -647,6 +676,13 @@
     const pasteBtn = document.getElementById('pasteBtn');
     const clearBtn = document.getElementById('clearBtn');
     const actionsRow = document.getElementById('actionsRow');
+    const manualCredentialsBlock = document.getElementById('manualCredentialsBlock');
+    const manualLoginValue = document.getElementById('manualLoginValue');
+    const manualPasswordValue = document.getElementById('manualPasswordValue');
+    const manualCredentialsHint = document.getElementById('manualCredentialsHint');
+    const manualSupportBtn = document.getElementById('manualSupportBtn');
+    const copyLoginBtn = document.getElementById('copyLoginBtn');
+    const copyPasswordBtn = document.getElementById('copyPasswordBtn');
 
     const startBtn = document.getElementById('startBtn');
     const checkBtn = document.getElementById('checkBtn');
@@ -681,6 +717,7 @@
     let validateTimer = null;
     let tokenValidatedOk = false;
     let lastValidateReason = '';
+    let isCredentialsDelivery = false;
 
     // By default, allow retry only after explicit failure or pending timeout.
     retryNewKeyBtn.disabled = true;
@@ -726,6 +763,38 @@
     }
 
     restoreReviewReward();
+
+    function setCredentialsDeliveryMode(payload) {
+      isCredentialsDelivery = true;
+      stopPolling();
+      if (tokenBlock) tokenBlock.style.display = 'none';
+      if (actionsRow) actionsRow.style.display = 'none';
+      if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'block';
+
+      const status = String(payload?.status || '').trim().toLowerCase();
+      const credentials = payload?.credentials && typeof payload.credentials === 'object' ? payload.credentials : null;
+      const login = String(credentials?.login || '').trim();
+      const password = String(credentials?.password || '').trim();
+      const supportUrl = String(payload?.supportUrl || 'https://t.me/gptishkasupp').trim();
+      const defaultMessage = 'No free login details are available right now. Contact support or wait for an email with your data.';
+      const message = String(payload?.message || '').trim() || defaultMessage;
+
+      if (manualLoginValue) manualLoginValue.textContent = login || 'Login is not assigned yet';
+      if (manualPasswordValue) manualPasswordValue.textContent = password || 'Password is not assigned yet';
+      if (manualCredentialsHint) manualCredentialsHint.textContent = message;
+
+      const hasCredentials = status === 'credentials_ready' && login && password;
+      if (manualSupportBtn) {
+        manualSupportBtn.href = supportUrl || 'https://t.me/gptishkasupp';
+        manualSupportBtn.style.display = hasCredentials ? 'none' : 'inline-flex';
+      }
+
+      if (hasCredentials) {
+        setStatus('success', 'Login details are ready. Copy login and password below.', false);
+      } else {
+        setStatus('pending', message, false);
+      }
+    }
 
     function readStoredActivationResumeContext() {
       try {
@@ -833,8 +902,15 @@
 
     copyOrderIdBtn.addEventListener('click', () => copyText(orderId, 'Order ID copied'));
     copyTaskBtn.addEventListener('click', () => copyText(currentTaskId, 'Task ID copied'));
+    if (copyLoginBtn) {
+      copyLoginBtn.addEventListener('click', () => copyText(manualLoginValue ? manualLoginValue.textContent : '', 'Login copied'));
+    }
+    if (copyPasswordBtn) {
+      copyPasswordBtn.addEventListener('click', () => copyText(manualPasswordValue ? manualPasswordValue.textContent : '', 'Password copied'));
+    }
 
     startBtn.addEventListener('click', async () => {
+      if (isCredentialsDelivery) return;
       const token = getTokenForSubmit();
       if (!token) return;
 
@@ -880,6 +956,7 @@
     });
 
     checkBtn.addEventListener('click', async () => {
+      if (isCredentialsDelivery) return;
       if (!currentTaskId) {
         setStatus('pending', 'Start activation first', false);
         return;
@@ -890,6 +967,7 @@
     });
 
     retryNewKeyBtn.addEventListener('click', async () => {
+      if (isCredentialsDelivery) return;
       if (isRetryRunning) return;
       const now = Date.now();
       const remain = RETRY_COOLDOWN_MS - (now - lastRetryAt);
@@ -950,6 +1028,10 @@
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
           setStatus('error', payload?.message || 'Failed to load activation status', false);
+          return;
+        }
+        if (String(payload?.deliveryMode || '').toLowerCase() === 'credentials') {
+          setCredentialsDeliveryMode(payload);
           return;
         }
         const activationStatus = String(payload?.status || '').trim().toLowerCase();
@@ -1106,11 +1188,21 @@
     }
 
     function updateStartButtonState() {
+      if (isCredentialsDelivery) {
+        startBtn.disabled = true;
+        return;
+      }
       const hasValue = Boolean(orderId && String(tokenInput.value || '').trim());
       startBtn.disabled = !hasValue || !tokenValidatedOk;
     }
 
     function scheduleValidateToken() {
+      if (isCredentialsDelivery) {
+        tokenValidatedOk = true;
+        if (tokenWarn) tokenWarn.textContent = '';
+        updateStartButtonState();
+        return;
+      }
       tokenValidatedOk = false;
       lastValidateReason = '';
       updateStartButtonState();
@@ -1122,6 +1214,11 @@
     }
 
     async function validateTokenNow() {
+      if (isCredentialsDelivery) {
+        tokenValidatedOk = true;
+        updateStartButtonState();
+        return true;
+      }
       const token = getTokenForSubmit();
       if (!orderId || !token) {
         tokenValidatedOk = false;

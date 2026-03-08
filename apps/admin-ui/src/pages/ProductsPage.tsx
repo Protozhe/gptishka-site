@@ -6,6 +6,7 @@ import { money } from "../lib/format";
 
 type BadgeType = "none" | "best" | "new" | "hit" | "sale" | "popular" | "limited" | "gift" | "pro";
 type MediaType = "none" | "image" | "video";
+type ProductDeliveryType = "activation" | "credentials";
 
 type ProductImage = {
   id: string;
@@ -26,6 +27,17 @@ type Product = {
   tags: string[];
   images?: ProductImage[];
   isActive: boolean;
+  deliveryType?: ProductDeliveryType;
+};
+
+type ManualCredential = {
+  id: string;
+  login: string;
+  password: string;
+  status: "available" | "assigned";
+  orderId: string | null;
+  email: string | null;
+  assignedAt: string | null;
 };
 
 const MEDIA_LINE_RE = /^media\s*:\s*(image|video)\s*:\s*(.+)$/i;
@@ -121,6 +133,15 @@ function withBadgeTag(tags: string[] = [], badge: BadgeType): string[] {
   return [...cleaned, `badge:${badge}`];
 }
 
+function resolveDeliveryType(item: Product): ProductDeliveryType {
+  const fromItem = String(item.deliveryType || "").trim().toLowerCase();
+  if (fromItem === "credentials") return "credentials";
+  const hasCredentialsTag = (item.tags || [])
+    .map((tag) => String(tag || "").trim().toLowerCase())
+    .some((tag) => tag === "delivery:credentials");
+  return hasCredentialsTag ? "credentials" : "activation";
+}
+
 function buildTags(title: string, badge: BadgeType): string[] {
   const tags = title
     .toLowerCase()
@@ -168,11 +189,14 @@ export default function ProductsPage() {
   const [description, setDescription] = useState("");
   const [descriptionEn, setDescriptionEn] = useState("");
   const [badge, setBadge] = useState<BadgeType>("none");
+  const [deliveryType, setDeliveryType] = useState<ProductDeliveryType>("activation");
   const [editingTags, setEditingTags] = useState<string[]>([]);
   const [mediaType, setMediaType] = useState<MediaType>("none");
   const [mediaUrl, setMediaUrl] = useState("");
   const [mediaCaption, setMediaCaption] = useState("");
   const [editingImages, setEditingImages] = useState<ProductImage[]>([]);
+  const [credentialsImportText, setCredentialsImportText] = useState("");
+  const [credentialsMessage, setCredentialsMessage] = useState<string | null>(null);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -190,6 +214,16 @@ export default function ProductsPage() {
   const products = useQuery({
     queryKey: ["products", params],
     queryFn: async () => (await api.get("/products", { params })).data,
+  });
+
+  const credentials = useQuery({
+    queryKey: ["product-credentials", editingId],
+    enabled: Boolean(editingId && deliveryType === "credentials"),
+    queryFn: async () =>
+      (await api.get(`/products/${editingId}/credentials`, { params: { status: undefined } })).data as {
+        items: ManualCredential[];
+        stats: { total: number; available: number; assigned: number };
+      },
   });
 
   const toggle = useMutation({
@@ -230,6 +264,26 @@ export default function ProductsPage() {
     },
   });
 
+  const importCredentials = useMutation({
+    mutationFn: async ({ id, text }: { id: string; text: string }) =>
+      (await api.post(`/products/${id}/credentials/import`, { text })).data as {
+        inserted: number;
+        skipped: number;
+        stats: { total: number; available: number; assigned: number };
+      },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["product-credentials", editingId] });
+    },
+  });
+
+  const deleteCredential = useMutation({
+    mutationFn: async ({ productId, credentialId }: { productId: string; credentialId: string }) =>
+      api.delete(`/products/${productId}/credentials/${credentialId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["product-credentials", editingId] });
+    },
+  });
+
   function resetForm() {
     setEditingId(null);
     setTitle("");
@@ -238,11 +292,14 @@ export default function ProductsPage() {
     setDescription("");
     setDescriptionEn("");
     setBadge("none");
+    setDeliveryType("activation");
     setEditingTags([]);
     setMediaType("none");
     setMediaUrl("");
     setMediaCaption("");
     setEditingImages([]);
+    setCredentialsImportText("");
+    setCredentialsMessage(null);
     setUploadFile(null);
     setUploadMessage(null);
     setFormError(null);
@@ -275,11 +332,14 @@ export default function ProductsPage() {
     setDescription(parsedRu.cleanDescription || "");
     setDescriptionEn(parsedEn.cleanDescription || "");
     setBadge(getBadgeFromTags(item.tags || []));
+    setDeliveryType(resolveDeliveryType(item));
     setEditingTags(Array.isArray(item.tags) ? item.tags : []);
     setMediaType(preferredMedia.mediaType || "none");
     setMediaUrl(preferredMedia.mediaUrl || "");
     setMediaCaption(preferredMedia.mediaCaption || "");
     setEditingImages(Array.isArray(item.images) ? item.images : []);
+    setCredentialsImportText("");
+    setCredentialsMessage(null);
     setUploadFile(null);
     setUploadMessage(null);
     setFormError(null);
@@ -352,6 +412,7 @@ export default function ProductsPage() {
           descriptionEn: finalDescriptionEn,
           price: normalizedPrice,
           tags: withBadgeTag(editingTags, badge),
+          deliveryType,
         },
       });
       resetForm();
@@ -370,6 +431,7 @@ export default function ProductsPage() {
       tags: buildTags(cleanTitle, badge),
       stock: null,
       isActive: true,
+      deliveryType,
     });
 
     resetForm();
@@ -427,6 +489,41 @@ export default function ProductsPage() {
     }
   }
 
+  async function onImportCredentialsClick() {
+    setCredentialsMessage(null);
+    if (!editingId) {
+      setCredentialsMessage("Сначала выберите товар через «Редактировать».");
+      return;
+    }
+    if (deliveryType !== "credentials") {
+      setCredentialsMessage("Импорт доступен только для типа «Логин/пароль».");
+      return;
+    }
+    const text = String(credentialsImportText || "").trim();
+    if (!text) {
+      setCredentialsMessage("Добавьте строки формата login:password.");
+      return;
+    }
+
+    try {
+      const result = await importCredentials.mutateAsync({ id: editingId, text });
+      setCredentialsImportText("");
+      setCredentialsMessage(`Импорт завершен: добавлено ${result.inserted}, пропущено ${result.skipped}.`);
+    } catch (error) {
+      setCredentialsMessage(getRequestErrorMessage(error, "Не удалось импортировать логины и пароли."));
+    }
+  }
+
+  async function onDeleteCredential(productId: string, credentialId: string) {
+    setCredentialsMessage(null);
+    try {
+      await deleteCredential.mutateAsync({ productId, credentialId });
+      setCredentialsMessage("Запись удалена.");
+    } catch (error) {
+      setCredentialsMessage(getRequestErrorMessage(error, "Не удалось удалить запись."));
+    }
+  }
+
   const isSaving = createProduct.isPending || updateProduct.isPending;
   const saveError = createProduct.error || updateProduct.error;
   const saveErrorMessage = saveError
@@ -450,6 +547,10 @@ export default function ProductsPage() {
             <option value="limited">Ограничено</option>
             <option value="gift">Бонус</option>
             <option value="pro">Pro</option>
+          </select>
+          <select className="input" value={deliveryType} onChange={(e) => setDeliveryType(e.target.value as ProductDeliveryType)}>
+            <option value="activation">Активация по токену</option>
+            <option value="credentials">Выдача логин/пароль</option>
           </select>
           <button className="btn-primary" type="submit" disabled={isSaving}>
             {isSaving ? "Сохраняем..." : editingId ? "Сохранить изменения" : "Добавить товар"}
@@ -554,6 +655,71 @@ export default function ProductsPage() {
             </div>
           )}
 
+          {editingId && deliveryType === "credentials" && (
+            <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
+              <div className="mb-2 text-sm font-semibold">Логин/пароль для автоматической выдачи</div>
+              <textarea
+                className="input min-h-24 w-full font-mono text-xs"
+                placeholder={"Формат: login:password\\nПо одной паре в строке"}
+                value={credentialsImportText}
+                onChange={(e) => setCredentialsImportText(e.target.value)}
+              />
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={onImportCredentialsClick}
+                  disabled={importCredentials.isPending}
+                >
+                  {importCredentials.isPending ? "Импортируем..." : "Импортировать пары"}
+                </button>
+                <span className="text-xs text-slate-600 dark:text-slate-300">
+                  {credentials.data?.stats
+                    ? `Всего: ${credentials.data.stats.total}, свободно: ${credentials.data.stats.available}, выдано: ${credentials.data.stats.assigned}`
+                    : "Загрузка пула..."}
+                </span>
+              </div>
+              {credentialsMessage && <div className="mt-2 text-xs text-slate-600 dark:text-slate-300">{credentialsMessage}</div>}
+              <div className="mt-3 overflow-x-auto">
+                <table className="min-w-full text-xs">
+                  <thead className="bg-slate-100 text-left dark:bg-slate-800">
+                    <tr>
+                      <th className="px-2 py-2">Логин</th>
+                      <th className="px-2 py-2">Пароль</th>
+                      <th className="px-2 py-2">Статус</th>
+                      <th className="px-2 py-2">Заказ</th>
+                      <th className="px-2 py-2">Действие</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(credentials.data?.items || []).map((cred) => (
+                      <tr key={cred.id} className="border-t border-slate-200 dark:border-slate-800">
+                        <td className="px-2 py-2 font-mono">{cred.login}</td>
+                        <td className="px-2 py-2 font-mono">{cred.password}</td>
+                        <td className="px-2 py-2">{cred.status === "available" ? "Свободен" : "Выдан"}</td>
+                        <td className="px-2 py-2">{cred.orderId || "-"}</td>
+                        <td className="px-2 py-2">
+                          {cred.status === "available" ? (
+                            <button
+                              type="button"
+                              className="btn-secondary"
+                              onClick={() => onDeleteCredential(editingId, cred.id)}
+                              disabled={deleteCredential.isPending}
+                            >
+                              Удалить
+                            </button>
+                          ) : (
+                            <span className="text-slate-400">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           <button className="btn-secondary md:col-span-4" type="button" onClick={onAutoTranslateClick} disabled={autoTranslate.isPending || isSaving}>
             {autoTranslate.isPending ? "Переводим RU -> EN..." : "Автоперевод RU -> EN"}
           </button>
@@ -592,6 +758,7 @@ export default function ProductsPage() {
                 <th className="px-4 py-3">Название</th>
                 <th className="px-4 py-3">Категория</th>
                 <th className="px-4 py-3">Цена</th>
+                <th className="px-4 py-3">Выдача</th>
                 <th className="px-4 py-3">Плашка</th>
                 <th className="px-4 py-3">Статус</th>
                 <th className="px-4 py-3">Действия</th>
@@ -600,6 +767,7 @@ export default function ProductsPage() {
             <tbody>
               {(Array.isArray(products.data?.items) ? products.data.items : []).map((item: Product) => {
                 const itemBadge = getBadgeFromTags(item.tags || []);
+                const itemDeliveryType = resolveDeliveryType(item);
                 return (
                   <tr className="border-t border-slate-200 dark:border-slate-800" key={item.id}>
                     <td className="px-4 py-3">
@@ -608,6 +776,7 @@ export default function ProductsPage() {
                     </td>
                     <td className="px-4 py-3">{item.category}</td>
                     <td className="px-4 py-3">{money(Number(item.price), item.currency)}</td>
+                    <td className="px-4 py-3">{itemDeliveryType === "credentials" ? "Логин/пароль" : "Активация"}</td>
                     <td className="px-4 py-3">{badgeLabel(itemBadge)}</td>
                     <td className="px-4 py-3">
                       <span className={`badge ${item.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-700"}`}>

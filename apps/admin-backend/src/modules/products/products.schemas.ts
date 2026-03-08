@@ -33,6 +33,7 @@ const productBody = z.object({
   tags: z.array(z.string().min(1).max(40)).max(20).default([]),
   stock: z.coerce.number().int().min(0).nullable().optional(),
   isActive: z.boolean().default(true),
+  deliveryType: z.enum(["activation", "credentials"]).default("activation"),
 });
 
 export const createProductSchema = productBody;
@@ -52,4 +53,14 @@ export const bulkPriceSchema = z.object({
 export const statusPatchSchema = z.object({
   isActive: z.boolean().optional(),
   isArchived: z.boolean().optional(),
+});
+
+export const productCredentialsQuerySchema = z.object({
+  status: z.enum(["available", "assigned"]).optional(),
+  q: z.string().max(120).optional(),
+});
+
+export const importProductCredentialsSchema = z.object({
+  rows: z.array(z.string().min(3).max(500)).max(5000).optional(),
+  text: z.string().max(1_000_000).optional(),
 });

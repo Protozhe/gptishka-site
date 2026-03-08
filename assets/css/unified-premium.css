@@ -416,6 +416,25 @@ header.is-scrolled {
   color: var(--premium-text);
 }
 
+.price-card.has-promo-price .price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.price-card__price-old {
+  font-size: 22px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+
+.price-card__price-current {
+  color: var(--premium-text);
+  font-weight: 800;
+}
+
 .price-card .price-actions {
   margin-top: 6px;
   display: grid;
@@ -622,6 +641,24 @@ body.is-product-modal-open {
 }
 
 .product-preview-modal__price {
+  color: #0f172a;
+  font-size: clamp(30px, 4.2vw, 42px);
+  font-weight: 800;
+  line-height: 1.1;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.product-preview-modal__price-old {
+  font-size: clamp(18px, 2.2vw, 24px);
+  font-weight: 700;
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+
+.product-preview-modal__price-current {
   color: #0f172a;
   font-size: clamp(30px, 4.2vw, 42px);
   font-weight: 800;
