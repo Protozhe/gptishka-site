@@ -1825,31 +1825,16 @@ document.addEventListener("click", e => {
   const numberLocale = isEnPage ? "en-US" : "ru-RU";
   const TEXT = isEnPage
     ? {
-        privacyLead: "Privacy mode: customer emails are shown only in masked format.",
-        totalLabel: "Activations",
-        realLabel: "Confirmed",
-        systemLabel: "Service",
-        onlineLabel: "Online",
-        realPrefix: "Confirmed activation",
-        systemPrefix: "Service event",
+        totalLabel: "total activations",
         emptyTicker: "Activation feed is updating...",
       }
     : {
-        privacyLead: "Режим приватности: email клиентов показывается только в маске.",
-        totalLabel: "Активации",
-        realLabel: "Подтвержденные",
-        systemLabel: "Сервисные",
-        onlineLabel: "Онлайн",
-        realPrefix: "Подтвержденная активация",
-        systemPrefix: "Сервисное событие",
+        totalLabel: "всего активаций",
         emptyTicker: "Лента активаций обновляется...",
       };
 
   let tickerTrack = null;
   let totalValueEl = null;
-  let realValueEl = null;
-  let systemValueEl = null;
-  let onlineValueEl = null;
   let isInitialized = false;
 
   function ensureSessionId() {
@@ -1889,17 +1874,10 @@ document.addEventListener("click", e => {
     ticker.setAttribute("aria-live", "polite");
     ticker.innerHTML = [
       '<div class="site-ticker__marquee">',
-      `  <span class="site-ticker__lead">${escapeHtml(TEXT.privacyLead)}</span>`,
       '  <div class="site-ticker__track" id="siteTickerTrack"></div>',
       "</div>",
       '<div class="site-ticker__stats">',
       `  <span class="site-ticker__stat"><span class="site-ticker__stat-label">${escapeHtml(TEXT.totalLabel)}:</span> <strong id="siteTickerSales">0</strong></span>`,
-      '  <span class="site-ticker__dot"></span>',
-      `  <span class="site-ticker__stat"><span class="site-ticker__stat-label">${escapeHtml(TEXT.realLabel)}:</span> <strong id="siteTickerReal">0</strong></span>`,
-      '  <span class="site-ticker__dot"></span>',
-      `  <span class="site-ticker__stat"><span class="site-ticker__stat-label">${escapeHtml(TEXT.systemLabel)}:</span> <strong id="siteTickerSystem">0</strong></span>`,
-      '  <span class="site-ticker__dot"></span>',
-      `  <span class="site-ticker__stat"><span class="site-ticker__stat-label">${escapeHtml(TEXT.onlineLabel)}:</span> <strong id="siteTickerOnline">0</strong></span>`,
       "</div>",
     ].join("");
 
@@ -1907,9 +1885,6 @@ document.addEventListener("click", e => {
 
     tickerTrack = document.getElementById("siteTickerTrack");
     totalValueEl = document.getElementById("siteTickerSales");
-    realValueEl = document.getElementById("siteTickerReal");
-    systemValueEl = document.getElementById("siteTickerSystem");
-    onlineValueEl = document.getElementById("siteTickerOnline");
   }
 
   function normalizeTickerEntries(stats) {
@@ -1918,8 +1893,7 @@ document.addEventListener("click", e => {
         .map(entry => {
           const email = String(entry?.email || "").trim();
           if (!email) return null;
-          const source = String(entry?.source || "real").toLowerCase() === "system" ? "system" : "real";
-          return { email, source };
+          return email;
         })
         .filter(Boolean);
     }
@@ -1927,8 +1901,7 @@ document.addEventListener("click", e => {
     if (Array.isArray(stats?.lastBuyers) && stats.lastBuyers.length) {
       return stats.lastBuyers
         .map(email => String(email || "").trim())
-        .filter(Boolean)
-        .map(email => ({ email, source: "real" }));
+        .filter(Boolean);
     }
 
     return [];
@@ -1939,15 +1912,10 @@ document.addEventListener("click", e => {
 
     const safeEntries = entries.length
       ? entries
-      : [{ email: TEXT.emptyTicker, source: "real" }];
-    const baseItems = safeEntries.map(entry => {
-      const isSystem = entry.source === "system";
-      const itemClass = isSystem ? "site-ticker__item site-ticker__item--system" : "site-ticker__item site-ticker__item--real";
-      const prefix = isSystem ? TEXT.systemPrefix : TEXT.realPrefix;
-      return (
-        `<span class="${itemClass}"><span class="site-ticker__item-prefix">${escapeHtml(prefix)}:</span> ${escapeHtml(entry.email)}</span>`
-      );
-    });
+      : [TEXT.emptyTicker];
+    const baseItems = safeEntries.map(email => (
+      `<span class="site-ticker__item">${escapeHtml(email)}</span>`
+    ));
 
     const separator = '<span class="site-ticker__sep">•</span>';
     const joined = baseItems.join(separator);
@@ -1970,14 +1938,7 @@ document.addEventListener("click", e => {
 
   function renderCounters(stats) {
     const total = Number(stats?.sales || 0);
-    const real = Number(stats?.realSales || 0);
-    const system = Number(stats?.systemSales || 0);
-    const online = Number(stats?.online || 0);
-
     if (totalValueEl) totalValueEl.textContent = formatNumber(total);
-    if (realValueEl) realValueEl.textContent = formatNumber(real);
-    if (systemValueEl) systemValueEl.textContent = formatNumber(system);
-    if (onlineValueEl) onlineValueEl.textContent = formatNumber(online);
   }
 
   async function fetchAndRenderStats() {

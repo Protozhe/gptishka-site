@@ -1044,20 +1044,63 @@ function createApp() {
       return res.status(502).json({ error: "Order API unavailable" });
     }
   });
-  app.get("/api/stats", async (_req, res) => {
+
+  async function fetchStorefrontStatsFromAdmin(req) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+    try {
+      const response = await fetch(`${ADMIN_BACKEND_URL}/api/public/storefront-stats`, {
+        method: "GET",
+        headers: buildAdminProxyHeaders(req, { method: "GET" }),
+        signal: controller.signal,
+      });
+      if (!response.ok) return null;
+      const payload = await response.json();
+      const sales = Number(payload?.sales || 0);
+      const tickerEntries = Array.isArray(payload?.tickerEntries)
+        ? payload.tickerEntries
+            .map(entry => ({
+              email: String(entry?.email || "").trim(),
+              source: "real",
+            }))
+            .filter(entry => entry.email)
+        : [];
+      return {
+        sales: Number.isFinite(sales) && sales >= 0 ? sales : 0,
+        tickerEntries,
+      };
+    } catch (_) {
+      return null;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  app.get("/api/stats", async (req, res) => {
     const cutoff = Date.now() - ONLINE_TTL_MS;
 
     try {
       await run("DELETE FROM online_sessions WHERE last_seen < ?", [cutoff]);
-      await ensureSystemActivationEvents();
+      const onlineRow = await get("SELECT COUNT(*) AS online FROM online_sessions");
+      const adminStats = await fetchStorefrontStatsFromAdmin(req);
+      if (adminStats) {
+        return res.json({
+          sales: adminStats.sales,
+          realSales: adminStats.sales,
+          systemSales: 0,
+          online: Number(onlineRow?.online || 0),
+          lastBuyers: adminStats.tickerEntries.map(item => item.email),
+          tickerEntries: adminStats.tickerEntries,
+        });
+      }
 
+      await ensureSystemActivationEvents();
       const realRow = await get(
         "SELECT COUNT(*) AS count FROM activation_events WHERE source = 'real'"
       );
       const systemRow = await get(
         "SELECT COUNT(*) AS count FROM activation_events WHERE source = 'system'"
       );
-      const onlineRow = await get("SELECT COUNT(*) AS online FROM online_sessions");
       const legacyRealSales = INCLUDE_LEGACY_PURCHASES
         ? Number((await get("SELECT COUNT(*) AS count FROM purchases"))?.count || 0)
         : 0;
