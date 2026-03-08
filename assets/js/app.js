@@ -608,28 +608,12 @@ document.querySelectorAll("a[href]").forEach(link => {
       .replaceAll("'", "&#39;");
   }
 
-  function getCardPromoInput(card) {
-    if (!card) return null;
-    return card.querySelector("[data-card-promo-input]");
-  }
-
-  function syncCardPromoInputs(code) {
-    const normalized = normalizePromoCodeInput(code);
-    cards.forEach(card => {
-      const input = getCardPromoInput(card);
-      if (!input) return;
-      if (document.activeElement === input) return;
-      input.value = normalized;
-    });
-  }
-
   function setActivePromoCode(code) {
     const normalized = normalizePromoCodeInput(code);
     activePromoCode = normalized;
     savePromoCode(normalized);
     if (headerCartPromoInputEl) headerCartPromoInputEl.value = normalized;
     if (cartPromoInputEl) cartPromoInputEl.value = normalized;
-    syncCardPromoInputs(normalized);
 
     if (productPreviewPromoInputEl && document.activeElement !== productPreviewPromoInputEl) {
       productPreviewPromoInputEl.value = normalized;
@@ -640,9 +624,7 @@ document.querySelectorAll("a[href]").forEach(link => {
   }
 
   function getCardPromoCode(card) {
-    const input = getCardPromoInput(card);
-    if (!input) return normalizePromoCodeInput(activePromoCode);
-    return normalizePromoCodeInput(input.value || activePromoCode);
+    return normalizePromoCodeInput(activePromoCode);
   }
 
   function sanitizeMediaUrl(value) {
@@ -1054,9 +1036,6 @@ document.querySelectorAll("a[href]").forEach(link => {
       list +
       '<div class="price-actions">' +
       '<button type="button" class="buy-btn pay-now-btn" data-product="' + escapeHtml(product) + '" data-sub="' + escapeHtml(sub) + '" data-title="' + escapeHtml(title) + '" data-term="' + escapeHtml(term) + '" data-price="' + escapeHtml(price) + '" data-currency="' + escapeHtml(currency) + '">' + escapeHtml(TEXT.payNow) + "</button>" +
-      '<div class="price-card-promo">' +
-      '<input type="text" class="price-card-promo__input" data-card-promo-input placeholder="' + escapeHtml(TEXT.cardPromoPlaceholder) + '" autocomplete="off" inputmode="text" maxlength="40">' +
-      "</div>" +
       "</div>" +
       '<div class="meta"><span>&#10003; ' + escapeHtml(TEXT.metaAuto) + "</span><span>&#10003; " + escapeHtml(TEXT.metaSecure) + "</span><span>&#10003; " + escapeHtml(TEXT.metaSupport) + "</span></div>" +
       "</div>"
@@ -1085,13 +1064,11 @@ document.querySelectorAll("a[href]").forEach(link => {
       pricingGridEl.innerHTML = items.map((item, idx) => buildProductCard(item, idx)).join("");
       refreshCards();
       syncCards();
-      syncCardPromoInputs(activePromoCode);
       renderCart();
       alignToHashTarget("auto");
     } catch (_) {
       refreshCards();
       syncCards();
-      syncCardPromoInputs(activePromoCode);
       renderCart();
       alignToHashTarget("auto");
     }
@@ -1962,7 +1939,6 @@ document.querySelectorAll("a[href]").forEach(link => {
   }
   if (headerCartPromoInputEl) headerCartPromoInputEl.value = activePromoCode;
   if (cartPromoInputEl) cartPromoInputEl.value = activePromoCode;
-  syncCardPromoInputs(activePromoCode);
   syncCheckoutEmailInputs();
   clearLegacyCartArtifacts();
 
@@ -2023,25 +1999,6 @@ document.querySelectorAll("a[href]").forEach(link => {
       if (headerCartPromoInputEl && headerCartPromoInputEl.value !== activePromoCode) headerCartPromoInputEl.value = activePromoCode;
     });
   }
-
-  document.addEventListener("input", e => {
-    const target = e.target;
-    if (!target || typeof target.closest !== "function") return;
-    const input = target.closest("[data-card-promo-input]");
-    if (!input) return;
-    const value = normalizePromoCodeInput(input.value || "");
-    if (input.value !== value) input.value = value;
-  });
-
-  document.addEventListener("keydown", e => {
-    if (e.key !== "Enter") return;
-    const target = e.target;
-    if (!target || typeof target.closest !== "function") return;
-    const input = target.closest("[data-card-promo-input]");
-    if (!input) return;
-    e.preventDefault();
-    setActivePromoCode(input.value || "");
-  });
 
   if (cartPaymentMethodsEl) {
     cartPaymentMethodsEl.addEventListener("change", event => {

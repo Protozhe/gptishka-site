@@ -426,31 +426,6 @@ header.is-scrolled {
   margin-top: 0;
 }
 
-.price-card-promo {
-  display: grid;
-}
-
-.price-card-promo__input {
-  width: 100%;
-  min-height: 40px;
-  border-radius: 12px;
-  border: 1px solid rgba(196, 210, 226, 0.86);
-  background: rgba(255, 255, 255, 0.86);
-  padding: 0 12px;
-  font: 600 13px/1.2 Manrope, Arial, sans-serif;
-  color: var(--premium-text);
-}
-
-.price-card-promo__input::placeholder {
-  color: var(--premium-muted);
-}
-
-.price-card-promo__input:focus {
-  outline: none;
-  border-color: rgba(20, 133, 118, 0.5);
-  box-shadow: 0 0 0 3px rgba(20, 133, 118, 0.14);
-}
-
 @media (max-width: 760px) {
   .sub.sub-top-list {
     min-height: 0;
