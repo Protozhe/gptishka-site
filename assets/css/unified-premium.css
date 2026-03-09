@@ -4618,19 +4618,23 @@ header {
   box-shadow: var(--lp-btn-shadow-hover), inset 0 1px 0 rgba(255, 255, 255, 0.42) !important;
 }
 
+:root {
+  --page-overlay-top: 0px;
+}
+
 html.is-entering header,
+html.is-leaving header {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
 html.is-entering main.page,
 html.is-entering footer {
   opacity: 0;
-  transform: translateY(2px);
+  transform: translateY(5px);
 }
 
-html.is-entering body {
-  opacity: 0;
-  transform: translateY(2px);
-}
-
-html.is-entering.is-entering-active header,
 html.is-entering.is-entering-active main.page,
 html.is-entering.is-entering-active footer {
   opacity: 1;
@@ -4638,52 +4642,38 @@ html.is-entering.is-entering-active footer {
   transition: opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1), transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-html.is-entering.is-entering-active body {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.46s cubic-bezier(0.22, 1, 0.36, 1), transform 0.46s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
 .page-overlay {
+  inset: var(--page-overlay-top, 0px) 0 0 0 !important;
+  z-index: 95 !important;
+  background: rgba(24, 37, 58, 0.22) !important;
+  backdrop-filter: blur(0px) saturate(102%) !important;
+  -webkit-backdrop-filter: blur(0px) saturate(102%) !important;
   transition: opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1), backdrop-filter 0.34s cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
+html.is-entering .page-overlay,
 html.is-leaving .page-overlay {
   opacity: 1 !important;
-  backdrop-filter: blur(2.5px) !important;
+  backdrop-filter: blur(4px) saturate(108%) !important;
+  -webkit-backdrop-filter: blur(4px) saturate(108%) !important;
 }
 
-html.is-leaving header,
+html.is-entering.is-entering-active .page-overlay {
+  opacity: 0 !important;
+  backdrop-filter: blur(0px) saturate(102%) !important;
+  -webkit-backdrop-filter: blur(0px) saturate(102%) !important;
+}
+
 html.is-leaving main.page,
 html.is-leaving footer {
-  opacity: 0.97;
-  transform: translateY(1px);
-  transition: opacity 0.24s ease, transform 0.24s ease;
-}
-
-html.is-leaving body {
-  opacity: 0.98;
-  transform: translateY(1px);
+  opacity: 0.24;
+  transform: translateY(4px);
   transition: opacity 0.24s ease, transform 0.24s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html.is-entering body,
-  html.is-entering header,
   html.is-entering main.page,
   html.is-entering footer,
-  html.is-leaving body {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-  }
-}
-
-@media (max-width: 900px) {
-  html.is-entering header,
-  html.is-entering main.page,
-  html.is-entering footer,
-  html.is-leaving header,
   html.is-leaving main.page,
   html.is-leaving footer {
     opacity: 1 !important;
@@ -4691,27 +4681,37 @@ html.is-leaving body {
     transition: none !important;
   }
 
-  html.is-entering body {
+  html.is-entering .page-overlay,
+  html.is-entering.is-entering-active .page-overlay,
+  html.is-leaving .page-overlay {
     opacity: 0 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    transition: none !important;
+  }
+}
+
+@media (max-width: 900px) {
+  html.is-entering main.page,
+  html.is-entering footer,
+  html.is-leaving main.page,
+  html.is-leaving footer {
     transform: none !important;
   }
 
-  html.is-entering.is-entering-active body {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: opacity 0.2s ease !important;
+  html.is-entering.is-entering-active main.page,
+  html.is-entering.is-entering-active footer {
+    transition: opacity 0.32s ease !important;
   }
 
-  html.is-leaving body {
-    opacity: 0.98 !important;
-    transform: none !important;
-    transition: opacity 0.15s ease !important;
+  html.is-leaving main.page,
+  html.is-leaving footer {
+    opacity: 0.36 !important;
+    transition: opacity 0.22s ease !important;
   }
 
   .page-overlay {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    transition: opacity 0.2s ease !important;
+    transition: opacity 0.26s ease, backdrop-filter 0.26s ease !important;
   }
 }
 

@@ -4,6 +4,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   document.documentElement.classList.remove("is-leaving");
+  syncPageTransitionOverlayOffset();
   initPageEnterTransition();
   initHomeGradientBackground();
   initPulseBeamButtons();
@@ -14,23 +15,28 @@ document.addEventListener("DOMContentLoaded", () => {
     document.documentElement.classList.remove("is-leaving");
     document.documentElement.classList.remove("is-entering");
     document.documentElement.classList.remove("is-entering-active");
+    syncPageTransitionOverlayOffset();
   });
 
   const header = document.querySelector("header");
-  if (!header) return;
+  if (header) {
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        header.classList.toggle("is-scrolled", window.scrollY > 10);
+        syncPageTransitionOverlayOffset(header);
+        ticking = false;
+      });
+    };
 
-  let ticking = false;
-  const onScroll = () => {
-    if (ticking) return;
-    ticking = true;
-    window.requestAnimationFrame(() => {
-      header.classList.toggle("is-scrolled", window.scrollY > 10);
-      ticking = false;
-    });
-  };
-
-  onScroll();
-  window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", () => syncPageTransitionOverlayOffset(header), { passive: true });
+  } else {
+    syncPageTransitionOverlayOffset();
+  }
 
   initFaqAccordions();
   initLanguageSwitch();
@@ -50,6 +56,16 @@ const WARMUP_PRODUCTS_DELAY_MS = 4400;
 const METRIKA_COUNTER_ID = 106969126;
 const TOP_MAIL_COUNTER_ID = "3744660";
 const prefetchedNavigationKeys = new Set();
+
+function syncPageTransitionOverlayOffset(headerEl = null) {
+  const header = headerEl || document.querySelector("header");
+  let offsetPx = 0;
+  if (header) {
+    const rect = header.getBoundingClientRect();
+    offsetPx = Math.max(0, Math.round(rect.bottom + 6));
+  }
+  document.documentElement.style.setProperty("--page-overlay-top", `${offsetPx}px`);
+}
 
 function markTransitionNavigationIntent() {
   try {
@@ -115,6 +131,7 @@ function navigateWithPageTransition(targetHref, delayMs = PAGE_TRANSITION_LEAVE_
   if (pageNavigationInProgress) return;
   pageNavigationInProgress = true;
   markTransitionNavigationIntent();
+  syncPageTransitionOverlayOffset();
   document.documentElement.classList.add("is-leaving");
   window.setTimeout(() => {
     window.location.href = href;
@@ -123,6 +140,7 @@ function navigateWithPageTransition(targetHref, delayMs = PAGE_TRANSITION_LEAVE_
 
 function initPageEnterTransition() {
   if (!consumeTransitionNavigationIntent()) return;
+  syncPageTransitionOverlayOffset();
   const root = document.documentElement;
   root.classList.add("is-entering");
   window.requestAnimationFrame(() => {
