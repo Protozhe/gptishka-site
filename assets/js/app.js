@@ -4,7 +4,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   document.documentElement.classList.remove("is-leaving");
-  initPageEnterTransition();
+  const enteredWithTransition = initPageEnterTransition();
   initHomeGradientBackground();
   initPulseBeamButtons();
   initLinkPageTransitions();
@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initLanguageSwitch();
   initActivationResumeShortcut();
   initReviewsSecurityBanner();
-  initSoftProgressivePageReveal();
+  initSoftProgressivePageReveal(enteredWithTransition);
 });
 
 let pageNavigationInProgress = false;
@@ -123,7 +123,8 @@ function navigateWithPageTransition(targetHref, delayMs = PAGE_TRANSITION_LEAVE_
 }
 
 function initPageEnterTransition() {
-  if (!consumeTransitionNavigationIntent()) return;
+  const isTransitionNavigation = consumeTransitionNavigationIntent();
+  if (!isTransitionNavigation) return false;
   const root = document.documentElement;
   root.classList.add("is-entering");
   window.requestAnimationFrame(() => {
@@ -135,6 +136,7 @@ function initPageEnterTransition() {
       }, PAGE_TRANSITION_CLEANUP_MS);
     });
   });
+  return true;
 }
 
 function normalizePathname(pathname) {
@@ -199,7 +201,8 @@ function runWhenIdle(callback, timeoutMs = 1400) {
   window.setTimeout(callback, 220);
 }
 
-function initSoftProgressivePageReveal() {
+function initSoftProgressivePageReveal(shouldRun) {
+  if (!shouldRun) return;
   const page = document.querySelector("main.page");
   if (!page) return;
   if (page.dataset.softRevealInit === "1") return;
