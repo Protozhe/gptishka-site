@@ -3939,7 +3939,7 @@ body::after {
       rgba(var(--gradient-first), 0) 58%
     ) !important;
   transform-origin: center center !important;
-  animation: lpGradFirst 58s ease-in-out infinite !important;
+  animation: lpGradFirst 32s ease-in-out infinite !important;
   opacity: 0.62 !important;
 }
 
@@ -3951,7 +3951,7 @@ body::after {
       rgba(var(--gradient-second), 0) 58%
     ) !important;
   transform-origin: calc(50% - 380px) calc(50% - 90px) !important;
-  animation: lpGradSecond 64s ease-in-out infinite !important;
+  animation: lpGradSecond 36s ease-in-out infinite !important;
   opacity: 0.56 !important;
 }
 
@@ -3963,7 +3963,7 @@ body::after {
       rgba(var(--gradient-third), 0) 60%
     ) !important;
   transform-origin: calc(50% + 360px) calc(50% - 80px) !important;
-  animation: lpGradThird 72s ease-in-out infinite !important;
+  animation: lpGradThird 42s ease-in-out infinite !important;
   opacity: 0.46 !important;
 }
 
@@ -3975,7 +3975,7 @@ body::after {
       rgba(var(--gradient-fourth), 0) 60%
     ) !important;
   transform-origin: calc(50% - 180px) calc(50% + 220px) !important;
-  animation: lpGradFourth 80s ease-in-out infinite !important;
+  animation: lpGradFourth 48s ease-in-out infinite !important;
   opacity: 0.42 !important;
 }
 
@@ -3987,7 +3987,7 @@ body::after {
       rgba(var(--gradient-fifth), 0) 62%
     ) !important;
   transform-origin: calc(50% - 720px) calc(50% + 680px) !important;
-  animation: lpGradFifth 90s ease-in-out infinite !important;
+  animation: lpGradFifth 54s ease-in-out infinite !important;
   opacity: 0.4 !important;
 }
 
@@ -4008,37 +4008,37 @@ body::after {
     calc(var(--home-pointer-y) * 0.22),
     0
   ) !important;
-  animation: lpGradPointerPulse 16s ease-in-out infinite alternate !important;
+  animation: lpGradPointerPulse 11s ease-in-out infinite alternate !important;
 }
 
 @keyframes lpGradFirst {
   0% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(6%, -4%, 0) scale(1.07); }
-  100% { transform: translate3d(-4%, 4%, 0) scale(1.03); }
+  50% { transform: translate3d(10%, -6%, 0) scale(1.1); }
+  100% { transform: translate3d(-8%, 6%, 0) scale(1.06); }
 }
 
 @keyframes lpGradSecond {
   0% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(-5%, 6%, 0) scale(1.08); }
-  100% { transform: translate3d(4%, -5%, 0) scale(1.04); }
+  50% { transform: translate3d(-9%, 10%, 0) scale(1.1); }
+  100% { transform: translate3d(7%, -8%, 0) scale(1.06); }
 }
 
 @keyframes lpGradThird {
   0% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(6%, 5%, 0) scale(1.09); }
-  100% { transform: translate3d(-5%, -4%, 0) scale(1.05); }
+  50% { transform: translate3d(9%, 8%, 0) scale(1.12); }
+  100% { transform: translate3d(-8%, -6%, 0) scale(1.07); }
 }
 
 @keyframes lpGradFourth {
   0% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(-4%, 6%, 0) scale(1.08); }
-  100% { transform: translate3d(5%, -3%, 0) scale(1.04); }
+  50% { transform: translate3d(-7%, 9%, 0) scale(1.1); }
+  100% { transform: translate3d(8%, -5%, 0) scale(1.06); }
 }
 
 @keyframes lpGradFifth {
   0% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(5%, -5%, 0) scale(1.1); }
-  100% { transform: translate3d(-4%, 4%, 0) scale(1.04); }
+  50% { transform: translate3d(8%, -8%, 0) scale(1.12); }
+  100% { transform: translate3d(-7%, 7%, 0) scale(1.06); }
 }
 
 @keyframes lpGradPointerPulse {
@@ -4052,6 +4052,17 @@ body::after {
     animation: none !important;
     transform: none !important;
   }
+}
+
+/* Fallback override: keep ambient body gradients alive even with home-gradient-page class */
+body.home-gradient-page::before {
+  opacity: 0.34 !important;
+  animation: premiumBodyGlowA 26s ease-in-out infinite alternate !important;
+}
+
+body.home-gradient-page::after {
+  opacity: 0.28 !important;
+  animation: premiumBodyGlowB 34s ease-in-out infinite alternate !important;
 }
 
 
