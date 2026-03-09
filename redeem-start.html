@@ -23,131 +23,259 @@
 <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260308g" />
 
   <style>
+    :root {
+      --redeem-surface: #f8fafc;
+      --redeem-card: rgba(255, 255, 255, 0.9);
+      --redeem-card-strong: #ffffff;
+      --redeem-ink: #112235;
+      --redeem-muted: #55667a;
+      --redeem-line: rgba(17, 34, 53, 0.16);
+      --redeem-line-soft: rgba(17, 34, 53, 0.1);
+      --redeem-primary: #0f8d77;
+      --redeem-primary-dark: #0b6f5e;
+      --redeem-accent: #f29b59;
+      --redeem-glow: rgba(15, 141, 119, 0.26);
+    }
+
+    body {
+      background:
+        radial-gradient(760px 360px at 8% -14%, rgba(15, 141, 119, 0.22), transparent 68%),
+        radial-gradient(680px 340px at 100% 2%, rgba(242, 155, 89, 0.2), transparent 66%),
+        linear-gradient(180deg, #f6faf9 0%, #f7f9fc 52%, #eef3f9 100%);
+      min-height: 100vh;
+    }
+
+    .page-overlay {
+      pointer-events: none;
+      opacity: 0.75;
+      background:
+        radial-gradient(1200px 500px at 50% -220px, rgba(255, 255, 255, 0.5), transparent 72%),
+        linear-gradient(140deg, rgba(255, 255, 255, 0.08), rgba(211, 228, 238, 0.1));
+    }
+
     .redeem-page {
-      max-width: 1080px;
+      position: relative;
+      z-index: 1;
+      max-width: 1120px;
       margin: 0 auto;
-      padding: 20px 0 0;
+      padding: 28px 14px 0;
+      animation: redeem-fade-up 0.45s ease both;
     }
 
     .redeem-card {
-      background: #fff;
-      border: 1px solid rgba(25, 34, 51, 0.08);
-      border-radius: 24px;
-      box-shadow: 0 18px 44px rgba(25, 34, 51, 0.08);
-      padding: 26px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.78);
+      border-radius: 30px;
+      padding: 30px;
+      background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 252, 255, 0.94) 40%, rgba(241, 250, 248, 0.92) 100%),
+        radial-gradient(circle at 1px 1px, rgba(10, 31, 53, 0.03) 1px, transparent 0);
+      background-size: auto, 16px 16px;
+      box-shadow:
+        0 24px 64px rgba(14, 28, 44, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.88);
+    }
+
+    .redeem-card::before,
+    .redeem-card::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+      border-radius: 999px;
+      filter: blur(0.2px);
+    }
+
+    .redeem-card::before {
+      width: 300px;
+      height: 300px;
+      right: -110px;
+      top: -150px;
+      background: radial-gradient(circle, rgba(15, 141, 119, 0.17), transparent 70%);
+    }
+
+    .redeem-card::after {
+      width: 260px;
+      height: 260px;
+      left: -130px;
+      bottom: -150px;
+      background: radial-gradient(circle, rgba(242, 155, 89, 0.16), transparent 72%);
     }
 
     .redeem-title {
       margin: 0;
-      font-size: clamp(30px, 4vw, 44px);
-      line-height: 1.08;
-      font-weight: 800;
-      color: #1f2937;
+      max-width: 16ch;
+      font-family: "Space Grotesk", "Manrope", sans-serif;
+      font-size: clamp(34px, 5vw, 50px);
+      line-height: 1.02;
+      letter-spacing: -0.03em;
+      font-weight: 700;
+      color: var(--redeem-ink);
+      text-wrap: balance;
     }
 
     .redeem-subtitle {
-      margin: 10px 0 0;
+      margin: 12px 0 0;
+      max-width: 64ch;
+      color: var(--redeem-muted);
       font-size: 16px;
-      line-height: 1.45;
-      color: #5c6778;
+      line-height: 1.6;
     }
 
     .redeem-grid {
-      margin-top: 18px;
+      margin-top: 22px;
       display: grid;
-      gap: 14px;
+      gap: 16px;
       grid-template-columns: 1fr;
     }
 
     .redeem-block {
-      background: #fbfaf6;
-      border: 1px solid rgba(25, 34, 51, 0.08);
-      border-radius: 16px;
-      padding: 14px;
+      position: relative;
+      border-radius: 20px;
+      border: 1px solid var(--redeem-line-soft);
+      background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.94), rgba(248, 252, 255, 0.9));
+      box-shadow: 0 12px 28px rgba(13, 31, 46, 0.08);
+      padding: 16px;
+    }
+
+    .redeem-block::before {
+      content: "";
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      top: 0;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.85), rgba(15, 141, 119, 0.24), rgba(255, 255, 255, 0.85));
+      pointer-events: none;
     }
 
     .redeem-label {
-      margin: 0 0 8px;
-      font-size: 16px;
-      font-weight: 700;
-      color: #1f2937;
+      margin: 0 0 10px;
+      color: #3f5368;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
     }
 
     .redeem-order-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
       flex-wrap: wrap;
-      border: 1px solid rgba(25, 34, 51, 0.1);
-      background: #fff;
-      border-radius: 12px;
-      padding: 10px 12px;
+      gap: 12px;
+      border: 1px solid var(--redeem-line-soft);
+      border-radius: 14px;
+      background:
+        linear-gradient(150deg, rgba(255, 255, 255, 0.92), rgba(246, 250, 255, 0.84));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+      padding: 11px 13px;
+    }
+
+    .redeem-order-row + .redeem-order-row {
+      margin-top: 8px;
     }
 
     .redeem-order-id {
+      flex: 1 1 270px;
       min-width: 0;
-      font-size: 14px;
-      color: #253041;
-      font-weight: 700;
+      max-width: 100%;
       overflow: hidden;
-      white-space: nowrap;
       text-overflow: ellipsis;
-      max-width: 760px;
+      white-space: nowrap;
+      color: #172c42;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
     }
 
     .redeem-guide {
-      margin: 0 0 10px;
-      border: 1px solid rgba(25, 34, 51, 0.1);
-      border-radius: 12px;
-      background: #fff;
-      padding: 10px 12px;
-      color: #3a4556;
-      line-height: 1.45;
+      margin: 0 0 12px;
+      border: 1px solid var(--redeem-line-soft);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 11px 12px;
+      color: #2f4156;
       font-size: 14px;
+      line-height: 1.55;
     }
 
     .redeem-guide summary {
+      list-style: none;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
       font-weight: 700;
-      color: #1f2937;
+      color: #1d354d;
+    }
+
+    .redeem-guide summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .redeem-guide summary::after {
+      content: "+";
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1px solid var(--redeem-line-soft);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      color: #335066;
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+
+    .redeem-guide[open] summary::after {
+      transform: rotate(45deg);
     }
 
     .redeem-guide ol {
-      margin: 8px 0 0 18px;
+      margin: 10px 0 0 18px;
       padding: 0;
     }
 
+    .redeem-guide li + li {
+      margin-top: 5px;
+    }
+
     .redeem-guide a {
-      color: #1f8f7f;
-      text-decoration: underline;
+      color: var(--redeem-primary-dark);
+      font-weight: 700;
+      text-decoration-thickness: 1px;
       text-underline-offset: 2px;
     }
 
     .redeem-input {
       width: 100%;
-      min-height: 150px;
+      min-height: 152px;
       resize: vertical;
-      border: 1px solid rgba(25, 34, 51, 0.14);
-      border-radius: 14px;
-      background: #fff;
+      border: 1px solid rgba(17, 34, 53, 0.2);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.95);
       padding: 12px 14px;
+      color: #0f2338;
       font: inherit;
-      line-height: 1.45;
-      color: #1f2937;
+      line-height: 1.5;
       outline: none;
-      transition: border-color .15s ease, box-shadow .15s ease;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
     }
 
     .redeem-input:focus {
-      border-color: #1f8f7f;
-      box-shadow: 0 0 0 3px rgba(31, 143, 127, 0.14);
+      border-color: rgba(15, 141, 119, 0.56);
+      box-shadow: 0 0 0 4px rgba(15, 141, 119, 0.14);
+      background: #ffffff;
     }
 
     .redeem-input.masked {
       color: transparent;
-      text-shadow: 0 0 6px rgba(31, 41, 55, 0.7);
-      caret-color: #1f2937;
+      text-shadow: 0 0 8px rgba(17, 34, 53, 0.72);
+      caret-color: #0f2338;
     }
 
     .redeem-meta {
@@ -155,63 +283,79 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
       flex-wrap: wrap;
+      gap: 8px;
+      color: #607386;
       font-size: 13px;
-      color: #667288;
     }
 
     .redeem-meta .warn {
-      color: #b42318;
+      color: #bf4a1f;
       font-weight: 700;
     }
 
     .redeem-manual-hint {
       margin: 12px 0 0;
-      padding: 13px 14px;
       border-radius: 14px;
-      border: 1px solid rgba(203, 213, 225, 0.92);
-      background: linear-gradient(150deg, rgba(255, 255, 255, 0.92), rgba(249, 251, 253, 0.82));
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.96);
-      color: #3f4e5e;
+      border: 1px solid rgba(17, 34, 53, 0.14);
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.9), rgba(246, 250, 255, 0.82));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+      padding: 13px 14px;
+      color: #2f4458;
       font-size: 14px;
-      line-height: 1.5;
+      line-height: 1.54;
+      font-weight: 600;
     }
 
     .redeem-manual-hint.is-alert {
-      border-color: rgba(245, 158, 11, 0.42);
-      background: linear-gradient(145deg, rgba(255, 248, 235, 0.95), rgba(255, 243, 225, 0.86));
-      box-shadow: 0 10px 22px rgba(180, 83, 9, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.96);
-      font-size: clamp(18px, 2.4vw, 24px);
-      line-height: 1.32;
-      font-weight: 800;
-      color: #9a3412;
+      border-color: rgba(213, 117, 59, 0.42);
+      background: linear-gradient(145deg, rgba(255, 247, 236, 0.95), rgba(255, 241, 224, 0.87));
+      color: #8d3c1c;
+      box-shadow:
+        0 10px 20px rgba(188, 94, 44, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.92);
     }
 
     .redeem-manual-hint.is-ok {
-      border-color: rgba(22, 163, 74, 0.32);
-      background: linear-gradient(150deg, rgba(236, 253, 245, 0.92), rgba(240, 253, 250, 0.78));
-      font-size: 15px;
-      line-height: 1.5;
-      font-weight: 600;
-      color: #0f7a5d;
+      border-color: rgba(16, 141, 101, 0.34);
+      background: linear-gradient(150deg, rgba(233, 252, 244, 0.95), rgba(243, 253, 250, 0.84));
+      color: #10674e;
+      box-shadow:
+        0 10px 20px rgba(15, 141, 119, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
     }
 
     .redeem-manual-code-row {
-      margin: 8px 0 0;
-      font-size: 14px;
-      color: #334154;
+      margin-top: 8px;
     }
 
-    .redeem-manual-code-row a {
-      color: #1f8f7f;
-      text-decoration: underline;
-      text-underline-offset: 2px;
+    .redeem-manual-code-label {
+      flex: 1 1 250px;
+      min-width: 0;
+      color: #1d344b;
+      font-size: 14px;
       font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .redeem-manual-link-btn {
+      min-width: 168px;
+    }
+
+    .redeem-manual-code-row a:not(.redeem-btn) {
+      color: var(--redeem-primary-dark);
+      font-weight: 700;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+    }
+
+    #manualSupportBtn {
+      margin-top: 10px !important;
+      min-height: 46px;
     }
 
     .redeem-actions {
-      margin-top: 14px;
+      margin-top: 16px;
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
@@ -222,67 +366,106 @@
     }
 
     .redeem-btn {
-      border: 1px solid rgba(25, 34, 51, 0.14);
-      background: #fff;
-      color: #243246;
-      text-decoration: none;
+      border: 1px solid rgba(17, 34, 53, 0.16);
       border-radius: 12px;
+      background: linear-gradient(155deg, rgba(255, 255, 255, 0.98), rgba(243, 249, 255, 0.92));
+      color: #24374d;
+      text-decoration: none;
       padding: 10px 14px;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
+      min-height: 44px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      min-height: 44px;
-      transition: background .15s ease, color .15s ease, border-color .15s ease, transform .1s ease;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow:
+        0 8px 18px rgba(13, 31, 46, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      transition: transform 0.14s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
     }
 
     .redeem-btn:hover {
-      background: #f7f8fa;
-      border-color: rgba(25, 34, 51, 0.2);
+      border-color: rgba(17, 34, 53, 0.25);
+      background: linear-gradient(150deg, #ffffff, #eef5fb);
+      transform: translateY(-1px);
+      box-shadow:
+        0 12px 26px rgba(13, 31, 46, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.94);
     }
 
     .redeem-btn:active {
-      transform: translateY(1px);
+      transform: translateY(0);
+      box-shadow:
+        0 6px 16px rgba(13, 31, 46, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.88);
+    }
+
+    .redeem-btn:focus-visible {
+      outline: none;
+      box-shadow:
+        0 0 0 3px rgba(15, 141, 119, 0.28),
+        0 10px 22px rgba(13, 31, 46, 0.1);
     }
 
     .redeem-btn:disabled {
-      opacity: 0.55;
+      opacity: 0.56;
       cursor: not-allowed;
       transform: none;
+      box-shadow: none;
     }
 
     .redeem-btn-primary {
-      background: #1f8f7f;
-      border-color: #1f8f7f;
-      color: #fff;
+      border-color: rgba(15, 141, 119, 0.74);
+      background: linear-gradient(135deg, #10a189 0%, #0f8d77 46%, #0e7967 100%);
+      color: #ffffff;
+      box-shadow:
+        0 14px 28px rgba(15, 141, 119, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.24);
     }
 
     .redeem-btn-primary:hover {
-      background: #177a6c;
-      border-color: #177a6c;
-      color: #fff;
+      border-color: rgba(11, 111, 94, 0.92);
+      background: linear-gradient(135deg, #11967f 0%, #0d7f6c 52%, #0a6658 100%);
+      color: #ffffff;
+      box-shadow:
+        0 18px 32px rgba(11, 111, 94, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.26);
     }
 
     .redeem-status {
       margin-top: 12px;
-      border: 1px solid rgba(25, 34, 51, 0.11);
-      background: #fff;
-      border-radius: 12px;
-      padding: 10px 12px;
+      border: 1px solid var(--redeem-line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.86);
+      padding: 11px 12px;
+      color: #31475d;
       font-size: 14px;
-      color: #334154;
+      font-weight: 600;
       display: flex;
       align-items: center;
       flex-wrap: wrap;
       gap: 8px;
     }
 
-    .redeem-status.pending { border-color: rgba(186, 131, 25, 0.35); background: #fff8e9; color: #9a6700; }
-    .redeem-status.success { border-color: rgba(17, 120, 90, 0.35); background: #eaf7f3; color: #0f7a5d; }
-    .redeem-status.error { border-color: rgba(178, 60, 60, 0.35); background: #ffefef; color: #b33f3f; }
+    .redeem-status.pending {
+      border-color: rgba(199, 129, 51, 0.42);
+      background: linear-gradient(145deg, rgba(255, 248, 232, 0.95), rgba(255, 242, 220, 0.9));
+      color: #8a5a08;
+    }
+
+    .redeem-status.success {
+      border-color: rgba(16, 141, 101, 0.38);
+      background: linear-gradient(145deg, rgba(232, 251, 243, 0.95), rgba(239, 253, 248, 0.9));
+      color: #0f684f;
+    }
+
+    .redeem-status.error {
+      border-color: rgba(181, 70, 62, 0.42);
+      background: linear-gradient(145deg, rgba(255, 238, 236, 0.95), rgba(255, 232, 231, 0.9));
+      color: #9c312f;
+    }
 
     .redeem-spinner {
       width: 13px;
@@ -291,17 +474,18 @@
       border-top-color: transparent;
       border-radius: 50%;
       display: none;
-      animation: redeem-spin .8s linear infinite;
+      animation: redeem-spin 0.8s linear infinite;
     }
 
     .redeem-faq {
       margin-top: 12px;
-      border: 1px solid rgba(25, 34, 51, 0.08);
-      border-radius: 12px;
-      padding: 10px 12px;
-      background: #fff;
-      color: #5e6a7d;
+      border-radius: 14px;
+      border: 1px solid var(--redeem-line-soft);
+      background: rgba(255, 255, 255, 0.84);
+      color: #4d6074;
       font-size: 14px;
+      line-height: 1.5;
+      padding: 11px 12px;
     }
 
     .redeem-review-reward[hidden] {
@@ -316,38 +500,40 @@
       place-items: center;
       padding: 18px;
       background:
-        radial-gradient(720px 360px at 50% -10%, rgba(31, 143, 127, 0.22), transparent 65%),
-        radial-gradient(620px 320px at 95% 115%, rgba(231, 125, 79, 0.2), transparent 70%),
-        rgba(19, 27, 39, 0.62);
+        radial-gradient(760px 360px at 50% -12%, rgba(15, 141, 119, 0.24), transparent 68%),
+        radial-gradient(660px 320px at 100% 115%, rgba(242, 155, 89, 0.22), transparent 70%),
+        rgba(14, 24, 37, 0.62);
       backdrop-filter: blur(4px) saturate(120%);
-      animation: redeem-review-fade .2s ease;
+      animation: redeem-review-fade 0.2s ease;
     }
 
     .redeem-review-card {
       position: relative;
       overflow: hidden;
-      width: min(580px, 100%);
-      border: 1px solid rgba(255, 255, 255, 0.48);
-      border-radius: 20px;
-      padding: 22px;
+      width: min(600px, 100%);
+      border: 1px solid rgba(255, 255, 255, 0.56);
+      border-radius: 22px;
+      padding: 24px;
       color: #183345;
       background:
-        linear-gradient(150deg, rgba(255, 255, 255, 0.9), rgba(240, 251, 246, 0.92)),
+        linear-gradient(155deg, rgba(255, 255, 255, 0.94), rgba(240, 251, 246, 0.9)),
         radial-gradient(circle at 2px 2px, rgba(23, 64, 83, 0.06) 1px, transparent 0);
       background-size: auto, 14px 14px;
-      box-shadow: 0 28px 58px rgba(9, 21, 33, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-      animation: redeem-review-pop .24s ease;
+      box-shadow:
+        0 30px 66px rgba(9, 21, 33, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.92);
+      animation: redeem-review-pop 0.24s ease;
     }
 
     .redeem-review-card::before {
       content: "";
       position: absolute;
-      width: 230px;
-      height: 230px;
-      right: -92px;
-      top: -108px;
+      width: 240px;
+      height: 240px;
+      right: -94px;
+      top: -112px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(31, 143, 127, 0.22), transparent 70%);
+      background: radial-gradient(circle, rgba(15, 141, 119, 0.24), transparent 70%);
       pointer-events: none;
     }
 
@@ -355,15 +541,15 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 7px 12px;
       border-radius: 999px;
-      border: 1px solid rgba(31, 143, 127, 0.25);
-      background: rgba(31, 143, 127, 0.1);
-      color: #116c5b;
+      border: 1px solid rgba(15, 141, 119, 0.28);
+      background: rgba(15, 141, 119, 0.12);
+      color: #0e6c5a;
       font-size: 12px;
       font-weight: 800;
       letter-spacing: 0.04em;
       text-transform: uppercase;
+      padding: 7px 12px;
     }
 
     .redeem-review-top {
@@ -376,9 +562,9 @@
     .redeem-review-close {
       width: 34px;
       height: 34px;
-      border: 1px solid rgba(24, 51, 69, 0.14);
       border-radius: 10px;
-      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid rgba(24, 51, 69, 0.16);
+      background: rgba(255, 255, 255, 0.88);
       color: #41576b;
       font-size: 21px;
       line-height: 1;
@@ -386,13 +572,12 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: background .16s ease, border-color .16s ease, color .16s ease, transform .12s ease;
+      transition: transform 0.14s ease, border-color 0.16s ease, background 0.16s ease;
     }
 
     .redeem-review-close:hover {
-      background: #fff;
-      border-color: rgba(24, 51, 69, 0.22);
-      color: #223748;
+      border-color: rgba(24, 51, 69, 0.26);
+      background: #ffffff;
       transform: translateY(-1px);
     }
 
@@ -418,9 +603,9 @@
       font-family: "Space Grotesk", "Manrope", sans-serif;
       font-size: 18px;
       font-weight: 700;
-      color: #fff;
-      background: linear-gradient(140deg, #1f8f7f, #138a78);
-      box-shadow: 0 6px 16px rgba(31, 143, 127, 0.36);
+      color: #ffffff;
+      background: linear-gradient(138deg, #10a189, #0f8d77);
+      box-shadow: 0 8px 18px rgba(15, 141, 119, 0.34);
     }
 
     .redeem-review-card h3 {
@@ -435,22 +620,22 @@
 
     .redeem-review-lead {
       margin: 12px 0 0;
-      font-size: 15px;
-      line-height: 1.55;
       color: #33475c;
+      font-size: 15px;
+      line-height: 1.56;
     }
 
     .redeem-review-note {
       margin: 8px 0 0;
+      color: #567085;
       font-size: 13px;
       line-height: 1.5;
-      color: #567085;
     }
 
     .redeem-review-links {
       margin-top: 16px;
-      padding-top: 14px;
       border-top: 1px solid rgba(24, 51, 69, 0.12);
+      padding-top: 14px;
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
@@ -464,28 +649,11 @@
       font-family: "Space Grotesk", "Manrope", sans-serif;
       font-size: 15px;
       letter-spacing: 0.01em;
-      box-shadow: 0 10px 26px rgba(31, 143, 127, 0.28);
+      box-shadow: 0 12px 24px rgba(15, 141, 119, 0.24);
     }
 
     .redeem-review-links .redeem-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 14px 30px rgba(31, 143, 127, 0.34);
-    }
-
-    @keyframes redeem-review-fade {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes redeem-review-pop {
-      from {
-        opacity: 0;
-        transform: translateY(8px) scale(0.98);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
+      box-shadow: 0 14px 30px rgba(15, 141, 119, 0.32);
     }
 
     .redeem-btn.loading {
@@ -499,11 +667,51 @@
       border: 2px solid currentColor;
       border-top-color: transparent;
       border-radius: 50%;
-      animation: redeem-spin .8s linear infinite;
+      animation: redeem-spin 0.8s linear infinite;
     }
 
     @keyframes redeem-spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes redeem-fade-up {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes redeem-review-fade {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes redeem-review-pop {
+      from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .redeem-card {
+        border-radius: 24px;
+        padding: 24px;
+      }
     }
 
     @media (max-width: 860px) {
@@ -514,21 +722,43 @@
       .redeem-actions .full {
         grid-column: auto;
       }
+
+      .redeem-order-row {
+        align-items: stretch;
+      }
+
+      .redeem-order-id,
+      .redeem-manual-code-label {
+        white-space: normal;
+        word-break: break-word;
+      }
+
+      .redeem-order-row .redeem-btn {
+        width: 100%;
+      }
+
+      .redeem-manual-link-btn {
+        width: 100%;
+      }
     }
 
     @media (max-width: 640px) {
       .redeem-page {
-        padding-top: 14px;
+        padding-top: 16px;
       }
 
       .redeem-card {
-        padding: 16px;
         border-radius: 18px;
+        padding: 16px;
       }
 
-      .redeem-guide,
-      .redeem-block {
+      .redeem-block,
+      .redeem-guide {
         border-radius: 12px;
+      }
+
+      .redeem-title {
+        font-size: clamp(28px, 10vw, 38px);
       }
 
       .redeem-review-card {
@@ -640,15 +870,15 @@
             <span id="manualLoginValue" class="redeem-order-id">-</span>
             <button id="copyLoginBtn" type="button" class="redeem-btn">Скопировать логин</button>
           </div>
-          <div class="redeem-order-row" style="margin-top:8px;">
+          <div class="redeem-order-row">
             <span id="manualPasswordValue" class="redeem-order-id">-</span>
             <button id="copyPasswordBtn" type="button" class="redeem-btn">Скопировать пароль</button>
           </div>
+          <div id="manualCodeLinkRow" class="redeem-order-row redeem-manual-code-row" style="display:none">
+            <span class="redeem-manual-code-label">Ссылка для получения кода:</span>
+            <a id="manualCodeLink" class="redeem-btn redeem-manual-link-btn" href="https://t.me/gptishkasupp" target="_blank" rel="noopener noreferrer">получить код</a>
+          </div>
           <p id="manualCredentialsHint" class="redeem-manual-hint"></p>
-          <p id="manualCodeLinkRow" class="redeem-manual-code-row" style="display:none">
-            Ссылка для получения кода:
-            <a id="manualCodeLink" href="https://t.me/gptishkasupp" target="_blank" rel="noopener noreferrer">получить код</a>
-          </p>
           <p id="manualEmailLinkRow" class="redeem-manual-code-row" style="display:none">
             Если удобнее, получите код по почте:
             <a id="manualEmailLink" href="mailto:support@gptishka.shop">support@gptishka.shop</a>
@@ -852,7 +1082,7 @@
         manualCodeLink.href = supportUrl || 'https://t.me/gptishkasupp';
       }
       if (manualCodeLinkRow) {
-        manualCodeLinkRow.style.display = hasCredentials ? 'none' : 'block';
+        manualCodeLinkRow.style.display = hasCredentials ? 'none' : 'flex';
       }
       if (manualEmailLink) {
         manualEmailLink.textContent = supportEmail || 'support@gptishka.shop';
