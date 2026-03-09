@@ -17,10 +17,9 @@
       margin: 0;
       font-family: "Manrope", Arial, sans-serif;
       background:
-        radial-gradient(60rem 42rem at 12% -8%, rgba(42, 91, 255, 0.24), rgba(42, 91, 255, 0) 62%),
-        radial-gradient(56rem 40rem at 92% 12%, rgba(79, 172, 254, 0.2), rgba(79, 172, 254, 0) 66%),
-        radial-gradient(58rem 40rem at 52% 108%, rgba(69, 109, 255, 0.14), rgba(69, 109, 255, 0) 70%),
-        linear-gradient(180deg, #0f1115 0%, #12151c 42%, #0f1115 100%);
+        radial-gradient(circle at 20% 30%, rgba(88, 101, 242, 0.08), transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(79, 172, 254, 0.06), transparent 45%),
+        #0e1014;
       color: var(--text);
       overflow: hidden;
       position: relative;
@@ -35,33 +34,30 @@
     }
     body::before {
       background:
-        radial-gradient(circle at 16% 34%, rgba(42, 91, 255, 0.48), transparent 56%),
-        radial-gradient(circle at 82% 18%, rgba(79, 172, 254, 0.34), transparent 56%);
-      filter: blur(118px);
-      opacity: 0.3;
+        radial-gradient(circle at 22% 28%, rgba(88, 101, 242, 0.1), transparent 54%),
+        radial-gradient(circle at 78% 66%, rgba(79, 172, 254, 0.08), transparent 58%);
+      filter: blur(120px);
+      opacity: 0.08;
     }
     body::after {
       background:
-        radial-gradient(circle at 72% 68%, rgba(38, 79, 222, 0.4), transparent 52%),
-        radial-gradient(circle at 22% 76%, rgba(91, 182, 255, 0.24), transparent 52%);
-      filter: blur(132px);
-      opacity: 0.26;
+        radial-gradient(circle at 18% 76%, rgba(88, 101, 242, 0.08), transparent 56%),
+        radial-gradient(circle at 84% 24%, rgba(79, 172, 254, 0.06), transparent 58%);
+      filter: blur(120px);
+      opacity: 0.06;
       z-index: -2;
     }
     .wrap { max-width: 760px; margin: 48px auto; padding: 24px; }
     .card {
-      background:
-        linear-gradient(145deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)),
-        radial-gradient(circle at top left, rgba(255, 255, 255, 0.09), transparent 68%),
-        rgba(14, 19, 29, 0.76);
-      border-radius: 24px;
+      background: rgba(20, 22, 28, 0.6);
+      border-radius: 16px;
       padding: 24px;
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255, 255, 255, 0.06);
       box-shadow:
-        0 20px 46px rgba(0, 0, 0, 0.42),
-        inset 0 1px 0 rgba(255, 255, 255, 0.14);
-      backdrop-filter: blur(16px) saturate(132%);
-      -webkit-backdrop-filter: blur(16px) saturate(132%);
+        0 10px 40px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
     .err { color: var(--danger); font-size: 24px; margin: 0 0 12px; }
     .meta { color: var(--muted); margin: 8px 0; }
@@ -70,16 +66,17 @@
       margin-top: 16px;
       padding: 10px 16px;
       border-radius: 10px;
-      border: 1px solid rgba(126, 156, 255, 0.42);
-      background: linear-gradient(180deg, #2a5bff 0%, #2148d6 100%);
-      box-shadow: 0 12px 24px rgba(33, 72, 214, 0.24);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: linear-gradient(135deg, #5865f2, #4facfe);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.38);
       color: #fff;
       text-decoration: none;
       font-weight: 700;
     }
     .btn:hover {
-      box-shadow: 0 16px 30px rgba(33, 72, 214, 0.32);
-      transform: translateY(-1px);
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.44);
+      transform: translateY(-2px);
+      filter: brightness(1.05);
     }
     code {
       background: rgba(255, 255, 255, 0.08);

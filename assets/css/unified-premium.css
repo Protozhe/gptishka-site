@@ -1936,19 +1936,19 @@ body.home-gradient-page footer {
    Premium Dark SaaS System
    ========================================================= */
 :root {
-  --saas-bg: #0f1115;
-  --saas-bg-2: #151821;
-  --saas-bg-3: #1a2030;
-  --saas-glass: rgba(255, 255, 255, 0.04);
-  --saas-glass-soft: rgba(255, 255, 255, 0.03);
-  --saas-glass-border: rgba(255, 255, 255, 0.08);
-  --saas-glass-highlight: rgba(255, 255, 255, 0.12);
+  --saas-bg: #0e1014;
+  --saas-bg-2: #14161c;
+  --saas-bg-3: #181b24;
+  --saas-glass: rgba(20, 22, 28, 0.6);
+  --saas-glass-soft: rgba(20, 22, 28, 0.52);
+  --saas-glass-border: rgba(255, 255, 255, 0.06);
+  --saas-glass-highlight: rgba(255, 255, 255, 0.08);
   --saas-text: #ffffff;
   --saas-text-muted: #aab0c0;
-  --saas-accent: #2a5bff;
+  --saas-accent: #5865f2;
   --saas-accent-2: #4facfe;
-  --saas-accent-strong: #2148d6;
-  --saas-accent-glow: rgba(79, 172, 254, 0.28);
+  --saas-accent-strong: #4e5de9;
+  --saas-accent-glow: rgba(79, 172, 254, 0.18);
 
   --bg: var(--saas-bg);
   --bg-alt: var(--saas-bg-2);
@@ -1969,19 +1969,17 @@ body.home-gradient-page footer {
 
 body {
   background:
-    radial-gradient(60rem 42rem at 12% -8%, rgba(42, 91, 255, 0.24), rgba(42, 91, 255, 0) 62%),
-    radial-gradient(56rem 40rem at 92% 12%, rgba(79, 172, 254, 0.2), rgba(79, 172, 254, 0) 66%),
-    radial-gradient(58rem 40rem at 52% 108%, rgba(69, 109, 255, 0.14), rgba(69, 109, 255, 0) 70%),
-    linear-gradient(180deg, #0f1115 0%, #12151c 42%, #0f1115 100%);
+    radial-gradient(circle at 20% 30%, rgba(88, 101, 242, 0.08), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(79, 172, 254, 0.06), transparent 45%),
+    #0e1014;
   color: var(--saas-text);
 }
 
 body.home-gradient-page {
   background:
-    radial-gradient(60rem 42rem at 12% -8%, rgba(42, 91, 255, 0.24), rgba(42, 91, 255, 0) 62%),
-    radial-gradient(56rem 40rem at 92% 12%, rgba(79, 172, 254, 0.2), rgba(79, 172, 254, 0) 66%),
-    radial-gradient(58rem 40rem at 52% 108%, rgba(69, 109, 255, 0.14), rgba(69, 109, 255, 0) 70%),
-    linear-gradient(180deg, #0f1115 0%, #12151c 42%, #0f1115 100%);
+    radial-gradient(circle at 20% 30%, rgba(88, 101, 242, 0.08), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(79, 172, 254, 0.06), transparent 45%),
+    #0e1014;
   color: var(--saas-text);
 }
 
@@ -1989,21 +1987,21 @@ body::before,
 body::after {
   inset: -34%;
   filter: blur(120px);
-  opacity: 0.3;
+  opacity: 0.08;
 }
 
 body::before {
   background:
-    radial-gradient(circle at 14% 22%, rgba(42, 91, 255, 0.52) 0%, rgba(42, 91, 255, 0) 58%),
-    radial-gradient(circle at 84% 26%, rgba(79, 172, 254, 0.46) 0%, rgba(79, 172, 254, 0) 62%);
+    radial-gradient(circle at 22% 28%, rgba(88, 101, 242, 0.1) 0%, rgba(88, 101, 242, 0) 54%),
+    radial-gradient(circle at 78% 66%, rgba(79, 172, 254, 0.08) 0%, rgba(79, 172, 254, 0) 58%);
   animation: saasBlobA 34s ease-in-out infinite alternate;
 }
 
 body::after {
   background:
-    radial-gradient(circle at 22% 82%, rgba(38, 79, 222, 0.48) 0%, rgba(38, 79, 222, 0) 60%),
-    radial-gradient(circle at 74% 74%, rgba(91, 182, 255, 0.38) 0%, rgba(91, 182, 255, 0) 62%);
-  opacity: 0.27;
+    radial-gradient(circle at 18% 76%, rgba(88, 101, 242, 0.08) 0%, rgba(88, 101, 242, 0) 56%),
+    radial-gradient(circle at 84% 24%, rgba(79, 172, 254, 0.06) 0%, rgba(79, 172, 254, 0) 58%);
+  opacity: 0.06;
   animation: saasBlobB 42s ease-in-out infinite alternate;
 }
 
@@ -2016,41 +2014,44 @@ main.page::after {
 /* Animated gradient layer on all pages that load app.min.js */
 body.home-gradient-page::before,
 body.home-gradient-page::after {
-  opacity: 0.34 !important;
+  opacity: 0.08 !important;
   filter: blur(120px) !important;
 }
 
 .home-gradient-bg {
-  --home-blending: screen;
+  --home-blending: normal;
   --home-size: 86vmax;
 }
 
 .home-gradient-bg__layer--1 {
-  background: radial-gradient(circle at center, rgba(42, 91, 255, 0.3) 0%, rgba(42, 91, 255, 0) 58%);
+  background: radial-gradient(circle at center, rgba(88, 101, 242, 0.08) 0%, rgba(88, 101, 242, 0) 58%);
+  opacity: 0.08;
 }
 
 .home-gradient-bg__layer--2 {
-  background: radial-gradient(circle at center, rgba(79, 172, 254, 0.26) 0%, rgba(79, 172, 254, 0) 58%);
+  background: radial-gradient(circle at center, rgba(79, 172, 254, 0.07) 0%, rgba(79, 172, 254, 0) 58%);
+  opacity: 0.07;
 }
 
 .home-gradient-bg__layer--3 {
-  background: radial-gradient(circle at center, rgba(76, 126, 255, 0.26) 0%, rgba(76, 126, 255, 0) 58%);
+  background: radial-gradient(circle at center, rgba(88, 101, 242, 0.06) 0%, rgba(88, 101, 242, 0) 58%);
+  opacity: 0.06;
 }
 
 .home-gradient-bg__layer--4 {
-  background: radial-gradient(circle at center, rgba(117, 139, 255, 0.18) 0%, rgba(117, 139, 255, 0) 58%);
-  opacity: 0.52;
+  background: radial-gradient(circle at center, rgba(79, 172, 254, 0.05) 0%, rgba(79, 172, 254, 0) 58%);
+  opacity: 0.05;
 }
 
 .home-gradient-bg__layer--5 {
-  background: radial-gradient(circle at center, rgba(102, 188, 255, 0.16) 0%, rgba(102, 188, 255, 0) 58%);
-  opacity: 0.48;
+  background: radial-gradient(circle at center, rgba(88, 101, 242, 0.05) 0%, rgba(88, 101, 242, 0) 58%);
+  opacity: 0.05;
 }
 
 .home-gradient-bg__pointer {
-  background: radial-gradient(circle at center, rgba(91, 136, 255, 0.3) 0%, rgba(91, 136, 255, 0) 64%);
-  filter: blur(38px);
-  opacity: 0.42;
+  background: radial-gradient(circle at center, rgba(79, 172, 254, 0.08) 0%, rgba(79, 172, 254, 0) 64%);
+  filter: blur(120px);
+  opacity: 0.08;
 }
 
 header,
@@ -2078,14 +2079,13 @@ header,
 .lang-current,
 .lang-dropdown {
   border: 1px solid var(--saas-glass-border) !important;
-  background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
-    rgba(17, 21, 30, 0.72) !important;
+  border-radius: 16px !important;
+  background: rgba(20, 22, 28, 0.6) !important;
   box-shadow:
-    0 10px 40px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 var(--saas-glass-highlight) !important;
-  backdrop-filter: blur(16px) saturate(135%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(135%) !important;
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
 }
 
 .hero,
@@ -2106,10 +2106,10 @@ header,
   height: 420px;
   border-radius: 50%;
   filter: blur(120px);
-  opacity: 0.26;
+  opacity: 0.08;
   pointer-events: none;
   z-index: 0;
-  background: radial-gradient(circle, rgba(79, 172, 254, 0.9) 0%, rgba(79, 172, 254, 0) 70%);
+  background: radial-gradient(circle, rgba(79, 172, 254, 0.22) 0%, rgba(79, 172, 254, 0) 70%);
 }
 
 .hero::before {
@@ -2178,17 +2178,16 @@ header,
 }
 
 .site-ticker {
-  border-color: rgba(255, 255, 255, 0.12) !important;
-  background:
-    linear-gradient(150deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
-    rgba(16, 20, 30, 0.68) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  border-radius: 16px !important;
+  background: rgba(20, 22, 28, 0.6) !important;
   box-shadow:
-    0 12px 34px rgba(0, 0, 0, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.13) !important;
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
 }
 
 .site-ticker::before {
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(133, 166, 255, 0.2), rgba(255, 255, 255, 0)) !important;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(133, 166, 255, 0.06), rgba(255, 255, 255, 0)) !important;
 }
 
 .site-ticker__lead,
@@ -2198,9 +2197,9 @@ header,
 
 .site-ticker__item {
   color: #dbe7ff !important;
-  border-color: rgba(255, 255, 255, 0.14) !important;
-  background: rgba(255, 255, 255, 0.06) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
 }
 
 .site-ticker__item--real .site-ticker__item-prefix {
@@ -2212,13 +2211,11 @@ header,
 }
 
 .site-ticker__stats {
-  border-color: rgba(255, 255, 255, 0.14) !important;
-  background:
-    linear-gradient(150deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
-    rgba(12, 18, 28, 0.72) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(20, 22, 28, 0.6) !important;
   box-shadow:
-    0 12px 28px rgba(0, 0, 0, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+    0 10px 24px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
 }
 
 .site-ticker__stat strong {
@@ -2226,18 +2223,17 @@ header,
 }
 
 .reviews-security-banner {
-  border-color: rgba(255, 255, 255, 0.14) !important;
-  background:
-    linear-gradient(155deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)),
-    rgba(13, 18, 28, 0.74) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  border-radius: 16px !important;
+  background: rgba(20, 22, 28, 0.6) !important;
   box-shadow:
-    0 10px 26px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
 }
 
 .reviews-security-banner__cat {
-  border-color: rgba(255, 255, 255, 0.16) !important;
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.03)) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
 }
 
 .reviews-security-banner__title {
@@ -2256,19 +2252,15 @@ header,
 .header-cart-panel__promo button,
 .payment-method-modal__close,
 .product-preview-modal__close {
-  --liquid-tint-a: rgba(42, 91, 255, 0.92);
-  --liquid-tint-b: rgba(33, 72, 214, 0.9);
+  --liquid-tint-a: #5865f2;
+  --liquid-tint-b: #4facfe;
   --liquid-ink: #ffffff;
-  background:
-    radial-gradient(160% 120% at 0% 0%, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.06) 56%),
-    linear-gradient(136deg, var(--liquid-tint-a), var(--liquid-tint-b)) !important;
-  border-color: rgba(126, 156, 255, 0.44) !important;
-  text-shadow: 0 1px 0 rgba(8, 14, 27, 0.28);
+  background: linear-gradient(135deg, var(--liquid-tint-a), var(--liquid-tint-b)) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  text-shadow: none;
   box-shadow:
-    0 10px 30px rgba(33, 72, 214, 0.26),
-    0 0 22px rgba(79, 172, 254, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    inset 0 -10px 16px rgba(9, 18, 34, 0.2);
+    0 8px 20px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .btn:hover,
@@ -2279,24 +2271,36 @@ header,
 .header-cart-panel__promo button:hover,
 .payment-method-modal__close:hover,
 .product-preview-modal__close:hover {
-  background:
-    radial-gradient(160% 120% at 0% 0%, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.08) 56%),
-    linear-gradient(136deg, var(--liquid-tint-a), var(--liquid-tint-b)) !important;
-  transform: translateY(-2px) scale(1.012);
+  filter: brightness(1.05);
+  transform: translateY(-2px);
   box-shadow:
-    0 14px 34px rgba(33, 72, 214, 0.34),
-    0 0 30px rgba(79, 172, 254, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.34),
-    inset 0 -10px 16px rgba(9, 18, 34, 0.22);
+    0 12px 26px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .btn.secondary,
-.header-mini-remove-btn {
-  --liquid-tint-a: rgba(255, 255, 255, 0.08);
-  --liquid-tint-b: rgba(255, 255, 255, 0.04);
+.product-preview-modal__promo-apply,
+.header-cart-panel__promo button,
+.header-mini-remove-btn,
+.payment-method-modal__close,
+.product-preview-modal__close {
+  --liquid-tint-a: rgba(20, 22, 28, 0.6);
+  --liquid-tint-b: rgba(20, 22, 28, 0.6);
   --liquid-ink: #d7dff3;
-  border-color: rgba(255, 255, 255, 0.14) !important;
+  background: rgba(20, 22, 28, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
   text-shadow: none;
+}
+
+.btn.secondary:hover,
+.product-preview-modal__promo-apply:hover,
+.header-cart-panel__promo button:hover,
+.header-mini-remove-btn:hover,
+.payment-method-modal__close:hover,
+.product-preview-modal__close:hover {
+  filter: none;
+  transform: none;
+  background: rgba(20, 22, 28, 0.68) !important;
 }
 
 .cart-remove-btn {
@@ -2308,55 +2312,50 @@ header,
 }
 
 .payment-method-modal__option {
-  border-color: rgba(255, 255, 255, 0.12) !important;
-  background:
-    radial-gradient(120% 110% at 0% 0%, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02) 62%),
-    rgba(17, 22, 33, 0.7) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  border-radius: 16px !important;
+  background: rgba(20, 22, 28, 0.6) !important;
   box-shadow:
-    0 10px 28px rgba(0, 0, 0, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .payment-method-modal__option:hover {
-  border-color: rgba(42, 91, 255, 0.44) !important;
+  border-color: rgba(88, 101, 242, 0.3) !important;
+  transform: translateY(-2px);
   box-shadow:
-    0 14px 30px rgba(28, 54, 158, 0.34),
-    0 0 20px rgba(79, 172, 254, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    0 12px 28px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .payment-method-modal__option.is-active {
-  border-color: rgba(42, 91, 255, 0.62) !important;
-  background:
-    radial-gradient(120% 110% at 0% 0%, rgba(42, 91, 255, 0.16), rgba(42, 91, 255, 0.04) 62%),
-    rgba(17, 23, 36, 0.74) !important;
+  border-color: rgba(88, 101, 242, 0.42) !important;
+  background: rgba(20, 22, 28, 0.6) !important;
   box-shadow:
-    0 0 0 1px rgba(42, 91, 255, 0.24),
-    0 14px 30px rgba(28, 54, 158, 0.36),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 10px 28px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .payment-method-modal__option.is-active::after {
-  border-color: rgba(42, 91, 255, 0.84) !important;
-  background: #2a5bff !important;
-  box-shadow: 0 0 0 4px rgba(42, 91, 255, 0.2) !important;
+  border-color: rgba(88, 101, 242, 0.65) !important;
+  background: #5865f2 !important;
+  box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.12) !important;
 }
 
 .payment-method-modal__dialog,
 .product-preview-modal__dialog {
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  background:
-    linear-gradient(165deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
-    rgba(15, 20, 30, 0.86) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 16px !important;
+  background: rgba(20, 22, 28, 0.6) !important;
   box-shadow:
-    0 18px 56px rgba(0, 0, 0, 0.52),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
 }
 
 .product-preview-modal__term {
-  border-color: rgba(126, 156, 255, 0.44) !important;
-  background: rgba(42, 91, 255, 0.12) !important;
-  color: #b8cdff !important;
+  border-color: rgba(88, 101, 242, 0.3) !important;
+  background: rgba(88, 101, 242, 0.1) !important;
+  color: #c7d2ff !important;
 }
 
 .product-preview-modal__title,
@@ -2378,17 +2377,18 @@ header,
 }
 
 .product-preview-modal__list li::before {
-  color: #7ea4ff !important;
+  color: #9fb2ff !important;
 }
 
 .product-preview-modal__checkout {
-  border-color: rgba(255, 255, 255, 0.14) !important;
-  background: rgba(13, 18, 28, 0.68) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  border-radius: 16px !important;
+  background: rgba(20, 22, 28, 0.6) !important;
 }
 
 .product-preview-modal__field-input {
-  border-color: rgba(255, 255, 255, 0.18) !important;
-  background: rgba(10, 15, 24, 0.72) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(16, 18, 24, 0.64) !important;
   color: #eef4ff !important;
 }
 
@@ -2401,35 +2401,36 @@ header,
 }
 
 .payment-method-modal__icon {
-  border-color: rgba(255, 255, 255, 0.16) !important;
-  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
 }
 
 .cart-payment-method__card {
-  border-color: rgba(255, 255, 255, 0.14) !important;
-  background: rgba(12, 18, 28, 0.72) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  border-radius: 16px !important;
+  background: rgba(20, 22, 28, 0.6) !important;
   box-shadow:
-    0 10px 24px rgba(0, 0, 0, 0.26),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
 }
 
 .cart-payment-method.is-active .cart-payment-method__card {
-  border-color: rgba(42, 91, 255, 0.52) !important;
+  border-color: rgba(88, 101, 242, 0.42) !important;
   box-shadow:
-    0 12px 26px rgba(28, 54, 158, 0.24),
-    0 0 0 1px rgba(42, 91, 255, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
 }
 
 .seo-note {
-  border-color: rgba(42, 91, 255, 0.28) !important;
-  background: rgba(42, 91, 255, 0.12) !important;
+  border-color: rgba(88, 101, 242, 0.26) !important;
+  background: rgba(88, 101, 242, 0.08) !important;
   color: #c9d9ff !important;
 }
 
 .seo-related {
-  border-color: rgba(255, 255, 255, 0.14) !important;
-  background: rgba(13, 19, 29, 0.74) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  border-radius: 16px !important;
+  background: rgba(20, 22, 28, 0.6) !important;
 }
 
 .page-overlay {
