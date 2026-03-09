@@ -3904,14 +3904,14 @@ footer {
    Source style: background-gradient-animation (21st.dev)
    ========================================================= */
 :root {
-  --gradient-background-start: #f6f7fb;
-  --gradient-background-end: #edf3ff;
-  --gradient-first: 132, 164, 255;
-  --gradient-second: 172, 214, 255;
-  --gradient-third: 255, 188, 228;
-  --gradient-fourth: 140, 224, 255;
-  --gradient-fifth: 186, 170, 255;
-  --gradient-pointer: 124, 164, 255;
+  --gradient-background-start: #f6f8ff;
+  --gradient-background-end: #ecf2ff;
+  --gradient-first: 118, 150, 255;
+  --gradient-second: 110, 210, 255;
+  --gradient-third: 255, 186, 220;
+  --gradient-fourth: 132, 226, 200;
+  --gradient-fifth: 198, 168, 255;
+  --gradient-pointer: 144, 136, 255;
   --gradient-size: min(96vmax, 1280px);
   --gradient-blending: screen;
 }
@@ -4095,22 +4095,32 @@ body.home-gradient-page main.page {
 body.home-gradient-page {
   background:
     radial-gradient(
-      120% 96% at 10% 16%,
-      rgba(var(--gradient-first), 0.34) 0%,
-      rgba(var(--gradient-first), 0) 64%
+      118% 92% at 8% 14%,
+      rgba(var(--gradient-first), 0.31) 0%,
+      rgba(var(--gradient-first), 0) 66%
     ),
     radial-gradient(
-      110% 92% at 88% 18%,
-      rgba(var(--gradient-second), 0.31) 0%,
-      rgba(var(--gradient-second), 0) 64%
+      108% 92% at 88% 12%,
+      rgba(var(--gradient-second), 0.28) 0%,
+      rgba(var(--gradient-second), 0) 66%
     ),
     radial-gradient(
-      98% 88% at 50% 88%,
-      rgba(var(--gradient-third), 0.28) 0%,
-      rgba(var(--gradient-third), 0) 62%
+      100% 90% at 52% 88%,
+      rgba(var(--gradient-third), 0.24) 0%,
+      rgba(var(--gradient-third), 0) 64%
+    ),
+    radial-gradient(
+      96% 84% at 22% 78%,
+      rgba(var(--gradient-fourth), 0.2) 0%,
+      rgba(var(--gradient-fourth), 0) 64%
+    ),
+    radial-gradient(
+      92% 82% at 78% 74%,
+      rgba(var(--gradient-fifth), 0.18) 0%,
+      rgba(var(--gradient-fifth), 0) 64%
     ),
     linear-gradient(40deg, var(--gradient-background-start), var(--gradient-background-end)) !important;
-  background-size: 186% 186%, 170% 170%, 160% 160%, 100% 100% !important;
+  background-size: 190% 190%, 176% 176%, 164% 164%, 156% 156%, 148% 148%, 100% 100% !important;
 }
 
 body.home-gradient-page main.page {
@@ -4119,12 +4129,12 @@ body.home-gradient-page main.page {
 }
 
 body.home-gradient-page::before {
-  opacity: 0.5 !important;
+  opacity: 0.44 !important;
   animation: premiumBodyGlowA 16s ease-in-out infinite alternate !important;
 }
 
 body.home-gradient-page::after {
-  opacity: 0.44 !important;
+  opacity: 0.38 !important;
   animation: premiumBodyGlowB 20s ease-in-out infinite alternate !important;
 }
 
@@ -4140,13 +4150,13 @@ body.home-gradient-page main.page::after {
 
 @keyframes lpBaseGradientShift {
   0% {
-    background-position: 0% 0%, 100% 0%, 50% 100%, 0% 0%;
+    background-position: 0% 0%, 100% 0%, 50% 100%, 12% 90%, 88% 86%, 0% 0%;
   }
   50% {
-    background-position: 36% 18%, 64% 22%, 52% 66%, 0% 0%;
+    background-position: 34% 18%, 66% 18%, 50% 64%, 24% 58%, 72% 58%, 0% 0%;
   }
   100% {
-    background-position: 100% 28%, 0% 30%, 48% 0%, 0% 0%;
+    background-position: 100% 28%, 0% 28%, 48% 0%, 32% 18%, 66% 16%, 0% 0%;
   }
 }
 
