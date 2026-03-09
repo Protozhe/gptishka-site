@@ -3906,14 +3906,14 @@ footer {
 :root {
   --gradient-background-start: #f6f8ff;
   --gradient-background-end: #ecf2ff;
-  --gradient-first: 118, 150, 255;
-  --gradient-second: 110, 210, 255;
-  --gradient-third: 255, 186, 220;
-  --gradient-fourth: 132, 226, 200;
-  --gradient-fifth: 198, 168, 255;
-  --gradient-pointer: 144, 136, 255;
+  --gradient-first: 110, 132, 255;
+  --gradient-second: 96, 208, 186;
+  --gradient-third: 255, 164, 198;
+  --gradient-fourth: 255, 208, 142;
+  --gradient-fifth: 188, 148, 255;
+  --gradient-pointer: 126, 144, 255;
   --gradient-size: min(96vmax, 1280px);
-  --gradient-blending: screen;
+  --gradient-blending: soft-light;
 }
 
 html,
@@ -3955,60 +3955,60 @@ body::after {
   background:
     radial-gradient(
       circle at center,
-      rgba(var(--gradient-first), 0.68) 0%,
+      rgba(var(--gradient-first), 0.6) 0%,
       rgba(var(--gradient-first), 0) 58%
     ) !important;
   transform-origin: center center !important;
   animation: lpGradFirst 32s ease-in-out infinite !important;
-  opacity: 0.74 !important;
+  opacity: 0.64 !important;
 }
 
 .home-gradient-bg__layer--2 {
   background:
     radial-gradient(
       circle at center,
-      rgba(var(--gradient-second), 0.64) 0%,
+      rgba(var(--gradient-second), 0.56) 0%,
       rgba(var(--gradient-second), 0) 58%
     ) !important;
   transform-origin: calc(50% - 380px) calc(50% - 90px) !important;
   animation: lpGradSecond 36s ease-in-out infinite !important;
-  opacity: 0.68 !important;
+  opacity: 0.56 !important;
 }
 
 .home-gradient-bg__layer--3 {
   background:
     radial-gradient(
       circle at center,
-      rgba(var(--gradient-third), 0.56) 0%,
+      rgba(var(--gradient-third), 0.68) 0%,
       rgba(var(--gradient-third), 0) 60%
     ) !important;
   transform-origin: calc(50% + 360px) calc(50% - 80px) !important;
   animation: lpGradThird 42s ease-in-out infinite !important;
-  opacity: 0.58 !important;
+  opacity: 0.66 !important;
 }
 
 .home-gradient-bg__layer--4 {
   background:
     radial-gradient(
       circle at center,
-      rgba(var(--gradient-fourth), 0.54) 0%,
+      rgba(var(--gradient-fourth), 0.64) 0%,
       rgba(var(--gradient-fourth), 0) 60%
     ) !important;
   transform-origin: calc(50% - 180px) calc(50% + 220px) !important;
   animation: lpGradFourth 48s ease-in-out infinite !important;
-  opacity: 0.54 !important;
+  opacity: 0.62 !important;
 }
 
 .home-gradient-bg__layer--5 {
   background:
     radial-gradient(
       circle at center,
-      rgba(var(--gradient-fifth), 0.52) 0%,
+      rgba(var(--gradient-fifth), 0.62) 0%,
       rgba(var(--gradient-fifth), 0) 62%
     ) !important;
   transform-origin: calc(50% - 720px) calc(50% + 680px) !important;
   animation: lpGradFifth 54s ease-in-out infinite !important;
-  opacity: 0.5 !important;
+  opacity: 0.58 !important;
 }
 
 .home-gradient-bg__pointer {
@@ -4096,31 +4096,36 @@ body.home-gradient-page {
   background:
     radial-gradient(
       118% 92% at 8% 14%,
-      rgba(var(--gradient-first), 0.31) 0%,
+      rgba(var(--gradient-first), 0.23) 0%,
       rgba(var(--gradient-first), 0) 66%
     ),
     radial-gradient(
       108% 92% at 88% 12%,
-      rgba(var(--gradient-second), 0.28) 0%,
+      rgba(var(--gradient-second), 0.21) 0%,
       rgba(var(--gradient-second), 0) 66%
     ),
     radial-gradient(
       100% 90% at 52% 88%,
-      rgba(var(--gradient-third), 0.24) 0%,
+      rgba(var(--gradient-third), 0.3) 0%,
       rgba(var(--gradient-third), 0) 64%
     ),
     radial-gradient(
       96% 84% at 22% 78%,
-      rgba(var(--gradient-fourth), 0.2) 0%,
+      rgba(var(--gradient-fourth), 0.28) 0%,
       rgba(var(--gradient-fourth), 0) 64%
     ),
     radial-gradient(
       92% 82% at 78% 74%,
-      rgba(var(--gradient-fifth), 0.18) 0%,
+      rgba(var(--gradient-fifth), 0.26) 0%,
       rgba(var(--gradient-fifth), 0) 64%
     ),
+    radial-gradient(
+      88% 76% at 48% 44%,
+      rgba(255, 246, 222, 0.28) 0%,
+      rgba(255, 246, 222, 0) 70%
+    ),
     linear-gradient(40deg, var(--gradient-background-start), var(--gradient-background-end)) !important;
-  background-size: 190% 190%, 176% 176%, 164% 164%, 156% 156%, 148% 148%, 100% 100% !important;
+  background-size: 190% 190%, 176% 176%, 164% 164%, 156% 156%, 148% 148%, 138% 138%, 100% 100% !important;
 }
 
 body.home-gradient-page main.page {
@@ -4130,33 +4135,47 @@ body.home-gradient-page main.page {
 
 body.home-gradient-page::before {
   opacity: 0.44 !important;
+  background:
+    radial-gradient(circle at 14% 26%, rgba(255, 170, 204, 0.34) 0%, rgba(255, 170, 204, 0) 58%),
+    radial-gradient(circle at 78% 18%, rgba(118, 206, 190, 0.28) 0%, rgba(118, 206, 190, 0) 60%),
+    radial-gradient(circle at 50% 86%, rgba(255, 224, 168, 0.24) 0%, rgba(255, 224, 168, 0) 64%) !important;
   animation: premiumBodyGlowA 16s ease-in-out infinite alternate !important;
 }
 
 body.home-gradient-page::after {
   opacity: 0.38 !important;
+  background:
+    radial-gradient(circle at 20% 78%, rgba(168, 146, 255, 0.3) 0%, rgba(168, 146, 255, 0) 62%),
+    radial-gradient(circle at 82% 68%, rgba(112, 190, 255, 0.24) 0%, rgba(112, 190, 255, 0) 62%),
+    radial-gradient(circle at 52% 12%, rgba(255, 201, 160, 0.22) 0%, rgba(255, 201, 160, 0) 64%) !important;
   animation: premiumBodyGlowB 20s ease-in-out infinite alternate !important;
 }
 
 body.home-gradient-page main.page::before {
   opacity: 0.56 !important;
+  background:
+    radial-gradient(76% 64% at 26% 24%, rgba(255, 210, 176, 0.22) 0%, rgba(255, 210, 176, 0) 70%),
+    radial-gradient(68% 58% at 78% 32%, rgba(138, 200, 255, 0.2) 0%, rgba(138, 200, 255, 0) 70%) !important;
   animation: premiumPageHazeA 14s ease-in-out infinite alternate !important;
 }
 
 body.home-gradient-page main.page::after {
   opacity: 0.46 !important;
+  background:
+    radial-gradient(70% 62% at 70% 76%, rgba(255, 172, 206, 0.2) 0%, rgba(255, 172, 206, 0) 70%),
+    radial-gradient(62% 56% at 24% 68%, rgba(168, 148, 255, 0.2) 0%, rgba(168, 148, 255, 0) 70%) !important;
   animation: premiumPageHazeB 18s ease-in-out infinite alternate !important;
 }
 
 @keyframes lpBaseGradientShift {
   0% {
-    background-position: 0% 0%, 100% 0%, 50% 100%, 12% 90%, 88% 86%, 0% 0%;
+    background-position: 0% 0%, 100% 0%, 50% 100%, 12% 90%, 88% 86%, 52% 44%, 0% 0%;
   }
   50% {
-    background-position: 34% 18%, 66% 18%, 50% 64%, 24% 58%, 72% 58%, 0% 0%;
+    background-position: 34% 18%, 66% 18%, 50% 64%, 24% 58%, 72% 58%, 46% 54%, 0% 0%;
   }
   100% {
-    background-position: 100% 28%, 0% 28%, 48% 0%, 32% 18%, 66% 16%, 0% 0%;
+    background-position: 100% 28%, 0% 28%, 48% 0%, 32% 18%, 66% 16%, 52% 44%, 0% 0%;
   }
 }
 
