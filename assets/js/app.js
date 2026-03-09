@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initLanguageSwitch();
   initActivationResumeShortcut();
   initReviewsSecurityBanner();
+  initSoftProgressivePageReveal();
 });
 
 let pageNavigationInProgress = false;
@@ -196,6 +197,77 @@ function runWhenIdle(callback, timeoutMs = 1400) {
     return;
   }
   window.setTimeout(callback, 220);
+}
+
+function initSoftProgressivePageReveal() {
+  const page = document.querySelector("main.page");
+  if (!page) return;
+  if (page.dataset.softRevealInit === "1") return;
+  page.dataset.softRevealInit = "1";
+
+  const prefersReducedMotion = typeof window.matchMedia === "function"
+    ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    : false;
+  if (prefersReducedMotion) return;
+
+  const root = document.documentElement;
+  const baseDelay = root.classList.contains("is-entering") ? 120 : 40;
+  const sectionNodes = Array.from(page.children)
+    .filter(node => node && node.nodeType === 1)
+    .filter(node => !node.hasAttribute("data-no-soft-reveal"));
+
+  if (!sectionNodes.length) return;
+
+  sectionNodes.forEach((node, index) => {
+    node.classList.add("soft-reveal-item");
+    const cappedIndex = Math.min(index, 6);
+    node.style.setProperty("--soft-reveal-delay", `${baseDelay + cappedIndex * 70}ms`);
+  });
+
+  const revealNow = node => {
+    if (!node || node.classList.contains("is-soft-visible")) return;
+    node.classList.add("is-soft-visible");
+  };
+
+  const foldLimit = Math.max(420, Math.round(window.innerHeight * 0.95));
+  let immediateShown = 0;
+  sectionNodes.forEach(node => {
+    if (immediateShown >= 4) return;
+    const rect = node.getBoundingClientRect();
+    if (rect.top <= foldLimit) {
+      revealNow(node);
+      immediateShown += 1;
+    }
+  });
+
+  if (!("IntersectionObserver" in window)) {
+    sectionNodes.forEach((node, index) => {
+      window.setTimeout(() => revealNow(node), baseDelay + index * 90);
+    });
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const node = entry.target;
+        revealNow(node);
+        observer.unobserve(node);
+      });
+    },
+    {
+      threshold: 0.12,
+      rootMargin: "0px 0px -10% 0px",
+    }
+  );
+
+  sectionNodes.forEach(node => {
+    if (node.classList.contains("is-soft-visible")) return;
+    observer.observe(node);
+  });
+
+  window.addEventListener("pagehide", () => observer.disconnect(), { once: true });
 }
 
 function normalizePrefetchNavigationKey(href) {

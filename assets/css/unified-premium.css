@@ -5048,4 +5048,41 @@ footer {
   }
 }
 
+/* =========================================================
+   Soft Progressive Page Reveal
+   ========================================================= */
+main.page > .soft-reveal-item {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  filter: saturate(97%) blur(0.2px);
+  transition:
+    opacity 0.56s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.56s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.56s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--soft-reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+main.page > .soft-reveal-item.is-soft-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  filter: none;
+}
+
+@media (max-width: 900px) {
+  main.page > .soft-reveal-item {
+    transform: translate3d(0, 10px, 0);
+    transition-duration: 0.44s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main.page > .soft-reveal-item {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+}
+
 
