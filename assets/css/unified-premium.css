@@ -3708,4 +3708,175 @@ footer .footer-link:hover {
   }
 }
 
+/* =========================================================
+   Visual Hotfixes: ticker edges, inner-page spacing, badges, footer
+   ========================================================= */
+
+/* richer but still soft ambient gradient */
+body::before {
+  background:
+    radial-gradient(circle at 12% 14%, rgba(158, 184, 255, 0.4) 0%, rgba(158, 184, 255, 0) 58%),
+    radial-gradient(circle at 72% 18%, rgba(163, 223, 255, 0.32) 0%, rgba(163, 223, 255, 0) 62%),
+    radial-gradient(circle at 88% 74%, rgba(255, 206, 228, 0.28) 0%, rgba(255, 206, 228, 0) 60%) !important;
+  animation-duration: 56s !important;
+}
+
+body::after {
+  background:
+    radial-gradient(circle at 20% 80%, rgba(195, 210, 255, 0.34) 0%, rgba(195, 210, 255, 0) 62%),
+    radial-gradient(circle at 68% 64%, rgba(186, 239, 255, 0.26) 0%, rgba(186, 239, 255, 0) 58%),
+    radial-gradient(circle at 50% 8%, rgba(255, 229, 241, 0.22) 0%, rgba(255, 229, 241, 0) 60%) !important;
+  animation-duration: 64s !important;
+}
+
+.home-gradient-bg__layer,
+.home-gradient-bg__pointer {
+  mix-blend-mode: screen;
+}
+
+/* inner pages should not stick to header */
+main.page {
+  padding-top: clamp(14px, 2.2vw, 28px) !important;
+}
+
+main.page > .about:first-child,
+main.page > .contact:first-child,
+main.page > .container:first-child {
+  margin-top: clamp(14px, 2.8vw, 34px) !important;
+}
+
+/* ensure guarantee/about/contact blocks use light system */
+.container,
+.block,
+.card {
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  background: var(--lp-surface-card) !important;
+  box-shadow: var(--lp-shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.76) !important;
+  backdrop-filter: blur(14px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(132%) !important;
+}
+
+.container h1,
+.block h2,
+.card h2 {
+  color: var(--lp-text) !important;
+}
+
+.intro,
+.block p,
+.block li,
+.card p,
+.card li {
+  color: var(--lp-text-soft) !important;
+}
+
+/* ticker: smooth edge fade and cleaner stats pill */
+.site-ticker {
+  overflow: hidden !important;
+}
+
+.site-ticker__marquee {
+  position: relative;
+  overflow: hidden !important;
+  mask-image: linear-gradient(90deg, transparent 0%, #000 7%, #000 93%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 7%, #000 93%, transparent 100%);
+}
+
+.site-ticker__track,
+.site-ticker__loop {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.site-ticker__stats {
+  padding: 7px 14px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(174, 194, 230, 0.74) !important;
+  background: linear-gradient(
+    158deg,
+    rgba(255, 255, 255, 0.86) 0%,
+    rgba(232, 241, 255, 0.78) 100%
+  ) !important;
+  box-shadow:
+    0 8px 18px rgba(66, 86, 130, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
+}
+
+.site-ticker__stat-label {
+  color: #5a6d8d !important;
+}
+
+.site-ticker__stat strong {
+  color: #274167 !important;
+}
+
+/* product badges should be compact, not full-card width */
+.price-card {
+  position: relative;
+}
+
+.price-card .badge,
+.price-card .badge.best,
+.price-card .badge.new,
+.price-card .badge.hit,
+.price-card .badge.sale,
+.price-card .badge.popular,
+.price-card .badge.limited,
+.price-card .badge.gift,
+.price-card .badge.pro {
+  position: absolute !important;
+  top: 14px !important;
+  right: 14px !important;
+  left: auto !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: auto !important;
+  max-width: calc(100% - 28px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 6px 12px !important;
+  line-height: 1.1;
+  border-radius: 999px !important;
+  z-index: 3;
+}
+
+/* prettier footer container */
+footer {
+  width: min(1240px, calc(100% - 24px)) !important;
+  margin: 18px auto 22px !important;
+  padding: 14px 18px 16px !important;
+  border: 1px solid rgba(184, 202, 236, 0.56) !important;
+  border-radius: 16px !important;
+  background: linear-gradient(
+    162deg,
+    rgba(255, 255, 255, 0.68) 0%,
+    rgba(236, 243, 255, 0.58) 100%
+  ) !important;
+  box-shadow:
+    0 12px 24px rgba(69, 89, 132, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
+}
+
+@media (max-width: 760px) {
+  .site-ticker__marquee {
+    mask-image: linear-gradient(90deg, transparent 0%, #000 5%, #000 95%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 5%, #000 95%, transparent 100%);
+  }
+
+  .price-card .badge,
+  .price-card .badge.best,
+  .price-card .badge.new,
+  .price-card .badge.hit,
+  .price-card .badge.sale,
+  .price-card .badge.popular,
+  .price-card .badge.limited,
+  .price-card .badge.gift,
+  .price-card .badge.pro {
+    left: 14px !important;
+    right: auto !important;
+  }
+}
+
 
