@@ -3924,13 +3924,23 @@ footer .footer-copy {
   scroll-margin-top: 104px;
 }
 
+#faq {
+  scroll-margin-top: 104px;
+}
+
+#payment {
+  scroll-margin-top: 104px;
+}
+
 @media (max-width: 760px) {
-  #how {
-    scroll-margin-top: 112px;
+  #how,
+  #pricing,
+  #faq {
+    scroll-margin-top: 132px;
   }
 
-  #pricing {
-    scroll-margin-top: 112px;
+  #payment {
+    scroll-margin-top: 124px;
   }
 
   footer .footer-links-primary,
