@@ -5137,13 +5137,15 @@ footer {
   }
 
   .site-ticker {
-    grid-template-columns: 1fr !important;
-    gap: 6px !important;
-    padding: 6px 8px 8px !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 7px !important;
+    padding: 6px 8px !important;
   }
 
   .site-ticker__marquee {
     min-height: 19px !important;
+    min-width: 0 !important;
   }
 
   .site-ticker__track {
@@ -5157,13 +5159,15 @@ footer {
   }
 
   .site-ticker__stats {
-    justify-self: center !important;
-    justify-content: center !important;
+    justify-self: end !important;
+    justify-content: flex-end !important;
+    align-self: center !important;
     width: auto !important;
-    max-width: calc(100% - 8px) !important;
-    padding: 5px 9px !important;
-    font-size: 10px !important;
-    gap: 6px !important;
+    max-width: min(48vw, 192px) !important;
+    overflow: hidden !important;
+    padding: 4px 8px !important;
+    font-size: 9px !important;
+    gap: 4px !important;
     white-space: nowrap !important;
   }
 
@@ -5175,15 +5179,19 @@ footer {
   }
 
   .site-ticker__stat-label {
-    display: inline !important;
-    font-size: 10px !important;
-    opacity: 0.78 !important;
+    display: inline-block !important;
+    max-width: 92px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    vertical-align: bottom !important;
+    font-size: 9px !important;
+    opacity: 0.84 !important;
     letter-spacing: 0.01em !important;
     text-transform: none !important;
   }
 
   .site-ticker__stat strong {
-    font-size: 12px !important;
+    font-size: 11px !important;
     letter-spacing: 0.015em !important;
   }
 }
