@@ -55,6 +55,37 @@ function initPageEnterTransition() {
   });
 }
 
+function normalizePathname(pathname) {
+  const path = String(pathname || "").trim() || "/";
+  if (path === "/") return "/";
+  return path.endsWith("/") ? path.slice(0, -1) : path;
+}
+
+function shouldUsePageTransitionForHref(href, linkEl) {
+  const rawHref = String(href || "").trim();
+  if (!rawHref) return false;
+  if (rawHref.startsWith("mailto:") || rawHref.startsWith("tel:") || rawHref.startsWith("javascript:")) return false;
+  if (linkEl && (linkEl.hasAttribute("download") || String(linkEl.getAttribute("target") || "").toLowerCase() === "_blank")) return false;
+
+  let targetUrl;
+  try {
+    targetUrl = new URL(rawHref, window.location.href);
+  } catch (_) {
+    return false;
+  }
+
+  if (targetUrl.origin !== window.location.origin) return false;
+
+  const currentPath = normalizePathname(window.location.pathname);
+  const targetPath = normalizePathname(targetUrl.pathname);
+  const samePath = currentPath === targetPath;
+  const sameSearch = targetUrl.search === window.location.search;
+  const isSamePageAnchor = samePath && sameSearch && Boolean(targetUrl.hash);
+  if (isSamePageAnchor) return false;
+
+  return true;
+}
+
 function initHomeGradientBackground() {
   const body = document.body;
   if (!body) return;
@@ -401,17 +432,9 @@ function initActivationResumeShortcut() {
 }
   
 document.querySelectorAll("a[href]").forEach(link => {
-    const href = link.getAttribute("href");
-  
-    if (
-      !href ||
-      href.includes("#") ||          // IMPORTANT
-      href.startsWith("http") ||
-      href.startsWith("mailto:") ||
-      href.startsWith("tel:")
-    ) return;
-  
     link.addEventListener("click", e => {
+      const href = link.getAttribute("href");
+      if (!shouldUsePageTransitionForHref(href, link)) return;
       e.preventDefault();
       navigateWithPageTransition(href, 230);
     });
