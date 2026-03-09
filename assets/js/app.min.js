@@ -5,6 +5,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   document.documentElement.classList.remove("is-leaving");
   initHomeGradientBackground();
+  initPulseBeamButtons();
 
   const header = document.querySelector("header");
   if (!header) return;
@@ -110,6 +111,84 @@ function initFaqAccordions() {
       if (item) item.classList.toggle("active");
     });
   });
+}
+
+function initPulseBeamButtons() {
+  const root = document.body;
+  if (!root) return;
+
+  const targetSelector = [
+    "a.btn",
+    "button.btn",
+    ".buy-btn",
+    ".faq-chat-btn",
+    ".redeem-btn",
+    ".redeem-btn-primary",
+    ".gptishka-resume-activation",
+    ".support-widget__fab",
+    ".support-widget__cta",
+    ".status-btn",
+    ".btn-primary",
+    ".btn-secondary",
+    ".product-preview-modal__pay",
+    ".product-preview-modal__promo-apply",
+    ".payment-method-modal__option",
+    "#cartCheckoutBtn",
+    "#headerCartPanelCheckoutBtn",
+    "#cartPromoApply",
+    "#headerCartPromoApply",
+    "#manualSupportBtn",
+  ].join(", ");
+
+  const skipSelector = [
+    ".faq-question",
+    ".payment-method-modal__close",
+    ".support-widget__close",
+    ".redeem-review-close",
+    ".header-mini-remove-btn",
+    ".cart-remove-btn",
+  ].join(", ");
+
+  const ensureBeamTarget = node => {
+    if (!(node instanceof HTMLElement)) return;
+    if (node.matches(skipSelector)) return;
+    if (node.classList.contains("lp-pulse-beam-target")) return;
+
+    node.classList.add("lp-pulse-beam-target");
+
+    const hasBeamLayer = Array.from(node.children).some(
+      child => child instanceof HTMLElement && child.classList.contains("lp-pulse-beams")
+    );
+    if (hasBeamLayer) return;
+
+    const beamLayer = document.createElement("span");
+    beamLayer.className = "lp-pulse-beams";
+    beamLayer.setAttribute("aria-hidden", "true");
+    node.insertBefore(beamLayer, node.firstChild);
+  };
+
+  const hydrateTargets = scope => {
+    if (!(scope instanceof Element)) return;
+
+    if (scope.matches(targetSelector)) {
+      ensureBeamTarget(scope);
+    }
+
+    scope.querySelectorAll(targetSelector).forEach(ensureBeamTarget);
+  };
+
+  hydrateTargets(root);
+
+  const observer = new MutationObserver(mutations => {
+    mutations.forEach(mutation => {
+      mutation.addedNodes.forEach(addedNode => {
+        if (!(addedNode instanceof Element)) return;
+        hydrateTargets(addedNode);
+      });
+    });
+  });
+
+  observer.observe(root, { childList: true, subtree: true });
 }
 
 function initReviewsSecurityBanner() {

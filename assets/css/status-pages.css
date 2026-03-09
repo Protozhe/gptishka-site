@@ -171,6 +171,35 @@
   content: none;
 }
 
+.status-btn::after,
+.btn::after {
+  content: "";
+  position: absolute;
+  inset: -28%;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  background:
+    linear-gradient(
+      116deg,
+      transparent 8%,
+      rgba(255, 255, 255, 0) 28%,
+      rgba(255, 255, 255, 0.22) 40%,
+      rgba(255, 255, 255, 0.76) 50%,
+      rgba(142, 198, 255, 0.36) 61%,
+      rgba(142, 198, 255, 0) 74%
+    ),
+    linear-gradient(
+      62deg,
+      transparent 16%,
+      rgba(174, 148, 255, 0) 36%,
+      rgba(174, 148, 255, 0.62) 52%,
+      rgba(174, 148, 255, 0) 70%
+    );
+  transition: opacity 0.22s ease;
+}
+
 .status-btn:hover,
 .btn:hover {
   transform: translateY(-2px);
@@ -178,6 +207,14 @@
   box-shadow:
     0 12px 26px rgba(0, 0, 0, 0.44),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.status-btn:hover::after,
+.btn:hover::after,
+.status-btn:focus-visible::after,
+.btn:focus-visible::after {
+  opacity: 0.88;
+  animation: statusPulseBeamSweep 1.45s cubic-bezier(0.32, 0, 0.2, 1) infinite;
 }
 
 .status-btn:active,
@@ -195,6 +232,15 @@
   box-shadow:
     0 8px 20px rgba(0, 0, 0, 0.38),
     inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+@keyframes statusPulseBeamSweep {
+  0% {
+    background-position: -220% 0, -180% 0;
+  }
+  100% {
+    background-position: 220% 0, 180% 0;
+  }
 }
 
 @media (max-width: 760px) {

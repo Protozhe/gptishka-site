@@ -62,6 +62,9 @@
     .err { color: var(--danger); font-size: 24px; margin: 0 0 12px; }
     .meta { color: var(--muted); margin: 8px 0; }
     .btn {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
       display: inline-block;
       margin-top: 16px;
       padding: 10px 16px;
@@ -73,10 +76,50 @@
       text-decoration: none;
       font-weight: 700;
     }
+    .btn::after {
+      content: "";
+      position: absolute;
+      inset: -28%;
+      border-radius: inherit;
+      pointer-events: none;
+      opacity: 0;
+      mix-blend-mode: screen;
+      background:
+        linear-gradient(
+          116deg,
+          transparent 8%,
+          rgba(255, 255, 255, 0) 28%,
+          rgba(255, 255, 255, 0.22) 40%,
+          rgba(255, 255, 255, 0.78) 50%,
+          rgba(142, 198, 255, 0.36) 62%,
+          rgba(142, 198, 255, 0) 74%
+        ),
+        linear-gradient(
+          62deg,
+          transparent 16%,
+          rgba(174, 148, 255, 0) 36%,
+          rgba(174, 148, 255, 0.62) 52%,
+          rgba(174, 148, 255, 0) 70%
+        );
+      transition: opacity 0.22s ease;
+    }
     .btn:hover {
       box-shadow: 0 12px 26px rgba(0, 0, 0, 0.44);
       transform: translateY(-2px);
       filter: brightness(1.05);
+    }
+    .btn:hover::after,
+    .btn:focus-visible::after {
+      opacity: 0.9;
+      animation: failPulseBeamSweep 1.45s cubic-bezier(0.32, 0, 0.2, 1) infinite;
+    }
+    @keyframes failPulseBeamSweep {
+      0% {
+        background-position: -220% 0, -180% 0;
+      }
+      100% {
+        background-position: 220% 0, 180% 0;
+      }
     }
     code {
       background: rgba(255, 255, 255, 0.08);
