@@ -500,41 +500,57 @@
       place-items: center;
       padding: 18px;
       background:
-        radial-gradient(760px 360px at 50% -12%, rgba(15, 141, 119, 0.24), transparent 68%),
-        radial-gradient(660px 320px at 100% 115%, rgba(242, 155, 89, 0.22), transparent 70%),
-        rgba(14, 24, 37, 0.62);
-      backdrop-filter: blur(4px) saturate(120%);
+        radial-gradient(820px 420px at 8% -8%, rgba(14, 168, 141, 0.24), transparent 64%),
+        radial-gradient(720px 380px at 100% 100%, rgba(230, 132, 75, 0.2), transparent 68%),
+        linear-gradient(135deg, rgba(10, 17, 27, 0.76), rgba(11, 22, 35, 0.7));
+      backdrop-filter: blur(10px) saturate(138%);
       animation: redeem-review-fade 0.2s ease;
     }
 
     .redeem-review-card {
       position: relative;
       overflow: hidden;
-      width: min(600px, 100%);
-      border: 1px solid rgba(255, 255, 255, 0.56);
-      border-radius: 22px;
-      padding: 24px;
+      isolation: isolate;
+      width: min(660px, 100%);
+      border: 1px solid rgba(214, 228, 244, 0.66);
+      border-radius: 28px;
+      padding: 26px;
       color: #183345;
       background:
-        linear-gradient(155deg, rgba(255, 255, 255, 0.94), rgba(240, 251, 246, 0.9)),
-        radial-gradient(circle at 2px 2px, rgba(23, 64, 83, 0.06) 1px, transparent 0);
-      background-size: auto, 14px 14px;
+        radial-gradient(130% 120% at 100% 0%, rgba(14, 168, 141, 0.11), transparent 58%),
+        radial-gradient(120% 130% at 0% 0%, rgba(67, 56, 202, 0.09), transparent 54%),
+        linear-gradient(162deg, rgba(255, 255, 255, 0.98), rgba(246, 251, 255, 0.93));
       box-shadow:
-        0 30px 66px rgba(9, 21, 33, 0.34),
-        inset 0 1px 0 rgba(255, 255, 255, 0.92);
+        0 34px 70px rgba(8, 19, 31, 0.36),
+        0 10px 28px rgba(17, 70, 95, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.96);
       animation: redeem-review-pop 0.24s ease;
     }
 
     .redeem-review-card::before {
       content: "";
       position: absolute;
-      width: 240px;
-      height: 240px;
-      right: -94px;
-      top: -112px;
+      width: 300px;
+      height: 300px;
+      right: -128px;
+      top: -172px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(15, 141, 119, 0.24), transparent 70%);
+      background: radial-gradient(circle, rgba(14, 168, 141, 0.26), transparent 68%);
       pointer-events: none;
+    }
+
+    .redeem-review-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background:
+        linear-gradient(102deg, rgba(255, 255, 255, 0.42), transparent 22%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
+      mix-blend-mode: screen;
+      opacity: 0.7;
+      z-index: -1;
     }
 
     .redeem-review-badge {
@@ -542,118 +558,180 @@
       align-items: center;
       gap: 6px;
       border-radius: 999px;
-      border: 1px solid rgba(15, 141, 119, 0.28);
-      background: rgba(15, 141, 119, 0.12);
-      color: #0e6c5a;
+      border: 1px solid rgba(13, 148, 136, 0.34);
+      background: linear-gradient(140deg, rgba(13, 148, 136, 0.16), rgba(59, 130, 246, 0.1));
+      color: #0f5f66;
       font-size: 12px;
       font-weight: 800;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.045em;
       text-transform: uppercase;
-      padding: 7px 12px;
+      padding: 8px 13px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
     }
 
     .redeem-review-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 12px;
     }
 
     .redeem-review-close {
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
-      border: 1px solid rgba(24, 51, 69, 0.16);
-      background: rgba(255, 255, 255, 0.88);
-      color: #41576b;
-      font-size: 21px;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      border: 1px solid rgba(35, 56, 79, 0.18);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(239, 246, 254, 0.86));
+      color: #34495f;
+      font-size: 22px;
       line-height: 1;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: transform 0.14s ease, border-color 0.16s ease, background 0.16s ease;
+      box-shadow: 0 10px 22px rgba(13, 31, 46, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.96);
+      transition: transform 0.14s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
     }
 
     .redeem-review-close:hover {
-      border-color: rgba(24, 51, 69, 0.26);
-      background: #ffffff;
+      border-color: rgba(35, 56, 79, 0.32);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 1), rgba(246, 251, 255, 0.92));
       transform: translateY(-1px);
+      box-shadow: 0 14px 26px rgba(13, 31, 46, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.98);
     }
 
     .redeem-review-close:active {
       transform: translateY(0);
     }
 
+    .redeem-review-body {
+      margin-top: 14px;
+    }
+
     .redeem-review-head {
-      margin-top: 12px;
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: start;
+      gap: 14px;
+    }
+
+    .redeem-review-mark-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(140deg, rgba(14, 168, 141, 0.24), rgba(59, 130, 246, 0.22));
+      box-shadow: 0 10px 24px rgba(14, 74, 97, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.68);
     }
 
     .redeem-review-mark {
-      flex-shrink: 0;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      border-radius: 13px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       font-family: "Space Grotesk", "Manrope", sans-serif;
-      font-size: 18px;
+      font-size: 19px;
       font-weight: 700;
       color: #ffffff;
-      background: linear-gradient(138deg, #10a189, #0f8d77);
-      box-shadow: 0 8px 18px rgba(15, 141, 119, 0.34);
+      background: linear-gradient(138deg, #0da58c, #0e8f76 48%, #1d7f9f);
+      box-shadow: 0 10px 22px rgba(15, 141, 119, 0.34);
     }
 
     .redeem-review-card h3 {
       margin: 0;
       font-family: "Space Grotesk", "Manrope", sans-serif;
-      font-size: clamp(22px, 3vw, 30px);
-      line-height: 1.08;
+      font-size: clamp(24px, 3.3vw, 34px);
+      line-height: 1.05;
       letter-spacing: -0.02em;
-      color: #183345;
+      color: #132b40;
       text-wrap: balance;
     }
 
     .redeem-review-lead {
-      margin: 12px 0 0;
-      color: #33475c;
+      margin: 9px 0 0;
+      color: #37516a;
       font-size: 15px;
-      line-height: 1.56;
+      line-height: 1.6;
+      max-width: 46ch;
+      text-wrap: pretty;
+    }
+
+    .redeem-review-points {
+      margin: 16px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 9px;
+    }
+
+    .redeem-review-points li {
+      position: relative;
+      padding: 11px 13px 11px 36px;
+      border-radius: 12px;
+      border: 1px solid rgba(188, 205, 223, 0.78);
+      background: linear-gradient(156deg, rgba(255, 255, 255, 0.84), rgba(242, 248, 255, 0.72));
+      color: #2f4860;
+      font-size: 14px;
+      line-height: 1.48;
+      font-weight: 600;
+    }
+
+    .redeem-review-points li::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: 17px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(140deg, #0da58c, #1a80a5);
+      box-shadow: 0 0 0 5px rgba(13, 165, 140, 0.18);
     }
 
     .redeem-review-note {
-      margin: 8px 0 0;
-      color: #567085;
+      margin: 12px 0 0;
+      color: #60758b;
       font-size: 13px;
       line-height: 1.5;
     }
 
     .redeem-review-links {
-      margin-top: 16px;
-      border-top: 1px solid rgba(24, 51, 69, 0.12);
-      padding-top: 14px;
-      display: flex;
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
       gap: 10px;
-      flex-wrap: wrap;
+      align-items: center;
     }
 
     .redeem-review-links .redeem-btn {
-      width: 100%;
-      min-height: 50px;
+      min-height: 48px;
       border-radius: 14px;
-      justify-content: center;
       font-family: "Space Grotesk", "Manrope", sans-serif;
       font-size: 15px;
       letter-spacing: 0.01em;
-      box-shadow: 0 12px 24px rgba(15, 141, 119, 0.24);
+      justify-content: center;
     }
 
-    .redeem-review-links .redeem-btn:hover {
-      box-shadow: 0 14px 30px rgba(15, 141, 119, 0.32);
+    .redeem-review-links .redeem-btn-primary {
+      min-width: 220px;
+      box-shadow: 0 14px 30px rgba(15, 141, 119, 0.26);
+    }
+
+    .redeem-btn-soft {
+      border-color: rgba(133, 154, 175, 0.52);
+      background: linear-gradient(150deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 255, 0.88));
+      color: #29435a;
+      box-shadow: 0 10px 22px rgba(13, 31, 46, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.96);
+    }
+
+    .redeem-btn-soft:hover {
+      border-color: rgba(76, 102, 128, 0.48);
+      background: linear-gradient(150deg, rgba(255, 255, 255, 1), rgba(246, 251, 255, 0.92));
+      color: #1f3a53;
     }
 
     .redeem-btn.loading {
@@ -767,12 +845,34 @@
       }
 
       .redeem-review-head {
-        gap: 10px;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .redeem-review-mark-wrap {
+        width: 46px;
+        height: 46px;
+        border-radius: 13px;
       }
 
       .redeem-review-mark {
-        width: 30px;
-        height: 30px;
+        width: 34px;
+        height: 34px;
+        border-radius: 11px;
+        font-size: 17px;
+      }
+
+      .redeem-review-points li {
+        padding: 10px 12px 10px 34px;
+        font-size: 13px;
+      }
+
+      .redeem-review-links {
+        grid-template-columns: 1fr;
+      }
+
+      .redeem-review-links .redeem-btn {
+        width: 100%;
       }
 
       .redeem-review-close {
@@ -908,19 +1008,31 @@
         <button id="copyTaskBtn" type="button" class="redeem-btn" style="display:none">Скопировать Task</button>
       </section>
 
-      <section id="reviewRewardBox" class="redeem-review-reward" hidden aria-modal="true" role="dialog" aria-live="polite">
+      <section id="reviewRewardBox" class="redeem-review-reward" hidden aria-modal="true" role="dialog" aria-live="polite" aria-labelledby="reviewRewardTitle">
         <div class="redeem-review-card">
           <div class="redeem-review-top">
             <span class="redeem-review-badge">Бонус 10% на следующий заказ</span>
             <button id="reviewRewardCloseBtn" type="button" class="redeem-review-close" aria-label="Закрыть сообщение" title="Закрыть">&times;</button>
           </div>
-          <div class="redeem-review-head">
-            <span class="redeem-review-mark" aria-hidden="true">✓</span>
-            <h3>Ваш тариф успешно активирован</h3>
-          </div>
-          <p class="redeem-review-lead">Спасибо за покупку. Оставьте короткий отзыв в Telegram и получите персональный промокод 10%.</p>
-          <div class="redeem-review-links">
-            <a class="redeem-btn redeem-btn-primary" href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">Оставить отзыв</a>
+          <div class="redeem-review-body">
+            <div class="redeem-review-head">
+              <span class="redeem-review-mark-wrap" aria-hidden="true">
+                <span class="redeem-review-mark">✓</span>
+              </span>
+              <div class="redeem-review-copy">
+                <h3 id="reviewRewardTitle">Ваш тариф успешно активирован</h3>
+                <p class="redeem-review-lead">Спасибо за покупку. Оставьте короткий отзыв в Telegram и получите персональный промокод 10%.</p>
+              </div>
+            </div>
+            <ul class="redeem-review-points">
+              <li>Промокод действует на следующий заказ и суммируется с текущими акциями.</li>
+              <li>Проверим отзыв и отправим ваш персональный код в поддержку без задержек.</li>
+            </ul>
+            <div class="redeem-review-links">
+              <a class="redeem-btn redeem-btn-primary" href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">Оставить отзыв</a>
+              <button id="reviewRewardDismissBtn" type="button" class="redeem-btn redeem-btn-soft">Позже</button>
+            </div>
+            <p class="redeem-review-note">Если окно мешает, нажмите «Позже» или клавишу Esc. Бонус останется доступен.</p>
           </div>
         </div>
       </section>
@@ -977,6 +1089,7 @@
     const copyTaskBtn = document.getElementById('copyTaskBtn');
     const reviewRewardBox = document.getElementById('reviewRewardBox');
     const reviewRewardCloseBtn = document.getElementById('reviewRewardCloseBtn');
+    const reviewRewardDismissBtn = document.getElementById('reviewRewardDismissBtn');
 
     const POLL_INTERVAL_MS = 2000;
     // Provider processing may take a few minutes. Don't auto-restart tasks on short timeouts.
@@ -1134,6 +1247,12 @@
 
     if (reviewRewardCloseBtn) {
       reviewRewardCloseBtn.addEventListener('click', () => {
+        dismissReviewReward();
+      });
+    }
+
+    if (reviewRewardDismissBtn) {
+      reviewRewardDismissBtn.addEventListener('click', () => {
         dismissReviewReward();
       });
     }
