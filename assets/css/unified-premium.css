@@ -3916,22 +3916,21 @@ footer .footer-copy {
   display: block;
 }
 
-#how,
-#pricing,
-#faq,
-#payment {
-  scroll-margin-top: 92px;
+#how {
+  scroll-margin-top: 104px;
+}
+
+#pricing {
+  scroll-margin-top: 104px;
 }
 
 @media (max-width: 760px) {
-  #how,
-  #pricing,
-  #faq {
-    scroll-margin-top: 84px;
+  #how {
+    scroll-margin-top: 96px;
   }
 
-  #payment {
-    scroll-margin-top: 68px;
+  #pricing {
+    scroll-margin-top: 96px;
   }
 
   footer .footer-links-primary,
