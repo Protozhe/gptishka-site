@@ -3913,7 +3913,7 @@ footer {
   --gradient-fifth: 186, 170, 255;
   --gradient-pointer: 124, 164, 255;
   --gradient-size: min(96vmax, 1280px);
-  --gradient-blending: hard-light;
+  --gradient-blending: screen;
 }
 
 html,
@@ -4089,38 +4089,64 @@ body.home-gradient-page::after {
 body.home-gradient-page,
 body.home-gradient-page main.page {
   background-size: 180% 180% !important;
-  animation: lpBaseGradientShift 38s ease-in-out infinite alternate !important;
+  animation: lpBaseGradientShift 24s ease-in-out infinite alternate !important;
+}
+
+body.home-gradient-page {
+  background:
+    radial-gradient(
+      120% 96% at 10% 16%,
+      rgba(var(--gradient-first), 0.34) 0%,
+      rgba(var(--gradient-first), 0) 64%
+    ),
+    radial-gradient(
+      110% 92% at 88% 18%,
+      rgba(var(--gradient-second), 0.31) 0%,
+      rgba(var(--gradient-second), 0) 64%
+    ),
+    radial-gradient(
+      98% 88% at 50% 88%,
+      rgba(var(--gradient-third), 0.28) 0%,
+      rgba(var(--gradient-third), 0) 62%
+    ),
+    linear-gradient(40deg, var(--gradient-background-start), var(--gradient-background-end)) !important;
+  background-size: 186% 186%, 170% 170%, 160% 160%, 100% 100% !important;
+}
+
+body.home-gradient-page main.page {
+  background: transparent !important;
+  animation: none !important;
 }
 
 body.home-gradient-page::before {
-  opacity: 0.38 !important;
-  animation: premiumBodyGlowA 22s ease-in-out infinite alternate !important;
+  opacity: 0.5 !important;
+  animation: premiumBodyGlowA 16s ease-in-out infinite alternate !important;
 }
 
 body.home-gradient-page::after {
-  opacity: 0.32 !important;
-  animation: premiumBodyGlowB 28s ease-in-out infinite alternate !important;
+  opacity: 0.44 !important;
+  animation: premiumBodyGlowB 20s ease-in-out infinite alternate !important;
 }
 
 body.home-gradient-page main.page::before {
-  opacity: 0.42 !important;
-  animation: premiumPageHazeA 20s ease-in-out infinite alternate !important;
+  opacity: 0.56 !important;
+  animation: premiumPageHazeA 14s ease-in-out infinite alternate !important;
 }
 
 body.home-gradient-page main.page::after {
-  opacity: 0.34 !important;
-  animation: premiumPageHazeB 26s ease-in-out infinite alternate !important;
+  opacity: 0.46 !important;
+  animation: premiumPageHazeB 18s ease-in-out infinite alternate !important;
 }
 
 @keyframes lpBaseGradientShift {
   0% {
-    background-position: 0% 38%;
+    background-position: 0% 0%, 100% 0%, 50% 100%, 0% 0%;
   }
   50% {
-    background-position: 52% 56%;
+    background-position: 36% 18%, 64% 22%, 52% 66%, 0% 0%;
   }
   100% {
-    background-position: 100% 52%;
+    background-position: 100% 28%, 0% 30%, 48% 0%, 0% 0%;
   }
 }
 
