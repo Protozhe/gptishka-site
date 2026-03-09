@@ -3920,9 +3920,17 @@ footer .footer-copy {
   scroll-margin-top: 148px;
 }
 
+#pricing {
+  scroll-margin-top: 112px;
+}
+
 @media (max-width: 760px) {
   #how {
     scroll-margin-top: 178px;
+  }
+
+  #pricing {
+    scroll-margin-top: 132px;
   }
 
   footer .footer-links-primary,
@@ -5111,16 +5119,29 @@ footer {
   }
 
   .site-ticker__stats {
-    justify-self: stretch !important;
+    justify-self: center !important;
     justify-content: center !important;
-    width: 100% !important;
-    padding: 5px 10px !important;
+    width: auto !important;
+    max-width: calc(100% - 8px) !important;
+    padding: 5px 9px !important;
     font-size: 10px !important;
-    gap: 5px !important;
+    gap: 6px !important;
+    white-space: nowrap !important;
+  }
+
+  .site-ticker__stat {
+    display: inline-flex !important;
+    align-items: baseline !important;
+    gap: 4px !important;
+    white-space: nowrap !important;
   }
 
   .site-ticker__stat-label {
-    display: none !important;
+    display: inline !important;
+    font-size: 10px !important;
+    opacity: 0.78 !important;
+    letter-spacing: 0.01em !important;
+    text-transform: none !important;
   }
 
   .site-ticker__stat strong {
