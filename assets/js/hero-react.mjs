@@ -57,7 +57,10 @@ function RotatingHero(props) {
               {
                 key: index,
                 className: "hero-react__word",
-                initial: { opacity: 0, y: -100 },
+                initial:
+                  index === 0
+                    ? { opacity: 1, y: 0 }
+                    : { opacity: 0, y: 110 },
                 transition: { type: "spring", stiffness: 50 },
                 animate:
                   titleNumber === index
@@ -164,10 +167,3 @@ if (document.readyState === "loading") {
 } else {
   mountAllHeroes();
 }
-
-// Re-check after other deferred scripts are executed.
-window.addEventListener("load", () => {
-  mountAllHeroes();
-  window.setTimeout(mountAllHeroes, 400);
-  window.setTimeout(mountAllHeroes, 1200);
-}, { once: true });

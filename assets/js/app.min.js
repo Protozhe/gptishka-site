@@ -18,6 +18,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const header = document.querySelector("header");
   if (header) {
+    header.classList.add("is-nav-warmup");
+    window.setTimeout(() => {
+      header.classList.remove("is-nav-warmup");
+    }, 700);
+
     let ticking = false;
     const onScroll = () => {
       if (ticking) return;
@@ -2935,6 +2940,10 @@ document.addEventListener("click", e => {
     ].join("");
 
     header.insertBefore(ticker, header.firstChild);
+    ticker.classList.add("is-warmup");
+    window.setTimeout(() => {
+      ticker.classList.remove("is-warmup");
+    }, 900);
 
     tickerTrack = document.getElementById("siteTickerTrack");
     totalValueEl = document.getElementById("siteTickerSales");
