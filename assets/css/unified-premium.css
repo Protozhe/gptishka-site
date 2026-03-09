@@ -2888,4 +2888,260 @@ footer {
   color: var(--text-soft) !important;
 }
 
+/* =========================================================
+   Selective Liquid Glass Accents (Production-safe)
+   Inspired by liquid-glass-studio, adapted for landing UX
+   ========================================================= */
+:root {
+  --liquid-glass-fill: linear-gradient(
+    160deg,
+    rgba(236, 242, 255, 0.22) 0%,
+    rgba(138, 158, 255, 0.2) 30%,
+    rgba(91, 113, 230, 0.28) 100%
+  );
+  --liquid-glass-fill-soft: linear-gradient(
+    160deg,
+    rgba(236, 242, 255, 0.08) 0%,
+    rgba(138, 158, 255, 0.07) 38%,
+    rgba(91, 113, 230, 0.1) 100%
+  );
+  --liquid-glass-border: rgba(225, 234, 255, 0.28);
+  --liquid-glass-border-soft: rgba(205, 217, 255, 0.16);
+  --liquid-glass-sheen: rgba(255, 255, 255, 0.44);
+  --liquid-glass-core: rgba(126, 145, 255, 0.58);
+  --liquid-glass-shadow: 0 10px 24px rgba(7, 12, 26, 0.44);
+}
+
+/* keep large surfaces calm; no liquid overlays there */
+.hero,
+.pricing,
+.how,
+.faq,
+.price-card,
+.how-card,
+.faq-item,
+.faq-sticky {
+  isolation: isolate;
+}
+
+/* primary premium controls */
+.btn:not(.secondary),
+.buy-btn,
+.faq-chat-btn,
+.product-preview-modal__pay {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--liquid-glass-border) !important;
+  background: var(--liquid-glass-fill) !important;
+  color: #f8faff !important;
+  box-shadow:
+    var(--liquid-glass-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -8px 18px rgba(22, 36, 88, 0.24) !important;
+  backdrop-filter: blur(9px) saturate(130%);
+  -webkit-backdrop-filter: blur(9px) saturate(130%);
+  transition:
+    transform 0.24s ease,
+    box-shadow 0.24s ease,
+    filter 0.24s ease,
+    border-color 0.24s ease !important;
+}
+
+.btn:not(.secondary)::before,
+.buy-btn::before,
+.faq-chat-btn::before,
+.product-preview-modal__pay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      120% 72% at 14% 0%,
+      var(--liquid-glass-sheen) 0%,
+      rgba(255, 255, 255, 0) 58%
+    ),
+    radial-gradient(
+      120% 130% at 85% 100%,
+      rgba(161, 181, 255, 0.34) 0%,
+      rgba(161, 181, 255, 0) 66%
+    );
+  opacity: 0.86;
+  pointer-events: none;
+}
+
+.btn:not(.secondary)::after,
+.buy-btn::after,
+.faq-chat-btn::after,
+.product-preview-modal__pay::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  border-top: 1px solid rgba(255, 255, 255, 0.28);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+}
+
+.btn:not(.secondary) > *,
+.buy-btn > *,
+.faq-chat-btn > *,
+.product-preview-modal__pay > * {
+  position: relative;
+  z-index: 1;
+}
+
+.btn:not(.secondary):hover,
+.buy-btn:hover,
+.faq-chat-btn:hover,
+.product-preview-modal__pay:hover {
+  transform: translateY(-2px) !important;
+  filter: brightness(1.05) saturate(1.05);
+  border-color: rgba(236, 242, 255, 0.38) !important;
+  box-shadow:
+    0 14px 28px rgba(7, 12, 26, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.52),
+    inset 0 -10px 20px rgba(25, 41, 103, 0.26) !important;
+}
+
+.btn:not(.secondary):active,
+.buy-btn:active,
+.faq-chat-btn:active,
+.product-preview-modal__pay:active {
+  transform: translateY(-1px) scale(0.995) !important;
+}
+
+/* secondary controls: subtle glass only */
+.btn.secondary,
+.product-preview-modal__promo-apply,
+.header-cart-panel__promo button,
+.header-mini-remove-btn,
+.payment-method-modal__close,
+.product-preview-modal__close {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--liquid-glass-border-soft) !important;
+  background: var(--liquid-glass-fill-soft) !important;
+  box-shadow:
+    0 6px 16px rgba(7, 12, 26, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+  backdrop-filter: blur(8px) saturate(118%);
+  -webkit-backdrop-filter: blur(8px) saturate(118%);
+}
+
+.btn.secondary:hover,
+.product-preview-modal__promo-apply:hover,
+.header-cart-panel__promo button:hover,
+.header-mini-remove-btn:hover,
+.payment-method-modal__close:hover,
+.product-preview-modal__close:hover {
+  transform: translateY(-1px) !important;
+  border-color: rgba(218, 228, 255, 0.24) !important;
+  filter: brightness(1.04);
+}
+
+/* liquid glass active nav pill */
+.nav > nav a {
+  overflow: hidden;
+}
+
+.nav > nav a::after {
+  display: none !important;
+}
+
+.nav > nav a.active {
+  border: 1px solid var(--liquid-glass-border-soft) !important;
+  background: var(--liquid-glass-fill-soft) !important;
+  color: #edf2ff !important;
+  box-shadow:
+    0 7px 18px rgba(7, 12, 26, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+  backdrop-filter: blur(8px) saturate(115%);
+  -webkit-backdrop-filter: blur(8px) saturate(115%);
+}
+
+.nav > nav a.active::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    115% 68% at 18% 4%,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0) 62%
+  );
+  pointer-events: none;
+}
+
+.nav > nav a:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.035) !important;
+}
+
+/* badges / status pills */
+.badge,
+.badge.best,
+.badge.new,
+.badge.hit,
+.badge.sale,
+.badge.popular,
+.badge.limited,
+.badge.gift,
+.badge.pro,
+.site-ticker__item {
+  position: relative;
+  overflow: hidden;
+  border-color: var(--liquid-glass-border-soft) !important;
+  background: var(--liquid-glass-fill-soft) !important;
+  box-shadow:
+    0 4px 12px rgba(7, 12, 26, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+  backdrop-filter: blur(7px) saturate(112%);
+  -webkit-backdrop-filter: blur(7px) saturate(112%);
+}
+
+.badge::before,
+.site-ticker__item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    150% 88% at 8% 0%,
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0) 62%
+  );
+  pointer-events: none;
+}
+
+.site-ticker__item-prefix {
+  color: rgba(224, 233, 255, 0.84) !important;
+}
+
+/* optional small floating control */
+.lang-current {
+  border-color: var(--liquid-glass-border-soft) !important;
+  background: rgba(24, 31, 44, 0.72) !important;
+  box-shadow:
+    0 8px 18px rgba(6, 10, 22, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+  backdrop-filter: blur(8px) saturate(112%);
+  -webkit-backdrop-filter: blur(8px) saturate(112%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn:not(.secondary),
+  .buy-btn,
+  .faq-chat-btn,
+  .product-preview-modal__pay,
+  .btn.secondary,
+  .product-preview-modal__promo-apply,
+  .header-cart-panel__promo button,
+  .header-mini-remove-btn,
+  .payment-method-modal__close,
+  .product-preview-modal__close,
+  .nav > nav a.active {
+    transition: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
 
