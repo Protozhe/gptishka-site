@@ -3896,7 +3896,47 @@ footer {
     inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
 }
 
+footer .footer-links-primary,
+footer .footer-links-secondary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+footer .footer-links-secondary {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(170, 188, 220, 0.56);
+}
+
+footer .footer-copy {
+  margin-top: 10px;
+  display: block;
+}
+
+#how {
+  scroll-margin-top: 148px;
+}
+
 @media (max-width: 760px) {
+  #how {
+    scroll-margin-top: 178px;
+  }
+
+  footer .footer-links-primary,
+  footer .footer-links-secondary {
+    gap: 6px;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  footer .footer-links-secondary {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+
   .site-ticker__marquee {
     mask-image: linear-gradient(90deg, transparent 0%, #000 5%, #000 95%, transparent 100%);
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 5%, #000 95%, transparent 100%);
