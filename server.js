@@ -40,6 +40,18 @@ const TELEGRAM_FETCH_HEADERS = {
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
   "Accept-Language": "en-US,en;q=0.9",
 };
+const NOINDEX_PUBLIC_PATHS = new Set([
+  "/cart.html",
+  "/payment.html",
+  "/success.html",
+  "/fail.html",
+  "/redeem-start.html",
+  "/en/cart.html",
+  "/en/payment.html",
+  "/en/success.html",
+  "/en/fail.html",
+  "/en/redeem-start.html",
+]);
 
 const dataDir = path.join(__dirname, "data");
 const dbPath = path.join(dataDir, "stats.sqlite");
@@ -557,12 +569,20 @@ function createApp() {
     return res.sendFile(path.join(__dirname, "sitemap.xml"));
   });
 
+  app.use((req, res, next) => {
+    const currentPath = String(req.path || "").toLowerCase();
+    if (NOINDEX_PUBLIC_PATHS.has(currentPath)) {
+      res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    }
+    return next();
+  });
+
   app.use(
     express.static(__dirname, {
       dotfiles: "ignore",
       index: false,
       etag: true,
-      maxAge: IS_PRODUCTION ? "7d" : 0,
+      maxAge: IS_PRODUCTION ? "30d" : 0,
       setHeaders: (res, filePath) => {
         if (/\.(html?)$/i.test(filePath)) {
           res.setHeader("Cache-Control", "no-store");
@@ -645,9 +665,20 @@ function createApp() {
         res.setHeader("Content-Type", contentType);
       }
 
-      const setCookie = response.headers.get("set-cookie");
-      if (setCookie) {
-        res.setHeader("set-cookie", setCookie);
+      const locationHeader = response.headers.get("location");
+      if (locationHeader) {
+        res.setHeader("Location", locationHeader);
+      }
+
+      const setCookies =
+        typeof response.headers.getSetCookie === "function"
+          ? response.headers.getSetCookie()
+          : (() => {
+              const single = response.headers.get("set-cookie");
+              return single ? [single] : [];
+            })();
+      if (Array.isArray(setCookies) && setCookies.length) {
+        res.setHeader("set-cookie", setCookies);
       }
 
       return res.status(response.status).send(body);

@@ -4622,12 +4622,12 @@ html.is-entering header,
 html.is-entering main.page,
 html.is-entering footer {
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(4px);
 }
 
 html.is-entering body {
   opacity: 0;
-  transform: translateY(8px);
+  transform: translateY(3px);
 }
 
 html.is-entering.is-entering-active header,
@@ -4635,36 +4635,36 @@ html.is-entering.is-entering-active main.page,
 html.is-entering.is-entering-active footer {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.42s ease, transform 0.42s ease;
+  transition: opacity 0.68s cubic-bezier(0.16, 1, 0.3, 1), transform 0.68s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 html.is-entering.is-entering-active body {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.46s ease, transform 0.46s ease;
+  transition: opacity 0.74s cubic-bezier(0.16, 1, 0.3, 1), transform 0.74s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .page-overlay {
-  transition: opacity 0.34s cubic-bezier(0.25, 0.1, 0.25, 1), backdrop-filter 0.34s cubic-bezier(0.25, 0.1, 0.25, 1) !important;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 html.is-leaving .page-overlay {
   opacity: 1 !important;
-  backdrop-filter: blur(5px) !important;
+  backdrop-filter: blur(2.5px) !important;
 }
 
 html.is-leaving header,
 html.is-leaving main.page,
 html.is-leaving footer {
-  opacity: 0.76;
-  transform: translateY(6px);
-  transition: opacity 0.32s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.32s cubic-bezier(0.25, 0.1, 0.25, 1);
+  opacity: 0.94;
+  transform: translateY(1.5px);
+  transition: opacity 0.44s cubic-bezier(0.16, 1, 0.3, 1), transform 0.44s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 html.is-leaving body {
-  opacity: 0.72;
-  transform: translateY(6px);
-  transition: opacity 0.32s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.32s cubic-bezier(0.25, 0.1, 0.25, 1);
+  opacity: 0.95;
+  transform: translateY(1px);
+  transition: opacity 0.44s cubic-bezier(0.16, 1, 0.3, 1), transform 0.44s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -4677,6 +4677,13 @@ html.is-leaving body {
     transform: none !important;
     transition: none !important;
   }
+}
+
+/* Final safety override for floating resume CTA sizing */
+.gptishka-resume-activation {
+  inline-size: fit-content !important;
+  width: fit-content !important;
+  max-inline-size: calc(100vw - 24px) !important;
 }
 
 

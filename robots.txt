@@ -5,5 +5,15 @@ Disallow: /apps/
 Disallow: /includes/
 Disallow: /backups/
 Disallow: /data/
+Disallow: /cart.html
+Disallow: /payment.html
+Disallow: /success.html
+Disallow: /fail.html
+Disallow: /redeem-start.html
+Disallow: /en/cart.html
+Disallow: /en/payment.html
+Disallow: /en/success.html
+Disallow: /en/fail.html
+Disallow: /en/redeem-start.html
 
 Sitemap: https://gptishka.shop/sitemap.xml

@@ -8,6 +8,12 @@ document.addEventListener("DOMContentLoaded", () => {
   initHomeGradientBackground();
   initPulseBeamButtons();
   initLinkPageTransitions();
+  window.addEventListener("pageshow", () => {
+    pageNavigationInProgress = false;
+    document.documentElement.classList.remove("is-leaving");
+    document.documentElement.classList.remove("is-entering");
+    document.documentElement.classList.remove("is-entering-active");
+  });
 
   const header = document.querySelector("header");
   if (!header) return;
@@ -32,14 +38,77 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 let pageNavigationInProgress = false;
-const PAGE_TRANSITION_LEAVE_MS = 320;
-const PAGE_TRANSITION_ENTER_MS = 520;
+const PAGE_TRANSITION_LEAVE_MS = 430;
+const PAGE_TRANSITION_ENTER_MS = 760;
+const PAGE_TRANSITION_CLEANUP_MS = PAGE_TRANSITION_ENTER_MS + 120;
+const PAGE_TRANSITION_NAV_FLAG_KEY = "gptishka_nav_transition";
+const METRIKA_COUNTER_ID = 106969126;
+const TOP_MAIL_COUNTER_ID = "3744660";
+
+function markTransitionNavigationIntent() {
+  try {
+    sessionStorage.setItem(PAGE_TRANSITION_NAV_FLAG_KEY, "1");
+  } catch (_) {
+    // Ignore storage errors in strict privacy modes.
+  }
+}
+
+function consumeTransitionNavigationIntent() {
+  try {
+    const value = sessionStorage.getItem(PAGE_TRANSITION_NAV_FLAG_KEY) === "1";
+    if (value) {
+      sessionStorage.removeItem(PAGE_TRANSITION_NAV_FLAG_KEY);
+    }
+    return value;
+  } catch (_) {
+    return false;
+  }
+}
+
+function trackAnalyticsEvent(eventName, payload = {}) {
+  const safeName = String(eventName || "").trim();
+  if (!safeName) return;
+  const safePayload = payload && typeof payload === "object" ? payload : {};
+
+  try {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: `gptishka_${safeName}`,
+      ...safePayload,
+    });
+  } catch (_) {
+    // Ignore analytics transport errors.
+  }
+
+  if (typeof window.ym === "function") {
+    try {
+      window.ym(METRIKA_COUNTER_ID, "reachGoal", safeName, safePayload);
+    } catch (_) {
+      // Ignore analytics transport errors.
+    }
+  }
+
+  if (Array.isArray(window._tmr)) {
+    try {
+      window._tmr.push({
+        id: TOP_MAIL_COUNTER_ID,
+        type: "reachGoal",
+        goal: safeName,
+      });
+    } catch (_) {
+      // Ignore analytics transport errors.
+    }
+  }
+}
+
+window.gptishkaTrackEvent = trackAnalyticsEvent;
 
 function navigateWithPageTransition(targetHref, delayMs = PAGE_TRANSITION_LEAVE_MS) {
   const href = String(targetHref || "").trim();
   if (!href) return;
   if (pageNavigationInProgress) return;
   pageNavigationInProgress = true;
+  markTransitionNavigationIntent();
   document.documentElement.classList.add("is-leaving");
   window.setTimeout(() => {
     window.location.href = href;
@@ -47,14 +116,17 @@ function navigateWithPageTransition(targetHref, delayMs = PAGE_TRANSITION_LEAVE_
 }
 
 function initPageEnterTransition() {
+  if (!consumeTransitionNavigationIntent()) return;
   const root = document.documentElement;
   root.classList.add("is-entering");
   window.requestAnimationFrame(() => {
-    root.classList.add("is-entering-active");
-    window.setTimeout(() => {
-      root.classList.remove("is-entering");
-      root.classList.remove("is-entering-active");
-    }, PAGE_TRANSITION_ENTER_MS);
+    window.requestAnimationFrame(() => {
+      root.classList.add("is-entering-active");
+      window.setTimeout(() => {
+        root.classList.remove("is-entering");
+        root.classList.remove("is-entering-active");
+      }, PAGE_TRANSITION_CLEANUP_MS);
+    });
   });
 }
 
@@ -68,6 +140,7 @@ function shouldUsePageTransitionForHref(href, linkEl) {
   const rawHref = String(href || "").trim();
   if (!rawHref) return false;
   if (rawHref.startsWith("mailto:") || rawHref.startsWith("tel:") || rawHref.startsWith("javascript:")) return false;
+  if (linkEl && linkEl.hasAttribute("data-no-transition")) return false;
   if (linkEl && (linkEl.hasAttribute("download") || String(linkEl.getAttribute("target") || "").toLowerCase() === "_blank")) return false;
 
   let targetUrl;
@@ -110,6 +183,8 @@ function initLinkPageTransitions() {
 function initHomeGradientBackground() {
   const body = document.body;
   if (!body) return;
+  const hasHeroRoot = Boolean(document.querySelector("[data-hero-react-root]"));
+  if (!hasHeroRoot) return;
   body.classList.add("home-gradient-page");
 
   let bg = document.querySelector(".home-gradient-bg");
@@ -136,6 +211,14 @@ function initHomeGradientBackground() {
   const prefersReducedMotion = window.matchMedia
     ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
     : false;
+  const hasFinePointer = window.matchMedia
+    ? window.matchMedia("(pointer: fine)").matches
+    : true;
+  if (!hasFinePointer || prefersReducedMotion) {
+    bg.style.setProperty("--home-pointer-x", "0px");
+    bg.style.setProperty("--home-pointer-y", "0px");
+    return;
+  }
   const pointerStrength = prefersReducedMotion ? 0.38 : 0.72;
   const pointerEase = prefersReducedMotion ? 0.1 : 0.18;
 
@@ -160,6 +243,7 @@ function initHomeGradientBackground() {
   window.addEventListener(
     "pointermove",
     e => {
+      if (document.visibilityState === "hidden") return;
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
       targetX = (e.clientX - centerX) * pointerStrength;
@@ -186,7 +270,14 @@ function initFaqAccordions() {
   questions.forEach(btn => {
     btn.addEventListener("click", () => {
       const item = btn.parentElement;
-      if (item) item.classList.toggle("active");
+      if (!item) return;
+      const nextState = !item.classList.contains("active");
+      item.classList.toggle("active");
+      if (nextState) {
+        trackAnalyticsEvent("faq_open", {
+          question: String(btn.textContent || "").replace(/\s+/g, " ").trim().slice(0, 120),
+        });
+      }
     });
   });
 }
@@ -194,6 +285,10 @@ function initFaqAccordions() {
 function initPulseBeamButtons() {
   const root = document.body;
   if (!root) return;
+  const prefersReducedMotion = window.matchMedia
+    ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    : false;
+  if (prefersReducedMotion) return;
 
   const targetSelector = [
     "a.btn",
@@ -261,16 +356,14 @@ function initPulseBeamButtons() {
 
   hydrateTargets(root);
 
-  const observer = new MutationObserver(mutations => {
-    mutations.forEach(mutation => {
-      mutation.addedNodes.forEach(addedNode => {
-        if (!(addedNode instanceof Element)) return;
-        hydrateTargets(addedNode);
-      });
-    });
-  });
-
-  observer.observe(root, { childList: true, subtree: true });
+  const lazyHydrate = event => {
+    const target = event.target instanceof Element ? event.target.closest(targetSelector) : null;
+    if (target instanceof Element) {
+      ensureBeamTarget(target);
+    }
+  };
+  document.addEventListener("mouseover", lazyHydrate, { passive: true });
+  document.addEventListener("focusin", lazyHydrate);
 }
 
 function initReviewsSecurityBanner() {
@@ -453,12 +546,14 @@ function initActivationResumeShortcut() {
   anchor.className = "gptishka-resume-activation";
   anchor.textContent = isEnPage ? "Resume activation" : "Продолжить активацию";
   anchor.setAttribute("aria-label", isEnPage ? "Resume order activation" : "Продолжить активацию заказа");
+  anchor.addEventListener("click", () => {
+    trackAnalyticsEvent("resume_activation_click");
+  });
   document.body.appendChild(anchor);
 }
   
 (() => {
   const CART_KEY = "gptishka_cart_v1";
-  const CARD_QTY_KEY = "gptishka_card_qty_v1";
   const CART_SELECTION_KEY = "selected_cart";
   const pricingGridEl = document.getElementById("pricingGrid");
   let cards = [];
@@ -601,7 +696,11 @@ function initActivationResumeShortcut() {
   const DEFAULT_PAYMENT_METHOD = "enot";
   const AVAILABLE_PAYMENT_METHODS = new Set(["enot", "lava"]);
   const PROMO_TTL_MS = 30 * 60 * 1000;
+  const PRODUCTS_CACHE_TTL_MS = 60 * 1000;
   let clickTimer = null;
+  let productsPayloadCache = null;
+  let productsPayloadCacheTs = 0;
+  let productsPayloadPendingPromise = null;
   let activePromoCode = "";
   let activePaymentMethod = DEFAULT_PAYMENT_METHOD;
   let promoValidationState = "idle"; // idle | checking | valid | invalid
@@ -715,6 +814,11 @@ function initActivationResumeShortcut() {
     if (checkoutInProgress) return;
     const row = prepareCheckoutRow();
     if (!row) return;
+    trackAnalyticsEvent("checkout_start", {
+      source: "cart",
+      product: String(row.product || "").slice(0, 120),
+      amount: Math.max(0, toAmount(row.price)),
+    });
 
     if (!cartPaymentModalEl || !cartPaymentModalOptions.length) {
       persistCartSelection(undefined, activePromoCode, activePaymentMethod);
@@ -740,6 +844,10 @@ function initActivationResumeShortcut() {
     const selectedMethod = savePaymentMethod(method);
     syncPaymentMethodUi();
     closePaymentMethodModal();
+    trackAnalyticsEvent("payment_method_selected", {
+      source: "modal",
+      method: selectedMethod,
+    });
 
     checkoutInProgress = true;
     startBackendCheckout(pendingRow, pendingRow.qty, checkoutPendingPromoCode, selectedMethod)
@@ -1083,6 +1191,12 @@ function initActivationResumeShortcut() {
       if (isValid) {
         const discountAmount = Math.max(0, toAmount(payload.discountAmount));
         const finalPrice = Math.max(0, toAmount(payload.finalPrice || basePrice - discountAmount));
+        trackAnalyticsEvent("promo_validate_success", {
+          source: "preview",
+          code: normalized.slice(0, 32),
+          discount: discountAmount,
+          product_id: productId,
+        });
         promoValidationState = "valid";
         promoDiscountAmount = discountAmount;
         promoValidationContextKey = [normalized, productId, "1"].join("|");
@@ -1095,6 +1209,11 @@ function initActivationResumeShortcut() {
           applyPromoMessageState(productPreviewPromoMsgEl, "valid");
         }
       } else {
+        trackAnalyticsEvent("promo_validate_fail", {
+          source: "preview",
+          code: normalized.slice(0, 32),
+          product_id: productId,
+        });
         promoValidationState = "invalid";
         promoDiscountAmount = 0;
         promoValidationContextKey = [normalized, productId, "1"].join("|");
@@ -1107,6 +1226,11 @@ function initActivationResumeShortcut() {
         }
       }
     } catch (_) {
+      trackAnalyticsEvent("promo_validate_fail", {
+        source: "preview",
+        code: normalized.slice(0, 32),
+        product_id: productId,
+      });
       promoValidationState = "invalid";
       promoDiscountAmount = 0;
       promoValidationContextKey = [normalized, productId, "1"].join("|");
@@ -1205,6 +1329,10 @@ function initActivationResumeShortcut() {
     if (!item) return;
     ensureProductPreviewModal();
     if (!productPreviewModalEl || !productPreviewContentEl) return;
+    trackAnalyticsEvent("plan_preview_open", {
+      product: String(item.product || item.title || "").slice(0, 120),
+      amount: Math.max(0, toAmount(item.price)),
+    });
 
     const model = parseDescriptionModel(item.description || "");
     const modalDescriptionModel = parseDescriptionModel(item.modalDescription || model.plainText || "");
@@ -1362,6 +1490,36 @@ function initActivationResumeShortcut() {
     );
   }
 
+  async function fetchProductsPayload(forceRefresh = false) {
+    const now = Date.now();
+    if (!forceRefresh && productsPayloadCache && now - productsPayloadCacheTs < PRODUCTS_CACHE_TTL_MS) {
+      return productsPayloadCache;
+    }
+    if (!forceRefresh && productsPayloadPendingPromise) {
+      return productsPayloadPendingPromise;
+    }
+
+    productsPayloadPendingPromise = fetch("/api/public/products?lang=" + (isEnPage ? "en" : "ru"), {
+      cache: "no-store",
+    })
+      .then(response => {
+        if (!response.ok) throw new Error("Products API not available");
+        return response.json();
+      })
+      .then(payload => {
+        const normalizedPayload =
+          payload && typeof payload === "object" ? payload : { items: [] };
+        productsPayloadCache = normalizedPayload;
+        productsPayloadCacheTs = Date.now();
+        return normalizedPayload;
+      })
+      .finally(() => {
+        productsPayloadPendingPromise = null;
+      });
+
+    return productsPayloadPendingPromise;
+  }
+
   async function loadPricingCards() {
     if (!pricingGridEl) {
       refreshCards();
@@ -1369,9 +1527,7 @@ function initActivationResumeShortcut() {
     }
 
     try {
-      const response = await fetch("/api/public/products?lang=" + (isEnPage ? "en" : "ru"), { cache: "no-store" });
-      if (!response.ok) throw new Error("Products API not available");
-      const payload = await response.json();
+      const payload = await fetchProductsPayload();
       const items = Array.isArray(payload?.items) ? payload.items : [];
       reconcileCartProductIds(items);
 
@@ -1529,6 +1685,11 @@ function initActivationResumeShortcut() {
     );
 
     const checkoutUrl = String(data.pay_url);
+    trackAnalyticsEvent("checkout_redirect", {
+      method: selectedPaymentMethod,
+      product_id: productId,
+      amount: Math.max(0, toAmount(checkoutItem.price)),
+    });
     window.location.href = checkoutUrl;
   }
 
@@ -1544,7 +1705,6 @@ function initActivationResumeShortcut() {
   function clearLegacyCartArtifacts() {
     try {
       localStorage.removeItem(CART_KEY);
-      localStorage.removeItem(CARD_QTY_KEY);
       localStorage.removeItem(CART_SELECTION_KEY);
     } catch (_) {
       // Ignore storage cleanup errors.
@@ -1600,31 +1760,6 @@ function initActivationResumeShortcut() {
     const singleRowCart = rows.length ? [rows[rows.length - 1]] : [];
     try {
       localStorage.setItem(CART_KEY, JSON.stringify(singleRowCart));
-    } catch (_) {
-      // Ignore storage write errors.
-    }
-  }
-
-  function loadCardQtyMap() {
-    try {
-      const parsed = safeParse(localStorage.getItem(CARD_QTY_KEY) || "{}", {});
-      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
-
-      const next = {};
-      Object.keys(parsed).forEach(product => {
-        const key = String(product || "").trim();
-        if (!key) return;
-        next[key] = Math.max(1, toInt(parsed[product]) || 1);
-      });
-      return next;
-    } catch (_) {
-      return {};
-    }
-  }
-
-  function saveCardQtyMap(cardQtyMap) {
-    try {
-      localStorage.setItem(CARD_QTY_KEY, JSON.stringify(cardQtyMap || {}));
     } catch (_) {
       // Ignore storage write errors.
     }
@@ -1731,13 +1866,29 @@ function initActivationResumeShortcut() {
       if (response.ok && payload && payload.valid) {
         promoValidationState = "valid";
         promoDiscountAmount = Math.max(0, toAmount(payload.discountAmount));
+        trackAnalyticsEvent("promo_validate_success", {
+          source: "cart",
+          code: normalized.slice(0, 32),
+          discount: promoDiscountAmount,
+          product_id: String(first.productId || ""),
+        });
       } else {
         promoValidationState = "invalid";
         promoDiscountAmount = 0;
+        trackAnalyticsEvent("promo_validate_fail", {
+          source: "cart",
+          code: normalized.slice(0, 32),
+          product_id: String(first.productId || ""),
+        });
       }
     } catch (_) {
       promoValidationState = "invalid";
       promoDiscountAmount = 0;
+      trackAnalyticsEvent("promo_validate_fail", {
+        source: "cart",
+        code: normalized.slice(0, 32),
+        product_id: String(first.productId || ""),
+      });
     }
 
     renderCart();
@@ -1848,9 +1999,7 @@ function initActivationResumeShortcut() {
     }
 
     try {
-      const response = await fetch("/api/public/products?lang=" + (isEnPage ? "en" : "ru"), { cache: "no-store" });
-      if (!response.ok) return item;
-      const payload = await response.json();
+      const payload = await fetchProductsPayload();
       const items = Array.isArray(payload?.items) ? payload.items : [];
       const lookup = buildProductLookup(items);
       const resolvedId =
@@ -1877,15 +2026,6 @@ function initActivationResumeShortcut() {
     const normalizedProduct = String(product || "").trim();
     if (!normalizedProduct) return 1;
     return 1;
-  }
-
-  function setCardQty(product, qty) {
-    const normalizedProduct = String(product || "").trim();
-    if (!normalizedProduct) return;
-    const cardQtyMap = loadCardQtyMap();
-    cardQtyMap[normalizedProduct] = 1;
-    saveCardQtyMap(cardQtyMap);
-    syncCards();
   }
 
   function addCartLot(item, qty) {
@@ -2404,6 +2544,7 @@ function initActivationResumeShortcut() {
   });
 
   window.setInterval(() => {
+    if (document.visibilityState === "hidden") return;
     if (!isPromoExpiredForUnpaidCart()) return;
     clearPromoCodeState();
     renderCart();
@@ -2511,6 +2652,8 @@ document.addEventListener("click", e => {
   let tickerTrack = null;
   let totalValueEl = null;
   let isInitialized = false;
+  let heartbeatTimerId = 0;
+  let statsTimerId = 0;
 
   function ensureSessionId() {
     try {
@@ -2644,6 +2787,29 @@ document.addEventListener("click", e => {
     }
   }
 
+  function stopTickerPolling() {
+    if (heartbeatTimerId) {
+      window.clearInterval(heartbeatTimerId);
+      heartbeatTimerId = 0;
+    }
+    if (statsTimerId) {
+      window.clearInterval(statsTimerId);
+      statsTimerId = 0;
+    }
+  }
+
+  function startTickerPolling(sessionId) {
+    stopTickerPolling();
+    heartbeatTimerId = window.setInterval(() => {
+      if (document.visibilityState === "hidden") return;
+      sendHeartbeat(sessionId);
+    }, HEARTBEAT_MS);
+    statsTimerId = window.setInterval(() => {
+      if (document.visibilityState === "hidden") return;
+      fetchAndRenderStats();
+    }, STATS_REFRESH_MS);
+  }
+
   function initLiveTicker() {
     if (isInitialized) return;
     isInitialized = true;
@@ -2654,14 +2820,15 @@ document.addEventListener("click", e => {
     const sessionId = ensureSessionId();
     sendHeartbeat(sessionId);
     fetchAndRenderStats();
+    startTickerPolling(sessionId);
 
-    window.setInterval(() => {
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState !== "visible") return;
       sendHeartbeat(sessionId);
-    }, HEARTBEAT_MS);
-
-    window.setInterval(() => {
       fetchAndRenderStats();
-    }, STATS_REFRESH_MS);
+      startTickerPolling(sessionId);
+    });
+    window.addEventListener("beforeunload", stopTickerPolling, { once: true });
   }
 
   if (document.readyState === "loading") {

@@ -14,6 +14,20 @@
     "/en/success.html"
   ];
 
+  function trackWidgetEvent(eventName, payload) {
+    if (typeof window.gptishkaTrackEvent === "function") {
+      window.gptishkaTrackEvent(eventName, payload || {});
+      return;
+    }
+    if (typeof window.ym === "function") {
+      try {
+        window.ym(106969126, "reachGoal", eventName, payload || {});
+      } catch (_e) {
+        // Ignore analytics transport errors.
+      }
+    }
+  }
+
   function readUntil(key) {
     try {
       var raw = window.localStorage.getItem(key);
@@ -116,6 +130,9 @@
     fab.addEventListener("click", function (event) {
       event.preventDefault();
       root.classList.toggle("is-open");
+      if (root.classList.contains("is-open")) {
+        trackWidgetEvent("support_widget_open");
+      }
     });
 
     closeBtn.addEventListener("click", function () {
@@ -123,6 +140,7 @@
     });
 
     cta.addEventListener("click", function () {
+      trackWidgetEvent("support_widget_click");
       setSuppress(STORAGE_CLICK_KEY);
       removeWidget(root);
     });
