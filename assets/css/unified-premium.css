@@ -4012,23 +4012,23 @@ body::after {
 }
 
 .home-gradient-bg__pointer {
-  width: 120% !important;
-  height: 120% !important;
-  top: -10% !important;
-  left: -10% !important;
+  width: 140% !important;
+  height: 140% !important;
+  top: -20% !important;
+  left: -20% !important;
   background:
     radial-gradient(
       circle at center,
-      rgba(var(--gradient-pointer), 0.46) 0%,
-      rgba(var(--gradient-pointer), 0) 58%
+      rgba(var(--gradient-pointer), 0.64) 0%,
+      rgba(var(--gradient-pointer), 0) 56%
     ) !important;
-  opacity: 0.58 !important;
+  opacity: 0.74 !important;
   transform: translate3d(
-    calc(var(--home-pointer-x) * 0.22),
-    calc(var(--home-pointer-y) * 0.22),
+    calc(var(--home-pointer-x) * 0.58),
+    calc(var(--home-pointer-y) * 0.58),
     0
   ) !important;
-  animation: lpGradPointerPulse 11s ease-in-out infinite alternate !important;
+  animation: lpGradPointerPulse 8s ease-in-out infinite alternate !important;
 }
 
 @keyframes lpGradFirst {

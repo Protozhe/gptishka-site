@@ -54,10 +54,15 @@ function initHomeGradientBackground() {
   let currentX = 0;
   let currentY = 0;
   let rafId = 0;
+  const prefersReducedMotion = window.matchMedia
+    ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    : false;
+  const pointerStrength = prefersReducedMotion ? 0.38 : 0.72;
+  const pointerEase = prefersReducedMotion ? 0.1 : 0.18;
 
   const updatePointer = () => {
-    currentX += (targetX - currentX) * 0.14;
-    currentY += (targetY - currentY) * 0.14;
+    currentX += (targetX - currentX) * pointerEase;
+    currentY += (targetY - currentY) * pointerEase;
     bg.style.setProperty("--home-pointer-x", `${Math.round(currentX)}px`);
     bg.style.setProperty("--home-pointer-y", `${Math.round(currentY)}px`);
     if (Math.abs(targetX - currentX) > 0.2 || Math.abs(targetY - currentY) > 0.2) {
@@ -78,8 +83,8 @@ function initHomeGradientBackground() {
     e => {
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
-      targetX = (e.clientX - centerX) * 0.18;
-      targetY = (e.clientY - centerY) * 0.18;
+      targetX = (e.clientX - centerX) * pointerStrength;
+      targetY = (e.clientY - centerY) * pointerStrength;
       queuePointerUpdate();
     },
     { passive: true }
