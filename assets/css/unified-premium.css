@@ -4626,10 +4626,6 @@ header {
   box-shadow: var(--lp-btn-shadow-hover), inset 0 1px 0 rgba(255, 255, 255, 0.42) !important;
 }
 
-:root {
-  --page-overlay-top: 0px;
-}
-
 html.is-entering header,
 html.is-leaving header {
   opacity: 1 !important;
@@ -4651,9 +4647,9 @@ html.is-entering.is-entering-active footer {
 }
 
 .page-overlay {
-  inset: var(--page-overlay-top, 0px) 0 0 0 !important;
+  inset: 0 !important;
   z-index: 95 !important;
-  background: rgba(24, 37, 58, 0.22) !important;
+  background: rgba(24, 37, 58, 0.26) !important;
   backdrop-filter: blur(0px) saturate(102%) !important;
   -webkit-backdrop-filter: blur(0px) saturate(102%) !important;
   transition: opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1), backdrop-filter 0.34s cubic-bezier(0.22, 1, 0.36, 1) !important;

@@ -4,7 +4,6 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   document.documentElement.classList.remove("is-leaving");
-  syncPageTransitionOverlayOffset();
   initPageEnterTransition();
   initHomeGradientBackground();
   initPulseBeamButtons();
@@ -15,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.documentElement.classList.remove("is-leaving");
     document.documentElement.classList.remove("is-entering");
     document.documentElement.classList.remove("is-entering-active");
-    syncPageTransitionOverlayOffset();
   });
 
   const header = document.querySelector("header");
@@ -26,16 +24,12 @@ document.addEventListener("DOMContentLoaded", () => {
       ticking = true;
       window.requestAnimationFrame(() => {
         header.classList.toggle("is-scrolled", window.scrollY > 10);
-        syncPageTransitionOverlayOffset(header);
         ticking = false;
       });
     };
 
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", () => syncPageTransitionOverlayOffset(header), { passive: true });
-  } else {
-    syncPageTransitionOverlayOffset();
   }
 
   initFaqAccordions();
@@ -56,16 +50,6 @@ const WARMUP_PRODUCTS_DELAY_MS = 4400;
 const METRIKA_COUNTER_ID = 106969126;
 const TOP_MAIL_COUNTER_ID = "3744660";
 const prefetchedNavigationKeys = new Set();
-
-function syncPageTransitionOverlayOffset(headerEl = null) {
-  const header = headerEl || document.querySelector("header");
-  let offsetPx = 0;
-  if (header) {
-    const rect = header.getBoundingClientRect();
-    offsetPx = Math.max(0, Math.round(rect.bottom + 6));
-  }
-  document.documentElement.style.setProperty("--page-overlay-top", `${offsetPx}px`);
-}
 
 function markTransitionNavigationIntent() {
   try {
@@ -131,7 +115,6 @@ function navigateWithPageTransition(targetHref, delayMs = PAGE_TRANSITION_LEAVE_
   if (pageNavigationInProgress) return;
   pageNavigationInProgress = true;
   markTransitionNavigationIntent();
-  syncPageTransitionOverlayOffset();
   document.documentElement.classList.add("is-leaving");
   window.setTimeout(() => {
     window.location.href = href;
@@ -140,7 +123,6 @@ function navigateWithPageTransition(targetHref, delayMs = PAGE_TRANSITION_LEAVE_
 
 function initPageEnterTransition() {
   if (!consumeTransitionNavigationIntent()) return;
-  syncPageTransitionOverlayOffset();
   const root = document.documentElement;
   root.classList.add("is-entering");
   window.requestAnimationFrame(() => {
@@ -2792,7 +2774,10 @@ document.addEventListener("click", e => {
   const HEARTBEAT_MS = 20000;
   const SESSION_KEY = "gptishka_session_id";
   const TICKER_CACHE_KEY = "gptishka_ticker_cache_v2";
+  const TICKER_ANCHOR_KEY = "gptishka_ticker_anchor_v1";
   const TICKER_CACHE_TTL_MS = 12 * 60 * 1000;
+  const TICKER_MIN_VISUAL_UPDATE_MS = 60000;
+  const TICKER_WARM_FETCH_DELAY_MS = 12000;
   const DEFAULT_TICKER_CYCLE_MS = 130000;
 
   const pathname = String(window.location.pathname || "/").toLowerCase();
@@ -2814,6 +2799,7 @@ document.addEventListener("click", e => {
   let isInitialized = false;
   let heartbeatTimerId = 0;
   let statsTimerId = 0;
+  let delayedFetchTimerId = 0;
   let lastTickerSignature = "";
   let tickerRenderedAt = 0;
 
@@ -2830,6 +2816,18 @@ document.addEventListener("click", e => {
       return generated;
     } catch (_) {
       return "s_" + Date.now().toString(36);
+    }
+  }
+
+  function ensureTickerAnchorMs() {
+    const now = Date.now();
+    try {
+      const raw = Number(localStorage.getItem(TICKER_ANCHOR_KEY) || 0);
+      if (Number.isFinite(raw) && raw > 0) return raw;
+      localStorage.setItem(TICKER_ANCHOR_KEY, String(now));
+      return now;
+    } catch (_) {
+      return now;
     }
   }
 
@@ -2906,13 +2904,14 @@ document.addEventListener("click", e => {
     }
   }
 
-  function applyTickerAnimationOffset(renderedAtMs) {
+  function applyTickerAnimationOffset(anchorMs) {
     if (!tickerTrack) return;
-    const safeRenderedAt = Number(renderedAtMs || Date.now());
-    const elapsed = Math.max(0, Date.now() - safeRenderedAt);
+    const safeAnchorMs = Number(anchorMs || ensureTickerAnchorMs());
+    const elapsed = Math.max(0, Date.now() - safeAnchorMs);
     const cycleMs = getTickerCycleMs();
     const offsetSeconds = (elapsed % cycleMs) / 1000;
     tickerTrack.style.animationDelay = `-${offsetSeconds.toFixed(3)}s`;
+    tickerTrack.style.animationPlayState = "running";
   }
 
   function readTickerCache() {
@@ -2962,7 +2961,7 @@ document.addEventListener("click", e => {
 
   function renderTicker(entries, options = {}) {
     if (!tickerTrack) return;
-    const renderedAt = Number(options.renderedAt || Date.now());
+    const renderedAt = Date.now();
     const force = Boolean(options.force);
 
     const safeEntries = entries.length
@@ -2971,7 +2970,12 @@ document.addEventListener("click", e => {
     const signature = safeEntries.join("\u241f");
 
     if (!force && signature === lastTickerSignature) {
-      applyTickerAnimationOffset(tickerRenderedAt || renderedAt);
+      applyTickerAnimationOffset();
+      return;
+    }
+
+    if (!force && tickerRenderedAt && Date.now() - tickerRenderedAt < TICKER_MIN_VISUAL_UPDATE_MS) {
+      applyTickerAnimationOffset();
       return;
     }
 
@@ -2993,7 +2997,7 @@ document.addEventListener("click", e => {
 
     lastTickerSignature = signature;
     tickerRenderedAt = renderedAt > 0 ? renderedAt : Date.now();
-    applyTickerAnimationOffset(tickerRenderedAt);
+    applyTickerAnimationOffset();
   }
 
   function formatNumber(value) {
@@ -3013,10 +3017,9 @@ document.addEventListener("click", e => {
       if (!response.ok) return;
       const stats = await response.json();
       const entries = normalizeTickerEntries(stats);
-      const renderedAt = Date.now();
       renderCounters(stats);
-      renderTicker(entries, { renderedAt });
-      writeTickerCache(entries, Number(stats?.sales || 0), renderedAt);
+      renderTicker(entries);
+      writeTickerCache(entries, Number(stats?.sales || 0), Date.now());
     } catch (_) {
       // Keep last successful values if API is unavailable.
     }
@@ -3047,6 +3050,10 @@ document.addEventListener("click", e => {
       window.clearInterval(statsTimerId);
       statsTimerId = 0;
     }
+    if (delayedFetchTimerId) {
+      window.clearTimeout(delayedFetchTimerId);
+      delayedFetchTimerId = 0;
+    }
   }
 
   function startTickerPolling(sessionId) {
@@ -3069,15 +3076,23 @@ document.addEventListener("click", e => {
     const cached = readTickerCache();
     if (cached) {
       renderCounters({ sales: cached.total });
-      renderTicker(cached.entries, { force: true, renderedAt: cached.renderedAt });
+      renderTicker(cached.entries, { force: true });
+      writeTickerCache(cached.entries, cached.total, Date.now());
     } else {
-      renderTicker([], { force: true, renderedAt: Date.now() });
+      renderTicker([], { force: true });
     }
 
     const sessionId = ensureSessionId();
     sendHeartbeat(sessionId);
-    fetchAndRenderStats();
     startTickerPolling(sessionId);
+    if (cached) {
+      delayedFetchTimerId = window.setTimeout(() => {
+        delayedFetchTimerId = 0;
+        fetchAndRenderStats();
+      }, TICKER_WARM_FETCH_DELAY_MS);
+    } else {
+      fetchAndRenderStats();
+    }
 
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState !== "visible") return;
