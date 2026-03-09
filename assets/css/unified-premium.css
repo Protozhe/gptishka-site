@@ -1925,10 +1925,28 @@ body.home-gradient-page footer {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-gradient-bg__layer,
+  .home-gradient-bg__layer--1 {
+    animation: lpGradFirst 72s linear infinite !important;
+  }
+
+  .home-gradient-bg__layer--2 {
+    animation: lpGradSecond 78s linear infinite !important;
+  }
+
+  .home-gradient-bg__layer--3 {
+    animation: lpGradThird 84s linear infinite !important;
+  }
+
+  .home-gradient-bg__layer--4 {
+    animation: lpGradFourth 90s linear infinite !important;
+  }
+
+  .home-gradient-bg__layer--5 {
+    animation: lpGradFifth 96s linear infinite !important;
+  }
+
   .home-gradient-bg__pointer {
-    animation: none !important;
-    transform: none !important;
+    animation: lpGradPointerPulse 22s ease-in-out infinite alternate !important;
   }
 }
 
