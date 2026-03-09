@@ -4083,4 +4083,43 @@ body.home-gradient-page::after {
   animation: premiumBodyGlowB 34s ease-in-out infinite alternate !important;
 }
 
+/* Hard fallback so the background is always visibly animated */
+body.home-gradient-page,
+body.home-gradient-page main.page {
+  background-size: 180% 180% !important;
+  animation: lpBaseGradientShift 38s ease-in-out infinite alternate !important;
+}
+
+body.home-gradient-page::before {
+  opacity: 0.38 !important;
+  animation: premiumBodyGlowA 22s ease-in-out infinite alternate !important;
+}
+
+body.home-gradient-page::after {
+  opacity: 0.32 !important;
+  animation: premiumBodyGlowB 28s ease-in-out infinite alternate !important;
+}
+
+body.home-gradient-page main.page::before {
+  opacity: 0.42 !important;
+  animation: premiumPageHazeA 20s ease-in-out infinite alternate !important;
+}
+
+body.home-gradient-page main.page::after {
+  opacity: 0.34 !important;
+  animation: premiumPageHazeB 26s ease-in-out infinite alternate !important;
+}
+
+@keyframes lpBaseGradientShift {
+  0% {
+    background-position: 0% 38%;
+  }
+  50% {
+    background-position: 52% 56%;
+  }
+  100% {
+    background-position: 100% 52%;
+  }
+}
+
 
