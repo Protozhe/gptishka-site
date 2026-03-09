@@ -3926,11 +3926,11 @@ footer .footer-copy {
 
 @media (max-width: 760px) {
   #how {
-    scroll-margin-top: 112px;
+    scroll-margin-top: 96px;
   }
 
   #pricing {
-    scroll-margin-top: 112px;
+    scroll-margin-top: 96px;
   }
 
   footer .footer-links-primary,
