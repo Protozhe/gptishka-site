@@ -467,6 +467,69 @@ header.is-scrolled {
   color: var(--premium-muted);
 }
 
+.hero .hero-title-animated {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 14px;
+}
+
+.hero .hero-title-animated__lead {
+  display: block;
+  font-size: clamp(1.4rem, 2.4vw, 2.1rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: #1b2938;
+}
+
+.hero .hero-title-animated__viewport {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-height: 1.1em;
+  overflow: hidden;
+}
+
+.hero .hero-title-animated__word {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  text-align: left;
+  color: #0f8d77;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  transform: translateY(120%);
+  opacity: 0;
+  transition: transform 0.56s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.4s ease;
+  will-change: transform, opacity;
+}
+
+.hero .hero-title-animated__word.is-enter {
+  transform: translateY(120%);
+  opacity: 0;
+}
+
+.hero .hero-title-animated__word.is-active {
+  transform: translateY(0%);
+  opacity: 1;
+}
+
+.hero .hero-title-animated__word.is-exit {
+  transform: translateY(-120%);
+  opacity: 0;
+}
+
+@media (max-width: 760px) {
+  .hero .hero-title-animated {
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  .hero .hero-title-animated__lead {
+    font-size: clamp(1.16rem, 6vw, 1.46rem);
+  }
+}
+
 a {
   color: var(--premium-link);
 }

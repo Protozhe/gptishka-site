@@ -22,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("scroll", onScroll, { passive: true });
 
   initFaqAccordions();
+  initHeroHeadlineRotator();
   initLanguageSwitch();
   initActivationResumeShortcut();
   initReviewsSecurityBanner();
@@ -35,6 +36,66 @@ function initFaqAccordions() {
       const item = btn.parentElement;
       if (item) item.classList.toggle("active");
     });
+  });
+}
+
+function initHeroHeadlineRotator() {
+  const nodes = Array.from(document.querySelectorAll("[data-hero-rotator]"));
+  if (!nodes.length) return;
+
+  const reduceMotion = Boolean(
+    window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+
+  nodes.forEach(node => {
+    const wordsRaw = String(node.getAttribute("data-hero-words") || "");
+    const words = wordsRaw
+      .split("|")
+      .map(v => String(v || "").trim())
+      .filter(Boolean);
+    if (!words.length) return;
+
+    const viewport = node.querySelector(".hero-title-animated__viewport");
+    if (!viewport) return;
+
+    const intervalRaw = Number(node.getAttribute("data-hero-interval") || 2200);
+    const intervalMs = Number.isFinite(intervalRaw) && intervalRaw >= 1200 ? intervalRaw : 2200;
+
+    let titleIndex = 0;
+    viewport.innerHTML = "";
+
+    const first = document.createElement("span");
+    first.className = "hero-title-animated__word is-active";
+    first.textContent = words[0];
+    viewport.appendChild(first);
+
+    if (reduceMotion || words.length < 2) return;
+
+    window.setInterval(() => {
+      const current = viewport.querySelector(".hero-title-animated__word.is-active");
+      const nextIndex = (titleIndex + 1) % words.length;
+      const next = document.createElement("span");
+      next.className = "hero-title-animated__word is-enter";
+      next.textContent = words[nextIndex];
+      viewport.appendChild(next);
+
+      window.requestAnimationFrame(() => {
+        next.classList.remove("is-enter");
+        next.classList.add("is-active");
+        if (current) {
+          current.classList.remove("is-active");
+          current.classList.add("is-exit");
+        }
+      });
+
+      window.setTimeout(() => {
+        if (current && current.parentElement === viewport) {
+          current.remove();
+        }
+      }, 620);
+
+      titleIndex = nextIndex;
+    }, intervalMs);
   });
 }
 
