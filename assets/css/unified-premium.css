@@ -473,6 +473,10 @@ header.is-scrolled {
   justify-items: center;
 }
 
+.hero [data-hero-react-root][data-hero-mounted="1"] > :not(.hero-react) {
+  display: none !important;
+}
+
 .hero .hero-react__headline {
   display: grid;
   gap: 12px;
@@ -482,44 +486,48 @@ header.is-scrolled {
 .hero .hero-react__title {
   margin: 0;
   width: 100%;
-  max-width: 860px;
+  max-width: 980px;
   text-align: center;
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .hero .hero-react__top {
   display: block;
   font-family: "Space Grotesk", "Manrope", sans-serif;
-  font-size: clamp(2rem, 4.8vw, 3.7rem);
+  font-size: clamp(2.18rem, 5vw, 4.02rem);
   line-height: 1.06;
   letter-spacing: -0.03em;
-  font-weight: 600;
-  color: #1a2837;
+  font-weight: 700;
+  color: #101010;
 }
 
 .hero .hero-react__viewport {
   position: relative;
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
   width: 100%;
-  min-height: clamp(54px, 6.3vw, 98px);
+  min-height: clamp(66px, 7.3vw, 116px);
   overflow: hidden;
 }
 
 .hero .hero-react__word {
   position: absolute;
-  left: 50%;
+  left: 0;
+  right: 0;
   top: 0;
-  width: 100%;
-  transform: translateX(-50%);
+  width: max-content;
+  max-width: 100%;
+  margin: 0 auto;
   text-align: center;
   font-family: "Space Grotesk", "Manrope", sans-serif;
-  font-size: clamp(2.05rem, 5vw, 3.95rem);
+  font-size: clamp(2.28rem, 5.25vw, 4.22rem);
   line-height: 1.02;
   letter-spacing: -0.034em;
   font-weight: 700;
-  color: #0f8d77;
-  text-wrap: balance;
+  color: #101010;
+  white-space: nowrap;
 }
 
 .hero .hero-react__description {
@@ -547,15 +555,15 @@ header.is-scrolled {
   }
 
   .hero .hero-react__viewport {
-    min-height: clamp(46px, 14vw, 72px);
+    min-height: clamp(54px, 15vw, 84px);
   }
 
   .hero .hero-react__top {
-    font-size: clamp(1.62rem, 9.1vw, 2.26rem);
+    font-size: clamp(1.78rem, 9.6vw, 2.52rem);
   }
 
   .hero .hero-react__word {
-    font-size: clamp(1.8rem, 10.1vw, 2.64rem);
+    font-size: clamp(1.96rem, 10.5vw, 2.84rem);
   }
 }
 

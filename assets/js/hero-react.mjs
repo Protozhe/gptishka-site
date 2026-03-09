@@ -5,14 +5,14 @@ import { motion } from "https://esm.sh/framer-motion@11.11.17";
 const COPY = {
   ru: {
     top: "Подключение и продление",
-    titles: ["ChatGPT", "За несколько минут"],
+    titles: ["ChatGPT", "За несколько минут", "Автоматически"],
     description:
       "Быстрая активация подписки без лишних действий. Удобно, безопасно и с поддержкой на каждом этапе.",
     cta: "Открыть тарифы",
   },
   en: {
     top: "Connect and renew",
-    titles: ["ChatGPT", "In a few minutes"],
+    titles: ["ChatGPT", "In a few minutes", "Automatically"],
     description:
       "Fast subscription activation without extra steps. Convenient, secure, and supported at every stage.",
     cta: "View plans",
@@ -51,7 +51,6 @@ function RotatingHero(props) {
         e(
           "span",
           { className: "hero-react__viewport", "aria-live": "polite" },
-          "\u00A0",
           titles.map((title, index) =>
             e(
               motion.span,
@@ -111,7 +110,7 @@ function buildCopy(node) {
 }
 
 function mountHero(node) {
-  if (!node || node.dataset.heroMounted === "1") return;
+  if (!node) return;
   const lang = getLang(node);
   const copy = buildCopy(node);
   const defaultHref = lang === "en" ? "/en/index.html#pricing" : "/index.html#pricing";
@@ -119,9 +118,23 @@ function mountHero(node) {
   const rawInterval = Number(node.getAttribute("data-hero-interval") || 2000);
   const intervalMs = Number.isFinite(rawInterval) && rawInterval >= 1200 ? rawInterval : 2000;
 
-  const root = createRoot(node);
-  root.render(React.createElement(RotatingHero, { copy, ctaHref, intervalMs }));
+  if (!node.__heroReactRoot) {
+    node.__heroReactRoot = createRoot(node);
+  }
+  node.__heroReactRoot.render(React.createElement(RotatingHero, { copy, ctaHref, intervalMs }));
   node.dataset.heroMounted = "1";
+
+  if (node.dataset.heroObserverAttached !== "1" && typeof MutationObserver !== "undefined") {
+    const observer = new MutationObserver(() => {
+      const hasHeroTree = node.querySelector(".hero-react");
+      if (hasHeroTree) return;
+      mountHero(node);
+    });
+
+    observer.observe(node, { childList: true, subtree: true });
+    node.__heroReactObserver = observer;
+    node.dataset.heroObserverAttached = "1";
+  }
 }
 
 function mountAllHeroes() {
@@ -135,3 +148,9 @@ if (document.readyState === "loading") {
   mountAllHeroes();
 }
 
+// Re-check after other deferred scripts are executed.
+window.addEventListener("load", () => {
+  mountAllHeroes();
+  window.setTimeout(mountAllHeroes, 400);
+  window.setTimeout(mountAllHeroes, 1200);
+}, { once: true });
