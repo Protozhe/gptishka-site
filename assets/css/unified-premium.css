@@ -3917,20 +3917,20 @@ footer .footer-copy {
 }
 
 #how {
-  scroll-margin-top: 124px;
+  scroll-margin-top: 104px;
 }
 
 #pricing {
-  scroll-margin-top: 124px;
+  scroll-margin-top: 104px;
 }
 
 @media (max-width: 760px) {
   #how {
-    scroll-margin-top: 132px;
+    scroll-margin-top: 112px;
   }
 
   #pricing {
-    scroll-margin-top: 132px;
+    scroll-margin-top: 112px;
   }
 
   footer .footer-links-primary,
