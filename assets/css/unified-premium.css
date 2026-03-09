@@ -2471,4 +2471,421 @@ header,
   100% { transform: translate3d(-3%, -2%, 0) scale(1.04); }
 }
 
+/* =========================================================
+   Quiet Luxury Dark SaaS System
+   ========================================================= */
+:root {
+  --bg: #0b0d12;
+  --bg-soft: #10131a;
+  --surface: rgba(18, 22, 30, 0.78);
+  --surface-2: rgba(22, 27, 36, 0.92);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-soft: rgba(255, 255, 255, 0.05);
+  --text: #f5f7fb;
+  --text-soft: #a7b0c0;
+  --accent: #7c8cff;
+  --accent-hover: #95a3ff;
+  --accent-soft: rgba(124, 140, 255, 0.16);
+
+  --primary: var(--accent);
+  --primary-2: var(--accent-hover);
+  --premium-text: var(--text);
+  --premium-muted: var(--text-soft);
+  --premium-link: #b8c2ff;
+  --premium-link-hover: #d4dcff;
+
+  --glass-fill: var(--surface);
+  --glass-border: var(--border-soft);
+  --glass-border-strong: var(--border);
+}
+
+html,
+body {
+  color: var(--text) !important;
+  background:
+    radial-gradient(circle at 24% 14%, rgba(124, 140, 255, 0.08), transparent 42%),
+    radial-gradient(circle at 72% 74%, rgba(124, 140, 255, 0.05), transparent 48%),
+    #0b0d12 !important;
+}
+
+body::before,
+body::after {
+  filter: blur(120px) !important;
+  opacity: 0.07 !important;
+  animation: none !important;
+}
+
+body::before {
+  background:
+    radial-gradient(circle at 20% 30%, rgba(124, 140, 255, 0.1) 0%, rgba(124, 140, 255, 0) 48%),
+    radial-gradient(circle at 80% 18%, rgba(124, 140, 255, 0.07) 0%, rgba(124, 140, 255, 0) 52%) !important;
+}
+
+body::after {
+  background:
+    radial-gradient(circle at 18% 82%, rgba(124, 140, 255, 0.06) 0%, rgba(124, 140, 255, 0) 52%),
+    radial-gradient(circle at 84% 66%, rgba(124, 140, 255, 0.05) 0%, rgba(124, 140, 255, 0) 54%) !important;
+}
+
+main.page::before,
+main.page::after {
+  opacity: 0 !important;
+}
+
+.home-gradient-bg {
+  --home-blending: normal;
+}
+
+.home-gradient-bg__layer,
+.home-gradient-bg__pointer {
+  filter: blur(120px) !important;
+}
+
+.home-gradient-bg__layer--1,
+.home-gradient-bg__layer--2,
+.home-gradient-bg__layer--3,
+.home-gradient-bg__layer--4,
+.home-gradient-bg__layer--5,
+.home-gradient-bg__pointer {
+  background: radial-gradient(circle at center, rgba(124, 140, 255, 0.08) 0%, rgba(124, 140, 255, 0) 62%) !important;
+  opacity: 0.08 !important;
+}
+
+header {
+  border: 1px solid var(--border-soft) !important;
+  border-radius: 16px !important;
+  background: rgba(14, 17, 24, 0.74) !important;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+header.is-scrolled {
+  background: rgba(14, 17, 24, 0.88) !important;
+  border-color: var(--border) !important;
+  box-shadow:
+    0 12px 34px rgba(0, 0, 0, 0.44),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+header .logo-img {
+  filter: brightness(1.2) contrast(1.08) saturate(0.95) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
+}
+
+.nav > nav a {
+  position: relative;
+  padding: 8px 10px;
+  color: var(--text-soft) !important;
+  background: transparent !important;
+  border-radius: 10px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.nav > nav a::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 4px;
+  height: 1.5px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+  opacity: 0;
+  transform: scaleX(0.7);
+  transform-origin: center;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.nav > nav a:hover {
+  color: #e6ebff !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+.nav > nav a:hover::after,
+.nav > nav a.active::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.nav > nav a.active {
+  color: var(--text) !important;
+}
+
+.lang-current {
+  border: 1px solid var(--border-soft) !important;
+  background: rgba(20, 24, 32, 0.88) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+
+.lang-dropdown {
+  border: 1px solid var(--border-soft) !important;
+  border-radius: 12px !important;
+  background: var(--surface-2) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45) !important;
+}
+
+.lang-item {
+  color: var(--text-soft) !important;
+}
+
+.lang-item:hover {
+  color: var(--text) !important;
+  background: var(--accent-soft) !important;
+}
+
+.site-ticker,
+.site-ticker__stats {
+  border-color: var(--border-soft) !important;
+  background: rgba(15, 18, 25, 0.72) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+.site-ticker::before {
+  opacity: 0.35;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(124, 140, 255, 0.12), rgba(255, 255, 255, 0)) !important;
+}
+
+.site-ticker__lead,
+.site-ticker__item,
+.site-ticker__stat-label {
+  color: var(--text-soft) !important;
+}
+
+.site-ticker__item {
+  border-color: var(--border-soft) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.site-ticker__stat strong {
+  color: var(--text) !important;
+}
+
+.hero,
+.pricing,
+.how,
+.faq,
+.about,
+.contact,
+.reviews,
+.seo-article,
+.price-card,
+.how-card,
+.faq-item,
+.faq-sticky,
+.contact-card,
+.review,
+.cart-box,
+.header-mini-item,
+.header-cart-panel,
+.payment-method-modal__dialog,
+.product-preview-modal__dialog,
+.activation-video {
+  border: 1px solid var(--border-soft) !important;
+  border-radius: 16px !important;
+  background: var(--surface) !important;
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+.hero::before,
+.hero::after,
+.pricing::before,
+.how::before,
+.faq::before {
+  opacity: 0.08 !important;
+}
+
+.hero h1,
+.hero-react__top,
+.hero-react__word {
+  color: var(--text) !important;
+  letter-spacing: -0.028em;
+}
+
+.hero h1 {
+  font-size: clamp(2.2rem, 5.2vw, 4.2rem) !important;
+  line-height: 1.04;
+}
+
+.hero p,
+.hero-react__description,
+.pricing-header p,
+.faq-header p,
+.how-card p,
+.about p,
+.contact p,
+.review-text,
+.faq-answer p,
+.faq-sticky p,
+.sub,
+.meta span {
+  color: var(--text-soft) !important;
+}
+
+.pricing-header h2,
+.faq-header h2,
+.how-title,
+.about h1,
+.contact h1,
+.reviews-header h1,
+.container h1,
+.price-card h3 {
+  color: var(--text) !important;
+}
+
+.price-card.featured {
+  border-color: rgba(124, 140, 255, 0.34) !important;
+  background: linear-gradient(180deg, rgba(124, 140, 255, 0.08), rgba(18, 22, 30, 0.78)) !important;
+}
+
+.price,
+.price-card__price-current {
+  color: var(--text) !important;
+}
+
+.price-card__price-old {
+  color: #8a94a8 !important;
+}
+
+.price-card .price-card-features li,
+.price-card ul li {
+  color: var(--text-soft) !important;
+}
+
+.badge {
+  border: 1px solid rgba(124, 140, 255, 0.32) !important;
+  background: rgba(124, 140, 255, 0.16) !important;
+  color: #dde3ff !important;
+  box-shadow: none !important;
+}
+
+.badge.best,
+.badge.new,
+.badge.hit,
+.badge.sale,
+.badge.popular,
+.badge.limited,
+.badge.gift,
+.badge.pro {
+  border: 1px solid rgba(124, 140, 255, 0.32) !important;
+  background: rgba(124, 140, 255, 0.16) !important;
+  color: #dde3ff !important;
+}
+
+.faq-item.active {
+  border-color: rgba(124, 140, 255, 0.32) !important;
+}
+
+.faq-question {
+  color: var(--text) !important;
+}
+
+.faq-icon {
+  border-color: #7f8ba2 !important;
+}
+
+.faq-item.active .faq-icon {
+  border-color: var(--accent) !important;
+}
+
+.btn:not(.secondary),
+.buy-btn,
+.faq-chat-btn,
+.product-preview-modal__pay {
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: linear-gradient(135deg, #5865f2, #4facfe) !important;
+  color: #f8faff !important;
+  text-shadow: none !important;
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+.btn:not(.secondary):hover,
+.buy-btn:hover,
+.faq-chat-btn:hover,
+.product-preview-modal__pay:hover {
+  transform: translateY(-2px) !important;
+  filter: brightness(1.05);
+  box-shadow:
+    0 12px 26px rgba(0, 0, 0, 0.44),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.btn.secondary,
+.product-preview-modal__promo-apply,
+.header-cart-panel__promo button,
+.header-mini-remove-btn,
+.payment-method-modal__close,
+.product-preview-modal__close {
+  border: 1px solid var(--border) !important;
+  background: rgba(20, 24, 32, 0.84) !important;
+  color: #d9e1f3 !important;
+  text-shadow: none !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+.btn.secondary:hover,
+.product-preview-modal__promo-apply:hover,
+.header-cart-panel__promo button:hover,
+.header-mini-remove-btn:hover,
+.payment-method-modal__close:hover,
+.product-preview-modal__close:hover {
+  background: rgba(26, 31, 42, 0.92) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  transform: translateY(-1px) !important;
+  filter: none !important;
+}
+
+.payment-method-modal__option,
+.cart-payment-method__card {
+  border: 1px solid var(--border-soft) !important;
+  background: var(--surface-2) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+.payment-method-modal__option:hover,
+.cart-payment-method.is-active .cart-payment-method__card {
+  border-color: rgba(124, 140, 255, 0.34) !important;
+  background: rgba(26, 31, 42, 0.94) !important;
+}
+
+.payment-method-modal__option.is-active::after {
+  background: var(--accent) !important;
+  border-color: rgba(124, 140, 255, 0.66) !important;
+}
+
+.product-preview-modal__checkout,
+.seo-related,
+.page-overlay {
+  background: rgba(12, 15, 22, 0.74) !important;
+}
+
+.product-preview-modal__field-input,
+.header-cart-panel__promo input,
+.header-cart-panel__email input,
+.cart-email input {
+  border: 1px solid var(--border-soft) !important;
+  background: rgba(14, 18, 26, 0.84) !important;
+  color: var(--text) !important;
+}
+
+.product-preview-modal__field-input::placeholder,
+.header-cart-panel__promo input::placeholder,
+.header-cart-panel__email input::placeholder,
+.cart-email input::placeholder {
+  color: #7f8aa0;
+}
+
+footer {
+  border-top: 1px solid var(--border-soft) !important;
+  color: var(--text-soft) !important;
+}
+
 
