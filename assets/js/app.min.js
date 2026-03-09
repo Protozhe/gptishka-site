@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initPageEnterTransition();
   initHomeGradientBackground();
   initPulseBeamButtons();
+  initLinkPageTransitions();
 
   const header = document.querySelector("header");
   if (!header) return;
@@ -31,8 +32,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 let pageNavigationInProgress = false;
+const PAGE_TRANSITION_LEAVE_MS = 320;
+const PAGE_TRANSITION_ENTER_MS = 520;
 
-function navigateWithPageTransition(targetHref, delayMs = 220) {
+function navigateWithPageTransition(targetHref, delayMs = PAGE_TRANSITION_LEAVE_MS) {
   const href = String(targetHref || "").trim();
   if (!href) return;
   if (pageNavigationInProgress) return;
@@ -51,7 +54,7 @@ function initPageEnterTransition() {
     window.setTimeout(() => {
       root.classList.remove("is-entering");
       root.classList.remove("is-entering-active");
-    }, 460);
+    }, PAGE_TRANSITION_ENTER_MS);
   });
 }
 
@@ -84,6 +87,24 @@ function shouldUsePageTransitionForHref(href, linkEl) {
   if (isSamePageAnchor) return false;
 
   return true;
+}
+
+function initLinkPageTransitions() {
+  document.addEventListener("click", e => {
+    if (e.defaultPrevented) return;
+    if (e.button !== 0) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+    const target = e.target instanceof Element ? e.target : null;
+    const link = target ? target.closest("a[href]") : null;
+    if (!(link instanceof HTMLAnchorElement)) return;
+
+    const href = link.getAttribute("href");
+    if (!shouldUsePageTransitionForHref(href, link)) return;
+
+    e.preventDefault();
+    navigateWithPageTransition(link.href, PAGE_TRANSITION_LEAVE_MS);
+  });
 }
 
 function initHomeGradientBackground() {
@@ -181,7 +202,6 @@ function initPulseBeamButtons() {
     ".faq-chat-btn",
     ".redeem-btn",
     ".redeem-btn-primary",
-    ".gptishka-resume-activation",
     ".support-widget__fab",
     ".support-widget__cta",
     ".status-btn",
@@ -209,6 +229,7 @@ function initPulseBeamButtons() {
   const ensureBeamTarget = node => {
     if (!(node instanceof HTMLElement)) return;
     if (node.matches(skipSelector)) return;
+    if (node.classList.contains("gptishka-resume-activation")) return;
     if (node.classList.contains("lp-pulse-beam-target")) return;
 
     node.classList.add("lp-pulse-beam-target");
@@ -227,7 +248,11 @@ function initPulseBeamButtons() {
   const hydrateTargets = scope => {
     if (!(scope instanceof Element)) return;
 
-    if (scope.matches(targetSelector)) {
+    const matchesScope = scope.matches(targetSelector);
+    const firstDescendant = matchesScope ? scope : scope.querySelector(targetSelector);
+    if (!matchesScope && !firstDescendant) return;
+
+    if (matchesScope) {
       ensureBeamTarget(scope);
     }
 
@@ -431,15 +456,6 @@ function initActivationResumeShortcut() {
   document.body.appendChild(anchor);
 }
   
-document.querySelectorAll("a[href]").forEach(link => {
-    link.addEventListener("click", e => {
-      const href = link.getAttribute("href");
-      if (!shouldUsePageTransitionForHref(href, link)) return;
-      e.preventDefault();
-      navigateWithPageTransition(href, 230);
-    });
-  });
-
 (() => {
   const CART_KEY = "gptishka_cart_v1";
   const CARD_QTY_KEY = "gptishka_card_qty_v1";

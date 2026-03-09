@@ -4355,6 +4355,10 @@ body.home-gradient-page::after {
   overflow: hidden !important;
 }
 
+.gptishka-resume-activation.lp-pulse-beam-target {
+  position: fixed !important;
+}
+
 .lp-pulse-beam-target .lp-pulse-beams {
   position: absolute;
   inset: -28%;
@@ -4439,7 +4443,6 @@ body.home-gradient-page::after {
   .faq-chat-btn,
   .redeem-btn,
   .redeem-btn-primary,
-  .gptishka-resume-activation,
   .support-widget__fab,
   .support-widget__cta,
   .btn-primary,
@@ -4457,7 +4460,6 @@ body.home-gradient-page::after {
   .faq-chat-btn,
   .redeem-btn,
   .redeem-btn-primary,
-  .gptishka-resume-activation,
   .support-widget__fab,
   .support-widget__cta,
   .btn-primary,
@@ -4497,7 +4499,6 @@ body.home-gradient-page::after {
   .faq-chat-btn,
   .redeem-btn,
   .redeem-btn-primary,
-  .gptishka-resume-activation,
   .support-widget__fab,
   .support-widget__cta,
   .btn-primary,
@@ -4510,7 +4511,6 @@ body.home-gradient-page::after {
   .faq-chat-btn,
   .redeem-btn,
   .redeem-btn-primary,
-  .gptishka-resume-activation,
   .support-widget__fab,
   .support-widget__cta,
   .btn-primary,
@@ -4645,7 +4645,7 @@ html.is-entering.is-entering-active body {
 }
 
 .page-overlay {
-  transition: opacity 0.28s ease, backdrop-filter 0.28s ease !important;
+  transition: opacity 0.34s cubic-bezier(0.25, 0.1, 0.25, 1), backdrop-filter 0.34s cubic-bezier(0.25, 0.1, 0.25, 1) !important;
 }
 
 html.is-leaving .page-overlay {
@@ -4653,10 +4653,18 @@ html.is-leaving .page-overlay {
   backdrop-filter: blur(5px) !important;
 }
 
+html.is-leaving header,
+html.is-leaving main.page,
+html.is-leaving footer {
+  opacity: 0.76;
+  transform: translateY(6px);
+  transition: opacity 0.32s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.32s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
 html.is-leaving body {
-  opacity: 0.86;
-  transform: translateY(4px);
-  transition: opacity 0.24s ease, transform 0.24s ease;
+  opacity: 0.72;
+  transform: translateY(6px);
+  transition: opacity 0.32s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.32s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
