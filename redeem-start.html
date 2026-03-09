@@ -926,6 +926,121 @@
         height: 32px;
       }
     }
+  
+
+    /* Unified redeem visual language with main site */
+    body.redeem-flow {
+      background:
+        radial-gradient(920px 500px at 8% -12%, rgba(104, 141, 255, 0.18), transparent 64%),
+        radial-gradient(820px 460px at 98% 4%, rgba(255, 191, 142, 0.16), transparent 66%),
+        linear-gradient(180deg, var(--lp-bg, #f6f7fb) 0%, var(--lp-bg-soft, #eef2fb) 100%) !important;
+    }
+
+    body.redeem-flow::before,
+    body.redeem-flow::after,
+    body.redeem-flow main.page::before,
+    body.redeem-flow main.page::after {
+      content: "" !important;
+      display: block !important;
+    }
+
+    body.redeem-flow .redeem-page {
+      max-width: 1180px !important;
+      padding: 24px 12px 0 !important;
+    }
+
+    body.redeem-flow .redeem-card {
+      border: 1px solid var(--lp-border, rgba(173, 186, 213, 0.38)) !important;
+      border-radius: 26px !important;
+      background: var(--lp-surface-main, rgba(255, 255, 255, 0.5)) !important;
+      box-shadow: var(--lp-shadow-lg, 0 14px 44px rgba(31, 41, 55, 0.08)), inset 0 1px 0 rgba(255, 255, 255, 0.76) !important;
+      backdrop-filter: blur(16px) saturate(132%) !important;
+      -webkit-backdrop-filter: blur(16px) saturate(132%) !important;
+    }
+
+    body.redeem-flow .redeem-block,
+    body.redeem-flow .redeem-order-row,
+    body.redeem-flow .redeem-guide,
+    body.redeem-flow .redeem-status,
+    body.redeem-flow .redeem-faq {
+      border-color: rgba(186, 198, 224, 0.42) !important;
+      background: var(--lp-surface-card, rgba(255, 255, 255, 0.68)) !important;
+      box-shadow: var(--lp-shadow-md, 0 10px 30px rgba(31, 41, 55, 0.07)), inset 0 1px 0 rgba(255, 255, 255, 0.74) !important;
+      backdrop-filter: blur(14px) saturate(128%) !important;
+      -webkit-backdrop-filter: blur(14px) saturate(128%) !important;
+    }
+
+    body.redeem-flow .redeem-title {
+      color: var(--lp-text, #161f2f) !important;
+    }
+
+    body.redeem-flow .redeem-subtitle,
+    body.redeem-flow .redeem-meta,
+    body.redeem-flow .redeem-faq,
+    body.redeem-flow .redeem-manual-hint {
+      color: var(--lp-text-soft, #5f6b81) !important;
+    }
+
+    body.redeem-flow .redeem-label {
+      color: #3f5368 !important;
+      letter-spacing: 0.08em !important;
+      text-transform: uppercase !important;
+      font-size: 12px !important;
+      font-weight: 800 !important;
+    }
+
+    body.redeem-flow .redeem-btn {
+      border: 1px solid rgba(186, 198, 224, 0.66) !important;
+      border-radius: 12px !important;
+      background: linear-gradient(136deg, rgba(255, 255, 255, 0.9), rgba(235, 244, 255, 0.78)) !important;
+      color: var(--lp-text, #161f2f) !important;
+      box-shadow: 0 10px 22px rgba(31, 41, 55, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.84) !important;
+      text-shadow: none !important;
+    }
+
+    body.redeem-flow .redeem-btn:hover {
+      box-shadow: 0 14px 28px rgba(31, 41, 55, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+    }
+
+    body.redeem-flow .redeem-btn-primary {
+      border: 1px solid rgba(74, 109, 255, 0.46) !important;
+      background: linear-gradient(135deg, var(--primary, #2a5bff), var(--primary-2, #2148d6)) !important;
+      color: #ffffff !important;
+      box-shadow: 0 14px 28px rgba(33, 72, 214, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+    }
+
+    body.redeem-flow .redeem-btn-primary:hover {
+      filter: saturate(108%) !important;
+    }
+
+    body.redeem-flow .redeem-status.pending {
+      border-color: rgba(199, 129, 51, 0.32) !important;
+      background: rgba(255, 243, 221, 0.82) !important;
+      color: #8a5a08 !important;
+    }
+
+    body.redeem-flow .redeem-status.success {
+      border-color: rgba(16, 141, 101, 0.3) !important;
+      background: rgba(228, 249, 239, 0.84) !important;
+      color: #0f684f !important;
+    }
+
+    body.redeem-flow .redeem-status.error {
+      border-color: rgba(181, 70, 62, 0.32) !important;
+      background: rgba(255, 236, 234, 0.84) !important;
+      color: #9c312f !important;
+    }
+
+    @media (max-width: 640px) {
+      body.redeem-flow .redeem-page {
+        padding: 14px 10px 0 !important;
+      }
+
+      body.redeem-flow .redeem-card {
+        border-radius: 18px !important;
+      }
+    }
+
   </style>
 <link rel="stylesheet" href="/assets/css/support-widget.css?v=20260305a" />
 </head>
