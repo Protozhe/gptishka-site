@@ -1289,25 +1289,27 @@ footer {
 }
 
 @keyframes premiumBodyGlowA {
-  0% { transform: translate3d(-3%, -2%, 0) scale(1); }
-  50% { transform: translate3d(2%, 2%, 0) scale(1.04); }
-  100% { transform: translate3d(3%, -1%, 0) scale(1.03); }
+  0% { transform: translate3d(-6%, -4%, 0) scale(0.98); }
+  50% { transform: translate3d(5%, 4%, 0) scale(1.08); }
+  100% { transform: translate3d(8%, -3%, 0) scale(1.04); }
 }
 
 @keyframes premiumBodyGlowB {
-  0% { transform: translate3d(2%, -2%, 0) scale(1); }
-  50% { transform: translate3d(-2%, 2%, 0) scale(1.05); }
-  100% { transform: translate3d(-3%, -1%, 0) scale(1.03); }
+  0% { transform: translate3d(5%, -4%, 0) scale(0.98); }
+  50% { transform: translate3d(-4%, 5%, 0) scale(1.09); }
+  100% { transform: translate3d(-8%, -2%, 0) scale(1.04); }
 }
 
 @keyframes premiumPageHazeA {
-  0% { opacity: 0.52; transform: translateX(-50%) scale(1); }
-  100% { opacity: 0.64; transform: translateX(-50%) scale(1.04); }
+  0% { opacity: 0.44; transform: translate(-52%, -3%) scale(0.96); }
+  50% { opacity: 0.68; transform: translate(-48%, 2%) scale(1.08); }
+  100% { opacity: 0.58; transform: translate(-51%, -1%) scale(1.03); }
 }
 
 @keyframes premiumPageHazeB {
-  0% { opacity: 0.4; transform: translateX(-50%) scale(1); }
-  100% { opacity: 0.52; transform: translateX(-50%) scale(1.05); }
+  0% { opacity: 0.34; transform: translate(-49%, 2%) scale(0.96); }
+  50% { opacity: 0.56; transform: translate(-53%, -2%) scale(1.09); }
+  100% { opacity: 0.46; transform: translate(-50%, 1%) scale(1.04); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3904,13 +3906,13 @@ footer {
 :root {
   --gradient-background-start: #f6f7fb;
   --gradient-background-end: #edf3ff;
-  --gradient-first: 170, 190, 255;
-  --gradient-second: 210, 225, 255;
-  --gradient-third: 255, 220, 235;
-  --gradient-fourth: 188, 239, 255;
-  --gradient-fifth: 198, 214, 255;
-  --gradient-pointer: 166, 188, 255;
-  --gradient-size: min(92vmax, 1220px);
+  --gradient-first: 132, 164, 255;
+  --gradient-second: 172, 214, 255;
+  --gradient-third: 255, 188, 228;
+  --gradient-fourth: 140, 224, 255;
+  --gradient-fifth: 186, 170, 255;
+  --gradient-pointer: 124, 164, 255;
+  --gradient-size: min(96vmax, 1280px);
   --gradient-blending: hard-light;
 }
 
@@ -3922,8 +3924,8 @@ body {
 
 body::before,
 body::after {
-  opacity: 0.28 !important;
-  filter: blur(188px) saturate(108%) !important;
+  opacity: 0.4 !important;
+  filter: blur(148px) saturate(122%) !important;
 }
 
 .home-gradient-bg {
@@ -3946,67 +3948,67 @@ body::after {
   border-radius: 999px !important;
   mix-blend-mode: var(--gradient-blending) !important;
   will-change: transform, opacity;
-  filter: blur(132px) saturate(116%) !important;
+  filter: blur(102px) saturate(130%) !important;
 }
 
 .home-gradient-bg__layer--1 {
   background:
     radial-gradient(
       circle at center,
-      rgba(var(--gradient-first), 0.56) 0%,
+      rgba(var(--gradient-first), 0.68) 0%,
       rgba(var(--gradient-first), 0) 58%
     ) !important;
   transform-origin: center center !important;
   animation: lpGradFirst 32s ease-in-out infinite !important;
-  opacity: 0.62 !important;
+  opacity: 0.74 !important;
 }
 
 .home-gradient-bg__layer--2 {
   background:
     radial-gradient(
       circle at center,
-      rgba(var(--gradient-second), 0.52) 0%,
+      rgba(var(--gradient-second), 0.64) 0%,
       rgba(var(--gradient-second), 0) 58%
     ) !important;
   transform-origin: calc(50% - 380px) calc(50% - 90px) !important;
   animation: lpGradSecond 36s ease-in-out infinite !important;
-  opacity: 0.56 !important;
+  opacity: 0.68 !important;
 }
 
 .home-gradient-bg__layer--3 {
   background:
     radial-gradient(
       circle at center,
-      rgba(var(--gradient-third), 0.44) 0%,
+      rgba(var(--gradient-third), 0.56) 0%,
       rgba(var(--gradient-third), 0) 60%
     ) !important;
   transform-origin: calc(50% + 360px) calc(50% - 80px) !important;
   animation: lpGradThird 42s ease-in-out infinite !important;
-  opacity: 0.46 !important;
+  opacity: 0.58 !important;
 }
 
 .home-gradient-bg__layer--4 {
   background:
     radial-gradient(
       circle at center,
-      rgba(var(--gradient-fourth), 0.44) 0%,
+      rgba(var(--gradient-fourth), 0.54) 0%,
       rgba(var(--gradient-fourth), 0) 60%
     ) !important;
   transform-origin: calc(50% - 180px) calc(50% + 220px) !important;
   animation: lpGradFourth 48s ease-in-out infinite !important;
-  opacity: 0.42 !important;
+  opacity: 0.54 !important;
 }
 
 .home-gradient-bg__layer--5 {
   background:
     radial-gradient(
       circle at center,
-      rgba(var(--gradient-fifth), 0.42) 0%,
+      rgba(var(--gradient-fifth), 0.52) 0%,
       rgba(var(--gradient-fifth), 0) 62%
     ) !important;
   transform-origin: calc(50% - 720px) calc(50% + 680px) !important;
   animation: lpGradFifth 54s ease-in-out infinite !important;
-  opacity: 0.4 !important;
+  opacity: 0.5 !important;
 }
 
 .home-gradient-bg__pointer {
@@ -4017,10 +4019,10 @@ body::after {
   background:
     radial-gradient(
       circle at center,
-      rgba(var(--gradient-pointer), 0.32) 0%,
+      rgba(var(--gradient-pointer), 0.46) 0%,
       rgba(var(--gradient-pointer), 0) 58%
     ) !important;
-  opacity: 0.44 !important;
+  opacity: 0.58 !important;
   transform: translate3d(
     calc(var(--home-pointer-x) * 0.22),
     calc(var(--home-pointer-y) * 0.22),
