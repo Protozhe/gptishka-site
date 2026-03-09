@@ -4230,4 +4230,113 @@ body.home-gradient-page main.page::after {
   }
 }
 
+/* =========================================================
+   Final Visual Tuning: Brighter Buttons + Rich Multi-Color Gradient
+   ========================================================= */
+:root {
+  --lp-btn-a: #5f8dff;
+  --lp-btn-b: #63ccff;
+  --lp-btn-c: #887dff;
+  --lp-btn-shadow: 0 14px 28px rgba(73, 111, 255, 0.3);
+  --lp-btn-shadow-hover: 0 18px 34px rgba(73, 111, 255, 0.38);
+  --gradient-background-start: #f5f8ff;
+  --gradient-background-end: #eef4ff;
+  --gradient-first: 92, 122, 255;
+  --gradient-second: 92, 220, 232;
+  --gradient-third: 255, 158, 197;
+  --gradient-fourth: 255, 209, 132;
+  --gradient-fifth: 166, 136, 255;
+  --gradient-pointer: 142, 122, 255;
+  --gradient-size: min(112vmax, 1500px);
+  --gradient-blending: screen;
+}
+
+/* Primary buttons should feel lighter and more premium */
+.btn:not(.secondary),
+.buy-btn,
+.faq-chat-btn,
+.redeem-btn-primary,
+.gptishka-resume-activation,
+.support-widget__fab,
+.support-widget__cta,
+#manualSupportBtn.redeem-btn-primary {
+  border-color: rgba(140, 173, 255, 0.56) !important;
+  background: linear-gradient(132deg, var(--lp-btn-a) 0%, var(--lp-btn-c) 44%, var(--lp-btn-b) 100%) !important;
+  color: #ffffff !important;
+  box-shadow: var(--lp-btn-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+  text-shadow: none !important;
+}
+
+.btn:not(.secondary):hover,
+.buy-btn:hover,
+.faq-chat-btn:hover,
+.redeem-btn-primary:hover,
+.gptishka-resume-activation:hover,
+.support-widget__fab:hover,
+.support-widget__cta:hover,
+#manualSupportBtn.redeem-btn-primary:hover {
+  filter: saturate(108%) brightness(1.04) !important;
+  box-shadow: var(--lp-btn-shadow-hover), inset 0 1px 0 rgba(255, 255, 255, 0.34) !important;
+}
+
+/* Richer, less flat ambient gradient */
+body.home-gradient-page {
+  background:
+    radial-gradient(118% 96% at 8% 10%, rgba(var(--gradient-first), 0.32) 0%, rgba(var(--gradient-first), 0) 66%),
+    radial-gradient(116% 96% at 92% 10%, rgba(var(--gradient-second), 0.28) 0%, rgba(var(--gradient-second), 0) 68%),
+    radial-gradient(104% 92% at 54% 90%, rgba(var(--gradient-third), 0.3) 0%, rgba(var(--gradient-third), 0) 68%),
+    radial-gradient(92% 84% at 20% 78%, rgba(var(--gradient-fourth), 0.28) 0%, rgba(var(--gradient-fourth), 0) 66%),
+    radial-gradient(92% 84% at 80% 74%, rgba(var(--gradient-fifth), 0.26) 0%, rgba(var(--gradient-fifth), 0) 66%),
+    linear-gradient(40deg, var(--gradient-background-start), var(--gradient-background-end)) !important;
+  background-size: 196% 196%, 182% 182%, 170% 170%, 160% 160%, 152% 152%, 100% 100% !important;
+  animation: lpBaseGradientShiftRich 18s ease-in-out infinite alternate !important;
+}
+
+body.home-gradient-page::before {
+  opacity: 0.5 !important;
+  background:
+    radial-gradient(circle at 14% 24%, rgba(255, 172, 206, 0.38) 0%, rgba(255, 172, 206, 0) 58%),
+    radial-gradient(circle at 78% 16%, rgba(108, 220, 234, 0.3) 0%, rgba(108, 220, 234, 0) 60%),
+    radial-gradient(circle at 50% 86%, rgba(255, 214, 141, 0.3) 0%, rgba(255, 214, 141, 0) 64%) !important;
+  filter: blur(118px) saturate(132%) !important;
+}
+
+body.home-gradient-page::after {
+  opacity: 0.44 !important;
+  background:
+    radial-gradient(circle at 20% 78%, rgba(174, 146, 255, 0.34) 0%, rgba(174, 146, 255, 0) 62%),
+    radial-gradient(circle at 82% 66%, rgba(112, 190, 255, 0.28) 0%, rgba(112, 190, 255, 0) 62%),
+    radial-gradient(circle at 52% 12%, rgba(255, 200, 160, 0.26) 0%, rgba(255, 200, 160, 0) 64%) !important;
+  filter: blur(124px) saturate(128%) !important;
+}
+
+.home-gradient-bg__layer,
+.home-gradient-bg__pointer {
+  filter: blur(90px) saturate(136%) !important;
+}
+
+.home-gradient-bg__pointer {
+  background:
+    radial-gradient(circle at center, rgba(var(--gradient-pointer), 0.72) 0%, rgba(var(--gradient-pointer), 0) 58%) !important;
+  opacity: 0.82 !important;
+  transform: translate3d(
+    calc(var(--home-pointer-x) * 0.72),
+    calc(var(--home-pointer-y) * 0.72),
+    0
+  ) !important;
+  animation: lpGradPointerPulse 6s ease-in-out infinite alternate !important;
+}
+
+@keyframes lpBaseGradientShiftRich {
+  0% {
+    background-position: 0% 0%, 100% 0%, 50% 100%, 10% 92%, 90% 86%, 0% 0%;
+  }
+  50% {
+    background-position: 36% 18%, 64% 18%, 50% 62%, 24% 56%, 74% 58%, 0% 0%;
+  }
+  100% {
+    background-position: 100% 26%, 0% 26%, 48% 0%, 32% 16%, 66% 18%, 0% 0%;
+  }
+}
+
 
