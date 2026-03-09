@@ -1789,3 +1789,143 @@ footer {
   box-shadow: 0 0 0 4px rgba(15, 141, 119, 0.16);
 }
 
+/* Home animated gradient background */
+body.home-gradient-page {
+  background: linear-gradient(40deg, #e9f4ff 0%, #d8ecff 42%, #e2f5f4 100%);
+}
+
+body.home-gradient-page::before,
+body.home-gradient-page::after,
+body.home-gradient-page main.page::before,
+body.home-gradient-page main.page::after {
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+body.home-gradient-page header,
+body.home-gradient-page main.page,
+body.home-gradient-page footer {
+  position: relative;
+  z-index: 1;
+}
+
+.home-gradient-bg {
+  --home-blending: hard-light;
+  --home-size: 82vmax;
+  --home-pointer-x: 0px;
+  --home-pointer-y: 0px;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.home-gradient-bg__layer,
+.home-gradient-bg__pointer {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--home-size);
+  height: var(--home-size);
+  margin-left: calc(var(--home-size) / -2);
+  margin-top: calc(var(--home-size) / -2);
+  border-radius: 50%;
+  mix-blend-mode: var(--home-blending);
+  will-change: transform, opacity;
+}
+
+.home-gradient-bg__layer--1 {
+  background: radial-gradient(circle at center, rgba(18, 137, 210, 0.34) 0%, rgba(18, 137, 210, 0) 58%);
+  animation: homeGradientFirst 18s linear infinite;
+}
+
+.home-gradient-bg__layer--2 {
+  background: radial-gradient(circle at center, rgba(23, 179, 147, 0.33) 0%, rgba(23, 179, 147, 0) 58%);
+  transform-origin: calc(50% - 420px) 50%;
+  animation: homeGradientSecond 24s linear infinite reverse;
+}
+
+.home-gradient-bg__layer--3 {
+  background: radial-gradient(circle at center, rgba(103, 225, 255, 0.31) 0%, rgba(103, 225, 255, 0) 58%);
+  transform-origin: calc(50% + 380px) 50%;
+  animation: homeGradientThird 22s linear infinite;
+}
+
+.home-gradient-bg__layer--4 {
+  background: radial-gradient(circle at center, rgba(244, 151, 103, 0.22) 0%, rgba(244, 151, 103, 0) 58%);
+  transform-origin: calc(50% - 260px) calc(50% - 180px);
+  opacity: 0.74;
+  animation: homeGradientFourth 28s linear infinite;
+}
+
+.home-gradient-bg__layer--5 {
+  background: radial-gradient(circle at center, rgba(250, 214, 120, 0.22) 0%, rgba(250, 214, 120, 0) 58%);
+  transform-origin: calc(50% - 760px) calc(50% + 660px);
+  opacity: 0.72;
+  animation: homeGradientFifth 30s linear infinite;
+}
+
+.home-gradient-bg__pointer {
+  width: 72vmax;
+  height: 72vmax;
+  margin-left: -36vmax;
+  margin-top: -36vmax;
+  background: radial-gradient(circle at center, rgba(140, 196, 255, 0.34) 0%, rgba(140, 196, 255, 0) 62%);
+  filter: blur(30px);
+  opacity: 0.62;
+  transform: translate3d(var(--home-pointer-x), var(--home-pointer-y), 0);
+}
+
+@keyframes homeGradientFirst {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.06); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes homeGradientSecond {
+  0% { transform: rotate(0deg) scale(1.02); }
+  50% { transform: rotate(180deg) scale(0.96); }
+  100% { transform: rotate(360deg) scale(1.02); }
+}
+
+@keyframes homeGradientThird {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.08); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes homeGradientFourth {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.12); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes homeGradientFifth {
+  0% { transform: rotate(0deg) scale(0.96); }
+  50% { transform: rotate(180deg) scale(1.05); }
+  100% { transform: rotate(360deg) scale(0.96); }
+}
+
+@media (max-width: 760px) {
+  .home-gradient-bg {
+    --home-size: 112vmax;
+  }
+
+  .home-gradient-bg__pointer {
+    width: 90vmax;
+    height: 90vmax;
+    margin-left: -45vmax;
+    margin-top: -45vmax;
+    opacity: 0.56;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-gradient-bg__layer,
+  .home-gradient-bg__pointer {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+

@@ -4,6 +4,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   document.documentElement.classList.remove("is-leaving");
+  initHomeGradientBackground();
 
   const header = document.querySelector("header");
   if (!header) return;
@@ -26,6 +27,82 @@ document.addEventListener("DOMContentLoaded", () => {
   initActivationResumeShortcut();
   initReviewsSecurityBanner();
 });
+
+function initHomeGradientBackground() {
+  const path = String(window.location.pathname || "/").toLowerCase();
+  const isHomePage =
+    path === "/" ||
+    path.endsWith("/index.html") ||
+    path === "/en/" ||
+    path.endsWith("/en/index.html");
+  if (!isHomePage) return;
+
+  const body = document.body;
+  if (!body) return;
+  body.classList.add("home-gradient-page");
+
+  let bg = document.querySelector(".home-gradient-bg");
+  if (!bg) {
+    bg = document.createElement("div");
+    bg.className = "home-gradient-bg";
+    bg.setAttribute("aria-hidden", "true");
+    bg.innerHTML = [
+      '<span class="home-gradient-bg__layer home-gradient-bg__layer--1"></span>',
+      '<span class="home-gradient-bg__layer home-gradient-bg__layer--2"></span>',
+      '<span class="home-gradient-bg__layer home-gradient-bg__layer--3"></span>',
+      '<span class="home-gradient-bg__layer home-gradient-bg__layer--4"></span>',
+      '<span class="home-gradient-bg__layer home-gradient-bg__layer--5"></span>',
+      '<span class="home-gradient-bg__pointer"></span>',
+    ].join("");
+    body.insertBefore(bg, body.firstChild);
+  }
+
+  let targetX = 0;
+  let targetY = 0;
+  let currentX = 0;
+  let currentY = 0;
+  let rafId = 0;
+
+  const updatePointer = () => {
+    currentX += (targetX - currentX) * 0.14;
+    currentY += (targetY - currentY) * 0.14;
+    bg.style.setProperty("--home-pointer-x", `${Math.round(currentX)}px`);
+    bg.style.setProperty("--home-pointer-y", `${Math.round(currentY)}px`);
+    if (Math.abs(targetX - currentX) > 0.2 || Math.abs(targetY - currentY) > 0.2) {
+      rafId = window.requestAnimationFrame(updatePointer);
+      return;
+    }
+    rafId = 0;
+  };
+
+  const queuePointerUpdate = () => {
+    if (!rafId) {
+      rafId = window.requestAnimationFrame(updatePointer);
+    }
+  };
+
+  window.addEventListener(
+    "pointermove",
+    e => {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      targetX = (e.clientX - centerX) * 0.18;
+      targetY = (e.clientY - centerY) * 0.18;
+      queuePointerUpdate();
+    },
+    { passive: true }
+  );
+
+  window.addEventListener(
+    "pointerleave",
+    () => {
+      targetX = 0;
+      targetY = 0;
+      queuePointerUpdate();
+    },
+    { passive: true }
+  );
+}
 
 function initFaqAccordions() {
   const questions = Array.from(document.querySelectorAll(".faq-question"));
