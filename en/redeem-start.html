@@ -20,9 +20,27 @@
   <link rel="stylesheet" href="/assets/css/logo.min.css">
   
   <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2">
-<link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260308g" />
+<link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260309q" />
 
   <style>
+    body.redeem-flow::before,
+    body.redeem-flow::after,
+    body.redeem-flow main.page::before,
+    body.redeem-flow main.page::after {
+      content: none !important;
+      display: none !important;
+      animation: none !important;
+      filter: none !important;
+    }
+
+    body.redeem-flow .redeem-card,
+    body.redeem-flow .redeem-block,
+    body.redeem-flow .redeem-order-row,
+    body.redeem-flow .redeem-guide {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
     .redeem-page {
       max-width: 1080px;
       margin: 0 auto;
@@ -516,7 +534,7 @@
   </style>
 <link rel="stylesheet" href="/assets/css/support-widget.css?v=20260305a" />
 </head>
-<body>
+<body class="redeem-flow">
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
   <div class="page-overlay"></div>
 

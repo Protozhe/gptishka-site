@@ -1,9 +1,8 @@
-﻿import { Request, Response } from "express";
+import { Request, Response } from "express";
 import { asyncHandler } from "../../common/http/async-handler";
 import { AppError } from "../../common/errors/app-error";
 import { deliveryTypeToMethod, resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { productsService } from "./products.service";
-import { saveProductImage } from "../files/files.service";
 
 function actor(req: Request) {
   return {
@@ -75,16 +74,6 @@ export const deleteProduct = asyncHandler(async (req: Request, res: Response) =>
 export const bulkPriceUpdate = asyncHandler(async (req: Request, res: Response) => {
   const data = await productsService.bulkPrice(req.body.productIds, req.body.mode, req.body.value, actor(req));
   res.json({ items: data });
-});
-
-export const uploadProductImage = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.file) {
-    return res.status(400).json({ message: "Image file is required" });
-  }
-
-  const url = saveProductImage(req.file);
-  const image = await productsService.addImage(String(req.params.id), url, actor(req));
-  res.status(201).json(image);
 });
 
 export const listProductCredentials = asyncHandler(async (req: Request, res: Response) => {

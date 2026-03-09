@@ -755,7 +755,7 @@ body.is-product-modal-open {
 }
 
 .product-preview-modal__list li::before {
-  content: "•";
+  content: "\2022";
   position: absolute;
   left: 0;
   top: 0;
@@ -1361,3 +1361,145 @@ footer {
     font-size: 12px;
   }
 }
+
+/* Final modal refinement: minimal premium (overrides above) */
+.product-preview-modal__backdrop,
+.payment-method-modal__backdrop {
+  background: rgba(8, 15, 24, 0.44);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.product-preview-modal__dialog {
+  width: min(690px, 100%);
+  border-radius: 22px;
+  border: 1px solid rgba(184, 199, 216, 0.88);
+  padding: 22px 20px 18px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.985), rgba(247, 252, 255, 0.95));
+  box-shadow: 0 24px 52px rgba(11, 23, 38, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.98);
+}
+
+.product-preview-modal__content {
+  gap: 12px;
+}
+
+.product-preview-modal__description-list {
+  gap: 7px;
+}
+
+.product-preview-modal__description-list li {
+  color: #36495c;
+  font-size: 13px;
+}
+
+.product-preview-modal__field-input {
+  border-color: rgba(190, 204, 220, 0.9);
+  background: #ffffff;
+  font-weight: 600;
+}
+
+.product-preview-modal__field-input:focus {
+  border-color: rgba(15, 141, 119, 0.56);
+  box-shadow: 0 0 0 3px rgba(15, 141, 119, 0.12);
+}
+
+.product-preview-modal__promo-apply {
+  border: 1px solid rgba(177, 194, 212, 0.9);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.96), rgba(244, 250, 255, 0.86));
+  color: #182739;
+  box-shadow: none;
+}
+
+.product-preview-modal__promo-apply:hover {
+  border-color: rgba(15, 141, 119, 0.45);
+  transform: translateY(0);
+}
+
+.product-preview-modal__actions {
+  margin-top: 12px;
+}
+
+.product-preview-modal__pay {
+  border-radius: 14px;
+  min-height: 50px;
+  background: linear-gradient(135deg, #0f8d77, #107b99);
+  box-shadow: 0 14px 26px rgba(15, 123, 153, 0.24);
+}
+
+.payment-method-modal__dialog {
+  width: min(640px, 100%);
+  border-radius: 22px;
+  border: 1px solid rgba(183, 198, 214, 0.88);
+  padding: 24px 20px 18px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.985), rgba(247, 252, 255, 0.95));
+  box-shadow: 0 24px 52px rgba(11, 23, 38, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.98);
+}
+
+.payment-method-modal__title {
+  font-size: clamp(25px, 3.3vw, 31px);
+  letter-spacing: -0.02em;
+}
+
+.payment-method-modal__subtitle {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #5a6d80;
+}
+
+.payment-method-modal__list {
+  margin-top: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.payment-method-modal__option {
+  grid-template-columns: 50px 1fr;
+  min-height: 76px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(190, 204, 220, 0.9);
+  background: linear-gradient(152deg, rgba(255, 255, 255, 0.95), rgba(245, 250, 255, 0.84));
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.payment-method-modal__option::after {
+  top: 10px;
+  right: 10px;
+}
+
+.payment-method-modal__option:hover {
+  transform: translateY(-1px);
+  border-color: rgba(15, 141, 119, 0.42);
+  box-shadow: 0 10px 20px rgba(15, 141, 119, 0.12);
+}
+
+.payment-method-modal__option.is-active {
+  border-color: rgba(15, 141, 119, 0.52);
+  box-shadow: 0 0 0 1px rgba(15, 141, 119, 0.18), 0 10px 22px rgba(15, 141, 119, 0.14);
+}
+
+.payment-method-modal__option.is-active::after {
+  border-color: rgba(15, 141, 119, 0.75);
+  background: #0f8d77;
+  box-shadow: 0 0 0 4px rgba(15, 141, 119, 0.14);
+}
+
+.payment-method-modal__logo {
+  width: 40px;
+  height: 40px;
+}
+
+.payment-method-modal__name {
+  font-size: 15px;
+}
+
+.payment-method-modal__hint {
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .payment-method-modal__list {
+    grid-template-columns: 1fr;
+  }
+}
+

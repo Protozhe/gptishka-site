@@ -26,6 +26,8 @@ const productBody = z.object({
   titleEn: z.string().min(3).max(150),
   description: z.string().min(10).max(5000),
   descriptionEn: z.string().min(10).max(5000),
+  modalDescription: z.string().max(5000).optional(),
+  modalDescriptionEn: z.string().max(5000).optional(),
   price: z.coerce.number().positive(),
   oldPrice: z.coerce.number().positive().nullable().optional(),
   currency: z.nativeEnum(Currency),

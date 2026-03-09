@@ -679,51 +679,6 @@ document.querySelectorAll("a[href]").forEach(link => {
     return normalizePromoCodeInput(activePromoCode);
   }
 
-  function sanitizeMediaUrl(value) {
-    const raw = String(value || "").trim();
-    if (!raw) return "";
-    if (raw.startsWith("/")) return raw;
-
-    try {
-      const parsed = new URL(raw, window.location.origin);
-      if (parsed.protocol === "https:" || parsed.protocol === "http:") {
-        return parsed.toString();
-      }
-    } catch (_) {
-      return "";
-    }
-
-    return "";
-  }
-
-  function resolveYoutubeEmbedUrl(value) {
-    const safeUrl = sanitizeMediaUrl(value);
-    if (!safeUrl) return "";
-
-    try {
-      const parsed = new URL(safeUrl, window.location.origin);
-      const hostname = parsed.hostname.replace(/^www\./i, "").toLowerCase();
-      let videoId = "";
-
-      if (hostname === "youtu.be") {
-        videoId = parsed.pathname.replace(/\//g, "").trim();
-      } else if (hostname.endsWith("youtube.com")) {
-        if (parsed.pathname === "/watch") {
-          videoId = String(parsed.searchParams.get("v") || "").trim();
-        } else if (parsed.pathname.startsWith("/shorts/")) {
-          videoId = parsed.pathname.split("/")[2] || "";
-        } else if (parsed.pathname.startsWith("/embed/")) {
-          videoId = parsed.pathname.split("/")[2] || "";
-        }
-      }
-
-      if (!videoId) return "";
-      return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?rel=0&modestbranding=1`;
-    } catch (_) {
-      return "";
-    }
-  }
-
   function alignToHashTarget(behavior = "auto") {
     const hash = String(window.location.hash || "").trim();
     if (!hash || hash === "#") return;
@@ -787,23 +742,15 @@ document.querySelectorAll("a[href]").forEach(link => {
   function parseDescriptionModel(description) {
     const lines = parseDescriptionLines(description);
     const visibleLines = [];
-    let mediaType = "";
-    let mediaUrl = "";
-    let mediaCaption = "";
 
     lines.forEach(line => {
       const mediaMatch = line.match(/^media\s*:\s*(image|video)\s*:\s*(.+)$/i);
       if (mediaMatch) {
-        if (!mediaUrl) {
-          mediaType = String(mediaMatch[1] || "").toLowerCase();
-          mediaUrl = String(mediaMatch[2] || "").trim();
-        }
         return;
       }
 
       const captionMatch = line.match(/^media-caption\s*:\s*(.+)$/i);
       if (captionMatch) {
-        if (!mediaCaption) mediaCaption = String(captionMatch[1] || "").trim();
         return;
       }
 
@@ -812,62 +759,18 @@ document.querySelectorAll("a[href]").forEach(link => {
 
     return {
       lines: visibleLines,
-      mediaType,
-      mediaUrl,
-      mediaCaption,
       plainText: visibleLines.join("\n"),
     };
   }
 
-  function buildPreviewMediaMarkup(type, url, caption, title) {
-    const mediaType = String(type || "").trim().toLowerCase();
-    const mediaUrl = sanitizeMediaUrl(url);
-    const mediaCaption = String(caption || "").trim();
-    if (!mediaUrl || (mediaType !== "image" && mediaType !== "video")) return "";
-
-    const captionHtml = mediaCaption
-      ? '<p class="product-preview-modal__media-caption">' + escapeHtml(mediaCaption) + "</p>"
-      : "";
-
-    if (mediaType === "video") {
-      const youtubeEmbedUrl = resolveYoutubeEmbedUrl(mediaUrl);
-      if (youtubeEmbedUrl) {
-        return (
-          '<figure class="product-preview-modal__media product-preview-modal__media--video">' +
-          '<div class="product-preview-modal__video-frame">' +
-          '<iframe src="' + escapeHtml(youtubeEmbedUrl) + '" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="' + escapeHtml(title || TEXT.previewTitle) + '"></iframe>' +
-          "</div>" +
-          captionHtml +
-          "</figure>"
-        );
-      }
-
-      return (
-        '<figure class="product-preview-modal__media product-preview-modal__media--video">' +
-        '<video controls preload="metadata" playsinline>' +
-        '<source src="' + escapeHtml(mediaUrl) + '">' +
-        "</video>" +
-        captionHtml +
-        "</figure>"
-      );
-    }
-
-    return (
-      '<figure class="product-preview-modal__media product-preview-modal__media--image">' +
-      '<img src="' + escapeHtml(mediaUrl) + '" alt="' + escapeHtml(mediaCaption || title || TEXT.previewTitle) + '" loading="lazy" decoding="async">' +
-      captionHtml +
-      "</figure>"
-    );
-  }
-
-  function buildPreviewDescriptionMarkup(lines) {
+  function buildPreviewDescriptionMarkup(lines, className = "product-preview-modal__list") {
     const safeLines = Array.isArray(lines) ? lines.filter(Boolean) : [];
     if (!safeLines.length) {
       return '<p class="product-preview-modal__empty">' + escapeHtml(TEXT.previewNoDetails) + "</p>";
     }
 
     return (
-      '<ul class="product-preview-modal__list">' +
+      '<ul class="' + escapeHtml(className) + '">' +
       safeLines.map(line => '<li>' + escapeHtml(line) + "</li>").join("") +
       "</ul>"
     );
@@ -1110,20 +1013,16 @@ document.querySelectorAll("a[href]").forEach(link => {
     if (!productPreviewModalEl || !productPreviewContentEl) return;
 
     const model = parseDescriptionModel(item.description || "");
-    const mediaMarkup = buildPreviewMediaMarkup(
-      item.mediaType || model.mediaType,
-      item.mediaUrl || model.mediaUrl,
-      item.mediaCaption || model.mediaCaption,
-      item.title || item.product
-    );
+    const modalDescriptionModel = parseDescriptionModel(item.modalDescription || model.plainText || "");
 
     productPreviewContentEl.innerHTML = [
       '<div class="product-preview-modal__head">',
-      item.term ? '<div class="product-preview-modal__term">' + escapeHtml(item.term) + "</div>" : "",
       '<h3 class="product-preview-modal__title" id="productPreviewModalTitle">' + escapeHtml(item.title || item.product || TEXT.previewTitle) + "</h3>",
       '<div class="product-preview-modal__price" id="productPreviewPrice">' + escapeHtml(formatPriceByCurrency(item.price, item.currency)) + "</div>",
       "</div>",
-      mediaMarkup,
+      '<section class="product-preview-modal__description">',
+      buildPreviewDescriptionMarkup(modalDescriptionModel.lines, "product-preview-modal__description-list"),
+      "</section>",
       '<section class="product-preview-modal__checkout">',
       '<label class="product-preview-modal__field-label" for="productPreviewEmailInput">' + escapeHtml(TEXT.previewEmailLabel) + "</label>",
       '<input type="email" class="product-preview-modal__field-input" id="productPreviewEmailInput" placeholder="' + escapeHtml(TEXT.emailPlaceholder) + '" autocomplete="email" />',
@@ -1134,18 +1033,12 @@ document.querySelectorAll("a[href]").forEach(link => {
       "</div>",
       '<p class="product-preview-modal__promo-msg" id="productPreviewPromoMsg"></p>',
       "</section>",
-      '<section class="product-preview-modal__section">',
-      '<h4 class="product-preview-modal__section-title">' + escapeHtml(TEXT.previewIncluded) + "</h4>",
-      buildPreviewDescriptionMarkup(model.lines),
-      "</section>",
     ].join("");
 
     previewItem = {
       ...item,
       description: model.plainText,
-      mediaType: item.mediaType || model.mediaType,
-      mediaUrl: item.mediaUrl || model.mediaUrl,
-      mediaCaption: item.mediaCaption || model.mediaCaption,
+      modalDescription: modalDescriptionModel.plainText,
       deliveryType: item.deliveryType || "activation",
     };
 
@@ -1201,9 +1094,10 @@ document.querySelectorAll("a[href]").forEach(link => {
   function buildProductCard(item, index) {
     const product = String(item.product || item.id || "product_" + index).trim();
     const title = String(item.title || "Product").trim();
-    const description = String(item.description || "").trim();
-    const descriptionModel = parseDescriptionModel(description);
-    const descriptionLines = descriptionModel.lines;
+      const description = String(item.description || "").trim();
+      const descriptionModel = parseDescriptionModel(description);
+      const modalDescriptionModel = parseDescriptionModel(String(item.modalDescription || descriptionModel.plainText).trim());
+      const descriptionLines = descriptionModel.lines;
     const durationLineRegex = /^(срок|duration)\s*:/i;
     const durationLine = descriptionLines.find(line => durationLineRegex.test(line)) || "";
     const nonDurationLines = descriptionLines.filter(line => !durationLineRegex.test(line));
@@ -1255,9 +1149,7 @@ document.querySelectorAll("a[href]").forEach(link => {
       ' data-sub="' + escapeHtml(sub) + '"' +
       ' data-term="' + escapeHtml(term) + '"' +
       ' data-description="' + escapeHtml(descriptionModel.plainText) + '"' +
-      ' data-media-type="' + escapeHtml(descriptionModel.mediaType) + '"' +
-      ' data-media-url="' + escapeHtml(descriptionModel.mediaUrl) + '"' +
-      ' data-media-caption="' + escapeHtml(descriptionModel.mediaCaption) + '"' +
+      ' data-modal-description="' + escapeHtml(modalDescriptionModel.plainText) + '"' +
       ' data-price="' + escapeHtml(price) + '"' +
       ' data-currency="' + escapeHtml(currency) + '"' +
       ' data-delivery-type="' + escapeHtml(deliveryType) + '">' +
@@ -1682,9 +1574,7 @@ document.querySelectorAll("a[href]").forEach(link => {
       sub: String(card.getAttribute("data-sub") || (sub ? sub.innerText : "")).replace(/\s+/g, " ").trim(),
       promoCode: getCardPromoCode(card),
       description: String(card.getAttribute("data-description") || "").trim(),
-      mediaType: String(card.getAttribute("data-media-type") || "").trim().toLowerCase(),
-      mediaUrl: String(card.getAttribute("data-media-url") || "").trim(),
-      mediaCaption: String(card.getAttribute("data-media-caption") || "").trim(),
+      modalDescription: String(card.getAttribute("data-modal-description") || "").trim(),
       price: toAmount(card.getAttribute("data-price") || (priceNode ? priceNode.innerText : "")),
       currency: String(card.getAttribute("data-currency") || "RUB").trim() || "RUB",
       deliveryType: String(card.getAttribute("data-delivery-type") || "activation").trim() || "activation",
@@ -1695,6 +1585,9 @@ document.querySelectorAll("a[href]").forEach(link => {
         .map(line => String(line.textContent || "").trim())
         .filter(Boolean);
       item.description = topLines.join("\n");
+    }
+    if (!item.modalDescription) {
+      item.modalDescription = item.description;
     }
 
     return item;

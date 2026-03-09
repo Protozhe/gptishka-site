@@ -151,6 +151,8 @@ export const productsService = {
       titleEn: input.titleEn,
       description: input.description,
       descriptionEn: input.descriptionEn,
+      modalDescription: input.modalDescription ?? "",
+      modalDescriptionEn: input.modalDescriptionEn ?? "",
       price: input.price,
       oldPrice: input.oldPrice ?? null,
       currency: input.currency,
@@ -193,6 +195,8 @@ export const productsService = {
       ...(input.titleEn !== undefined ? { titleEn: input.titleEn } : {}),
       ...(input.description !== undefined ? { description: input.description } : {}),
       ...(input.descriptionEn !== undefined ? { descriptionEn: input.descriptionEn } : {}),
+      ...(input.modalDescription !== undefined ? { modalDescription: input.modalDescription } : {}),
+      ...(input.modalDescriptionEn !== undefined ? { modalDescriptionEn: input.modalDescriptionEn } : {}),
       ...(input.price !== undefined ? { price: input.price } : {}),
       ...(input.oldPrice !== undefined ? { oldPrice: input.oldPrice } : {}),
       ...(input.currency !== undefined ? { currency: input.currency } : {}),
@@ -269,23 +273,6 @@ export const productsService = {
     });
 
     return changed;
-  },
-
-  async addImage(productId: string, url: string, actor?: { userId?: string; ip?: string; userAgent?: string }) {
-    await this.getById(productId);
-    const image = await productsRepository.addImage(productId, url);
-
-    await writeAuditLog({
-      userId: actor?.userId,
-      entityType: "product",
-      entityId: productId,
-      action: "add_image",
-      after: image,
-      ip: actor?.ip,
-      userAgent: actor?.userAgent,
-    });
-
-    return image;
   },
 
   async listManualCredentials(

@@ -22,6 +22,8 @@ export const productsRepository = {
               { titleEn: { contains: params.q, mode: "insensitive" } },
               { description: { contains: params.q, mode: "insensitive" } },
               { descriptionEn: { contains: params.q, mode: "insensitive" } },
+              { modalDescription: { contains: params.q, mode: "insensitive" } },
+              { modalDescriptionEn: { contains: params.q, mode: "insensitive" } },
             ],
           }
         : {}),
@@ -76,9 +78,5 @@ export const productsRepository = {
     }
 
     return prisma.product.findMany({ where: { id: { in: productIds } }, include: { images: true } });
-  },
-
-  addImage(productId: string, url: string) {
-    return prisma.productImage.create({ data: { productId, url } });
   },
 };

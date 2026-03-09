@@ -110,6 +110,8 @@ model Product {
   titleEn     String         @default("")
   description String
   descriptionEn String       @default("")
+  modalDescription String    @default("")
+  modalDescriptionEn String  @default("")
   price       Decimal        @db.Decimal(12, 2)
   oldPrice    Decimal?       @db.Decimal(12, 2)
   currency    Currency       @default(USD)

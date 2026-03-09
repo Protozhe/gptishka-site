@@ -13,7 +13,6 @@ import {
   patchProductStatus,
   translateRuToEn,
   updateProduct,
-  uploadProductImage,
 } from "./products.controller";
 import {
   bulkPriceSchema,
@@ -25,7 +24,6 @@ import {
   translateRuToEnSchema,
   updateProductSchema,
 } from "./products.schemas";
-import { imageUpload } from "../files/files.middleware";
 
 export const productsRouter = Router();
 
@@ -38,7 +36,6 @@ productsRouter.post("/", allowRoles(["OWNER", "ADMIN"]), validateBody(createProd
 productsRouter.put("/:id", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateBody(updateProductSchema), updateProduct);
 productsRouter.patch("/:id/status", allowRoles(["OWNER", "ADMIN"]), validateBody(statusPatchSchema), patchProductStatus);
 productsRouter.patch("/bulk/price", allowRoles(["OWNER", "ADMIN"]), validateBody(bulkPriceSchema), bulkPriceUpdate);
-productsRouter.post("/:id/images", allowRoles(["OWNER", "ADMIN"]), imageUpload.single("image"), uploadProductImage);
 productsRouter.get("/:id/credentials", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateQuery(productCredentialsQuerySchema), listProductCredentials);
 productsRouter.post("/:id/credentials/import", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateBody(importProductCredentialsSchema), importProductCredentials);
 productsRouter.delete("/:id/credentials/:credentialId", allowRoles(["OWNER", "ADMIN", "MANAGER"]), deleteProductCredential);

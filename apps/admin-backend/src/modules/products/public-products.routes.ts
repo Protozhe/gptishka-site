@@ -44,6 +44,8 @@ publicProductsRouter.get(
         titleEn: true,
         description: true,
         descriptionEn: true,
+        modalDescription: true,
+        modalDescriptionEn: true,
         price: true,
         oldPrice: true,
         currency: true,
@@ -60,6 +62,10 @@ publicProductsRouter.get(
           product: item.slug,
           title: lang === "en" ? item.titleEn || item.title : item.title,
           description: lang === "en" ? item.descriptionEn || item.description : item.description,
+          modalDescription:
+            lang === "en"
+              ? item.modalDescriptionEn || item.modalDescription || item.descriptionEn || item.description
+              : item.modalDescription || item.description,
           price: toRub(Number(item.price), item.currency),
           oldPrice: item.oldPrice ? toRub(Number(item.oldPrice), item.currency) : null,
           currency: Currency.RUB,
