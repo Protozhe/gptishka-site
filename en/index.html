@@ -68,7 +68,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/logo.min.css">
 <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2">
-  <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260309r" />
+  <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260309s" />
 <link rel="stylesheet" href="/assets/css/trust-promo.css?v=20260305g">
 <link rel="stylesheet" href="/assets/css/support-widget.css?v=20260305a" />
 </head>
@@ -114,14 +114,11 @@
 
   <main class="page">
     <div class="hero">
-      <h1 class="hero-title-animated" data-hero-rotator data-hero-words="ChatGPT|In a few minutes" data-hero-interval="2200">
-        <span class="hero-title-animated__lead">Connect and renew</span>
-        <span class="hero-title-animated__viewport" aria-live="polite">
-          <span class="hero-title-animated__word is-active">ChatGPT</span>
-        </span>
-      </h1>
-      <p>Fast subscription activation without extra steps. Convenient, secure, and supported at every stage.</p>
-      <a href="/en/index.html#pricing" class="btn">View plans</a>
+      <div data-hero-react-root data-lang="en" data-cta-href="/en/index.html#pricing" data-hero-interval="2000">
+        <h1>Connect and renew ChatGPT in a few minutes</h1>
+        <p>Fast subscription activation without extra steps. Convenient, secure, and supported at every stage.</p>
+        <a href="/en/index.html#pricing" class="btn">View plans</a>
+      </div>
     </div>
 
     <section class="pricing" id="pricing">
@@ -261,7 +258,8 @@
     <span class="footer-copy">© 2026 GPTishka. All rights reserved.</span>
   </footer>
 
-  <script src="/assets/js/app.min.js?v=20260309c" defer></script>
+  <script type="module" src="/assets/js/hero-react.mjs?v=20260309a"></script>
+  <script src="/assets/js/app.min.js?v=20260309e" defer></script>
   <script src="/assets/js/support-widget.js?v=20260305a" defer></script>
 </body>
 </html>
