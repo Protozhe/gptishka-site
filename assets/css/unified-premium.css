@@ -1932,4 +1932,542 @@ body.home-gradient-page footer {
   }
 }
 
+/* =========================================================
+   Premium Dark SaaS System
+   ========================================================= */
+:root {
+  --saas-bg: #0f1115;
+  --saas-bg-2: #151821;
+  --saas-bg-3: #1a2030;
+  --saas-glass: rgba(255, 255, 255, 0.04);
+  --saas-glass-soft: rgba(255, 255, 255, 0.03);
+  --saas-glass-border: rgba(255, 255, 255, 0.08);
+  --saas-glass-highlight: rgba(255, 255, 255, 0.12);
+  --saas-text: #ffffff;
+  --saas-text-muted: #aab0c0;
+  --saas-accent: #2a5bff;
+  --saas-accent-2: #4facfe;
+  --saas-accent-strong: #2148d6;
+  --saas-accent-glow: rgba(79, 172, 254, 0.28);
+
+  --bg: var(--saas-bg);
+  --bg-alt: var(--saas-bg-2);
+  --card: var(--saas-bg-2);
+  --text: var(--saas-text);
+  --muted: var(--saas-text-muted);
+  --border: var(--saas-glass-border);
+  --primary: var(--saas-accent);
+  --primary-2: var(--saas-accent-strong);
+  --accent: var(--saas-accent-2);
+  --focus: #7f9eff;
+
+  --premium-text: var(--saas-text);
+  --premium-muted: var(--saas-text-muted);
+  --premium-link: #9cbcff;
+  --premium-link-hover: #d2dfff;
+}
+
+body {
+  background:
+    radial-gradient(60rem 42rem at 12% -8%, rgba(42, 91, 255, 0.24), rgba(42, 91, 255, 0) 62%),
+    radial-gradient(56rem 40rem at 92% 12%, rgba(79, 172, 254, 0.2), rgba(79, 172, 254, 0) 66%),
+    radial-gradient(58rem 40rem at 52% 108%, rgba(69, 109, 255, 0.14), rgba(69, 109, 255, 0) 70%),
+    linear-gradient(180deg, #0f1115 0%, #12151c 42%, #0f1115 100%);
+  color: var(--saas-text);
+}
+
+body.home-gradient-page {
+  background:
+    radial-gradient(60rem 42rem at 12% -8%, rgba(42, 91, 255, 0.24), rgba(42, 91, 255, 0) 62%),
+    radial-gradient(56rem 40rem at 92% 12%, rgba(79, 172, 254, 0.2), rgba(79, 172, 254, 0) 66%),
+    radial-gradient(58rem 40rem at 52% 108%, rgba(69, 109, 255, 0.14), rgba(69, 109, 255, 0) 70%),
+    linear-gradient(180deg, #0f1115 0%, #12151c 42%, #0f1115 100%);
+  color: var(--saas-text);
+}
+
+body::before,
+body::after {
+  inset: -34%;
+  filter: blur(120px);
+  opacity: 0.3;
+}
+
+body::before {
+  background:
+    radial-gradient(circle at 14% 22%, rgba(42, 91, 255, 0.52) 0%, rgba(42, 91, 255, 0) 58%),
+    radial-gradient(circle at 84% 26%, rgba(79, 172, 254, 0.46) 0%, rgba(79, 172, 254, 0) 62%);
+  animation: saasBlobA 34s ease-in-out infinite alternate;
+}
+
+body::after {
+  background:
+    radial-gradient(circle at 22% 82%, rgba(38, 79, 222, 0.48) 0%, rgba(38, 79, 222, 0) 60%),
+    radial-gradient(circle at 74% 74%, rgba(91, 182, 255, 0.38) 0%, rgba(91, 182, 255, 0) 62%);
+  opacity: 0.27;
+  animation: saasBlobB 42s ease-in-out infinite alternate;
+}
+
+main.page::before,
+main.page::after {
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+/* Animated gradient layer on all pages that load app.min.js */
+body.home-gradient-page::before,
+body.home-gradient-page::after {
+  opacity: 0.34 !important;
+  filter: blur(120px) !important;
+}
+
+.home-gradient-bg {
+  --home-blending: screen;
+  --home-size: 86vmax;
+}
+
+.home-gradient-bg__layer--1 {
+  background: radial-gradient(circle at center, rgba(42, 91, 255, 0.3) 0%, rgba(42, 91, 255, 0) 58%);
+}
+
+.home-gradient-bg__layer--2 {
+  background: radial-gradient(circle at center, rgba(79, 172, 254, 0.26) 0%, rgba(79, 172, 254, 0) 58%);
+}
+
+.home-gradient-bg__layer--3 {
+  background: radial-gradient(circle at center, rgba(76, 126, 255, 0.26) 0%, rgba(76, 126, 255, 0) 58%);
+}
+
+.home-gradient-bg__layer--4 {
+  background: radial-gradient(circle at center, rgba(117, 139, 255, 0.18) 0%, rgba(117, 139, 255, 0) 58%);
+  opacity: 0.52;
+}
+
+.home-gradient-bg__layer--5 {
+  background: radial-gradient(circle at center, rgba(102, 188, 255, 0.16) 0%, rgba(102, 188, 255, 0) 58%);
+  opacity: 0.48;
+}
+
+.home-gradient-bg__pointer {
+  background: radial-gradient(circle at center, rgba(91, 136, 255, 0.3) 0%, rgba(91, 136, 255, 0) 64%);
+  filter: blur(38px);
+  opacity: 0.42;
+}
+
+header,
+.hero,
+.pricing,
+.how,
+.faq,
+.about,
+.contact,
+.reviews,
+.container,
+.seo-article,
+.cart-box,
+.price-card,
+.how-card,
+.faq-item,
+.faq-sticky,
+.contact-card,
+.review,
+.block,
+.card,
+.header-cart,
+.header-cart-panel,
+.header-mini-item,
+.lang-current,
+.lang-dropdown {
+  border: 1px solid var(--saas-glass-border) !important;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+    rgba(17, 21, 30, 0.72) !important;
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 var(--saas-glass-highlight) !important;
+  backdrop-filter: blur(16px) saturate(135%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(135%) !important;
+}
+
+.hero,
+.pricing,
+.how,
+.faq {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero::before,
+.pricing::before,
+.how::before,
+.faq::before {
+  content: "";
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.26;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle, rgba(79, 172, 254, 0.9) 0%, rgba(79, 172, 254, 0) 70%);
+}
+
+.hero::before {
+  top: -180px;
+  right: -140px;
+}
+
+.pricing::before {
+  top: -170px;
+  left: -130px;
+}
+
+.how::before {
+  top: -180px;
+  right: -120px;
+}
+
+.faq::before {
+  top: -160px;
+  left: -120px;
+}
+
+.hero > *,
+.pricing > *,
+.how > *,
+.faq > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hero h1,
+.hero-react__top,
+.hero-react__word,
+.pricing-header h2,
+.faq-header h2,
+.how-title,
+.price-card h3,
+.about h1,
+.contact h1,
+.reviews-header h1,
+.container h1,
+.block h2,
+.card h2 {
+  color: var(--saas-text) !important;
+}
+
+.hero p,
+.hero-react__description,
+.pricing-header p,
+.faq-header p,
+.about p,
+.contact p,
+.review-text,
+.block p,
+.card p,
+.sub,
+.meta span {
+  color: var(--saas-text-muted) !important;
+}
+
+.nav > nav a,
+.lang-item,
+.payment-method-modal__hint,
+.product-preview-modal__promo-msg {
+  color: #c4cce0 !important;
+}
+
+.site-ticker {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+    rgba(16, 20, 30, 0.68) !important;
+  box-shadow:
+    0 12px 34px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.13) !important;
+}
+
+.site-ticker::before {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(133, 166, 255, 0.2), rgba(255, 255, 255, 0)) !important;
+}
+
+.site-ticker__lead,
+.site-ticker__stat-label {
+  color: #9aa9c6 !important;
+}
+
+.site-ticker__item {
+  color: #dbe7ff !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+.site-ticker__item--real .site-ticker__item-prefix {
+  color: #8fb2ff !important;
+}
+
+.site-ticker__item--system .site-ticker__item-prefix {
+  color: #f8c888 !important;
+}
+
+.site-ticker__stats {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+    rgba(12, 18, 28, 0.72) !important;
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+}
+
+.site-ticker__stat strong {
+  color: #dce8ff !important;
+}
+
+.reviews-security-banner {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)),
+    rgba(13, 18, 28, 0.74) !important;
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+}
+
+.reviews-security-banner__cat {
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.03)) !important;
+}
+
+.reviews-security-banner__title {
+  color: #e7efff !important;
+}
+
+.reviews-security-banner__text {
+  color: #aab0c0 !important;
+}
+
+.btn,
+.buy-btn,
+.faq-chat-btn,
+.product-preview-modal__pay,
+.product-preview-modal__promo-apply,
+.header-cart-panel__promo button,
+.payment-method-modal__close,
+.product-preview-modal__close {
+  --liquid-tint-a: rgba(42, 91, 255, 0.92);
+  --liquid-tint-b: rgba(33, 72, 214, 0.9);
+  --liquid-ink: #ffffff;
+  background:
+    radial-gradient(160% 120% at 0% 0%, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.06) 56%),
+    linear-gradient(136deg, var(--liquid-tint-a), var(--liquid-tint-b)) !important;
+  border-color: rgba(126, 156, 255, 0.44) !important;
+  text-shadow: 0 1px 0 rgba(8, 14, 27, 0.28);
+  box-shadow:
+    0 10px 30px rgba(33, 72, 214, 0.26),
+    0 0 22px rgba(79, 172, 254, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -10px 16px rgba(9, 18, 34, 0.2);
+}
+
+.btn:hover,
+.buy-btn:hover,
+.faq-chat-btn:hover,
+.product-preview-modal__pay:hover,
+.product-preview-modal__promo-apply:hover,
+.header-cart-panel__promo button:hover,
+.payment-method-modal__close:hover,
+.product-preview-modal__close:hover {
+  background:
+    radial-gradient(160% 120% at 0% 0%, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.08) 56%),
+    linear-gradient(136deg, var(--liquid-tint-a), var(--liquid-tint-b)) !important;
+  transform: translateY(-2px) scale(1.012);
+  box-shadow:
+    0 14px 34px rgba(33, 72, 214, 0.34),
+    0 0 30px rgba(79, 172, 254, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -10px 16px rgba(9, 18, 34, 0.22);
+}
+
+.btn.secondary,
+.header-mini-remove-btn {
+  --liquid-tint-a: rgba(255, 255, 255, 0.08);
+  --liquid-tint-b: rgba(255, 255, 255, 0.04);
+  --liquid-ink: #d7dff3;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  text-shadow: none;
+}
+
+.cart-remove-btn {
+  --liquid-tint-a: rgba(255, 111, 141, 0.24);
+  --liquid-tint-b: rgba(255, 90, 116, 0.2);
+  --liquid-ink: #ffd7e1;
+  border-color: rgba(255, 130, 152, 0.46) !important;
+  text-shadow: none;
+}
+
+.payment-method-modal__option {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background:
+    radial-gradient(120% 110% at 0% 0%, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02) 62%),
+    rgba(17, 22, 33, 0.7) !important;
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.payment-method-modal__option:hover {
+  border-color: rgba(42, 91, 255, 0.44) !important;
+  box-shadow:
+    0 14px 30px rgba(28, 54, 158, 0.34),
+    0 0 20px rgba(79, 172, 254, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.payment-method-modal__option.is-active {
+  border-color: rgba(42, 91, 255, 0.62) !important;
+  background:
+    radial-gradient(120% 110% at 0% 0%, rgba(42, 91, 255, 0.16), rgba(42, 91, 255, 0.04) 62%),
+    rgba(17, 23, 36, 0.74) !important;
+  box-shadow:
+    0 0 0 1px rgba(42, 91, 255, 0.24),
+    0 14px 30px rgba(28, 54, 158, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.payment-method-modal__option.is-active::after {
+  border-color: rgba(42, 91, 255, 0.84) !important;
+  background: #2a5bff !important;
+  box-shadow: 0 0 0 4px rgba(42, 91, 255, 0.2) !important;
+}
+
+.payment-method-modal__dialog,
+.product-preview-modal__dialog {
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+    rgba(15, 20, 30, 0.86) !important;
+  box-shadow:
+    0 18px 56px rgba(0, 0, 0, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+}
+
+.product-preview-modal__term {
+  border-color: rgba(126, 156, 255, 0.44) !important;
+  background: rgba(42, 91, 255, 0.12) !important;
+  color: #b8cdff !important;
+}
+
+.product-preview-modal__title,
+.product-preview-modal__price,
+.product-preview-modal__price-current,
+.product-preview-modal__section-title,
+.payment-method-modal__title,
+.payment-method-modal__name {
+  color: var(--saas-text) !important;
+}
+
+.product-preview-modal__price-old,
+.product-preview-modal__field-label,
+.product-preview-modal__list li,
+.product-preview-modal__empty,
+.product-preview-modal__description-list li,
+.payment-method-modal__subtitle {
+  color: var(--saas-text-muted) !important;
+}
+
+.product-preview-modal__list li::before {
+  color: #7ea4ff !important;
+}
+
+.product-preview-modal__checkout {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  background: rgba(13, 18, 28, 0.68) !important;
+}
+
+.product-preview-modal__field-input {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  background: rgba(10, 15, 24, 0.72) !important;
+  color: #eef4ff !important;
+}
+
+.product-preview-modal__field-input::placeholder {
+  color: rgba(170, 176, 192, 0.7) !important;
+}
+
+.payment-method-modal__option {
+  color: #dce6ff !important;
+}
+
+.payment-method-modal__icon {
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.cart-payment-method__card {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  background: rgba(12, 18, 28, 0.72) !important;
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+.cart-payment-method.is-active .cart-payment-method__card {
+  border-color: rgba(42, 91, 255, 0.52) !important;
+  box-shadow:
+    0 12px 26px rgba(28, 54, 158, 0.24),
+    0 0 0 1px rgba(42, 91, 255, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+}
+
+.seo-note {
+  border-color: rgba(42, 91, 255, 0.28) !important;
+  background: rgba(42, 91, 255, 0.12) !important;
+  color: #c9d9ff !important;
+}
+
+.seo-related {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  background: rgba(13, 19, 29, 0.74) !important;
+}
+
+.page-overlay {
+  background: rgba(8, 12, 19, 0.62) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after,
+  .home-gradient-bg__layer,
+  .home-gradient-bg__pointer {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .btn,
+  .buy-btn,
+  .faq-chat-btn,
+  .product-preview-modal__pay,
+  .product-preview-modal__promo-apply,
+  .header-cart-panel__promo button,
+  .payment-method-modal__close,
+  .product-preview-modal__close {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+@keyframes saasBlobA {
+  0% { transform: translate3d(-2%, -2%, 0) scale(1); }
+  50% { transform: translate3d(2%, 2%, 0) scale(1.06); }
+  100% { transform: translate3d(3%, -1%, 0) scale(1.04); }
+}
+
+@keyframes saasBlobB {
+  0% { transform: translate3d(2%, -1%, 0) scale(1); }
+  50% { transform: translate3d(-2%, 2%, 0) scale(1.05); }
+  100% { transform: translate3d(-3%, -2%, 0) scale(1.04); }
+}
+
 
