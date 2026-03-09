@@ -2791,6 +2791,9 @@ document.addEventListener("click", e => {
   const STATS_REFRESH_MS = 15000;
   const HEARTBEAT_MS = 20000;
   const SESSION_KEY = "gptishka_session_id";
+  const TICKER_CACHE_KEY = "gptishka_ticker_cache_v2";
+  const TICKER_CACHE_TTL_MS = 12 * 60 * 1000;
+  const DEFAULT_TICKER_CYCLE_MS = 130000;
 
   const pathname = String(window.location.pathname || "/").toLowerCase();
   if (pathname.startsWith("/admin")) return;
@@ -2811,6 +2814,8 @@ document.addEventListener("click", e => {
   let isInitialized = false;
   let heartbeatTimerId = 0;
   let statsTimerId = 0;
+  let lastTickerSignature = "";
+  let tickerRenderedAt = 0;
 
   function ensureSessionId() {
     try {
@@ -2882,12 +2887,94 @@ document.addEventListener("click", e => {
     return [];
   }
 
-  function renderTicker(entries) {
+  function getTickerCycleMs() {
+    if (!tickerTrack) return DEFAULT_TICKER_CYCLE_MS;
+    try {
+      const raw = String(window.getComputedStyle(tickerTrack).animationDuration || "").split(",")[0].trim();
+      if (!raw) return DEFAULT_TICKER_CYCLE_MS;
+      if (raw.endsWith("ms")) {
+        const parsedMs = Number(raw.slice(0, -2));
+        return Number.isFinite(parsedMs) && parsedMs > 0 ? parsedMs : DEFAULT_TICKER_CYCLE_MS;
+      }
+      if (raw.endsWith("s")) {
+        const parsedS = Number(raw.slice(0, -1));
+        return Number.isFinite(parsedS) && parsedS > 0 ? Math.round(parsedS * 1000) : DEFAULT_TICKER_CYCLE_MS;
+      }
+      return DEFAULT_TICKER_CYCLE_MS;
+    } catch (_) {
+      return DEFAULT_TICKER_CYCLE_MS;
+    }
+  }
+
+  function applyTickerAnimationOffset(renderedAtMs) {
     if (!tickerTrack) return;
+    const safeRenderedAt = Number(renderedAtMs || Date.now());
+    const elapsed = Math.max(0, Date.now() - safeRenderedAt);
+    const cycleMs = getTickerCycleMs();
+    const offsetSeconds = (elapsed % cycleMs) / 1000;
+    tickerTrack.style.animationDelay = `-${offsetSeconds.toFixed(3)}s`;
+  }
+
+  function readTickerCache() {
+    try {
+      const raw = localStorage.getItem(TICKER_CACHE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return null;
+      const updatedAt = Number(parsed.updatedAt || 0);
+      if (!updatedAt || Date.now() - updatedAt > TICKER_CACHE_TTL_MS) return null;
+      const entries = Array.isArray(parsed.entries)
+        ? parsed.entries
+            .map(v => String(v || "").trim())
+            .filter(Boolean)
+            .slice(0, 28)
+        : [];
+      const total = Number(parsed.total || 0);
+      const renderedAt = Number(parsed.renderedAt || updatedAt || Date.now());
+      return {
+        entries,
+        total: Number.isFinite(total) ? total : 0,
+        renderedAt: Number.isFinite(renderedAt) && renderedAt > 0 ? renderedAt : Date.now(),
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writeTickerCache(entries, total, renderedAt) {
+    try {
+      const payload = {
+        entries: Array.isArray(entries)
+          ? entries
+              .map(v => String(v || "").trim())
+              .filter(Boolean)
+              .slice(0, 28)
+          : [],
+        total: Number(total || 0),
+        renderedAt: Number(renderedAt || Date.now()),
+        updatedAt: Date.now(),
+      };
+      localStorage.setItem(TICKER_CACHE_KEY, JSON.stringify(payload));
+    } catch (_) {
+      // Ignore storage quota/privacy errors.
+    }
+  }
+
+  function renderTicker(entries, options = {}) {
+    if (!tickerTrack) return;
+    const renderedAt = Number(options.renderedAt || Date.now());
+    const force = Boolean(options.force);
 
     const safeEntries = entries.length
       ? entries
       : [TEXT.emptyTicker];
+    const signature = safeEntries.join("\u241f");
+
+    if (!force && signature === lastTickerSignature) {
+      applyTickerAnimationOffset(tickerRenderedAt || renderedAt);
+      return;
+    }
+
     const baseItems = safeEntries.map(email => (
       `<span class="site-ticker__item">${escapeHtml(email)}</span>`
     ));
@@ -2903,6 +2990,10 @@ document.addEventListener("click", e => {
       '<div class="site-ticker__loop" aria-hidden="true">' +
       repeated +
       "</div>";
+
+    lastTickerSignature = signature;
+    tickerRenderedAt = renderedAt > 0 ? renderedAt : Date.now();
+    applyTickerAnimationOffset(tickerRenderedAt);
   }
 
   function formatNumber(value) {
@@ -2921,8 +3012,11 @@ document.addEventListener("click", e => {
       const response = await fetch(API_STATS_URL, { cache: "no-store" });
       if (!response.ok) return;
       const stats = await response.json();
+      const entries = normalizeTickerEntries(stats);
+      const renderedAt = Date.now();
       renderCounters(stats);
-      renderTicker(normalizeTickerEntries(stats));
+      renderTicker(entries, { renderedAt });
+      writeTickerCache(entries, Number(stats?.sales || 0), renderedAt);
     } catch (_) {
       // Keep last successful values if API is unavailable.
     }
@@ -2972,7 +3066,13 @@ document.addEventListener("click", e => {
     isInitialized = true;
 
     createTicker();
-    renderTicker([]);
+    const cached = readTickerCache();
+    if (cached) {
+      renderCounters({ sales: cached.total });
+      renderTicker(cached.entries, { force: true, renderedAt: cached.renderedAt });
+    } else {
+      renderTicker([], { force: true, renderedAt: Date.now() });
+    }
 
     const sessionId = ensureSessionId();
     sendHeartbeat(sessionId);

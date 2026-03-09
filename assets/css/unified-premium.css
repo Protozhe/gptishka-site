@@ -558,7 +558,8 @@ header.is-scrolled {
   }
 
   .hero .hero-react__viewport {
-    min-height: clamp(54px, 15vw, 84px);
+    min-height: clamp(84px, 23vw, 112px);
+    padding-inline: 2px;
   }
 
   .hero .hero-react__top {
@@ -566,7 +567,14 @@ header.is-scrolled {
   }
 
   .hero .hero-react__word {
-    font-size: clamp(1.96rem, 10.5vw, 2.84rem);
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding-inline: 4px;
+    white-space: normal;
+    text-wrap: balance;
+    line-height: 1.08;
+    font-size: clamp(1.62rem, 8.5vw, 2.3rem);
   }
 }
 
