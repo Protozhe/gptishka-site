@@ -4520,4 +4520,117 @@ body.home-gradient-page::after {
   animation: lpPulseBeamsSweep 1.45s cubic-bezier(0.32, 0, 0.2, 1) infinite;
 }
 
+/* =========================================================
+   UX Hotfixes: nav layering, smoother transitions, softer buttons
+   ========================================================= */
+:root {
+  --lp-btn-a: rgba(95, 141, 255, 0.78);
+  --lp-btn-b: rgba(99, 204, 255, 0.74);
+  --lp-btn-c: rgba(136, 125, 255, 0.76);
+  --lp-btn-shadow: 0 10px 22px rgba(73, 111, 255, 0.2);
+  --lp-btn-shadow-hover: 0 14px 28px rgba(73, 111, 255, 0.26);
+}
+
+header {
+  z-index: 400 !important;
+  overflow: visible !important;
+}
+
+.nav,
+.header-tools,
+.lang-switch {
+  position: relative;
+  overflow: visible !important;
+}
+
+.lang-dropdown {
+  z-index: 500 !important;
+}
+
+.gptishka-resume-activation {
+  left: auto !important;
+  width: auto !important;
+  max-width: calc(100vw - 24px) !important;
+  display: inline-flex !important;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .gptishka-resume-activation {
+    width: auto !important;
+    max-width: calc(100vw - 20px) !important;
+    white-space: nowrap;
+  }
+}
+
+.btn:not(.secondary),
+.buy-btn,
+.faq-chat-btn,
+.redeem-btn-primary,
+.gptishka-resume-activation,
+.support-widget__fab,
+.support-widget__cta,
+#manualSupportBtn.redeem-btn-primary {
+  border-color: rgba(170, 196, 255, 0.58) !important;
+  background: linear-gradient(
+    132deg,
+    var(--lp-btn-a) 0%,
+    var(--lp-btn-c) 44%,
+    var(--lp-btn-b) 100%
+  ) !important;
+  box-shadow: var(--lp-btn-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.34) !important;
+  backdrop-filter: blur(10px) saturate(128%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(128%) !important;
+}
+
+.btn.secondary,
+.redeem-btn:not(.redeem-btn-primary),
+.header-cart-panel__promo button,
+.header-mini-remove-btn,
+.cart-remove-btn,
+.payment-method-modal__option {
+  background: rgba(255, 255, 255, 0.56) !important;
+  border-color: rgba(172, 191, 224, 0.58) !important;
+  color: #2d3f59 !important;
+  box-shadow: 0 8px 20px rgba(21, 46, 88, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.62) !important;
+  backdrop-filter: blur(10px) saturate(125%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(125%) !important;
+}
+
+.btn:not(.secondary):hover,
+.buy-btn:hover,
+.faq-chat-btn:hover,
+.redeem-btn-primary:hover,
+.gptishka-resume-activation:hover,
+.support-widget__fab:hover,
+.support-widget__cta:hover,
+#manualSupportBtn.redeem-btn-primary:hover {
+  filter: saturate(106%) brightness(1.03) !important;
+  box-shadow: var(--lp-btn-shadow-hover), inset 0 1px 0 rgba(255, 255, 255, 0.42) !important;
+}
+
+html.is-entering header,
+html.is-entering main.page,
+html.is-entering footer {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+html.is-entering.is-entering-active header,
+html.is-entering.is-entering-active main.page,
+html.is-entering.is-entering-active footer {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.42s ease, transform 0.42s ease;
+}
+
+.page-overlay {
+  transition: opacity 0.28s ease, backdrop-filter 0.28s ease !important;
+}
+
+html.is-leaving .page-overlay {
+  opacity: 1 !important;
+  backdrop-filter: blur(5px) !important;
+}
+
 

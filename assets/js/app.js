@@ -4,6 +4,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   document.documentElement.classList.remove("is-leaving");
+  initPageEnterTransition();
   initHomeGradientBackground();
   initPulseBeamButtons();
 
@@ -28,6 +29,31 @@ document.addEventListener("DOMContentLoaded", () => {
   initActivationResumeShortcut();
   initReviewsSecurityBanner();
 });
+
+let pageNavigationInProgress = false;
+
+function navigateWithPageTransition(targetHref, delayMs = 220) {
+  const href = String(targetHref || "").trim();
+  if (!href) return;
+  if (pageNavigationInProgress) return;
+  pageNavigationInProgress = true;
+  document.documentElement.classList.add("is-leaving");
+  window.setTimeout(() => {
+    window.location.href = href;
+  }, delayMs);
+}
+
+function initPageEnterTransition() {
+  const root = document.documentElement;
+  root.classList.add("is-entering");
+  window.requestAnimationFrame(() => {
+    root.classList.add("is-entering-active");
+    window.setTimeout(() => {
+      root.classList.remove("is-entering");
+      root.classList.remove("is-entering-active");
+    }, 460);
+  });
+}
 
 function initHomeGradientBackground() {
   const body = document.body;
@@ -265,7 +291,7 @@ function initLanguageSwitch() {
       const targetUrl = new URL(targetPath, window.location.origin);
       targetUrl.search = "";
       targetUrl.hash = "";
-      window.location.href = targetUrl.toString();
+      navigateWithPageTransition(targetUrl.toString());
     });
   });
 
@@ -387,12 +413,7 @@ document.querySelectorAll("a[href]").forEach(link => {
   
     link.addEventListener("click", e => {
       e.preventDefault();
-  
-      document.documentElement.classList.add("is-leaving");
-  
-      setTimeout(() => {
-        window.location.href = href;
-      }, 160);
+      navigateWithPageTransition(href, 230);
     });
   });
 
