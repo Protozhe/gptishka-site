@@ -3181,6 +3181,52 @@ footer {
   --liquid-glass-border-soft: rgba(187, 202, 235, 0.56);
   --liquid-glass-sheen: rgba(255, 255, 255, 0.78);
   --liquid-glass-shadow: 0 12px 28px rgba(78, 97, 145, 0.22);
+
+  /* compatibility aliases for previous dark-theme variables */
+  --saas-bg: var(--lp-bg);
+  --saas-bg-2: #f0f4fc;
+  --saas-bg-3: #ebf1fb;
+  --saas-glass: var(--lp-surface-main);
+  --saas-glass-soft: rgba(255, 255, 255, 0.56);
+  --saas-glass-border: rgba(186, 198, 224, 0.42);
+  --saas-glass-highlight: rgba(255, 255, 255, 0.72);
+  --saas-text: var(--lp-text);
+  --saas-text-muted: var(--lp-text-soft);
+  --saas-accent: var(--lp-accent);
+  --saas-accent-2: var(--lp-accent-2);
+  --saas-accent-strong: #5972ff;
+  --saas-accent-glow: rgba(122, 147, 255, 0.2);
+
+  --bg: var(--lp-bg);
+  --bg-soft: var(--lp-bg-soft);
+  --bg-alt: var(--lp-bg-soft);
+  --card: var(--lp-surface-card);
+  --surface: var(--lp-surface-main);
+  --surface-2: rgba(249, 252, 255, 0.82);
+  --text: var(--lp-text);
+  --text-soft: var(--lp-text-soft);
+  --muted: var(--lp-text-soft);
+  --border: rgba(173, 186, 213, 0.42);
+  --border-soft: rgba(186, 198, 224, 0.38);
+  --primary: var(--lp-accent);
+  --primary-2: #6a8fff;
+  --accent: var(--lp-accent);
+  --accent-hover: #7b9aff;
+  --accent-soft: var(--lp-accent-soft);
+
+  --premium-text: var(--lp-text);
+  --premium-muted: var(--lp-text-soft);
+  --premium-link: #3f5ca3;
+  --premium-link-hover: #2f477f;
+  --premium-border: rgba(255, 255, 255, 0.66);
+  --premium-glass-a: rgba(255, 255, 255, 0.72);
+  --premium-glass-b: rgba(237, 244, 255, 0.62);
+  --premium-shadow-lg: var(--lp-shadow-lg);
+  --premium-shadow-md: var(--lp-shadow-md);
+
+  --glass-fill: var(--lp-surface-main);
+  --glass-border: rgba(186, 198, 224, 0.42);
+  --glass-border-strong: rgba(173, 186, 213, 0.52);
 }
 
 html,
