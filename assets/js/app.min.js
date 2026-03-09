@@ -292,25 +292,6 @@ function initActivationResumeShortcut() {
   anchor.className = "gptishka-resume-activation";
   anchor.textContent = isEnPage ? "Resume activation" : "Продолжить активацию";
   anchor.setAttribute("aria-label", isEnPage ? "Resume order activation" : "Продолжить активацию заказа");
-  anchor.style.cssText = [
-    "position:fixed",
-    "right:14px",
-    "bottom:14px",
-    "z-index:1200",
-    "display:inline-flex",
-    "align-items:center",
-    "justify-content:center",
-    "min-height:44px",
-    "padding:10px 14px",
-    "border-radius:999px",
-    "border:1px solid rgba(0,0,0,0.12)",
-    "background:#1a8f7b",
-    "color:#fff",
-    "font:700 13px/1 Manrope,Arial,sans-serif",
-    "text-decoration:none",
-    "box-shadow:0 12px 28px rgba(26,143,123,0.35)",
-  ].join(";");
-
   document.body.appendChild(anchor);
 }
   
