@@ -35,6 +35,11 @@ const TELEGRAM_REVIEWS_HINT_WINDOW = Number(process.env.TELEGRAM_REVIEWS_HINT_WI
 const TELEGRAM_REVIEWS_TOP_STEP = Number(process.env.TELEGRAM_REVIEWS_TOP_STEP || 20);
 const TELEGRAM_REVIEWS_FETCH_TIMEOUT_MS = Number(process.env.TELEGRAM_REVIEWS_FETCH_TIMEOUT_MS || 2500);
 const TELEGRAM_REVIEWS_REFRESH_TIMEOUT_MS = Number(process.env.TELEGRAM_REVIEWS_REFRESH_TIMEOUT_MS || 9000);
+const STATS_CACHE_TTL_MS = Math.max(500, Number(process.env.STATS_CACHE_TTL_MS || 2200));
+const HEARTBEAT_MIN_WRITE_INTERVAL_MS = Math.max(
+  1000,
+  Number(process.env.HEARTBEAT_MIN_WRITE_INTERVAL_MS || 6000)
+);
 const TELEGRAM_FETCH_HEADERS = {
   "User-Agent":
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
@@ -545,6 +550,10 @@ function createApp() {
       max: 600,
       standardHeaders: true,
       legacyHeaders: false,
+      skip: req => {
+        const apiPath = String(req.path || "").toLowerCase();
+        return apiPath === "/stats" || apiPath === "/heartbeat";
+      },
     })
   );
   app.use(express.json({ limit: "256kb" }));
@@ -688,6 +697,12 @@ function createApp() {
     }
   }
 
+  let statsPayloadCache = null;
+  let statsPayloadCacheTs = 0;
+  let statsPayloadPendingPromise = null;
+  let lastOnlineCleanupTs = 0;
+  const heartbeatWriteTracker = new Map();
+
   app.use("/api/admin", async (req, res) => {
     const query = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
     const basePath = `/api/admin${req.path}`;
@@ -703,6 +718,11 @@ function createApp() {
     }
 
     const now = Date.now();
+    const lastWriteTs = Number(heartbeatWriteTracker.get(sessionId) || 0);
+    if (now - lastWriteTs < HEARTBEAT_MIN_WRITE_INTERVAL_MS) {
+      return res.json({ ok: true, throttled: true });
+    }
+
     try {
       await run(
         `
@@ -713,6 +733,15 @@ function createApp() {
         `,
         [sessionId, currentPath, now]
       );
+      heartbeatWriteTracker.set(sessionId, now);
+      if (heartbeatWriteTracker.size > 20000) {
+        const staleBefore = now - ONLINE_TTL_MS * 2;
+        for (const [key, ts] of heartbeatWriteTracker.entries()) {
+          if (Number(ts || 0) < staleBefore) heartbeatWriteTracker.delete(key);
+        }
+      }
+      statsPayloadCache = null;
+      statsPayloadCacheTs = 0;
       res.json({ ok: true });
     } catch (_error) {
       res.status(500).json({ error: "Failed to update heartbeat" });
@@ -1151,21 +1180,40 @@ function createApp() {
   }
 
   app.get("/api/stats", async (req, res) => {
-    const cutoff = Date.now() - ONLINE_TTL_MS;
+    const now = Date.now();
+    if (statsPayloadCache && now - statsPayloadCacheTs < STATS_CACHE_TTL_MS) {
+      return res.json(statsPayloadCache);
+    }
 
-    try {
-      await run("DELETE FROM online_sessions WHERE last_seen < ?", [cutoff]);
+    if (statsPayloadPendingPromise) {
+      try {
+        const payload = await statsPayloadPendingPromise;
+        return res.json(payload);
+      } catch (_) {
+        return res.status(500).json({ error: "Failed to load stats" });
+      }
+    }
+
+    statsPayloadPendingPromise = (async () => {
+      const currentTs = Date.now();
+      if (currentTs - lastOnlineCleanupTs > ONLINE_TTL_MS) {
+        const cutoff = currentTs - ONLINE_TTL_MS;
+        await run("DELETE FROM online_sessions WHERE last_seen < ?", [cutoff]);
+        lastOnlineCleanupTs = currentTs;
+      }
+
       const onlineRow = await get("SELECT COUNT(*) AS online FROM online_sessions");
+      const online = Number(onlineRow?.online || 0);
       const adminStats = await fetchStorefrontStatsFromAdmin(req);
       if (adminStats) {
-        return res.json({
+        return {
           sales: adminStats.sales,
           realSales: adminStats.sales,
           systemSales: 0,
-          online: Number(onlineRow?.online || 0),
+          online,
           lastBuyers: adminStats.tickerEntries.map(item => item.email),
           tickerEntries: adminStats.tickerEntries,
-        });
+        };
       }
 
       await ensureSystemActivationEvents();
@@ -1178,8 +1226,8 @@ function createApp() {
       const legacyRealSales = INCLUDE_LEGACY_PURCHASES
         ? Number((await get("SELECT COUNT(*) AS count FROM purchases"))?.count || 0)
         : 0;
-      let realSales = Number(realRow?.count || 0) + legacyRealSales;
-      let systemSales = Number(systemRow?.count || 0);
+      const realSales = Number(realRow?.count || 0) + legacyRealSales;
+      const systemSales = Number(systemRow?.count || 0);
       let buyerRows;
 
       if (INCLUDE_LEGACY_PURCHASES) {
@@ -1216,16 +1264,25 @@ function createApp() {
         };
       });
 
-      res.json({
+      return {
         sales: realSales + systemSales,
         realSales,
         systemSales,
-        online: Number(onlineRow?.online || 0),
+        online,
         lastBuyers: tickerEntries.map(item => item.email),
         tickerEntries,
-      });
+      };
+    })();
+
+    try {
+      const payload = await statsPayloadPendingPromise;
+      statsPayloadCache = payload;
+      statsPayloadCacheTs = Date.now();
+      return res.json(payload);
     } catch (_) {
-      res.status(500).json({ error: "Failed to load stats" });
+      return res.status(500).json({ error: "Failed to load stats" });
+    } finally {
+      statsPayloadPendingPromise = null;
     }
   });
 

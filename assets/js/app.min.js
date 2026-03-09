@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initHomeGradientBackground();
   initPulseBeamButtons();
   initLinkPageTransitions();
+  initProgressiveResourceWarmup();
   window.addEventListener("pageshow", () => {
     pageNavigationInProgress = false;
     document.documentElement.classList.remove("is-leaving");
@@ -38,12 +39,17 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 let pageNavigationInProgress = false;
-const PAGE_TRANSITION_LEAVE_MS = 430;
-const PAGE_TRANSITION_ENTER_MS = 760;
-const PAGE_TRANSITION_CLEANUP_MS = PAGE_TRANSITION_ENTER_MS + 120;
+const PAGE_TRANSITION_LEAVE_MS = 260;
+const PAGE_TRANSITION_ENTER_MS = 480;
+const PAGE_TRANSITION_CLEANUP_MS = PAGE_TRANSITION_ENTER_MS + 80;
 const PAGE_TRANSITION_NAV_FLAG_KEY = "gptishka_nav_transition";
+const WARMUP_START_DELAY_MS = 1600;
+const WARMUP_STEP_DELAY_MS = 1200;
+const WARMUP_MAX_ROUTES = 7;
+const WARMUP_PRODUCTS_DELAY_MS = 4400;
 const METRIKA_COUNTER_ID = 106969126;
 const TOP_MAIL_COUNTER_ID = "3744660";
+const prefetchedNavigationKeys = new Set();
 
 function markTransitionNavigationIntent() {
   try {
@@ -158,6 +164,7 @@ function shouldUsePageTransitionForHref(href, linkEl) {
   const sameSearch = targetUrl.search === window.location.search;
   const isSamePageAnchor = samePath && sameSearch && Boolean(targetUrl.hash);
   if (isSamePageAnchor) return false;
+  if (targetUrl.hash) return false;
 
   return true;
 }
@@ -176,8 +183,136 @@ function initLinkPageTransitions() {
     if (!shouldUsePageTransitionForHref(href, link)) return;
 
     e.preventDefault();
-    navigateWithPageTransition(link.href, PAGE_TRANSITION_LEAVE_MS);
+    const fastDelay = isPrefetchedNavigationTarget(link.href)
+      ? Math.min(180, PAGE_TRANSITION_LEAVE_MS)
+      : PAGE_TRANSITION_LEAVE_MS;
+    navigateWithPageTransition(link.href, fastDelay);
   });
+}
+
+function runWhenIdle(callback, timeoutMs = 1400) {
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(() => callback(), { timeout: timeoutMs });
+    return;
+  }
+  window.setTimeout(callback, 220);
+}
+
+function normalizePrefetchNavigationKey(href) {
+  try {
+    const url = new URL(String(href || ""), window.location.href);
+    if (url.origin !== window.location.origin) return "";
+    return `${normalizePathname(url.pathname)}${url.search}`;
+  } catch (_) {
+    return "";
+  }
+}
+
+function isPrefetchedNavigationTarget(href) {
+  const key = normalizePrefetchNavigationKey(href);
+  return key ? prefetchedNavigationKeys.has(key) : false;
+}
+
+function addDocumentPrefetch(href) {
+  let targetUrl;
+  try {
+    targetUrl = new URL(String(href || ""), window.location.href);
+  } catch (_) {
+    return;
+  }
+  if (targetUrl.origin !== window.location.origin) return;
+  targetUrl.hash = "";
+  const key = normalizePrefetchNavigationKey(targetUrl.href);
+  if (!key) return;
+  const currentKey = normalizePrefetchNavigationKey(window.location.href);
+  if (key === currentKey || prefetchedNavigationKeys.has(key)) return;
+  prefetchedNavigationKeys.add(key);
+
+  const prefetchPath = `${targetUrl.pathname}${targetUrl.search}`;
+  const supportsLinkPrefetch = (() => {
+    const link = document.createElement("link");
+    return Boolean(link.relList && typeof link.relList.supports === "function" && link.relList.supports("prefetch"));
+  })();
+
+  if (supportsLinkPrefetch) {
+    const link = document.createElement("link");
+    link.rel = "prefetch";
+    link.as = "document";
+    link.href = prefetchPath;
+    document.head.appendChild(link);
+    return;
+  }
+
+  fetch(targetUrl.href, { method: "GET", credentials: "same-origin", cache: "force-cache" }).catch(() => {});
+}
+
+function collectWarmupRoutes() {
+  const isEnPage = String(window.location.pathname || "").toLowerCase().startsWith("/en/");
+  const defaults = isEnPage
+    ? ["/en/index.html", "/en/about.html", "/en/guarantee.html", "/en/contact.html", "/en/site-map.html"]
+    : ["/index.html", "/about.html", "/guarantee.html", "/contact.html", "/site-map.html"];
+  const fromNav = Array.from(document.querySelectorAll("header nav a[href]"))
+    .map(link => link.getAttribute("href") || "")
+    .filter(Boolean);
+
+  const merged = [...defaults, ...fromNav];
+  const uniq = [];
+  const seen = new Set();
+  for (const href of merged) {
+    const key = normalizePrefetchNavigationKey(href);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    uniq.push(href);
+    if (uniq.length >= WARMUP_MAX_ROUTES) break;
+  }
+  return uniq;
+}
+
+function canRunProgressiveWarmup() {
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (!connection) return true;
+  if (connection.saveData) return false;
+  const effectiveType = String(connection.effectiveType || "").toLowerCase();
+  if (effectiveType.includes("2g")) return false;
+  return true;
+}
+
+function warmupProductsEndpoint() {
+  const isEnPage = String(window.location.pathname || "").toLowerCase().startsWith("/en/");
+  const lang = isEnPage ? "en" : "ru";
+  fetch(`/api/public/products?lang=${lang}`, {
+    method: "GET",
+    credentials: "same-origin",
+    cache: "force-cache",
+  }).catch(() => {});
+}
+
+function initProgressiveResourceWarmup() {
+  if (!document.head) return;
+  if (!canRunProgressiveWarmup()) return;
+
+  const queue = collectWarmupRoutes();
+  if (!queue.length) return;
+
+  let cursor = 0;
+  const processNext = () => {
+    if (cursor >= queue.length) return;
+    if (document.visibilityState === "hidden") {
+      window.setTimeout(processNext, 1400);
+      return;
+    }
+    runWhenIdle(() => {
+      addDocumentPrefetch(queue[cursor]);
+      cursor += 1;
+      window.setTimeout(processNext, WARMUP_STEP_DELAY_MS);
+    });
+  };
+
+  window.setTimeout(processNext, WARMUP_START_DELAY_MS);
+  window.setTimeout(() => {
+    if (document.visibilityState !== "visible") return;
+    warmupProductsEndpoint();
+  }, WARMUP_PRODUCTS_DELAY_MS);
 }
 
 function initHomeGradientBackground() {
