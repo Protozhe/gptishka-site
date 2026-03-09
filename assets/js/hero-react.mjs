@@ -111,6 +111,9 @@ function buildCopy(node) {
 
 function mountHero(node) {
   if (!node) return;
+  const alreadyMounted = node.dataset.heroMounted === "1" && Boolean(node.querySelector(".hero-react"));
+  if (alreadyMounted) return;
+
   const lang = getLang(node);
   const copy = buildCopy(node);
   const defaultHref = lang === "en" ? "/en/index.html#pricing" : "/index.html#pricing";
@@ -122,7 +125,21 @@ function mountHero(node) {
     node.__heroReactRoot = createRoot(node);
   }
   node.__heroReactRoot.render(React.createElement(RotatingHero, { copy, ctaHref, intervalMs }));
-  node.dataset.heroMounted = "1";
+
+  const markMountedWhenReady = (attempt = 0) => {
+    if (!node) return;
+    if (node.querySelector(".hero-react")) {
+      node.dataset.heroMounted = "1";
+      return;
+    }
+    if (attempt >= 20) {
+      node.dataset.heroMounted = "1";
+      return;
+    }
+    window.requestAnimationFrame(() => markMountedWhenReady(attempt + 1));
+  };
+
+  markMountedWhenReady();
 
   if (node.dataset.heroObserverAttached !== "1" && typeof MutationObserver !== "undefined") {
     const observer = new MutationObserver(() => {

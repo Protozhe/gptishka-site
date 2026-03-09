@@ -77,6 +77,17 @@
 <link rel="stylesheet" href="/assets/css/support-widget.css?v=20260305a" />
 </head>
 <body>
+<script>
+  (function () {
+    try {
+      var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var fine = window.matchMedia ? window.matchMedia("(pointer: fine)").matches : true;
+      var compact = window.matchMedia ? window.matchMedia("(max-width: 900px)").matches : window.innerWidth <= 900;
+      var cls = (reduce || !fine || compact) ? "home-gradient-page-lite" : "home-gradient-page";
+      document.body.classList.add(cls);
+    } catch (_) {}
+  })();
+</script>
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
   <div class="page-overlay"></div>
   <header>
@@ -262,12 +273,11 @@
     <span class="footer-copy">© 2026 GPTishka. All rights reserved.</span>
   </footer>
 
-  <script type="module" src="/assets/js/hero-react.mjs?v=20260309c"></script>
+  <script type="module" src="/assets/js/hero-react.mjs?v=20260310e"></script>
   <script src="/assets/js/app.min.js?v=20260310d" defer></script>
   <script src="/assets/js/support-widget.js?v=20260309b" defer></script>
 </body>
 </html>
-
 
 
 
