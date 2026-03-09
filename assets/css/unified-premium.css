@@ -4722,7 +4722,7 @@ body.home-gradient-page .home-gradient-bg__pointer {
 
 @media (max-width: 900px) {
   #siteTicker {
-    display: none !important;
+    display: grid !important;
   }
 
   body.home-gradient-page {
@@ -4812,6 +4812,199 @@ body.home-gradient-page .home-gradient-bg__pointer {
     bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;
     max-width: calc(100vw - 20px) !important;
     font-size: 13px !important;
+  }
+}
+
+/* =========================================================
+   Mobile Header + Overflow + Ticker Stabilization
+   ========================================================= */
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip !important;
+  overscroll-behavior-x: none;
+}
+
+@supports not (overflow: clip) {
+  html,
+  body {
+    overflow-x: hidden !important;
+  }
+}
+
+main.page,
+header,
+footer {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+@media (max-width: 900px) {
+  header {
+    top: 8px !important;
+    width: calc(100% - 12px) !important;
+    margin-top: 0 !important;
+    border-radius: 14px !important;
+  }
+
+  .nav {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    column-gap: 8px !important;
+    row-gap: 8px !important;
+    padding: 8px 10px !important;
+  }
+
+  .nav > nav {
+    grid-column: 1 / -1 !important;
+    order: 3 !important;
+    width: 100% !important;
+    margin-top: 2px !important;
+    padding-top: 6px !important;
+    border-top: 1px solid rgba(169, 191, 223, 0.34) !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .nav > nav::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .nav > nav a {
+    flex: 0 0 auto !important;
+    font-size: 12px !important;
+    padding: 7px 9px !important;
+    border-radius: 9px !important;
+  }
+
+  .header-tools {
+    grid-column: 3 !important;
+    justify-self: end !important;
+    align-self: center !important;
+    margin: 0 !important;
+    order: 1 !important;
+    width: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .nav > .lang-switch,
+  .header-tools .lang-switch {
+    margin: 0 !important;
+    align-self: center !important;
+  }
+
+  header .logo-link {
+    grid-column: 1 !important;
+    align-self: center !important;
+  }
+
+  header .logo-img {
+    height: 40px !important;
+  }
+
+  .lang-current {
+    height: 34px !important;
+    padding: 0 9px !important;
+    border-radius: 10px !important;
+    font-size: 12px !important;
+    gap: 6px !important;
+  }
+
+  .lang-current span:not(.arrow) {
+    max-width: 70px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .lang-dropdown {
+    right: 0 !important;
+    top: calc(100% + 6px) !important;
+    min-width: 146px !important;
+  }
+
+  .site-ticker {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 8px !important;
+    padding: 6px 10px !important;
+    min-height: 40px !important;
+    border-radius: 14px 14px 0 0 !important;
+  }
+
+  .site-ticker__marquee {
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .site-ticker__track {
+    animation-duration: 108s !important;
+  }
+
+  .site-ticker__item {
+    font-size: 11px !important;
+    padding: 1px 6px !important;
+  }
+
+  .site-ticker__sep {
+    margin: 0 8px !important;
+  }
+
+  .site-ticker__stats {
+    padding: 4px 8px !important;
+    gap: 4px !important;
+    font-size: 10px !important;
+    border-radius: 999px !important;
+  }
+
+  .site-ticker__stat strong {
+    font-size: 11px !important;
+  }
+
+  main.page::before,
+  main.page::after {
+    width: min(980px, 100vw) !important;
+    max-width: 100vw !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .nav {
+    padding: 7px 9px !important;
+  }
+
+  header .logo-img {
+    height: 36px !important;
+  }
+
+  .header-tools {
+    gap: 6px !important;
+  }
+
+  .lang-current {
+    height: 32px !important;
+    padding: 0 8px !important;
+  }
+
+  .lang-current span:not(.arrow) {
+    max-width: 56px;
+  }
+
+  .site-ticker {
+    grid-template-columns: 1fr !important;
+    gap: 4px !important;
+    padding: 6px 8px !important;
+  }
+
+  .site-ticker__stats {
+    justify-self: start !important;
   }
 }
 
