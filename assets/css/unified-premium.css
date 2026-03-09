@@ -4686,4 +4686,133 @@ html.is-leaving body {
   max-inline-size: calc(100vw - 24px) !important;
 }
 
+/* =========================================================
+   Performance-Safe Overrides (mobile + weaker devices)
+   ========================================================= */
+body.home-gradient-page-lite {
+  background:
+    radial-gradient(140% 95% at 10% -10%, rgba(135, 170, 255, 0.22), transparent 58%),
+    radial-gradient(130% 92% at 88% 8%, rgba(132, 236, 255, 0.16), transparent 62%),
+    radial-gradient(120% 96% at 52% 100%, rgba(255, 158, 212, 0.12), transparent 68%),
+    linear-gradient(180deg, #f6f9ff 0%, #eef4ff 52%, #f7fbff 100%) !important;
+}
+
+body.home-gradient-page-lite::before,
+body.home-gradient-page-lite::after,
+body.home-gradient-page-lite main.page::before,
+body.home-gradient-page-lite main.page::after {
+  display: none !important;
+  animation: none !important;
+}
+
+/* Desktop: reduce GPU pressure from animated ambient background */
+body.home-gradient-page .home-gradient-bg__layer--4,
+body.home-gradient-page .home-gradient-bg__layer--5 {
+  display: none !important;
+}
+
+body.home-gradient-page .home-gradient-bg__layer {
+  filter: blur(84px) saturate(116%) !important;
+}
+
+body.home-gradient-page .home-gradient-bg__pointer {
+  filter: blur(74px) saturate(120%) !important;
+  opacity: 0.52 !important;
+}
+
+@media (max-width: 900px) {
+  #siteTicker {
+    display: none !important;
+  }
+
+  body.home-gradient-page {
+    background:
+      radial-gradient(130% 92% at 12% -8%, rgba(138, 169, 255, 0.18), transparent 58%),
+      radial-gradient(120% 88% at 86% 12%, rgba(140, 232, 255, 0.13), transparent 60%),
+      linear-gradient(180deg, #f8faff 0%, #f1f6ff 52%, #f9fbff 100%) !important;
+  }
+
+  .home-gradient-bg {
+    display: none !important;
+  }
+
+  header,
+  .hero,
+  .pricing,
+  .how,
+  .faq,
+  .about,
+  .contact,
+  .reviews,
+  .container,
+  .activation-video,
+  .price-card,
+  .faq-item,
+  .faq-sticky,
+  .review,
+  .cart-box,
+  .contact-card,
+  .block,
+  .card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: 0 6px 18px rgba(17, 35, 70, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.86) !important;
+  }
+
+  .btn:not(.secondary),
+  .buy-btn,
+  .faq-chat-btn,
+  .redeem-btn-primary,
+  .gptishka-resume-activation,
+  .support-widget__fab,
+  .support-widget__cta,
+  #manualSupportBtn.redeem-btn-primary {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  main.page {
+    padding-top: 10px !important;
+  }
+
+  .hero {
+    margin: 16px auto 36px !important;
+    padding: 20px 15px !important;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.72rem, 8vw, 2.2rem) !important;
+    line-height: 1.08 !important;
+  }
+
+  .hero p {
+    font-size: 0.98rem !important;
+    line-height: 1.56 !important;
+    margin-bottom: 20px !important;
+  }
+
+  .pricing,
+  .how,
+  .faq,
+  .about,
+  .contact,
+  .reviews,
+  .container,
+  .activation-video {
+    margin-bottom: 42px !important;
+    padding: 16px !important;
+  }
+
+  .price-card {
+    padding: 18px !important;
+  }
+
+  .gptishka-resume-activation {
+    right: 10px !important;
+    bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;
+    max-width: calc(100vw - 20px) !important;
+    font-size: 13px !important;
+  }
+}
+
 

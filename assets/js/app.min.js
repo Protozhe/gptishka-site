@@ -185,6 +185,25 @@ function initHomeGradientBackground() {
   if (!body) return;
   const hasHeroRoot = Boolean(document.querySelector("[data-hero-react-root]"));
   if (!hasHeroRoot) return;
+
+  const prefersReducedMotion = window.matchMedia
+    ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    : false;
+  const hasFinePointer = window.matchMedia
+    ? window.matchMedia("(pointer: fine)").matches
+    : true;
+  const isCompactViewport = window.matchMedia
+    ? window.matchMedia("(max-width: 900px)").matches
+    : window.innerWidth <= 900;
+
+  // On mobile/coarse pointer/reduced motion we keep a static premium gradient only.
+  if (prefersReducedMotion || !hasFinePointer || isCompactViewport) {
+    body.classList.remove("home-gradient-page");
+    body.classList.add("home-gradient-page-lite");
+    return;
+  }
+
+  body.classList.remove("home-gradient-page-lite");
   body.classList.add("home-gradient-page");
 
   let bg = document.querySelector(".home-gradient-bg");
@@ -208,17 +227,7 @@ function initHomeGradientBackground() {
   let currentX = 0;
   let currentY = 0;
   let rafId = 0;
-  const prefersReducedMotion = window.matchMedia
-    ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    : false;
-  const hasFinePointer = window.matchMedia
-    ? window.matchMedia("(pointer: fine)").matches
-    : true;
-  if (!hasFinePointer || prefersReducedMotion) {
-    bg.style.setProperty("--home-pointer-x", "0px");
-    bg.style.setProperty("--home-pointer-y", "0px");
-    return;
-  }
+
   const pointerStrength = prefersReducedMotion ? 0.38 : 0.72;
   const pointerEase = prefersReducedMotion ? 0.1 : 0.18;
 
@@ -288,28 +297,23 @@ function initPulseBeamButtons() {
   const prefersReducedMotion = window.matchMedia
     ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
     : false;
-  if (prefersReducedMotion) return;
+  const hasFinePointer = window.matchMedia
+    ? window.matchMedia("(pointer: fine)").matches
+    : true;
+  const isDesktopViewport = window.matchMedia
+    ? window.matchMedia("(min-width: 1025px)").matches
+    : window.innerWidth >= 1025;
+  if (prefersReducedMotion || !hasFinePointer || !isDesktopViewport) return;
 
   const targetSelector = [
     "a.btn",
     "button.btn",
     ".buy-btn",
     ".faq-chat-btn",
-    ".redeem-btn",
     ".redeem-btn-primary",
-    ".support-widget__fab",
-    ".support-widget__cta",
-    ".status-btn",
-    ".btn-primary",
-    ".btn-secondary",
     ".product-preview-modal__pay",
-    ".product-preview-modal__promo-apply",
-    ".payment-method-modal__option",
     "#cartCheckoutBtn",
     "#headerCartPanelCheckoutBtn",
-    "#cartPromoApply",
-    "#headerCartPromoApply",
-    "#manualSupportBtn",
   ].join(", ");
 
   const skipSelector = [
