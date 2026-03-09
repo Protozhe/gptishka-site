@@ -1,4 +1,4 @@
-﻿// =========================
+// =========================
 // PAGE TRANSITION - FIXED
 // =========================
 
@@ -29,14 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initHomeGradientBackground() {
-  const path = String(window.location.pathname || "/").toLowerCase();
-  const isHomePage =
-    path === "/" ||
-    path.endsWith("/index.html") ||
-    path === "/en/" ||
-    path.endsWith("/en/index.html");
-  if (!isHomePage) return;
-
   const body = document.body;
   if (!body) return;
   body.classList.add("home-gradient-page");

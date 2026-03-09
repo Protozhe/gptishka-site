@@ -2,10 +2,13 @@
    Visual-only overrides. No layout/logic changes. */
 
 :root {
+  --primary: #2a5bff;
+  --primary-2: #2148d6;
+  --accent: #ff9f5a;
   --premium-text: #15202d;
   --premium-muted: #4f5f72;
-  --premium-link: #0f6f63;
-  --premium-link-hover: #0b5a50;
+  --premium-link: #2a57db;
+  --premium-link-hover: #1f44b0;
   --premium-border: rgba(255, 255, 255, 0.62);
   --premium-glass-a: rgba(255, 255, 255, 0.68);
   --premium-glass-b: rgba(248, 252, 255, 0.42);
@@ -15,8 +18,8 @@
 
 body {
   background:
-    radial-gradient(160% 120% at 50% -20%, rgba(248, 251, 255, 0.98) 0%, rgba(240, 245, 251, 0.86) 44%, rgba(231, 238, 247, 0.92) 100%),
-    linear-gradient(170deg, #eef3f8 0%, #e7edf5 48%, #dee6ef 100%);
+    radial-gradient(160% 120% at 50% -20%, rgba(244, 249, 255, 0.99) 0%, rgba(232, 241, 255, 0.9) 44%, rgba(226, 235, 252, 0.94) 100%),
+    linear-gradient(168deg, #edf3ff 0%, #e7efff 48%, #dfe8fb 100%);
   color: var(--premium-text);
 }
 
@@ -32,22 +35,22 @@ body::after {
 body::before {
   z-index: -1;
   background:
-    radial-gradient(circle at 14% 26%, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0) 54%),
-    radial-gradient(circle at 86% 18%, rgba(198, 220, 244, 0.4) 0%, rgba(198, 220, 244, 0) 52%),
-    radial-gradient(circle at 44% 78%, rgba(160, 226, 210, 0.3) 0%, rgba(160, 226, 210, 0) 48%);
+    radial-gradient(circle at 14% 26%, rgba(255, 255, 255, 0.74) 0%, rgba(255, 255, 255, 0) 54%),
+    radial-gradient(circle at 86% 18%, rgba(160, 194, 255, 0.44) 0%, rgba(160, 194, 255, 0) 52%),
+    radial-gradient(circle at 44% 78%, rgba(134, 163, 255, 0.28) 0%, rgba(134, 163, 255, 0) 48%);
   filter: blur(96px);
-  opacity: 0.56;
+  opacity: 0.6;
   animation: premiumBodyGlowA 28s ease-in-out infinite alternate;
 }
 
 body::after {
   z-index: -2;
   background:
-    radial-gradient(circle at 72% 68%, rgba(120, 170, 255, 0.22) 0%, rgba(120, 170, 255, 0) 46%),
-    radial-gradient(circle at 22% 76%, rgba(120, 220, 200, 0.2) 0%, rgba(120, 220, 200, 0) 42%),
-    radial-gradient(circle at 54% 12%, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0) 56%);
+    radial-gradient(circle at 72% 68%, rgba(106, 151, 255, 0.26) 0%, rgba(106, 151, 255, 0) 46%),
+    radial-gradient(circle at 22% 76%, rgba(113, 191, 255, 0.22) 0%, rgba(113, 191, 255, 0) 42%),
+    radial-gradient(circle at 54% 12%, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 56%);
   filter: blur(108px);
-  opacity: 0.5;
+  opacity: 0.54;
   animation: premiumBodyGlowB 34s ease-in-out infinite alternate;
 }
 
@@ -172,7 +175,7 @@ header.is-scrolled {
 }
 
 .site-ticker__item--real .site-ticker__item-prefix {
-  color: #0f6f63;
+  color: #2a57db;
 }
 
 .site-ticker__item--system .site-ticker__item-prefix {
@@ -578,8 +581,8 @@ a:hover {
 .btn,
 .buy-btn,
 .faq-chat-btn {
-  border-color: rgba(20, 133, 118, 0.42);
-  background: linear-gradient(180deg, #189d89 0%, #138a78 100%);
+  border-color: rgba(42, 91, 255, 0.42);
+  background: linear-gradient(180deg, #189d89 0%, #214fdc 100%);
   box-shadow: 0 12px 26px rgba(19, 138, 120, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
@@ -647,7 +650,7 @@ a:hover {
 }
 
 .cart-payment-method.is-active .cart-payment-method__card {
-  border-color: rgba(20, 133, 118, 0.52);
+  border-color: rgba(42, 91, 255, 0.52);
   box-shadow: 0 8px 20px rgba(19, 138, 120, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.92);
   transform: translateY(-1px);
 }
@@ -726,8 +729,8 @@ body.is-product-modal-open {
   max-width: 100%;
   padding: 6px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(20, 133, 118, 0.34);
-  background: rgba(20, 133, 118, 0.08);
+  border: 1px solid rgba(42, 91, 255, 0.34);
+  background: rgba(42, 91, 255, 0.08);
   font-size: 12px;
   font-weight: 700;
   color: #0f766e;
@@ -798,8 +801,8 @@ body.is-product-modal-open {
 
 .product-preview-modal__field-input:focus {
   outline: none;
-  border-color: rgba(20, 133, 118, 0.5);
-  box-shadow: 0 0 0 3px rgba(20, 133, 118, 0.14);
+  border-color: rgba(42, 91, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(42, 91, 255, 0.14);
 }
 
 .product-preview-modal__promo-row {
@@ -820,7 +823,7 @@ body.is-product-modal-open {
 }
 
 .product-preview-modal__promo-apply:hover {
-  border-color: rgba(20, 133, 118, 0.5);
+  border-color: rgba(42, 91, 255, 0.5);
 }
 
 .product-preview-modal__promo-msg {
@@ -1013,12 +1016,12 @@ body.is-product-modal-open {
 
 .payment-method-modal__option:hover {
   transform: translateY(-1px);
-  border-color: rgba(20, 133, 118, 0.46);
+  border-color: rgba(42, 91, 255, 0.46);
   box-shadow: 0 12px 24px rgba(19, 138, 120, 0.14);
 }
 
 .payment-method-modal__option.is-active {
-  border-color: rgba(20, 133, 118, 0.52);
+  border-color: rgba(42, 91, 255, 0.52);
   box-shadow: 0 10px 22px rgba(19, 138, 120, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.96);
 }
 
@@ -1078,8 +1081,8 @@ body.is-product-modal-open {
 
 .product-preview-modal__term {
   padding: 7px 12px;
-  border-color: rgba(20, 133, 118, 0.45);
-  background: rgba(20, 133, 118, 0.12);
+  border-color: rgba(42, 91, 255, 0.45);
+  background: rgba(42, 91, 255, 0.12);
 }
 
 .product-preview-modal__title {
@@ -1110,8 +1113,8 @@ body.is-product-modal-open {
   min-height: 44px;
   border: 0;
   color: #fff;
-  background: linear-gradient(135deg, #0e9f86, #149975 56%, #1a78af);
-  box-shadow: 0 12px 24px rgba(20, 133, 118, 0.25);
+  background: linear-gradient(135deg, #3f74ff, #3b6dff 56%, #1a78af);
+  box-shadow: 0 12px 24px rgba(42, 91, 255, 0.25);
 }
 
 .product-preview-modal__promo-apply:hover {
@@ -1125,13 +1128,13 @@ body.is-product-modal-open {
 .product-preview-modal__close:focus-visible,
 .payment-method-modal__close:focus-visible {
   outline: 0;
-  box-shadow: 0 0 0 3px rgba(20, 133, 118, 0.2);
+  box-shadow: 0 0 0 3px rgba(42, 91, 255, 0.2);
 }
 
 .product-preview-modal__list li::before {
   content: "\2713";
   top: 1px;
-  color: #149975;
+  color: #3b6dff;
 }
 
 .product-preview-modal__actions {
@@ -1146,7 +1149,7 @@ body.is-product-modal-open {
   font-weight: 800;
   letter-spacing: 0.01em;
   color: #fff;
-  background: linear-gradient(135deg, #0f9f88, #128d74 48%, #1c739f);
+  background: linear-gradient(135deg, #396fff, #2654e4 48%, #1c739f);
   box-shadow: 0 16px 28px rgba(18, 126, 109, 0.3);
 }
 
@@ -1499,8 +1502,8 @@ footer {
 }
 
 .product-preview-modal__field-input:focus {
-  border-color: rgba(15, 141, 119, 0.56);
-  box-shadow: 0 0 0 3px rgba(15, 141, 119, 0.12);
+  border-color: rgba(42, 91, 255, 0.56);
+  box-shadow: 0 0 0 3px rgba(42, 91, 255, 0.12);
 }
 
 .product-preview-modal__promo-apply {
@@ -1511,7 +1514,7 @@ footer {
 }
 
 .product-preview-modal__promo-apply:hover {
-  border-color: rgba(15, 141, 119, 0.45);
+  border-color: rgba(42, 91, 255, 0.45);
   transform: translateY(0);
 }
 
@@ -1522,7 +1525,7 @@ footer {
 .product-preview-modal__pay {
   border-radius: 14px;
   min-height: 50px;
-  background: linear-gradient(135deg, #0f8d77, #107b99);
+  background: linear-gradient(135deg, #2a5bff, #214fdc);
   box-shadow: 0 14px 26px rgba(15, 123, 153, 0.24);
 }
 
@@ -1569,19 +1572,19 @@ footer {
 
 .payment-method-modal__option:hover {
   transform: translateY(-1px);
-  border-color: rgba(15, 141, 119, 0.42);
-  box-shadow: 0 10px 20px rgba(15, 141, 119, 0.12);
+  border-color: rgba(42, 91, 255, 0.42);
+  box-shadow: 0 10px 20px rgba(42, 91, 255, 0.12);
 }
 
 .payment-method-modal__option.is-active {
-  border-color: rgba(15, 141, 119, 0.52);
-  box-shadow: 0 0 0 1px rgba(15, 141, 119, 0.18), 0 10px 22px rgba(15, 141, 119, 0.14);
+  border-color: rgba(42, 91, 255, 0.52);
+  box-shadow: 0 0 0 1px rgba(42, 91, 255, 0.18), 0 10px 22px rgba(42, 91, 255, 0.14);
 }
 
 .payment-method-modal__option.is-active::after {
-  border-color: rgba(15, 141, 119, 0.75);
-  background: #0f8d77;
-  box-shadow: 0 0 0 4px rgba(15, 141, 119, 0.14);
+  border-color: rgba(42, 91, 255, 0.75);
+  background: #2a5bff;
+  box-shadow: 0 0 0 4px rgba(42, 91, 255, 0.14);
 }
 
 .payment-method-modal__logo {
@@ -1614,8 +1617,8 @@ footer {
 .cart-remove-btn,
 .payment-method-modal__close,
 .product-preview-modal__close {
-  --liquid-tint-a: rgba(22, 160, 140, 0.74);
-  --liquid-tint-b: rgba(20, 122, 157, 0.7);
+  --liquid-tint-a: rgba(58, 108, 255, 0.76);
+  --liquid-tint-b: rgba(37, 77, 214, 0.74);
   --liquid-ink: #f5fffd;
   position: relative;
   isolation: isolate;
@@ -1710,15 +1713,15 @@ footer {
   box-shadow:
     0 12px 24px rgba(8, 19, 34, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.74),
-    0 0 0 3px rgba(20, 133, 118, 0.2);
+    0 0 0 3px rgba(42, 91, 255, 0.24);
 }
 
 .btn:not(.secondary),
 .buy-btn,
 .faq-chat-btn,
 .product-preview-modal__pay {
-  --liquid-tint-a: rgba(16, 162, 141, 0.78);
-  --liquid-tint-b: rgba(21, 121, 153, 0.74);
+  --liquid-tint-a: rgba(51, 107, 255, 0.8);
+  --liquid-tint-b: rgba(33, 72, 214, 0.78);
   --liquid-ink: #f7fffe;
 }
 
@@ -1766,32 +1769,32 @@ footer {
 
 .payment-method-modal__option:hover {
   transform: translateY(-2px) scale(1.01);
-  border-color: rgba(20, 133, 118, 0.42);
+  border-color: rgba(42, 91, 255, 0.44);
   box-shadow:
     0 16px 28px rgba(8, 19, 34, 0.16),
     inset 0 1px 0 rgba(255, 255, 255, 0.86);
 }
 
 .payment-method-modal__option.is-active {
-  border-color: rgba(20, 133, 118, 0.56);
+  border-color: rgba(42, 91, 255, 0.58);
   background:
     radial-gradient(120% 110% at 0% 0%, rgba(255, 255, 255, 0.64), rgba(255, 255, 255, 0.16) 62%),
-    linear-gradient(145deg, rgba(228, 252, 247, 0.88), rgba(215, 242, 255, 0.74));
+    linear-gradient(145deg, rgba(232, 240, 255, 0.9), rgba(220, 233, 255, 0.78));
   box-shadow:
-    0 0 0 1px rgba(20, 133, 118, 0.2),
-    0 16px 30px rgba(10, 91, 79, 0.18),
+    0 0 0 1px rgba(42, 91, 255, 0.22),
+    0 16px 30px rgba(29, 56, 160, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .payment-method-modal__option.is-active::after {
-  border-color: rgba(15, 141, 119, 0.75);
-  background: #0f8d77;
-  box-shadow: 0 0 0 4px rgba(15, 141, 119, 0.16);
+  border-color: rgba(42, 91, 255, 0.78);
+  background: #2a5bff;
+  box-shadow: 0 0 0 4px rgba(42, 91, 255, 0.16);
 }
 
-/* Home animated gradient background */
+/* Global animated gradient background */
 body.home-gradient-page {
-  background: linear-gradient(40deg, #e9f4ff 0%, #d8ecff 42%, #e2f5f4 100%);
+  background: linear-gradient(42deg, #edf3ff 0%, #dfe9ff 44%, #e9f2ff 100%);
 }
 
 body.home-gradient-page::before,
@@ -1836,31 +1839,31 @@ body.home-gradient-page footer {
 }
 
 .home-gradient-bg__layer--1 {
-  background: radial-gradient(circle at center, rgba(18, 137, 210, 0.34) 0%, rgba(18, 137, 210, 0) 58%);
+  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.34) 0%, rgba(59, 130, 246, 0) 58%);
   animation: homeGradientFirst 18s linear infinite;
 }
 
 .home-gradient-bg__layer--2 {
-  background: radial-gradient(circle at center, rgba(23, 179, 147, 0.33) 0%, rgba(23, 179, 147, 0) 58%);
+  background: radial-gradient(circle at center, rgba(42, 91, 255, 0.34) 0%, rgba(42, 91, 255, 0) 58%);
   transform-origin: calc(50% - 420px) 50%;
   animation: homeGradientSecond 24s linear infinite reverse;
 }
 
 .home-gradient-bg__layer--3 {
-  background: radial-gradient(circle at center, rgba(103, 225, 255, 0.31) 0%, rgba(103, 225, 255, 0) 58%);
+  background: radial-gradient(circle at center, rgba(122, 199, 255, 0.32) 0%, rgba(122, 199, 255, 0) 58%);
   transform-origin: calc(50% + 380px) 50%;
   animation: homeGradientThird 22s linear infinite;
 }
 
 .home-gradient-bg__layer--4 {
-  background: radial-gradient(circle at center, rgba(244, 151, 103, 0.22) 0%, rgba(244, 151, 103, 0) 58%);
+  background: radial-gradient(circle at center, rgba(252, 170, 129, 0.2) 0%, rgba(252, 170, 129, 0) 58%);
   transform-origin: calc(50% - 260px) calc(50% - 180px);
   opacity: 0.74;
   animation: homeGradientFourth 28s linear infinite;
 }
 
 .home-gradient-bg__layer--5 {
-  background: radial-gradient(circle at center, rgba(250, 214, 120, 0.22) 0%, rgba(250, 214, 120, 0) 58%);
+  background: radial-gradient(circle at center, rgba(175, 196, 255, 0.23) 0%, rgba(175, 196, 255, 0) 58%);
   transform-origin: calc(50% - 760px) calc(50% + 660px);
   opacity: 0.72;
   animation: homeGradientFifth 30s linear infinite;
@@ -1871,7 +1874,7 @@ body.home-gradient-page footer {
   height: 72vmax;
   margin-left: -36vmax;
   margin-top: -36vmax;
-  background: radial-gradient(circle at center, rgba(140, 196, 255, 0.34) 0%, rgba(140, 196, 255, 0) 62%);
+  background: radial-gradient(circle at center, rgba(107, 153, 255, 0.36) 0%, rgba(107, 153, 255, 0) 62%);
   filter: blur(30px);
   opacity: 0.62;
   transform: translate3d(var(--home-pointer-x), var(--home-pointer-y), 0);
@@ -1928,4 +1931,5 @@ body.home-gradient-page footer {
     transform: none !important;
   }
 }
+
 
