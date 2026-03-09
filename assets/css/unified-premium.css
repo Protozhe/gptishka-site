@@ -3144,4 +3144,522 @@ footer {
   }
 }
 
+/* =========================================================
+   Light Premium Glass Theme (Final Visual Override)
+   ========================================================= */
+:root {
+  --lp-bg: #f6f7fb;
+  --lp-bg-soft: #eef2fb;
+  --lp-text: #161f2f;
+  --lp-text-soft: #5f6b81;
+  --lp-text-muted: #7b879c;
+  --lp-border: rgba(173, 186, 213, 0.38);
+  --lp-border-soft: rgba(186, 198, 224, 0.34);
+  --lp-surface-hero: rgba(255, 255, 255, 0.58);
+  --lp-surface-main: rgba(255, 255, 255, 0.5);
+  --lp-surface-card: rgba(255, 255, 255, 0.68);
+  --lp-shadow-lg: 0 14px 44px rgba(31, 41, 55, 0.08);
+  --lp-shadow-md: 0 10px 30px rgba(31, 41, 55, 0.07);
+  --lp-accent: #6478ff;
+  --lp-accent-2: #79b4ff;
+  --lp-accent-soft: rgba(122, 147, 255, 0.16);
+  --lp-accent-soft-2: rgba(121, 180, 255, 0.12);
+
+  --liquid-glass-fill: linear-gradient(
+    158deg,
+    rgba(255, 255, 255, 0.32) 0%,
+    rgba(145, 169, 255, 0.3) 32%,
+    rgba(107, 160, 255, 0.44) 100%
+  );
+  --liquid-glass-fill-soft: linear-gradient(
+    158deg,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(226, 234, 255, 0.7) 42%,
+    rgba(214, 230, 255, 0.62) 100%
+  );
+  --liquid-glass-border: rgba(131, 156, 255, 0.4);
+  --liquid-glass-border-soft: rgba(187, 202, 235, 0.56);
+  --liquid-glass-sheen: rgba(255, 255, 255, 0.78);
+  --liquid-glass-shadow: 0 12px 28px rgba(78, 97, 145, 0.22);
+}
+
+html,
+body {
+  color: var(--lp-text) !important;
+  background:
+    radial-gradient(circle at 18% 14%, rgba(170, 190, 255, 0.18), transparent 46%),
+    radial-gradient(circle at 76% 72%, rgba(210, 225, 255, 0.14), transparent 50%),
+    radial-gradient(circle at 60% 24%, rgba(255, 220, 235, 0.1), transparent 45%),
+    var(--lp-bg) !important;
+}
+
+body::before,
+body::after {
+  opacity: 0.72 !important;
+  filter: blur(168px) saturate(116%) !important;
+}
+
+body::before {
+  background:
+    radial-gradient(circle at 22% 26%, rgba(170, 190, 255, 0.38) 0%, rgba(170, 190, 255, 0) 58%),
+    radial-gradient(circle at 78% 20%, rgba(210, 225, 255, 0.32) 0%, rgba(210, 225, 255, 0) 60%) !important;
+  animation: lpFloatA 44s ease-in-out infinite !important;
+}
+
+body::after {
+  background:
+    radial-gradient(circle at 20% 82%, rgba(210, 225, 255, 0.34) 0%, rgba(210, 225, 255, 0) 60%),
+    radial-gradient(circle at 84% 66%, rgba(255, 220, 235, 0.24) 0%, rgba(255, 220, 235, 0) 58%) !important;
+  animation: lpFloatB 52s ease-in-out infinite !important;
+}
+
+main.page::before,
+main.page::after {
+  opacity: 0 !important;
+}
+
+.home-gradient-bg {
+  --home-blending: normal;
+}
+
+.home-gradient-bg__layer,
+.home-gradient-bg__pointer {
+  filter: blur(164px) saturate(112%) !important;
+  opacity: 0.16 !important;
+}
+
+.home-gradient-bg__layer--1 {
+  background: radial-gradient(circle at center, rgba(170, 190, 255, 0.44) 0%, rgba(170, 190, 255, 0) 66%) !important;
+  animation-duration: 50s !important;
+}
+
+.home-gradient-bg__layer--2 {
+  background: radial-gradient(circle at center, rgba(210, 225, 255, 0.4) 0%, rgba(210, 225, 255, 0) 64%) !important;
+  animation-duration: 58s !important;
+}
+
+.home-gradient-bg__layer--3 {
+  background: radial-gradient(circle at center, rgba(255, 220, 235, 0.32) 0%, rgba(255, 220, 235, 0) 64%) !important;
+  animation-duration: 62s !important;
+}
+
+.home-gradient-bg__layer--4 {
+  background: radial-gradient(circle at center, rgba(188, 209, 255, 0.34) 0%, rgba(188, 209, 255, 0) 66%) !important;
+  animation-duration: 70s !important;
+}
+
+.home-gradient-bg__layer--5,
+.home-gradient-bg__pointer {
+  background: radial-gradient(circle at center, rgba(214, 228, 255, 0.3) 0%, rgba(214, 228, 255, 0) 66%) !important;
+  animation-duration: 74s !important;
+}
+
+header {
+  position: sticky;
+  top: 14px;
+  z-index: 80;
+  border: 1px solid rgba(255, 255, 255, 0.58) !important;
+  border-radius: 16px !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.68) 0%,
+    rgba(255, 255, 255, 0.56) 100%
+  ) !important;
+  box-shadow:
+    0 8px 24px rgba(31, 41, 55, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.74) !important;
+  backdrop-filter: blur(18px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(140%) !important;
+}
+
+header.is-scrolled {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.74) 0%,
+    rgba(255, 255, 255, 0.62) 100%
+  ) !important;
+  border-color: rgba(255, 255, 255, 0.66) !important;
+  box-shadow:
+    0 12px 30px rgba(31, 41, 55, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
+header .logo-img {
+  filter: contrast(1.08) brightness(0.96) saturate(0.96) !important;
+}
+
+.nav > nav a {
+  color: var(--lp-text-soft) !important;
+  border-radius: 12px;
+  padding: 8px 12px;
+  transition: color 0.22s ease, background-color 0.22s ease, border-color 0.22s ease !important;
+}
+
+.nav > nav a::after {
+  display: none !important;
+}
+
+.nav > nav a:hover {
+  color: #2a3446 !important;
+  background: rgba(255, 255, 255, 0.48) !important;
+}
+
+.nav > nav a.active {
+  color: #202b3f !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  background: linear-gradient(
+    162deg,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(230, 238, 255, 0.62) 100%
+  ) !important;
+  box-shadow:
+    0 8px 20px rgba(31, 41, 55, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.74) !important;
+  backdrop-filter: blur(12px) saturate(132%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(132%) !important;
+}
+
+.nav > nav a.active::before {
+  background: radial-gradient(
+    110% 76% at 18% 2%,
+    rgba(255, 255, 255, 0.52) 0%,
+    rgba(255, 255, 255, 0) 64%
+  ) !important;
+}
+
+.lang-current {
+  border: 1px solid rgba(255, 255, 255, 0.66) !important;
+  background: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(236, 243, 255, 0.62) 100%
+  ) !important;
+  color: #273349 !important;
+  box-shadow:
+    0 8px 18px rgba(31, 41, 55, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(12px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(130%) !important;
+}
+
+.lang-dropdown {
+  border: 1px solid rgba(255, 255, 255, 0.68) !important;
+  background: rgba(250, 252, 255, 0.88) !important;
+  box-shadow: var(--lp-shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.76) !important;
+}
+
+.lang-item {
+  color: var(--lp-text-soft) !important;
+}
+
+.lang-item:hover {
+  color: #25324a !important;
+  background: rgba(121, 161, 255, 0.12) !important;
+}
+
+.hero {
+  background: var(--lp-surface-hero) !important;
+  border: 1px solid rgba(255, 255, 255, 0.66) !important;
+  box-shadow: var(--lp-shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(20px) saturate(148%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(148%) !important;
+}
+
+.pricing,
+.how,
+.faq,
+.about,
+.contact,
+.reviews,
+.seo-article,
+.activation-video,
+.header-mini-item,
+.header-cart-panel,
+.payment-method-modal__dialog,
+.product-preview-modal__dialog {
+  background: var(--lp-surface-main) !important;
+  border: 1px solid rgba(255, 255, 255, 0.62) !important;
+  box-shadow: var(--lp-shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.68) !important;
+  backdrop-filter: blur(18px) saturate(144%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(144%) !important;
+}
+
+.price-card,
+.how-card,
+.faq-item,
+.faq-sticky,
+.contact-card,
+.review,
+.cart-box,
+.cart-payment-method__card {
+  background: var(--lp-surface-card) !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  box-shadow: var(--lp-shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.74) !important;
+  backdrop-filter: blur(14px) saturate(135%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(135%) !important;
+}
+
+.price-card.featured {
+  border-color: rgba(122, 147, 255, 0.44) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.84) 0%,
+    rgba(234, 242, 255, 0.76) 100%
+  ) !important;
+  box-shadow:
+    0 14px 34px rgba(121, 144, 207, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
+.hero h1,
+.hero-react__top,
+.hero-react__word,
+.pricing-header h2,
+.faq-header h2,
+.how-title,
+.about h1,
+.contact h1,
+.reviews-header h1,
+.container h1,
+.price-card h3,
+.faq-question {
+  color: var(--lp-text) !important;
+}
+
+.hero p,
+.hero-react__description,
+.pricing-header p,
+.faq-header p,
+.how-card p,
+.about p,
+.contact p,
+.review-text,
+.faq-answer p,
+.faq-sticky p,
+.sub,
+.meta span,
+.price-card .price-card-features li,
+.price-card ul li {
+  color: var(--lp-text-soft) !important;
+}
+
+.price,
+.price-card__price-current {
+  color: #1b2436 !important;
+}
+
+.price-card__price-old {
+  color: #8d97aa !important;
+}
+
+.faq-item.active {
+  border-color: rgba(122, 147, 255, 0.5) !important;
+}
+
+.faq-icon {
+  border-color: rgba(118, 130, 153, 0.72) !important;
+}
+
+.faq-item.active .faq-icon {
+  border-color: #6f85ff !important;
+}
+
+.site-ticker,
+.site-ticker__stats {
+  border-color: rgba(255, 255, 255, 0.68) !important;
+  background: rgba(255, 255, 255, 0.52) !important;
+  box-shadow: 0 8px 18px rgba(31, 41, 55, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(14px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(130%) !important;
+}
+
+.site-ticker::before {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0),
+    rgba(122, 147, 255, 0.16),
+    rgba(255, 255, 255, 0)
+  ) !important;
+  opacity: 0.44 !important;
+}
+
+.site-ticker__lead,
+.site-ticker__item,
+.site-ticker__stat-label {
+  color: #5d6a83 !important;
+}
+
+.site-ticker__stat strong {
+  color: #232f46 !important;
+}
+
+.badge,
+.badge.best,
+.badge.new,
+.badge.hit,
+.badge.sale,
+.badge.popular,
+.badge.limited,
+.badge.gift,
+.badge.pro {
+  color: #32425f !important;
+  border-color: rgba(181, 197, 232, 0.62) !important;
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.78) 0%,
+    rgba(232, 240, 255, 0.72) 100%
+  ) !important;
+  box-shadow:
+    0 6px 16px rgba(76, 94, 136, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(10px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(130%) !important;
+}
+
+.btn:not(.secondary),
+.buy-btn,
+.faq-chat-btn,
+.product-preview-modal__pay {
+  border: 1px solid rgba(114, 139, 255, 0.44) !important;
+  background: linear-gradient(
+    145deg,
+    rgba(110, 131, 255, 0.92) 0%,
+    rgba(109, 172, 255, 0.92) 100%
+  ) !important;
+  color: #fbfcff !important;
+  box-shadow:
+    0 14px 28px rgba(91, 118, 191, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.44),
+    inset 0 -10px 16px rgba(74, 109, 202, 0.24) !important;
+  text-shadow: 0 1px 0 rgba(34, 52, 95, 0.24);
+}
+
+.btn:not(.secondary)::before,
+.buy-btn::before,
+.faq-chat-btn::before,
+.product-preview-modal__pay::before {
+  opacity: 0.94 !important;
+  background:
+    radial-gradient(
+      130% 76% at 12% 0%,
+      rgba(255, 255, 255, 0.74) 0%,
+      rgba(255, 255, 255, 0) 62%
+    ),
+    radial-gradient(
+      120% 120% at 88% 100%,
+      rgba(176, 203, 255, 0.42) 0%,
+      rgba(176, 203, 255, 0) 70%
+    ) !important;
+}
+
+.btn:not(.secondary):hover,
+.buy-btn:hover,
+.faq-chat-btn:hover,
+.product-preview-modal__pay:hover {
+  transform: translateY(-2px) !important;
+  filter: brightness(1.04) saturate(1.04) !important;
+  box-shadow:
+    0 16px 30px rgba(84, 111, 184, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -10px 16px rgba(75, 112, 204, 0.26) !important;
+}
+
+.btn.secondary,
+.product-preview-modal__promo-apply,
+.header-cart-panel__promo button,
+.header-mini-remove-btn,
+.payment-method-modal__close,
+.product-preview-modal__close {
+  border: 1px solid rgba(182, 196, 228, 0.64) !important;
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.74) 0%,
+    rgba(235, 242, 255, 0.68) 100%
+  ) !important;
+  color: #2a3750 !important;
+  box-shadow:
+    0 8px 18px rgba(76, 94, 136, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(12px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(130%) !important;
+}
+
+.btn.secondary:hover,
+.product-preview-modal__promo-apply:hover,
+.header-cart-panel__promo button:hover,
+.header-mini-remove-btn:hover,
+.payment-method-modal__close:hover,
+.product-preview-modal__close:hover {
+  transform: translateY(-1px) !important;
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.86) 0%,
+    rgba(238, 245, 255, 0.8) 100%
+  ) !important;
+  border-color: rgba(168, 184, 221, 0.74) !important;
+}
+
+.product-preview-modal__checkout,
+.seo-related {
+  background: rgba(255, 255, 255, 0.56) !important;
+}
+
+.page-overlay {
+  background: rgba(29, 39, 57, 0.24) !important;
+}
+
+.product-preview-modal__field-input,
+.header-cart-panel__promo input,
+.header-cart-panel__email input,
+.cart-email input {
+  border: 1px solid rgba(182, 197, 228, 0.66) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  color: #1f2a3d !important;
+}
+
+.product-preview-modal__field-input::placeholder,
+.header-cart-panel__promo input::placeholder,
+.header-cart-panel__email input::placeholder,
+.cart-email input::placeholder {
+  color: #8692a8 !important;
+}
+
+footer {
+  border-top: 1px solid rgba(182, 198, 230, 0.52) !important;
+  background: rgba(255, 255, 255, 0.42) !important;
+  color: #66748d !important;
+  backdrop-filter: blur(12px) saturate(126%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(126%) !important;
+}
+
+footer .footer-link {
+  color: #566684 !important;
+}
+
+footer .footer-link:hover {
+  color: #2d3d5b !important;
+}
+
+@keyframes lpFloatA {
+  0% { transform: translate3d(-2%, -1%, 0) scale(1); }
+  50% { transform: translate3d(2%, 2%, 0) scale(1.04); }
+  100% { transform: translate3d(3%, -2%, 0) scale(1.03); }
+}
+
+@keyframes lpFloatB {
+  0% { transform: translate3d(2%, -2%, 0) scale(1); }
+  50% { transform: translate3d(-2%, 2%, 0) scale(1.04); }
+  100% { transform: translate3d(-3%, -1%, 0) scale(1.03); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after,
+  .home-gradient-bg__layer,
+  .home-gradient-bg__pointer {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
 
