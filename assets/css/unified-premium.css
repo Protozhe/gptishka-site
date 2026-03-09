@@ -3893,7 +3893,7 @@ footer {
   --gradient-fifth: 198, 214, 255;
   --gradient-pointer: 166, 188, 255;
   --gradient-size: min(92vmax, 1220px);
-  --gradient-blending: soft-light;
+  --gradient-blending: hard-light;
 }
 
 html,
@@ -3911,7 +3911,7 @@ body::after {
 .home-gradient-bg {
   position: fixed !important;
   inset: -12% -8% -12% -8% !important;
-  z-index: -4 !important;
+  z-index: 0 !important;
   pointer-events: none !important;
   overflow: hidden !important;
   --home-pointer-x: 0px;
