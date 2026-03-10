@@ -154,7 +154,6 @@
     var text = en
       ? {
           rootLabel: "Support mascot",
-          supportAria: "Open support in Telegram",
           panelTitle: "Need help?",
           panelText: "Write to support, we will help you with activation.",
           panelMeta: "Average response: ~5 minutes",
@@ -165,7 +164,6 @@
         }
       : {
           rootLabel: "Кот-помощник",
-          supportAria: "Открыть поддержку в Telegram",
           panelTitle: "Нужна помощь?",
           panelText: "Напишите нам в поддержку — поможем с подключением.",
           panelMeta: "Средний ответ: ~5 минут",
@@ -182,23 +180,18 @@
     root.setAttribute("aria-label", text.rootLabel);
 
     root.innerHTML =
-      '<a class="support-widget__fab" href="' + SUPPORT_URL + '" target="_blank" rel="noopener noreferrer" aria-label="' + escapeHtml(text.supportAria) + '">' +
-        '<span class="support-widget__fab-icon" aria-hidden="true">' +
-          '<img class="support-widget__fab-mascot" src="/assets/img/assistant-cat-left.gif" alt="" width="112" height="168" loading="lazy" decoding="async" />' +
-        '</span>' +
-      '</a>' +
-      '<div class="support-widget__float-stack" aria-hidden="true">' +
-        '<a class="support-widget__resume-bubble" data-resume-bubble hidden></a>' +
-        '<div class="support-widget__panel">' +
-          '<h3 class="support-widget__title">' + escapeHtml(text.panelTitle) + '</h3>' +
-          '<p class="support-widget__text">' + escapeHtml(text.panelText) + '</p>' +
-          '<p class="support-widget__meta">' + escapeHtml(text.panelMeta) + '</p>' +
-          '<a class="support-widget__cta" href="' + SUPPORT_URL + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(text.panelCta) + '</a>' +
-        '</div>' +
+      '<div class="support-widget__mascot" aria-hidden="true">' +
+        '<img class="support-widget__mascot-image" src="/assets/img/assistant-cat-left.gif" alt="" width="112" height="168" loading="lazy" decoding="async" />' +
+      '</div>' +
+      '<a class="support-widget__resume-bubble" data-resume-bubble hidden></a>' +
+      '<div class="support-widget__panel">' +
+        '<h3 class="support-widget__title">' + escapeHtml(text.panelTitle) + '</h3>' +
+        '<p class="support-widget__text">' + escapeHtml(text.panelText) + '</p>' +
+        '<p class="support-widget__meta">' + escapeHtml(text.panelMeta) + '</p>' +
+        '<a class="support-widget__cta" href="' + SUPPORT_URL + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(text.panelCta) + '</a>' +
       '</div>';
 
-    var fab = root.querySelector(".support-widget__fab");
-    var stack = root.querySelector(".support-widget__float-stack");
+    var mascot = root.querySelector(".support-widget__mascot");
     var panel = root.querySelector(".support-widget__panel");
     var cta = root.querySelector(".support-widget__cta");
     var bubble = root.querySelector("[data-resume-bubble]");
@@ -231,12 +224,6 @@
         closePanel();
       }
     });
-
-    if (fab) {
-      fab.addEventListener("click", function () {
-        trackWidgetEvent("support_widget_click", { source: "mascot_fab" });
-      });
-    }
 
     if (cta) {
       cta.addEventListener("click", function () {
@@ -276,29 +263,25 @@
       root.style.height = isMobile ? "140px" : "168px";
       root.style.pointerEvents = "auto";
 
-      if (fab) {
-        fab.style.position = "absolute";
-        fab.style.right = "0";
-        fab.style.bottom = "0";
-        fab.style.width = isMobile ? "92px" : "112px";
-        fab.style.height = isMobile ? "140px" : "168px";
-      }
-
-      if (stack) {
-        stack.style.position = "absolute";
-        stack.style.right = isMobile ? "78px" : "96px";
-        stack.style.bottom = isMobile ? "14px" : "20px";
-        stack.style.display = "grid";
-        stack.style.gap = isMobile ? "8px" : "10px";
+      if (mascot) {
+        mascot.style.position = "absolute";
+        mascot.style.right = "0";
+        mascot.style.bottom = "0";
+        mascot.style.width = isMobile ? "92px" : "112px";
+        mascot.style.height = isMobile ? "140px" : "168px";
       }
 
       if (panel) {
-        panel.style.position = "relative";
+        panel.style.position = "absolute";
+        panel.style.right = isMobile ? "78px" : "96px";
+        panel.style.bottom = isMobile ? "14px" : "20px";
         panel.style.display = "none";
       }
 
       if (bubble) {
-        bubble.style.position = "relative";
+        bubble.style.position = "absolute";
+        bubble.style.right = isMobile ? "12px" : "18px";
+        bubble.style.bottom = isMobile ? "124px" : "152px";
       }
     }
 
