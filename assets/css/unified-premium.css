@@ -5286,4 +5286,44 @@ main.page > .soft-reveal-item.is-soft-visible {
   transform: none !important;
 }
 
+/* Softer hover for payment system choices */
+.payment-method-modal__option:hover {
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(244, 249, 255, 0.92) 100%
+  ) !important;
+  border-color: rgba(150, 172, 208, 0.56) !important;
+  box-shadow:
+    0 8px 18px rgba(28, 45, 78, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88) !important;
+  filter: none !important;
+}
+
+/* Product card modal close button alignment guard */
+.product-preview-modal {
+  z-index: 12000 !important;
+}
+
+.product-preview-modal__dialog {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.product-preview-modal__head {
+  padding-right: 44px !important;
+}
+
+.product-preview-modal__close {
+  position: absolute !important;
+  top: 12px !important;
+  right: 12px !important;
+  left: auto !important;
+  inset-inline-start: auto !important;
+  inset-inline-end: 12px !important;
+  margin: 0 !important;
+  z-index: 3 !important;
+  transform: none !important;
+}
+
 
