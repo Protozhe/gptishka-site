@@ -18,6 +18,16 @@
   transition: opacity 220ms ease, transform 220ms ease;
 }
 
+#gptishka-support-widget.support-widget {
+  position: fixed !important;
+  right: 20px !important;
+  bottom: 20px !important;
+  left: auto !important;
+  top: auto !important;
+  margin: 0 !important;
+  z-index: 10050 !important;
+}
+
 .support-widget.is-visible {
   opacity: 1;
   transform: translateY(0) scale(1);
@@ -185,7 +195,8 @@
 }
 
 .support-widget:hover .support-widget__panel,
-.support-widget:focus-within .support-widget__panel {
+.support-widget:focus-within .support-widget__panel,
+.support-widget.is-open .support-widget__panel {
   opacity: 1;
   transform: translateY(0) scale(1);
   pointer-events: auto;
@@ -270,6 +281,11 @@
     bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     width: 92px;
     height: 140px;
+  }
+
+  #gptishka-support-widget.support-widget {
+    right: 10px !important;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   .support-widget .support-widget__fab,

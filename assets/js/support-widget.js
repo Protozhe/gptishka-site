@@ -198,17 +198,39 @@
       '</div>';
 
     var fab = root.querySelector(".support-widget__fab");
+    var stack = root.querySelector(".support-widget__float-stack");
+    var panel = root.querySelector(".support-widget__panel");
     var cta = root.querySelector(".support-widget__cta");
     var bubble = root.querySelector("[data-resume-bubble]");
 
+    applyFallbackLayout();
+
     var panelTracked = false;
-    var onPanelOpen = function () {
+    var onPanelOpenTrack = function () {
       if (panelTracked) return;
       panelTracked = true;
       trackWidgetEvent("support_widget_open");
     };
-    root.addEventListener("mouseenter", onPanelOpen, { passive: true });
-    root.addEventListener("focusin", onPanelOpen);
+
+    var openPanel = function () {
+      root.classList.add("is-open");
+      if (panel) panel.style.display = "block";
+      onPanelOpenTrack();
+    };
+
+    var closePanel = function () {
+      root.classList.remove("is-open");
+      if (panel) panel.style.display = "none";
+    };
+
+    root.addEventListener("mouseenter", openPanel);
+    root.addEventListener("mouseleave", closePanel);
+    root.addEventListener("focusin", openPanel);
+    root.addEventListener("focusout", function () {
+      if (!root.contains(document.activeElement)) {
+        closePanel();
+      }
+    });
 
     if (fab) {
       fab.addEventListener("click", function () {
@@ -236,6 +258,48 @@
           source: "mascot_prompt"
         });
       });
+    }
+
+    function applyFallbackLayout() {
+      var isMobile = typeof window.matchMedia === "function"
+        ? window.matchMedia("(max-width: 640px)").matches
+        : window.innerWidth <= 640;
+
+      root.style.position = "fixed";
+      root.style.right = isMobile ? "10px" : "20px";
+      root.style.bottom = isMobile ? "10px" : "20px";
+      root.style.left = "auto";
+      root.style.top = "auto";
+      root.style.margin = "0";
+      root.style.zIndex = "10050";
+      root.style.width = isMobile ? "92px" : "112px";
+      root.style.height = isMobile ? "140px" : "168px";
+      root.style.pointerEvents = "auto";
+
+      if (fab) {
+        fab.style.position = "absolute";
+        fab.style.right = "0";
+        fab.style.bottom = "0";
+        fab.style.width = isMobile ? "92px" : "112px";
+        fab.style.height = isMobile ? "140px" : "168px";
+      }
+
+      if (stack) {
+        stack.style.position = "absolute";
+        stack.style.right = isMobile ? "78px" : "96px";
+        stack.style.bottom = isMobile ? "14px" : "20px";
+        stack.style.display = "grid";
+        stack.style.gap = isMobile ? "8px" : "10px";
+      }
+
+      if (panel) {
+        panel.style.position = "relative";
+        panel.style.display = "none";
+      }
+
+      if (bubble) {
+        bubble.style.position = "relative";
+      }
     }
 
     return root;
