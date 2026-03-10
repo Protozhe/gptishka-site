@@ -172,6 +172,8 @@
           resumeCta: "Продолжить активацию",
           resumeAria: "Продолжить активацию заказа"
         };
+    var resumeCancelLabel = en ? "Cancel" : "Отменить";
+    var resumeCancelAria = en ? "Dismiss activation reminder" : "Скрыть напоминание об активации";
 
     var root = document.createElement("aside");
     root.id = WIDGET_ID;
@@ -183,7 +185,13 @@
       '<div class="support-widget__mascot" aria-hidden="true">' +
         '<img class="support-widget__mascot-image" src="/assets/img/assistant-cat-left.gif" alt="" width="112" height="168" loading="lazy" decoding="async" />' +
       '</div>' +
-      '<a class="support-widget__resume-bubble" data-resume-bubble hidden></a>' +
+      '<div class="support-widget__resume-bubble" data-resume-bubble hidden>' +
+        '<span class="support-widget__resume-text" data-resume-text></span>' +
+        '<div class="support-widget__resume-actions">' +
+          '<a class="support-widget__resume-link" data-resume-continue></a>' +
+          '<button class="support-widget__resume-cancel" type="button" data-resume-cancel></button>' +
+        '</div>' +
+      '</div>' +
       '<div class="support-widget__panel">' +
         '<h3 class="support-widget__title">' + escapeHtml(text.panelTitle) + '</h3>' +
         '<p class="support-widget__text">' + escapeHtml(text.panelText) + '</p>' +
@@ -195,6 +203,9 @@
     var panel = root.querySelector(".support-widget__panel");
     var cta = root.querySelector(".support-widget__cta");
     var bubble = root.querySelector("[data-resume-bubble]");
+    var resumeText = root.querySelector("[data-resume-text]");
+    var resumeContinue = root.querySelector("[data-resume-continue]");
+    var resumeCancel = root.querySelector("[data-resume-cancel]");
 
     applyFallbackLayout();
 
@@ -205,25 +216,50 @@
       trackWidgetEvent("support_widget_open");
     };
 
+    var closeTimer = 0;
+    var clearCloseTimer = function () {
+      if (!closeTimer) return;
+      window.clearTimeout(closeTimer);
+      closeTimer = 0;
+    };
+
     var openPanel = function () {
+      clearCloseTimer();
       root.classList.add("is-open");
       if (panel) panel.style.display = "block";
       onPanelOpenTrack();
     };
 
     var closePanel = function () {
+      clearCloseTimer();
       root.classList.remove("is-open");
       if (panel) panel.style.display = "none";
     };
 
-    root.addEventListener("mouseenter", openPanel);
-    root.addEventListener("mouseleave", closePanel);
-    root.addEventListener("focusin", openPanel);
-    root.addEventListener("focusout", function () {
-      if (!root.contains(document.activeElement)) {
+    var requestClosePanel = function () {
+      clearCloseTimer();
+      closeTimer = window.setTimeout(function () {
+        closeTimer = 0;
+        if (panel && panel.matches(":hover")) return;
         closePanel();
-      }
-    });
+      }, 90);
+    };
+
+    if (mascot) {
+      mascot.addEventListener("mouseenter", openPanel);
+      mascot.addEventListener("mouseleave", requestClosePanel);
+    }
+
+    if (panel) {
+      panel.addEventListener("mouseenter", openPanel);
+      panel.addEventListener("mouseleave", requestClosePanel);
+      panel.addEventListener("focusin", openPanel);
+      panel.addEventListener("focusout", function () {
+        if (!panel.contains(document.activeElement)) {
+          requestClosePanel();
+        }
+      });
+    }
 
     if (cta) {
       cta.addEventListener("click", function () {
@@ -232,16 +268,28 @@
     }
 
     var resumeUrl = resolveActivationResumeUrl();
-    if (bubble && resumeUrl) {
-      bubble.href = resumeUrl;
+    if (bubble && resumeText && resumeContinue && resumeCancel && resumeUrl) {
       bubble.hidden = false;
       bubble.classList.add("is-visible");
-      bubble.setAttribute("aria-label", text.resumeAria);
-      bubble.innerHTML =
-        '<span class="support-widget__resume-text">' + escapeHtml(text.resumeLead) + '</span>' +
-        '<span class="support-widget__resume-cta">' + escapeHtml(text.resumeCta) + '</span>';
-      bubble.addEventListener("click", function () {
+      resumeText.textContent = text.resumeLead;
+      resumeContinue.textContent = text.resumeCta;
+      resumeContinue.href = resumeUrl;
+      resumeContinue.setAttribute("aria-label", text.resumeAria);
+      resumeCancel.textContent = resumeCancelLabel;
+      resumeCancel.setAttribute("aria-label", resumeCancelAria);
+
+      resumeContinue.addEventListener("click", function () {
         trackWidgetEvent("resume_activation_click", {
+          source: "mascot_prompt"
+        });
+      });
+
+      resumeCancel.addEventListener("click", function (event) {
+        event.preventDefault();
+        clearStoredActivationResumeContext();
+        bubble.classList.remove("is-visible");
+        bubble.hidden = true;
+        trackWidgetEvent("resume_activation_dismiss", {
           source: "mascot_prompt"
         });
       });
@@ -274,7 +322,7 @@
       if (panel) {
         panel.style.position = "absolute";
         panel.style.right = isMobile ? "78px" : "96px";
-        panel.style.bottom = isMobile ? "14px" : "20px";
+        panel.style.bottom = isMobile ? "154px" : "192px";
         panel.style.display = "none";
       }
 
