@@ -67,7 +67,7 @@
       localStorage.removeItem(ACTIVATION_LAST_ORDER_ID_KEY);
       localStorage.removeItem(ACTIVATION_RESUME_URL_KEY);
       localStorage.removeItem(ACTIVATION_RESUME_SAVED_AT_KEY);
-    } catch (_e) {
+    } catch (_) {
       // localStorage may be blocked in privacy mode.
     }
   }
@@ -94,7 +94,7 @@
             var urlToken = String(parsed.searchParams.get("t") || "").trim();
             if (!orderId && urlOrderId) orderId = urlOrderId;
             if (!token && urlToken) token = urlToken;
-          } catch (_e) {
+          } catch (_) {
             // Ignore malformed URLs in storage.
           }
         }
@@ -106,7 +106,7 @@
       }
 
       return { orderId: orderId, token: token };
-    } catch (_e) {
+    } catch (_) {
       return { orderId: "", token: "" };
     }
   }
@@ -151,31 +151,74 @@
     if (document.getElementById(WIDGET_ID)) return null;
 
     var en = isEnPage();
-    var bubbleLead = en
-      ? "Looks like you forgot to finish activation."
-      : "Похоже, вы забыли завершить активацию.";
-    var bubbleCta = en ? "Resume activation" : "Продолжить активацию";
+    var text = en
+      ? {
+          rootLabel: "Support mascot",
+          supportAria: "Open support in Telegram",
+          panelTitle: "Need help?",
+          panelText: "Write to support, we will help you with activation.",
+          panelMeta: "Average response: ~5 minutes",
+          panelCta: "Write in Telegram",
+          resumeLead: "Looks like you forgot to finish activation.",
+          resumeCta: "Resume activation",
+          resumeAria: "Resume order activation"
+        }
+      : {
+          rootLabel: "Кот-помощник",
+          supportAria: "Открыть поддержку в Telegram",
+          panelTitle: "Нужна помощь?",
+          panelText: "Напишите нам в поддержку — поможем с подключением.",
+          panelMeta: "Средний ответ: ~5 минут",
+          panelCta: "Написать в Telegram",
+          resumeLead: "Похоже, вы забыли завершить активацию.",
+          resumeCta: "Продолжить активацию",
+          resumeAria: "Продолжить активацию заказа"
+        };
 
     var root = document.createElement("aside");
     root.id = WIDGET_ID;
     root.className = "support-widget";
     root.setAttribute("role", "complementary");
-    root.setAttribute("aria-label", en ? "Support mascot" : "Кот-помощник");
+    root.setAttribute("aria-label", text.rootLabel);
 
     root.innerHTML =
-      '<a class="support-widget__fab" href="' + SUPPORT_URL + '" target="_blank" rel="noopener noreferrer" aria-label="' + (en ? "Open support in Telegram" : "Открыть поддержку в Telegram") + '">' +
+      '<a class="support-widget__fab" href="' + SUPPORT_URL + '" target="_blank" rel="noopener noreferrer" aria-label="' + escapeHtml(text.supportAria) + '">' +
         '<span class="support-widget__fab-icon" aria-hidden="true">' +
-          '<img class="support-widget__fab-mascot" src="/assets/img/assistant-cat-left.gif" alt="" width="80" height="120" loading="lazy" decoding="async" />' +
+          '<img class="support-widget__fab-mascot" src="/assets/img/assistant-cat-left.gif" alt="" width="112" height="168" loading="lazy" decoding="async" />' +
         '</span>' +
       '</a>' +
-      '<a class="support-widget__resume-bubble" data-resume-bubble hidden></a>';
+      '<div class="support-widget__float-stack" aria-hidden="true">' +
+        '<a class="support-widget__resume-bubble" data-resume-bubble hidden></a>' +
+        '<div class="support-widget__panel">' +
+          '<h3 class="support-widget__title">' + escapeHtml(text.panelTitle) + '</h3>' +
+          '<p class="support-widget__text">' + escapeHtml(text.panelText) + '</p>' +
+          '<p class="support-widget__meta">' + escapeHtml(text.panelMeta) + '</p>' +
+          '<a class="support-widget__cta" href="' + SUPPORT_URL + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(text.panelCta) + '</a>' +
+        '</div>' +
+      '</div>';
 
     var fab = root.querySelector(".support-widget__fab");
+    var cta = root.querySelector(".support-widget__cta");
     var bubble = root.querySelector("[data-resume-bubble]");
+
+    var panelTracked = false;
+    var onPanelOpen = function () {
+      if (panelTracked) return;
+      panelTracked = true;
+      trackWidgetEvent("support_widget_open");
+    };
+    root.addEventListener("mouseenter", onPanelOpen, { passive: true });
+    root.addEventListener("focusin", onPanelOpen);
 
     if (fab) {
       fab.addEventListener("click", function () {
-        trackWidgetEvent("support_widget_click");
+        trackWidgetEvent("support_widget_click", { source: "mascot_fab" });
+      });
+    }
+
+    if (cta) {
+      cta.addEventListener("click", function () {
+        trackWidgetEvent("support_widget_click", { source: "panel_cta" });
       });
     }
 
@@ -184,10 +227,10 @@
       bubble.href = resumeUrl;
       bubble.hidden = false;
       bubble.classList.add("is-visible");
-      bubble.setAttribute("aria-label", en ? "Resume order activation" : "Продолжить активацию заказа");
+      bubble.setAttribute("aria-label", text.resumeAria);
       bubble.innerHTML =
-        '<span class="support-widget__resume-text">' + escapeHtml(bubbleLead) + '</span>' +
-        '<span class="support-widget__resume-cta">' + escapeHtml(bubbleCta) + '</span>';
+        '<span class="support-widget__resume-text">' + escapeHtml(text.resumeLead) + '</span>' +
+        '<span class="support-widget__resume-cta">' + escapeHtml(text.resumeCta) + '</span>';
       bubble.addEventListener("click", function () {
         trackWidgetEvent("resume_activation_click", {
           source: "mascot_prompt"
