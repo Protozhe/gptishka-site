@@ -322,14 +322,14 @@
       if (panel) {
         panel.style.position = "absolute";
         panel.style.right = isMobile ? "78px" : "96px";
-        panel.style.bottom = isMobile ? "154px" : "192px";
+        panel.style.bottom = isMobile ? "16px" : "22px";
         panel.style.display = "none";
       }
 
       if (bubble) {
         bubble.style.position = "absolute";
         bubble.style.right = isMobile ? "12px" : "18px";
-        bubble.style.bottom = isMobile ? "124px" : "152px";
+        bubble.style.bottom = isMobile ? "148px" : "188px";
       }
     }
 
