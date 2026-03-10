@@ -5260,4 +5260,30 @@ main.page > .soft-reveal-item.is-soft-visible {
   }
 }
 
+/* Payment method modal final alignment guard */
+.payment-method-modal {
+  z-index: 12000 !important;
+}
+
+.payment-method-modal__dialog {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.payment-method-modal__title {
+  padding-right: 42px !important;
+}
+
+.payment-method-modal__close {
+  position: absolute !important;
+  top: 12px !important;
+  right: 12px !important;
+  left: auto !important;
+  inset-inline-start: auto !important;
+  inset-inline-end: 12px !important;
+  margin-left: 0 !important;
+  z-index: 3 !important;
+  transform: none !important;
+}
+
 

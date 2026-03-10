@@ -991,11 +991,13 @@ function initActivationResumeShortcut() {
       });
     }
 
+    resetPaymentMethodModalUi();
+  }
+
+  function resetPaymentMethodModalUi() {
     cartPaymentModalOptions.forEach(option => {
-      const optionMethod = normalizePaymentMethod(option.getAttribute("data-payment-method-modal-option") || "");
-      const isActive = optionMethod === selected;
-      option.classList.toggle("is-active", isActive);
-      option.setAttribute("aria-pressed", isActive ? "true" : "false");
+      option.classList.remove("is-active");
+      option.setAttribute("aria-pressed", "false");
     });
   }
 
@@ -1008,7 +1010,7 @@ function initActivationResumeShortcut() {
 
   function openPaymentMethodModal() {
     if (!cartPaymentModalEl) return;
-    syncPaymentMethodUi();
+    resetPaymentMethodModalUi();
     cartPaymentModalEl.hidden = false;
     cartPaymentModalEl.setAttribute("aria-hidden", "false");
     document.body.classList.add("is-payment-modal-open");
