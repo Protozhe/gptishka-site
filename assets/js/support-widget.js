@@ -110,9 +110,7 @@
     root.innerHTML =
       '<button class="support-widget__fab" type="button" aria-label="Открыть поддержку">' +
         '<span class="support-widget__fab-icon" aria-hidden="true">' +
-          '<svg viewBox="0 0 24 24" width="22" height="22" focusable="false" aria-hidden="true">' +
-            '<path fill="currentColor" d="M12 3c-4.96 0-9 3.58-9 8 0 2.2.99 4.22 2.63 5.67L4.5 21l4.88-2.2c.84.19 1.72.29 2.62.29 4.96 0 9-3.58 9-8s-4.04-8-9-8zm0 14.09c-.84 0-1.66-.1-2.43-.3l-.71-.18-2.18.98.5-2.08-.48-.44C5.45 14.01 5 12.99 5 11c0-3.31 3.14-6 7-6s7 2.69 7 6-3.14 6.09-7 6.09z"/>' +
-          '</svg>' +
+          '<img class="support-widget__fab-mascot" src="/assets/img/assistant-cat-left.gif" alt="" width="80" height="120" loading="lazy" decoding="async" />' +
         '</span>' +
       '</button>' +
       '<div class="support-widget__panel">' +
