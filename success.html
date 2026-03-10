@@ -9,6 +9,18 @@
 <link rel="icon" href="/favicon.ico" sizes="any" />
 <link rel="shortcut icon" href="/favicon.ico" />
 <link rel="apple-touch-icon" href="/assets/img/logo.png" />
+<style>
+  /* Defensive fallback: never render support widgets on payment status pages. */
+  #gptishka-support-widget,
+  .support-widget,
+  .gptishka-support-widget,
+  [data-support-widget],
+  [data-widget="support"],
+  img[src*="assistant-cat-left"],
+  img[src*="assistant-cat"] {
+    display: none !important;
+  }
+</style>
 </head>
 <body class="status-page status-page--center">
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
@@ -42,6 +54,24 @@
     const emailMaskedEl = document.getElementById("emailMasked");
     const amountEl = document.getElementById("amount");
     const statusEl = document.getElementById("statusText");
+    const SUPPORT_WIDGET_SELECTORS = [
+      "#gptishka-support-widget",
+      ".support-widget",
+      ".gptishka-support-widget",
+      "[data-support-widget]",
+      "[data-widget='support']",
+      ".assistant-widget",
+      ".gptishka-assistant-widget",
+    ];
+
+    removeInjectedSupportUi();
+    const supportObserver = new MutationObserver(() => {
+      removeInjectedSupportUi();
+    });
+    supportObserver.observe(document.documentElement, { childList: true, subtree: true });
+    setTimeout(() => {
+      supportObserver.disconnect();
+    }, 35000);
 
     if (!orderId) {
       orderIdEl.textContent = "не найден";
@@ -179,6 +209,28 @@
       } catch (_) {
         // Ignore event dispatch failures.
       }
+    }
+
+    function removeInjectedSupportUi() {
+      const selector = SUPPORT_WIDGET_SELECTORS.join(",");
+      if (selector) {
+        document.querySelectorAll(selector).forEach((node) => node.remove());
+      }
+
+      document.querySelectorAll('img[src*="assistant-cat-left"], img[src*="assistant-cat"]').forEach((img) => {
+        const host = img.closest("aside, section, article, div");
+        if (host && !host.classList.contains("status-card")) {
+          host.remove();
+          return;
+        }
+        img.remove();
+      });
+
+      document.querySelectorAll('a[href*="t.me/gptishkasupp"]').forEach((link) => {
+        const host = link.closest("aside, section, article, div");
+        if (!host || host.classList.contains("status-card")) return;
+        host.remove();
+      });
     }
 
     function formatAmount(value) {
