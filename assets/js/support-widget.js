@@ -206,6 +206,13 @@
     var resumeText = root.querySelector("[data-resume-text]");
     var resumeContinue = root.querySelector("[data-resume-continue]");
     var resumeCancel = root.querySelector("[data-resume-cancel]");
+    var bubbleClosedBottom = "188px";
+    var bubbleOpenBottom = "280px";
+
+    var setBubbleBottom = function (isOpen) {
+      if (!bubble || bubble.hidden) return;
+      bubble.style.bottom = isOpen ? bubbleOpenBottom : bubbleClosedBottom;
+    };
 
     applyFallbackLayout();
 
@@ -227,6 +234,7 @@
       clearCloseTimer();
       root.classList.add("is-open");
       if (panel) panel.style.display = "block";
+      setBubbleBottom(true);
       onPanelOpenTrack();
     };
 
@@ -234,6 +242,7 @@
       clearCloseTimer();
       root.classList.remove("is-open");
       if (panel) panel.style.display = "none";
+      setBubbleBottom(false);
     };
 
     var requestClosePanel = function () {
@@ -329,7 +338,9 @@
       if (bubble) {
         bubble.style.position = "absolute";
         bubble.style.right = isMobile ? "12px" : "18px";
-        bubble.style.bottom = isMobile ? "148px" : "188px";
+        bubbleClosedBottom = isMobile ? "148px" : "188px";
+        bubbleOpenBottom = isMobile ? "246px" : "280px";
+        setBubbleBottom(root.classList.contains("is-open"));
       }
     }
 

@@ -82,7 +82,7 @@
   transform: translateY(8px) scale(0.98);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+  transition: opacity 220ms ease, transform 220ms ease, box-shadow 220ms ease, bottom 240ms ease;
 }
 
 .support-widget__resume-bubble[hidden] {
