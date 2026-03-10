@@ -683,6 +683,63 @@
       color: #9c312f !important;
     }
 
+    .redeem-leave-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 24000;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+    }
+
+    .redeem-leave-modal[hidden] {
+      display: none !important;
+    }
+
+    .redeem-leave-modal__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(12, 22, 36, 0.42);
+      backdrop-filter: blur(8px) saturate(122%);
+      -webkit-backdrop-filter: blur(8px) saturate(122%);
+    }
+
+    .redeem-leave-modal__dialog {
+      position: relative;
+      width: min(460px, 100%);
+      border-radius: 18px;
+      border: 1px solid rgba(184, 198, 224, 0.62);
+      background: linear-gradient(156deg, rgba(255, 255, 255, 0.95), rgba(246, 251, 255, 0.9));
+      box-shadow:
+        0 24px 48px rgba(12, 24, 38, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.86);
+      padding: 18px 18px 16px;
+    }
+
+    .redeem-leave-modal__title {
+      margin: 0;
+      color: #14263b;
+      font-size: clamp(20px, 3.2vw, 24px);
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      font-weight: 700;
+    }
+
+    .redeem-leave-modal__text {
+      margin: 10px 0 0;
+      color: #53667c;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .redeem-leave-modal__actions {
+      margin-top: 16px;
+      display: flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
     @media (max-width: 640px) {
       body.redeem-flow .redeem-page {
         padding: 14px 10px 0 !important;
@@ -898,12 +955,142 @@
     let tokenValidatedOk = false;
     let lastValidateReason = '';
     let isCredentialsDelivery = false;
+    let activationCompleted = false;
+    let leaveGuardBypass = false;
+    let leaveConfirmModalEl = null;
+    let leaveConfirmProceedBtn = null;
+    let leaveConfirmCancelBtn = null;
+    let pendingLeaveHref = '';
 
     // By default, allow retry only after explicit failure or pending timeout.
     retryNewKeyBtn.disabled = true;
 
     const pollPauseKey = orderId ? `gptishka_activation_poll_paused:${orderId}` : '';
     const reviewRewardReadyKey = orderId ? `gptishka_review_reward_ready:${orderId}` : '';
+
+    const LEAVE_CONFIRM_TEXT = {
+      title: 'Are you sure you want to leave before subscription activation?',
+      subtitle: 'If you leave now, the activation flow may be interrupted. We recommend staying until the status is "Success".',
+      proceed: 'Yes, leave',
+      stay: 'No, stay',
+    };
+
+    function markActivationCompleted() {
+      activationCompleted = true;
+    }
+
+    function shouldBlockLeaving() {
+      if (leaveGuardBypass) return false;
+      if (!orderId) return false;
+      if (activationCompleted) return false;
+      return true;
+    }
+
+    function ensureLeaveConfirmModal() {
+      if (leaveConfirmModalEl) return;
+      const modal = document.createElement('div');
+      modal.className = 'redeem-leave-modal';
+      modal.hidden = true;
+      modal.innerHTML = [
+        '<div class="redeem-leave-modal__backdrop" data-redeem-leave-backdrop></div>',
+        '<div class="redeem-leave-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="redeemLeaveTitle">',
+        `  <h3 id="redeemLeaveTitle" class="redeem-leave-modal__title">${LEAVE_CONFIRM_TEXT.title}</h3>`,
+        `  <p class="redeem-leave-modal__text">${LEAVE_CONFIRM_TEXT.subtitle}</p>`,
+        '  <div class="redeem-leave-modal__actions">',
+        `    <button type="button" class="redeem-btn" data-redeem-leave-proceed>${LEAVE_CONFIRM_TEXT.proceed}</button>`,
+        `    <button type="button" class="redeem-btn redeem-btn-primary" data-redeem-leave-cancel>${LEAVE_CONFIRM_TEXT.stay}</button>`,
+        '  </div>',
+        '</div>',
+      ].join('');
+      document.body.appendChild(modal);
+      leaveConfirmModalEl = modal;
+      leaveConfirmProceedBtn = modal.querySelector('[data-redeem-leave-proceed]');
+      leaveConfirmCancelBtn = modal.querySelector('[data-redeem-leave-cancel]');
+      const backdrop = modal.querySelector('[data-redeem-leave-backdrop]');
+      if (backdrop) backdrop.addEventListener('click', closeLeaveConfirm);
+      if (leaveConfirmCancelBtn) leaveConfirmCancelBtn.addEventListener('click', closeLeaveConfirm);
+      if (leaveConfirmProceedBtn) leaveConfirmProceedBtn.addEventListener('click', proceedLeave);
+    }
+
+    function openLeaveConfirm(nextHref) {
+      ensureLeaveConfirmModal();
+      if (!leaveConfirmModalEl) return;
+      pendingLeaveHref = String(nextHref || '').trim();
+      leaveConfirmModalEl.hidden = false;
+      if (leaveConfirmCancelBtn) leaveConfirmCancelBtn.focus();
+    }
+
+    function closeLeaveConfirm() {
+      if (!leaveConfirmModalEl) return;
+      leaveConfirmModalEl.hidden = true;
+      pendingLeaveHref = '';
+    }
+
+    function proceedLeave() {
+      const nextHref = String(pendingLeaveHref || '').trim();
+      closeLeaveConfirm();
+      if (!nextHref) return;
+      leaveGuardBypass = true;
+      window.location.href = nextHref;
+    }
+
+    function setupLeaveGuard() {
+      document.addEventListener('click', (event) => {
+        const target = event.target;
+        const langItem = target && target.closest ? target.closest('.lang-item[data-lang]') : null;
+        if (langItem && shouldBlockLeaving()) {
+          const lang = String(langItem.getAttribute('data-lang') || '').trim().toLowerCase();
+          const currentUrl = new URL(window.location.href);
+          const isEnPath = currentUrl.pathname.startsWith('/en/');
+          let nextPath = currentUrl.pathname;
+          if (lang === 'en' && !isEnPath) nextPath = '/en/redeem-start.html';
+          if (lang === 'ru' && isEnPath) nextPath = '/redeem-start.html';
+          const nextHref = `${window.location.origin}${nextPath}${currentUrl.search}${currentUrl.hash}`;
+          if (nextHref !== window.location.href) {
+            event.preventDefault();
+            event.stopPropagation();
+            openLeaveConfirm(nextHref);
+            return;
+          }
+        }
+
+        const link = target && target.closest ? target.closest('a[href]') : null;
+        if (!link) return;
+        if (!shouldBlockLeaving()) return;
+        if (link.hasAttribute('data-redeem-leave-bypass')) return;
+        if (String(link.getAttribute('target') || '').toLowerCase() === '_blank') return;
+        if (link.hasAttribute('download')) return;
+
+        const href = String(link.getAttribute('href') || '').trim();
+        if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+
+        let nextUrl;
+        try {
+          nextUrl = new URL(href, window.location.href);
+        } catch (_) {
+          return;
+        }
+
+        if (
+          nextUrl.pathname === window.location.pathname &&
+          nextUrl.search === window.location.search &&
+          nextUrl.hash
+        ) {
+          return;
+        }
+        if (nextUrl.href === window.location.href) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        openLeaveConfirm(nextUrl.href);
+      }, true);
+
+      window.addEventListener('beforeunload', (event) => {
+        if (!shouldBlockLeaving()) return;
+        event.preventDefault();
+        event.returnValue = '';
+      });
+    }
 
     function isPollPaused() {
       if (!pollPauseKey) return false;
@@ -964,6 +1151,7 @@
       if (manualCredentialsHint) manualCredentialsHint.textContent = message;
 
       const hasCredentials = status === 'credentials_ready' && login && password;
+      if (hasCredentials) markActivationCompleted();
       if (manualSupportBtn) {
         manualSupportBtn.href = supportUrl || 'https://t.me/gptishkasupp';
         manualSupportBtn.style.display = hasCredentials ? 'none' : 'inline-flex';
@@ -1010,6 +1198,10 @@
     }
 
     document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && leaveConfirmModalEl && !leaveConfirmModalEl.hidden) {
+        closeLeaveConfirm();
+        return;
+      }
       if (event.key === 'Escape' && reviewRewardBox && !reviewRewardBox.hidden) {
         dismissReviewReward();
       }
@@ -1023,6 +1215,7 @@
           const url = new URL('/en/redeem-start.html', window.location.origin);
           url.searchParams.set('order_id', lastId);
           url.searchParams.set('t', lastToken);
+          leaveGuardBypass = true;
           window.location.replace(url.toString());
         }
       } catch (_) {}
@@ -1218,6 +1411,7 @@
         if (activationStatus === 'success') {
           currentTaskId = String(payload.taskId || '');
           renderTask(currentTaskId);
+          markActivationCompleted();
           setStatus('success', currentTaskId ? `Success. Task: ${currentTaskId}` : 'Activation completed successfully.', false);
           clearActivationResumeStorage();
           hideActionButtons();
@@ -1286,6 +1480,7 @@
 
         if (payload.success) {
           setStatus('success', `Success. Task: ${currentTaskId}`, false);
+          markActivationCompleted();
           clearActivationResumeStorage();
           hideActionButtons();
           showReviewReward();
@@ -1501,6 +1696,8 @@
         setStatus('error', 'Copy failed', false);
       }
     }
+
+    setupLeaveGuard();
   </script>
 <script src="/assets/js/support-widget.js?v=20260309b" defer></script>
 </body>
