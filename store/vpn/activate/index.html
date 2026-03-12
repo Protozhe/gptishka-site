@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex,nofollow" />
   <title>Активация VPN-доступа - GPTishka</title>
-  <meta name="description" content="Активация VPN-доступа GPTishka: подключите VPN за 1-2 минуты." />
+  <meta name="description" content="Подключите GPTishka VPN за 1-2 минуты: выберите устройство, вставьте ключ и включите подключение." />
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260312fix2" />
   <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260312fix2" />
@@ -17,15 +17,16 @@
     }
 
     .vpn-activation-wrap {
-      width: min(1180px, calc(100% - 24px));
-      margin: 16px auto 40px;
+      width: min(1100px, calc(100% - 24px));
+      margin: 10px auto 18px;
       display: grid;
-      gap: 10px;
+      gap: 8px;
     }
 
-    .vpn-activation-wrap .pricing,
-    .vpn-activation-wrap .price-card {
-      overflow: hidden;
+    .section-pad {
+      padding: 18px;
+      border-radius: 16px;
+      box-shadow: 0 10px 24px rgba(31, 39, 49, 0.08);
     }
 
     .text-limit {
@@ -38,244 +39,171 @@
       max-width: 100%;
     }
 
-    .section-pad {
-      padding: clamp(20px, 2.2vw, 24px);
-      border-radius: 16px;
-      box-shadow: 0 10px 26px rgba(31, 39, 49, 0.08);
-    }
-
-    .section-title {
+    .page-title {
       margin: 0 0 6px;
-      font-size: clamp(26px, 3.1vw, 38px);
-      line-height: 1.1;
-      letter-spacing: -0.02em;
+      font-size: clamp(22px, 2.2vw, 28px);
+      line-height: 1.15;
+      letter-spacing: -0.01em;
     }
 
     .step-title {
-      margin: 0 0 6px;
-      font-size: clamp(21px, 2.2vw, 30px);
-      line-height: 1.2;
+      margin: 0 0 8px;
+      font-size: 18px;
+      line-height: 1.25;
     }
 
-    .step-subtitle {
-      margin: 0;
-      color: var(--muted);
-      font-size: 15px;
+    .copy,
+    .copy li {
+      font-size: 14px;
       line-height: 1.55;
+      color: var(--muted);
+      margin: 0;
     }
 
     .hero-warning {
-      margin-top: 14px;
-      border: 1px solid rgba(231, 125, 79, 0.35);
-      border-radius: 14px;
-      padding: 12px 14px;
+      margin-top: 10px;
+      border: 1px solid rgba(231, 125, 79, 0.3);
+      border-radius: 12px;
+      padding: 10px 12px;
       background: linear-gradient(150deg, rgba(255, 251, 247, 0.94), rgba(255, 244, 233, 0.88));
       color: #6f3f1a;
-      line-height: 1.55;
-      font-size: 14px;
-    }
-
-    .device-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 12px;
-    }
-
-    .device-card {
-      border: 1px solid rgba(255, 255, 255, 0.66);
-      border-radius: 14px;
-      padding: 14px;
-      background: linear-gradient(145deg, rgba(255, 255, 255, 0.76), rgba(250, 241, 228, 0.44));
-      box-shadow: 0 8px 20px rgba(31, 39, 49, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-      cursor: pointer;
-      text-align: left;
-      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-      min-height: 96px;
-      display: grid;
-      gap: 8px;
-      justify-content: start;
-    }
-
-    .device-card:hover {
-      transform: translateY(-1px);
-    }
-
-    .device-card.is-active {
-      border-color: rgba(19, 138, 120, 0.45);
-      box-shadow: 0 14px 28px rgba(19, 138, 120, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-      background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(238, 252, 249, 0.86));
-    }
-
-    .device-title {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 800;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .device-sub {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
       line-height: 1.45;
     }
 
-    .device-icon {
-      width: 18px;
-      height: 18px;
-      fill: currentColor;
-      opacity: 0.92;
-      flex: 0 0 18px;
+    .vpn-main-grid {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 8px;
+      align-items: start;
     }
 
-    .guide-wrap {
+    .vpn-left-column,
+    .vpn-right-column {
       display: grid;
-      gap: 14px;
+      gap: 8px;
+    }
+
+    .device-pills {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      margin-bottom: 6px;
+    }
+
+    .device-pill {
+      border: 1px solid rgba(255, 255, 255, 0.68);
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(250, 241, 228, 0.46));
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+      white-space: nowrap;
+      box-shadow: 0 6px 14px rgba(31, 39, 49, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .device-pill:hover {
+      transform: translateY(-1px);
+    }
+
+    .device-pill.is-active {
+      border-color: rgba(19, 138, 120, 0.45);
+      box-shadow: 0 10px 20px rgba(19, 138, 120, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.94);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(238, 252, 249, 0.86));
     }
 
     .guide-intro {
-      border: 1px dashed rgba(19, 138, 120, 0.25);
+      border: 1px dashed rgba(19, 138, 120, 0.24);
       border-radius: 12px;
       padding: 10px 12px;
-      background: rgba(238, 252, 249, 0.76);
+      background: rgba(238, 252, 249, 0.75);
       color: #18534a;
       font-size: 14px;
-      line-height: 1.48;
+      line-height: 1.45;
     }
 
     .guide-card {
       display: none;
       border: 1px solid rgba(19, 138, 120, 0.22);
-      border-radius: 14px;
+      border-radius: 12px;
       padding: 12px;
-      background: rgba(255, 255, 255, 0.82);
-      box-shadow: 0 9px 22px rgba(31, 39, 49, 0.09);
-      gap: 10px;
+      background: rgba(255, 255, 255, 0.84);
+      box-shadow: 0 8px 18px rgba(31, 39, 49, 0.08);
+      max-height: 200px;
+      overflow: auto;
     }
 
     .guide-card.is-visible {
       display: grid;
+      gap: 10px;
     }
 
     .guide-top {
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
-    .guide-headline {
+    .guide-top h3 {
       margin: 0;
-      font-size: clamp(18px, 1.8vw, 22px);
+      font-size: 18px;
       line-height: 1.2;
-      letter-spacing: -0.01em;
     }
 
-    .guide-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(19, 138, 120, 0.26);
-      background: rgba(238, 252, 249, 0.8);
-      color: #155a52;
-      font-size: 13px;
+    .device-tag {
+      font-size: 12px;
       font-weight: 700;
+      color: #155a52;
+      border: 1px solid rgba(19, 138, 120, 0.24);
+      border-radius: 999px;
+      background: rgba(238, 252, 249, 0.8);
+      padding: 4px 10px;
     }
 
     .guide-actions {
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .guide-action-btn {
-      text-decoration: none;
-    }
-
-    .connect-steps {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 8px;
+      flex-wrap: wrap;
     }
 
-    .connect-step {
-      border: 1px solid rgba(205, 216, 224, 0.84);
-      border-radius: 12px;
-      padding: 8px;
-      background: rgba(255, 255, 255, 0.78);
-      display: grid;
-      gap: 6px;
-      align-content: start;
-      min-height: 92px;
-    }
-
-    .connect-step-num {
-      width: 24px;
-      height: 24px;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      font-weight: 800;
-      color: #fff;
-      background: linear-gradient(135deg, var(--primary), #0f8f80);
-      box-shadow: 0 6px 14px rgba(19, 138, 120, 0.28);
-    }
-
-    .connect-step p {
-      margin: 0;
-      font-size: 13px;
-      line-height: 1.38;
-      color: var(--text);
-    }
-
-    .mini-important {
+    .guide-steps {
       margin: 0;
       padding-left: 18px;
       display: grid;
-      gap: 4px;
+      gap: 6px;
+    }
+
+    .guide-steps li {
+      font-size: 14px;
+      line-height: 1.4;
       color: var(--text);
-      font-size: 13px;
-      line-height: 1.42;
     }
 
-    .key-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1.65fr) minmax(280px, 1fr);
-      gap: 10px;
-      align-items: start;
-    }
-
-    .key-main {
-      display: grid;
-      gap: 10px;
-    }
-
-    .vpn-key-shell {
+    .key-shell {
       border: 1px solid rgba(19, 138, 120, 0.24);
       border-radius: 14px;
-      padding: 12px;
+      padding: 10px;
       background: linear-gradient(150deg, rgba(255, 255, 255, 0.92), rgba(246, 252, 250, 0.86));
-      box-shadow: 0 10px 24px rgba(31, 39, 49, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.94);
+      box-shadow: 0 9px 20px rgba(31, 39, 49, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.94);
       backdrop-filter: blur(8px) saturate(116%);
       -webkit-backdrop-filter: blur(8px) saturate(116%);
     }
 
-    .vpn-key-scroll {
+    .key-scroll {
       overflow-x: auto;
       max-width: 100%;
     }
 
-    .vpn-key-value {
+    .key-value {
       margin: 0;
-      font: 600 14px/1.65 "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+      font: 600 13px/1.55 "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
       color: #1f2731;
       white-space: pre-wrap;
     }
@@ -284,31 +212,31 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+      margin-top: 8px;
+    }
+
+    .key-actions .btn {
+      min-height: 38px;
+      padding: 10px 14px;
+      font-size: 13px;
     }
 
     .key-soft-btn {
       border-color: rgba(19, 138, 120, 0.22) !important;
       background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(238, 252, 249, 0.86)) !important;
       color: #155a52 !important;
-      box-shadow: 0 10px 22px rgba(31, 39, 49, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.92);
-      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-    }
-
-    .key-soft-btn:hover {
-      transform: translateY(-1px);
-      border-color: rgba(19, 138, 120, 0.34) !important;
-      box-shadow: 0 14px 28px rgba(19, 138, 120, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      box-shadow: 0 8px 18px rgba(31, 39, 49, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.92);
     }
 
     .key-soft-btn:disabled {
       opacity: .65;
-      transform: none;
       box-shadow: none;
     }
 
     .key-feedback {
-      min-height: 22px;
-      font-size: 14px;
+      min-height: 20px;
+      margin-top: 8px;
+      font-size: 13px;
       color: var(--muted);
     }
 
@@ -337,9 +265,14 @@
     }
 
     .meta-grid {
+      margin-top: 8px;
       display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
-      height: 100%;
+    }
+
+    .meta-item-wide {
+      grid-column: 1 / -1;
     }
 
     .meta-item {
@@ -351,64 +284,58 @@
 
     .meta-item span {
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       color: var(--muted);
-      font-size: 13px;
-      line-height: 1.4;
+      font-size: 12px;
+      line-height: 1.35;
     }
 
     .meta-item strong {
       display: block;
-      font-size: 15px;
-      line-height: 1.45;
       color: var(--text);
+      font-size: 14px;
+      line-height: 1.4;
     }
 
-    .support-cta {
-      display: grid;
-      gap: 14px;
-      align-items: start;
+    .support-title {
+      margin: 0 0 10px;
+      font-size: 18px;
+      line-height: 1.25;
     }
 
-    @media (max-width: 1080px) {
-      .connect-steps {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .key-layout {
+    @media (max-width: 980px) {
+      .vpn-main-grid {
         grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 900px) {
-      .device-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 640px) {
+    @media (max-width: 720px) {
       .vpn-activation-wrap {
         width: calc(100% - 16px);
-        gap: 8px;
+        gap: 6px;
       }
 
-      .vpn-activation-wrap .pricing,
-      .vpn-activation-wrap .price-card,
       .section-pad {
         padding: 14px;
       }
 
-      .guide-actions .btn,
-      .key-actions .btn {
+      .device-pills {
+        flex-direction: column;
+        overflow: visible;
+      }
+
+      .device-pill {
         width: 100%;
       }
 
-      .connect-steps {
+      .meta-grid {
         grid-template-columns: 1fr;
       }
 
-      .vpn-key-value {
-        font-size: 12px;
+      .guide-actions .btn,
+      .key-actions .btn,
+      .support-card .btn {
+        width: 100%;
       }
     }
   </style>
@@ -431,78 +358,45 @@
 
   <main class="page vpn-activation-wrap">
     <section class="pricing section-pad">
-      <h1 class="section-title">Активация VPN-доступа</h1>
-      <p class="step-subtitle text-limit">
-        Подключение занимает 1-2 минуты: выберите устройство, вставьте ключ и включите VPN.
-      </p>
-      <div class="hero-warning text-limit">
-        <strong>Один ключ = одно устройство.</strong> Не используйте один ключ одновременно на нескольких устройствах.
-      </div>
+      <h1 class="page-title">Активация VPN-доступа</h1>
+      <p class="copy text-limit">Подключение занимает 1-2 минуты: выберите устройство, вставьте ключ и включите VPN.</p>
+      <div class="hero-warning text-limit"><strong>Один ключ = одно устройство.</strong> Не используйте ключ одновременно на нескольких устройствах.</div>
     </section>
 
-    <section class="pricing section-pad">
-      <h2 class="step-title">Шаг 1 — выберите устройство</h2>
-      <p class="step-subtitle text-limit">Нажмите на свою платформу. Инструкция ниже обновится автоматически.</p>
+    <section class="vpn-main-grid">
+      <div class="vpn-left-column">
+        <article class="pricing section-pad">
+          <h2 class="step-title">Шаг 1 — выберите устройство</h2>
+          <div class="device-pills" role="tablist" aria-label="Выбор устройства">
+            <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="windows">Windows</button>
+            <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="android">Android</button>
+            <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="ios">iOS</button>
+          </div>
 
-      <div class="device-grid" role="tablist" aria-label="Выбор устройства">
-        <button type="button" class="device-card" role="tab" aria-selected="false" data-device="windows">
-          <p class="device-title">
-            <svg class="device-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4.7 10.8 3v8H2V4.7Zm9.8-1.8L22 1.5v9.5h-10.2V2.9ZM2 12.7h8.8v8L2 19v-6.3Zm9.8 0H22v9.8l-10.2-2v-7.8Z"/></svg>
-            Windows
-          </p>
-          <p class="device-sub">ПК и ноутбуки</p>
-        </button>
+          <p id="guideIntro" class="guide-intro text-limit">Шаг 2 — выберите устройство выше, затем скачайте приложение и выполните 4 шага подключения.</p>
 
-        <button type="button" class="device-card" role="tab" aria-selected="false" data-device="android">
-          <p class="device-title">
-            <svg class="device-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.1 4.7 6.8 2.4l.8-.5 1.3 2.2A8.5 8.5 0 0 1 12 3.5c1.1 0 2.1.2 3.1.6l1.3-2.2.8.5-1.3 2.3A6.8 6.8 0 0 1 19 10H5c0-2.2 1.2-4.1 3.1-5.3ZM7 11h1.5v6H7v-6Zm8.5 0H17v6h-1.5v-6ZM7.5 18h9a2 2 0 0 1 2 2v1H5.5v-1a2 2 0 0 1 2-2Z"/></svg>
-            Android
-          </p>
-          <p class="device-sub">Смартфоны и планшеты</p>
-        </button>
+          <div id="guideCard" class="guide-card">
+            <div class="guide-top">
+              <h3 id="guideTitle">Шаг 2 — установите приложение</h3>
+              <span id="guideTag" class="device-tag">Устройство не выбрано</span>
+            </div>
 
-        <button type="button" class="device-card" role="tab" aria-selected="false" data-device="ios">
-          <p class="device-title">
-            <svg class="device-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.4 2.2c.2 1.4-.3 2.9-1.1 3.9-.8 1-2.2 1.8-3.5 1.7-.2-1.4.4-2.8 1.2-3.7.9-1 2.3-1.8 3.4-1.9Zm3.9 15.5c-.5 1.1-.8 1.6-1.4 2.6-.8 1.4-1.9 3.1-3.3 3.1-1.2 0-1.6-.8-3.2-.8-1.6 0-2 .8-3.2.8-1.4 0-2.5-1.5-3.3-2.9-2.1-3.5-2.3-7.6-1.1-9.4.8-1.2 2.1-1.9 3.3-1.9 1.3 0 2.2.8 3.3.8 1.1 0 1.7-.8 3.3-.8 1 0 2.1.4 2.9 1.2-2.6 1.4-2.2 5.2.7 6.5Z"/></svg>
-            iPhone / iOS
-          </p>
-          <p class="device-sub">iPhone и iPad</p>
-        </button>
+            <div class="guide-actions">
+              <a id="appDownloadBtn" class="btn" href="#" target="_blank" rel="noopener">Скачать приложение</a>
+            </div>
+
+            <ol id="guideSteps" class="guide-steps"></ol>
+          </div>
+        </article>
       </div>
-    </section>
 
-    <section class="pricing section-pad">
-      <h2 class="step-title">Шаг 2 — инструкция подключения</h2>
-      <p id="guideIntro" class="guide-intro text-limit">Выберите устройство выше, затем скачайте приложение и выполните 4 шага.</p>
+      <aside class="vpn-right-column">
+        <article class="pricing section-pad">
+          <h2 class="step-title">Ваш VPN ключ</h2>
 
-      <div id="guideCard" class="guide-card">
-        <div class="guide-top">
-          <h3 id="guideTitle" class="guide-headline">Установите приложение</h3>
-          <span id="guideChip" class="guide-chip">Устройство не выбрано</span>
-        </div>
-
-        <div class="guide-actions">
-          <a id="appDownloadBtn" class="btn guide-action-btn" href="#" target="_blank" rel="noopener">Скачать приложение</a>
-        </div>
-
-        <h4 class="guide-headline" style="margin:0;font-size:18px;">Подключение в 4 шага</h4>
-        <div class="connect-steps" id="connectSteps"></div>
-
-        <ul class="mini-important">
-          <li><strong>Важно:</strong> ключ работает только на одном устройстве.</li>
-          <li>Не используйте один ключ одновременно на нескольких устройствах.</li>
-          <li>Не передавайте ключ другим людям.</li>
-        </ul>
-      </div>
-    </section>
-
-    <section class="pricing section-pad">
-      <h2 class="step-title">Ваш VPN ключ</h2>
-      <div class="key-layout">
-        <div class="key-main">
-          <div class="vpn-key-shell">
-            <div class="vpn-key-scroll overflow-safe">
-              <pre id="vpnAccessKey" class="vpn-key-value overflow-safe">Загрузка ключа...</pre>
+          <div class="key-shell">
+            <div class="key-scroll overflow-safe">
+              <pre id="vpnAccessKey" class="key-value overflow-safe">Загрузка ключа...</pre>
             </div>
           </div>
 
@@ -513,22 +407,19 @@
           </div>
 
           <div id="vpnCopyFeedback" class="key-feedback"></div>
-        </div>
 
-        <aside class="meta-grid">
-          <div class="meta-item overflow-safe"><span>UUID</span><strong id="vpnUuid" class="overflow-safe">—</strong></div>
-          <div class="meta-item overflow-safe"><span>Тариф</span><strong id="vpnPlan" class="overflow-safe">—</strong></div>
-          <div class="meta-item overflow-safe"><span>Дата окончания</span><strong id="vpnExpiresAt" class="overflow-safe">—</strong></div>
-        </aside>
-      </div>
-    </section>
+          <div class="meta-grid">
+            <div class="meta-item meta-item-wide overflow-safe"><span>UUID</span><strong id="vpnUuid" class="overflow-safe">—</strong></div>
+            <div class="meta-item overflow-safe"><span>Тариф</span><strong id="vpnPlan" class="overflow-safe">—</strong></div>
+            <div class="meta-item overflow-safe"><span>Дата окончания</span><strong id="vpnExpiresAt" class="overflow-safe">—</strong></div>
+          </div>
+        </article>
 
-    <section class="pricing section-pad">
-      <h2 class="step-title">Не получается подключиться?</h2>
-      <div class="support-cta text-limit">
-        <p class="step-subtitle">Если приложение не принимает ключ или VPN не запускается, напишите в поддержку и приложите скриншот ошибки.</p>
-        <a class="btn" href="https://t.me/gptishkasupp" target="_blank" rel="noopener">Написать в поддержку</a>
-      </div>
+        <article class="pricing section-pad support-card">
+          <h2 class="support-title">Не получается подключиться?</h2>
+          <a class="btn" href="https://t.me/gptishkasupp" target="_blank" rel="noopener">Написать в поддержку</a>
+        </article>
+      </aside>
     </section>
   </main>
 
@@ -550,30 +441,30 @@
           title: "Windows",
           appUrl: "https://github.com/2dust/v2rayN/releases/latest",
           steps: [
-            "Откройте приложение",
+            "Скачайте приложение",
             "Импортируйте конфигурацию",
-            "Вставьте VPN ключ",
-            "Нажмите «Подключить»",
+            "Вставьте ключ",
+            "Нажмите подключить",
           ],
         },
         android: {
           title: "Android",
           appUrl: "https://github.com/2dust/v2rayNG/releases/latest",
           steps: [
-            "Откройте приложение",
+            "Скачайте приложение",
             "Импортируйте конфигурацию",
-            "Вставьте VPN ключ",
-            "Нажмите «Подключить»",
+            "Вставьте ключ",
+            "Нажмите подключить",
           ],
         },
         ios: {
-          title: "iPhone / iOS",
+          title: "iOS",
           appUrl: "https://apps.apple.com/app/streisand/id6450534064",
           steps: [
-            "Откройте приложение",
+            "Скачайте приложение",
             "Импортируйте конфигурацию",
-            "Вставьте VPN ключ",
-            "Нажмите «Подключить»",
+            "Вставьте ключ",
+            "Нажмите подключить",
           ],
         },
       };
@@ -597,14 +488,13 @@
       const guideIntro = document.getElementById("guideIntro");
       const guideCard = document.getElementById("guideCard");
       const guideTitle = document.getElementById("guideTitle");
-      const guideChip = document.getElementById("guideChip");
+      const guideTag = document.getElementById("guideTag");
       const appDownloadBtn = document.getElementById("appDownloadBtn");
-      const connectSteps = document.getElementById("connectSteps");
+      const guideSteps = document.getElementById("guideSteps");
 
       const deviceButtons = Array.from(document.querySelectorAll("[data-device]"));
 
       let currentAccessKey = "";
-      let selectedDevice = "";
       let currentPlan = "";
 
       function setFeedback(message, kind) {
@@ -632,54 +522,37 @@
         return { orderId, token };
       }
 
-      function renderGuideSteps(steps) {
-        if (!connectSteps) return;
-        connectSteps.innerHTML = "";
-        (steps || []).slice(0, 4).forEach((text, idx) => {
-          const card = document.createElement("div");
-          card.className = "connect-step";
-
-          const num = document.createElement("span");
-          num.className = "connect-step-num";
-          num.textContent = String(idx + 1);
-
-          const label = document.createElement("p");
-          label.textContent = String(text || "");
-
-          card.appendChild(num);
-          card.appendChild(label);
-          connectSteps.appendChild(card);
-        });
-      }
-
       function applyDeviceSelection(device) {
-        const key = String(device || "").toLowerCase();
+        const key = String(device || "").trim().toLowerCase();
         const config = DEVICE_CONFIG[key];
 
-        selectedDevice = config ? key : "";
-
-        deviceButtons.forEach((btn) => {
-          const isActive = String(btn.getAttribute("data-device") || "").toLowerCase() === selectedDevice;
-          btn.classList.toggle("is-active", isActive);
-          btn.setAttribute("aria-selected", isActive ? "true" : "false");
+        deviceButtons.forEach((button) => {
+          const isActive = String(button.getAttribute("data-device") || "") === key;
+          button.classList.toggle("is-active", isActive);
+          button.setAttribute("aria-selected", isActive ? "true" : "false");
         });
 
         if (!config) {
-          guideCard.classList.remove("is-visible");
           guideIntro.style.display = "block";
+          guideCard.classList.remove("is-visible");
+          guideTag.textContent = "Устройство не выбрано";
           appDownloadBtn.removeAttribute("href");
-          appDownloadBtn.setAttribute("aria-disabled", "true");
-          guideChip.textContent = "Устройство не выбрано";
+          guideSteps.innerHTML = "";
           return;
         }
 
-        guideCard.classList.add("is-visible");
         guideIntro.style.display = "none";
-        guideTitle.textContent = `Установите приложение (${config.title})`;
-        guideChip.textContent = config.title;
+        guideCard.classList.add("is-visible");
+        guideTitle.textContent = "Шаг 2 — установите приложение";
+        guideTag.textContent = config.title;
         appDownloadBtn.href = config.appUrl;
-        appDownloadBtn.removeAttribute("aria-disabled");
-        renderGuideSteps(config.steps);
+
+        guideSteps.innerHTML = "";
+        config.steps.forEach((stepText, index) => {
+          const li = document.createElement("li");
+          li.textContent = `${index + 1}. ${stepText}`;
+          guideSteps.appendChild(li);
+        });
       }
 
       function renderAccess(payload) {
@@ -699,7 +572,7 @@
       async function loadVpnAccess() {
         const context = readOrderContext();
         if (!context.orderId) {
-          setFeedback("Откройте эту страницу из ссылки после оплаты (с order_id и t).", "error");
+          setFeedback("Откройте страницу из ссылки после оплаты (с order_id и t).", "error");
           renderAccess({});
           return;
         }
@@ -722,7 +595,7 @@
           }
 
           renderAccess(payload);
-          setFeedback("Доступ активирован. Выберите устройство и выполните шаги подключения.", "success");
+          setFeedback("Доступ активирован.", "success");
         } catch (_) {
           setFeedback("Ошибка сети при запросе VPN-доступа.", "error");
           renderAccess({});
@@ -761,8 +634,7 @@
 
       deviceButtons.forEach((button) => {
         button.addEventListener("click", () => {
-          const device = String(button.getAttribute("data-device") || "").trim().toLowerCase();
-          applyDeviceSelection(device);
+          applyDeviceSelection(button.getAttribute("data-device") || "");
         });
       });
 
