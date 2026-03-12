@@ -29,6 +29,19 @@
       box-shadow: 0 10px 24px rgba(31, 39, 49, 0.08);
     }
 
+    .activation-shell {
+      display: grid;
+      gap: 10px;
+    }
+
+    .inner-block {
+      border: 1px solid rgba(205, 216, 224, 0.82);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.74);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
     .text-limit {
       max-width: 680px;
     }
@@ -303,6 +316,18 @@
       line-height: 1.25;
     }
 
+    .support-inline {
+      margin-top: 8px;
+      display: grid;
+      gap: 8px;
+      align-items: start;
+    }
+
+    .support-inline .btn {
+      width: fit-content;
+      min-height: 38px;
+    }
+
     @media (max-width: 980px) {
       .vpn-main-grid {
         grid-template-columns: 1fr;
@@ -334,7 +359,7 @@
 
       .guide-actions .btn,
       .key-actions .btn,
-      .support-card .btn {
+      .support-inline .btn {
         width: 100%;
       }
     }
@@ -357,69 +382,69 @@
   </header>
 
   <main class="page vpn-activation-wrap">
-    <section class="pricing section-pad">
+    <section class="pricing section-pad activation-shell">
       <h1 class="page-title">Активация VPN-доступа</h1>
       <p class="copy text-limit">Подключение занимает 1-2 минуты: выберите устройство, вставьте ключ и включите VPN.</p>
       <div class="hero-warning text-limit"><strong>Один ключ = одно устройство.</strong> Не используйте ключ одновременно на нескольких устройствах.</div>
-    </section>
 
-    <section class="vpn-main-grid">
-      <div class="vpn-left-column">
-        <article class="pricing section-pad">
-          <h2 class="step-title">Шаг 1 — выберите устройство</h2>
-          <div class="device-pills" role="tablist" aria-label="Выбор устройства">
-            <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="windows">Windows</button>
-            <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="android">Android</button>
-            <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="ios">iOS</button>
-          </div>
-
-          <p id="guideIntro" class="guide-intro text-limit">Шаг 2 — выберите устройство выше, затем скачайте приложение и выполните 4 шага подключения.</p>
-
-          <div id="guideCard" class="guide-card">
-            <div class="guide-top">
-              <h3 id="guideTitle">Шаг 2 — установите приложение</h3>
-              <span id="guideTag" class="device-tag">Устройство не выбрано</span>
+      <div class="vpn-main-grid">
+        <div class="vpn-left-column">
+          <div class="inner-block">
+            <h2 class="step-title">Шаг 1 — выберите устройство</h2>
+            <div class="device-pills" role="tablist" aria-label="Выбор устройства">
+              <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="windows">Windows</button>
+              <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="android">Android</button>
+              <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="ios">iOS</button>
             </div>
 
-            <div class="guide-actions">
-              <a id="appDownloadBtn" class="btn" href="#" target="_blank" rel="noopener">Скачать приложение</a>
+            <p id="guideIntro" class="guide-intro text-limit">Шаг 2 — выберите устройство выше, затем скачайте приложение и выполните 4 шага подключения.</p>
+
+            <div id="guideCard" class="guide-card">
+              <div class="guide-top">
+                <h3 id="guideTitle">Шаг 2 — установите приложение</h3>
+                <span id="guideTag" class="device-tag">Устройство не выбрано</span>
+              </div>
+
+              <div class="guide-actions">
+                <a id="appDownloadBtn" class="btn" href="#" target="_blank" rel="noopener">Скачать приложение</a>
+              </div>
+
+              <ol id="guideSteps" class="guide-steps"></ol>
+            </div>
+          </div>
+        </div>
+
+        <aside class="vpn-right-column">
+          <div class="inner-block">
+            <h2 class="step-title">Ваш VPN ключ</h2>
+
+            <div class="key-shell">
+              <div class="key-scroll overflow-safe">
+                <pre id="vpnAccessKey" class="key-value overflow-safe">Загрузка ключа...</pre>
+              </div>
             </div>
 
-            <ol id="guideSteps" class="guide-steps"></ol>
+            <div class="key-actions">
+              <button id="vpnCopyKeyBtn" type="button" class="btn" disabled>Скопировать ключ</button>
+              <button id="vpnDownloadConfigBtn" type="button" class="btn secondary key-soft-btn" disabled>Скачать конфигурацию</button>
+              <button id="vpnReloadBtn" type="button" class="btn secondary key-soft-btn">Обновить</button>
+            </div>
+
+            <div id="vpnCopyFeedback" class="key-feedback"></div>
+
+            <div class="meta-grid">
+              <div class="meta-item meta-item-wide overflow-safe"><span>UUID</span><strong id="vpnUuid" class="overflow-safe">—</strong></div>
+              <div class="meta-item overflow-safe"><span>Тариф</span><strong id="vpnPlan" class="overflow-safe">—</strong></div>
+              <div class="meta-item overflow-safe"><span>Дата окончания</span><strong id="vpnExpiresAt" class="overflow-safe">—</strong></div>
+            </div>
           </div>
-        </article>
+
+          <div class="inner-block support-inline">
+            <h2 class="support-title">Не получается подключиться?</h2>
+            <a class="btn" href="https://t.me/gptishkasupp" target="_blank" rel="noopener">Написать в поддержку</a>
+          </div>
+        </aside>
       </div>
-
-      <aside class="vpn-right-column">
-        <article class="pricing section-pad">
-          <h2 class="step-title">Ваш VPN ключ</h2>
-
-          <div class="key-shell">
-            <div class="key-scroll overflow-safe">
-              <pre id="vpnAccessKey" class="key-value overflow-safe">Загрузка ключа...</pre>
-            </div>
-          </div>
-
-          <div class="key-actions">
-            <button id="vpnCopyKeyBtn" type="button" class="btn" disabled>Скопировать ключ</button>
-            <button id="vpnDownloadConfigBtn" type="button" class="btn secondary key-soft-btn" disabled>Скачать конфигурацию</button>
-            <button id="vpnReloadBtn" type="button" class="btn secondary key-soft-btn">Обновить</button>
-          </div>
-
-          <div id="vpnCopyFeedback" class="key-feedback"></div>
-
-          <div class="meta-grid">
-            <div class="meta-item meta-item-wide overflow-safe"><span>UUID</span><strong id="vpnUuid" class="overflow-safe">—</strong></div>
-            <div class="meta-item overflow-safe"><span>Тариф</span><strong id="vpnPlan" class="overflow-safe">—</strong></div>
-            <div class="meta-item overflow-safe"><span>Дата окончания</span><strong id="vpnExpiresAt" class="overflow-safe">—</strong></div>
-          </div>
-        </article>
-
-        <article class="pricing section-pad support-card">
-          <h2 class="support-title">Не получается подключиться?</h2>
-          <a class="btn" href="https://t.me/gptishkasupp" target="_blank" rel="noopener">Написать в поддержку</a>
-        </article>
-      </aside>
     </section>
   </main>
 
