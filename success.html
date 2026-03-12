@@ -10,7 +10,6 @@
   <link rel="shortcut icon" href="/favicon.ico" />
   <link rel="apple-touch-icon" href="/assets/img/logo.png" />
   <style>
-    /* Defensive fallback: never render support widgets on payment status pages. */
     #gptishka-support-widget,
     .support-widget,
     .gptishka-support-widget,
@@ -72,9 +71,7 @@
       removeInjectedSupportUi();
     });
     supportObserver.observe(document.documentElement, { childList: true, subtree: true });
-    setTimeout(() => {
-      supportObserver.disconnect();
-    }, 35000);
+    setTimeout(() => supportObserver.disconnect(), 35000);
 
     if (!orderId) {
       orderIdEl.textContent = "не найден";
@@ -125,7 +122,7 @@
           handlePaidOrder(id);
           if (deliveryMode === "vpn") {
             statusEl.className = "status paid";
-            statusEl.textContent = "Оплачено. Переводим в личный кабинет VPN...";
+            statusEl.textContent = "Оплачено. Переводим в активацию VPN...";
             try {
               localStorage.setItem("gptishka_vpn_order_id", id);
               if (linkToken) localStorage.setItem(`gptishka_vpn_order_token:${id}`, linkToken);
@@ -170,13 +167,11 @@
       try {
         const lastPaid = String(localStorage.getItem(LAST_PAID_ORDER_KEY) || "").trim();
         if (lastPaid === id) return;
-
         CART_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
         localStorage.setItem(LAST_PAID_ORDER_KEY, id);
       } catch (_) {
         // Ignore storage write errors.
       }
-
       resetCartUiBadge();
       notifyCartCleared();
     }
@@ -202,10 +197,7 @@
       fetch("/api/purchases", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          orderId: safeOrderId,
-        }),
+        body: JSON.stringify({ email, orderId: safeOrderId }),
         keepalive: true,
       }).catch(() => {
         // Tracking failures must not block activation flow.
@@ -235,9 +227,7 @@
 
     function removeInjectedSupportUi() {
       const selector = SUPPORT_WIDGET_SELECTORS.join(",");
-      if (selector) {
-        document.querySelectorAll(selector).forEach((node) => node.remove());
-      }
+      if (selector) document.querySelectorAll(selector).forEach((node) => node.remove());
 
       document.querySelectorAll('img[src*="assistant-cat-left"], img[src*="assistant-cat"]').forEach((img) => {
         const host = img.closest("aside, section, article, div");

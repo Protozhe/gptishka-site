@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2" />
   <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260310r" />
   <style>
-    .vpn-page-wrap { width: min(1120px, calc(100% - 24px)); margin: 16px auto 40px; }
+    .vpn-page-wrap { width: min(1120px, calc(100% - 24px)); margin: 16px auto 40px; display: grid; gap: 18px; }
     .vpn-toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
     .vpn-toolbar .input { min-width: min(360px, 100%); }
     .vpn-status { min-height: 22px; font-size: 13px; color: var(--muted); transition: all .2s ease; }
@@ -27,12 +27,22 @@
     }
     .vpn-status.error { color: #b42318; border-color: rgba(196, 77, 59, 0.26); background: rgba(255, 245, 243, 0.9); }
     .vpn-status.success { color: #0f766e; border-color: rgba(15, 118, 110, 0.24); background: rgba(238, 252, 249, 0.92); }
+
+    .vpn-cabinet-wrap { width: min(860px, 100%); margin: 0 auto; }
     .vpn-profile-grid { display: grid; gap: 10px; margin-top: 10px; }
-    .vpn-profile-item { font-size: 14px; display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed rgba(31, 39, 49, 0.14); padding-bottom: 8px; }
+    .vpn-profile-item {
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px dashed rgba(31, 39, 49, 0.14);
+      padding-bottom: 8px;
+    }
     .vpn-profile-item strong { text-align: right; word-break: break-all; }
     .vpn-copy-wrap { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
     .vpn-copy-wrap .btn { min-width: 220px; }
     .vpn-cabinet-actions { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+
     .vpn-soft-btn {
       border-color: rgba(19, 138, 120, 0.22) !important;
       background:
@@ -55,9 +65,11 @@
       transform: none;
       box-shadow: none;
     }
+
     @media (max-width: 720px) {
       .vpn-profile-item { flex-direction: column; }
       .vpn-copy-wrap .btn { width: 100%; min-width: 0; }
+      .vpn-toolbar .input { min-width: 100%; }
     }
   </style>
 </head>
@@ -85,7 +97,7 @@
       </div>
 
       <div class="vpn-toolbar">
-        <input id="vpnEmailInput" class="input" type="email" autocomplete="email" placeholder="Email для оплаты и доступа" />
+        <input id="vpnEmailInput" class="input" type="email" autocomplete="email" placeholder="Email для оплаты и выдачи доступа" />
       </div>
       <div id="vpnCheckoutStatus" class="vpn-status"></div>
 
@@ -112,7 +124,7 @@
           <span class="badge best">Лучший выбор</span>
           <h3>VPN 12 месяцев</h3>
           <div class="term">365 дней</div>
-          <div class="price" data-plan-price>1699 ₽</div>
+          <div class="price" data-plan-price>1 699 ₽</div>
           <div class="sub">VLESS Reality • Один конфиг • Максимальная выгода</div>
           <div class="price-actions">
             <button type="button" class="btn" data-vpn-buy="vpn_year">Подключить VPN</button>
@@ -121,7 +133,7 @@
       </div>
     </section>
 
-    <section class="pricing" id="vpnCabinetSection">
+    <section class="pricing vpn-cabinet-wrap" id="vpnCabinetSection" hidden>
       <div class="pricing-header">
         <h2>Личный кабинет VPN</h2>
         <p>Данные подтягиваются из <code>/vpn/me</code> по заказу после оплаты.</p>
@@ -175,6 +187,7 @@
       const copyBtn = document.getElementById("vpnCopyConfigBtn");
       const refreshBtn = document.getElementById("vpnRefreshBtn");
       const catalogSection = document.getElementById("vpnCatalogSection");
+      const cabinetSection = document.getElementById("vpnCabinetSection");
       const showPlansBtn = document.getElementById("vpnShowPlansBtn");
 
       const uuidEl = document.getElementById("vpnUuid");
@@ -186,9 +199,11 @@
       let currentAccessLink = "";
       let isCatalogShownManually = false;
 
-      function hasOrderIdInQuery() {
+      function getOrderContextFromQuery() {
         const params = new URLSearchParams(window.location.search);
-        return Boolean(String(params.get("order_id") || params.get("orderId") || "").trim());
+        const orderId = String(params.get("order_id") || params.get("orderId") || "").trim();
+        const token = String(params.get("t") || "").trim();
+        return { orderId, token };
       }
 
       function setCatalogVisible(visible) {
@@ -196,17 +211,32 @@
         catalogSection.hidden = !visible;
       }
 
+      function setCabinetVisible(visible) {
+        if (!cabinetSection) return;
+        cabinetSection.hidden = !visible;
+      }
+
       function applyCabinetFocusMode() {
-        if (isCatalogShownManually) {
+        const context = getOrderContextFromQuery();
+        const hasQueryOrder = Boolean(context.orderId);
+
+        if (!hasQueryOrder) {
           setCatalogVisible(true);
-          if (showPlansBtn) showPlansBtn.textContent = "Скрыть тарифы";
-          return;
-        }
-        if (!hasOrderIdInQuery()) {
-          setCatalogVisible(true);
+          setCabinetVisible(false);
           if (showPlansBtn) showPlansBtn.hidden = true;
           return;
         }
+
+        setCabinetVisible(true);
+        if (isCatalogShownManually) {
+          setCatalogVisible(true);
+          if (showPlansBtn) {
+            showPlansBtn.hidden = false;
+            showPlansBtn.textContent = "Скрыть тарифы";
+          }
+          return;
+        }
+
         setCatalogVisible(false);
         if (showPlansBtn) {
           showPlansBtn.hidden = false;
@@ -251,48 +281,6 @@
         return `${size.toFixed(digits)} ${units[unit]}`;
       }
 
-      function readStoredToken(orderId) {
-        if (!orderId) return "";
-        try {
-          return String(localStorage.getItem(`gptishka_vpn_order_token:${orderId}`) || "").trim();
-        } catch (_) {
-          return "";
-        }
-      }
-
-      function saveOrderContext(orderId, token) {
-        if (!orderId) return;
-        try {
-          localStorage.setItem(VPN_ORDER_ID_KEY, orderId);
-          if (token) localStorage.setItem(`gptishka_vpn_order_token:${orderId}`, token);
-        } catch (_) {
-          // Ignore storage errors.
-        }
-      }
-
-      function readOrderContext() {
-        const params = new URLSearchParams(window.location.search);
-        const fromQueryOrderId = String(params.get("order_id") || params.get("orderId") || "").trim();
-        const fromQueryToken = String(params.get("t") || "").trim();
-        if (fromQueryOrderId) {
-          saveOrderContext(fromQueryOrderId, fromQueryToken);
-          return {
-            orderId: fromQueryOrderId,
-            token: fromQueryToken || readStoredToken(fromQueryOrderId),
-          };
-        }
-
-        try {
-          const orderId = String(localStorage.getItem(VPN_ORDER_ID_KEY) || "").trim();
-          return {
-            orderId,
-            token: readStoredToken(orderId),
-          };
-        } catch (_) {
-          return { orderId: "", token: "" };
-        }
-      }
-
       async function loadPlans() {
         try {
           const response = await fetch("/api/public/products?lang=ru", { cache: "no-store" });
@@ -324,9 +312,10 @@
         const email = String(emailInput?.value || "").trim().toLowerCase();
         if (!isValidEmail(email)) {
           setStatus(checkoutStatus, "Введите корректный email.", "error");
-          emailInput && emailInput.focus();
+          if (emailInput) emailInput.focus();
           return;
         }
+
         const plan = planMap.get(slug);
         if (!plan?.id) {
           setStatus(checkoutStatus, "Тариф временно недоступен. Обновите страницу.", "error");
@@ -335,7 +324,9 @@
 
         try {
           localStorage.setItem(CHECKOUT_EMAIL_KEY, email);
-        } catch (_) {}
+        } catch (_) {
+          // Ignore storage errors.
+        }
 
         const oldText = button ? button.textContent : "";
         if (button) {
@@ -360,6 +351,7 @@
             setStatus(checkoutStatus, message, "error");
             return;
           }
+
           setStatus(checkoutStatus, "Перенаправляем на оплату...", "success");
           window.location.href = String(payload.pay_url);
         } catch (_) {
@@ -373,18 +365,17 @@
       }
 
       async function refreshVpnMe() {
-        applyCabinetFocusMode();
-        const context = readOrderContext();
+        const context = getOrderContextFromQuery();
         if (!context.orderId) {
-          setStatus(vpnMeStatus, "После оплаты откройте ссылку с order_id, чтобы увидеть данные VPN.", "");
+          setStatus(vpnMeStatus, "", "");
           return;
         }
 
+        setStatus(vpnMeStatus, "Обновляем данные...", "");
         const params = new URLSearchParams();
         params.set("order_id", context.orderId);
         if (context.token) params.set("t", context.token);
 
-        setStatus(vpnMeStatus, "Обновляем данные...", "");
         try {
           const response = await fetch(`/api/vpn/me?${params.toString()}`, { cache: "no-store" });
           const payload = await response.json().catch(() => ({}));
@@ -430,9 +421,7 @@
         }
 
         if (refreshBtn) {
-          refreshBtn.addEventListener("click", () => {
-            refreshVpnMe();
-          });
+          refreshBtn.addEventListener("click", refreshVpnMe);
         }
 
         if (showPlansBtn) {
@@ -447,13 +436,15 @@
         try {
           const stored = String(localStorage.getItem(CHECKOUT_EMAIL_KEY) || "").trim().toLowerCase();
           if (stored && emailInput && !emailInput.value) emailInput.value = stored;
-        } catch (_) {}
+        } catch (_) {
+          // Ignore storage errors.
+        }
       }
 
       hydrateEmail();
-      applyCabinetFocusMode();
       bindEvents();
       loadPlans();
+      applyCabinetFocusMode();
       refreshVpnMe();
     })();
   </script>

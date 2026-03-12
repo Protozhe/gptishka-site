@@ -76,11 +76,6 @@
         0 14px 28px rgba(19, 138, 120, 0.16),
         inset 0 1px 0 rgba(255, 255, 255, 0.95);
     }
-    .vpn-soft-btn:disabled {
-      opacity: .65;
-      transform: none;
-      box-shadow: none;
-    }
 
     .vpn-feedback {
       min-height: 22px;
@@ -165,10 +160,7 @@
       align-items: center;
       gap: 8px;
     }
-    .os-sub {
-      font-size: 13px;
-      color: var(--muted);
-    }
+    .os-sub { font-size: 13px; color: var(--muted); }
     .os-icon {
       width: 18px;
       height: 18px;
@@ -203,11 +195,7 @@
       gap: 8px;
       color: var(--text);
     }
-    .support-copy {
-      margin: 0 0 14px;
-      color: var(--muted);
-      line-height: 1.6;
-    }
+    .support-copy { margin: 0 0 14px; color: var(--muted); line-height: 1.6; }
 
     @media (max-width: 900px) {
       .os-selector { grid-template-columns: 1fr; }
@@ -311,9 +299,7 @@
           <li>Нажмите кнопку подключения.</li>
           <li>После успешного подключения ваш интернет-трафик будет идти через VPN.</li>
         </ol>
-        <div class="instruction-hint">
-          Если приложение попросит разрешение на создание VPN-подключения, подтвердите его.
-        </div>
+        <div class="instruction-hint">Если приложение попросит разрешение на создание VPN-подключения, подтвердите его.</div>
       </article>
 
       <article class="price-card instruction-panel" data-os-panel="android">
@@ -326,9 +312,7 @@
           <li>Включите подключение.</li>
           <li>Подтвердите системный запрос на создание VPN.</li>
         </ol>
-        <div class="instruction-hint">
-          При первом запуске Android может показать предупреждение о VPN-подключении — это нормально.
-        </div>
+        <div class="instruction-hint">При первом запуске Android может показать предупреждение о VPN-подключении — это нормально.</div>
       </article>
 
       <article class="price-card instruction-panel" data-os-panel="ios">
@@ -341,9 +325,7 @@
           <li>Нажмите подключиться.</li>
           <li>Подтвердите системное разрешение на добавление VPN-конфигурации.</li>
         </ol>
-        <div class="instruction-hint">
-          iOS может запросить ввод пароля устройства для подтверждения установки VPN-профиля.
-        </div>
+        <div class="instruction-hint">iOS может запросить ввод пароля устройства для подтверждения установки VPN-профиля.</div>
       </article>
     </section>
 
@@ -367,8 +349,7 @@
       </div>
       <article class="price-card">
         <p class="support-copy">
-          Если приложение не принимает ключ или VPN не запускается, обратитесь в поддержку GPTishka и
-          приложите скриншот ошибки.
+          Если приложение не принимает ключ или VPN не запускается, обратитесь в поддержку GPTishka и приложите скриншот ошибки.
         </p>
         <a class="btn" href="https://t.me/gptishkasupp" target="_blank" rel="noopener">Написать в поддержку</a>
       </article>
@@ -388,9 +369,6 @@
 
   <script>
     (function () {
-      const VPN_ORDER_ID_KEY = "gptishka_vpn_order_id";
-      const VPN_TOKEN_PREFIX = "gptishka_vpn_order_token:";
-
       const keyEl = document.getElementById("vpnAccessKey");
       const copyBtn = document.getElementById("vpnCopyKeyBtn");
       const reloadBtn = document.getElementById("vpnReloadBtn");
@@ -418,50 +396,11 @@
         return date.toLocaleString("ru-RU");
       }
 
-      function saveOrderContext(orderId, token) {
-        const safeOrderId = String(orderId || "").trim();
-        const safeToken = String(token || "").trim();
-        if (!safeOrderId) return;
-        try {
-          localStorage.setItem(VPN_ORDER_ID_KEY, safeOrderId);
-          if (safeToken) localStorage.setItem(`${VPN_TOKEN_PREFIX}${safeOrderId}`, safeToken);
-        } catch (_) {
-          // Ignore storage errors.
-        }
-      }
-
-      function readStoredToken(orderId) {
-        const safeOrderId = String(orderId || "").trim();
-        if (!safeOrderId) return "";
-        try {
-          return String(localStorage.getItem(`${VPN_TOKEN_PREFIX}${safeOrderId}`) || "").trim();
-        } catch (_) {
-          return "";
-        }
-      }
-
-      function resolveOrderContext() {
+      function readOrderContext() {
         const params = new URLSearchParams(window.location.search);
-        const queryOrderId = String(params.get("order_id") || params.get("orderId") || "").trim();
-        const queryToken = String(params.get("t") || "").trim();
-
-        if (queryOrderId) {
-          saveOrderContext(queryOrderId, queryToken);
-          return {
-            orderId: queryOrderId,
-            token: queryToken || readStoredToken(queryOrderId),
-          };
-        }
-
-        try {
-          const orderId = String(localStorage.getItem(VPN_ORDER_ID_KEY) || "").trim();
-          return {
-            orderId,
-            token: readStoredToken(orderId),
-          };
-        } catch (_) {
-          return { orderId: "", token: "" };
-        }
+        const orderId = String(params.get("order_id") || params.get("orderId") || "").trim();
+        const token = String(params.get("t") || "").trim();
+        return { orderId, token };
       }
 
       function setActiveOsTab(os) {
@@ -491,18 +430,16 @@
       function renderAccess(payload) {
         currentAccessKey = String(payload?.accessLink || "").trim();
         keyEl.textContent = currentAccessKey || "Ключ пока не выдан. Обновите страницу через несколько секунд.";
-
         uuidEl.textContent = String(payload?.uuid || "—");
         planEl.textContent = String(payload?.plan || "—");
         expiresAtEl.textContent = formatDate(payload?.expiresAt);
-
         copyBtn.disabled = !currentAccessKey;
       }
 
       async function loadVpnAccess() {
-        const context = resolveOrderContext();
+        const context = readOrderContext();
         if (!context.orderId) {
-          setFeedback("Откройте страницу из ссылки после оплаты (с order_id и t).", "error");
+          setFeedback("Откройте эту страницу из ссылки после оплаты (с order_id и t).", "error");
           renderAccess({});
           return;
         }
@@ -536,20 +473,7 @@
           await navigator.clipboard.writeText(currentAccessKey);
           setFeedback("Ключ скопирован", "success");
         } catch (_) {
-          try {
-            const textarea = document.createElement("textarea");
-            textarea.value = currentAccessKey;
-            textarea.setAttribute("readonly", "readonly");
-            textarea.style.position = "absolute";
-            textarea.style.left = "-9999px";
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand("copy");
-            textarea.remove();
-            setFeedback("Ключ скопирован", "success");
-          } catch (_) {
-            setFeedback("Не удалось скопировать ключ. Скопируйте вручную.", "error");
-          }
+          setFeedback("Не удалось скопировать ключ. Скопируйте вручную.", "error");
         }
       }
 
