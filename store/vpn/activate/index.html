@@ -20,7 +20,7 @@
       width: min(1180px, calc(100% - 24px));
       margin: 16px auto 40px;
       display: grid;
-      gap: 16px;
+      gap: 10px;
     }
 
     .vpn-activation-wrap .pricing,
@@ -39,20 +39,20 @@
     }
 
     .section-pad {
-      padding: clamp(24px, 2.4vw, 32px);
+      padding: clamp(20px, 2.2vw, 24px);
       border-radius: 16px;
       box-shadow: 0 10px 26px rgba(31, 39, 49, 0.08);
     }
 
     .section-title {
-      margin: 0 0 8px;
+      margin: 0 0 6px;
       font-size: clamp(26px, 3.1vw, 38px);
       line-height: 1.1;
       letter-spacing: -0.02em;
     }
 
     .step-title {
-      margin: 0 0 8px;
+      margin: 0 0 6px;
       font-size: clamp(21px, 2.2vw, 30px);
       line-height: 1.2;
     }
@@ -60,8 +60,8 @@
     .step-subtitle {
       margin: 0;
       color: var(--muted);
-      font-size: 16px;
-      line-height: 1.65;
+      font-size: 15px;
+      line-height: 1.55;
     }
 
     .hero-warning {
@@ -139,21 +139,21 @@
     .guide-intro {
       border: 1px dashed rgba(19, 138, 120, 0.25);
       border-radius: 12px;
-      padding: 12px 14px;
+      padding: 10px 12px;
       background: rgba(238, 252, 249, 0.76);
       color: #18534a;
-      font-size: 15px;
-      line-height: 1.58;
+      font-size: 14px;
+      line-height: 1.48;
     }
 
     .guide-card {
       display: none;
       border: 1px solid rgba(19, 138, 120, 0.22);
       border-radius: 14px;
-      padding: 16px;
+      padding: 12px;
       background: rgba(255, 255, 255, 0.82);
       box-shadow: 0 9px 22px rgba(31, 39, 49, 0.09);
-      gap: 14px;
+      gap: 10px;
     }
 
     .guide-card.is-visible {
@@ -170,7 +170,7 @@
 
     .guide-headline {
       margin: 0;
-      font-size: clamp(20px, 2vw, 26px);
+      font-size: clamp(18px, 1.8vw, 22px);
       line-height: 1.2;
       letter-spacing: -0.01em;
     }
@@ -201,18 +201,18 @@
     .connect-steps {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
+      gap: 8px;
     }
 
     .connect-step {
       border: 1px solid rgba(205, 216, 224, 0.84);
       border-radius: 12px;
-      padding: 10px;
+      padding: 8px;
       background: rgba(255, 255, 255, 0.78);
       display: grid;
-      gap: 8px;
+      gap: 6px;
       align-content: start;
-      min-height: 108px;
+      min-height: 92px;
     }
 
     .connect-step-num {
@@ -231,8 +231,8 @@
 
     .connect-step p {
       margin: 0;
-      font-size: 14px;
-      line-height: 1.45;
+      font-size: 13px;
+      line-height: 1.38;
       color: var(--text);
     }
 
@@ -240,22 +240,22 @@
       margin: 0;
       padding-left: 18px;
       display: grid;
-      gap: 6px;
+      gap: 4px;
       color: var(--text);
-      font-size: 14px;
-      line-height: 1.48;
+      font-size: 13px;
+      line-height: 1.42;
     }
 
     .key-layout {
       display: grid;
       grid-template-columns: minmax(0, 1.65fr) minmax(280px, 1fr);
-      gap: 14px;
+      gap: 10px;
       align-items: start;
     }
 
     .key-main {
       display: grid;
-      gap: 12px;
+      gap: 10px;
     }
 
     .vpn-key-shell {
@@ -283,7 +283,7 @@
     .key-actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
     }
 
     .key-soft-btn {
@@ -338,14 +338,14 @@
 
     .meta-grid {
       display: grid;
-      gap: 10px;
+      gap: 8px;
       height: 100%;
     }
 
     .meta-item {
       border: 1px dashed rgba(31, 39, 49, 0.2);
       border-radius: 12px;
-      padding: 12px;
+      padding: 10px;
       background: rgba(255, 255, 255, 0.72);
     }
 
@@ -359,7 +359,7 @@
 
     .meta-item strong {
       display: block;
-      font-size: 16px;
+      font-size: 15px;
       line-height: 1.45;
       color: var(--text);
     }
@@ -389,13 +389,13 @@
     @media (max-width: 640px) {
       .vpn-activation-wrap {
         width: calc(100% - 16px);
-        gap: 12px;
+        gap: 8px;
       }
 
       .vpn-activation-wrap .pricing,
       .vpn-activation-wrap .price-card,
       .section-pad {
-        padding: 18px;
+        padding: 14px;
       }
 
       .guide-actions .btn,
@@ -433,8 +433,7 @@
     <section class="pricing section-pad">
       <h1 class="section-title">Активация VPN-доступа</h1>
       <p class="step-subtitle text-limit">
-        Вы получили персональный ключ доступа к GPTishka VPN. Ниже 2 шага: выбрать устройство и подключиться.
-        Обычно это занимает 1-2 минуты.
+        Подключение занимает 1-2 минуты: выберите устройство, вставьте ключ и включите VPN.
       </p>
       <div class="hero-warning text-limit">
         <strong>Один ключ = одно устройство.</strong> Не используйте один ключ одновременно на нескольких устройствах.
@@ -474,11 +473,11 @@
 
     <section class="pricing section-pad">
       <h2 class="step-title">Шаг 2 — инструкция подключения</h2>
-      <p id="guideIntro" class="guide-intro text-limit">Сначала выберите устройство выше. Затем нажмите «Скачать приложение» и выполните 4 шага подключения.</p>
+      <p id="guideIntro" class="guide-intro text-limit">Выберите устройство выше, затем скачайте приложение и выполните 4 шага.</p>
 
       <div id="guideCard" class="guide-card">
         <div class="guide-top">
-          <h3 id="guideTitle" class="guide-headline">Шаг 2 — установите приложение</h3>
+          <h3 id="guideTitle" class="guide-headline">Установите приложение</h3>
           <span id="guideChip" class="guide-chip">Устройство не выбрано</span>
         </div>
 
@@ -486,7 +485,7 @@
           <a id="appDownloadBtn" class="btn guide-action-btn" href="#" target="_blank" rel="noopener">Скачать приложение</a>
         </div>
 
-        <h4 class="guide-headline" style="margin:0;font-size:20px;">Шаг 3 — подключение</h4>
+        <h4 class="guide-headline" style="margin:0;font-size:18px;">Подключение в 4 шага</h4>
         <div class="connect-steps" id="connectSteps"></div>
 
         <ul class="mini-important">
@@ -676,7 +675,7 @@
 
         guideCard.classList.add("is-visible");
         guideIntro.style.display = "none";
-        guideTitle.textContent = `Шаг 2 — установите приложение (${config.title})`;
+        guideTitle.textContent = `Установите приложение (${config.title})`;
         guideChip.textContent = config.title;
         appDownloadBtn.href = config.appUrl;
         appDownloadBtn.removeAttribute("aria-disabled");
