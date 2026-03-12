@@ -12,9 +12,21 @@
     .vpn-page-wrap { width: min(1120px, calc(100% - 24px)); margin: 16px auto 40px; }
     .vpn-toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
     .vpn-toolbar .input { min-width: min(360px, 100%); }
-    .vpn-status { min-height: 22px; font-size: 13px; color: var(--muted); }
-    .vpn-status.error { color: #b42318; }
-    .vpn-status.success { color: #0f766e; }
+    .vpn-status { min-height: 22px; font-size: 13px; color: var(--muted); transition: all .2s ease; }
+    .vpn-status.error,
+    .vpn-status.success {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      margin-top: 6px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.82);
+    }
+    .vpn-status.error { color: #b42318; border-color: rgba(196, 77, 59, 0.26); background: rgba(255, 245, 243, 0.9); }
+    .vpn-status.success { color: #0f766e; border-color: rgba(15, 118, 110, 0.24); background: rgba(238, 252, 249, 0.92); }
     .vpn-profile-grid { display: grid; gap: 10px; margin-top: 10px; }
     .vpn-profile-item { font-size: 14px; display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed rgba(31, 39, 49, 0.14); padding-bottom: 8px; }
     .vpn-profile-item strong { text-align: right; word-break: break-all; }
@@ -92,7 +104,7 @@
         <h2>Личный кабинет VPN</h2>
         <p>Данные подтягиваются из <code>/vpn/me</code> по заказу после оплаты.</p>
         <div class="vpn-cabinet-actions">
-          <button id="vpnShowPlansBtn" type="button" class="btn-secondary" hidden>Показать тарифы</button>
+          <button id="vpnShowPlansBtn" type="button" class="btn secondary" hidden>Показать тарифы</button>
         </div>
       </div>
       <article class="price-card">
@@ -105,7 +117,7 @@
         </div>
         <div class="vpn-copy-wrap">
           <button id="vpnCopyConfigBtn" type="button" class="btn" disabled>Скопировать конфиг</button>
-          <button id="vpnRefreshBtn" type="button" class="btn-secondary">Обновить</button>
+          <button id="vpnRefreshBtn" type="button" class="btn secondary">Обновить</button>
         </div>
         <div id="vpnMeStatus" class="vpn-status"></div>
       </article>
