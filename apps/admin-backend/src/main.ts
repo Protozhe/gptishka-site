@@ -2,6 +2,7 @@ import { createApp } from "./app";
 import { env } from "./config/env";
 import { prisma } from "./config/prisma";
 import { ensureWelcomePromoCode } from "./modules/promocodes/welcome-promo.service";
+import { vpnService } from "./services/vpn.service";
 
 async function bootstrap() {
   await prisma.$connect();
@@ -9,6 +10,11 @@ async function bootstrap() {
     await ensureWelcomePromoCode();
   } catch (error) {
     console.error("[promo] failed to ensure welcome promo code", error);
+  }
+  try {
+    await vpnService.ensureVpnCatalogProducts();
+  } catch (error) {
+    console.error("[vpn] failed to ensure vpn catalog products", error);
   }
   const app = createApp();
 

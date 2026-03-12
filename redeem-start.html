@@ -1817,6 +1817,14 @@
           setCredentialsDeliveryMode(payload);
           return;
         }
+        if (String(payload?.deliveryMode || '').toLowerCase() === 'vpn') {
+          handlePaidOrder(orderId);
+          const url = new URL('/store/vpn', window.location.origin);
+          url.searchParams.set('order_id', orderId);
+          if (orderLinkToken) url.searchParams.set('t', orderLinkToken);
+          window.location.href = url.toString();
+          return;
+        }
         handlePaidOrder(orderId);
         const activationStatus = String(payload?.status || '').trim().toLowerCase();
         if (activationStatus === 'success') {

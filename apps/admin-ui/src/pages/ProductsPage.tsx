@@ -5,7 +5,7 @@ import { api } from "../lib/api";
 import { money } from "../lib/format";
 
 type BadgeType = "none" | "best" | "new" | "hit" | "sale" | "popular" | "limited" | "gift" | "pro";
-type ProductDeliveryType = "activation" | "credentials";
+type ProductDeliveryType = "activation" | "credentials" | "vpn";
 
 type Product = {
   id: string;
@@ -22,7 +22,7 @@ type Product = {
   tags: string[];
   isActive: boolean;
   deliveryType?: ProductDeliveryType;
-  deliveryMethod?: 1 | 2 | "1" | "2";
+  deliveryMethod?: 1 | 2 | 3 | "1" | "2" | "3";
 };
 
 type ManualCredential = {
@@ -93,22 +93,30 @@ function withBadgeTag(tags: string[] = [], badge: BadgeType): string[] {
 function resolveDeliveryType(item: Product): ProductDeliveryType {
   const fromMethod = String(item.deliveryMethod || "").trim();
   if (fromMethod === "2") return "credentials";
+  if (fromMethod === "3") return "vpn";
   if (fromMethod === "1") return "activation";
 
   const fromItem = String(item.deliveryType || "").trim().toLowerCase();
   if (fromItem === "credentials") return "credentials";
+  if (fromItem === "vpn") return "vpn";
+  const hasVpnTag = (item.tags || [])
+    .map((tag) => String(tag || "").trim().toLowerCase())
+    .some((tag) => tag === "delivery:vpn");
+  if (hasVpnTag) return "vpn";
   const hasCredentialsTag = (item.tags || [])
     .map((tag) => String(tag || "").trim().toLowerCase())
     .some((tag) => tag === "delivery:credentials");
   return hasCredentialsTag ? "credentials" : "activation";
 }
 
-function deliveryMethodNumber(deliveryType: ProductDeliveryType): 1 | 2 {
+function deliveryMethodNumber(deliveryType: ProductDeliveryType): 1 | 2 | 3 {
+  if (deliveryType === "vpn") return 3;
   return deliveryType === "credentials" ? 2 : 1;
 }
 
 function deliveryMethodLabel(deliveryType: ProductDeliveryType): string {
   if (deliveryType === "credentials") return "Метод 2: Логин и пароль";
+  if (deliveryType === "vpn") return "Метод 3: VPN (VLESS)";
   return "Метод 1: Активация по ключу";
 }
 
@@ -502,6 +510,7 @@ export default function ProductsPage() {
           <select className="input" value={deliveryType} onChange={(e) => setDeliveryType(e.target.value as ProductDeliveryType)}>
             <option value="activation">Метод 1: Активация по ключу</option>
             <option value="credentials">Метод 2: Выдача логин/пароль</option>
+            <option value="vpn">Метод 3: Выдача VPN</option>
           </select>
           <button className="btn-primary" type="submit" disabled={isSaving}>
             {isSaving ? "Сохраняем..." : editingId ? "Сохранить изменения" : "Добавить товар"}
@@ -514,6 +523,9 @@ export default function ProductsPage() {
             </div>
             <div>
               Метод 2: после оплаты клиент получает логин/пароль из вашего пула. Если пул пустой, показывается сообщение обратиться в поддержку.
+            </div>
+            <div>
+              Метод 3: после оплаты автоматически создается/продлевается VPN-доступ (VLESS Reality) через 3x-ui API.
             </div>
           </div>
 

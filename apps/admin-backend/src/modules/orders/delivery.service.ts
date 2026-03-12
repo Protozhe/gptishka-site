@@ -2,6 +2,7 @@
 import { resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { canonicalProductKey } from "../../common/utils/product-key";
 import { prisma } from "../../config/prisma";
+import { resolveVpnProvisionPayload, vpnService } from "../../services/vpn.service";
 import { manualCredentialsStore } from "../products/manual-credentials.store";
 import { activationStore } from "./activation.store";
 
@@ -46,6 +47,27 @@ export async function deliverProduct(order: Order) {
     }
 
     console.info(`[delivery] assigned credentials for order=${order.id} product=${productId}`);
+    return;
+  }
+
+  if (deliveryType === "vpn") {
+    const vpnProvision = resolveVpnProvisionPayload(product);
+    if (!vpnProvision) {
+      console.warn(`[delivery] vpn product config not resolved for order=${order.id}`);
+      return;
+    }
+
+    const access = await vpnService.createVpnUser({
+      orderId: order.id,
+      email: order.email,
+      plan: vpnProvision.plan,
+      durationDays: vpnProvision.durationDays,
+      source: vpnProvision.source,
+    });
+
+    console.info(
+      `[delivery] vpn access ready for order=${order.id} uuid=${access.uuid} plan=${access.plan} source=${access.source}`
+    );
     return;
   }
 

@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GPTishka VPN</title>
+  <meta name="description" content="GPTishka VPN: VLESS Reality, быстрый запуск и стабильный доступ." />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2" />
+  <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260310r" />
+  <style>
+    .vpn-page-wrap { width: min(1120px, calc(100% - 24px)); margin: 16px auto 40px; }
+    .vpn-toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+    .vpn-toolbar .input { min-width: min(360px, 100%); }
+    .vpn-status { min-height: 22px; font-size: 13px; color: var(--muted); }
+    .vpn-status.error { color: #b42318; }
+    .vpn-status.success { color: #0f766e; }
+    .vpn-profile-grid { display: grid; gap: 10px; margin-top: 10px; }
+    .vpn-profile-item { font-size: 14px; display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed rgba(31, 39, 49, 0.14); padding-bottom: 8px; }
+    .vpn-profile-item strong { text-align: right; word-break: break-all; }
+    .vpn-copy-wrap { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .vpn-copy-wrap .btn { min-width: 220px; }
+    @media (max-width: 720px) {
+      .vpn-profile-item { flex-direction: column; }
+      .vpn-copy-wrap .btn { width: 100%; min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-overlay"></div>
+  <header>
+    <div class="nav">
+      <a href="/index.html" class="logo-link">
+        <img src="/assets/img/logo.png" alt="GPTishka" class="logo-img" loading="lazy" decoding="async" />
+      </a>
+      <nav>
+        <a href="/index.html">Главная</a>
+        <a href="/index.html#pricing">Тарифы</a>
+        <a href="/store/vpn" class="active">VPN</a>
+        <a href="/contact.html">Контакты</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page vpn-page-wrap">
+    <section class="pricing">
+      <div class="pricing-header">
+        <h1>GPTishka VPN</h1>
+        <p>Работает при блокировках. VLESS Reality. Подключение за 1 минуту.</p>
+      </div>
+
+      <div class="vpn-toolbar">
+        <input id="vpnEmailInput" class="input" type="email" autocomplete="email" placeholder="Email для оплаты и доступа" />
+      </div>
+      <div id="vpnCheckoutStatus" class="vpn-status"></div>
+
+      <div class="pricing-grid" id="vpnPlansGrid">
+        <article class="price-card" data-plan-slug="vpn_month">
+          <h3>VPN 1 месяц</h3>
+          <div class="term">30 дней</div>
+          <div class="price" data-plan-price>199 ₽</div>
+          <div class="sub">VLESS Reality • Один конфиг • Быстрый запуск</div>
+          <div class="price-actions">
+            <button type="button" class="btn" data-vpn-buy="vpn_month">Подключить VPN</button>
+          </div>
+        </article>
+        <article class="price-card" data-plan-slug="vpn_halfyear">
+          <h3>VPN 6 месяцев</h3>
+          <div class="term">180 дней</div>
+          <div class="price" data-plan-price>999 ₽</div>
+          <div class="sub">VLESS Reality • Один конфиг • Выгода на длительный срок</div>
+          <div class="price-actions">
+            <button type="button" class="btn" data-vpn-buy="vpn_halfyear">Подключить VPN</button>
+          </div>
+        </article>
+        <article class="price-card featured" data-plan-slug="vpn_year">
+          <span class="badge best">Лучший выбор</span>
+          <h3>VPN 12 месяцев</h3>
+          <div class="term">365 дней</div>
+          <div class="price" data-plan-price>1699 ₽</div>
+          <div class="sub">VLESS Reality • Один конфиг • Максимальная выгода</div>
+          <div class="price-actions">
+            <button type="button" class="btn" data-vpn-buy="vpn_year">Подключить VPN</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="pricing">
+      <div class="pricing-header">
+        <h2>Личный кабинет VPN</h2>
+        <p>Данные подтягиваются из <code>/vpn/me</code> по заказу после оплаты.</p>
+      </div>
+      <article class="price-card">
+        <div class="vpn-profile-grid">
+          <div class="vpn-profile-item"><span>UUID</span><strong id="vpnUuid">—</strong></div>
+          <div class="vpn-profile-item"><span>План</span><strong id="vpnPlan">—</strong></div>
+          <div class="vpn-profile-item"><span>Действует до</span><strong id="vpnExpiresAt">—</strong></div>
+          <div class="vpn-profile-item"><span>Трафик</span><strong id="vpnTrafficUsed">—</strong></div>
+          <div class="vpn-profile-item"><span>Статус</span><strong id="vpnActive">—</strong></div>
+        </div>
+        <div class="vpn-copy-wrap">
+          <button id="vpnCopyConfigBtn" type="button" class="btn" disabled>Скопировать конфиг</button>
+          <button id="vpnRefreshBtn" type="button" class="btn-secondary">Обновить</button>
+        </div>
+        <div id="vpnMeStatus" class="vpn-status"></div>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-links-primary">
+      <a class="footer-link" href="/oferta.html">Публичная оферта</a>
+      &middot;
+      <a class="footer-link" href="/politika.html">Политика конфиденциальности</a>
+      &middot;
+      <a class="footer-link" href="/refund.html">Условия возврата</a>
+    </div>
+    <span class="footer-copy">&copy; 2026 GPTishka</span>
+  </footer>
+
+  <script>
+    (function () {
+      const CHECKOUT_EMAIL_KEY = "checkout_email";
+      const VPN_ORDER_ID_KEY = "gptishka_vpn_order_id";
+      const PLAN_SLUGS = ["vpn_month", "vpn_halfyear", "vpn_year"];
+      const FALLBACK_PRICES = {
+        vpn_month: 199,
+        vpn_halfyear: 999,
+        vpn_year: 1699,
+      };
+
+      const planMap = new Map();
+      const emailInput = document.getElementById("vpnEmailInput");
+      const checkoutStatus = document.getElementById("vpnCheckoutStatus");
+      const vpnMeStatus = document.getElementById("vpnMeStatus");
+      const copyBtn = document.getElementById("vpnCopyConfigBtn");
+      const refreshBtn = document.getElementById("vpnRefreshBtn");
+
+      const uuidEl = document.getElementById("vpnUuid");
+      const planEl = document.getElementById("vpnPlan");
+      const expiresAtEl = document.getElementById("vpnExpiresAt");
+      const trafficEl = document.getElementById("vpnTrafficUsed");
+      const activeEl = document.getElementById("vpnActive");
+
+      let currentAccessLink = "";
+
+      function setStatus(node, message, kind) {
+        if (!node) return;
+        node.textContent = String(message || "");
+        node.classList.remove("error", "success");
+        if (kind) node.classList.add(kind);
+      }
+
+      function isValidEmail(value) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+      }
+
+      function formatRub(amount) {
+        const value = Number(amount || 0);
+        if (!Number.isFinite(value)) return "—";
+        return `${value.toLocaleString("ru-RU")} ₽`;
+      }
+
+      function formatDate(value) {
+        const date = new Date(String(value || ""));
+        if (Number.isNaN(date.getTime())) return "—";
+        return date.toLocaleString("ru-RU");
+      }
+
+      function formatBytes(value) {
+        const bytes = Number(value || 0);
+        if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+        const units = ["B", "KB", "MB", "GB", "TB"];
+        let size = bytes;
+        let unit = 0;
+        while (size >= 1024 && unit < units.length - 1) {
+          size /= 1024;
+          unit += 1;
+        }
+        const digits = size >= 100 || unit === 0 ? 0 : 2;
+        return `${size.toFixed(digits)} ${units[unit]}`;
+      }
+
+      function readStoredToken(orderId) {
+        if (!orderId) return "";
+        try {
+          return String(localStorage.getItem(`gptishka_vpn_order_token:${orderId}`) || "").trim();
+        } catch (_) {
+          return "";
+        }
+      }
+
+      function saveOrderContext(orderId, token) {
+        if (!orderId) return;
+        try {
+          localStorage.setItem(VPN_ORDER_ID_KEY, orderId);
+          if (token) localStorage.setItem(`gptishka_vpn_order_token:${orderId}`, token);
+        } catch (_) {
+          // Ignore storage errors.
+        }
+      }
+
+      function readOrderContext() {
+        const params = new URLSearchParams(window.location.search);
+        const fromQueryOrderId = String(params.get("order_id") || params.get("orderId") || "").trim();
+        const fromQueryToken = String(params.get("t") || "").trim();
+        if (fromQueryOrderId) {
+          saveOrderContext(fromQueryOrderId, fromQueryToken);
+          return {
+            orderId: fromQueryOrderId,
+            token: fromQueryToken || readStoredToken(fromQueryOrderId),
+          };
+        }
+
+        try {
+          const orderId = String(localStorage.getItem(VPN_ORDER_ID_KEY) || "").trim();
+          return {
+            orderId,
+            token: readStoredToken(orderId),
+          };
+        } catch (_) {
+          return { orderId: "", token: "" };
+        }
+      }
+
+      async function loadPlans() {
+        try {
+          const response = await fetch("/api/public/products?lang=ru", { cache: "no-store" });
+          if (!response.ok) throw new Error("products_unavailable");
+          const payload = await response.json().catch(() => ({}));
+          const items = Array.isArray(payload?.items) ? payload.items : [];
+          items.forEach((item) => {
+            const slug = String(item?.product || "").trim().toLowerCase();
+            if (!PLAN_SLUGS.includes(slug)) return;
+            planMap.set(slug, item);
+            const card = document.querySelector(`[data-plan-slug="${slug}"]`);
+            if (!card) return;
+            const priceEl = card.querySelector("[data-plan-price]");
+            if (priceEl) {
+              priceEl.textContent = formatRub(item?.price || FALLBACK_PRICES[slug] || 0);
+            }
+          });
+        } catch (_) {
+          PLAN_SLUGS.forEach((slug) => {
+            const card = document.querySelector(`[data-plan-slug="${slug}"]`);
+            if (!card) return;
+            const priceEl = card.querySelector("[data-plan-price]");
+            if (priceEl) priceEl.textContent = formatRub(FALLBACK_PRICES[slug] || 0);
+          });
+        }
+      }
+
+      async function startCheckout(slug, button) {
+        const email = String(emailInput?.value || "").trim().toLowerCase();
+        if (!isValidEmail(email)) {
+          setStatus(checkoutStatus, "Введите корректный email.", "error");
+          emailInput && emailInput.focus();
+          return;
+        }
+        const plan = planMap.get(slug);
+        if (!plan?.id) {
+          setStatus(checkoutStatus, "Тариф временно недоступен. Обновите страницу.", "error");
+          return;
+        }
+
+        try {
+          localStorage.setItem(CHECKOUT_EMAIL_KEY, email);
+        } catch (_) {}
+
+        const oldText = button ? button.textContent : "";
+        if (button) {
+          button.disabled = true;
+          button.textContent = "Переходим к оплате...";
+        }
+        setStatus(checkoutStatus, "Создаем счет...", "");
+
+        try {
+          const response = await fetch("/api/payments/enot/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email,
+              plan_id: String(plan.id),
+              payment_method: "enot",
+            }),
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok || !payload?.pay_url) {
+            const message = String(payload?.message || payload?.error || "Не удалось создать платеж.");
+            setStatus(checkoutStatus, message, "error");
+            return;
+          }
+          setStatus(checkoutStatus, "Перенаправляем на оплату...", "success");
+          window.location.href = String(payload.pay_url);
+        } catch (_) {
+          setStatus(checkoutStatus, "Ошибка сети при создании платежа.", "error");
+        } finally {
+          if (button) {
+            button.disabled = false;
+            button.textContent = oldText || "Подключить VPN";
+          }
+        }
+      }
+
+      async function refreshVpnMe() {
+        const context = readOrderContext();
+        if (!context.orderId) {
+          setStatus(vpnMeStatus, "После оплаты откройте ссылку с order_id, чтобы увидеть данные VPN.", "");
+          return;
+        }
+
+        const params = new URLSearchParams();
+        params.set("order_id", context.orderId);
+        if (context.token) params.set("t", context.token);
+
+        setStatus(vpnMeStatus, "Обновляем данные...", "");
+        try {
+          const response = await fetch(`/api/vpn/me?${params.toString()}`, { cache: "no-store" });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message = String(payload?.message || payload?.error || "Не удалось получить VPN-данные.");
+            setStatus(vpnMeStatus, message, "error");
+            return;
+          }
+
+          uuidEl.textContent = String(payload?.uuid || "—");
+          planEl.textContent = String(payload?.plan || "—");
+          expiresAtEl.textContent = formatDate(payload?.expiresAt);
+          trafficEl.textContent = formatBytes(payload?.trafficUsedBytes);
+          activeEl.textContent = payload?.isActive ? "Активен" : "Неактивен";
+          currentAccessLink = String(payload?.accessLink || "");
+          copyBtn.disabled = !currentAccessLink;
+          setStatus(vpnMeStatus, "VPN-данные обновлены.", "success");
+        } catch (_) {
+          setStatus(vpnMeStatus, "Ошибка сети при запросе /vpn/me.", "error");
+        }
+      }
+
+      function bindEvents() {
+        const buttons = Array.from(document.querySelectorAll("[data-vpn-buy]"));
+        buttons.forEach((button) => {
+          button.addEventListener("click", () => {
+            const slug = String(button.getAttribute("data-vpn-buy") || "").trim().toLowerCase();
+            if (!slug) return;
+            startCheckout(slug, button);
+          });
+        });
+
+        if (copyBtn) {
+          copyBtn.addEventListener("click", async () => {
+            if (!currentAccessLink) return;
+            try {
+              await navigator.clipboard.writeText(currentAccessLink);
+              setStatus(vpnMeStatus, "VLESS ссылка скопирована.", "success");
+            } catch (_) {
+              setStatus(vpnMeStatus, "Не удалось скопировать ссылку.", "error");
+            }
+          });
+        }
+
+        if (refreshBtn) {
+          refreshBtn.addEventListener("click", () => {
+            refreshVpnMe();
+          });
+        }
+      }
+
+      function hydrateEmail() {
+        try {
+          const stored = String(localStorage.getItem(CHECKOUT_EMAIL_KEY) || "").trim().toLowerCase();
+          if (stored && emailInput && !emailInput.value) emailInput.value = stored;
+        } catch (_) {}
+      }
+
+      hydrateEmail();
+      bindEvents();
+      loadPlans();
+      refreshVpnMe();
+    })();
+  </script>
+</body>
+</html>

@@ -21,6 +21,7 @@ import { partnerEarningsRouter, partnersRouter } from "./modules/partners/partne
 import { publicPaymentsRouter } from "./modules/payments/public-payments.routes";
 import { cdkKeysRouter } from "./modules/cdks/cdks.routes";
 import { verifyAdminOrigin } from "./common/security/csrf-origin";
+import { vpnAdminRouter, vpnPublicRouter } from "./modules/vpn/vpn.routes";
 
 export function createApp() {
   const app = express();
@@ -59,6 +60,8 @@ export function createApp() {
   app.use("/api/payments", publicPaymentsRouter);
   app.use("/api", publicOrdersRouter);
   app.use("/api", publicPromoCodesRouter);
+  app.use("/api", vpnPublicRouter);
+  app.use("/", vpnPublicRouter);
   app.use("/api/admin/orders", ordersRouter);
   app.use("/api/admin/analytics", analyticsRouter);
   app.use("/api/admin/audit", auditRouter);
@@ -67,6 +70,8 @@ export function createApp() {
   app.use("/api/admin/partners", partnersRouter);
   app.use("/api/admin/partner-earnings", partnerEarningsRouter);
   app.use("/api/admin/cdks", cdkKeysRouter);
+  app.use("/api/admin/vpn", vpnAdminRouter);
+  app.use("/admin/vpn", vpnAdminRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

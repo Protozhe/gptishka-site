@@ -1,10 +1,10 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ru">
 <head>
 <script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Оплата обрабатывается - GPTишка</title>
+<title>РћРїР»Р°С‚Р° РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ - GPTРёС€РєР°</title>
 <link rel="stylesheet" href="/assets/css/status-pages.css?v=20260310a" />
 <link rel="icon" href="/favicon.ico" sizes="any" />
 <link rel="shortcut icon" href="/favicon.ico" />
@@ -25,15 +25,15 @@
 <body class="status-page status-page--center">
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
   <section class="status-card">
-    <h1 class="status-title">Оплата обрабатывается</h1>
-    <p class="status-text">Проверяем платеж через webhook. Обычно это занимает до 30 секунд.</p>
-    <div class="meta">Заказ: <strong id="orderId">-</strong></div>
+    <h1 class="status-title">РћРїР»Р°С‚Р° РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ</h1>
+    <p class="status-text">РџСЂРѕРІРµСЂСЏРµРј РїР»Р°С‚РµР¶ С‡РµСЂРµР· webhook. РћР±С‹С‡РЅРѕ СЌС‚Рѕ Р·Р°РЅРёРјР°РµС‚ РґРѕ 30 СЃРµРєСѓРЅРґ.</p>
+    <div class="meta">Р—Р°РєР°Р·: <strong id="orderId">-</strong></div>
     <div class="meta">Email: <strong id="emailMasked">-</strong></div>
-    <div class="meta">Сумма: <strong id="amount">-</strong></div>
-    <div class="status pending" id="statusText">Ожидаем подтверждение платежа...</div>
+    <div class="meta">РЎСѓРјРјР°: <strong id="amount">-</strong></div>
+    <div class="status pending" id="statusText">РћР¶РёРґР°РµРј РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїР»Р°С‚РµР¶Р°...</div>
     <div class="actions">
-      <a class="btn primary" href="/">На главную</a>
-      <a class="btn" href="/index.html#pricing">К тарифам</a>
+      <a class="btn primary" href="/">РќР° РіР»Р°РІРЅСѓСЋ</a>
+      <a class="btn" href="/index.html#pricing">Рљ С‚Р°СЂРёС„Р°Рј</a>
     </div>
   </section>
 
@@ -74,9 +74,9 @@
     }, 35000);
 
     if (!orderId) {
-      orderIdEl.textContent = "не найден";
+      orderIdEl.textContent = "РЅРµ РЅР°Р№РґРµРЅ";
       statusEl.className = "status failed";
-      statusEl.textContent = "Не удалось определить order_id. Откройте оплату заново.";
+      statusEl.textContent = "РќРµ СѓРґР°Р»РѕСЃСЊ РѕРїСЂРµРґРµР»РёС‚СЊ order_id. РћС‚РєСЂРѕР№С‚Рµ РѕРїР»Р°С‚Сѓ Р·Р°РЅРѕРІРѕ.";
     } else {
       orderIdEl.textContent = orderId;
       try {
@@ -100,7 +100,7 @@
       }
 
       statusEl.className = "status pending";
-      statusEl.textContent = "Платеж еще в обработке. Обновите страницу через несколько секунд.";
+      statusEl.textContent = "РџР»Р°С‚РµР¶ РµС‰Рµ РІ РѕР±СЂР°Р±РѕС‚РєРµ. РћР±РЅРѕРІРёС‚Рµ СЃС‚СЂР°РЅРёС†Сѓ С‡РµСЂРµР· РЅРµСЃРєРѕР»СЊРєРѕ СЃРµРєСѓРЅРґ.";
     }
 
     async function requestStatus(id) {
@@ -112,6 +112,7 @@
         const status = String(payload?.status || "PENDING").toUpperCase();
         const amount = Number(payload?.finalAmount || 0);
         const currency = String(payload?.currency || "RUB");
+        const deliveryMode = String(payload?.deliveryMode || "activation").trim().toLowerCase();
 
         if (payload?.emailMasked) emailMaskedEl.textContent = payload.emailMasked;
         amountEl.textContent = `${formatAmount(amount)} ${currency}`;
@@ -119,8 +120,26 @@
         if (status === "PAID") {
           trackPurchaseRecord(id, payload);
           handlePaidOrder(id);
+          if (deliveryMode === "vpn") {
+            statusEl.className = "status paid";
+            statusEl.textContent = "Оплачено. Переводим в личный кабинет VPN...";
+            try {
+              localStorage.setItem("gptishka_vpn_order_id", id);
+              if (linkToken) localStorage.setItem(`gptishka_vpn_order_token:${id}`, linkToken);
+            } catch (_) {
+              // Ignore storage write errors.
+            }
+            setTimeout(() => {
+              const url = new URL("/store/vpn", window.location.origin);
+              url.searchParams.set("order_id", id);
+              if (linkToken) url.searchParams.set("t", linkToken);
+              window.location.href = url.toString();
+            }, 1200);
+            return true;
+          }
+
           statusEl.className = "status paid";
-          statusEl.textContent = "Оплачено. Переводим на страницу активации...";
+          statusEl.textContent = "РћРїР»Р°С‡РµРЅРѕ. РџРµСЂРµРІРѕРґРёРј РЅР° СЃС‚СЂР°РЅРёС†Сѓ Р°РєС‚РёРІР°С†РёРё...";
           setTimeout(() => {
             const url = new URL("/redeem-start.html", window.location.origin);
             url.searchParams.set("order_id", id);
@@ -132,12 +151,12 @@
 
         if (status === "FAILED" || status === "REFUNDED") {
           statusEl.className = "status failed";
-          statusEl.textContent = status === "REFUNDED" ? "Платеж возвращен." : "Оплата не подтверждена.";
+          statusEl.textContent = status === "REFUNDED" ? "РџР»Р°С‚РµР¶ РІРѕР·РІСЂР°С‰РµРЅ." : "РћРїР»Р°С‚Р° РЅРµ РїРѕРґС‚РІРµСЂР¶РґРµРЅР°.";
           return true;
         }
 
         statusEl.className = "status pending";
-        statusEl.textContent = "Ожидаем подтверждение платежа...";
+        statusEl.textContent = "РћР¶РёРґР°РµРј РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїР»Р°С‚РµР¶Р°...";
         return false;
       } catch (_) {
         return false;

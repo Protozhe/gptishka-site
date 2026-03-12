@@ -122,6 +122,20 @@ const envSchema = z.object({
   ACTIVATION_DEVICE_ID: z.string().optional().default("web"),
   ACTIVATION_TOKEN_ENCRYPTION_KEY: z.string().optional().default(""),
   ACTIVATION_STORED_TOKEN_TTL_HOURS: z.coerce.number().int().min(1).max(24 * 30).default(24 * 7),
+  VPN_SERVER_ID: z.string().min(2).default("eu-1"),
+  VPN_3XUI_BASE_URL: z.string().optional().default(""),
+  VPN_3XUI_USERNAME: z.string().optional().default(""),
+  VPN_3XUI_PASSWORD: z.string().optional().default(""),
+  VPN_3XUI_INBOUND_ID: z.coerce.number().int().min(0).default(0),
+  VPN_3XUI_CLIENT_TOTAL_GB: z.coerce.number().min(0).default(0),
+  VPN_ACCESS_LINK_TEMPLATE: z.string().optional().default(""),
+  VPN_VLESS_HOST: z.string().optional().default("vpn.gptishka.shop"),
+  VPN_VLESS_PORT: z.coerce.number().int().min(1).max(65535).default(443),
+  VPN_VLESS_SNI: z.string().optional().default("vpn.gptishka.shop"),
+  VPN_VLESS_PBK: z.string().optional().default(""),
+  VPN_VLESS_SID: z.string().optional().default(""),
+  VPN_VLESS_FP: z.string().optional().default("chrome"),
+  VPN_VLESS_PATH: z.string().optional().default(""),
 });
 
 const parsed = envSchema.safeParse(process.env);

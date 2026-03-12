@@ -1148,6 +1148,34 @@ function createApp() {
     }
   });
 
+  app.get("/api/vpn/me", async (req, res) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+    try {
+      const qs = String(req.url || "").includes("?") ? String(req.url || "").split("?")[1] : "";
+      const suffix = qs ? `?${qs}` : "";
+      const response = await fetch(`${ADMIN_BACKEND_URL}/api/vpn/me${suffix}`, {
+        method: "GET",
+        headers: buildAdminProxyHeaders(req, { method: "GET" }),
+        signal: controller.signal,
+      });
+      const body = await response.text();
+      clearTimeout(timeout);
+      if (!response.ok) {
+        return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "VPN fetch failed" }));
+      }
+      return res.status(response.status).type("application/json").send(body);
+    } catch (_) {
+      clearTimeout(timeout);
+      return res.status(502).json({ error: "VPN API unavailable" });
+    }
+  });
+
+  app.get("/vpn/me", (req, res) => {
+    const qs = String(req.url || "").includes("?") ? String(req.url || "").split("?")[1] : "";
+    return res.redirect(307, qs ? `/api/vpn/me?${qs}` : "/api/vpn/me");
+  });
+
   async function fetchStorefrontStatsFromAdmin(req) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 6000);
@@ -1377,6 +1405,14 @@ function createApp() {
       return next();
     }
     return res.sendFile(path.join(__dirname, "admin", "index.html"));
+  });
+
+  app.get("/store/vpn", (_req, res) => {
+    res.sendFile(path.join(__dirname, "store", "vpn", "index.html"));
+  });
+
+  app.get("/store/vpn/", (_req, res) => {
+    res.sendFile(path.join(__dirname, "store", "vpn", "index.html"));
   });
 
   app.use((req, res) => {

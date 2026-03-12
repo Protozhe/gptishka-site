@@ -163,6 +163,7 @@ model Order {
   items         OrderItem[]
   payments      Payment[]
   licenseKeys   LicenseKey[]
+  vpnAccesses   VpnAccess[]
   partnerEarning PartnerEarning?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
@@ -261,6 +262,47 @@ model PartnerEarning {
   @@index([partnerId])
   @@index([status])
   @@index([createdAt])
+}
+
+model VpnAccess {
+  id               String     @id @default(cuid())
+  telegramId       String?    @map("telegram_id")
+  email            String?
+  orderId          String?    @map("order_id")
+  order            Order?     @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  uuid             String     @unique
+  accessLink       String     @map("access_link")
+  plan             String
+  source           String
+  serverId         String     @default("eu-1") @map("server_id")
+  trafficUsedBytes BigInt     @default(0) @map("traffic_used_bytes")
+  expiresAt        DateTime   @map("expires_at")
+  isActive         Boolean    @default(true) @map("is_active")
+  disabledAt       DateTime?  @map("disabled_at")
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+  events           VpnEvent[]
+
+  @@index([telegramId])
+  @@index([email])
+  @@index([orderId])
+  @@index([isActive, expiresAt])
+  @@map("vpn_access")
+}
+
+model VpnEvent {
+  id          String     @id @default(cuid())
+  vpnAccessId String?    @map("vpn_access_id")
+  vpnAccess   VpnAccess? @relation(fields: [vpnAccessId], references: [id], onDelete: SetNull)
+  telegramId  String?    @map("telegram_id")
+  eventType   String     @map("event_type")
+  meta        Json?
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  @@index([vpnAccessId])
+  @@index([telegramId])
+  @@index([eventType, createdAt])
+  @@map("vpn_events")
 }
 
 model AuditLog {

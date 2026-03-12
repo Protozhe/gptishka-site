@@ -11,6 +11,7 @@ import { activationStore, type ActivationRecord } from "./activation.store";
 import { deliverProduct } from "./delivery.service";
 import { resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { manualCredentialsStore } from "../products/manual-credentials.store";
+import { toVpnMePayload, vpnService } from "../../services/vpn.service";
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
@@ -35,6 +36,15 @@ function resolveSupportEmail() {
   const raw = String(env.SMTP_FROM || "").trim();
   const emailMatch = raw.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
   return String(emailMatch?.[0] || DEFAULT_SUPPORT_EMAIL).toLowerCase();
+}
+
+function assertTokenActivationDeliveryMode(activationInfo: any) {
+  const deliveryMode = String(activationInfo?.deliveryMode || "activation").trim().toLowerCase();
+  if (deliveryMode === "activation") return;
+  if (deliveryMode === "vpn") {
+    throw new AppError("This product is delivered as VPN access. Token activation is not required.", 409);
+  }
+  throw new AppError("This product is delivered via login/password. Token activation is not required.", 409);
 }
 
 async function withActivationOrderLock<T>(orderId: string, job: () => Promise<T>) {
@@ -200,10 +210,12 @@ export const ordersService = {
 
     const firstItem = order.items[0];
     const planId = firstItem?.product?.id || firstItem?.productId || null;
+    const deliveryMode = resolveProductDeliveryType(firstItem?.product?.tags || []);
 
     return {
       status: order.status,
       planId,
+      deliveryMode,
       emailMasked: maskEmail(order.email),
       finalAmount: Number(order.totalAmount),
       currency: order.currency,
@@ -266,6 +278,23 @@ export const ordersService = {
       };
     }
 
+    if (deliveryType === "vpn") {
+      await deliverProduct(order);
+      const access = await vpnService.getLatestByOrderOrIdentity({
+        orderId: order.id,
+        email: order.email,
+      });
+      if (!access) {
+        throw new AppError("VPN access is not issued yet", 409);
+      }
+      return {
+        orderId: order.id,
+        deliveryMode: "vpn",
+        status: "vpn_ready",
+        ...toVpnMePayload(access),
+      };
+    }
+
     const activation = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
     if (!activation) {
       await this.reconcilePublicStatus(orderId);
@@ -283,6 +312,7 @@ export const ordersService = {
 
     return {
       orderId: current.orderId,
+      deliveryMode: "activation",
       product: current.productKey,
       status: current.status,
       taskId: current.taskId || null,
@@ -294,17 +324,13 @@ export const ordersService = {
 
   async startActivation(orderId: string, token: string, orderToken?: string) {
     const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
-    if (String(activationInfo?.deliveryMode || "") === "credentials") {
-      throw new AppError("This product is delivered via login/password. Token activation is not required.", 409);
-    }
+    assertTokenActivationDeliveryMode(activationInfo);
     return withActivationOrderLock(orderId, async () => startActivationUnsafe(orderId, token, orderToken));
   },
 
   async validateActivationToken(orderId: string, token: string, orderToken?: string) {
     const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
-    if (String(activationInfo?.deliveryMode || "") === "credentials") {
-      throw new AppError("This product is delivered via login/password. Token activation is not required.", 409);
-    }
+    assertTokenActivationDeliveryMode(activationInfo);
 
     const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
     if (!stored?.cdk) {
@@ -373,9 +399,7 @@ export const ordersService = {
       const order = await assertPaidOrderAccess(orderId, orderToken);
 
       const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
-      if (String(activationInfo?.deliveryMode || "") === "credentials") {
-        throw new AppError("This product is delivered via login/password. Token activation is not required.", 409);
-      }
+      assertTokenActivationDeliveryMode(activationInfo);
       const current = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
       if (current?.status === "success") {
         throw new AppError("Activation is already completed", 409);
@@ -448,9 +472,7 @@ export const ordersService = {
   async getActivationTask(orderId: string, taskId: string, orderToken?: string) {
     assertOrderId(orderId);
     const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
-    if (String(activationInfo?.deliveryMode || "") === "credentials") {
-      throw new AppError("This product is delivered via login/password. Token activation is not required.", 409);
-    }
+    assertTokenActivationDeliveryMode(activationInfo);
     const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
     const payload = await fetchActivationTaskPayload(taskId, stored?.deviceId || null);
     updateActivationFromProviderPayload(orderId, taskId, payload);
@@ -566,6 +588,51 @@ export const ordersService = {
       };
     }
 
+    if (deliveryType === "vpn") {
+      if (order.status === OrderStatus.PAID) {
+        await deliverProduct(order);
+      }
+
+      const access = await vpnService.getLatestByOrderOrIdentity({
+        orderId: order.id,
+        email: order.email,
+      });
+      const vpnPayload = access ? toVpnMePayload(access) : null;
+      const certainty =
+        order.status !== OrderStatus.PAID
+          ? {
+              code: "ORDER_NOT_PAID",
+              label: "Order is not paid",
+            }
+          : vpnPayload
+          ? {
+              code: "VPN_READY",
+              label: "VPN access is issued",
+            }
+          : {
+              code: "VPN_PENDING",
+              label: "VPN access is not issued yet",
+            };
+
+      return {
+        orderId: order.id,
+        orderStatus: order.status,
+        emailMasked: maskEmail(order.email),
+        deliveryMode: "vpn",
+        product: product
+          ? {
+              id: product.id,
+              slug: product.slug,
+              title: product.title,
+            }
+          : null,
+        activation: null,
+        vpn: vpnPayload,
+        certainty,
+        isActivatedConfirmed: Boolean(vpnPayload?.isActive),
+      };
+    }
+
     let activation = normalizeActivationRecordForRead(activationStore.findByOrderId(id));
     if (!activation && order.status === OrderStatus.PAID) {
       await deliverProduct(order);
@@ -603,6 +670,7 @@ export const ordersService = {
       orderId: order.id,
       orderStatus: order.status,
       emailMasked: maskEmail(order.email),
+      deliveryMode: "activation",
       product: product
         ? {
             id: product.id,
