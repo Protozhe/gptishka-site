@@ -3,7 +3,6 @@ import { OrderStatus } from "@prisma/client";
 import { Request, Response } from "express";
 import { AppError } from "../../common/errors/app-error";
 import { asyncHandler } from "../../common/http/async-handler";
-import { resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { prisma } from "../../config/prisma";
 import { deliverProduct } from "../orders/delivery.service";
 import { resolveVpnProvisionPayload, toVpnMePayload, vpnService } from "../../services/vpn.service";
@@ -42,8 +41,8 @@ async function resolveVpnAccessByOrder(orderId: string, orderToken?: string) {
   }
 
   const firstItem = order.items[0];
-  const deliveryMode = resolveProductDeliveryType(firstItem?.product?.tags || []);
-  if (deliveryMode !== "vpn") {
+  const vpnProvision = resolveVpnProvisionPayload(firstItem?.product || null);
+  if (!vpnProvision) {
     throw new AppError("This order does not contain VPN delivery", 409);
   }
 
@@ -60,8 +59,6 @@ async function resolveVpnAccessByOrder(orderId: string, orderToken?: string) {
   }
 
   if (!access) {
-    const vpnProvision = resolveVpnProvisionPayload(firstItem?.product || null);
-    if (!vpnProvision) throw new AppError("VPN plan is not configured", 409);
     access = await vpnService.createVpnUser({
       orderId: order.id,
       email: order.email,

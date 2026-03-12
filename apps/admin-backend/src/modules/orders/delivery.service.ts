@@ -21,6 +21,21 @@ export async function deliverProduct(order: Order) {
   const firstItem = fullOrder.items[0];
   const product = firstItem?.product || null;
   const deliveryType = resolveProductDeliveryType(product?.tags || []);
+  const vpnProvision = resolveVpnProvisionPayload(product);
+
+  async function ensureBundleVpnAccess() {
+    if (!vpnProvision || vpnProvision.source !== "bundle") return;
+    const access = await vpnService.createVpnUser({
+      orderId: order.id,
+      email: order.email,
+      plan: vpnProvision.plan,
+      durationDays: vpnProvision.durationDays,
+      source: "bundle",
+    });
+    console.info(
+      `[delivery] bundle vpn access ready for order=${order.id} uuid=${access.uuid} plan=${access.plan} source=${access.source}`
+    );
+  }
 
   if (deliveryType === "credentials") {
     const productId = String(product?.id || firstItem?.productId || "").trim();
@@ -32,6 +47,7 @@ export async function deliverProduct(order: Order) {
     const existing = manualCredentialsStore.findByOrderId(order.id);
     if (existing && existing.productId === productId) {
       console.info(`[delivery] credentials already assigned order=${order.id} credential=${existing.id}`);
+      await ensureBundleVpnAccess();
       return;
     }
 
@@ -47,11 +63,11 @@ export async function deliverProduct(order: Order) {
     }
 
     console.info(`[delivery] assigned credentials for order=${order.id} product=${productId}`);
+    await ensureBundleVpnAccess();
     return;
   }
 
   if (deliveryType === "vpn") {
-    const vpnProvision = resolveVpnProvisionPayload(product);
     if (!vpnProvision) {
       console.warn(`[delivery] vpn product config not resolved for order=${order.id}`);
       return;
@@ -76,6 +92,7 @@ export async function deliverProduct(order: Order) {
   const existing = activationStore.findByOrderId(order.id);
   if (existing) {
     console.info(`[delivery] activation already exists order=${order.id} cdk=${existing.cdk}`);
+    await ensureBundleVpnAccess();
     return;
   }
 
@@ -119,4 +136,5 @@ export async function deliverProduct(order: Order) {
   });
 
   console.info(`[delivery] issued CDK for order ${order.id} (${order.email}) product=${productKey}`);
+  await ensureBundleVpnAccess();
 }

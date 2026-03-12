@@ -140,6 +140,13 @@ function parsePlanTag(tags: string[] | null | undefined) {
   return normalizePlan(raw);
 }
 
+function hasBundleVpnTag(tags: string[] | null | undefined) {
+  const list = Array.isArray(tags) ? tags : [];
+  return list
+    .map((tag) => String(tag || "").trim().toLowerCase())
+    .some((tag) => tag === "bundle:vpn" || tag === "vpn:bundle" || tag === "with:vpn" || tag === "with_vpn");
+}
+
 function is3xUiConfigured() {
   return Boolean(
     String(env.VPN_3XUI_BASE_URL || "").trim() &&
@@ -370,14 +377,17 @@ export function toVpnMePayload(access: VpnAccess) {
 
 export function resolveVpnProvisionPayload(product: Pick<Product, "slug" | "tags"> | null | undefined): VpnProvisionPayload | null {
   if (!product) return null;
-  if (resolveProductDeliveryType(product.tags || []) !== "vpn") return null;
+  const tags = product.tags || [];
+  const isPrimaryVpnDelivery = resolveProductDeliveryType(tags) === "vpn";
+  const isVpnBundleAddon = hasBundleVpnTag(tags);
+  if (!isPrimaryVpnDelivery && !isVpnBundleAddon) return null;
 
   const slug = normalizePlan(product.slug);
+  const taggedPlan = parsePlanTag(tags);
+  const plan = normalizePlan(taggedPlan || (isPrimaryVpnDelivery ? slug : "vpn_month") || "vpn_month") || "vpn_month";
   const directDays = slug ? DIRECT_VPN_PLANS[slug] : 0;
-  const taggedPlan = parsePlanTag(product.tags || []);
-  const plan = normalizePlan(taggedPlan || slug || "vpn_bundle") || "vpn_bundle";
-  const durationDays = toPositiveDays(parseDaysTag(product.tags || []) || DIRECT_VPN_PLANS[plan] || directDays, DEFAULT_VPN_DURATION_DAYS);
-  const source: VpnSource = DIRECT_VPN_PLANS[slug] ? "vpn" : "bundle";
+  const durationDays = toPositiveDays(parseDaysTag(tags) || DIRECT_VPN_PLANS[plan] || directDays, DEFAULT_VPN_DURATION_DAYS);
+  const source: VpnSource = isPrimaryVpnDelivery ? "vpn" : "bundle";
 
   return {
     plan,

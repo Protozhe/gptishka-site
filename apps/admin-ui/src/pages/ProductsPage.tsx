@@ -6,6 +6,7 @@ import { money } from "../lib/format";
 
 type BadgeType = "none" | "best" | "new" | "hit" | "sale" | "popular" | "limited" | "gift" | "pro";
 type ProductDeliveryType = "activation" | "credentials" | "vpn";
+type VpnBundlePlan = "vpn_month" | "vpn_halfyear" | "vpn_year";
 
 type Product = {
   id: string;
@@ -120,6 +121,57 @@ function deliveryMethodLabel(deliveryType: ProductDeliveryType): string {
   return "Метод 1: Активация по ключу";
 }
 
+const VPN_BUNDLE_FLAG_TAG = "bundle:vpn";
+const VPN_PLAN_TAG_PREFIX = "vpn:plan:";
+const VPN_DAYS_TAG_PREFIX = "vpn:days:";
+const VPN_BUNDLE_PLAN_DAYS: Record<VpnBundlePlan, number> = {
+  vpn_month: 30,
+  vpn_halfyear: 180,
+  vpn_year: 365,
+};
+
+function normalizePlanCandidate(value: string): VpnBundlePlan {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "vpn_halfyear") return "vpn_halfyear";
+  if (normalized === "vpn_year") return "vpn_year";
+  return "vpn_month";
+}
+
+function parseVpnBundleConfig(tags: string[] = []): { enabled: boolean; plan: VpnBundlePlan } {
+  const list = Array.isArray(tags) ? tags : [];
+  const normalized = list.map((tag) => String(tag || "").trim().toLowerCase());
+  const enabled = normalized.includes(VPN_BUNDLE_FLAG_TAG);
+  const planTag = normalized.find((tag) => tag.startsWith(VPN_PLAN_TAG_PREFIX));
+  if (planTag) {
+    return { enabled, plan: normalizePlanCandidate(planTag.slice(VPN_PLAN_TAG_PREFIX.length)) };
+  }
+
+  const daysTag = normalized.find((tag) => tag.startsWith(VPN_DAYS_TAG_PREFIX));
+  const days = Number(daysTag?.slice(VPN_DAYS_TAG_PREFIX.length) || "");
+  if (days >= 365) return { enabled, plan: "vpn_year" };
+  if (days >= 180) return { enabled, plan: "vpn_halfyear" };
+  return { enabled, plan: "vpn_month" };
+}
+
+function withVpnBundleTags(tags: string[] = [], enabled: boolean, plan: VpnBundlePlan): string[] {
+  const list = Array.isArray(tags) ? tags : [];
+  const cleaned = list.filter((tag) => {
+    const normalized = String(tag || "").trim().toLowerCase();
+    if (!normalized) return false;
+    if (normalized === VPN_BUNDLE_FLAG_TAG) return false;
+    if (normalized.startsWith(VPN_PLAN_TAG_PREFIX)) return false;
+    if (normalized.startsWith(VPN_DAYS_TAG_PREFIX)) return false;
+    return true;
+  });
+  if (!enabled) return cleaned;
+  return [...cleaned, VPN_BUNDLE_FLAG_TAG, `${VPN_PLAN_TAG_PREFIX}${plan}`, `${VPN_DAYS_TAG_PREFIX}${VPN_BUNDLE_PLAN_DAYS[plan]}`];
+}
+
+function withoutVpnBundleFlag(tags: string[] = []): string[] {
+  const list = Array.isArray(tags) ? tags : [];
+  return list.filter((tag) => String(tag || "").trim().toLowerCase() !== VPN_BUNDLE_FLAG_TAG);
+}
+
 function buildTags(title: string, badge: BadgeType): string[] {
   const tags = title
     .toLowerCase()
@@ -130,6 +182,12 @@ function buildTags(title: string, badge: BadgeType): string[] {
 
   const base = tags.length ? tags : ["subscription"];
   return withBadgeTag(base, badge);
+}
+
+function vpnBundlePlanLabel(plan: VpnBundlePlan): string {
+  if (plan === "vpn_halfyear") return "VPN 6 месяцев (180 дней)";
+  if (plan === "vpn_year") return "VPN 12 месяцев (365 дней)";
+  return "VPN 1 месяц (30 дней)";
 }
 
 function badgeLabel(badge: BadgeType): string {
@@ -170,6 +228,8 @@ export default function ProductsPage() {
   const [modalDescriptionEn, setModalDescriptionEn] = useState("");
   const [badge, setBadge] = useState<BadgeType>("none");
   const [deliveryType, setDeliveryType] = useState<ProductDeliveryType>("activation");
+  const [vpnBundleEnabled, setVpnBundleEnabled] = useState(false);
+  const [vpnBundlePlan, setVpnBundlePlan] = useState<VpnBundlePlan>("vpn_month");
   const [editingTags, setEditingTags] = useState<string[]>([]);
   const [credentialsImportText, setCredentialsImportText] = useState("");
   const [credentialsMessage, setCredentialsMessage] = useState<string | null>(null);
@@ -261,6 +321,8 @@ export default function ProductsPage() {
     setModalDescriptionEn("");
     setBadge("none");
     setDeliveryType("activation");
+    setVpnBundleEnabled(false);
+    setVpnBundlePlan("vpn_month");
     setEditingTags([]);
     setCredentialsImportText("");
     setCredentialsMessage(null);
@@ -294,6 +356,9 @@ export default function ProductsPage() {
     setModalDescriptionEn(parsedModalEn.cleanDescription || "");
     setBadge(getBadgeFromTags(item.tags || []));
     setDeliveryType(resolveDeliveryType(item));
+    const bundleConfig = parseVpnBundleConfig(item.tags || []);
+    setVpnBundleEnabled(bundleConfig.enabled);
+    setVpnBundlePlan(bundleConfig.plan);
     setEditingTags(Array.isArray(item.tags) ? item.tags : []);
     setCredentialsImportText("");
     setCredentialsMessage(null);
@@ -370,6 +435,9 @@ export default function ProductsPage() {
     }
 
     if (editingId) {
+      const preparedTags = deliveryType === "vpn"
+        ? withoutVpnBundleFlag(withBadgeTag(editingTags, badge))
+        : withVpnBundleTags(withBadgeTag(editingTags, badge), vpnBundleEnabled, vpnBundlePlan);
       await updateProduct.mutateAsync({
         id: editingId,
         payload: {
@@ -380,7 +448,7 @@ export default function ProductsPage() {
           modalDescription: cleanModalDescription,
           modalDescriptionEn: cleanModalDescriptionEn,
           price: normalizedPrice,
-          tags: withBadgeTag(editingTags, badge),
+          tags: preparedTags,
           deliveryType,
           deliveryMethod: deliveryMethodNumber(deliveryType),
         },
@@ -389,6 +457,10 @@ export default function ProductsPage() {
       return;
     }
 
+    const createdBaseTags = buildTags(cleanTitle, badge);
+    const preparedTags = deliveryType === "vpn"
+      ? withoutVpnBundleFlag(createdBaseTags)
+      : withVpnBundleTags(createdBaseTags, vpnBundleEnabled, vpnBundlePlan);
     await createProduct.mutateAsync({
       title: cleanTitle,
       titleEn: cleanTitleEn,
@@ -400,7 +472,7 @@ export default function ProductsPage() {
       oldPrice: null,
       currency: "RUB",
       category: "Subscriptions",
-      tags: buildTags(cleanTitle, badge),
+      tags: preparedTags,
       stock: null,
       isActive: true,
       deliveryType,
@@ -527,6 +599,30 @@ export default function ProductsPage() {
             <div>
               Метод 3: после оплаты автоматически создается/продлевается VPN-доступ (VLESS Reality) через 3x-ui API.
             </div>
+            {deliveryType !== "vpn" && (
+              <div className="mt-2 rounded-lg border border-slate-200 bg-white p-2 text-xs dark:border-slate-700 dark:bg-slate-950">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={vpnBundleEnabled}
+                    onChange={(e) => setVpnBundleEnabled(e.target.checked)}
+                  />
+                  <span className="font-semibold">Выдать VPN в пакете (bundle)</span>
+                </label>
+                {vpnBundleEnabled && (
+                  <div className="mt-2 grid gap-2 md:max-w-sm">
+                    <select className="input" value={vpnBundlePlan} onChange={(e) => setVpnBundlePlan(normalizePlanCandidate(e.target.value))}>
+                      <option value="vpn_month">{vpnBundlePlanLabel("vpn_month")}</option>
+                      <option value="vpn_halfyear">{vpnBundlePlanLabel("vpn_halfyear")}</option>
+                      <option value="vpn_year">{vpnBundlePlanLabel("vpn_year")}</option>
+                    </select>
+                    <div className="text-xs text-slate-600 dark:text-slate-300">
+                      При оплате этого товара клиент получит основную выдачу + VPN с источником <code>bundle</code>.
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <textarea
@@ -676,6 +772,7 @@ export default function ProductsPage() {
               {(Array.isArray(products.data?.items) ? products.data.items : []).map((item: Product) => {
                 const itemBadge = getBadgeFromTags(item.tags || []);
                 const itemDeliveryType = resolveDeliveryType(item);
+                const itemVpnBundle = parseVpnBundleConfig(item.tags || []);
                 return (
                   <tr className="border-t border-slate-200 dark:border-slate-800" key={item.id}>
                     <td className="px-4 py-3">
@@ -684,7 +781,12 @@ export default function ProductsPage() {
                     </td>
                     <td className="px-4 py-3">{item.category}</td>
                     <td className="px-4 py-3">{money(Number(item.price), item.currency)}</td>
-                    <td className="px-4 py-3">{deliveryMethodLabel(itemDeliveryType)}</td>
+                    <td className="px-4 py-3">
+                      <div>{deliveryMethodLabel(itemDeliveryType)}</div>
+                      {itemDeliveryType !== "vpn" && itemVpnBundle.enabled && (
+                        <div className="text-xs text-emerald-700 dark:text-emerald-400">+ VPN bundle: {vpnBundlePlanLabel(itemVpnBundle.plan)}</div>
+                      )}
+                    </td>
                     <td className="px-4 py-3">{badgeLabel(itemBadge)}</td>
                     <td className="px-4 py-3">
                       <span className={`badge ${item.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-700"}`}>
