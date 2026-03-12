@@ -20,6 +20,7 @@
     .vpn-profile-item strong { text-align: right; word-break: break-all; }
     .vpn-copy-wrap { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
     .vpn-copy-wrap .btn { min-width: 220px; }
+    .vpn-cabinet-actions { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
     @media (max-width: 720px) {
       .vpn-profile-item { flex-direction: column; }
       .vpn-copy-wrap .btn { width: 100%; min-width: 0; }
@@ -43,7 +44,7 @@
   </header>
 
   <main class="page vpn-page-wrap">
-    <section class="pricing">
+    <section class="pricing" id="vpnCatalogSection">
       <div class="pricing-header">
         <h1>GPTishka VPN</h1>
         <p>Работает при блокировках. VLESS Reality. Подключение за 1 минуту.</p>
@@ -86,10 +87,13 @@
       </div>
     </section>
 
-    <section class="pricing">
+    <section class="pricing" id="vpnCabinetSection">
       <div class="pricing-header">
         <h2>Личный кабинет VPN</h2>
         <p>Данные подтягиваются из <code>/vpn/me</code> по заказу после оплаты.</p>
+        <div class="vpn-cabinet-actions">
+          <button id="vpnShowPlansBtn" type="button" class="btn-secondary" hidden>Показать тарифы</button>
+        </div>
       </div>
       <article class="price-card">
         <div class="vpn-profile-grid">
@@ -136,6 +140,8 @@
       const vpnMeStatus = document.getElementById("vpnMeStatus");
       const copyBtn = document.getElementById("vpnCopyConfigBtn");
       const refreshBtn = document.getElementById("vpnRefreshBtn");
+      const catalogSection = document.getElementById("vpnCatalogSection");
+      const showPlansBtn = document.getElementById("vpnShowPlansBtn");
 
       const uuidEl = document.getElementById("vpnUuid");
       const planEl = document.getElementById("vpnPlan");
@@ -144,6 +150,35 @@
       const activeEl = document.getElementById("vpnActive");
 
       let currentAccessLink = "";
+      let isCatalogShownManually = false;
+
+      function hasOrderIdInQuery() {
+        const params = new URLSearchParams(window.location.search);
+        return Boolean(String(params.get("order_id") || params.get("orderId") || "").trim());
+      }
+
+      function setCatalogVisible(visible) {
+        if (!catalogSection) return;
+        catalogSection.hidden = !visible;
+      }
+
+      function applyCabinetFocusMode() {
+        if (isCatalogShownManually) {
+          setCatalogVisible(true);
+          if (showPlansBtn) showPlansBtn.textContent = "Скрыть тарифы";
+          return;
+        }
+        if (!hasOrderIdInQuery()) {
+          setCatalogVisible(true);
+          if (showPlansBtn) showPlansBtn.hidden = true;
+          return;
+        }
+        setCatalogVisible(false);
+        if (showPlansBtn) {
+          showPlansBtn.hidden = false;
+          showPlansBtn.textContent = "Показать тарифы";
+        }
+      }
 
       function setStatus(node, message, kind) {
         if (!node) return;
@@ -304,6 +339,7 @@
       }
 
       async function refreshVpnMe() {
+        applyCabinetFocusMode();
         const context = readOrderContext();
         if (!context.orderId) {
           setStatus(vpnMeStatus, "После оплаты откройте ссылку с order_id, чтобы увидеть данные VPN.", "");
@@ -364,6 +400,13 @@
             refreshVpnMe();
           });
         }
+
+        if (showPlansBtn) {
+          showPlansBtn.addEventListener("click", () => {
+            isCatalogShownManually = !isCatalogShownManually;
+            applyCabinetFocusMode();
+          });
+        }
       }
 
       function hydrateEmail() {
@@ -374,6 +417,7 @@
       }
 
       hydrateEmail();
+      applyCabinetFocusMode();
       bindEvents();
       loadPlans();
       refreshVpnMe();
