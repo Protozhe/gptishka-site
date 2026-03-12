@@ -42,6 +42,11 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
     }
 
+    .device-block,
+    .key-block {
+      min-height: 296px;
+    }
+
     .text-limit {
       max-width: 680px;
     }
@@ -140,20 +145,44 @@
       line-height: 1.45;
     }
 
+    .guide-stage {
+      position: relative;
+      min-height: 188px;
+    }
+
+    .guide-intro,
     .guide-card {
-      display: none;
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      transition: opacity .18s ease, visibility .18s ease;
+    }
+
+    .guide-intro.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .guide-card {
+      display: grid;
+      gap: 10px;
       border: 1px solid rgba(19, 138, 120, 0.22);
       border-radius: 12px;
       padding: 12px;
       background: rgba(255, 255, 255, 0.84);
       box-shadow: 0 8px 18px rgba(31, 39, 49, 0.08);
-      max-height: 200px;
+      max-height: 188px;
       overflow: auto;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
     }
 
     .guide-card.is-visible {
-      display: grid;
-      gap: 10px;
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
     }
 
     .guide-top {
@@ -344,6 +373,15 @@
         padding: 14px;
       }
 
+      .device-block,
+      .key-block {
+        min-height: auto;
+      }
+
+      .guide-stage {
+        min-height: 210px;
+      }
+
       .device-pills {
         flex-direction: column;
         overflow: visible;
@@ -389,7 +427,7 @@
 
       <div class="vpn-main-grid">
         <div class="vpn-left-column">
-          <div class="inner-block">
+          <div class="inner-block device-block">
             <h2 class="step-title">Шаг 1 — выберите устройство</h2>
             <div class="device-pills" role="tablist" aria-label="Выбор устройства">
               <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="windows">Windows</button>
@@ -397,25 +435,27 @@
               <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="ios">iOS</button>
             </div>
 
-            <p id="guideIntro" class="guide-intro text-limit">Шаг 2 — выберите устройство выше, затем скачайте приложение и выполните 4 шага подключения.</p>
+            <div id="guideStage" class="guide-stage">
+              <p id="guideIntro" class="guide-intro text-limit">Шаг 2 — выберите устройство выше, затем скачайте приложение и выполните 4 шага подключения.</p>
 
-            <div id="guideCard" class="guide-card">
-              <div class="guide-top">
-                <h3 id="guideTitle">Шаг 2 — установите приложение</h3>
-                <span id="guideTag" class="device-tag">Устройство не выбрано</span>
+              <div id="guideCard" class="guide-card">
+                <div class="guide-top">
+                  <h3 id="guideTitle">Шаг 2 — установите приложение</h3>
+                  <span id="guideTag" class="device-tag">Устройство не выбрано</span>
+                </div>
+
+                <div class="guide-actions">
+                  <a id="appDownloadBtn" class="btn" href="#" target="_blank" rel="noopener">Скачать приложение</a>
+                </div>
+
+                <ol id="guideSteps" class="guide-steps"></ol>
               </div>
-
-              <div class="guide-actions">
-                <a id="appDownloadBtn" class="btn" href="#" target="_blank" rel="noopener">Скачать приложение</a>
-              </div>
-
-              <ol id="guideSteps" class="guide-steps"></ol>
             </div>
           </div>
         </div>
 
         <aside class="vpn-right-column">
-          <div class="inner-block">
+          <div class="inner-block key-block">
             <h2 class="step-title">Ваш VPN ключ</h2>
 
             <div class="key-shell">
@@ -512,6 +552,7 @@
 
       const guideIntro = document.getElementById("guideIntro");
       const guideCard = document.getElementById("guideCard");
+      const guideStage = document.getElementById("guideStage");
       const guideTitle = document.getElementById("guideTitle");
       const guideTag = document.getElementById("guideTag");
       const appDownloadBtn = document.getElementById("appDownloadBtn");
@@ -558,7 +599,8 @@
         });
 
         if (!config) {
-          guideIntro.style.display = "block";
+          guideStage.classList.remove("has-selection");
+          guideIntro.classList.remove("is-hidden");
           guideCard.classList.remove("is-visible");
           guideTag.textContent = "Устройство не выбрано";
           appDownloadBtn.removeAttribute("href");
@@ -566,7 +608,8 @@
           return;
         }
 
-        guideIntro.style.display = "none";
+        guideStage.classList.add("has-selection");
+        guideIntro.classList.add("is-hidden");
         guideCard.classList.add("is-visible");
         guideTitle.textContent = "Шаг 2 — установите приложение";
         guideTag.textContent = config.title;
