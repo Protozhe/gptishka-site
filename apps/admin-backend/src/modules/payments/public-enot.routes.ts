@@ -5,6 +5,8 @@ import { asyncHandler } from "../../common/http/async-handler";
 import { AppError } from "../../common/errors/app-error";
 import { paymentsService } from "./payments.service";
 import { checkoutCreateRateLimit } from "../../common/security/rate-limit";
+import { prisma } from "../../config/prisma";
+import { resolveProductDeliveryType } from "../../common/utils/product-delivery";
 
 const createEnotPaymentSchema = z.object({
   email: z.string().email(),
@@ -50,7 +52,12 @@ publicEnotRouter.post(
     }
 
     const publicOrigin = resolvePublicOrigin(req) || `${req.protocol}://${req.get("host")}`;
-    const activationUrl = new URL("/redeem-start.html", publicOrigin);
+    const product = await prisma.product.findUnique({
+      where: { id: body.plan_id },
+      select: { tags: true },
+    });
+    const deliveryType = resolveProductDeliveryType(product?.tags || []);
+    const activationUrl = new URL(deliveryType === "vpn" ? "/store/vpn/activate" : "/redeem-start.html", publicOrigin);
     activationUrl.searchParams.set("order_id", created.orderId);
     if (created.redeemToken) {
       activationUrl.searchParams.set("t", created.redeemToken);

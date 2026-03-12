@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Активация VPN-доступа - GPTishka</title>
+  <meta
+    name="description"
+    content="Активация VPN-доступа GPTishka: получите персональный ключ и подключите устройство за 1-2 минуты."
+  />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2" />
+  <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260310r" />
+  <style>
+    .vpn-activation-wrap {
+      width: min(1120px, calc(100% - 24px));
+      margin: 16px auto 40px;
+      display: grid;
+      gap: 18px;
+    }
+    .vpn-hero h1 { margin-bottom: 10px; }
+    .vpn-hero p {
+      margin: 0;
+      line-height: 1.65;
+      color: var(--muted);
+    }
+
+    .vpn-warning {
+      margin-top: 16px;
+      border: 1px solid rgba(231, 125, 79, 0.32);
+      border-radius: 14px;
+      padding: 14px 16px;
+      background: linear-gradient(150deg, rgba(255, 251, 247, 0.95), rgba(255, 243, 232, 0.88));
+      color: #6e3f1c;
+      box-shadow: 0 10px 24px rgba(31, 39, 49, 0.09);
+      line-height: 1.56;
+      font-size: 14px;
+    }
+    .vpn-warning strong { color: #8d3c11; }
+
+    .vpn-key-layout { display: grid; gap: 14px; }
+    .vpn-key-box {
+      border: 1px solid rgba(19, 138, 120, 0.2);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.84);
+    }
+    .vpn-key-value {
+      margin: 0;
+      font: 600 13px/1.6 "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+      color: #1f2731;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .vpn-copy-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .vpn-soft-btn {
+      border-color: rgba(19, 138, 120, 0.22) !important;
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(238, 252, 249, 0.86)) !important;
+      color: #155a52 !important;
+      box-shadow:
+        0 10px 22px rgba(31, 39, 49, 0.09),
+        inset 0 1px 0 rgba(255, 255, 255, 0.92);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .vpn-soft-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(19, 138, 120, 0.34) !important;
+      box-shadow:
+        0 14px 28px rgba(19, 138, 120, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    }
+    .vpn-soft-btn:disabled {
+      opacity: .65;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .vpn-feedback {
+      min-height: 22px;
+      color: var(--muted);
+      font-size: 13px;
+      transition: all .2s ease;
+    }
+    .vpn-feedback.success,
+    .vpn-feedback.error {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      margin-top: 6px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.82);
+    }
+    .vpn-feedback.success {
+      color: #0f766e;
+      border-color: rgba(15, 118, 110, 0.24);
+      background: rgba(238, 252, 249, 0.92);
+    }
+    .vpn-feedback.error {
+      color: #b42318;
+      border-color: rgba(196, 77, 59, 0.26);
+      background: rgba(255, 245, 243, 0.9);
+    }
+
+    .vpn-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .vpn-meta-item {
+      border: 1px dashed rgba(31, 39, 49, 0.18);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.62);
+    }
+    .vpn-meta-item span {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .vpn-meta-item strong {
+      display: block;
+      font-size: 14px;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .os-selector {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .os-tab {
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.74), rgba(250, 241, 228, 0.44));
+      border-radius: 14px;
+      padding: 14px 12px;
+      cursor: pointer;
+      text-align: left;
+      display: grid;
+      gap: 8px;
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+      box-shadow: 0 9px 22px rgba(31, 39, 49, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.88);
+    }
+    .os-tab:hover { transform: translateY(-1px); }
+    .os-tab.is-active {
+      border-color: rgba(19, 138, 120, 0.42);
+      box-shadow: 0 12px 26px rgba(19, 138, 120, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.92);
+    }
+    .os-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .os-sub {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .os-icon {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      opacity: .9;
+    }
+
+    .instruction-panel { display: none; }
+    .instruction-panel.is-active { display: block; }
+    .instruction-panel h3 { margin-bottom: 10px; }
+    .instruction-panel ol {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 8px;
+      color: var(--text);
+    }
+    .instruction-hint {
+      margin-top: 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(19, 138, 120, 0.22);
+      padding: 10px 12px;
+      background: rgba(238, 252, 249, 0.78);
+      color: #18534a;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .vpn-info-list {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 8px;
+      color: var(--text);
+    }
+    .support-copy {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    @media (max-width: 900px) {
+      .os-selector { grid-template-columns: 1fr; }
+      .vpn-meta-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .vpn-copy-row .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-overlay"></div>
+  <header>
+    <div class="nav">
+      <a href="/index.html" class="logo-link">
+        <img src="/assets/img/logo.png" alt="GPTishka" class="logo-img" loading="lazy" decoding="async" />
+      </a>
+      <nav>
+        <a href="/index.html">Главная</a>
+        <a href="/index.html#pricing">Тарифы</a>
+        <a href="/store/vpn" class="active">VPN</a>
+        <a href="/contact.html">Контакты</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page vpn-activation-wrap">
+    <section class="pricing vpn-hero">
+      <div class="pricing-header">
+        <h1>Активация VPN-доступа</h1>
+        <p>
+          Вы получили персональный ключ доступа к GPTishka VPN. Выберите свою операционную систему и
+          следуйте инструкции ниже. Подключение занимает 1-2 минуты.
+        </p>
+      </div>
+      <div class="vpn-warning">
+        <strong>Один ключ = одно устройство.</strong>
+        VPN-доступ выдаётся строго на 1 систему. Не используйте один и тот же ключ одновременно на
+        нескольких устройствах, иначе подключение может работать нестабильно или быть автоматически ограничено.
+      </div>
+    </section>
+
+    <section class="pricing">
+      <div class="pricing-header">
+        <h2>Ваш ключ доступа</h2>
+      </div>
+      <article class="price-card vpn-key-layout">
+        <div class="vpn-key-box">
+          <pre id="vpnAccessKey" class="vpn-key-value">Загрузка ключа...</pre>
+        </div>
+        <div class="vpn-copy-row">
+          <button id="vpnCopyKeyBtn" type="button" class="btn">Скопировать ключ</button>
+          <button id="vpnReloadBtn" type="button" class="btn secondary vpn-soft-btn">Обновить</button>
+        </div>
+        <div id="vpnCopyFeedback" class="vpn-feedback"></div>
+        <div class="vpn-meta-grid">
+          <div class="vpn-meta-item"><span>UUID</span><strong id="vpnUuid">—</strong></div>
+          <div class="vpn-meta-item"><span>Тариф</span><strong id="vpnPlan">—</strong></div>
+          <div class="vpn-meta-item"><span>Действует до</span><strong id="vpnExpiresAt">—</strong></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="pricing">
+      <div class="pricing-header">
+        <h2>Выберите систему</h2>
+      </div>
+      <div class="os-selector" role="tablist" aria-label="Выбор операционной системы">
+        <button type="button" class="os-tab is-active" role="tab" aria-selected="true" data-os-tab="windows">
+          <span class="os-title">
+            <svg class="os-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4.7 10.8 3v8H2V4.7Zm9.8-1.8L22 1.5v9.5h-10.2V2.9ZM2 12.7h8.8v8L2 19v-6.3Zm9.8 0H22v9.8l-10.2-2v-7.8Z"/></svg>
+            Windows
+          </span>
+          <span class="os-sub">ПК и ноутбуки</span>
+        </button>
+        <button type="button" class="os-tab" role="tab" aria-selected="false" data-os-tab="android">
+          <span class="os-title">
+            <svg class="os-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.1 4.7 6.8 2.4l.8-.5 1.3 2.2A8.5 8.5 0 0 1 12 3.5c1.1 0 2.1.2 3.1.6l1.3-2.2.8.5-1.3 2.3A6.8 6.8 0 0 1 19 10H5c0-2.2 1.2-4.1 3.1-5.3ZM7 11h1.5v6H7v-6Zm8.5 0H17v6h-1.5v-6ZM7.5 18h9a2 2 0 0 1 2 2v1H5.5v-1a2 2 0 0 1 2-2Z"/></svg>
+            Android
+          </span>
+          <span class="os-sub">Смартфоны и планшеты</span>
+        </button>
+        <button type="button" class="os-tab" role="tab" aria-selected="false" data-os-tab="ios">
+          <span class="os-title">
+            <svg class="os-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.4 2.2c.2 1.4-.3 2.9-1.1 3.9-.8 1-2.2 1.8-3.5 1.7-.2-1.4.4-2.8 1.2-3.7.9-1 2.3-1.8 3.4-1.9Zm3.9 15.5c-.5 1.1-.8 1.6-1.4 2.6-.8 1.4-1.9 3.1-3.3 3.1-1.2 0-1.6-.8-3.2-.8-1.6 0-2 .8-3.2.8-1.4 0-2.5-1.5-3.3-2.9-2.1-3.5-2.3-7.6-1.1-9.4.8-1.2 2.1-1.9 3.3-1.9 1.3 0 2.2.8 3.3.8 1.1 0 1.7-.8 3.3-.8 1 0 2.1.4 2.9 1.2-2.6 1.4-2.2 5.2.7 6.5Z"/></svg>
+            iPhone / iOS
+          </span>
+          <span class="os-sub">iPhone и iPad</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="pricing">
+      <article class="price-card instruction-panel is-active" data-os-panel="windows">
+        <h3>Подключение на Windows</h3>
+        <ol>
+          <li>Скачайте и установите рекомендованное приложение для подключения.</li>
+          <li>Откройте приложение и выберите импорт конфигурации по ссылке или ключу.</li>
+          <li>Вставьте ваш персональный ключ доступа.</li>
+          <li>Сохраните подключение.</li>
+          <li>Нажмите кнопку подключения.</li>
+          <li>После успешного подключения ваш интернет-трафик будет идти через VPN.</li>
+        </ol>
+        <div class="instruction-hint">
+          Если приложение попросит разрешение на создание VPN-подключения, подтвердите его.
+        </div>
+      </article>
+
+      <article class="price-card instruction-panel" data-os-panel="android">
+        <h3>Подключение на Android</h3>
+        <ol>
+          <li>Установите приложение для подключения VPN из магазина приложений.</li>
+          <li>Откройте приложение и выберите импорт по ключу или ссылке.</li>
+          <li>Вставьте выданный вам ключ доступа.</li>
+          <li>Сохраните конфигурацию.</li>
+          <li>Включите подключение.</li>
+          <li>Подтвердите системный запрос на создание VPN.</li>
+        </ol>
+        <div class="instruction-hint">
+          При первом запуске Android может показать предупреждение о VPN-подключении — это нормально.
+        </div>
+      </article>
+
+      <article class="price-card instruction-panel" data-os-panel="ios">
+        <h3>Подключение на iPhone / iPad</h3>
+        <ol>
+          <li>Установите подходящее приложение для VPN-подключения.</li>
+          <li>Откройте его и выберите добавление конфигурации по ключу или ссылке.</li>
+          <li>Вставьте ваш персональный ключ.</li>
+          <li>Сохраните подключение.</li>
+          <li>Нажмите подключиться.</li>
+          <li>Подтвердите системное разрешение на добавление VPN-конфигурации.</li>
+        </ol>
+        <div class="instruction-hint">
+          iOS может запросить ввод пароля устройства для подтверждения установки VPN-профиля.
+        </div>
+      </article>
+    </section>
+
+    <section class="pricing">
+      <div class="pricing-header">
+        <h2>Важно знать перед подключением</h2>
+      </div>
+      <article class="price-card">
+        <ul class="vpn-info-list">
+          <li>Ваш ключ персональный и привязан к одной системе.</li>
+          <li>Не передавайте его другим людям.</li>
+          <li>Не используйте ключ одновременно на нескольких устройствах.</li>
+          <li>При смене устройства может потребоваться перевыпуск доступа через поддержку.</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="pricing">
+      <div class="pricing-header">
+        <h2>Не получается подключиться?</h2>
+      </div>
+      <article class="price-card">
+        <p class="support-copy">
+          Если приложение не принимает ключ или VPN не запускается, обратитесь в поддержку GPTishka и
+          приложите скриншот ошибки.
+        </p>
+        <a class="btn" href="https://t.me/gptishkasupp" target="_blank" rel="noopener">Написать в поддержку</a>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-links-primary">
+      <a class="footer-link" href="/oferta.html">Публичная оферта</a>
+      &middot;
+      <a class="footer-link" href="/politika.html">Политика конфиденциальности</a>
+      &middot;
+      <a class="footer-link" href="/refund.html">Условия возврата</a>
+    </div>
+    <span class="footer-copy">&copy; 2026 GPTishka</span>
+  </footer>
+
+  <script>
+    (function () {
+      const VPN_ORDER_ID_KEY = "gptishka_vpn_order_id";
+      const VPN_TOKEN_PREFIX = "gptishka_vpn_order_token:";
+
+      const keyEl = document.getElementById("vpnAccessKey");
+      const copyBtn = document.getElementById("vpnCopyKeyBtn");
+      const reloadBtn = document.getElementById("vpnReloadBtn");
+      const feedbackEl = document.getElementById("vpnCopyFeedback");
+
+      const uuidEl = document.getElementById("vpnUuid");
+      const planEl = document.getElementById("vpnPlan");
+      const expiresAtEl = document.getElementById("vpnExpiresAt");
+
+      const tabButtons = Array.from(document.querySelectorAll("[data-os-tab]"));
+      const tabPanels = Array.from(document.querySelectorAll("[data-os-panel]"));
+
+      let currentAccessKey = "";
+
+      function setFeedback(message, kind) {
+        if (!feedbackEl) return;
+        feedbackEl.textContent = String(message || "");
+        feedbackEl.classList.remove("success", "error");
+        if (kind) feedbackEl.classList.add(kind);
+      }
+
+      function formatDate(value) {
+        const date = new Date(String(value || ""));
+        if (Number.isNaN(date.getTime())) return "—";
+        return date.toLocaleString("ru-RU");
+      }
+
+      function saveOrderContext(orderId, token) {
+        const safeOrderId = String(orderId || "").trim();
+        const safeToken = String(token || "").trim();
+        if (!safeOrderId) return;
+        try {
+          localStorage.setItem(VPN_ORDER_ID_KEY, safeOrderId);
+          if (safeToken) localStorage.setItem(`${VPN_TOKEN_PREFIX}${safeOrderId}`, safeToken);
+        } catch (_) {
+          // Ignore storage errors.
+        }
+      }
+
+      function readStoredToken(orderId) {
+        const safeOrderId = String(orderId || "").trim();
+        if (!safeOrderId) return "";
+        try {
+          return String(localStorage.getItem(`${VPN_TOKEN_PREFIX}${safeOrderId}`) || "").trim();
+        } catch (_) {
+          return "";
+        }
+      }
+
+      function resolveOrderContext() {
+        const params = new URLSearchParams(window.location.search);
+        const queryOrderId = String(params.get("order_id") || params.get("orderId") || "").trim();
+        const queryToken = String(params.get("t") || "").trim();
+
+        if (queryOrderId) {
+          saveOrderContext(queryOrderId, queryToken);
+          return {
+            orderId: queryOrderId,
+            token: queryToken || readStoredToken(queryOrderId),
+          };
+        }
+
+        try {
+          const orderId = String(localStorage.getItem(VPN_ORDER_ID_KEY) || "").trim();
+          return {
+            orderId,
+            token: readStoredToken(orderId),
+          };
+        } catch (_) {
+          return { orderId: "", token: "" };
+        }
+      }
+
+      function setActiveOsTab(os) {
+        const safeOs = String(os || "").trim().toLowerCase() || "windows";
+
+        tabButtons.forEach((button) => {
+          const isActive = String(button.getAttribute("data-os-tab") || "").toLowerCase() === safeOs;
+          button.classList.toggle("is-active", isActive);
+          button.setAttribute("aria-selected", isActive ? "true" : "false");
+        });
+
+        tabPanels.forEach((panel) => {
+          const isActive = String(panel.getAttribute("data-os-panel") || "").toLowerCase() === safeOs;
+          panel.classList.toggle("is-active", isActive);
+        });
+      }
+
+      function bindOsTabs() {
+        tabButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            const os = String(button.getAttribute("data-os-tab") || "").trim().toLowerCase();
+            setActiveOsTab(os);
+          });
+        });
+      }
+
+      function renderAccess(payload) {
+        currentAccessKey = String(payload?.accessLink || "").trim();
+        keyEl.textContent = currentAccessKey || "Ключ пока не выдан. Обновите страницу через несколько секунд.";
+
+        uuidEl.textContent = String(payload?.uuid || "—");
+        planEl.textContent = String(payload?.plan || "—");
+        expiresAtEl.textContent = formatDate(payload?.expiresAt);
+
+        copyBtn.disabled = !currentAccessKey;
+      }
+
+      async function loadVpnAccess() {
+        const context = resolveOrderContext();
+        if (!context.orderId) {
+          setFeedback("Откройте страницу из ссылки после оплаты (с order_id и t).", "error");
+          renderAccess({});
+          return;
+        }
+
+        const query = new URLSearchParams();
+        query.set("order_id", context.orderId);
+        if (context.token) query.set("t", context.token);
+
+        setFeedback("Проверяем VPN-доступ...", "");
+        try {
+          const response = await fetch(`/api/vpn/me?${query.toString()}`, { cache: "no-store" });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message = String(payload?.message || payload?.error || "Не удалось получить VPN-доступ.");
+            setFeedback(message, "error");
+            renderAccess({});
+            return;
+          }
+
+          renderAccess(payload);
+          setFeedback("Доступ активирован. Выберите систему и выполните шаги подключения.", "success");
+        } catch (_) {
+          setFeedback("Ошибка сети при запросе VPN-доступа.", "error");
+          renderAccess({});
+        }
+      }
+
+      async function copyAccessKey() {
+        if (!currentAccessKey) return;
+        try {
+          await navigator.clipboard.writeText(currentAccessKey);
+          setFeedback("Ключ скопирован", "success");
+        } catch (_) {
+          try {
+            const textarea = document.createElement("textarea");
+            textarea.value = currentAccessKey;
+            textarea.setAttribute("readonly", "readonly");
+            textarea.style.position = "absolute";
+            textarea.style.left = "-9999px";
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            textarea.remove();
+            setFeedback("Ключ скопирован", "success");
+          } catch (_) {
+            setFeedback("Не удалось скопировать ключ. Скопируйте вручную.", "error");
+          }
+        }
+      }
+
+      copyBtn.addEventListener("click", copyAccessKey);
+      reloadBtn.addEventListener("click", loadVpnAccess);
+
+      bindOsTabs();
+      setActiveOsTab("windows");
+      loadVpnAccess();
+    })();
+  </script>
+</body>
+</html>

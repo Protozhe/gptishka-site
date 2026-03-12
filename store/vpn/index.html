@@ -33,6 +33,28 @@
     .vpn-copy-wrap { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
     .vpn-copy-wrap .btn { min-width: 220px; }
     .vpn-cabinet-actions { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .vpn-soft-btn {
+      border-color: rgba(19, 138, 120, 0.22) !important;
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(238, 252, 249, 0.86)) !important;
+      color: #155a52 !important;
+      box-shadow:
+        0 10px 22px rgba(31, 39, 49, 0.09),
+        inset 0 1px 0 rgba(255, 255, 255, 0.92);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .vpn-soft-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(19, 138, 120, 0.34) !important;
+      box-shadow:
+        0 14px 28px rgba(19, 138, 120, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    }
+    .vpn-soft-btn:disabled {
+      opacity: .65;
+      transform: none;
+      box-shadow: none;
+    }
     @media (max-width: 720px) {
       .vpn-profile-item { flex-direction: column; }
       .vpn-copy-wrap .btn { width: 100%; min-width: 0; }
@@ -104,7 +126,7 @@
         <h2>Личный кабинет VPN</h2>
         <p>Данные подтягиваются из <code>/vpn/me</code> по заказу после оплаты.</p>
         <div class="vpn-cabinet-actions">
-          <button id="vpnShowPlansBtn" type="button" class="btn secondary" hidden>Показать тарифы</button>
+          <button id="vpnShowPlansBtn" type="button" class="btn secondary vpn-soft-btn" hidden>Показать тарифы</button>
         </div>
       </div>
       <article class="price-card">
@@ -117,7 +139,7 @@
         </div>
         <div class="vpn-copy-wrap">
           <button id="vpnCopyConfigBtn" type="button" class="btn" disabled>Скопировать конфиг</button>
-          <button id="vpnRefreshBtn" type="button" class="btn secondary">Обновить</button>
+          <button id="vpnRefreshBtn" type="button" class="btn secondary vpn-soft-btn">Обновить</button>
         </div>
         <div id="vpnMeStatus" class="vpn-status"></div>
       </article>

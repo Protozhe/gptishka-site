@@ -1415,6 +1415,14 @@ function createApp() {
     res.sendFile(path.join(__dirname, "store", "vpn", "index.html"));
   });
 
+  app.get("/store/vpn/activate", (_req, res) => {
+    res.sendFile(path.join(__dirname, "store", "vpn", "activate", "index.html"));
+  });
+
+  app.get("/store/vpn/activate/", (_req, res) => {
+    res.sendFile(path.join(__dirname, "store", "vpn", "activate", "index.html"));
+  });
+
   app.use((req, res) => {
     if (req.path.startsWith("/api/")) {
       return res.status(404).json({ error: "Not found" });

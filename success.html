@@ -1,39 +1,42 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ru">
 <head>
-<script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>РћРїР»Р°С‚Р° РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ - GPTРёС€РєР°</title>
-<link rel="stylesheet" href="/assets/css/status-pages.css?v=20260310a" />
-<link rel="icon" href="/favicon.ico" sizes="any" />
-<link rel="shortcut icon" href="/favicon.ico" />
-<link rel="apple-touch-icon" href="/assets/img/logo.png" />
-<style>
-  /* Defensive fallback: never render support widgets on payment status pages. */
-  #gptishka-support-widget,
-  .support-widget,
-  .gptishka-support-widget,
-  [data-support-widget],
-  [data-widget="support"],
-  img[src*="assistant-cat-left"],
-  img[src*="assistant-cat"] {
-    display: none !important;
-  }
-</style>
+  <script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Оплата обрабатывается - GPTишка</title>
+  <link rel="stylesheet" href="/assets/css/status-pages.css?v=20260310a" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" href="/assets/img/logo.png" />
+  <style>
+    /* Defensive fallback: never render support widgets on payment status pages. */
+    #gptishka-support-widget,
+    .support-widget,
+    .gptishka-support-widget,
+    [data-support-widget],
+    [data-widget="support"],
+    img[src*="assistant-cat-left"],
+    img[src*="assistant-cat"] {
+      display: none !important;
+    }
+  </style>
 </head>
 <body class="status-page status-page--center">
-<noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+  <noscript>
+    <div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div>
+  </noscript>
+
   <section class="status-card">
-    <h1 class="status-title">РћРїР»Р°С‚Р° РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ</h1>
-    <p class="status-text">РџСЂРѕРІРµСЂСЏРµРј РїР»Р°С‚РµР¶ С‡РµСЂРµР· webhook. РћР±С‹С‡РЅРѕ СЌС‚Рѕ Р·Р°РЅРёРјР°РµС‚ РґРѕ 30 СЃРµРєСѓРЅРґ.</p>
-    <div class="meta">Р—Р°РєР°Р·: <strong id="orderId">-</strong></div>
+    <h1 class="status-title">Оплата обрабатывается</h1>
+    <p class="status-text">Проверяем платеж через webhook. Обычно это занимает до 30 секунд.</p>
+    <div class="meta">Заказ: <strong id="orderId">-</strong></div>
     <div class="meta">Email: <strong id="emailMasked">-</strong></div>
-    <div class="meta">РЎСѓРјРјР°: <strong id="amount">-</strong></div>
-    <div class="status pending" id="statusText">РћР¶РёРґР°РµРј РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїР»Р°С‚РµР¶Р°...</div>
+    <div class="meta">Сумма: <strong id="amount">-</strong></div>
+    <div class="status pending" id="statusText">Ожидаем подтверждение платежа...</div>
     <div class="actions">
-      <a class="btn primary" href="/">РќР° РіР»Р°РІРЅСѓСЋ</a>
-      <a class="btn" href="/index.html#pricing">Рљ С‚Р°СЂРёС„Р°Рј</a>
+      <a class="btn primary" href="/">На главную</a>
+      <a class="btn" href="/index.html#pricing">К тарифам</a>
     </div>
   </section>
 
@@ -74,9 +77,9 @@
     }, 35000);
 
     if (!orderId) {
-      orderIdEl.textContent = "РЅРµ РЅР°Р№РґРµРЅ";
+      orderIdEl.textContent = "не найден";
       statusEl.className = "status failed";
-      statusEl.textContent = "РќРµ СѓРґР°Р»РѕСЃСЊ РѕРїСЂРµРґРµР»РёС‚СЊ order_id. РћС‚РєСЂРѕР№С‚Рµ РѕРїР»Р°С‚Сѓ Р·Р°РЅРѕРІРѕ.";
+      statusEl.textContent = "Не удалось определить order_id. Откройте оплату заново.";
     } else {
       orderIdEl.textContent = orderId;
       try {
@@ -100,7 +103,7 @@
       }
 
       statusEl.className = "status pending";
-      statusEl.textContent = "РџР»Р°С‚РµР¶ РµС‰Рµ РІ РѕР±СЂР°Р±РѕС‚РєРµ. РћР±РЅРѕРІРёС‚Рµ СЃС‚СЂР°РЅРёС†Сѓ С‡РµСЂРµР· РЅРµСЃРєРѕР»СЊРєРѕ СЃРµРєСѓРЅРґ.";
+      statusEl.textContent = "Платеж еще в обработке. Обновите страницу через несколько секунд.";
     }
 
     async function requestStatus(id) {
@@ -130,7 +133,7 @@
               // Ignore storage write errors.
             }
             setTimeout(() => {
-              const url = new URL("/store/vpn", window.location.origin);
+              const url = new URL("/store/vpn/activate", window.location.origin);
               url.searchParams.set("order_id", id);
               if (linkToken) url.searchParams.set("t", linkToken);
               window.location.href = url.toString();
@@ -139,7 +142,7 @@
           }
 
           statusEl.className = "status paid";
-          statusEl.textContent = "РћРїР»Р°С‡РµРЅРѕ. РџРµСЂРµРІРѕРґРёРј РЅР° СЃС‚СЂР°РЅРёС†Сѓ Р°РєС‚РёРІР°С†РёРё...";
+          statusEl.textContent = "Оплачено. Переводим на страницу активации...";
           setTimeout(() => {
             const url = new URL("/redeem-start.html", window.location.origin);
             url.searchParams.set("order_id", id);
@@ -151,12 +154,12 @@
 
         if (status === "FAILED" || status === "REFUNDED") {
           statusEl.className = "status failed";
-          statusEl.textContent = status === "REFUNDED" ? "РџР»Р°С‚РµР¶ РІРѕР·РІСЂР°С‰РµРЅ." : "РћРїР»Р°С‚Р° РЅРµ РїРѕРґС‚РІРµСЂР¶РґРµРЅР°.";
+          statusEl.textContent = status === "REFUNDED" ? "Платеж возвращен." : "Оплата не подтверждена.";
           return true;
         }
 
         statusEl.className = "status pending";
-        statusEl.textContent = "РћР¶РёРґР°РµРј РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїР»Р°С‚РµР¶Р°...";
+        statusEl.textContent = "Ожидаем подтверждение платежа...";
         return false;
       } catch (_) {
         return false;
@@ -193,7 +196,7 @@
         String(payload?.email || "").trim().toLowerCase(),
         String(localStorage.getItem("checkout_email") || "").trim().toLowerCase(),
       ];
-      const email = emailCandidates.find(value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) || "";
+      const email = emailCandidates.find((value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) || "";
       if (!email) return;
 
       fetch("/api/purchases", {
@@ -262,7 +265,7 @@
     }
 
     function wait(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
+      return new Promise((resolve) => setTimeout(resolve, ms));
     }
   </script>
 </body>

@@ -96,7 +96,7 @@ publicPaymentsRouter.post(
       select: { tags: true },
     });
     const deliveryType = resolveProductDeliveryType(product?.tags || []);
-    const activationUrl = new URL(deliveryType === "vpn" ? "/store/vpn" : "/redeem-start.html", publicOrigin);
+    const activationUrl = new URL(deliveryType === "vpn" ? "/store/vpn/activate" : "/redeem-start.html", publicOrigin);
     activationUrl.searchParams.set("order_id", created.orderId);
     if (created.redeemToken) {
       activationUrl.searchParams.set("t", created.redeemToken);
