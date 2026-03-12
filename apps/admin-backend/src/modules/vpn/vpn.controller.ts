@@ -5,6 +5,7 @@ import { AppError } from "../../common/errors/app-error";
 import { asyncHandler } from "../../common/http/async-handler";
 import { prisma } from "../../config/prisma";
 import { deliverProduct } from "../orders/delivery.service";
+import { ordersService } from "../orders/orders.service";
 import { resolveVpnProvisionPayload, toVpnMePayload, vpnService } from "../../services/vpn.service";
 
 function assertOrderId(orderId: string) {
@@ -16,16 +17,19 @@ function assertOrderId(orderId: string) {
 
 async function resolveVpnAccessByOrder(orderId: string, orderToken?: string) {
   assertOrderId(orderId);
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
-    include: {
-      items: {
-        include: { product: true },
-        orderBy: { id: "asc" },
-        take: 1,
+  const loadOrder = () =>
+    prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: {
+          include: { product: true },
+          orderBy: { id: "asc" },
+          take: 1,
+        },
       },
-    },
-  });
+    });
+
+  let order = await loadOrder();
   if (!order) throw new AppError("Order not found", 404);
 
   const expectedTokenHash = String(order.redeemTokenHash || "").trim();
@@ -37,7 +41,13 @@ async function resolveVpnAccessByOrder(orderId: string, orderToken?: string) {
   }
 
   if (order.status !== OrderStatus.PAID) {
-    throw new AppError("Order is not paid yet", 409);
+    if (order.status === OrderStatus.PENDING) {
+      await ordersService.reconcilePublicStatus(order.id);
+      order = await loadOrder();
+    }
+    if (!order || order.status !== OrderStatus.PAID) {
+      throw new AppError("Order is not paid yet", 409);
+    }
   }
 
   const firstItem = order.items[0];
