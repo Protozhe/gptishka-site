@@ -5,21 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex,nofollow" />
   <title>Активация VPN-доступа - GPTishka</title>
-  <meta
-    name="description"
-    content="Активация VPN-доступа GPTishka: получите персональный ключ и подключите устройство за 1-2 минуты."
-  />
+  <meta name="description" content="Активация VPN-доступа GPTishka: получите персональный ключ и подключите устройство за 1-2 минуты." />
   <link rel="icon" href="/favicon.ico" sizes="any" />
-  <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2" />
-  <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260310r" />
+  <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260312fix2" />
+  <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260312fix2" />
   <style>
+    .vpn-activation-wrap,
+    .vpn-activation-wrap * {
+      min-width: 0;
+    }
+
     .vpn-activation-wrap {
       width: min(1120px, calc(100% - 24px));
       margin: 16px auto 40px;
       display: grid;
       gap: 18px;
     }
-    .vpn-hero h1 { margin-bottom: 10px; }
+
+    .vpn-activation-wrap .pricing,
+    .vpn-activation-wrap .price-card {
+      overflow: hidden;
+    }
+
+    .vpn-activation-wrap h1,
+    .vpn-activation-wrap h2,
+    .vpn-activation-wrap h3,
+    .vpn-activation-wrap p,
+    .vpn-activation-wrap li,
+    .vpn-activation-wrap span,
+    .vpn-activation-wrap strong {
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .vpn-hero h1 {
+      margin: 0 0 10px;
+    }
+
     .vpn-hero p {
       margin: 0;
       line-height: 1.65;
@@ -28,53 +50,68 @@
 
     .vpn-warning {
       margin-top: 16px;
-      border: 1px solid rgba(231, 125, 79, 0.32);
+      border: 1px solid rgba(231, 125, 79, 0.34);
       border-radius: 14px;
       padding: 14px 16px;
-      background: linear-gradient(150deg, rgba(255, 251, 247, 0.95), rgba(255, 243, 232, 0.88));
+      background: linear-gradient(150deg, rgba(255, 251, 247, 0.96), rgba(255, 243, 232, 0.9));
       color: #6e3f1c;
       box-shadow: 0 10px 24px rgba(31, 39, 49, 0.09);
       line-height: 1.56;
       font-size: 14px;
     }
-    .vpn-warning strong { color: #8d3c11; }
 
-    .vpn-key-layout { display: grid; gap: 14px; }
+    .vpn-warning strong {
+      color: #8d3c11;
+    }
+
+    .vpn-key-layout {
+      display: grid;
+      gap: 14px;
+    }
+
     .vpn-key-box {
       border: 1px solid rgba(19, 138, 120, 0.2);
       border-radius: 14px;
       padding: 12px;
       background: rgba(255, 255, 255, 0.84);
+      min-height: 64px;
+      overflow: hidden;
     }
+
     .vpn-key-value {
       margin: 0;
       font: 600 13px/1.6 "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
       color: #1f2731;
       overflow-wrap: anywhere;
       word-break: break-word;
+      white-space: pre-wrap;
     }
+
     .vpn-copy-row {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
       align-items: center;
     }
+
     .vpn-soft-btn {
       border-color: rgba(19, 138, 120, 0.22) !important;
-      background:
-        linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(238, 252, 249, 0.86)) !important;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(238, 252, 249, 0.86)) !important;
       color: #155a52 !important;
-      box-shadow:
-        0 10px 22px rgba(31, 39, 49, 0.09),
-        inset 0 1px 0 rgba(255, 255, 255, 0.92);
+      box-shadow: 0 10px 22px rgba(31, 39, 49, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.92);
       transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
     }
+
     .vpn-soft-btn:hover {
       transform: translateY(-1px);
       border-color: rgba(19, 138, 120, 0.34) !important;
-      box-shadow:
-        0 14px 28px rgba(19, 138, 120, 0.16),
-        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      box-shadow: 0 14px 28px rgba(19, 138, 120, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    }
+
+    .vpn-soft-btn:disabled {
+      opacity: .65;
+      transform: none;
+      box-shadow: none;
     }
 
     .vpn-feedback {
@@ -83,6 +120,7 @@
       font-size: 13px;
       transition: all .2s ease;
     }
+
     .vpn-feedback.success,
     .vpn-feedback.error {
       display: inline-flex;
@@ -95,11 +133,13 @@
       font-weight: 600;
       background: rgba(255, 255, 255, 0.82);
     }
+
     .vpn-feedback.success {
       color: #0f766e;
       border-color: rgba(15, 118, 110, 0.24);
       background: rgba(238, 252, 249, 0.92);
     }
+
     .vpn-feedback.error {
       color: #b42318;
       border-color: rgba(196, 77, 59, 0.26);
@@ -111,30 +151,36 @@
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
     }
+
     .vpn-meta-item {
       border: 1px dashed rgba(31, 39, 49, 0.18);
       border-radius: 12px;
       padding: 10px;
       background: rgba(255, 255, 255, 0.62);
+      overflow: hidden;
     }
+
     .vpn-meta-item span {
       display: block;
       font-size: 12px;
       color: var(--muted);
       margin-bottom: 4px;
     }
+
     .vpn-meta-item strong {
       display: block;
       font-size: 14px;
       color: var(--text);
+      overflow-wrap: anywhere;
       word-break: break-word;
     }
 
     .os-selector {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
       gap: 12px;
     }
+
     .os-tab {
       border: 1px solid rgba(255, 255, 255, 0.65);
       background: linear-gradient(145deg, rgba(255, 255, 255, 0.74), rgba(250, 241, 228, 0.44));
@@ -146,12 +192,18 @@
       gap: 8px;
       transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
       box-shadow: 0 9px 22px rgba(31, 39, 49, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.88);
+      min-height: 90px;
     }
-    .os-tab:hover { transform: translateY(-1px); }
+
+    .os-tab:hover {
+      transform: translateY(-1px);
+    }
+
     .os-tab.is-active {
       border-color: rgba(19, 138, 120, 0.42);
       box-shadow: 0 12px 26px rgba(19, 138, 120, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.92);
     }
+
     .os-title {
       font-size: 15px;
       font-weight: 700;
@@ -160,17 +212,32 @@
       align-items: center;
       gap: 8px;
     }
-    .os-sub { font-size: 13px; color: var(--muted); }
+
+    .os-sub {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
     .os-icon {
       width: 18px;
       height: 18px;
       fill: currentColor;
       opacity: .9;
+      flex: 0 0 18px;
     }
 
-    .instruction-panel { display: none; }
-    .instruction-panel.is-active { display: block; }
-    .instruction-panel h3 { margin-bottom: 10px; }
+    .instruction-panel {
+      display: none;
+    }
+
+    .instruction-panel.is-active {
+      display: block;
+    }
+
+    .instruction-panel h3 {
+      margin: 0 0 10px;
+    }
+
     .instruction-panel ol {
       margin: 0;
       padding-left: 18px;
@@ -178,6 +245,7 @@
       gap: 8px;
       color: var(--text);
     }
+
     .instruction-hint {
       margin-top: 14px;
       border-radius: 12px;
@@ -187,7 +255,9 @@
       color: #18534a;
       font-size: 13px;
       line-height: 1.55;
+      overflow-wrap: anywhere;
     }
+
     .vpn-info-list {
       margin: 0;
       padding-left: 18px;
@@ -195,14 +265,42 @@
       gap: 8px;
       color: var(--text);
     }
-    .support-copy { margin: 0 0 14px; color: var(--muted); line-height: 1.6; }
 
-    @media (max-width: 900px) {
-      .os-selector { grid-template-columns: 1fr; }
-      .vpn-meta-grid { grid-template-columns: 1fr; }
+    .support-copy {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.6;
     }
+
+    @media (max-width: 980px) {
+      .vpn-meta-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (max-width: 640px) {
-      .vpn-copy-row .btn { width: 100%; }
+      .vpn-activation-wrap .pricing,
+      .vpn-activation-wrap .price-card {
+        padding: 16px;
+      }
+
+      .vpn-key-value {
+        font-size: 12px;
+      }
+
+      .vpn-copy-row .btn {
+        width: 100%;
+      }
+
+      .vpn-activation-wrap {
+        width: calc(100% - 16px);
+        gap: 12px;
+      }
+
+      .os-tab {
+        min-height: 0;
+        padding: 12px 10px;
+      }
     }
   </style>
 </head>
@@ -247,7 +345,7 @@
           <pre id="vpnAccessKey" class="vpn-key-value">Загрузка ключа...</pre>
         </div>
         <div class="vpn-copy-row">
-          <button id="vpnCopyKeyBtn" type="button" class="btn">Скопировать ключ</button>
+          <button id="vpnCopyKeyBtn" type="button" class="btn" disabled>Скопировать ключ</button>
           <button id="vpnReloadBtn" type="button" class="btn secondary vpn-soft-btn">Обновить</button>
         </div>
         <div id="vpnCopyFeedback" class="vpn-feedback"></div>
@@ -428,11 +526,11 @@
       }
 
       function renderAccess(payload) {
-        currentAccessKey = String(payload?.accessLink || "").trim();
+        currentAccessKey = String(payload && payload.accessLink || "").trim();
         keyEl.textContent = currentAccessKey || "Ключ пока не выдан. Обновите страницу через несколько секунд.";
-        uuidEl.textContent = String(payload?.uuid || "—");
-        planEl.textContent = String(payload?.plan || "—");
-        expiresAtEl.textContent = formatDate(payload?.expiresAt);
+        uuidEl.textContent = String(payload && payload.uuid || "—");
+        planEl.textContent = String(payload && payload.plan || "—");
+        expiresAtEl.textContent = formatDate(payload && payload.expiresAt);
         copyBtn.disabled = !currentAccessKey;
       }
 
@@ -452,8 +550,9 @@
         try {
           const response = await fetch(`/api/vpn/me?${query.toString()}`, { cache: "no-store" });
           const payload = await response.json().catch(() => ({}));
+
           if (!response.ok) {
-            const message = String(payload?.message || payload?.error || "Не удалось получить VPN-доступ.");
+            const message = String(payload && (payload.message || payload.error) || "Не удалось получить VPN-доступ.");
             setFeedback(message, "error");
             renderAccess({});
             return;
