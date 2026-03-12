@@ -913,8 +913,10 @@ async function tryReconcilePendingOrderPayment(orderId: string, cachedOrder?: Pe
       amount: status.amount ?? undefined,
       currency: status.currency || undefined,
     });
-  } catch {
-    // Keep current order status if provider API is temporarily unavailable.
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error || "unknown error");
+    console.warn(`[orders] pending payment reconcile failed order=${order.id} provider=${providerCode}: ${reason}`);
+    // Keep current order status if provider API is temporarily unavailable or verification fails.
   }
 }
 
