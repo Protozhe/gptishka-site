@@ -893,7 +893,12 @@ async function tryReconcilePendingOrderPayment(orderId: string, cachedOrder?: Pe
   try {
     if (providerCode === "lava") {
       const status = await probeLavaInvoiceStatus(order.id, providerRef);
-      if (!status) return;
+      if (!status) {
+        console.warn(
+          `[orders] pending payment reconcile no status confirmation order=${order.id} provider=${providerCode} ref=${providerRef}`
+        );
+        return;
+      }
       await paymentWebhookService.handle({
         invoice_id: status.invoiceId,
         order_id: status.orderId || String(order.id),
@@ -905,7 +910,12 @@ async function tryReconcilePendingOrderPayment(orderId: string, cachedOrder?: Pe
     }
 
     const status = await probeGatewayInvoiceStatus(order.id, providerRef);
-    if (!status) return;
+    if (!status) {
+      console.warn(
+        `[orders] pending payment reconcile no status confirmation order=${order.id} provider=${providerCode} ref=${providerRef}`
+      );
+      return;
+    }
     await paymentWebhookService.handle({
       invoice_id: status.invoiceId,
       order_id: status.orderId || String(order.id),
