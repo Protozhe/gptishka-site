@@ -224,35 +224,9 @@
         <input id="vpnEmailInput" class="input" type="email" autocomplete="email" placeholder="Email для оплаты и выдачи доступа" />
       </div>
       <div id="vpnCheckoutStatus" class="vpn-status"></div>
-
       <div class="pricing-grid" id="vpnPlansGrid">
-        <article class="price-card" data-plan-slug="vpn_month">
-          <h3>VPN 1 месяц</h3>
-          <div class="term">30 дней</div>
-          <div class="price" data-plan-price>199 ₽</div>
-          <div class="sub">VLESS Reality • Один конфиг • Быстрый запуск</div>
-          <div class="price-actions">
-            <button type="button" class="btn" data-vpn-buy="vpn_month">Подключить VPN</button>
-          </div>
-        </article>
-        <article class="price-card" data-plan-slug="vpn_halfyear">
-          <h3>VPN 6 месяцев</h3>
-          <div class="term">180 дней</div>
-          <div class="price" data-plan-price>999 ₽</div>
-          <div class="sub">VLESS Reality • Один конфиг • Выгода на длительный срок</div>
-          <div class="price-actions">
-            <button type="button" class="btn" data-vpn-buy="vpn_halfyear">Подключить VPN</button>
-          </div>
-        </article>
-        <article class="price-card featured" data-plan-slug="vpn_year">
-          <span class="badge best">Лучший выбор</span>
-          <h3>VPN 12 месяцев</h3>
-          <div class="term">365 дней</div>
-          <div class="price" data-plan-price>1 699 ₽</div>
-          <div class="sub">VLESS Reality • Один конфиг • Максимальная выгода</div>
-          <div class="price-actions">
-            <button type="button" class="btn" data-vpn-buy="vpn_year">Подключить VPN</button>
-          </div>
+        <article class="price-card">
+          <h3>Загрузка VPN-тарифов...</h3>
         </article>
       </div>
     </section>
@@ -296,15 +270,10 @@
   <script>
     (function () {
       const CHECKOUT_EMAIL_KEY = "checkout_email";
-      const PLAN_SLUGS = ["vpn_month", "vpn_halfyear", "vpn_year"];
-      const FALLBACK_PRICES = {
-        vpn_month: 199,
-        vpn_halfyear: 999,
-        vpn_year: 1699,
-      };
 
       const planMap = new Map();
       const emailInput = document.getElementById("vpnEmailInput");
+      const plansGrid = document.getElementById("vpnPlansGrid");
       const checkoutStatus = document.getElementById("vpnCheckoutStatus");
       const vpnMeStatus = document.getElementById("vpnMeStatus");
       const copyBtn = document.getElementById("vpnCopyConfigBtn");
@@ -404,34 +373,149 @@
         return `${size.toFixed(digits)} ${units[unit]}`;
       }
 
+      function escapeHtml(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function normalizeSlug(value) {
+        return String(value || "").trim().toLowerCase();
+      }
+
+      function isVpnProduct(item) {
+        if (!item || typeof item !== "object") return false;
+        const slug = normalizeSlug(item.product);
+        const category = normalizeSlug(item.category);
+        const deliveryType = normalizeSlug(item.deliveryType);
+        const deliveryMethod = Number(item.deliveryMethod || 0);
+        const tags = Array.isArray(item.tags) ? item.tags.map((tag) => normalizeSlug(tag)) : [];
+
+        return (
+          deliveryType === "vpn"
+          || deliveryMethod === 3
+          || tags.includes("delivery:vpn")
+          || slug.startsWith("vpn")
+          || category.includes("vpn")
+        );
+      }
+
+      function formatDaysLabel(days) {
+        const value = Number(days || 0);
+        if (!Number.isFinite(value) || value <= 0) return "";
+        const mod10 = value % 10;
+        const mod100 = value % 100;
+        if (mod10 === 1 && mod100 !== 11) return `${value} день`;
+        if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${value} дня`;
+        return `${value} дней`;
+      }
+
+      function getPlanTerm(item) {
+        const tags = Array.isArray(item && item.tags) ? item.tags : [];
+        for (const tag of tags) {
+          const normalizedTag = normalizeSlug(tag);
+          if (!normalizedTag.startsWith("vpn:days:")) continue;
+          const days = Number(normalizedTag.replace("vpn:days:", ""));
+          const label = formatDaysLabel(days);
+          if (label) return label;
+        }
+
+        const rawDescription = String((item && item.description) || "").replace(/\s+/g, " ").trim();
+        const match = rawDescription.match(/(\d+)\s*(дней|день|дня|месяц|месяца|месяцев|год|года|лет)/i);
+        if (match) return `${match[1]} ${match[2]}`;
+        return "Гибкий срок";
+      }
+
+      function getPlanSubtitle(item) {
+        const raw = String((item && (item.modalDescription || item.description)) || "").replace(/\s+/g, " ").trim();
+        if (!raw) return "VLESS Reality • Один конфиг • Быстрый запуск";
+        return raw;
+      }
+
+      function getPlanBadge(item) {
+        const tags = Array.isArray(item && item.tags) ? item.tags.map((tag) => normalizeSlug(tag)) : [];
+        const tagBadge = tags.find((tag) => tag.startsWith("badge:"));
+        const rawBadge = normalizeSlug(item && item.badge);
+        const type = rawBadge || (tagBadge ? tagBadge.replace("badge:", "") : "");
+        if (!type) return null;
+
+        const labels = {
+          best: "Лучший выбор",
+          popular: "Популярный",
+          hit: "Хит",
+          new: "Новинка",
+          pro: "PRO",
+        };
+
+        return {
+          type,
+          label: labels[type] || String(item && item.badge || type).toUpperCase(),
+        };
+      }
+
+      function renderPlans(items) {
+        if (!plansGrid) return;
+        planMap.clear();
+
+        const vpnItems = (Array.isArray(items) ? items : [])
+          .filter(isVpnProduct)
+          .sort((a, b) => Number(a && a.price || 0) - Number(b && b.price || 0));
+
+        if (!vpnItems.length) {
+          plansGrid.innerHTML = '<article class="price-card"><h3>Сейчас нет активных VPN-тарифов</h3><div class="sub">Добавьте и включите товар VPN в админке.</div></article>';
+          return;
+        }
+
+        plansGrid.innerHTML = vpnItems.map((item) => {
+          const slug = normalizeSlug(item && item.product);
+          const title = String(item && item.title || slug || "VPN тариф");
+          const badge = getPlanBadge(item);
+          const featuredClass = badge && badge.type === "best" ? " featured" : "";
+          const badgeMarkup = badge ? `<span class="badge ${escapeHtml(badge.type)}">${escapeHtml(badge.label)}</span>` : "";
+          const price = formatRub(item && item.price);
+          const term = getPlanTerm(item);
+          const subtitle = getPlanSubtitle(item);
+          return `
+            <article class="price-card${featuredClass}" data-plan-slug="${escapeHtml(slug)}">
+              ${badgeMarkup}
+              <h3>${escapeHtml(title)}</h3>
+              <div class="term">${escapeHtml(term)}</div>
+              <div class="price">${escapeHtml(price)}</div>
+              <div class="sub">${escapeHtml(subtitle)}</div>
+              <div class="price-actions">
+                <button type="button" class="btn" data-vpn-buy="${escapeHtml(slug)}">Подключить VPN</button>
+              </div>
+            </article>
+          `;
+        }).join("");
+
+        vpnItems.forEach((item) => {
+          const slug = normalizeSlug(item && item.product);
+          if (!slug) return;
+          planMap.set(slug, item);
+        });
+      }
+
       async function loadPlans() {
+        if (!plansGrid) return;
         try {
           const response = await fetch("/api/public/products?lang=ru", { cache: "no-store" });
           if (!response.ok) throw new Error("products_unavailable");
           const payload = await response.json().catch(() => ({}));
           const items = Array.isArray(payload && payload.items) ? payload.items : [];
-          items.forEach((item) => {
-            const slug = String(item && item.product || "").trim().toLowerCase();
-            if (!PLAN_SLUGS.includes(slug)) return;
-            planMap.set(slug, item);
-            const card = document.querySelector(`[data-plan-slug="${slug}"]`);
-            if (!card) return;
-            const priceEl = card.querySelector("[data-plan-price]");
-            if (priceEl) {
-              priceEl.textContent = formatRub(item && item.price || FALLBACK_PRICES[slug] || 0);
-            }
-          });
+          renderPlans(items);
+          if (!planMap.size) {
+            setStatus(checkoutStatus, "Нет активных VPN-тарифов. Проверьте статус товара в админке.", "error");
+            return;
+          }
+          setStatus(checkoutStatus, "", "");
         } catch (_) {
-          PLAN_SLUGS.forEach((slug) => {
-            if (!planMap.has(slug)) {
-              planMap.set(slug, {
-                id: `${slug}_product_2026`,
-                product: slug,
-                price: FALLBACK_PRICES[slug],
-                currency: "RUB",
-              });
-            }
-          });
+          planMap.clear();
+          plansGrid.innerHTML = '<article class="price-card"><h3>Не удалось загрузить VPN-тарифы</h3><div class="sub">Обновите страницу через 5-10 секунд.</div></article>';
+          setStatus(checkoutStatus, "Ошибка загрузки тарифов VPN.", "error");
         }
       }
 
@@ -562,13 +646,17 @@
           emailInput.value = storedEmail;
         }
 
-        document.querySelectorAll("[data-vpn-buy]").forEach((button) => {
-          button.addEventListener("click", () => {
-            const slug = String(button.getAttribute("data-vpn-buy") || "").trim().toLowerCase();
+        if (plansGrid) {
+          plansGrid.addEventListener("click", (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLElement)) return;
+            const button = target.closest("[data-vpn-buy]");
+            if (!(button instanceof HTMLButtonElement) || !plansGrid.contains(button)) return;
+            const slug = normalizeSlug(button.getAttribute("data-vpn-buy"));
             if (!slug) return;
             createPayment(slug, button);
           });
-        });
+        }
 
         if (refreshBtn) refreshBtn.addEventListener("click", refreshVpnMe);
         if (copyBtn) copyBtn.addEventListener("click", copyConfig);
@@ -590,3 +678,4 @@
   </script>
 </body>
 </html>
+

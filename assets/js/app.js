@@ -915,7 +915,8 @@ function initActivationResumeShortcut() {
   const DEFAULT_PAYMENT_METHOD = "enot";
   const AVAILABLE_PAYMENT_METHODS = new Set(["enot", "lava"]);
   const PROMO_TTL_MS = 30 * 60 * 1000;
-  const PRODUCTS_CACHE_TTL_MS = 60 * 1000;
+  const PRODUCTS_CACHE_TTL_MS = 15 * 1000;
+  const PRODUCTS_FETCH_TIMEOUT_MS = 8000;
   let clickTimer = null;
   let productsPayloadCache = null;
   let productsPayloadCacheTs = 0;
@@ -1720,8 +1721,12 @@ function initActivationResumeShortcut() {
       return productsPayloadPendingPromise;
     }
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), PRODUCTS_FETCH_TIMEOUT_MS);
+
     productsPayloadPendingPromise = fetch("/api/public/products?lang=" + (isEnPage ? "en" : "ru"), {
       cache: "no-store",
+      signal: controller.signal,
     })
       .then(response => {
         if (!response.ok) throw new Error("Products API not available");
@@ -1735,6 +1740,7 @@ function initActivationResumeShortcut() {
         return normalizedPayload;
       })
       .finally(() => {
+        clearTimeout(timeoutId);
         productsPayloadPendingPromise = null;
       });
 
@@ -1819,15 +1825,7 @@ function initActivationResumeShortcut() {
       const allItems = Array.isArray(payload?.items) ? payload.items : [];
       reconcileCartProductIds(allItems);
 
-      // Home pricing should contain subscription products only.
-      // VPN catalog is shown on /store/vpn and should not duplicate on index.
-      const items = allItems.filter(item => {
-        const tags = Array.isArray(item?.tags) ? item.tags.filter(Boolean) : [];
-        const deliveryType = resolveDeliveryType(item?.deliveryType, item?.deliveryMethod, tags);
-        const productSlug = String(item?.product || item?.slug || "").trim().toLowerCase();
-        const category = String(item?.category || "").trim().toLowerCase();
-        return deliveryType !== "vpn" && !productSlug.startsWith("vpn_") && category !== "vpn";
-      });
+      const items = allItems;
 
       if (!items.length) {
         pricingGridEl.classList.remove("pricing-grid--categorized");
@@ -1843,6 +1841,8 @@ function initActivationResumeShortcut() {
       renderCart();
       alignToHashTarget("auto");
     } catch (_) {
+      pricingGridEl.classList.remove("pricing-grid--categorized");
+      pricingGridEl.innerHTML = '<div class="price-card"><h3>' + escapeHtml(TEXT.productsUnavailable) + "</h3></div>";
       refreshCards();
       syncCards();
       renderCart();
