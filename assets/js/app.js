@@ -1749,8 +1749,18 @@ function initActivationResumeShortcut() {
 
     try {
       const payload = await fetchProductsPayload();
-      const items = Array.isArray(payload?.items) ? payload.items : [];
-      reconcileCartProductIds(items);
+      const allItems = Array.isArray(payload?.items) ? payload.items : [];
+      reconcileCartProductIds(allItems);
+
+      // Home pricing should contain subscription products only.
+      // VPN catalog is shown on /store/vpn and should not duplicate on index.
+      const items = allItems.filter(item => {
+        const tags = Array.isArray(item?.tags) ? item.tags.filter(Boolean) : [];
+        const deliveryType = resolveDeliveryType(item?.deliveryType, item?.deliveryMethod, tags);
+        const productSlug = String(item?.product || item?.slug || "").trim().toLowerCase();
+        const category = String(item?.category || "").trim().toLowerCase();
+        return deliveryType !== "vpn" && !productSlug.startsWith("vpn_") && category !== "vpn";
+      });
 
       if (!items.length) {
         pricingGridEl.innerHTML = '<div class="price-card"><h3>' + escapeHtml(TEXT.productsUnavailable) + "</h3></div>";
