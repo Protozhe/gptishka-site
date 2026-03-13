@@ -752,6 +752,14 @@ export default function ProductsPage() {
       return;
     }
 
+    const categoryInfo = categoryRows.find((row) => categoryKey(row.name) === sourceKey);
+    const confirmDelete = window.confirm(
+      `Удалить категорию «${sourceCategory}»?\n` +
+        `Товаров: ${categoryInfo?.total ?? 0} (активных: ${categoryInfo?.active ?? 0}, отключенных: ${categoryInfo?.disabled ?? 0}).\n\n` +
+        "После подтверждения товары будут перенесены в другую категорию или удалены по вашему выбору."
+    );
+    if (!confirmDelete) return;
+
     setIsDangerActionPending(true);
     try {
       const sourceItems = await fetchAllProducts({ category: sourceCategory, isArchived: false });
