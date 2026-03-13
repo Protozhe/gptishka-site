@@ -1043,9 +1043,13 @@ main.page {
 
 .pricing-grid--category {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(285px, 100%), 285px));
-  justify-content: start;
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
   gap: 20px;
+}
+
+.pricing-grid--category.is-single {
+  grid-template-columns: minmax(min(285px, 100%), 340px);
+  justify-content: start;
 }
 
 .activation-video {
