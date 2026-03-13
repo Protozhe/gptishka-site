@@ -27,27 +27,33 @@ export function maskStorefrontEmail(email: string) {
 
 function buildPaidOrderWhereFilter() {
   const settings = storefrontTickerStore.get();
-  const where: Prisma.OrderWhereInput = { status: "PAID" };
-  const notClauses: Prisma.OrderWhereInput[] = [];
+  const andClauses: Prisma.OrderWhereInput[] = [{ NOT: { paymentMethod: "stub" } }];
 
   if (settings.hiddenEmails.length) {
-    notClauses.push({ email: { in: settings.hiddenEmails } });
+    andClauses.push({ NOT: { email: { in: settings.hiddenEmails } } });
   }
   if (settings.hiddenOrderIds.length) {
-    notClauses.push({ id: { in: settings.hiddenOrderIds } });
-  }
-  if (notClauses.length) {
-    where.NOT = notClauses;
+    andClauses.push({ NOT: { id: { in: settings.hiddenOrderIds } } });
   }
 
-  return { where, settings };
+  const where: Prisma.OrderWhereInput = {
+    status: "PAID",
+    AND: andClauses,
+  };
+
+  const totalWhere: Prisma.OrderWhereInput = {
+    status: "PAID",
+    NOT: { paymentMethod: "stub" },
+  };
+
+  return { where, totalWhere, settings };
 }
 
 export const storefrontTickerService = {
   async getPublicStats() {
-    const { where } = buildPaidOrderWhereFilter();
+    const { where, totalWhere } = buildPaidOrderWhereFilter();
     const [sales, recentOrders] = await prisma.$transaction([
-      prisma.order.count({ where }),
+      prisma.order.count({ where: totalWhere }),
       prisma.order.findMany({
         where,
         select: { id: true, email: true, createdAt: true },
@@ -76,7 +82,10 @@ export const storefrontTickerService = {
     const hiddenOrderIds = new Set(settings.hiddenOrderIds);
 
     const recentOrders = await prisma.order.findMany({
-      where: { status: "PAID" },
+      where: {
+        status: "PAID",
+        NOT: { paymentMethod: "stub" },
+      },
       select: { id: true, email: true, createdAt: true },
       orderBy: { createdAt: "desc" },
       take: ADMIN_PREVIEW_LIMIT,
