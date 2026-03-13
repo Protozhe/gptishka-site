@@ -968,6 +968,62 @@ main.page {
   gap: 20px;
 }
 
+.pricing-grid.pricing-grid--categorized {
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.pricing-category {
+  border: 1px solid rgba(255, 255, 255, 0.56);
+  border-radius: calc(var(--radius-lg) - 8px);
+  padding: 14px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.58), rgba(250, 241, 228, 0.34)),
+    var(--glass-noise);
+  background-size: auto, 14px 14px, 20px 20px;
+  box-shadow: 0 10px 20px rgba(31, 39, 49, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(12px) saturate(124%);
+  -webkit-backdrop-filter: blur(12px) saturate(124%);
+}
+
+.pricing-category__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.pricing-category__title {
+  margin: 0;
+  font-family: "Space Grotesk", "Manrope", sans-serif;
+  font-size: clamp(1.05rem, 1.7vw, 1.3rem);
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.pricing-category__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(19, 138, 120, 0.22);
+  background: rgba(19, 138, 120, 0.08);
+  color: var(--primary-2);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.pricing-grid--category {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(285px, 1fr));
+  gap: 20px;
+}
+
 .activation-video {
   position: relative;
   max-width: 1200px;
@@ -2007,6 +2063,14 @@ html.is-leaving .page-overlay {
   .price-card h3 {
     padding-right: 0;
     margin-top: 20px;
+  }
+
+  .pricing-grid--category {
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-category {
+    padding: 12px;
   }
 
   .cart-item {

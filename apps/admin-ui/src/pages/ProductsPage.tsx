@@ -222,6 +222,7 @@ export default function ProductsPage() {
   const [title, setTitle] = useState("");
   const [titleEn, setTitleEn] = useState("");
   const [price, setPrice] = useState("");
+  const [category, setCategory] = useState("Подписки ChatGPT");
   const [description, setDescription] = useState("");
   const [descriptionEn, setDescriptionEn] = useState("");
   const [modalDescription, setModalDescription] = useState("");
@@ -249,6 +250,17 @@ export default function ProductsPage() {
     queryKey: ["products", params],
     queryFn: async () => (await api.get("/products", { params })).data,
   });
+
+  const categorySuggestions = useMemo(() => {
+    const items = Array.isArray(products.data?.items) ? (products.data.items as Product[]) : [];
+    const set = new Set<string>();
+    items.forEach((item) => {
+      const value = String(item?.category || "").trim();
+      if (value) set.add(value);
+    });
+    if (!set.size) set.add("Подписки ChatGPT");
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "ru"));
+  }, [products.data?.items]);
 
   const credentials = useQuery({
     queryKey: ["product-credentials", editingId],
@@ -315,6 +327,7 @@ export default function ProductsPage() {
     setTitle("");
     setTitleEn("");
     setPrice("");
+    setCategory("Подписки ChatGPT");
     setDescription("");
     setDescriptionEn("");
     setModalDescription("");
@@ -350,6 +363,7 @@ export default function ProductsPage() {
     setTitle(item.title || "");
     setTitleEn(item.titleEn || "");
     setPrice(String(item.price ?? ""));
+    setCategory(String(item.category || "").trim() || "Подписки ChatGPT");
     setDescription(parsedRu.cleanDescription || "");
     setDescriptionEn(parsedEn.cleanDescription || "");
     setModalDescription(parsedModalRu.cleanDescription || "");
@@ -371,6 +385,7 @@ export default function ProductsPage() {
 
     const cleanTitle = title.trim();
     let cleanTitleEn = titleEn.trim();
+    const cleanCategory = category.trim();
     const cleanDescription = parseDescriptionWithMedia(description).cleanDescription.trim();
     let cleanDescriptionEn = parseDescriptionWithMedia(descriptionEn).cleanDescription.trim();
     const cleanModalDescription = composeDescriptionWithMedia(modalDescription).trim();
@@ -418,6 +433,11 @@ export default function ProductsPage() {
       return;
     }
 
+    if (cleanCategory.length < 2) {
+      setFormError("Категория должна быть не короче 2 символов.");
+      return;
+    }
+
     const finalDescriptionRu = composeDescriptionWithMedia(cleanDescription);
     const finalDescriptionEn = composeDescriptionWithMedia(cleanDescriptionEn);
 
@@ -443,6 +463,7 @@ export default function ProductsPage() {
         payload: {
           title: cleanTitle,
           titleEn: cleanTitleEn,
+          category: cleanCategory,
           description: finalDescriptionRu,
           descriptionEn: finalDescriptionEn,
           modalDescription: cleanModalDescription,
@@ -471,7 +492,7 @@ export default function ProductsPage() {
       price: normalizedPrice,
       oldPrice: null,
       currency: "RUB",
-      category: "Subscriptions",
+      category: cleanCategory,
       tags: preparedTags,
       stock: null,
       isActive: true,
@@ -568,6 +589,18 @@ export default function ProductsPage() {
           <input className="input" placeholder="Название товара (RU)" value={title} onChange={(e) => setTitle(e.target.value)} />
           <input className="input" placeholder="Product title (EN)" value={titleEn} onChange={(e) => setTitleEn(e.target.value)} />
           <input className="input" placeholder="Цена (RUB)" value={price} onChange={(e) => setPrice(e.target.value)} />
+          <input
+            className="input"
+            placeholder="Категория (например: Подписки ChatGPT)"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            list="product-categories"
+          />
+          <datalist id="product-categories">
+            {categorySuggestions.map((value) => (
+              <option key={value} value={value} />
+            ))}
+          </datalist>
           <select className="input" value={badge} onChange={(e) => setBadge(e.target.value as BadgeType)}>
             <option value="none">Без плашки</option>
             <option value="best">Лучший выбор</option>
