@@ -303,35 +303,30 @@ async function update3xUiClient(client: Record<string, unknown>) {
   }
 }
 
-function buildAccessLink(input: { uuid: string; plan: string; serverId: string; email: string | null }) {
-  const template = String(env.VPN_ACCESS_LINK_TEMPLATE || "").trim();
-  if (template) {
-    return template
-      .replaceAll("{uuid}", input.uuid)
-      .replaceAll("{plan}", input.plan)
-      .replaceAll("{serverId}", input.serverId)
-      .replaceAll("{email}", input.email || "");
-  }
+const GPTISHKA_VLESS_REALITY = {
+  host: "89.208.96.217",
+  port: 443,
+  sni: "www.microsoft.com",
+  fp: "safari",
+  sid: "7a",
+  pbk: "tjkQAA2MFOuXNbvE50pjKG6hinrbC5pzmuqOifA0fQM",
+  name: "GPTishka-vpn",
+} as const;
 
-  const host = String(env.VPN_VLESS_HOST || "vpn.gptishka.shop").trim() || "vpn.gptishka.shop";
-  const port = Math.max(1, Number(env.VPN_VLESS_PORT || 443));
-  const sni = String(env.VPN_VLESS_SNI || host).trim() || host;
-  const pbk = String(env.VPN_VLESS_PBK || "").trim();
-  const sid = String(env.VPN_VLESS_SID || "").trim();
-  const fp = String(env.VPN_VLESS_FP || "chrome").trim() || "chrome";
-  const pathValue = String(env.VPN_VLESS_PATH || "").trim();
-
+function buildVlessRealityLink(uuid: string) {
+  const safeUuid = String(uuid || "").trim();
   const query = new URLSearchParams();
   query.set("type", "tcp");
   query.set("security", "reality");
-  query.set("sni", sni);
-  query.set("fp", fp);
-  if (pbk) query.set("pbk", pbk);
-  if (sid) query.set("sid", sid);
-  if (pathValue) query.set("path", pathValue);
+  query.set("sni", GPTISHKA_VLESS_REALITY.sni);
+  query.set("fp", GPTISHKA_VLESS_REALITY.fp);
+  query.set("pbk", GPTISHKA_VLESS_REALITY.pbk);
+  query.set("sid", GPTISHKA_VLESS_REALITY.sid);
+  return `vless://${safeUuid}@${GPTISHKA_VLESS_REALITY.host}:${GPTISHKA_VLESS_REALITY.port}?${query.toString()}#${GPTISHKA_VLESS_REALITY.name}`;
+}
 
-  const label = encodeURIComponent(`GPTishka-${input.plan}`);
-  return `vless://${input.uuid}@${host}:${port}?${query.toString()}#${label}`;
+function buildAccessLink(input: { uuid: string; plan: string; serverId: string; email: string | null }) {
+  return buildVlessRealityLink(input.uuid);
 }
 
 function isAccessActiveNow(access: Pick<VpnAccess, "isActive" | "expiresAt">) {
@@ -663,6 +658,17 @@ export const vpnService = {
     });
     if (!row) throw new AppError("VPN access not found", 404);
     return row;
+  },
+
+  async getLatestByOrder(input: { orderId?: string | null; serverId?: string | null }) {
+    const orderId = String(input.orderId || "").trim();
+    if (!orderId) return null;
+
+    const serverId = normalizeServerId(input.serverId);
+    return prisma.vpnAccess.findFirst({
+      where: { orderId, serverId },
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+    });
   },
 
   async getLatestByOrderOrIdentity(input: { orderId?: string | null; email?: string | null; telegramId?: string | null; serverId?: string | null }) {
