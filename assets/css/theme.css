@@ -1048,7 +1048,8 @@ main.page {
 }
 
 .pricing-grid--category.is-single {
-  grid-template-columns: minmax(min(285px, 100%), 340px);
+  grid-template-columns: 1fr;
+  max-width: min(100%, 250px);
   justify-content: start;
 }
 
