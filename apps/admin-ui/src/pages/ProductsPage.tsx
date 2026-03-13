@@ -248,6 +248,8 @@ export default function ProductsPage() {
   const [credentialsImportText, setCredentialsImportText] = useState("");
   const [credentialsMessage, setCredentialsMessage] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [dangerActionMessage, setDangerActionMessage] = useState<string | null>(null);
+  const [isDangerActionPending, setIsDangerActionPending] = useState(false);
 
   const params = useMemo(
     () => ({
@@ -291,6 +293,35 @@ export default function ProductsPage() {
     if (!set.size) set.add(DEFAULT_PRODUCT_CATEGORY);
     return Array.from(set).sort((a, b) => a.localeCompare(b, "ru"));
   }, [categoriesSource.data?.items, manualCategories, category]);
+
+  const categoryRows = useMemo(() => {
+    const items = Array.isArray(categoriesSource.data?.items) ? (categoriesSource.data.items as Product[]) : [];
+    const map = new Map<string, { name: string; total: number; active: number; disabled: number }>();
+
+    const ensure = (categoryName: string) => {
+      const normalizedName = normalizeCategoryValue(categoryName);
+      if (!normalizedName) return null;
+      const key = categoryKey(normalizedName);
+      if (!map.has(key)) {
+        map.set(key, { name: normalizedName, total: 0, active: 0, disabled: 0 });
+      }
+      return map.get(key)!;
+    };
+
+    items.forEach((item) => {
+      const bucket = ensure(String(item?.category || ""));
+      if (!bucket) return;
+      bucket.total += 1;
+      if (item.isActive) bucket.active += 1;
+      else bucket.disabled += 1;
+    });
+
+    categorySuggestions.forEach((name) => {
+      ensure(name);
+    });
+
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name, "ru"));
+  }, [categoriesSource.data?.items, categorySuggestions]);
 
   const credentials = useQuery({
     queryKey: ["product-credentials", editingId],
@@ -358,6 +389,36 @@ export default function ProductsPage() {
     },
   });
 
+  async function fetchAllProducts(params: Record<string, string | number | boolean | undefined>) {
+    const limit = 100;
+    let page = 1;
+    let totalPages = 1;
+    const result: Product[] = [];
+
+    while (page <= totalPages) {
+      const response = await api.get("/products", {
+        params: {
+          page,
+          limit,
+          sortBy: "createdAt",
+          sortDir: "desc",
+          ...params,
+        },
+      });
+
+      const payload = response.data as { items?: Product[]; total?: number };
+      const items = Array.isArray(payload?.items) ? payload.items : [];
+      const total = Number(payload?.total || 0);
+
+      result.push(...items);
+      totalPages = Math.max(1, Math.ceil(total / limit));
+      if (!items.length) break;
+      page += 1;
+    }
+
+    return result;
+  }
+
   function resetForm() {
     setEditingId(null);
     setTitle("");
@@ -378,6 +439,7 @@ export default function ProductsPage() {
     setCredentialsImportText("");
     setCredentialsMessage(null);
     setFormError(null);
+    setDangerActionMessage(null);
   }
 
   async function onBulkMinus10(e: FormEvent) {
@@ -580,6 +642,165 @@ export default function ProductsPage() {
     setCategoryNotice("Категория добавлена. Сохраните товар, чтобы она появилась в каталоге.");
   }
 
+  async function onDeleteDisabledProducts(categoryFilter?: string) {
+    setDangerActionMessage(null);
+    const categoryName = normalizeCategoryValue(categoryFilter || "");
+    const warning = categoryName
+      ? `Удалить отключенные товары в категории «${categoryName}»?`
+      : "Удалить ВСЕ отключенные товары?";
+
+    if (!window.confirm(`${warning}\n\nТовары с историей заказов могут не удалиться и будут пропущены.`)) {
+      return;
+    }
+
+    setIsDangerActionPending(true);
+    try {
+      const disabledItems = await fetchAllProducts({
+        isActive: false,
+        ...(categoryName ? { category: categoryName } : {}),
+      });
+
+      if (!disabledItems.length) {
+        setDangerActionMessage(categoryName ? `В категории «${categoryName}» нет отключенных товаров.` : "Отключенные товары не найдены.");
+        return;
+      }
+
+      let deleted = 0;
+      let skipped = 0;
+
+      for (const item of disabledItems) {
+        try {
+          await api.delete(`/products/${item.id}`);
+          deleted += 1;
+        } catch {
+          skipped += 1;
+        }
+      }
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["products"] }),
+        queryClient.invalidateQueries({ queryKey: ["products-categories"] }),
+      ]);
+
+      setDangerActionMessage(`Удалено: ${deleted}. Пропущено: ${skipped}.`);
+    } catch (error) {
+      setDangerActionMessage(getRequestErrorMessage(error, "Не удалось удалить отключенные товары."));
+    } finally {
+      setIsDangerActionPending(false);
+    }
+  }
+
+  async function onDeleteSingleDisabledProduct(item: Product) {
+    setDangerActionMessage(null);
+    if (item.isActive) {
+      setDangerActionMessage("Можно удалить только отключенный товар.");
+      return;
+    }
+    if (!window.confirm(`Удалить отключенный товар «${item.title}»?`)) return;
+
+    setIsDangerActionPending(true);
+    try {
+      await api.delete(`/products/${item.id}`);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["products"] }),
+        queryClient.invalidateQueries({ queryKey: ["products-categories"] }),
+      ]);
+      setDangerActionMessage(`Товар «${item.title}» удален.`);
+    } catch (error) {
+      setDangerActionMessage(getRequestErrorMessage(error, "Не удалось удалить товар. Возможно, есть связанные заказы."));
+    } finally {
+      setIsDangerActionPending(false);
+    }
+  }
+
+  async function onDeleteCategory(categoryName: string) {
+    setDangerActionMessage(null);
+    const sourceCategory = normalizeCategoryValue(categoryName);
+    if (!sourceCategory) return;
+
+    const sourceKey = categoryKey(sourceCategory);
+    const defaultKey = categoryKey(DEFAULT_PRODUCT_CATEGORY);
+    if (sourceKey === defaultKey) {
+      setDangerActionMessage("Базовую категорию «Подписки ChatGPT» удалить нельзя.");
+      return;
+    }
+
+    setIsDangerActionPending(true);
+    try {
+      const sourceItems = await fetchAllProducts({ category: sourceCategory });
+      if (!sourceItems.length) {
+        setManualCategories((prev) => prev.filter((value) => categoryKey(value) !== sourceKey));
+        if (categoryKey(category) === sourceKey) setCategory(DEFAULT_PRODUCT_CATEGORY);
+        setDangerActionMessage(`Категория «${sourceCategory}» уже пустая и удалена из списка.`);
+        return;
+      }
+
+      const targetPrompt = window.prompt(
+        `Удаление категории «${sourceCategory}».\nВведите категорию, куда перенести оставшиеся товары:`,
+        DEFAULT_PRODUCT_CATEGORY
+      );
+
+      if (targetPrompt === null) return;
+
+      const targetCategory = normalizeCategoryValue(targetPrompt);
+      if (targetCategory.length < 2) {
+        setDangerActionMessage("Категория назначения должна быть не короче 2 символов.");
+        return;
+      }
+      if (categoryKey(targetCategory) === sourceKey) {
+        setDangerActionMessage("Категория назначения должна отличаться от удаляемой.");
+        return;
+      }
+
+      const shouldDeleteDisabled = window.confirm(
+        `Удалять отключенные товары из «${sourceCategory}»?\n\nOK: удалять (и переносить только те, что не удалились)\nОтмена: перенести все товары в «${targetCategory}»`
+      );
+
+      let moved = 0;
+      let deleted = 0;
+      let skipped = 0;
+
+      for (const item of sourceItems) {
+        const canDelete = !item.isActive && shouldDeleteDisabled;
+        if (canDelete) {
+          try {
+            await api.delete(`/products/${item.id}`);
+            deleted += 1;
+            continue;
+          } catch {
+            // Fallback: keep category cleanup by moving undeletable records.
+          }
+        }
+
+        try {
+          await api.put(`/products/${item.id}`, { category: targetCategory });
+          moved += 1;
+        } catch {
+          skipped += 1;
+        }
+      }
+
+      if (!categorySuggestions.some((value) => categoryKey(value) === categoryKey(targetCategory))) {
+        setManualCategories((prev) => [...prev, targetCategory]);
+      }
+      if (categoryKey(category) === sourceKey) setCategory(targetCategory);
+      setManualCategories((prev) => prev.filter((value) => categoryKey(value) !== sourceKey));
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["products"] }),
+        queryClient.invalidateQueries({ queryKey: ["products-categories"] }),
+      ]);
+
+      setDangerActionMessage(
+        `Категория «${sourceCategory}» очищена. Перенесено: ${moved}. Удалено: ${deleted}. Пропущено: ${skipped}.`
+      );
+    } catch (error) {
+      setDangerActionMessage(getRequestErrorMessage(error, "Не удалось удалить категорию."));
+    } finally {
+      setIsDangerActionPending(false);
+    }
+  }
+
   async function onAutoTranslateClick() {
     setFormError(null);
     const cleanTitle = title.trim();
@@ -739,26 +960,39 @@ export default function ProductsPage() {
             </datalist>
 
             <div className="mt-3 flex flex-wrap gap-2">
-              {categorySuggestions.map((value) => {
-                const active = categoryKey(value) === categoryKey(category);
+              {categoryRows.map((row) => {
+                const active = categoryKey(row.name) === categoryKey(category);
+                const removable = categoryKey(row.name) !== categoryKey(DEFAULT_PRODUCT_CATEGORY);
                 return (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => onPickCategory(value)}
-                    className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                  <span
+                    key={row.name}
+                    className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs font-semibold ${
                       active
                         ? "border-indigo-400 bg-indigo-100 text-indigo-800 dark:border-indigo-500/50 dark:bg-indigo-900/40 dark:text-indigo-100"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-indigo-300 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+                        : "border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
                     }`}
                   >
-                    {value}
-                  </button>
+                    <button type="button" onClick={() => onPickCategory(row.name)} className="px-1">
+                      {row.name} ({row.total})
+                    </button>
+                    {removable && (
+                      <button
+                        type="button"
+                        onClick={() => onDeleteCategory(row.name)}
+                        className="rounded-full px-2 py-0.5 text-[11px] font-bold text-rose-600 hover:bg-rose-100 dark:text-rose-300 dark:hover:bg-rose-900/30"
+                        title={`Удалить категорию «${row.name}»`}
+                        disabled={isDangerActionPending}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </span>
                 );
               })}
             </div>
 
             {categoryNotice && <div className="mt-2 text-xs text-slate-600 dark:text-slate-300">{categoryNotice}</div>}
+            {dangerActionMessage && <div className="mt-2 text-xs text-slate-600 dark:text-slate-300">{dangerActionMessage}</div>}
           </div>
 
           <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
@@ -918,6 +1152,9 @@ export default function ProductsPage() {
           <button className="btn-secondary" onClick={onBulkMinus10} disabled={bulk.isPending}>
             {bulk.isPending ? "Применяем..." : "Массово -10%"}
           </button>
+          <button className="btn-secondary" type="button" onClick={() => onDeleteDisabledProducts()} disabled={isDangerActionPending}>
+            {isDangerActionPending ? "Удаляем..." : "Удалить отключенные"}
+          </button>
           <button className="btn-secondary" type="button" onClick={() => setShowInactive((v) => !v)}>
             {showInactive ? "Скрыть отключенные" : "Показать отключенные"}
           </button>
@@ -925,6 +1162,7 @@ export default function ProductsPage() {
         {(toggle.error || archive.error || bulk.error) && (
           <div className="mt-3 text-sm text-rose-600">Не удалось выполнить действие. Проверьте доступы и соединение с API.</div>
         )}
+        {dangerActionMessage && <div className="mt-3 text-sm text-slate-600 dark:text-slate-300">{dangerActionMessage}</div>}
       </section>
 
       <section className="card overflow-hidden">
@@ -977,6 +1215,16 @@ export default function ProductsPage() {
                         <button className="btn-secondary" onClick={() => archive.mutate(item.id)} disabled={toggle.isPending || archive.isPending}>
                           {archive.isPending ? "Архивируем..." : "В архив"}
                         </button>
+                        {!item.isActive && (
+                          <button
+                            className="btn-secondary"
+                            type="button"
+                            onClick={() => onDeleteSingleDisabledProduct(item)}
+                            disabled={isDangerActionPending}
+                          >
+                            Удалить
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
