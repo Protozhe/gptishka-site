@@ -206,6 +206,8 @@ function badgeLabel(badge: BadgeType): string {
 
 function getRequestErrorMessage(error: unknown, fallback: string): string {
   if (axios.isAxiosError(error)) {
+    const apiMessage = String((error.response?.data as any)?.message || "").trim();
+    if (apiMessage) return apiMessage;
     const status = error.response?.status;
     if (status === 403) return "Недостаточно прав для изменения товаров. Нужна роль ADMIN, OWNER или MANAGER.";
     if (status === 422) return "Проверьте обязательные поля формы.";
@@ -256,6 +258,7 @@ export default function ProductsPage() {
       page: 1,
       limit: 50,
       q,
+      isArchived: false,
       ...(showInactive ? {} : { isActive: true }),
     }),
     [q, showInactive]
@@ -271,7 +274,7 @@ export default function ProductsPage() {
     queryFn: async () =>
       (
         await api.get("/products", {
-          params: { page: 1, limit: 100, sortBy: "title", sortDir: "asc" },
+          params: { page: 1, limit: 100, sortBy: "title", sortDir: "asc", isArchived: false },
         })
       ).data,
     staleTime: 60_000,
@@ -657,6 +660,7 @@ export default function ProductsPage() {
     try {
       const disabledItems = await fetchAllProducts({
         isActive: false,
+        isArchived: false,
         ...(categoryName ? { category: categoryName } : {}),
       });
 
@@ -666,13 +670,23 @@ export default function ProductsPage() {
       }
 
       let deleted = 0;
+      let archived = 0;
       let skipped = 0;
 
       for (const item of disabledItems) {
         try {
           await api.delete(`/products/${item.id}`);
           deleted += 1;
-        } catch {
+        } catch (error) {
+          if (axios.isAxiosError(error) && error.response?.status === 409) {
+            try {
+              await api.patch(`/products/${item.id}/status`, { isArchived: true, isActive: false });
+              archived += 1;
+              continue;
+            } catch {
+              // ignore and count as skipped below
+            }
+          }
           skipped += 1;
         }
       }
@@ -682,7 +696,7 @@ export default function ProductsPage() {
         queryClient.invalidateQueries({ queryKey: ["products-categories"] }),
       ]);
 
-      setDangerActionMessage(`Удалено: ${deleted}. Пропущено: ${skipped}.`);
+      setDangerActionMessage(`Удалено: ${deleted}. В архив: ${archived}. Пропущено: ${skipped}.`);
     } catch (error) {
       setDangerActionMessage(getRequestErrorMessage(error, "Не удалось удалить отключенные товары."));
     } finally {
@@ -707,6 +721,19 @@ export default function ProductsPage() {
       ]);
       setDangerActionMessage(`Товар «${item.title}» удален.`);
     } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        try {
+          await api.patch(`/products/${item.id}/status`, { isArchived: true, isActive: false });
+          await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ["products"] }),
+            queryClient.invalidateQueries({ queryKey: ["products-categories"] }),
+          ]);
+          setDangerActionMessage(`Товар «${item.title}» связан с заказами и отправлен в архив.`);
+          return;
+        } catch {
+          // If archival also fails, fall back to generic error below.
+        }
+      }
       setDangerActionMessage(getRequestErrorMessage(error, "Не удалось удалить товар. Возможно, есть связанные заказы."));
     } finally {
       setIsDangerActionPending(false);
@@ -727,7 +754,7 @@ export default function ProductsPage() {
 
     setIsDangerActionPending(true);
     try {
-      const sourceItems = await fetchAllProducts({ category: sourceCategory });
+      const sourceItems = await fetchAllProducts({ category: sourceCategory, isArchived: false });
       if (!sourceItems.length) {
         setManualCategories((prev) => prev.filter((value) => categoryKey(value) !== sourceKey));
         if (categoryKey(category) === sourceKey) setCategory(DEFAULT_PRODUCT_CATEGORY);

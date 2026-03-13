@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import slugify from "../../common/utils/slugify";
 import { AppError } from "../../common/errors/app-error";
 import { applyProductDeliveryTypeTag, methodToDeliveryType } from "../../common/utils/product-delivery";
@@ -246,7 +247,17 @@ export const productsService = {
   async remove(id: string, actor?: { userId?: string; ip?: string; userAgent?: string }) {
     const before = await productsRepository.findById(id);
     if (!before) throw new AppError("Product not found", 404);
-    await productsRepository.remove(id);
+    try {
+      await productsRepository.remove(id);
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        (error.code === "P2003" || error.code === "P2014")
+      ) {
+        throw new AppError("Нельзя удалить товар: есть связанные заказы. Отключите товар и отправьте его в архив.", 409);
+      }
+      throw error;
+    }
 
     await writeAuditLog({
       userId: actor?.userId,
