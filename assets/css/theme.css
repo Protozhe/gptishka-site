@@ -1043,7 +1043,8 @@ main.page {
 
 .pricing-grid--category {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(285px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(285px, 100%), 285px));
+  justify-content: start;
   gap: 20px;
 }
 
