@@ -36,6 +36,8 @@ type ManualCredential = {
   assignedAt: string | null;
 };
 
+const DEFAULT_PRODUCT_CATEGORY = "Подписки ChatGPT";
+
 const LEGACY_MEDIA_LINE_RE = /^media\s*:\s*(image|video)\s*:\s*(.+)$/i;
 const LEGACY_MEDIA_CAPTION_RE = /^media-caption\s*:\s*(.+)$/i;
 
@@ -213,6 +215,14 @@ function getRequestErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
+function normalizeCategoryValue(value: string): string {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function categoryKey(value: string): string {
+  return normalizeCategoryValue(value).toLocaleLowerCase("ru");
+}
+
 export default function ProductsPage() {
   const queryClient = useQueryClient();
   const [q, setQ] = useState("");
@@ -222,7 +232,10 @@ export default function ProductsPage() {
   const [title, setTitle] = useState("");
   const [titleEn, setTitleEn] = useState("");
   const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("Подписки ChatGPT");
+  const [category, setCategory] = useState(DEFAULT_PRODUCT_CATEGORY);
+  const [newCategoryDraft, setNewCategoryDraft] = useState("");
+  const [categoryNotice, setCategoryNotice] = useState<string | null>(null);
+  const [manualCategories, setManualCategories] = useState<string[]>([]);
   const [description, setDescription] = useState("");
   const [descriptionEn, setDescriptionEn] = useState("");
   const [modalDescription, setModalDescription] = useState("");
@@ -251,16 +264,33 @@ export default function ProductsPage() {
     queryFn: async () => (await api.get("/products", { params })).data,
   });
 
+  const categoriesSource = useQuery({
+    queryKey: ["products-categories"],
+    queryFn: async () =>
+      (
+        await api.get("/products", {
+          params: { page: 1, limit: 100, sortBy: "title", sortDir: "asc" },
+        })
+      ).data,
+    staleTime: 60_000,
+  });
+
   const categorySuggestions = useMemo(() => {
-    const items = Array.isArray(products.data?.items) ? (products.data.items as Product[]) : [];
+    const items = Array.isArray(categoriesSource.data?.items) ? (categoriesSource.data.items as Product[]) : [];
     const set = new Set<string>();
     items.forEach((item) => {
-      const value = String(item?.category || "").trim();
+      const value = normalizeCategoryValue(item?.category || "");
       if (value) set.add(value);
     });
-    if (!set.size) set.add("Подписки ChatGPT");
+    manualCategories.forEach((value) => {
+      const normalized = normalizeCategoryValue(value);
+      if (normalized) set.add(normalized);
+    });
+    const current = normalizeCategoryValue(category);
+    if (current) set.add(current);
+    if (!set.size) set.add(DEFAULT_PRODUCT_CATEGORY);
     return Array.from(set).sort((a, b) => a.localeCompare(b, "ru"));
-  }, [products.data?.items]);
+  }, [categoriesSource.data?.items, manualCategories, category]);
 
   const credentials = useQuery({
     queryKey: ["product-credentials", editingId],
@@ -289,12 +319,18 @@ export default function ProductsPage() {
 
   const createProduct = useMutation({
     mutationFn: (payload: any) => api.post("/products", payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["products"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["products-categories"] });
+    },
   });
 
   const updateProduct = useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: any }) => api.put(`/products/${id}`, payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["products"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["products-categories"] });
+    },
   });
 
   const autoTranslate = useMutation({
@@ -327,7 +363,9 @@ export default function ProductsPage() {
     setTitle("");
     setTitleEn("");
     setPrice("");
-    setCategory("Подписки ChatGPT");
+    setCategory(DEFAULT_PRODUCT_CATEGORY);
+    setNewCategoryDraft("");
+    setCategoryNotice(null);
     setDescription("");
     setDescriptionEn("");
     setModalDescription("");
@@ -363,7 +401,9 @@ export default function ProductsPage() {
     setTitle(item.title || "");
     setTitleEn(item.titleEn || "");
     setPrice(String(item.price ?? ""));
-    setCategory(String(item.category || "").trim() || "Подписки ChatGPT");
+    setCategory(normalizeCategoryValue(item.category || "") || DEFAULT_PRODUCT_CATEGORY);
+    setNewCategoryDraft("");
+    setCategoryNotice(null);
     setDescription(parsedRu.cleanDescription || "");
     setDescriptionEn(parsedEn.cleanDescription || "");
     setModalDescription(parsedModalRu.cleanDescription || "");
@@ -382,10 +422,11 @@ export default function ProductsPage() {
   async function onSubmitProductForm(e: FormEvent) {
     e.preventDefault();
     setFormError(null);
+    setCategoryNotice(null);
 
     const cleanTitle = title.trim();
     let cleanTitleEn = titleEn.trim();
-    const cleanCategory = category.trim();
+    const cleanCategory = normalizeCategoryValue(category);
     const cleanDescription = parseDescriptionWithMedia(description).cleanDescription.trim();
     let cleanDescriptionEn = parseDescriptionWithMedia(descriptionEn).cleanDescription.trim();
     const cleanModalDescription = composeDescriptionWithMedia(modalDescription).trim();
@@ -435,6 +476,10 @@ export default function ProductsPage() {
 
     if (cleanCategory.length < 2) {
       setFormError("Категория должна быть не короче 2 символов.");
+      return;
+    }
+    if (cleanCategory.length > 100) {
+      setFormError("Категория должна быть не длиннее 100 символов.");
       return;
     }
 
@@ -501,6 +546,38 @@ export default function ProductsPage() {
     });
 
     resetForm();
+  }
+
+  function onPickCategory(value: string) {
+    const normalized = normalizeCategoryValue(value);
+    if (!normalized) return;
+    setCategory(normalized);
+    setCategoryNotice(null);
+  }
+
+  function onAddCategory() {
+    const normalized = normalizeCategoryValue(newCategoryDraft);
+    if (normalized.length < 2) {
+      setCategoryNotice("Введите название категории (минимум 2 символа).");
+      return;
+    }
+    if (normalized.length > 100) {
+      setCategoryNotice("Категория должна быть не длиннее 100 символов.");
+      return;
+    }
+
+    const existing = categorySuggestions.find((item) => categoryKey(item) === categoryKey(normalized));
+    if (existing) {
+      setCategory(existing);
+      setNewCategoryDraft("");
+      setCategoryNotice("Категория уже существует и выбрана.");
+      return;
+    }
+
+    setManualCategories((prev) => [...prev, normalized]);
+    setCategory(normalized);
+    setNewCategoryDraft("");
+    setCategoryNotice("Категория добавлена. Сохраните товар, чтобы она появилась в каталоге.");
   }
 
   async function onAutoTranslateClick() {
@@ -589,18 +666,6 @@ export default function ProductsPage() {
           <input className="input" placeholder="Название товара (RU)" value={title} onChange={(e) => setTitle(e.target.value)} />
           <input className="input" placeholder="Product title (EN)" value={titleEn} onChange={(e) => setTitleEn(e.target.value)} />
           <input className="input" placeholder="Цена (RUB)" value={price} onChange={(e) => setPrice(e.target.value)} />
-          <input
-            className="input"
-            placeholder="Категория (например: Подписки ChatGPT)"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            list="product-categories"
-          />
-          <datalist id="product-categories">
-            {categorySuggestions.map((value) => (
-              <option key={value} value={value} />
-            ))}
-          </datalist>
           <select className="input" value={badge} onChange={(e) => setBadge(e.target.value as BadgeType)}>
             <option value="none">Без плашки</option>
             <option value="best">Лучший выбор</option>
@@ -620,6 +685,81 @@ export default function ProductsPage() {
           <button className="btn-primary" type="submit" disabled={isSaving}>
             {isSaving ? "Сохраняем..." : editingId ? "Сохранить изменения" : "Добавить товар"}
           </button>
+
+          <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold tracking-wide text-indigo-700 dark:border-indigo-700/40 dark:bg-indigo-900/30 dark:text-indigo-200">
+                Категории
+              </span>
+              <span className="text-xs text-slate-600 dark:text-slate-300">
+                Текущая: <strong>{normalizeCategoryValue(category) || "—"}</strong>
+              </span>
+            </div>
+
+            <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_auto]">
+              <input
+                className="input"
+                placeholder="Категория товара (например: Подписки ChatGPT)"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                list="product-categories"
+              />
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => onPickCategory(category)}
+                disabled={!normalizeCategoryValue(category)}
+              >
+                Выбрать
+              </button>
+            </div>
+
+            <div className="mt-2 grid gap-2 md:grid-cols-[minmax(0,1fr)_auto]">
+              <input
+                className="input"
+                placeholder="Новая категория"
+                value={newCategoryDraft}
+                onChange={(e) => setNewCategoryDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    onAddCategory();
+                  }
+                }}
+              />
+              <button type="button" className="btn-secondary" onClick={onAddCategory}>
+                Добавить категорию
+              </button>
+            </div>
+
+            <datalist id="product-categories">
+              {categorySuggestions.map((value) => (
+                <option key={value} value={value} />
+              ))}
+            </datalist>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              {categorySuggestions.map((value) => {
+                const active = categoryKey(value) === categoryKey(category);
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => onPickCategory(value)}
+                    className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                      active
+                        ? "border-indigo-400 bg-indigo-100 text-indigo-800 dark:border-indigo-500/50 dark:bg-indigo-900/40 dark:text-indigo-100"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-indigo-300 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+                    }`}
+                  >
+                    {value}
+                  </button>
+                );
+              })}
+            </div>
+
+            {categoryNotice && <div className="mt-2 text-xs text-slate-600 dark:text-slate-300">{categoryNotice}</div>}
+          </div>
 
           <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
             <div className="font-semibold">Текущий режим выдачи: {deliveryMethodLabel(deliveryType)}</div>

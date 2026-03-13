@@ -995,12 +995,35 @@ main.page {
   padding: 0 4px;
 }
 
+.pricing-category__lead {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pricing-category__label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  border-radius: 999px;
+  border: 1px solid rgba(19, 138, 120, 0.2);
+  background: rgba(19, 138, 120, 0.08);
+  color: var(--primary-2);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+}
+
 .pricing-category__title {
   margin: 0;
   font-family: "Space Grotesk", "Manrope", sans-serif;
   font-size: clamp(1.05rem, 1.7vw, 1.3rem);
   line-height: 1.2;
   color: var(--text);
+  overflow-wrap: anywhere;
 }
 
 .pricing-category__count {
@@ -2071,6 +2094,10 @@ html.is-leaving .page-overlay {
 
   .pricing-category {
     padding: 12px;
+  }
+
+  .pricing-category__header {
+    align-items: flex-start;
   }
 
   .cart-item {
