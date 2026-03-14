@@ -70,6 +70,60 @@
       color: #5c6778;
     }
 
+    .redeem-vpn-offer {
+      margin-top: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(54, 124, 255, 0.28);
+      background:
+        linear-gradient(145deg, rgba(239, 247, 255, 0.95), rgba(229, 241, 255, 0.9));
+      box-shadow: 0 10px 24px rgba(43, 96, 182, 0.1);
+      padding: 14px 16px;
+    }
+
+    .redeem-vpn-offer[hidden] {
+      display: none !important;
+    }
+
+    .redeem-vpn-offer-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .redeem-vpn-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #2148d6;
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid rgba(42, 91, 255, 0.28);
+      box-shadow: 0 6px 14px rgba(42, 91, 255, 0.14);
+      white-space: nowrap;
+    }
+
+    .redeem-vpn-offer-text {
+      margin: 0;
+      color: #2a4360;
+      font-size: 14px;
+      line-height: 1.5;
+      text-wrap: balance;
+    }
+
+    .redeem-vpn-offer-actions {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
     .redeem-grid {
       margin-top: 18px;
       display: grid;
@@ -542,6 +596,14 @@
       .redeem-actions .full {
         grid-column: auto;
       }
+
+      .redeem-vpn-offer-head {
+        flex-wrap: wrap;
+      }
+
+      .redeem-vpn-pill {
+        order: -1;
+      }
     }
 
     @media (max-width: 640px) {
@@ -799,6 +861,18 @@
       <h1 class="redeem-title">Extend / Activate</h1>
       <p class="redeem-subtitle">After payment, complete your order delivery using the instructions below.</p>
 
+      <section id="vpnOfferBlock" class="redeem-vpn-offer" hidden>
+        <div class="redeem-vpn-offer-head">
+          <p class="redeem-label" style="margin-bottom:0;">VPN in this order</p>
+          <span class="redeem-vpn-pill">Recommended</span>
+        </div>
+        <p class="redeem-vpn-offer-text">Set up VPN access first, then return here to finish ChatGPT token activation.</p>
+        <div class="redeem-vpn-offer-actions">
+          <a id="vpnOfferSetupBtn" class="redeem-btn redeem-btn-primary" href="/store/vpn/activate" data-redeem-leave-bypass>Set up VPN</a>
+          <button id="vpnOfferSkipBtn" type="button" class="redeem-btn">Continue activation</button>
+        </div>
+      </section>
+
       <div class="redeem-grid">
         <section class="redeem-block">
           <p class="redeem-label">Order ID</p>
@@ -920,6 +994,9 @@
     const manualSupportBtn = document.getElementById('manualSupportBtn');
     const copyLoginBtn = document.getElementById('copyLoginBtn');
     const copyPasswordBtn = document.getElementById('copyPasswordBtn');
+    const vpnOfferBlock = document.getElementById('vpnOfferBlock');
+    const vpnOfferSetupBtn = document.getElementById('vpnOfferSetupBtn');
+    const vpnOfferSkipBtn = document.getElementById('vpnOfferSkipBtn');
 
     const startBtn = document.getElementById('startBtn');
     const checkBtn = document.getElementById('checkBtn');
@@ -955,6 +1032,7 @@
     let tokenValidatedOk = false;
     let lastValidateReason = '';
     let isCredentialsDelivery = false;
+    let vpnOfferDismissed = false;
     let activationCompleted = false;
     let leaveGuardBypass = false;
     let leaveConfirmModalEl = null;
@@ -967,6 +1045,7 @@
 
     const pollPauseKey = orderId ? `gptishka_activation_poll_paused:${orderId}` : '';
     const reviewRewardReadyKey = orderId ? `gptishka_review_reward_ready:${orderId}` : '';
+    const vpnOfferDismissKey = orderId ? `gptishka_vpn_offer_dismissed:${orderId}` : '';
 
     const LEAVE_CONFIRM_TEXT = {
       title: 'Are you sure you want to leave before subscription activation?',
@@ -1134,6 +1213,7 @@
     function setCredentialsDeliveryMode(payload) {
       isCredentialsDelivery = true;
       stopPolling();
+      hideVpnOffer(false);
       if (tokenBlock) tokenBlock.style.display = 'none';
       if (actionsRow) actionsRow.style.display = 'none';
       if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'block';
@@ -1161,6 +1241,47 @@
         setStatus('success', 'Login details are ready. Copy login and password below.', false);
       } else {
         setStatus('pending', message, false);
+      }
+    }
+
+    function buildVpnActivateUrl() {
+      const url = new URL('/store/vpn/activate', window.location.origin);
+      url.searchParams.set('order_id', orderId);
+      if (orderLinkToken) url.searchParams.set('t', orderLinkToken);
+      return url.toString();
+    }
+
+    function hideVpnOffer(persist = false) {
+      if (vpnOfferBlock) vpnOfferBlock.hidden = true;
+      if (!persist || !vpnOfferDismissKey) return;
+      vpnOfferDismissed = true;
+      try {
+        localStorage.setItem(vpnOfferDismissKey, '1');
+      } catch (_) {
+        // Ignore storage failures.
+      }
+    }
+
+    function showVpnOffer() {
+      if (!vpnOfferBlock || isCredentialsDelivery || vpnOfferDismissed) return;
+      if (vpnOfferSetupBtn) vpnOfferSetupBtn.href = buildVpnActivateUrl();
+      vpnOfferBlock.hidden = false;
+    }
+
+    async function maybeShowVpnOffer() {
+      if (!orderId || isCredentialsDelivery || vpnOfferDismissed) return;
+      try {
+        const url = new URL('/api/vpn/me', window.location.origin);
+        url.searchParams.set('order_id', orderId);
+        if (orderLinkToken) url.searchParams.set('t', orderLinkToken);
+
+        const response = await fetch(url.toString());
+        if (!response.ok) return;
+        const payload = await response.json().catch(() => ({}));
+        if (!payload || !String(payload.accessLink || '').trim()) return;
+        showVpnOffer();
+      } catch (_) {
+        // Ignore optional VPN hint errors.
       }
     }
 
@@ -1235,6 +1356,12 @@
         }
         if (orderLinkToken) localStorage.setItem(`gptishka_activation_order_token:${orderId}`, orderLinkToken);
       } catch (_) {}
+      try {
+        vpnOfferDismissed = vpnOfferDismissKey ? localStorage.getItem(vpnOfferDismissKey) === '1' : false;
+      } catch (_) {
+        vpnOfferDismissed = false;
+      }
+      if (vpnOfferDismissed) hideVpnOffer(false);
       loadActivation();
     }
 
@@ -1280,6 +1407,19 @@
     }
     if (copyPasswordBtn) {
       copyPasswordBtn.addEventListener('click', () => copyText(manualPasswordValue ? manualPasswordValue.textContent : '', 'Password copied'));
+    }
+    if (vpnOfferSetupBtn) {
+      vpnOfferSetupBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        leaveGuardBypass = true;
+        window.location.href = buildVpnActivateUrl();
+      });
+    }
+    if (vpnOfferSkipBtn) {
+      vpnOfferSkipBtn.addEventListener('click', () => {
+        hideVpnOffer(true);
+        setStatus('pending', 'You can continue ChatGPT activation below.', false);
+      });
     }
 
     startBtn.addEventListener('click', async () => {
@@ -1411,9 +1551,11 @@
           const url = new URL('/store/vpn', window.location.origin);
           url.searchParams.set('order_id', orderId);
           if (orderLinkToken) url.searchParams.set('t', orderLinkToken);
+          leaveGuardBypass = true;
           window.location.href = url.toString();
           return;
         }
+        await maybeShowVpnOffer();
         const activationStatus = String(payload?.status || '').trim().toLowerCase();
         if (activationStatus === 'success') {
           currentTaskId = String(payload.taskId || '');
