@@ -12,7 +12,7 @@ const ONLINE_TTL_SECONDS = Number(process.env.ONLINE_TTL_SECONDS || 45);
 const ONLINE_TTL_MS = ONLINE_TTL_SECONDS * 1000;
 const ADMIN_BACKEND_URL = String(process.env.ADMIN_BACKEND_URL || "http://localhost:4100").replace(/\/$/, "");
 const ENABLE_SYSTEM_ACTIVATIONS =
-  String(process.env.ENABLE_SYSTEM_ACTIVATIONS || "true").toLowerCase() === "true";
+  String(process.env.ENABLE_SYSTEM_ACTIVATIONS || "false").toLowerCase() === "true";
 const SYSTEM_ACTIVATIONS_PER_DAY = Math.max(
   0,
   Number(process.env.SYSTEM_ACTIVATIONS_PER_DAY || 15)
@@ -876,21 +876,43 @@ function createApp() {
     const timeout = setTimeout(() => controller.abort(), 12000);
 
     try {
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/promo/validate`, {
-        method: "POST",
-        headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
-        body: JSON.stringify(req.body || {}),
-        signal: controller.signal,
-      });
+      const targetPaths = ["/api/promo/validate", "/api/public/promo/validate"];
+      let fallbackStatus = 502;
+      let fallbackBody = "";
 
-      const body = await response.text();
-      clearTimeout(timeout);
+      for (const targetPath of targetPaths) {
+        const response = await fetch(`${ADMIN_BACKEND_URL}${targetPath}`, {
+          method: "POST",
+          headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
+          body: JSON.stringify(req.body || {}),
+          signal: controller.signal,
+        });
 
-      if (!response.ok) {
-        return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "Promo validate failed" }));
+        const body = await response.text();
+        fallbackStatus = response.status;
+        fallbackBody = body;
+
+        // Compatibility fallback between route versions.
+        if ((response.status === 404 || response.status === 405) && targetPath === "/api/promo/validate") {
+          continue;
+        }
+
+        clearTimeout(timeout);
+        if (!response.ok) {
+          return res
+            .status(response.status)
+            .type("application/json")
+            .send(body || JSON.stringify({ error: "Promo validate failed" }));
+        }
+
+        return res.status(response.status).type("application/json").send(body);
       }
 
-      return res.status(response.status).type("application/json").send(body);
+      clearTimeout(timeout);
+      return res
+        .status(fallbackStatus)
+        .type("application/json")
+        .send(fallbackBody || JSON.stringify({ error: "Promo validate failed" }));
     } catch (_) {
       clearTimeout(timeout);
       return res.status(502).json({ error: "Promo API unavailable" });
@@ -923,7 +945,10 @@ function createApp() {
       source.id,
       source.product,
     ]);
-    const promoCode = pickFirstString([source.promo_code, source.promoCode, source.promo], "");
+    const promoCode = pickFirstString(
+      [source.promo_code, source.promoCode, source.promocode, source.promo, source.code],
+      ""
+    );
     const qtyRaw = Number(source.qty ?? source.quantity ?? 1);
     const qty = Number.isFinite(qtyRaw) && qtyRaw > 0 ? Math.floor(qtyRaw) : 1;
 
@@ -1244,27 +1269,31 @@ function createApp() {
         };
       }
 
-      await ensureSystemActivationEvents();
+      if (ENABLE_SYSTEM_ACTIVATIONS) {
+        await ensureSystemActivationEvents();
+      }
       const realRow = await get(
         "SELECT COUNT(*) AS count FROM activation_events WHERE source = 'real'"
       );
-      const systemRow = await get(
-        "SELECT COUNT(*) AS count FROM activation_events WHERE source = 'system'"
-      );
+      const systemRow = ENABLE_SYSTEM_ACTIVATIONS
+        ? await get("SELECT COUNT(*) AS count FROM activation_events WHERE source = 'system'")
+        : { count: 0 };
       const legacyRealSales = INCLUDE_LEGACY_PURCHASES
         ? Number((await get("SELECT COUNT(*) AS count FROM purchases"))?.count || 0)
         : 0;
       const realSales = Number(realRow?.count || 0) + legacyRealSales;
-      const systemSales = Number(systemRow?.count || 0);
+      const systemSales = ENABLE_SYSTEM_ACTIVATIONS ? Number(systemRow?.count || 0) : 0;
       let buyerRows;
 
       if (INCLUDE_LEGACY_PURCHASES) {
+        const activationSourceFilter = ENABLE_SYSTEM_ACTIVATIONS ? "" : "WHERE source = 'real'";
         buyerRows = await all(
           `
           SELECT email, source, created_at
           FROM (
             SELECT email, source, created_at
             FROM activation_events
+            ${activationSourceFilter}
             UNION ALL
             SELECT email, 'real' AS source, created_at
             FROM purchases
@@ -1274,10 +1303,12 @@ function createApp() {
           `
         );
       } else {
+        const sourceFilter = ENABLE_SYSTEM_ACTIVATIONS ? "" : "WHERE source = 'real'";
         buyerRows = await all(
           `
           SELECT email, source, created_at
           FROM activation_events
+          ${sourceFilter}
           ORDER BY datetime(created_at) DESC
           LIMIT ${TICKER_EVENT_LIMIT}
           `
@@ -1421,6 +1452,14 @@ function createApp() {
 
   app.get("/store/vpn/activate/", (_req, res) => {
     res.sendFile(path.join(__dirname, "store", "vpn", "activate", "index.html"));
+  });
+
+  app.get("/vpn", (_req, res) => {
+    res.sendFile(path.join(__dirname, "vpn", "index.html"));
+  });
+
+  app.get("/vpn/", (_req, res) => {
+    res.sendFile(path.join(__dirname, "vpn", "index.html"));
   });
 
   app.use((req, res) => {

@@ -57,6 +57,7 @@ export function createApp() {
   app.use("/api/admin/products", productsRouter);
   app.use("/api/public", publicProductsRouter);
   app.use("/api/public", publicOrdersRouter);
+  app.use("/api/public", publicPromoCodesRouter);
   app.use("/api/payments", publicPaymentsRouter);
   app.use("/api", publicOrdersRouter);
   app.use("/api", publicPromoCodesRouter);
