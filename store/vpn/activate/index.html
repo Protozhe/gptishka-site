@@ -17,10 +17,26 @@
     }
 
     .vpn-activation-wrap {
-      width: min(1280px, calc(100% - 24px));
+      width: min(1500px, calc(100% - 20px));
       margin: 10px auto 18px;
       display: grid;
       gap: 8px;
+    }
+
+    .logo-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .brand-text {
+      font-family: "Space Grotesk", "Manrope", sans-serif;
+      font-size: clamp(20px, 2.2vw, 28px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      white-space: nowrap;
     }
 
     .section-pad {
@@ -348,8 +364,48 @@
     .support-inline {
       margin-top: 8px;
       display: grid;
-      gap: 8px;
-      align-items: start;
+      grid-template-columns: 96px minmax(0, 1fr);
+      gap: 10px;
+      align-items: end;
+      min-height: 122px;
+    }
+
+    .support-cat-gif {
+      width: 96px;
+      height: auto;
+      align-self: end;
+      filter: drop-shadow(0 8px 18px rgba(31, 39, 49, 0.16));
+    }
+
+    .support-bubble {
+      position: relative;
+      border: 1px solid rgba(186, 198, 224, 0.72);
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 18px rgba(31, 39, 49, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.96);
+      display: grid;
+      gap: 10px;
+    }
+
+    .support-bubble::before {
+      content: "";
+      position: absolute;
+      left: -10px;
+      bottom: 22px;
+      border-style: solid;
+      border-width: 10px 10px 10px 0;
+      border-color: transparent rgba(186, 198, 224, 0.72) transparent transparent;
+    }
+
+    .support-bubble::after {
+      content: "";
+      position: absolute;
+      left: -8px;
+      bottom: 23px;
+      border-style: solid;
+      border-width: 9px 9px 9px 0;
+      border-color: transparent rgba(255, 255, 255, 0.9) transparent transparent;
     }
 
     .support-inline .btn {
@@ -400,6 +456,24 @@
       .support-inline .btn {
         width: 100%;
       }
+
+      .brand-text {
+        font-size: 20px;
+      }
+
+      .support-inline {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+
+      .support-cat-gif {
+        width: 76px;
+      }
+
+      .support-bubble::before,
+      .support-bubble::after {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -409,6 +483,7 @@
     <div class="nav">
       <a href="/index.html" class="logo-link">
         <img src="/assets/img/logo.png" alt="GPTishka" class="logo-img" loading="lazy" decoding="async" />
+        <span class="brand-text">GPTишка</span>
       </a>
       <nav>
         <a href="/index.html">Главная</a>
@@ -433,6 +508,7 @@
               <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="windows">Windows</button>
               <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="android">Android</button>
               <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="ios">iOS</button>
+              <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="mac">Mac</button>
             </div>
 
             <div id="guideStage" class="guide-stage">
@@ -480,8 +556,11 @@
           </div>
 
           <div class="inner-block support-inline">
-            <h2 class="support-title">Не получается подключиться?</h2>
-            <a class="btn" href="https://t.me/gptishkasupp" target="_blank" rel="noopener">Написать в поддержку</a>
+            <img class="support-cat-gif" src="/assets/img/assistant-cat-left.gif" alt="Кот поддержки GPTishka" loading="lazy" decoding="async" />
+            <div class="support-bubble">
+              <h2 class="support-title">Не получается подключиться?</h2>
+              <a class="btn" href="https://t.me/gptishkasupp" target="_blank" rel="noopener">Написать в поддержку</a>
+            </div>
           </div>
         </aside>
       </div>
@@ -525,6 +604,16 @@
         ios: {
           title: "iOS",
           appUrl: "https://apps.apple.com/app/streisand/id6450534064",
+          steps: [
+            "Скачайте приложение",
+            "Импортируйте конфигурацию",
+            "Вставьте ключ",
+            "Нажмите подключить",
+          ],
+        },
+        mac: {
+          title: "Mac",
+          appUrl: "https://github.com/2dust/v2rayN/releases/latest",
           steps: [
             "Скачайте приложение",
             "Импортируйте конфигурацию",
