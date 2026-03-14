@@ -101,3 +101,24 @@ export const activationWriteRateLimit = rateLimit({
   legacyHeaders: false,
   handler: withScope("activation-write"),
 });
+
+export const vpnAccessReadRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 120,
+  keyGenerator: (req) => {
+    const orderId = String((req.query as any)?.order_id || (req.query as any)?.orderId || "").trim().toLowerCase();
+    const telegramId = String((req.query as any)?.telegramId || (req.query as any)?.telegram_id || "").trim().toLowerCase();
+    return `vpn-read:${orderId || telegramId || req.ip}`;
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: withScope("vpn-read"),
+});
+
+export const vpnAccessWriteRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: withScope("vpn-write"),
+});

@@ -16,6 +16,7 @@ import PartnersPage from "./pages/PartnersPage";
 import PartnerEarningsPage from "./pages/PartnerEarningsPage";
 import CdkKeysPage from "./pages/CdkKeysPage";
 import StorefrontTickerPage from "./pages/StorefrontTickerPage";
+import VpnAccessPage from "./pages/VpnAccessPage";
 import "./styles/index.css";
 
 const queryClient = new QueryClient();
@@ -73,6 +74,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                   <Route path="partner-earnings" element={<PartnerEarningsPage />} />
                   <Route path="users" element={<UsersPage />} />
                   <Route path="cdks" element={<CdkKeysPage />} />
+                  <Route path="vpn-access" element={<VpnAccessPage />} />
                 </Route>
               </Route>
               <Route path="*" element={<Navigate to="/login" replace />} />

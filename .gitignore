@@ -19,3 +19,4 @@ apps/admin-ui/.env.production
 data/cdk-keys.json
 apps/admin-backend/data/cdk-keys.json
 data/backups/
+local-backups/

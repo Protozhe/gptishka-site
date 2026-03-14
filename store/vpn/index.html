@@ -140,6 +140,17 @@
       flex-wrap: wrap;
     }
 
+    .vpn-platform-grid {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .vpn-platform-grid .btn {
+      min-width: 130px;
+    }
+
     .vpn-soft-btn {
       border-color: rgba(19, 138, 120, 0.22) !important;
       background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(238, 252, 249, 0.86)) !important;
@@ -250,6 +261,12 @@
         <div class="vpn-copy-wrap">
           <button id="vpnCopyConfigBtn" type="button" class="btn" disabled>Скопировать конфиг</button>
           <button id="vpnRefreshBtn" type="button" class="btn secondary vpn-soft-btn">Обновить</button>
+        </div>
+        <div class="vpn-platform-grid">
+          <a class="btn secondary vpn-soft-btn" href="/vpn?os=windows" target="_blank" rel="noopener">Windows</a>
+          <a class="btn secondary vpn-soft-btn" href="/vpn?os=android" target="_blank" rel="noopener">Android</a>
+          <a class="btn secondary vpn-soft-btn" href="/vpn?os=ios" target="_blank" rel="noopener">iOS</a>
+          <a class="btn secondary vpn-soft-btn" href="/vpn?os=mac" target="_blank" rel="noopener">Mac</a>
         </div>
         <div id="vpnMeStatus" class="vpn-status"></div>
       </article>

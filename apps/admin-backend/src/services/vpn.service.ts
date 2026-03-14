@@ -1,3 +1,4 @@
+import axios, { AxiosError } from "axios";
 import { Prisma, Product, VpnAccess } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { AppError } from "../common/errors/app-error";
@@ -31,6 +32,16 @@ const DIRECT_VPN_PLANS: Record<string, number> = {
 
 const DEFAULT_VPN_DURATION_DAYS = 30;
 const XUI_COOKIE_TTL_MS = 10 * 60 * 1000;
+
+type VlessRealityConfig = {
+  host: string;
+  port: number;
+  sni: string;
+  fp: string;
+  sid: string;
+  pbk: string;
+  name: string;
+};
 
 const VPN_CATALOG_DEFAULTS = [
   {
@@ -160,15 +171,6 @@ function resolve3xUiBaseUrl() {
   return String(env.VPN_3XUI_BASE_URL || "").trim().replace(/\/+$/, "");
 }
 
-function extractSetCookies(response: Response) {
-  const withGetSetCookie = response.headers as Headers & { getSetCookie?: () => string[] };
-  if (typeof withGetSetCookie.getSetCookie === "function") {
-    return withGetSetCookie.getSetCookie().filter(Boolean);
-  }
-  const single = response.headers.get("set-cookie");
-  return single ? [single] : [];
-}
-
 async function ensure3xUiCookie(forceRefresh = false) {
   if (!is3xUiConfigured()) return "";
   if (!forceRefresh && xuiCookie && Date.now() - xuiCookieIssuedAt < XUI_COOKIE_TTL_MS) {
@@ -181,20 +183,21 @@ async function ensure3xUiCookie(forceRefresh = false) {
     password: String(env.VPN_3XUI_PASSWORD || "").trim(),
   });
 
-  const response = await fetch(`${baseUrl}/login`, {
-    method: "POST",
+  const response = await axios.post(`${baseUrl}/login`, body.toString(), {
     headers: {
       Accept: "application/json, text/plain, */*",
       "Content-Type": "application/x-www-form-urlencoded",
     },
-    body: body.toString(),
+    validateStatus: () => true,
   });
 
-  if (!response.ok) {
-    throw new AppError("VPN panel login failed", 502, { upstreamStatus: response.status });
+  if (response.status < 200 || response.status >= 300) {
+    throw new AppError("VPN panel login failed", 502, { upstreamStatus: response.status, upstreamBody: response.data });
   }
 
-  const cookie = extractSetCookies(response)
+  const rawSetCookie = response.headers["set-cookie"];
+  const setCookies = Array.isArray(rawSetCookie) ? rawSetCookie : rawSetCookie ? [String(rawSetCookie)] : [];
+  const cookie = setCookies
     .map((line) => String(line || "").split(";")[0]?.trim())
     .filter(Boolean)
     .join("; ");
@@ -208,34 +211,64 @@ async function ensure3xUiCookie(forceRefresh = false) {
   return xuiCookie;
 }
 
-async function call3xUi(path: string, payload: unknown, canRetry = true): Promise<any> {
+async function call3xUiPost(path: string, payload: unknown, canRetry = true): Promise<any> {
   if (!is3xUiConfigured()) return null;
 
   const cookie = await ensure3xUiCookie(false);
-  const response = await fetch(`${resolve3xUiBaseUrl()}${path}`, {
-    method: "POST",
+  const response = await axios.post(`${resolve3xUiBaseUrl()}${path}`, payload || {}, {
     headers: {
       Accept: "application/json, text/plain, */*",
       "Content-Type": "application/json",
       Cookie: cookie,
     },
-    body: JSON.stringify(payload || {}),
+    validateStatus: () => true,
   });
 
   if (response.status === 401 && canRetry) {
     await ensure3xUiCookie(true);
-    return call3xUi(path, payload, false);
+    return call3xUiPost(path, payload, false);
   }
 
-  const text = await response.text().catch(() => "");
-  let json: any = null;
-  try {
-    json = text ? JSON.parse(text) : null;
-  } catch {
-    json = null;
+  const json: any = response.data;
+  const text = typeof response.data === "string" ? response.data : JSON.stringify(response.data || {});
+
+  if (response.status < 200 || response.status >= 300) {
+    throw new AppError("VPN panel request failed", 502, {
+      upstreamStatus: response.status,
+      upstreamBody: String(text || "").slice(0, 2000),
+    });
   }
 
-  if (!response.ok) {
+  if (json && typeof json === "object" && json.success === false) {
+    throw new AppError("VPN panel returned unsuccessful response", 502, {
+      upstreamBody: String(json.msg || json.message || "unknown error").slice(0, 1000),
+    });
+  }
+
+  return json;
+}
+
+async function call3xUiGet(path: string, canRetry = true): Promise<any> {
+  if (!is3xUiConfigured()) return null;
+
+  const cookie = await ensure3xUiCookie(false);
+  const response = await axios.get(`${resolve3xUiBaseUrl()}${path}`, {
+    headers: {
+      Accept: "application/json, text/plain, */*",
+      Cookie: cookie,
+    },
+    validateStatus: () => true,
+  });
+
+  if (response.status === 401 && canRetry) {
+    await ensure3xUiCookie(true);
+    return call3xUiGet(path, false);
+  }
+
+  const json: any = response.data;
+  const text = typeof response.data === "string" ? response.data : JSON.stringify(response.data || {});
+
+  if (response.status < 200 || response.status >= 300) {
     throw new AppError("VPN panel request failed", 502, {
       upstreamStatus: response.status,
       upstreamBody: String(text || "").slice(0, 2000),
@@ -284,7 +317,7 @@ function build3xUiClientPayload(input: {
 
 async function add3xUiClient(client: Record<string, unknown>) {
   if (!is3xUiConfigured()) return;
-  await call3xUi("/panel/api/inbounds/addClient", {
+  await call3xUiPost("/panel/api/inbounds/addClient", {
     id: Number(env.VPN_3XUI_INBOUND_ID),
     settings: JSON.stringify({ clients: [client] }),
   });
@@ -293,7 +326,7 @@ async function add3xUiClient(client: Record<string, unknown>) {
 async function update3xUiClient(client: Record<string, unknown>) {
   if (!is3xUiConfigured()) return;
   try {
-    await call3xUi("/panel/api/inbounds/updateClient", {
+    await call3xUiPost("/panel/api/inbounds/updateClient", {
       id: Number(env.VPN_3XUI_INBOUND_ID),
       settings: JSON.stringify({ clients: [client] }),
     });
@@ -303,26 +336,47 @@ async function update3xUiClient(client: Record<string, unknown>) {
   }
 }
 
-const GPTISHKA_VLESS_REALITY = {
-  host: "89.208.96.217",
-  port: 443,
-  sni: "www.microsoft.com",
-  fp: "safari",
-  sid: "7a",
-  pbk: "tjkQAA2MFOuXNbvE50pjKG6hinrbC5pzmuqOifA0fQM",
-  name: "GPTishka-vpn",
-} as const;
+function resolveVlessRealityConfig(): VlessRealityConfig {
+  return {
+    host: String(env.VPN_VLESS_HOST || "vpn.gptishka.shop").trim() || "vpn.gptishka.shop",
+    port: Number(env.VPN_VLESS_PORT || 443) || 443,
+    sni: String(env.VPN_VLESS_SNI || "www.microsoft.com").trim() || "www.microsoft.com",
+    fp: String(env.VPN_VLESS_FP || "chrome").trim() || "chrome",
+    sid: String(env.VPN_VLESS_SID || "7a").trim() || "7a",
+    pbk: String(env.VPN_VLESS_PBK || "").trim(),
+    name: "GPTishka-vpn",
+  };
+}
+
+function applyAccessLinkTemplate(template: string, uuid: string, cfg: VlessRealityConfig) {
+  return String(template || "")
+    .replace(/\{uuid\}/gi, uuid)
+    .replace(/\{host\}/gi, cfg.host)
+    .replace(/\{port\}/gi, String(cfg.port))
+    .replace(/\{sni\}/gi, cfg.sni)
+    .replace(/\{fp\}/gi, cfg.fp)
+    .replace(/\{pbk\}/gi, cfg.pbk)
+    .replace(/\{sid\}/gi, cfg.sid)
+    .replace(/\{name\}/gi, cfg.name);
+}
 
 function buildVlessRealityLink(uuid: string) {
+  const cfg = resolveVlessRealityConfig();
   const safeUuid = String(uuid || "").trim();
+  const template = String(env.VPN_ACCESS_LINK_TEMPLATE || "").trim();
+  if (template) {
+    const fromTemplate = applyAccessLinkTemplate(template, safeUuid, cfg).trim();
+    if (fromTemplate) return fromTemplate;
+  }
+
   const query = new URLSearchParams();
   query.set("type", "tcp");
   query.set("security", "reality");
-  query.set("sni", GPTISHKA_VLESS_REALITY.sni);
-  query.set("fp", GPTISHKA_VLESS_REALITY.fp);
-  query.set("pbk", GPTISHKA_VLESS_REALITY.pbk);
-  query.set("sid", GPTISHKA_VLESS_REALITY.sid);
-  return `vless://${safeUuid}@${GPTISHKA_VLESS_REALITY.host}:${GPTISHKA_VLESS_REALITY.port}?${query.toString()}#${GPTISHKA_VLESS_REALITY.name}`;
+  query.set("sni", cfg.sni);
+  query.set("fp", cfg.fp);
+  query.set("pbk", cfg.pbk);
+  query.set("sid", cfg.sid);
+  return `vless://${safeUuid}@${cfg.host}:${cfg.port}?${query.toString()}#${cfg.name}`;
 }
 
 function buildAccessLink(input: { uuid: string; plan: string; serverId: string; email: string | null }) {
@@ -357,6 +411,65 @@ async function writeVpnEvent(params: {
   } catch (error) {
     console.warn("[vpn] failed to write event", error);
   }
+}
+
+function toSafeBigInt(value: unknown, fallback = 0n) {
+  if (typeof value === "bigint") return value >= 0n ? value : fallback;
+  const asNumber = Number(value);
+  if (!Number.isFinite(asNumber) || asNumber < 0) return fallback;
+  try {
+    return BigInt(Math.floor(asNumber));
+  } catch {
+    return fallback;
+  }
+}
+
+function resolveClientEmailForAccess(row: Pick<VpnAccess, "email" | "telegramId" | "plan" | "uuid">) {
+  return deriveClientEmail(row.email, row.telegramId, row.plan, row.uuid);
+}
+
+function parseJsonObject(input: unknown): Record<string, unknown> {
+  if (input && typeof input === "object" && !Array.isArray(input)) {
+    return input as Record<string, unknown>;
+  }
+  if (typeof input !== "string") return {};
+  try {
+    const parsed = JSON.parse(input);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed as Record<string, unknown>;
+    }
+    return {};
+  } catch {
+    return {};
+  }
+}
+
+function normalizeStatsUsage(entry: Record<string, unknown>) {
+  const total = Number(entry.total ?? entry.usage ?? entry.traffic ?? -1);
+  if (Number.isFinite(total) && total >= 0) return Math.floor(total);
+  const up = Number(entry.up ?? entry.upload ?? entry.uplink ?? 0);
+  const down = Number(entry.down ?? entry.download ?? entry.downlink ?? 0);
+  const mixed = up + down;
+  if (Number.isFinite(mixed) && mixed >= 0) return Math.floor(mixed);
+  return 0;
+}
+
+function extractUsageFromInboundResponse(payload: any, clientEmail: string) {
+  const root = parseJsonObject(payload);
+  const obj = parseJsonObject(root.obj);
+  const statsRaw = (obj.clientStats ?? obj.clientTraffic ?? obj.clientStatsList ?? root.clientStats) as unknown;
+  const stats = Array.isArray(statsRaw) ? statsRaw : [];
+  const target = String(clientEmail || "").trim().toLowerCase();
+  if (!target || !stats.length) return 0;
+
+  for (const item of stats) {
+    const row = parseJsonObject(item);
+    const email = String(row.email ?? row.clientEmail ?? "").trim().toLowerCase();
+    if (!email || email !== target) continue;
+    return normalizeStatsUsage(row);
+  }
+
+  return 0;
 }
 
 export function toVpnMePayload(access: VpnAccess) {
@@ -686,5 +799,193 @@ export const vpnService = {
       email: input.email,
       telegramId: input.telegramId,
     });
+  },
+
+  async getById(id: string) {
+    const row = await prisma.vpnAccess.findUnique({
+      where: { id: String(id || "").trim() },
+    });
+    if (!row) throw new AppError("VPN access not found", 404);
+    return row;
+  },
+
+  async revokeById(id: string, reason?: string | null) {
+    const row = await this.getById(id);
+    return this.disableVpnUser({
+      uuid: row.uuid,
+      reason: String(reason || "").trim() || "revoked_by_admin",
+    });
+  },
+
+  async regenerateKeyById(id: string, reason?: string | null) {
+    const row = await this.getById(id);
+    const previousUuid = row.uuid;
+    const newUuid = randomUUID();
+    const clientEmail = resolveClientEmailForAccess({ ...row, uuid: newUuid });
+    const nextIsActive = Boolean(row.isActive) && row.expiresAt.getTime() > Date.now();
+    const nextClient = build3xUiClientPayload({
+      uuid: newUuid,
+      clientEmail,
+      telegramId: row.telegramId,
+      expiresAt: row.expiresAt,
+      enabled: nextIsActive,
+    });
+
+    await add3xUiClient(nextClient);
+
+    try {
+      const oldClient = build3xUiClientPayload({
+        uuid: previousUuid,
+        clientEmail: resolveClientEmailForAccess(row),
+        telegramId: row.telegramId,
+        expiresAt: row.expiresAt,
+        enabled: false,
+      });
+      await update3xUiClient(oldClient);
+    } catch (error) {
+      console.warn("[vpn] failed to disable old uuid during key regeneration", error);
+    }
+
+    const updated = await prisma.vpnAccess.update({
+      where: { id: row.id },
+      data: {
+        uuid: newUuid,
+        accessLink: buildAccessLink({
+          uuid: newUuid,
+          plan: row.plan,
+          serverId: row.serverId,
+          email: row.email,
+        }),
+        isActive: nextIsActive,
+        disabledAt: nextIsActive ? null : row.disabledAt || new Date(),
+      },
+    });
+
+    await writeVpnEvent({
+      eventType: "regenerate",
+      vpnAccessId: updated.id,
+      telegramId: updated.telegramId,
+      meta: {
+        reason: String(reason || "").trim() || "regenerated_by_admin",
+        previousUuid,
+        nextUuid: newUuid,
+      },
+    });
+
+    return updated;
+  },
+
+  async setExpiryById(id: string, expiresAtValue: string | Date, reason?: string | null) {
+    const row = await this.getById(id);
+    const nextExpiresAt = new Date(expiresAtValue);
+    if (Number.isNaN(nextExpiresAt.getTime())) {
+      throw new AppError("Invalid expiresAt date", 422);
+    }
+
+    const shouldBeActive = Boolean(row.isActive) && nextExpiresAt.getTime() > Date.now();
+    const client = build3xUiClientPayload({
+      uuid: row.uuid,
+      clientEmail: resolveClientEmailForAccess(row),
+      telegramId: row.telegramId,
+      expiresAt: nextExpiresAt,
+      enabled: shouldBeActive,
+    });
+    await update3xUiClient(client);
+
+    const updated = await prisma.vpnAccess.update({
+      where: { id: row.id },
+      data: {
+        expiresAt: nextExpiresAt,
+        isActive: shouldBeActive,
+        disabledAt: shouldBeActive ? null : row.disabledAt || new Date(),
+      },
+    });
+
+    await writeVpnEvent({
+      eventType: "set_expiry",
+      vpnAccessId: updated.id,
+      telegramId: updated.telegramId,
+      meta: {
+        reason: String(reason || "").trim() || "expiry_updated_by_admin",
+        expiresAt: nextExpiresAt.toISOString(),
+      },
+    });
+
+    return updated;
+  },
+
+  async syncTrafficById(id: string) {
+    const row = await this.getById(id);
+    if (!is3xUiConfigured()) {
+      return row;
+    }
+
+    const inboundId = Number(env.VPN_3XUI_INBOUND_ID || 0);
+    if (!inboundId) {
+      return row;
+    }
+
+    let usage = 0;
+    try {
+      const inbound = await call3xUiGet(`/panel/api/inbounds/get/${inboundId}`);
+      usage = extractUsageFromInboundResponse(inbound, resolveClientEmailForAccess(row));
+    } catch (error) {
+      const asAxios = error as AxiosError | undefined;
+      console.warn("[vpn] failed to sync traffic", asAxios?.message || error);
+      throw new AppError("Failed to sync VPN traffic from panel", 502);
+    }
+
+    const updated = await prisma.vpnAccess.update({
+      where: { id: row.id },
+      data: {
+        trafficUsedBytes: toSafeBigInt(usage, row.trafficUsedBytes),
+      },
+    });
+
+    await writeVpnEvent({
+      eventType: "sync_traffic",
+      vpnAccessId: updated.id,
+      telegramId: updated.telegramId,
+      meta: {
+        trafficUsedBytes: String(updated.trafficUsedBytes),
+      },
+    });
+
+    return updated;
+  },
+
+  async disableExpiredAccesses(limit = 200) {
+    const safeLimit = Math.max(1, Math.min(Math.floor(Number(limit) || 0), 1000));
+    const now = new Date();
+    const rows = await prisma.vpnAccess.findMany({
+      where: {
+        isActive: true,
+        expiresAt: { lte: now },
+      },
+      orderBy: [{ expiresAt: "asc" }, { updatedAt: "asc" }],
+      take: safeLimit,
+    });
+
+    let disabled = 0;
+    let failed = 0;
+
+    for (const row of rows) {
+      try {
+        await this.disableVpnUser({
+          uuid: row.uuid,
+          reason: "expired_auto",
+        });
+        disabled += 1;
+      } catch (error) {
+        failed += 1;
+        console.warn("[vpn] failed to disable expired access", row.id, error);
+      }
+    }
+
+    return {
+      checked: rows.length,
+      disabled,
+      failed,
+    };
   },
 };

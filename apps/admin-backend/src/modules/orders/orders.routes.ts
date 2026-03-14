@@ -2,7 +2,6 @@
 import { allowRoles, requireAuth } from "../auth/auth.middleware";
 import { validateBody, validateQuery } from "../../common/middleware/validation";
 import {
-  createOrder,
   exportOrdersCsv,
   getStorefrontTickerSettings,
   getOrderActivationProof,
@@ -15,7 +14,6 @@ import {
   updateOrderStatus,
 } from "./orders.controller";
 import {
-  createOrderSchema,
   manualConfirmSchema,
   ordersQuerySchema,
   storefrontTickerSettingsSchema,
@@ -23,8 +21,6 @@ import {
 } from "./orders.schemas";
 
 export const ordersRouter = Router();
-
-ordersRouter.post("/checkout", validateBody(createOrderSchema), createOrder);
 
 ordersRouter.use(requireAuth);
 ordersRouter.get("/", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateQuery(ordersQuerySchema), listOrders);

@@ -211,7 +211,6 @@ export const ordersService = {
     const firstItem = order.items[0];
     const planId = firstItem?.product?.id || firstItem?.productId || null;
     const deliveryMode = resolveProductDeliveryType(firstItem?.product?.tags || []);
-
     return {
       status: order.status,
       planId,
@@ -247,20 +246,19 @@ export const ordersService = {
     const fullOrder = await getOrderWithFirstItem(order.id);
     const firstItem = fullOrder?.items?.[0];
     const deliveryType = resolveProductDeliveryType(firstItem?.product?.tags || []);
-
     if (deliveryType === "credentials") {
       await deliverProduct(order);
       const assigned = manualCredentialsStore.findByOrderId(order.id);
       const supportEmail = resolveSupportEmail();
       if (assigned && String(assigned.productId || "").trim() === String(firstItem?.productId || "").trim()) {
-        return {
-          orderId: order.id,
-          deliveryMode: "credentials",
-          status: "credentials_ready",
-          credentials: {
-            login: assigned.login,
-            password: assigned.password,
-          },
+      return {
+        orderId: order.id,
+        deliveryMode: "credentials",
+        status: "credentials_ready",
+        credentials: {
+          login: assigned.login,
+          password: assigned.password,
+        },
           supportUrl: DEFAULT_SUPPORT_URL,
           supportEmail,
           message: "Данные для входа доступны ниже.",
@@ -280,9 +278,8 @@ export const ordersService = {
 
     if (deliveryType === "vpn") {
       await deliverProduct(order);
-      const access = await vpnService.getLatestByOrderOrIdentity({
+      const access = await vpnService.getLatestByOrder({
         orderId: order.id,
-        email: order.email,
       });
       if (!access) {
         throw new AppError("VPN access is not issued yet", 409);
@@ -593,9 +590,8 @@ export const ordersService = {
         await deliverProduct(order);
       }
 
-      const access = await vpnService.getLatestByOrderOrIdentity({
+      const access = await vpnService.getLatestByOrder({
         orderId: order.id,
-        email: order.email,
       });
       const vpnPayload = access ? toVpnMePayload(access) : null;
       const certainty =

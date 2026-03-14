@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VPN Setup - GPTishka</title>
+  <meta name="description" content="Инструкция подключения GPTishka VPN: Windows, Android, iOS, Mac." />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260312fix2" />
+  <style>
+    .vpn-setup {
+      width: min(1080px, calc(100% - 24px));
+      margin: 16px auto 40px;
+      display: grid;
+      gap: 14px;
+    }
+    .vpn-card {
+      border: 1px solid rgba(205, 216, 224, 0.86);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.78);
+      padding: 18px;
+      box-shadow: 0 10px 22px rgba(31, 39, 49, 0.08);
+    }
+    .vpn-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .vpn-pill {
+      border: 1px solid rgba(19, 138, 120, 0.26);
+      background: rgba(238, 252, 249, 0.84);
+      border-radius: 999px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .vpn-pill.is-active {
+      box-shadow: 0 8px 16px rgba(19, 138, 120, 0.16);
+      border-color: rgba(19, 138, 120, 0.45);
+    }
+    .vpn-guide h2 {
+      margin: 0 0 8px;
+      font-size: 20px;
+    }
+    .vpn-guide ol {
+      margin: 0;
+      padding-left: 20px;
+      display: grid;
+      gap: 6px;
+    }
+    .vpn-guide li {
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+    .vpn-key-box {
+      width: 100%;
+      min-height: 132px;
+      border: 1px solid rgba(205, 216, 224, 0.9);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.92);
+      padding: 10px 12px;
+      font: 600 13px/1.45 "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+      resize: vertical;
+      overflow-wrap: anywhere;
+      word-break: break-all;
+    }
+    .vpn-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 720px) {
+      .vpn-setup {
+        width: calc(100% - 16px);
+      }
+      .vpn-actions .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-overlay"></div>
+  <header>
+    <div class="nav">
+      <a href="/index.html" class="logo-link">
+        <img src="/assets/img/logo.png" alt="GPTishka" class="logo-img" loading="lazy" decoding="async" />
+      </a>
+      <nav>
+        <a href="/index.html">Главная</a>
+        <a href="/index.html#pricing">Тарифы</a>
+        <a href="/store/vpn">VPN</a>
+        <a href="/vpn" class="active">VPN Setup</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page vpn-setup">
+    <section class="vpn-card">
+      <h1>Настройка GPTishka VPN</h1>
+      <p class="sub">Выберите платформу, вставьте ключ и подключитесь за 1-2 минуты.</p>
+      <div class="vpn-pills">
+        <button type="button" class="vpn-pill is-active" data-os="windows">Windows (v2rayN)</button>
+        <button type="button" class="vpn-pill" data-os="android">Android (v2rayNG)</button>
+        <button type="button" class="vpn-pill" data-os="ios">iOS (FoXray)</button>
+        <button type="button" class="vpn-pill" data-os="mac">Mac (v2rayN)</button>
+      </div>
+    </section>
+
+    <section class="vpn-card vpn-guide">
+      <h2 id="vpnGuideTitle">Windows · v2rayN</h2>
+      <div class="vpn-actions">
+        <a id="vpnGuideDownload" class="btn" href="https://github.com/2dust/v2rayN/releases/latest" target="_blank" rel="noopener">Скачать приложение</a>
+      </div>
+      <ol id="vpnGuideSteps">
+        <li>Установите приложение.</li>
+        <li>Импортируйте конфигурацию по ссылке.</li>
+        <li>Вставьте ваш VLESS ключ.</li>
+        <li>Нажмите подключить.</li>
+      </ol>
+    </section>
+
+    <section class="vpn-card">
+      <h2>Ваш VPN ключ</h2>
+      <textarea id="vpnManualKey" class="vpn-key-box" placeholder="Вставьте vless://..."></textarea>
+      <div class="vpn-actions">
+        <button id="vpnCopyManualKey" type="button" class="btn">Скопировать ключ</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const CONFIG = {
+        windows: {
+          title: "Windows · v2rayN",
+          download: "https://github.com/2dust/v2rayN/releases/latest",
+          steps: ["Установите приложение.", "Импортируйте конфигурацию по ссылке.", "Вставьте ваш VLESS ключ.", "Нажмите подключить."],
+        },
+        android: {
+          title: "Android · v2rayNG",
+          download: "https://github.com/2dust/v2rayNG/releases/latest",
+          steps: ["Установите приложение.", "Нажмите импорт по ссылке.", "Вставьте ваш VLESS ключ.", "Включите подключение."],
+        },
+        ios: {
+          title: "iOS · FoXray",
+          download: "https://apps.apple.com/app/fo-xray/id6448898396",
+          steps: ["Установите FoXray.", "Добавьте конфигурацию по ссылке.", "Вставьте ваш VLESS ключ.", "Разрешите VPN-профиль и подключитесь."],
+        },
+        mac: {
+          title: "Mac · v2rayN",
+          download: "https://github.com/2dust/v2rayN/releases/latest",
+          steps: ["Установите приложение.", "Добавьте конфигурацию по ссылке.", "Вставьте ваш VLESS ключ.", "Нажмите подключить."],
+        },
+      };
+
+      const titleEl = document.getElementById("vpnGuideTitle");
+      const downloadEl = document.getElementById("vpnGuideDownload");
+      const stepsEl = document.getElementById("vpnGuideSteps");
+      const pills = Array.from(document.querySelectorAll("[data-os]"));
+      const keyEl = document.getElementById("vpnManualKey");
+      const copyBtn = document.getElementById("vpnCopyManualKey");
+
+      function render(os) {
+        const cfg = CONFIG[os] || CONFIG.windows;
+        titleEl.textContent = cfg.title;
+        downloadEl.href = cfg.download;
+        stepsEl.innerHTML = "";
+        cfg.steps.forEach((step) => {
+          const li = document.createElement("li");
+          li.textContent = step;
+          stepsEl.appendChild(li);
+        });
+        pills.forEach((pill) => pill.classList.toggle("is-active", pill.getAttribute("data-os") === os));
+      }
+
+      pills.forEach((pill) => {
+        pill.addEventListener("click", () => render(String(pill.getAttribute("data-os") || "windows")));
+      });
+
+      copyBtn.addEventListener("click", async () => {
+        const value = String(keyEl.value || "").trim();
+        if (!value) return;
+        try {
+          await navigator.clipboard.writeText(value);
+          copyBtn.textContent = "Скопировано";
+          setTimeout(() => {
+            copyBtn.textContent = "Скопировать ключ";
+          }, 1200);
+        } catch {
+          copyBtn.textContent = "Ошибка копирования";
+        }
+      });
+
+      const queryOs = String(new URLSearchParams(window.location.search).get("os") || "").trim().toLowerCase();
+      render(CONFIG[queryOs] ? queryOs : "windows");
+    })();
+  </script>
+</body>
+</html>

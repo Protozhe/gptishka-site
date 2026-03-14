@@ -47,7 +47,7 @@ export default function OrdersPage() {
   const checkActivation = useMutation({
     mutationFn: async (id: string) => (await api.get(`/orders/${id}/activation-proof`, { params: { forceCheck: 1 } })).data,
     onMutate: (id: string) => {
-      setCheckMessage(`Проверяем активацию для заказа ${id.slice(0, 10)}...`);
+      setCheckMessage(`Проверяем активацию для заказа ${id}...`);
     },
     onSuccess: (data: any) => {
       qc.invalidateQueries({ queryKey: ["orders"] });
@@ -73,7 +73,7 @@ export default function OrdersPage() {
   const readActivationToken = useMutation({
     mutationFn: async (id: string) => (await api.get(`/orders/${id}/activation-token`)).data,
     onMutate: (id: string) => {
-      setCheckMessage(`Загружаем токен клиента для заказа ${id.slice(0, 10)}...`);
+      setCheckMessage(`Загружаем токен клиента для заказа ${id}...`);
     },
     onSuccess: (data: any) => {
       const token = String(data?.token || "");
@@ -98,6 +98,39 @@ export default function OrdersPage() {
     } catch {
       setCheckMessage("Не удалось скопировать токен");
     }
+  }
+
+  function formatActivationStatus(value: unknown) {
+    const code = String(value || "").trim().toLowerCase();
+    if (!code) return "?";
+    const map: Record<string, string> = {
+      success: "\u0423\u0441\u043f\u0435\u0448\u043d\u043e",
+      succeeded: "\u0423\u0441\u043f\u0435\u0448\u043d\u043e",
+      completed: "\u0417\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u043e",
+      pending: "\u0412 \u043e\u0436\u0438\u0434\u0430\u043d\u0438\u0438",
+      processing: "\u0412 \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0435",
+      in_progress: "\u0412 \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0435",
+      failed: "\u041e\u0448\u0438\u0431\u043a\u0430",
+      error: "\u041e\u0448\u0438\u0431\u043a\u0430",
+      cancelled: "\u041e\u0442\u043c\u0435\u043d\u0435\u043d\u043e",
+      canceled: "\u041e\u0442\u043c\u0435\u043d\u0435\u043d\u043e",
+    };
+    return map[code] || String(value);
+  }
+
+  function formatVerificationState(value: unknown) {
+    const code = String(value || "").trim().toLowerCase();
+    if (!code || code === "unknown") return "\u041d\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043d\u043e";
+    const map: Record<string, string> = {
+      verified: "\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u043e",
+      unverified: "\u041d\u0435 \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u043e",
+      pending: "\u041e\u0436\u0438\u0434\u0430\u043d\u0438\u0435",
+      in_progress: "\u0412 \u043f\u0440\u043e\u0446\u0435\u0441\u0441\u0435",
+      failed: "\u041e\u0448\u0438\u0431\u043a\u0430",
+      success: "\u0423\u0441\u043f\u0435\u0448\u043d\u043e",
+      not_started: "\u041d\u0435 \u0437\u0430\u043f\u0443\u0449\u0435\u043d\u043e",
+    };
+    return map[code] || String(value);
   }
 
   return (
@@ -143,7 +176,7 @@ export default function OrdersPage() {
                 return (
                 <tr className="border-t border-slate-200 dark:border-slate-800" key={o.id}>
                   <td className="px-4 py-3">
-                    <div className="font-semibold">{o.id.slice(0, 10)}...</div>
+                    <div className="font-semibold break-all">{String(o.id || "-")}</div>
                     <div className="text-xs text-slate-500">{fmtDate(o.createdAt)}</div>
                   </td>
                   <td className="px-4 py-3">{o.email}</td>
@@ -153,25 +186,25 @@ export default function OrdersPage() {
                   <td className="px-4 py-3">
                     {o.activation ? (
                       <div className="text-xs leading-5">
-                        <div className="font-semibold">{o.activation.status}</div>
-                        <div className="text-slate-500">{o.activation.verificationState || "unknown"}</div>
+                        <div className="font-semibold">{formatActivationStatus(o.activation.status)}</div>
+                        <div className="text-slate-500">{formatVerificationState(o.activation.verificationState)}</div>
                         <div className="text-slate-500">
-                          token: {o.activation.tokenBound ? "bound" : o.activation.tokenSeen ? "entered" : "missing"}
+                          {"\u0422\u043e\u043a\u0435\u043d"}: {o.activation.tokenBound ? "\u043f\u0440\u0438\u0432\u044f\u0437\u0430\u043d" : o.activation.tokenSeen ? "\u0432\u0432\u0435\u0434\u0435\u043d" : "\u043d\u0435 \u0432\u0432\u0435\u0434\u0435\u043d"}
                         </div>
-                        <div className="text-slate-500">stored token: {o.activation.tokenStored ? "yes" : "no"}</div>
+                        <div className="text-slate-500">{"\u0422\u043e\u043a\u0435\u043d \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d"}: {o.activation.tokenStored ? "\u0434\u0430" : "\u043d\u0435\u0442"}</div>
                         <div className={`text-slate-500 ${hasRepeatedTokenInput ? "font-semibold text-amber-700" : ""}`}>
-                          token input:{" "}
-                          {hasRepeatedTokenInput ? `repeated (${tokenValidationAttempts}x)` : tokenValidationAttempts === 1 ? "single" : "none"}
+                          {"\u0412\u0432\u043e\u0434 \u0442\u043e\u043a\u0435\u043d\u0430"}:{" "}
+                          {hasRepeatedTokenInput ? `\u043f\u043e\u0432\u0442\u043e\u0440\u043d\u044b\u0439 (${tokenValidationAttempts}x)` : tokenValidationAttempts === 1 ? "\u043e\u0434\u0438\u043d \u0440\u0430\u0437" : "\u043d\u0435\u0442"}
                         </div>
-                        <div className="text-slate-500">validations: {tokenValidationAttempts}</div>
-                        <div className="text-slate-500">attempts: {Number(o.activation.attempts || 0)} / 3</div>
+                        <div className="text-slate-500">{"\u041f\u0440\u043e\u0432\u0435\u0440\u043e\u043a"}: {tokenValidationAttempts}</div>
+                        <div className="text-slate-500">{"\u041f\u043e\u043f\u044b\u0442\u043a\u0438"}: {Number(o.activation.attempts || 0)} / 3</div>
                         {o.activation.lastTokenValidatedAt ? (
-                          <div className="text-slate-400">token seen: {fmtDate(o.activation.lastTokenValidatedAt)}</div>
+                          <div className="text-slate-400">{"\u0422\u043e\u043a\u0435\u043d \u0432\u0438\u0434\u0435\u043b\u0438"}: {fmtDate(o.activation.lastTokenValidatedAt)}</div>
                         ) : null}
                         {o.activation.tokenExpiresAt ? (
-                          <div className="text-slate-400">token expires: {fmtDate(o.activation.tokenExpiresAt)}</div>
+                          <div className="text-slate-400">{"\u0422\u043e\u043a\u0435\u043d \u0438\u0441\u0442\u0435\u043a\u0430\u0435\u0442"}: {fmtDate(o.activation.tokenExpiresAt)}</div>
                         ) : null}
-                        {o.activation.taskId ? <div className="text-slate-400">task: {String(o.activation.taskId)}</div> : null}
+                        {o.activation.taskId ? <div className="text-slate-400">{"\u0417\u0430\u0434\u0430\u0447\u0430"}: {String(o.activation.taskId)}</div> : null}
                         {o.activation.lastProviderCheckedAt ? (
                           <div className="text-slate-400">{fmtDate(o.activation.lastProviderCheckedAt)}</div>
                         ) : null}
@@ -214,7 +247,7 @@ export default function OrdersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-3xl rounded-2xl bg-white p-4 shadow-2xl dark:bg-slate-900">
             <div className="mb-3 flex items-center justify-between">
-              <div className="text-sm font-semibold">Токен клиента · {tokenDialog.orderId.slice(0, 10)}...</div>
+              <div className="text-sm font-semibold">Токен клиента · {tokenDialog.orderId}</div>
               <button className="btn-secondary" onClick={() => setTokenDialog(null)}>
                 Закрыть
               </button>

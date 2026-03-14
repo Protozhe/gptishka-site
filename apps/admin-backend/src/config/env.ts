@@ -129,12 +129,12 @@ const envSchema = z.object({
   VPN_3XUI_INBOUND_ID: z.coerce.number().int().min(0).default(0),
   VPN_3XUI_CLIENT_TOTAL_GB: z.coerce.number().min(0).default(0),
   VPN_ACCESS_LINK_TEMPLATE: z.string().optional().default(""),
-  VPN_VLESS_HOST: z.string().optional().default("89.208.96.217"),
+  VPN_VLESS_HOST: z.string().optional().default("vpn.gptishka.shop"),
   VPN_VLESS_PORT: z.coerce.number().int().min(1).max(65535).default(443),
   VPN_VLESS_SNI: z.string().optional().default("www.microsoft.com"),
   VPN_VLESS_PBK: z.string().optional().default("tjkQAA2MFOuXNbvE50pjKG6hinrbC5pzmuqOifA0fQM"),
   VPN_VLESS_SID: z.string().optional().default("7a"),
-  VPN_VLESS_FP: z.string().optional().default("safari"),
+  VPN_VLESS_FP: z.string().optional().default("chrome"),
   VPN_VLESS_PATH: z.string().optional().default(""),
 });
 
