@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Order delivery steps: set up VPN first, then complete ChatGPT activation." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="GPTishka" />
+  <meta property="og:title" content="VPN + Order activation - GPTishka" />
+  <meta property="og:description" content="Two sections: VPN setup and ChatGPT token activation." />
+  <meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
+  <meta property="og:url" content="https://gptishka.shop/en/bundle-activation.html" />
+  <title>VPN + Order activation - GPTishka</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" href="/assets/img/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/logo.min.css" />
+  <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2" />
+  <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260310r" />
+  <style>
+    #gptishka-support-widget,
+    .support-widget,
+    .gptishka-support-widget,
+    [data-support-widget],
+    [data-widget="support"],
+    img[src*="assistant-cat-left"],
+    img[src*="assistant-cat"] {
+      display: none !important;
+    }
+
+    body {
+      background:
+        radial-gradient(860px 420px at 8% -8%, rgba(104, 141, 255, 0.2), transparent 64%),
+        radial-gradient(760px 360px at 100% 2%, rgba(255, 191, 142, 0.17), transparent 66%),
+        linear-gradient(180deg, var(--lp-bg, #f6f7fb) 0%, var(--lp-bg-soft, #eef2fb) 100%);
+    }
+
+    .bundle-page {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 24px 12px 0;
+    }
+
+    .bundle-card {
+      border: 1px solid var(--lp-border, rgba(173, 186, 213, 0.38));
+      border-radius: 24px;
+      background: var(--lp-surface-main, rgba(255, 255, 255, 0.5));
+      box-shadow: var(--lp-shadow-lg, 0 14px 44px rgba(31, 41, 55, 0.08)), inset 0 1px 0 rgba(255, 255, 255, 0.76);
+      backdrop-filter: blur(16px) saturate(132%);
+      -webkit-backdrop-filter: blur(16px) saturate(132%);
+      padding: 24px;
+    }
+
+    .bundle-title {
+      margin: 0;
+      font-family: "Space Grotesk", "Manrope", sans-serif;
+      font-size: clamp(30px, 4vw, 44px);
+      line-height: 1.08;
+      color: var(--lp-text, #161f2f);
+      letter-spacing: -0.02em;
+    }
+
+    .bundle-subtitle {
+      margin: 10px 0 0;
+      color: var(--lp-text-soft, #5f6b81);
+      font-size: 16px;
+      line-height: 1.5;
+      max-width: 70ch;
+    }
+
+    .bundle-order {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      border: 1px solid rgba(186, 198, 224, 0.55);
+      background: rgba(255, 255, 255, 0.72);
+      border-radius: 14px;
+      padding: 10px 12px;
+    }
+
+    .bundle-order-id {
+      color: var(--lp-text, #161f2f);
+      font-size: 14px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .bundle-grid {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .bundle-section {
+      border: 1px solid rgba(186, 198, 224, 0.55);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: 0 10px 30px rgba(31, 41, 55, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.74);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .bundle-step {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #3f5368;
+    }
+
+    .bundle-section h2 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.2;
+      color: #1f2f44;
+      font-family: "Space Grotesk", "Manrope", sans-serif;
+    }
+
+    .bundle-section p,
+    .bundle-section li {
+      margin: 0;
+      color: #516179;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .bundle-section ol {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .bundle-status {
+      border: 1px solid rgba(186, 198, 224, 0.65);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.86);
+      padding: 10px 12px;
+      font-size: 14px;
+      color: #34455d;
+    }
+
+    .bundle-status.ok {
+      border-color: rgba(16, 141, 101, 0.35);
+      color: #0f6e55;
+      background: rgba(238, 255, 248, 0.86);
+    }
+
+    .bundle-status.warn {
+      border-color: rgba(199, 129, 51, 0.35);
+      color: #8f5e1f;
+      background: rgba(255, 249, 236, 0.88);
+    }
+
+    .bundle-status.error {
+      border-color: rgba(181, 70, 62, 0.35);
+      color: #8c2f2a;
+      background: rgba(255, 241, 239, 0.88);
+    }
+
+    .bundle-actions {
+      margin-top: auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    @media (max-width: 920px) {
+      .bundle-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header glass-shell">
+    <div class="header-inner compact">
+      <a class="logo-wrap" href="/en/index.html" aria-label="GPTishka">
+        <img loading="lazy" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTishka" class="logo-img" />
+      </a>
+      <nav class="desktop-nav" aria-label="Main navigation">
+        <a class="nav-link" href="/en/index.html">Home</a>
+        <a class="nav-link" href="/en/index.html#pricing">Plans</a>
+        <a class="nav-link" href="/store/vpn/">VPN</a>
+        <a class="nav-link" href="/en/contact.html">Contacts</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page bundle-page">
+    <section class="bundle-card">
+      <h1 class="bundle-title">Order with VPN bundle</h1>
+      <p class="bundle-subtitle">This product has two delivery sections: VPN setup first, then ChatGPT token activation.</p>
+
+      <div class="bundle-order">
+        <div>Order ID: <strong id="orderId" class="bundle-order-id">-</strong></div>
+        <button id="copyOrderIdBtn" type="button" class="btn">Copy</button>
+      </div>
+
+      <div class="bundle-grid">
+        <section class="bundle-section">
+          <p class="bundle-step">Section 1</p>
+          <h2>Set up VPN</h2>
+          <p>Get your VPN key and connect your device.</p>
+          <ol>
+            <li>Open the VPN activation page.</li>
+            <li>Copy your VLESS link.</li>
+            <li>Choose setup instructions for your OS.</li>
+          </ol>
+          <div id="vpnStatus" class="bundle-status">Checking VPN access...</div>
+          <div class="bundle-actions">
+            <a id="openVpnBtn" class="btn primary" href="/store/vpn/activate">Open VPN</a>
+          </div>
+        </section>
+
+        <section class="bundle-section">
+          <p class="bundle-step">Section 2</p>
+          <h2>Extend / Activate</h2>
+          <p>Finish ChatGPT activation using your account token.</p>
+          <ol>
+            <li>Open token activation page.</li>
+            <li>Paste token from `chatgpt.com/api/auth/session`.</li>
+            <li>Click "Activate" and wait for success status.</li>
+          </ol>
+          <div id="activationStatus" class="bundle-status">Checking activation status...</div>
+          <div class="bundle-actions">
+            <a id="openActivationBtn" class="btn" href="/en/redeem-start.html">Open activation</a>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const orderId = String(params.get("order_id") || params.get("orderId") || "").trim();
+    const linkToken = String(params.get("t") || "").trim();
+
+    const orderIdEl = document.getElementById("orderId");
+    const copyOrderIdBtn = document.getElementById("copyOrderIdBtn");
+    const openVpnBtn = document.getElementById("openVpnBtn");
+    const openActivationBtn = document.getElementById("openActivationBtn");
+    const vpnStatusEl = document.getElementById("vpnStatus");
+    const activationStatusEl = document.getElementById("activationStatus");
+
+    function buildVpnUrl() {
+      const url = new URL("/store/vpn/activate", window.location.origin);
+      if (orderId) url.searchParams.set("order_id", orderId);
+      if (linkToken) url.searchParams.set("t", linkToken);
+      return url.toString();
+    }
+
+    function buildActivationUrl() {
+      const url = new URL("/en/redeem-start.html", window.location.origin);
+      if (orderId) url.searchParams.set("order_id", orderId);
+      if (linkToken) url.searchParams.set("t", linkToken);
+      url.searchParams.set("skip_bundle_redirect", "1");
+      return url.toString();
+    }
+
+    function setStatus(target, tone, text) {
+      target.className = `bundle-status ${tone || ""}`.trim();
+      target.textContent = text;
+    }
+
+    async function loadVpnStatus() {
+      if (!orderId) {
+        setStatus(vpnStatusEl, "error", "Missing order_id.");
+        return;
+      }
+      try {
+        const url = new URL("/api/vpn/me", window.location.origin);
+        url.searchParams.set("order_id", orderId);
+        if (linkToken) url.searchParams.set("t", linkToken);
+        const response = await fetch(url.toString(), { cache: "no-store" });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setStatus(vpnStatusEl, "warn", String(payload?.message || "VPN access is not ready yet."));
+          return;
+        }
+        const expires = payload?.expiresAt ? new Date(payload.expiresAt).toLocaleString("en-US") : "";
+        setStatus(vpnStatusEl, "ok", `VPN access is ready${expires ? `. Expires: ${expires}` : "."}`);
+      } catch (_) {
+        setStatus(vpnStatusEl, "error", "Network error while checking VPN.");
+      }
+    }
+
+    async function loadActivationStatus() {
+      if (!orderId) {
+        setStatus(activationStatusEl, "error", "Missing order_id.");
+        return;
+      }
+      try {
+        const suffix = linkToken ? `?t=${encodeURIComponent(linkToken)}` : "";
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation${suffix}`, { cache: "no-store" });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setStatus(activationStatusEl, "warn", String(payload?.message || "Activation is not ready yet."));
+          return;
+        }
+        const mode = String(payload?.deliveryMode || "").toLowerCase();
+        if (mode !== "activation") {
+          setStatus(activationStatusEl, "warn", "Token activation is not required for this order.");
+          return;
+        }
+        const status = String(payload?.status || "").toLowerCase();
+        if (status === "success") {
+          setStatus(activationStatusEl, "ok", "Activation is already completed.");
+          return;
+        }
+        if (status === "processing") {
+          setStatus(activationStatusEl, "warn", "Activation is processing. You can check it on activation page.");
+          return;
+        }
+        setStatus(activationStatusEl, "", "Waiting for token activation start.");
+      } catch (_) {
+        setStatus(activationStatusEl, "error", "Network error while checking activation.");
+      }
+    }
+
+    async function copyText(value) {
+      const text = String(value || "").trim();
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        setStatus(activationStatusEl, "ok", "Order ID copied.");
+      } catch (_) {
+        setStatus(activationStatusEl, "error", "Failed to copy Order ID.");
+      }
+    }
+
+    orderIdEl.textContent = orderId || "-";
+    openVpnBtn.href = buildVpnUrl();
+    openActivationBtn.href = buildActivationUrl();
+    copyOrderIdBtn.addEventListener("click", () => copyText(orderId));
+
+    loadVpnStatus();
+    loadActivationStatus();
+  </script>
+  <script src="/assets/js/support-widget.js?v=20260310m" defer></script>
+</body>
+</html>

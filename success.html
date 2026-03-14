@@ -138,6 +138,21 @@
             return true;
           }
 
+          if (deliveryMode === "activation") {
+            const hasBundleVpnAccess = await checkBundleVpnAccess(id);
+            if (hasBundleVpnAccess) {
+              statusEl.className = "status paid";
+              statusEl.textContent = "Оплачено. Открываем шаги: VPN + активация подписки...";
+              setTimeout(() => {
+                const url = new URL("/bundle-activation.html", window.location.origin);
+                url.searchParams.set("order_id", id);
+                if (linkToken) url.searchParams.set("t", linkToken);
+                window.location.href = url.toString();
+              }, 1200);
+              return true;
+            }
+          }
+
           statusEl.className = "status paid";
           statusEl.textContent = "Оплачено. Переводим на страницу активации...";
           setTimeout(() => {
@@ -158,6 +173,20 @@
         statusEl.className = "status pending";
         statusEl.textContent = "Ожидаем подтверждение платежа...";
         return false;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    async function checkBundleVpnAccess(id) {
+      try {
+        const url = new URL("/api/vpn/me", window.location.origin);
+        url.searchParams.set("order_id", id);
+        if (linkToken) url.searchParams.set("t", linkToken);
+        const response = await fetch(url.toString(), { cache: "no-store" });
+        if (!response.ok) return false;
+        const payload = await response.json().catch(() => ({}));
+        return Boolean(String(payload?.accessLink || "").trim());
       } catch (_) {
         return false;
       }

@@ -1345,6 +1345,7 @@
     const params = new URLSearchParams(window.location.search);
     const orderId = String(params.get('order_id') || params.get('orderId') || '').trim();
     let orderLinkToken = String(params.get('t') || '').trim();
+    const skipBundleRedirect = String(params.get('skip_bundle_redirect') || '').trim() === '1';
 
     const orderIdEl = document.getElementById('orderId');
     const copyOrderIdBtn = document.getElementById('copyOrderIdBtn');
@@ -1672,19 +1673,21 @@
     }
 
     async function maybeShowVpnOffer() {
-      if (!orderId || isCredentialsDelivery || vpnOfferDismissed) return;
+      if (!orderId || isCredentialsDelivery || vpnOfferDismissed) return false;
       try {
         const url = new URL('/api/vpn/me', window.location.origin);
         url.searchParams.set('order_id', orderId);
         if (orderLinkToken) url.searchParams.set('t', orderLinkToken);
 
         const response = await fetch(url.toString());
-        if (!response.ok) return;
+        if (!response.ok) return false;
         const payload = await response.json().catch(() => ({}));
-        if (!payload || !String(payload.accessLink || '').trim()) return;
+        if (!payload || !String(payload.accessLink || '').trim()) return false;
         showVpnOffer();
+        return true;
       } catch (_) {
         // Ignore optional VPN hint errors.
+        return false;
       }
     }
 
@@ -1966,8 +1969,16 @@
           window.location.href = url.toString();
           return;
         }
+        const hasBundleVpn = await maybeShowVpnOffer();
+        if (!skipBundleRedirect && String(payload?.deliveryMode || '').toLowerCase() === 'activation' && hasBundleVpn) {
+          const url = new URL('/bundle-activation.html', window.location.origin);
+          url.searchParams.set('order_id', orderId);
+          if (orderLinkToken) url.searchParams.set('t', orderLinkToken);
+          leaveGuardBypass = true;
+          window.location.href = url.toString();
+          return;
+        }
         handlePaidOrder(orderId);
-        await maybeShowVpnOffer();
         const activationStatus = String(payload?.status || '').trim().toLowerCase();
         if (activationStatus === 'success') {
           currentTaskId = String(payload.taskId || '');
