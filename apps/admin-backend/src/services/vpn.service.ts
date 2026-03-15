@@ -359,12 +359,14 @@ function buildVlessRealityLink(uuid: string) {
     throw new AppError("VPN VLESS configuration is incomplete", 500);
   }
   const query = new URLSearchParams();
+  query.set("encryption", "none");
   query.set("type", "tcp");
   query.set("security", "reality");
   query.set("sni", cfg.sni);
   query.set("fp", cfg.fp);
   query.set("pbk", cfg.pbk);
   query.set("sid", cfg.sid);
+  query.set("spx", String(env.VPN_VLESS_PATH || "").trim() || "/");
   return `vless://${safeUuid}@${cfg.host}:${cfg.port}?${query.toString()}#${cfg.name}`;
 }
 
@@ -377,6 +379,34 @@ function normalizeAccessTemplateKey(value: string) {
 
 function hasUnresolvedUuidPlaceholder(value: string) {
   return /\{\{\s*uuid\s*\}\}|\{\s*uuid\s*\}/i.test(String(value || ""));
+}
+
+function normalizeVlessAccessLink(rawLink: string) {
+  const raw = String(rawLink || "").trim();
+  if (!raw || !/^vless:\/\//i.test(raw)) return raw;
+
+  const cfg = resolveVlessRealityConfig();
+  const hashIndex = raw.indexOf("#");
+  const beforeHash = hashIndex >= 0 ? raw.slice(0, hashIndex) : raw;
+  const fragment = hashIndex >= 0 ? raw.slice(hashIndex) : "";
+  const queryIndex = beforeHash.indexOf("?");
+  const prefix = queryIndex >= 0 ? beforeHash.slice(0, queryIndex) : beforeHash;
+  const queryRaw = queryIndex >= 0 ? beforeHash.slice(queryIndex + 1) : "";
+  const query = new URLSearchParams(queryRaw);
+
+  if (!query.get("encryption")) query.set("encryption", "none");
+  if (!query.get("type")) query.set("type", "tcp");
+  if (!query.get("security")) query.set("security", "reality");
+
+  if (String(query.get("security") || "").toLowerCase() === "reality") {
+    if (!query.get("sni") && cfg.sni) query.set("sni", cfg.sni);
+    if (!query.get("fp") && cfg.fp) query.set("fp", cfg.fp);
+    if (!query.get("pbk") && cfg.pbk) query.set("pbk", cfg.pbk);
+    if (!query.get("sid") && cfg.sid) query.set("sid", cfg.sid);
+    if (!query.get("spx")) query.set("spx", String(env.VPN_VLESS_PATH || "").trim() || "/");
+  }
+
+  return `${prefix}?${query.toString()}${fragment}`;
 }
 
 function buildAccessLink(input: { uuid: string; plan: string; serverId: string; email: string | null }) {
@@ -411,16 +441,16 @@ function buildAccessLink(input: { uuid: string; plan: string; serverId: string; 
       .replace(/\{\s*([a-zA-Z0-9_.-]+)\s*\}/g, replaceToken);
 
     if (!hasUnresolvedUuidPlaceholder(rendered)) {
-      return rendered;
+      return normalizeVlessAccessLink(rendered);
     }
   }
-  return buildVlessRealityLink(input.uuid);
+  return normalizeVlessAccessLink(buildVlessRealityLink(input.uuid));
 }
 
 function resolveAccessLinkForOutput(access: VpnAccess) {
   const stored = String(access.accessLink || "").trim();
   if (stored && !hasUnresolvedUuidPlaceholder(stored)) {
-    return stored;
+    return normalizeVlessAccessLink(stored);
   }
   return buildAccessLink({
     uuid: access.uuid,
