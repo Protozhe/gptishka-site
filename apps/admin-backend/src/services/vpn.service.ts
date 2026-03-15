@@ -10,6 +10,7 @@ export type VpnSource = "vpn" | "bundle";
 export type VpnProvisionPayload = {
   plan: string;
   durationDays: number;
+  limitIp: number;
   source: VpnSource;
 };
 
@@ -19,6 +20,7 @@ type CreateVpnUserInput = {
   telegramId?: string | null;
   plan: string;
   durationDays: number;
+  limitIp?: number;
   source: VpnSource;
   serverId?: string | null;
 };
@@ -30,6 +32,7 @@ const DIRECT_VPN_PLANS: Record<string, number> = {
 };
 
 const DEFAULT_VPN_DURATION_DAYS = 30;
+const DEFAULT_VPN_LIMIT_IP = 1;
 const XUI_COOKIE_TTL_MS = 10 * 60 * 1000;
 
 const VPN_CATALOG_DEFAULTS = [
@@ -109,6 +112,12 @@ function toPositiveDays(value: unknown, fallback = DEFAULT_VPN_DURATION_DAYS) {
   return Math.max(1, Math.floor(parsed));
 }
 
+function toLimitIp(value: unknown, fallback = DEFAULT_VPN_LIMIT_IP) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(0, Math.min(16, Math.floor(parsed)));
+}
+
 function addDays(input: Date, days: number) {
   return new Date(input.getTime() + Math.max(1, days) * 24 * 60 * 60 * 1000);
 }
@@ -138,6 +147,25 @@ function parsePlanTag(tags: string[] | null | undefined) {
   if (!planTag) return "";
   const raw = planTag.split(":").pop() || "";
   return normalizePlan(raw);
+}
+
+function parseLimitIpTag(tags: string[] | null | undefined) {
+  const list = Array.isArray(tags) ? tags : [];
+  const limitTag = list
+    .map((tag) => String(tag || "").trim().toLowerCase())
+    .find(
+      (tag) =>
+        tag.startsWith("vpn:users:") ||
+        tag.startsWith("vpn_users:") ||
+        tag.startsWith("vpn-users:") ||
+        tag.startsWith("vpn:limit_ip:") ||
+        tag.startsWith("vpn:limit-ip:") ||
+        tag.startsWith("users:")
+    );
+  if (!limitTag) return null;
+  const value = Number(limitTag.split(":").pop() || "");
+  if (!Number.isFinite(value) || value < 0) return null;
+  return Math.floor(value);
 }
 
 function hasBundleVpnTag(tags: string[] | null | undefined) {
@@ -264,6 +292,7 @@ function build3xUiClientPayload(input: {
   telegramId: string | null;
   expiresAt: Date;
   enabled: boolean;
+  limitIp: number;
 }) {
   const totalGb = Math.max(0, Number(env.VPN_3XUI_CLIENT_TOTAL_GB || 0));
   const totalBytes = totalGb > 0 ? Math.floor(totalGb * 1024 * 1024 * 1024) : 0;
@@ -272,7 +301,7 @@ function build3xUiClientPayload(input: {
     id: input.uuid,
     alterId: 0,
     email: input.clientEmail,
-    limitIp: 0,
+    limitIp: toLimitIp(input.limitIp, DEFAULT_VPN_LIMIT_IP),
     totalGB: totalBytes,
     expiryTime: input.expiresAt.getTime(),
     enable: input.enabled,
@@ -303,30 +332,102 @@ async function update3xUiClient(client: Record<string, unknown>) {
   }
 }
 
-const GPTISHKA_VLESS_REALITY = {
-  host: "89.208.96.217",
-  port: 443,
-  sni: "www.microsoft.com",
-  fp: "safari",
-  sid: "7a",
-  pbk: "tjkQAA2MFOuXNbvE50pjKG6hinrbC5pzmuqOifA0fQM",
-  name: "GPTishka-vpn",
-} as const;
+const DEFAULT_VLESS_REALITY_NAME = "GPTishka-vpn";
+
+function resolveVlessRealityConfig() {
+  const host = String(env.VPN_VLESS_HOST || "").trim() || "89.208.96.217";
+  const port = Number(env.VPN_VLESS_PORT || 443) || 443;
+  const sni = String(env.VPN_VLESS_SNI || "").trim() || "www.microsoft.com";
+  const fp = String(env.VPN_VLESS_FP || "").trim() || "chrome";
+  const sid = String(env.VPN_VLESS_SID || "").trim() || "7a";
+  const pbk = String(env.VPN_VLESS_PBK || "").trim();
+  return {
+    host,
+    port,
+    sni,
+    fp,
+    sid,
+    pbk,
+    name: DEFAULT_VLESS_REALITY_NAME,
+  };
+}
 
 function buildVlessRealityLink(uuid: string) {
   const safeUuid = String(uuid || "").trim();
+  const cfg = resolveVlessRealityConfig();
+  if (!cfg.host || !cfg.sni || !cfg.pbk || !cfg.sid) {
+    throw new AppError("VPN VLESS configuration is incomplete", 500);
+  }
   const query = new URLSearchParams();
   query.set("type", "tcp");
   query.set("security", "reality");
-  query.set("sni", GPTISHKA_VLESS_REALITY.sni);
-  query.set("fp", GPTISHKA_VLESS_REALITY.fp);
-  query.set("pbk", GPTISHKA_VLESS_REALITY.pbk);
-  query.set("sid", GPTISHKA_VLESS_REALITY.sid);
-  return `vless://${safeUuid}@${GPTISHKA_VLESS_REALITY.host}:${GPTISHKA_VLESS_REALITY.port}?${query.toString()}#${GPTISHKA_VLESS_REALITY.name}`;
+  query.set("sni", cfg.sni);
+  query.set("fp", cfg.fp);
+  query.set("pbk", cfg.pbk);
+  query.set("sid", cfg.sid);
+  return `vless://${safeUuid}@${cfg.host}:${cfg.port}?${query.toString()}#${cfg.name}`;
+}
+
+function normalizeAccessTemplateKey(value: string) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function hasUnresolvedUuidPlaceholder(value: string) {
+  return /\{\{\s*uuid\s*\}\}|\{\s*uuid\s*\}/i.test(String(value || ""));
 }
 
 function buildAccessLink(input: { uuid: string; plan: string; serverId: string; email: string | null }) {
+  const template = String(env.VPN_ACCESS_LINK_TEMPLATE || "").trim();
+  if (template) {
+    const cfg = resolveVlessRealityConfig();
+    const values: Record<string, string> = {
+      uuid: String(input.uuid || "").trim(),
+      email: String(input.email || "").trim(),
+      plan: String(input.plan || "").trim(),
+      serverId: String(input.serverId || "").trim(),
+      host: cfg.host,
+      port: String(cfg.port),
+      sni: cfg.sni,
+      fp: cfg.fp,
+      pbk: cfg.pbk,
+      sid: cfg.sid,
+      name: cfg.name,
+    };
+    const valuesByKey = Object.entries(values).reduce<Record<string, string>>((acc, [key, value]) => {
+      acc[normalizeAccessTemplateKey(key)] = String(value || "");
+      return acc;
+    }, {});
+
+    const replaceToken = (match: string, rawKey: string) => {
+      const key = normalizeAccessTemplateKey(rawKey);
+      return key && Object.prototype.hasOwnProperty.call(valuesByKey, key) ? valuesByKey[key] : match;
+    };
+
+    const rendered = template
+      .replace(/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/g, replaceToken)
+      .replace(/\{\s*([a-zA-Z0-9_.-]+)\s*\}/g, replaceToken);
+
+    if (!hasUnresolvedUuidPlaceholder(rendered)) {
+      return rendered;
+    }
+  }
   return buildVlessRealityLink(input.uuid);
+}
+
+function resolveAccessLinkForOutput(access: VpnAccess) {
+  const stored = String(access.accessLink || "").trim();
+  if (stored && !hasUnresolvedUuidPlaceholder(stored)) {
+    return stored;
+  }
+  return buildAccessLink({
+    uuid: access.uuid,
+    plan: access.plan,
+    serverId: access.serverId,
+    email: access.email || null,
+  });
 }
 
 function isAccessActiveNow(access: Pick<VpnAccess, "isActive" | "expiresAt">) {
@@ -362,7 +463,7 @@ async function writeVpnEvent(params: {
 export function toVpnMePayload(access: VpnAccess) {
   return {
     uuid: access.uuid,
-    accessLink: access.accessLink,
+    accessLink: resolveAccessLinkForOutput(access),
     expiresAt: access.expiresAt,
     plan: access.plan,
     trafficUsedBytes: trafficToNumber(access.trafficUsedBytes),
@@ -382,11 +483,13 @@ export function resolveVpnProvisionPayload(product: Pick<Product, "slug" | "tags
   const plan = normalizePlan(taggedPlan || (isPrimaryVpnDelivery ? slug : "vpn_month") || "vpn_month") || "vpn_month";
   const directDays = slug ? DIRECT_VPN_PLANS[slug] : 0;
   const durationDays = toPositiveDays(parseDaysTag(tags) || DIRECT_VPN_PLANS[plan] || directDays, DEFAULT_VPN_DURATION_DAYS);
+  const limitIp = toLimitIp(parseLimitIpTag(tags), DEFAULT_VPN_LIMIT_IP);
   const source: VpnSource = isPrimaryVpnDelivery ? "vpn" : "bundle";
 
   return {
     plan,
     durationDays,
+    limitIp,
     source,
   };
 }
@@ -461,6 +564,7 @@ export const vpnService = {
     const source: VpnSource = input.source === "bundle" ? "bundle" : "vpn";
     const serverId = normalizeServerId(input.serverId);
     const durationDays = toPositiveDays(input.durationDays, DEFAULT_VPN_DURATION_DAYS);
+    const limitIp = toLimitIp(input.limitIp, DEFAULT_VPN_LIMIT_IP);
 
     if (orderId) {
       const existingByOrder = await prisma.vpnAccess.findFirst({
@@ -481,6 +585,7 @@ export const vpnService = {
         telegramId: telegramId || existing.telegramId,
         expiresAt,
         enabled: true,
+        limitIp,
       });
 
       await update3xUiClient(client);
@@ -491,6 +596,12 @@ export const vpnService = {
           orderId: orderId || existing.orderId || null,
           email: email || existing.email || null,
           telegramId: telegramId || existing.telegramId || null,
+          accessLink: buildAccessLink({
+            uuid: existing.uuid,
+            plan,
+            serverId,
+            email: email || existing.email || null,
+          }),
           plan,
           source,
           serverId,
@@ -510,6 +621,7 @@ export const vpnService = {
           serverId,
           plan,
           durationDays,
+          limitIp,
         },
       });
 
@@ -526,6 +638,7 @@ export const vpnService = {
       telegramId,
       expiresAt,
       enabled: true,
+      limitIp,
     });
 
     await add3xUiClient(client);
@@ -549,14 +662,15 @@ export const vpnService = {
       eventType: "create",
       vpnAccessId: created.id,
       telegramId: created.telegramId,
-      meta: {
-        orderId,
-        source,
-        serverId,
-        plan,
-        durationDays,
-      },
-    });
+        meta: {
+          orderId,
+          source,
+          serverId,
+          plan,
+          durationDays,
+          limitIp,
+        },
+      });
 
     return created;
   },
@@ -585,6 +699,7 @@ export const vpnService = {
       telegramId: row.telegramId,
       expiresAt: row.expiresAt,
       enabled: false,
+      limitIp: DEFAULT_VPN_LIMIT_IP,
     });
     await update3xUiClient(client);
 
@@ -608,7 +723,7 @@ export const vpnService = {
 
   async extendVpnUserByTelegramId(
     telegramId: string | number,
-    options?: { durationDays?: number; plan?: string; source?: VpnSource; serverId?: string }
+    options?: { durationDays?: number; plan?: string; source?: VpnSource; serverId?: string; limitIp?: number }
   ) {
     const normalizedTelegramId = normalizeTelegramId(telegramId);
     if (!normalizedTelegramId) {
@@ -630,6 +745,7 @@ export const vpnService = {
       plan: normalizePlan(options?.plan) || existing.plan,
       source: options?.source || (existing.source === "bundle" ? "bundle" : "vpn"),
       serverId: options?.serverId || existing.serverId,
+      limitIp: options?.limitIp,
     });
   },
 
