@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex,nofollow" />
-  <title>Активация VPN-доступа - GPTishka</title>
-  <meta name="description" content="Подключите GPTishka VPN за 1-2 минуты: выберите устройство, вставьте ключ и включите подключение." />
+  <title>VPN Access Activation - GPTishka</title>
+  <meta name="description" content="Set up GPTishka VPN in 1-2 minutes: choose your device, paste your key, and connect." />
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -837,20 +837,20 @@
   <div class="page-overlay"></div>
   <header>
     <div class="nav">
-      <a href="/index.html" class="logo-link">
+      <a href="/en/index.html" class="logo-link">
         <img src="/assets/img/logo.png" alt="GPTishka" class="logo-img" loading="lazy" decoding="async" />
       </a>
       <nav>
-        <a href="/index.html">Главная</a>
-        <a href="/index.html#pricing">Тарифы</a>
+        <a href="/en/index.html">Home</a>
+        <a href="/en/index.html#pricing">Plans</a>
         <a href="/store/vpn" class="active">VPN</a>
-        <a href="/contact.html">Контакты</a>
+        <a href="/en/contact.html">Contact</a>
       </nav>
       <div class="header-tools">
         <div class="lang-switch" id="langSwitch">
           <div class="lang-current" id="langCurrent">
-            <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="" />
-            <span>Русский</span>
+            <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="" />
+            <span>English</span>
             <span class="arrow">▾</span>
           </div>
           <div class="lang-dropdown">
@@ -870,15 +870,15 @@
 
   <main class="page vpn-activation-wrap">
     <section class="pricing section-pad activation-shell card">
-      <h1 class="page-title">Активация VPN-доступа</h1>
-      <p class="copy text-limit">Подключение занимает 1-2 минуты: выберите устройство, вставьте ключ и включите VPN.</p>
-      <div class="hero-warning info-box text-limit"><strong>Один ключ = одно устройство.</strong> Не используйте ключ одновременно на нескольких устройствах.</div>
+      <h1 class="page-title">VPN Access Activation</h1>
+      <p class="copy text-limit">Setup takes 1-2 minutes: choose your device, paste the key, and enable VPN.</p>
+      <div class="hero-warning info-box text-limit"><strong>One key = one device.</strong> Do not use the same key on multiple devices at the same time.</div>
 
       <div class="vpn-main-grid">
         <div class="vpn-left-column">
           <div class="inner-block device-block card-soft">
-            <h2 class="step-title">Шаг 1 — выберите устройство</h2>
-            <div class="device-pills" role="tablist" aria-label="Выбор устройства">
+            <h2 class="step-title">Step 1 - choose your device</h2>
+            <div class="device-pills" role="tablist" aria-label="Device selection">
               <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="windows">Windows</button>
               <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="android">Android</button>
               <button type="button" class="device-pill" role="tab" aria-selected="false" data-device="ios">iOS</button>
@@ -886,16 +886,16 @@
             </div>
 
             <div id="guideStage" class="guide-stage">
-              <p id="guideIntro" class="guide-intro card-soft text-limit">Выберите устройство, затем скачайте приложение.</p>
+              <p id="guideIntro" class="guide-intro card-soft text-limit">Choose your device, then download the app.</p>
 
               <div id="guideCard" class="guide-card card-soft">
                 <div class="guide-top">
-                  <h3 id="guideTitle">Шаг 2 — установите приложение</h3>
-                  <span id="guideTag" class="device-tag">Устройство не выбрано</span>
+                  <h3 id="guideTitle">Step 2 - install the app</h3>
+                  <span id="guideTag" class="device-tag">No device selected</span>
                 </div>
 
                 <div class="guide-actions">
-                  <a id="appDownloadBtn" class="btn button-primary" href="#" target="_blank" rel="noopener">Скачать приложение</a>
+                  <a id="appDownloadBtn" class="btn button-primary" href="#" target="_blank" rel="noopener">Download app</a>
                 </div>
 
                 <ol id="guideSteps" class="guide-steps"></ol>
@@ -906,26 +906,26 @@
 
         <aside class="vpn-right-column">
           <div class="inner-block key-block card-accent">
-            <h2 class="step-title">Ваш VPN ключ</h2>
+            <h2 class="step-title">Your VPN key</h2>
 
             <div class="key-shell">
               <div class="key-scroll overflow-safe">
-                <pre id="vpnAccessKey" class="key-value overflow-safe">Загрузка ключа...</pre>
+                <pre id="vpnAccessKey" class="key-value overflow-safe">Loading key...</pre>
               </div>
             </div>
 
             <div class="key-actions">
-              <button id="vpnCopyKeyBtn" type="button" class="btn" disabled>Скопировать ключ</button>
-              <button id="vpnDownloadConfigBtn" type="button" class="btn secondary key-soft-btn" disabled>Скачать конфигурацию</button>
-              <button id="vpnReloadBtn" type="button" class="btn secondary key-soft-btn">Обновить</button>
+              <button id="vpnCopyKeyBtn" type="button" class="btn" disabled>Copy key</button>
+              <button id="vpnDownloadConfigBtn" type="button" class="btn secondary key-soft-btn" disabled>Download config</button>
+              <button id="vpnReloadBtn" type="button" class="btn secondary key-soft-btn">Refresh</button>
             </div>
 
             <div id="vpnCopyFeedback" class="key-feedback"></div>
 
             <div class="meta-grid">
               <div class="meta-item meta-item-wide overflow-safe"><span>UUID</span><strong id="vpnUuid" class="overflow-safe">—</strong></div>
-              <div class="meta-item overflow-safe"><span>Тариф</span><strong id="vpnPlan" class="overflow-safe">—</strong></div>
-              <div class="meta-item overflow-safe"><span>Дата окончания</span><strong id="vpnExpiresAt" class="overflow-safe">—</strong></div>
+              <div class="meta-item overflow-safe"><span>Plan</span><strong id="vpnPlan" class="overflow-safe">—</strong></div>
+              <div class="meta-item overflow-safe"><span>Expires at</span><strong id="vpnExpiresAt" class="overflow-safe">—</strong></div>
             </div>
           </div>
 
@@ -933,20 +933,20 @@
       </div>
 
       <div class="activation-bottom-cta">
-        <p class="activation-bottom-cta__text">После подключения VPN переходите к следующему шагу и завершите активацию аккаунта.</p>
-        <a id="vpnGoActivationBtn" class="btn button-primary activation-bottom-cta__btn is-disabled" href="#" aria-disabled="true">Перейти к активации</a>
+        <p class="activation-bottom-cta__text">After connecting VPN, proceed to the next step and finish account activation.</p>
+        <a id="vpnGoActivationBtn" class="btn button-primary activation-bottom-cta__btn is-disabled" href="#" aria-disabled="true">Go to activation</a>
       </div>
     </section>
   </main>
 
   <footer>
     <div class="footer-links-primary">
-      <a class="footer-link" href="/oferta.html">Публичная оферта</a> &middot; <a class="footer-link" href="/politika.html">Политика конфиденциальности</a> &middot; <a class="footer-link" href="/refund.html">Условия возврата</a>
+      <a class="footer-link" href="/en/oferta.html">Public offer</a> &middot; <a class="footer-link" href="/en/politika.html">Privacy policy</a> &middot; <a class="footer-link" href="/en/refund.html">Refund policy</a>
     </div>
     <div class="footer-links-secondary">
-      <a class="footer-link" href="/about.html">О сервисе</a> &middot; <a class="footer-link" href="/guarantee.html">Гарантия</a> &middot; <a class="footer-link" href="/contact.html">Связь с нами</a>
+      <a class="footer-link" href="/en/about.html">About</a> &middot; <a class="footer-link" href="/en/guarantee.html">Guarantee</a> &middot; <a class="footer-link" href="/en/contact.html">Contact us</a>
     </div>
-    <span class="footer-copy">&copy; 2026 GPTishka. Все права защищены, копирование запрещено.</span>
+    <span class="footer-copy">&copy; 2026 GPTishka. All rights reserved.</span>
   </footer>
 
   <script>
@@ -957,63 +957,63 @@
           appUrl: "/assets/downloads/gptishka-vpn-win32-x64.rar",
           downloadName: "GPTishka VPN-win32-x64.rar",
           steps: [
-            "Скачайте архив приложения. Скачайте файл GPTishka VPN с сайта.",
-            "Распакуйте архив. Нажмите правой кнопкой по архиву и выберите «Извлечь все».",
-            "Запустите программу. Откройте папку и запустите файл GPTishka VPN.exe.",
-            "Добавьте ключ доступа. В правом нижнем углу нажмите «+».",
-            "Вставьте VPN-ключ. Вставьте ключ, который вы получили на сайте, и нажмите «Вставить».",
-            "Подключитесь к VPN. Нажмите на значок дома и затем кнопку «Подключиться».",
-            "Готово. VPN подключен, интернет работает через защищенное соединение.",
+            "Download the app archive from the GPTishka website.",
+            "Extract the archive. Right-click the file and choose Extract All.",
+            "Launch the app. Open the folder and run GPTishka VPN.exe.",
+            "Add an access key. Click the + button in the bottom-right corner.",
+            "Paste your VPN key from the website and click Paste.",
+            "Connect to VPN. Tap the home icon and then Connect.",
+            "Done. VPN is connected and your traffic is protected.",
           ],
         },
         android: {
           title: "Android",
-          appUrl: "https://play.google.com/store/apps/details?id=dev.hexasoftware.v2box&hl=ru",
+          appUrl: "https://play.google.com/store/apps/details?id=dev.hexasoftware.v2box&hl=en",
           steps: [
-            "Скачайте приложение. Установите приложение V2BOX из Google Play Market.",
-            "Откройте приложение. Запустите V2BOX и перейдите во вкладку «Конфигурации» внизу экрана.",
-            "Добавьте конфигурацию. В правом верхнем углу нажмите «+».",
-            "Импортируйте ключ. Выберите «Импортировать V2Ray URI из буфера обмена».",
-            "Конфигурация добавится автоматически. В списке появится сервер GPTishka-VPN.",
-            "Выберите сервер. Нажмите на GPTishka-VPN.",
-            "Подключитесь. Передвиньте ползунок «Подключить».",
-            "Готово. VPN подключен, интернет работает через защищенное соединение.",
+            "Download the app. Install V2BOX from Google Play.",
+            "Open the app. Launch V2BOX and go to Configurations at the bottom.",
+            "Add configuration. Tap + in the top-right corner.",
+            "Import the key. Select Import V2Ray URI from clipboard.",
+            "Configuration will be added automatically. GPTishka-VPN will appear in the list.",
+            "Select the server. Tap GPTishka-VPN.",
+            "Connect. Turn on the Connect toggle.",
+            "Done. VPN is connected and your traffic is protected.",
           ],
         },
         ios: {
           title: "iOS",
           appUrl: "https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690",
           steps: [
-            "Скачайте приложение. Установите приложение V2BOX из App Store.",
-            "Откройте приложение. Запустите V2BOX и перейдите во вкладку «Конфигурации» внизу экрана.",
-            "Добавьте конфигурацию. В правом верхнем углу нажмите «+».",
-            "Импортируйте ключ. Выберите «Импортировать V2Ray URI из буфера обмена».",
-            "Конфигурация добавится автоматически. В списке появится сервер GPTishka-VPN.",
-            "Выберите сервер. Нажмите на GPTishka-VPN.",
-            "Подключитесь. Передвиньте ползунок «Подключить».",
-            "Готово. VPN подключен, интернет работает через защищенное соединение.",
+            "Download the app. Install V2BOX from the App Store.",
+            "Open the app. Launch V2BOX and go to Configurations at the bottom.",
+            "Add configuration. Tap + in the top-right corner.",
+            "Import the key. Select Import V2Ray URI from clipboard.",
+            "Configuration will be added automatically. GPTishka-VPN will appear in the list.",
+            "Select the server. Tap GPTishka-VPN.",
+            "Connect. Turn on the Connect toggle.",
+            "Done. VPN is connected and your traffic is protected.",
           ],
         },
         mac: {
           title: "Mac",
           appUrl: "https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690",
           steps: [
-            "Скачайте приложение. Установите приложение V2BOX из App Store.",
-            "Откройте приложение. Запустите V2BOX и перейдите во вкладку «Конфигурации» внизу экрана.",
-            "Добавьте конфигурацию. В правом верхнем углу нажмите «+».",
-            "Импортируйте ключ. Выберите «Импортировать V2Ray URI из буфера обмена».",
-            "Конфигурация добавится автоматически. В списке появится сервер GPTishka-VPN.",
-            "Выберите сервер. Нажмите на GPTishka-VPN.",
-            "Подключитесь. Передвиньте ползунок «Подключить».",
-            "Готово. VPN подключен, интернет работает через защищенное соединение.",
+            "Download the app. Install V2BOX from the App Store.",
+            "Open the app. Launch V2BOX and go to Configurations at the bottom.",
+            "Add configuration. Tap + in the top-right corner.",
+            "Import the key. Select Import V2Ray URI from clipboard.",
+            "Configuration will be added automatically. GPTishka-VPN will appear in the list.",
+            "Select the server. Tap GPTishka-VPN.",
+            "Connect. Turn on the Connect toggle.",
+            "Done. VPN is connected and your traffic is protected.",
           ],
         },
       };
 
       const PLAN_LABELS = {
-        vpn_month: "VPN 1 месяц",
-        vpn_halfyear: "VPN 6 месяцев",
-        vpn_year: "VPN 12 месяцев",
+        vpn_month: "VPN 1 month",
+        vpn_halfyear: "VPN 6 months",
+        vpn_year: "VPN 12 months",
       };
 
       const ACTIVATION_LAST_ORDER_ID_KEY = "gptishka_activation_order_id";
@@ -1022,7 +1022,7 @@
       const ACTIVATION_RESUME_SAVED_AT_KEY = "gptishka_activation_saved_at";
 
       function resolveLangTargetPath(targetLang) {
-        const path = String(window.location.pathname || "/store/vpn/activate/index.html").trim();
+        const path = String(window.location.pathname || "/en/store/vpn/activate/index.html").trim();
         const cleanPath = path === "/" ? "/index.html" : path;
         const isEnPath = cleanPath.startsWith("/en/");
         const isVpnActivationPage = /^(\/en)?\/store\/vpn\/activate(?:\/index\.html|\/)?$/i.test(cleanPath);
@@ -1183,7 +1183,7 @@
       function formatDate(value) {
         const date = new Date(String(value || ""));
         if (Number.isNaN(date.getTime())) return "—";
-        return date.toLocaleString("ru-RU");
+        return date.toLocaleString("en-US");
       }
 
       function formatPlan(value) {
@@ -1213,7 +1213,7 @@
           guideStage.classList.remove("has-selection");
           guideIntro.classList.remove("is-hidden");
           guideCard.classList.remove("is-visible");
-          guideTag.textContent = "Устройство не выбрано";
+          guideTag.textContent = "No device selected";
           appDownloadBtn.removeAttribute("href");
           appDownloadBtn.removeAttribute("download");
           guideSteps.innerHTML = "";
@@ -1223,7 +1223,7 @@
         guideStage.classList.add("has-selection");
         guideIntro.classList.add("is-hidden");
         guideCard.classList.add("is-visible");
-        guideTitle.textContent = "Шаг 2 — установите приложение";
+        guideTitle.textContent = "Step 2 - install the app";
         guideTag.textContent = config.title;
         appDownloadBtn.href = config.appUrl;
         if (config.downloadName) {
@@ -1246,7 +1246,7 @@
         currentAccessKey = String(payload && payload.accessLink || "").trim();
         currentPlan = String(payload && payload.plan || "").trim();
 
-        keyEl.textContent = currentAccessKey || "Ключ пока не выдан. Нажмите «Обновить» через несколько секунд.";
+        keyEl.textContent = currentAccessKey || "The key is not issued yet. Click Refresh in a few seconds.";
         uuidEl.textContent = String(payload && payload.uuid || "—");
         planEl.textContent = formatPlan(payload && payload.plan);
         expiresAtEl.textContent = formatDate(payload && payload.expiresAt);
@@ -1259,7 +1259,7 @@
       async function loadVpnAccess() {
         const context = readOrderContext();
         if (!context.orderId) {
-          setFeedback("Откройте страницу из ссылки после оплаты (с order_id и t).", "error");
+          setFeedback("Open this page from the post-payment link (with order_id and t).", "error");
           renderAccess({});
           return;
         }
@@ -1268,23 +1268,23 @@
         query.set("order_id", context.orderId);
         if (context.token) query.set("t", context.token);
 
-        setFeedback("Проверяем VPN-доступ...", "");
+        setFeedback("Checking VPN access...", "");
 
         try {
           const response = await fetch(`/api/vpn/me?${query.toString()}`, { cache: "no-store" });
           const payload = await response.json().catch(() => ({}));
 
           if (!response.ok) {
-            const message = String(payload && (payload.message || payload.error) || "Не удалось получить VPN-доступ.");
+            const message = String(payload && (payload.message || payload.error) || "Could not load VPN access.");
             setFeedback(message, "error");
             renderAccess({});
             return;
           }
 
           renderAccess(payload);
-          setFeedback("Доступ активирован.", "success");
+          setFeedback("Access activated.", "success");
         } catch (_) {
-          setFeedback("Ошибка сети при запросе VPN-доступа.", "error");
+          setFeedback("Network error while requesting VPN access.", "error");
           renderAccess({});
         }
       }
@@ -1330,9 +1330,9 @@
         if (!currentAccessKey) return;
         try {
           await navigator.clipboard.writeText(currentAccessKey);
-          setFeedback("Ключ скопирован", "success");
+          setFeedback("Key copied", "success");
         } catch (_) {
-          setFeedback("Не удалось скопировать ключ. Скопируйте вручную.", "error");
+          setFeedback("Could not copy key. Please copy it manually.", "error");
         }
       }
 
@@ -1350,9 +1350,9 @@
           a.click();
           a.remove();
           URL.revokeObjectURL(url);
-          setFeedback("Конфигурация скачана", "success");
+          setFeedback("Configuration downloaded", "success");
         } catch (_) {
-          setFeedback("Не удалось скачать конфигурацию.", "error");
+          setFeedback("Could not download configuration.", "error");
         }
       }
 
@@ -1367,7 +1367,7 @@
       reloadBtn.addEventListener("click", loadVpnAccess);
       if (goActivationBtn) {
         goActivationBtn.addEventListener("click", () => {
-          setFeedback("Переход к активации...", "");
+          setFeedback("Redirecting to activation...", "");
         });
       }
 
