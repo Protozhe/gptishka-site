@@ -288,8 +288,64 @@
 .product-preview-modal__term--badge {
   width: fit-content;
   max-width: 100%;
+  padding: 7px 12px;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: #cbd5e1 !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+  opacity: 1 !important;
   text-transform: none;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.01em !important;
+}
+
+.product-preview-modal__term--badge.best {
+  border-color: #b5c6ff !important;
+  background: #e8edff !important;
+  color: #29419a !important;
+}
+
+.product-preview-modal__term--badge.new {
+  border-color: #9cded2 !important;
+  background: #e8fbf6 !important;
+  color: #0f6a5f !important;
+}
+
+.product-preview-modal__term--badge.hit {
+  border-color: #f2c7a7 !important;
+  background: #fff2e8 !important;
+  color: #8e4219 !important;
+}
+
+.product-preview-modal__term--badge.sale {
+  border-color: #efb7d5 !important;
+  background: #fff0f8 !important;
+  color: #9f2f67 !important;
+}
+
+.product-preview-modal__term--badge.popular {
+  border-color: #b8d3ff !important;
+  background: #edf4ff !important;
+  color: #2c5ba8 !important;
+}
+
+.product-preview-modal__term--badge.limited {
+  border-color: #d3c1ff !important;
+  background: #f3eeff !important;
+  color: #5f3ca5 !important;
+}
+
+.product-preview-modal__term--badge.gift {
+  border-color: #f2d2a1 !important;
+  background: #fff6ea !important;
+  color: #9a6420 !important;
+}
+
+.product-preview-modal__term--badge.pro {
+  border-color: #bec6d6 !important;
+  background: #edf1f8 !important;
+  color: #2a3342 !important;
 }
 
 .product-preview-modal__price {
