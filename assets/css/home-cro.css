@@ -161,7 +161,13 @@
   display: block !important;
   line-height: 1.18;
   min-height: 2.95em;
+  width: 100%;
   max-width: 100%;
+  padding-inline: 2px 4px;
+}
+
+#pricingGrid .price-card .badge + .price-card__title {
+  margin-top: 42px !important;
 }
 
 #pricingGrid .price-card .price-card__title-mainline {
@@ -177,21 +183,21 @@
   display: inline !important;
   max-width: 100%;
   white-space: normal !important;
-  text-wrap: balance;
+  text-wrap: pretty;
   overflow-wrap: normal;
   word-break: normal;
 }
 
 #pricingGrid .price-card .price-card__title-main.is-compact {
-  font-size: clamp(0.98rem, 1.72vw, 1.22rem);
+  font-size: clamp(0.94rem, 1.62vw, 1.14rem);
 }
 
 #pricingGrid .price-card .price-card__title-main.is-tight {
-  font-size: clamp(0.9rem, 1.56vw, 1.06rem);
+  font-size: clamp(0.88rem, 1.5vw, 1.02rem);
 }
 
 #pricingGrid .price-card .price-card__title-main.is-x-tight {
-  font-size: clamp(0.84rem, 1.4vw, 0.98rem);
+  font-size: clamp(0.82rem, 1.32vw, 0.94rem);
 }
 
 #pricingGrid .price-card .price-card__title-chunk {
@@ -255,10 +261,25 @@
 
 .product-preview-modal__title {
   display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding-inline: 2px 4px;
   white-space: normal;
-  text-wrap: balance;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  text-wrap: pretty;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+}
+
+.product-preview-modal__head {
+  gap: 10px;
+}
+
+.product-preview-modal__term--badge {
+  width: fit-content;
+  max-width: 100%;
+  text-transform: none;
+  letter-spacing: 0.01em;
 }
 
 .price-card-skeleton {
@@ -410,6 +431,11 @@
 
   #pricingGrid .price-card .price-card__title {
     min-height: 2.6em;
+    padding-inline: 0 2px;
+  }
+
+  #pricingGrid .price-card .badge + .price-card__title {
+    margin-top: 38px !important;
   }
 
   #pricingGrid .price-card .sub.sub-top-list {
