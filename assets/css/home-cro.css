@@ -157,13 +157,11 @@
 
 #pricingGrid .price-card .price-card__title {
   gap: 6px;
+  min-height: 3.55em;
 }
 
 #pricingGrid .price-card .price-card__title-mainline {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
+  display: block;
   max-width: 100%;
 }
 
@@ -173,7 +171,15 @@
   white-space: normal !important;
   text-wrap: balance;
   overflow-wrap: anywhere;
-  word-break: break-word;
+  word-break: normal;
+}
+
+#pricingGrid .price-card .sub.sub-top-list {
+  min-height: 3.15em;
+}
+
+#pricingGrid .price-card .price-actions {
+  margin-top: auto;
 }
 
 #pricingGrid .price-card .price {
@@ -218,10 +224,7 @@
 }
 
 .product-preview-modal__title {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
+  display: block;
   white-space: normal;
   text-wrap: balance;
   overflow-wrap: anywhere;
@@ -373,6 +376,14 @@
 
   #pricingGrid .price-card {
     padding: 18px;
+  }
+
+  #pricingGrid .price-card .price-card__title {
+    min-height: 3.25em;
+  }
+
+  #pricingGrid .price-card .sub.sub-top-list {
+    min-height: 2.85em;
   }
 
   #pricingGrid .price-card .price {
