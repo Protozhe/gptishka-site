@@ -164,6 +164,7 @@
   width: 100%;
   max-width: 100%;
   padding-inline: 2px 4px;
+  text-align: center;
 }
 
 #pricingGrid .price-card .badge + .price-card__title {
@@ -171,8 +172,9 @@
 }
 
 #pricingGrid .price-card .price-card__title-mainline {
-  display: inline !important;
+  display: block !important;
   max-width: none;
+  text-align: center;
 }
 
 #pricingGrid .price-card .price-card__title-mainline + .price-card__title-mainline::before {
@@ -187,6 +189,7 @@
   overflow-wrap: normal;
   word-break: normal;
   font-size: clamp(1.08rem, 1.95vw, 1.34rem);
+  text-align: center;
 }
 
 #pricingGrid .price-card .price-card__title-main.is-compact {
@@ -278,6 +281,8 @@
 
 .product-preview-modal__head {
   gap: 10px;
+  justify-items: center;
+  text-align: center;
 }
 
 .product-preview-modal__term--badge {
@@ -285,6 +290,12 @@
   max-width: 100%;
   text-transform: none;
   letter-spacing: 0.01em;
+}
+
+.product-preview-modal__price {
+  justify-content: center;
+  text-align: center;
+  width: 100%;
 }
 
 .price-card-skeleton {
