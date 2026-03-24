@@ -159,7 +159,7 @@
 
 #pricingGrid .price-card .price-card__title {
   display: block !important;
-  line-height: 1.18;
+  line-height: 1.16;
   min-height: 2.95em;
   width: 100%;
   max-width: 100%;
@@ -186,18 +186,19 @@
   text-wrap: pretty;
   overflow-wrap: normal;
   word-break: normal;
+  font-size: clamp(1.08rem, 1.95vw, 1.34rem);
 }
 
 #pricingGrid .price-card .price-card__title-main.is-compact {
-  font-size: clamp(0.94rem, 1.62vw, 1.14rem);
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
 }
 
 #pricingGrid .price-card .price-card__title-main.is-tight {
-  font-size: clamp(0.88rem, 1.5vw, 1.02rem);
+  font-size: clamp(0.94rem, 1.68vw, 1.12rem);
 }
 
 #pricingGrid .price-card .price-card__title-main.is-x-tight {
-  font-size: clamp(0.82rem, 1.32vw, 0.94rem);
+  font-size: clamp(0.9rem, 1.56vw, 1.04rem);
 }
 
 #pricingGrid .price-card .price-card__title-chunk {
@@ -205,8 +206,11 @@
 }
 
 #pricingGrid .price-card .price-card__title-period {
-  display: inline-flex !important;
-  margin-left: 0.36ch;
+  display: flex !important;
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+  margin: 4px 0 0;
   vertical-align: baseline;
 }
 
@@ -264,6 +268,7 @@
   width: 100%;
   margin-top: 4px;
   padding-inline: 2px 4px;
+  text-align: center;
   white-space: normal;
   text-wrap: pretty;
   overflow-wrap: normal;
