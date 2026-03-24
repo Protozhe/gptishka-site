@@ -72,11 +72,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/logo.min.css">
 <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260313cat7">
-<link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260315a" />
+  <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260322-cardalign7" />
 <link rel="stylesheet" href="/assets/css/trust-promo.css?v=20260305g">
 
 <!-- GOOGLE FONTS -->
 <link rel="stylesheet" href="/assets/css/support-widget.css?v=20260315b" />
+<link rel="stylesheet" href="/assets/css/home-cro.css?v=20260324-cro1" />
 </head>
 <body>
 <script>
@@ -137,41 +138,83 @@
       
       <main class="page">
 <div class="hero">
-  <div data-hero-react-root data-lang="ru" data-cta-href="index.html#pricing" data-hero-interval="2000">
-    <h1>Подключение и продление ChatGPT за несколько минут</h1>
-    <p>Быстрая активация подписки без лишних действий. Удобно, безопасно и с поддержкой на каждом этапе.</p>
-    <a href="index.html#pricing" class="btn">Открыть тарифы</a>
+  <div data-hero-react-root data-lang="ru" data-hero-top="Купить подписку" data-hero-words="ChatGPT Plus" data-hero-description="Для пользователей из России и СНГ: активация по токену без логина и пароля. Оплата через СБП и карты, поддержка и гарантия на срок подписки." data-hero-cta="Выбрать тариф" data-cta-href="/index.html#pricing" data-hero-interval="2200">
+    <h1>Купить подписку ChatGPT Plus</h1>
+    <p>Для пользователей из России и СНГ: активация по токену без логина и пароля. Оплата через СБП и карты, поддержка и гарантия на срок подписки.</p>
+    <a href="/index.html#pricing" class="btn">Выбрать тариф</a>
   </div>
+  <ul class="hero-trust-pills" aria-label="Ключевые преимущества">
+    <li>Без логина и пароля</li>
+    <li>Оплата СБП и картой</li>
+    <li>Подключение за несколько минут</li>
+    <li>Поддержка и гарантия</li>
+  </ul>
 </div>
+
+<section class="trust-bar" aria-label="Гарантии и доверие">
+  <div class="trust-bar__grid">
+    <article class="trust-bar__item">
+      <h3>Безопасная активация</h3>
+      <p>Подключение выполняется по токену без передачи данных входа.</p>
+    </article>
+    <article class="trust-bar__item">
+      <h3>Логин и пароль не нужны</h3>
+      <p>Ваш аккаунт остается под вашим контролем на всех этапах.</p>
+    </article>
+    <article class="trust-bar__item">
+      <h3>Удобная оплата</h3>
+      <p>СБП и карты РФ/СНГ через подключенные платежные шлюзы.</p>
+    </article>
+    <article class="trust-bar__item">
+      <h3>Поддержка и гарантия</h3>
+      <p>Если автоактивация не сработает, подключим вручную или оформим возврат.</p>
+    </article>
+  </div>
+</section>
 
   <section class="pricing" id="pricing">
     <div class="pricing-header">
-      <h2>Выберите тариф</h2>
-      <p>Выберите формат и переходите к оплате.</p>
+      <h2>Выберите подписку ChatGPT Plus</h2>
+      <p>Срок и цена видны сразу. После оплаты вы переходите к активации без лишних шагов.</p>
+      <p class="pricing-header-note">Если не уверены в выборе, поддержка подскажет подходящий тариф.</p>
     </div>
   
-    <div class="pricing-grid" id="pricingGrid">
-      <div class="price-card">
-        <h3>Загрузка тарифов...</h3>
+    <div class="pricing-grid" id="pricingGrid" aria-live="polite">
+      <div class="price-card price-card-skeleton" aria-hidden="true">
+        <div class="price-card-skeleton__badge"></div>
+        <div class="price-card-skeleton__title"></div>
+        <div class="price-card-skeleton__title price-card-skeleton__title--short"></div>
+        <div class="price-card-skeleton__meta"></div>
+        <div class="price-card-skeleton__price"></div>
+        <div class="price-card-skeleton__line"></div>
+        <div class="price-card-skeleton__line"></div>
+        <div class="price-card-skeleton__button"></div>
+      </div>
+      <div class="price-card price-card-skeleton" aria-hidden="true">
+        <div class="price-card-skeleton__badge"></div>
+        <div class="price-card-skeleton__title"></div>
+        <div class="price-card-skeleton__title price-card-skeleton__title--short"></div>
+        <div class="price-card-skeleton__meta"></div>
+        <div class="price-card-skeleton__price"></div>
+        <div class="price-card-skeleton__line"></div>
+        <div class="price-card-skeleton__line"></div>
+        <div class="price-card-skeleton__button"></div>
+      </div>
+      <div class="price-card price-card-skeleton" aria-hidden="true">
+        <div class="price-card-skeleton__badge"></div>
+        <div class="price-card-skeleton__title"></div>
+        <div class="price-card-skeleton__title price-card-skeleton__title--short"></div>
+        <div class="price-card-skeleton__meta"></div>
+        <div class="price-card-skeleton__price"></div>
+        <div class="price-card-skeleton__line"></div>
+        <div class="price-card-skeleton__line"></div>
+        <div class="price-card-skeleton__button"></div>
       </div>
     </div>
 
 </section>
 
-<section class="activation-video" id="how" aria-labelledby="activationVideoTitle">
-  <div class="activation-video__header">
-    <h2 class="activation-video__title" id="activationVideoTitle">Посмотрите процесс активации</h2>
-    <p class="activation-video__subtitle">Обучающие видео с примером активации</p>
-  </div>
-  <div class="activation-video__frame">
-    <video class="activation-video__media" controls preload="metadata" playsinline poster="/assets/img/hero-activation-poster.png">
-      <source src="/assets/video/hero-activation.mp4" type="video/mp4">
-      Ваш браузер не поддерживает встроенное видео.
-    </video>
-  </div>
-</section>
-
-<section class="how">
+<section class="how" id="how">
   <div class="how-header">
     <div class="how-title">Как проходит покупка</div>
   </div>
@@ -180,19 +223,19 @@
     <div class="how-card">
       <div class="how-number">1</div>
       <h3>Выберите тариф</h3>
-      <p>Под нужный срок или формат подключения.</p>
+      <p>Сравните варианты по цене и сроку. Все условия сразу видны в карточке.</p>
     </div>
 
     <div class="how-card" id="payment">
       <div class="how-number">2</div>
-      <h3>Оплатите заказ</h3>
-      <p>СБП, карты РФ и СНГ. Работаем с проверенной платежной системой Enot.io. <strong>Ваши деньги замораживаются на весь период подписки.</strong></p>
+      <h3>Оплатите удобным способом</h3>
+      <p>СБП и карты РФ/СНГ. Оплата проходит на защищенной платежной странице.</p>
     </div>
 
     <div class="how-card">
       <div class="how-number">3</div>
-      <h3>Активируйте подписку</h3>
-      <p>После оплаты откроется страница активации: вставьте токен и нажмите «Активировать».</p>
+      <h3>Получите доступ и активацию</h3>
+      <p>Сразу после оплаты открывается активация по токену. Если автоактивация не сработает, подключим вручную.</p>
     </div>
   </div>
 </section>
@@ -214,7 +257,17 @@
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer">
-            <p>Токен нужен только для привязки оплаты к вашему заказу. Логин и пароль мы не запрашиваем и не видим.</p>
+            <p>Токен связывает оплату с заказом и используется только для активации. Логин, пароль и доступ к вашему аккаунту не передаются.</p>
+          </div>
+        </div>
+  
+        <div class="faq-item">
+          <button class="faq-question">
+            Нужен ли логин и пароль?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Нет. Для подключения нужен только токен. Данные входа в аккаунт мы не запрашиваем.</p>
           </div>
         </div>
   
@@ -224,17 +277,57 @@
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer">
-            <p>После оплаты вы переходите на страницу активации. Для готового аккаунта данные выдаются автоматически.</p>
+            <p>Вы переходите на страницу активации и получаете инструкции. Для готовых аккаунтов данные выдаются автоматически.</p>
           </div>
         </div>
-  
+
         <div class="faq-item">
           <button class="faq-question">
-            Какая гарантия?
+            Как быстро приходит доступ?
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer">
-            <p>Если автоактивация не прошла, подключаем вручную или оформляем возврат. Поддержка на связи до решения.</p>
+            <p>Обычно в течение нескольких минут после подтверждения оплаты.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            Что делать, если автоактивация не сработала?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Напишите в поддержку. Подключим вручную или оформим возврат по условиям гарантии.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            Есть ли поддержка?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Да. Поддержка на связи в течение всего срока подписки и помогает до результата.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            Какие способы оплаты доступны?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>СБП и банковские карты РФ/СНГ через подключенные платежные шлюзы.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            Можно ли продлить подписку?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Да. Выберите нужный тариф и оформите новую оплату для продления.</p>
           </div>
         </div>
   
@@ -242,15 +335,28 @@
   
       <!-- ПРАВАЯ ЛИПКАЯ КОЛОНКА -->
       <aside class="faq-sticky">
-        <h3>Остались вопросы?</h3>
+        <h3>Нужна помощь с выбором?</h3>
         <p>
-          Напишите нам — ответим быстро и поможем выбрать подходящий тариф.
+          Подскажем по тарифам, срокам и активации в чате поддержки.
         </p>
-        <a class="faq-chat-btn" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener noreferrer">Открыть чат</a>
+        <a class="faq-chat-btn" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener noreferrer">Написать в поддержку</a>
       </aside>
   
     </div>
   </section>
+
+<section class="activation-video" id="activationVideo" aria-labelledby="activationVideoTitle">
+  <div class="activation-video__header">
+    <h2 class="activation-video__title" id="activationVideoTitle">Видео процесса активации</h2>
+    <p class="activation-video__subtitle">Дополнительная инструкция: можно посмотреть до оплаты или сразу после покупки.</p>
+  </div>
+  <div class="activation-video__frame">
+    <video class="activation-video__media" controls preload="metadata" playsinline poster="/assets/img/hero-activation-poster.png">
+      <source src="/assets/video/hero-activation.mp4" type="video/mp4">
+      Ваш браузер не поддерживает встроенное видео.
+    </video>
+  </div>
+</section>
 </main>
 
 <div class="payment-method-modal" id="cartPaymentModal" hidden aria-hidden="true">
@@ -294,10 +400,11 @@
   <span class="footer-copy">&copy; 2026 GPTishka. Все права защищены, копирование запрещено.</span>
 </footer>
 <script type="module" src="/assets/js/hero-react.mjs?v=20260310f"></script>
-<script src="/assets/js/app.min.js?v=20260313cat5" defer></script>
+<script src="/assets/js/app.min.js?v=20260323-noacc1" defer></script>
   <script src="/assets/js/support-widget.js?v=20260315b" defer></script>
 </body>
 </html>
+
 
 
 

@@ -1,0 +1,347 @@
+/* Homepage conversion-focused refinements (safe UI layer only) */
+
+.hero [data-hero-react-root] {
+  max-width: 940px;
+  margin-inline: auto;
+}
+
+.hero .hero-react__description {
+  max-width: 760px;
+  font-size: clamp(1rem, 1.8vw, 1.16rem);
+  line-height: 1.58;
+}
+
+.hero .hero-react__actions {
+  margin-top: 4px;
+}
+
+.hero .hero-react__btn {
+  min-width: 220px;
+  min-height: 52px;
+  padding-inline: 30px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.hero-trust-pills {
+  margin: 20px auto 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  max-width: 980px;
+}
+
+.hero-trust-pills li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(19, 138, 120, 0.18);
+  background: rgba(255, 255, 255, 0.74);
+  color: #243544;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  box-shadow: 0 8px 18px rgba(17, 35, 70, 0.08);
+}
+
+.hero-trust-pills li::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1ba091, #2a5bff);
+  box-shadow: 0 0 0 3px rgba(27, 160, 145, 0.12);
+  flex: 0 0 auto;
+}
+
+.trust-bar {
+  max-width: 1200px;
+  margin: 0 auto 74px;
+  padding: 14px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.66), rgba(243, 250, 255, 0.5));
+  box-shadow: 0 14px 30px rgba(17, 35, 70, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(14px) saturate(126%);
+  -webkit-backdrop-filter: blur(14px) saturate(126%);
+}
+
+.trust-bar__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.trust-bar__item {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.72);
+  padding: 14px 14px 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.trust-bar__item h3 {
+  margin: 0 0 6px;
+  font-family: "Space Grotesk", "Manrope", sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  color: #1e2c3a;
+}
+
+.trust-bar__item p {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: #58697c;
+}
+
+#how {
+  scroll-margin-top: 148px;
+}
+
+.pricing-header {
+  display: grid;
+  gap: 9px;
+}
+
+.pricing-header-note {
+  width: fit-content;
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(19, 138, 120, 0.18);
+  background: rgba(19, 138, 120, 0.08);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #165f55;
+}
+
+#pricingGrid {
+  align-items: stretch;
+}
+
+#pricingGrid .price-card {
+  height: 100%;
+  padding: clamp(20px, 2.6vw, 26px);
+}
+
+#pricingGrid .price-card .price-card__title {
+  gap: 6px;
+}
+
+#pricingGrid .price-card .price {
+  margin: 6px 0 10px;
+  font-size: clamp(2.1rem, 4vw, 2.7rem);
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+#pricingGrid .price-card .price-duration {
+  margin: 0 0 10px;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+#pricingGrid .price-card .price-card-features {
+  margin-bottom: 14px;
+  gap: 8px;
+}
+
+#pricingGrid .price-card .price-card-features li {
+  line-height: 1.45;
+}
+
+#pricingGrid .price-card .buy-btn {
+  min-height: 48px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+#pricingGrid .price-card .meta {
+  margin-top: 12px;
+  padding-top: 10px;
+  gap: 6px;
+}
+
+#pricingGrid .price-card .meta span {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.price-card-skeleton {
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.price-card-skeleton > div {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  background: linear-gradient(100deg, rgba(182, 196, 214, 0.26) 22%, rgba(229, 236, 245, 0.72) 42%, rgba(182, 196, 214, 0.26) 64%);
+  background-size: 220% 100%;
+  animation: priceCardSkeletonPulse 1.3s ease-in-out infinite;
+}
+
+.price-card-skeleton__badge {
+  width: 88px;
+  height: 22px;
+  margin-bottom: 18px;
+}
+
+.price-card-skeleton__title {
+  width: 92%;
+  height: 22px;
+  margin-bottom: 8px;
+}
+
+.price-card-skeleton__title--short {
+  width: 64%;
+  margin-bottom: 16px;
+}
+
+.price-card-skeleton__meta {
+  width: 52%;
+  height: 18px;
+  margin-bottom: 20px;
+}
+
+.price-card-skeleton__price {
+  width: 42%;
+  height: 36px;
+  margin-bottom: 14px;
+}
+
+.price-card-skeleton__line {
+  width: 100%;
+  height: 14px;
+  margin-bottom: 8px;
+}
+
+.price-card-skeleton__button {
+  width: 100%;
+  height: 48px;
+  margin-top: auto;
+}
+
+@keyframes priceCardSkeletonPulse {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+.how-card p {
+  max-width: 34ch;
+}
+
+.faq-header p {
+  max-width: 680px;
+}
+
+.faq-question {
+  line-height: 1.35;
+}
+
+.faq-answer p {
+  max-width: 82ch;
+}
+
+.activation-video__subtitle {
+  max-width: 760px;
+}
+
+@media (max-width: 1100px) {
+  #how {
+    scroll-margin-top: 178px;
+  }
+
+  .trust-bar__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .hero-trust-pills {
+    margin-top: 14px;
+    gap: 8px;
+  }
+
+  .hero-trust-pills li {
+    min-height: 32px;
+    padding: 7px 11px;
+    font-size: 12px;
+  }
+
+  .trust-bar {
+    margin: 0 auto 52px;
+    padding: 12px;
+    border-radius: 20px;
+  }
+
+  .trust-bar__grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .trust-bar__item {
+    padding: 12px;
+  }
+
+  .trust-bar__item h3 {
+    font-size: 0.92rem;
+  }
+
+  .trust-bar__item p {
+    font-size: 0.81rem;
+  }
+
+  .pricing-header-note {
+    width: 100%;
+    text-align: center;
+  }
+
+  #pricingGrid .price-card {
+    padding: 18px;
+  }
+
+  #pricingGrid .price-card .price {
+    font-size: clamp(1.85rem, 8.4vw, 2.36rem);
+  }
+
+  #pricingGrid .price-card .buy-btn {
+    min-height: 46px;
+    font-size: 14px;
+  }
+
+  .price-card-skeleton__price {
+    width: 50%;
+    height: 32px;
+  }
+
+  .how-card p {
+    max-width: none;
+  }
+
+  .faq-question {
+    font-size: 14px;
+    padding: 16px;
+  }
+
+  .faq-answer p {
+    padding: 0 16px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+}
