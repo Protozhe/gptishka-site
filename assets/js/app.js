@@ -1797,6 +1797,10 @@ function initActivationResumeShortcut() {
     const durationLineRegex = /^(срок|duration)\s*:/i;
     const durationLine = descriptionLines.find(line => durationLineRegex.test(line)) || "";
     const titleDisplay = buildProductTitleDisplay(title, durationLine);
+    const category = String(item.category || "").trim();
+    const normalizedCategoryLabel = normalizeProductCategoryLabel(category).toLowerCase();
+    const isChatgptSubscriptionsCategory =
+      normalizedCategoryLabel.includes("подпис") || normalizedCategoryLabel.includes("subscription");
     const titleLinesMarkup = titleDisplay.lines
       .map((line) => (
         '<span class="price-card__title-mainline">' +
@@ -1806,7 +1810,7 @@ function initActivationResumeShortcut() {
         "</span>"
       ))
       .join("");
-    const titlePeriodMarkup = titleDisplay.period
+    const titlePeriodMarkup = titleDisplay.period && !isChatgptSubscriptionsCategory
       ? '<span class="price-card__title-period">' + escapeHtml(titleDisplay.period) + "</span>"
       : "";
     const titleMarkup =
@@ -1815,7 +1819,6 @@ function initActivationResumeShortcut() {
       titlePeriodMarkup +
       "</h3>";
     const nonDurationLines = descriptionLines.filter(line => !durationLineRegex.test(line));
-    const category = String(item.category || "").trim();
     const tags = Array.isArray(item.tags) ? item.tags.filter(Boolean) : [];
     const cardTextAlign = readCardTextAlignConfig(tags);
     const displayTags = tags.filter(tag => !isTechnicalProductTag(tag));
@@ -1857,7 +1860,7 @@ function initActivationResumeShortcut() {
     const durationMarkup = durationLine ? '<div class="price-duration">&#10003; ' + escapeHtml(durationLine) + "</div>" : "";
 
     return (
-      '<div class="price-card' + (badgeType === "best" ? " featured" : "") + '"' +
+      '<div class="price-card' + (badgeType === "best" ? " featured" : "") + (isChatgptSubscriptionsCategory ? " price-card--subscriptions" : "") + '"' +
       ' data-product="' + escapeHtml(product) + '"' +
       ' data-product-id="' + escapeHtml(String(item.id || "")) + '"' +
       ' data-title="' + escapeHtml(title) + '"' +

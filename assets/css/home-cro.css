@@ -204,6 +204,22 @@
   font-size: clamp(0.9rem, 1.56vw, 1.04rem);
 }
 
+#pricingGrid .price-card.price-card--subscriptions .price-card__title-main {
+  font-size: clamp(1.22rem, 2.28vw, 1.56rem);
+}
+
+#pricingGrid .price-card.price-card--subscriptions .price-card__title-main.is-compact {
+  font-size: clamp(1.14rem, 2.1vw, 1.4rem);
+}
+
+#pricingGrid .price-card.price-card--subscriptions .price-card__title-main.is-tight {
+  font-size: clamp(1.06rem, 1.92vw, 1.24rem);
+}
+
+#pricingGrid .price-card.price-card--subscriptions .price-card__title-main.is-x-tight {
+  font-size: clamp(1rem, 1.8vw, 1.14rem);
+}
+
 #pricingGrid .price-card .price-card__title-chunk {
   white-space: normal;
 }
@@ -508,6 +524,22 @@
 
   #pricingGrid .price-card .badge + .price-card__title {
     margin-top: 38px !important;
+  }
+
+  #pricingGrid .price-card.price-card--subscriptions .price-card__title-main {
+    font-size: clamp(1.08rem, 4.9vw, 1.3rem);
+  }
+
+  #pricingGrid .price-card.price-card--subscriptions .price-card__title-main.is-compact {
+    font-size: clamp(1.04rem, 4.5vw, 1.24rem);
+  }
+
+  #pricingGrid .price-card.price-card--subscriptions .price-card__title-main.is-tight {
+    font-size: clamp(0.98rem, 4.1vw, 1.16rem);
+  }
+
+  #pricingGrid .price-card.price-card--subscriptions .price-card__title-main.is-x-tight {
+    font-size: clamp(0.94rem, 3.8vw, 1.08rem);
   }
 
   #pricingGrid .price-card .sub.sub-top-list {
