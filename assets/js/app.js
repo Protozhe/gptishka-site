@@ -674,7 +674,7 @@ const ACTIVATION_LAST_ORDER_ID_KEY = "gptishka_activation_order_id";
 const ACTIVATION_ORDER_TOKEN_PREFIX = "gptishka_activation_order_token:";
 const ACTIVATION_RESUME_URL_KEY = "gptishka_activation_resume_url";
 const ACTIVATION_RESUME_SAVED_AT_KEY = "gptishka_activation_saved_at";
-const ACTIVATION_RESUME_TTL_MS = 60 * 60 * 1000;
+const ACTIVATION_RESUME_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 
 function clearStoredActivationResumeContext(orderId) {
   const safeOrderId = String(orderId || "").trim();
@@ -1162,7 +1162,7 @@ function initActivationResumeShortcut() {
     const amount = Math.max(0, toAmount(value));
     const c = String(currency || "RUB").toUpperCase();
     const symbol = c === "RUB" ? "RUB" : c;
-    return formatAmount(amount) + " " + symbol;
+    return formatAmount(amount) + "\u00A0" + symbol;
   }
 
   function escapeHtml(value) {
@@ -1254,6 +1254,45 @@ function initActivationResumeShortcut() {
       }
     }
     return "activation";
+  }
+
+  const CARD_TEXT_ALIGN_TAG_RE = /^align:(title|description|price|duration|features|meta):(left|center|right)$/i;
+
+  function readCardTextAlignConfig(tags) {
+    const result = {
+      title: "left",
+      description: "left",
+      price: "left",
+      duration: "left",
+      features: "left",
+      meta: "left",
+    };
+    if (!Array.isArray(tags)) return result;
+    tags.forEach(tag => {
+      const match = String(tag || "").trim().toLowerCase().match(CARD_TEXT_ALIGN_TAG_RE);
+      if (!match) return;
+      const block = match[1];
+      const align = match[2];
+      if (align === "center" || align === "right" || align === "left") {
+        result[block] = align;
+      }
+    });
+    return result;
+  }
+
+  function isTechnicalProductTag(tag) {
+    const normalized = String(tag || "").trim().toLowerCase();
+    if (!normalized) return true;
+    return (
+      normalized.startsWith("badge:") ||
+      normalized.startsWith("delivery:") ||
+      normalized.startsWith("bundle:") ||
+      normalized.startsWith("vpn:") ||
+      normalized.startsWith("vpn_users:") ||
+      normalized.startsWith("vpn-users:") ||
+      normalized.startsWith("users:") ||
+      normalized.startsWith("align:")
+    );
   }
 
   function parseDescriptionLines(description) {
@@ -1558,10 +1597,11 @@ function initActivationResumeShortcut() {
 
     const model = parseDescriptionModel(item.description || "");
     const modalDescriptionModel = parseDescriptionModel(item.modalDescription || model.plainText || "");
+    const previewTitle = String(item.title || item.product || TEXT.previewTitle).replace(/\s+/g, " ").trim();
 
     productPreviewContentEl.innerHTML = [
       '<div class="product-preview-modal__head">',
-      '<h3 class="product-preview-modal__title" id="productPreviewModalTitle">' + escapeHtml(item.title || item.product || TEXT.previewTitle) + "</h3>",
+      '<h3 class="product-preview-modal__title" id="productPreviewModalTitle">' + escapeHtml(previewTitle) + "</h3>",
       '<div class="product-preview-modal__price" id="productPreviewPrice">' + escapeHtml(formatPriceByCurrency(item.price, item.currency)) + "</div>",
       "</div>",
       '<section class="product-preview-modal__description">',
@@ -1635,6 +1675,103 @@ function initActivationResumeShortcut() {
     document.body.classList.add("is-product-modal-open");
   }
 
+  function normalizeProductDurationLabel(value) {
+    const raw = String(value || "").replace(/\s+/g, " ").trim();
+    if (!raw) return "";
+    return raw.replace(/^[^:]{1,24}\s*:\s*/u, "").trim();
+  }
+
+  function isDurationLikeLine(value) {
+    const raw = String(value || "").replace(/\s+/g, " ").trim();
+    if (!raw) return false;
+    const safe = normalizeProductDurationLabel(raw).toLowerCase();
+    return /^(?:\d+\s*)(?:month|months|mo|yr|yrs|year|years|месяц|месяца|месяцев|мес\.?|год|года|лет|г\.)$/iu.test(safe);
+  }
+
+  function splitProductTitleParts(title, durationFallback) {
+    const rawTitle = String(title || "").replace(/\r/g, "").trim();
+    const fallbackDuration = normalizeProductDurationLabel(durationFallback);
+    const normalizedTitle = rawTitle.replace(/\s+/g, " ").trim();
+    const titleLines = normalizedTitle ? [normalizedTitle] : [];
+
+    if (!titleLines.length) {
+      return { mainLines: [], period: fallbackDuration };
+    }
+
+    let period = "";
+    let mainLines = titleLines.slice();
+
+    if (titleLines.length > 1 && isDurationLikeLine(titleLines[titleLines.length - 1])) {
+      period = normalizeProductDurationLabel(titleLines[titleLines.length - 1]);
+      mainLines = titleLines.slice(0, -1);
+    } else if (titleLines.length === 1) {
+      const single = titleLines[0];
+      const trailingDurationMatch = single.match(/(\d+\s*(?:month|months|mo|yr|yrs|year|years|месяц|месяца|месяцев|мес\.?|год|года|лет|г\.))\s*$/iu);
+      if (trailingDurationMatch && trailingDurationMatch.index !== undefined) {
+        const head = single.slice(0, trailingDurationMatch.index).replace(/[–—\-,:/|]+$/u, "").trim();
+        period = normalizeProductDurationLabel(trailingDurationMatch[1]);
+        mainLines = head ? [head] : [single];
+      }
+    }
+
+    if (!mainLines.length) {
+      mainLines = titleLines.slice(0, 1);
+    }
+
+    return {
+      mainLines,
+      period: period || fallbackDuration,
+    };
+  }
+
+  function buildProductTitleChunks(mainLine) {
+    const normalized = String(mainLine || "").replace(/\s+/g, " ").trim();
+    if (!normalized) return [];
+
+    const plusParts = normalized
+      .split(/\s*\+\s*/u)
+      .map(part => String(part || "").trim())
+      .filter(Boolean);
+
+    if (plusParts.length <= 1) return [normalized];
+    return plusParts.map((part, index) => (index === 0 ? part : `+ ${part}`));
+  }
+
+  function resolveProductTitleScaleClass(maxLength, maxChunksPerLine, lineCount) {
+    // Keep combined product names (e.g. "ChatGPT Plus + VPN") comfortably inside the card
+    // so left/center/right alignment remains visually distinct.
+    if (maxLength >= 36 || maxChunksPerLine >= 5) return "is-x-tight";
+    if (maxLength >= 28 || maxChunksPerLine >= 4 || lineCount >= 3) return "is-tight";
+    if (maxLength >= 18 || maxChunksPerLine >= 2) return "is-compact";
+    return "is-normal";
+  }
+
+  function buildProductTitleDisplay(title, durationFallback) {
+    const parts = splitProductTitleParts(title, durationFallback);
+    const lines = parts.mainLines
+      .map((line) => {
+        const chunks = buildProductTitleChunks(line);
+        const text = chunks.length ? chunks.join(" ") : String(line || "").trim();
+        return {
+          text,
+          chunks: chunks.length ? chunks : [text],
+        };
+      })
+      .filter(line => Boolean(line.text));
+    const fallbackTitleText = String(title || "").replace(/\s+/g, " ").trim();
+    const safeLines = lines.length ? lines : [{ text: fallbackTitleText, chunks: [fallbackTitleText] }];
+    const maxLength = safeLines.reduce((max, line) => Math.max(max, line.text.length), 0);
+    const maxChunksPerLine = safeLines.reduce((max, line) => Math.max(max, line.chunks.length), 0);
+    const safePeriod = String(parts.period || "").trim();
+
+    return {
+      lines: safeLines,
+      period: safePeriod,
+      scaleClass: resolveProductTitleScaleClass(maxLength, maxChunksPerLine, safeLines.length),
+      ariaLabel: [...safeLines.map(line => line.text), safePeriod].filter(Boolean).join(" "),
+    };
+  }
+
   function buildProductCard(item, index) {
     const product = String(item.product || item.id || "product_" + index).trim();
     const title = String(item.title || "Product").trim();
@@ -1644,10 +1781,34 @@ function initActivationResumeShortcut() {
       const descriptionLines = descriptionModel.lines;
     const durationLineRegex = /^(срок|duration)\s*:/i;
     const durationLine = descriptionLines.find(line => durationLineRegex.test(line)) || "";
+    const titleDisplay = buildProductTitleDisplay(title, durationLine);
+    const titleLinesMarkup = titleDisplay.lines
+      .map((line) => {
+        const chunksMarkup = line.chunks
+          .map(chunk => '<span class="price-card__title-chunk">' + escapeHtml(chunk) + "</span>")
+          .join("");
+        return (
+          '<span class="price-card__title-mainline">' +
+          '<span class="price-card__title-main ' + titleDisplay.scaleClass + '">' +
+          chunksMarkup +
+          "</span>" +
+          "</span>"
+        );
+      })
+      .join("");
+    const titlePeriodMarkup = titleDisplay.period
+      ? '<span class="price-card__title-period">' + escapeHtml(titleDisplay.period) + "</span>"
+      : "";
+    const titleMarkup =
+      '<h3 class="price-card__title" aria-label="' + escapeHtml(titleDisplay.ariaLabel || title) + '">' +
+      titleLinesMarkup +
+      titlePeriodMarkup +
+      "</h3>";
     const nonDurationLines = descriptionLines.filter(line => !durationLineRegex.test(line));
     const category = String(item.category || "").trim();
     const tags = Array.isArray(item.tags) ? item.tags.filter(Boolean) : [];
-    const displayTags = tags.filter(tag => !String(tag).startsWith("badge:"));
+    const cardTextAlign = readCardTextAlignConfig(tags);
+    const displayTags = tags.filter(tag => !isTechnicalProductTag(tag));
     const term = category || (displayTags[0] ? displayTags[0].toUpperCase() : "DIGITAL");
     const sub = displayTags.length ? displayTags.slice(0, 3).join(" • ") : String(nonDurationLines[0] || description).slice(0, 90);
     const topHighlights = nonDurationLines.slice(0, 5);
@@ -1696,10 +1857,15 @@ function initActivationResumeShortcut() {
       ' data-modal-description="' + escapeHtml(modalDescriptionModel.plainText) + '"' +
       ' data-price="' + escapeHtml(price) + '"' +
       ' data-currency="' + escapeHtml(currency) + '"' +
-      ' data-delivery-type="' + escapeHtml(deliveryType) + '">' +
+      ' data-delivery-type="' + escapeHtml(deliveryType) + '"' +
+      ' data-align-title="' + escapeHtml(cardTextAlign.title) + '"' +
+      ' data-align-description="' + escapeHtml(cardTextAlign.description) + '"' +
+      ' data-align-price="' + escapeHtml(cardTextAlign.price) + '"' +
+      ' data-align-duration="' + escapeHtml(cardTextAlign.duration) + '"' +
+      ' data-align-features="' + escapeHtml(cardTextAlign.features) + '"' +
+      ' data-align-meta="' + escapeHtml(cardTextAlign.meta) + '">' +
       badge +
-      "<h3>" + escapeHtml(title) + "</h3>" +
-      '<div class="term">' + escapeHtml(term) + "</div>" +
+      titleMarkup +
       topHighlightsBlock +
       '<div class="price">' + escapeHtml(formatPriceByCurrency(price, currency)) + "</div>" +
       durationMarkup +
@@ -3297,4 +3463,3 @@ document.addEventListener("click", e => {
     initLiveTicker();
   }
 })();
-
