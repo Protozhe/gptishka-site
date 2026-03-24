@@ -152,11 +152,14 @@
 
 #pricingGrid .price-card {
   height: 100%;
+  display: flex;
+  flex-direction: column;
   padding: clamp(20px, 2.6vw, 26px);
 }
 
 #pricingGrid .price-card .price-card__title {
-  gap: 6px;
+  display: block !important;
+  line-height: 1.18;
   min-height: 2.95em;
   max-width: 100%;
 }
@@ -174,9 +177,25 @@
   display: inline !important;
   max-width: 100%;
   white-space: normal !important;
-  text-wrap: pretty;
+  text-wrap: balance;
   overflow-wrap: normal;
   word-break: normal;
+}
+
+#pricingGrid .price-card .price-card__title-main.is-compact {
+  font-size: clamp(0.98rem, 1.72vw, 1.22rem);
+}
+
+#pricingGrid .price-card .price-card__title-main.is-tight {
+  font-size: clamp(0.9rem, 1.56vw, 1.06rem);
+}
+
+#pricingGrid .price-card .price-card__title-main.is-x-tight {
+  font-size: clamp(0.84rem, 1.4vw, 0.98rem);
+}
+
+#pricingGrid .price-card .price-card__title-chunk {
+  white-space: normal;
 }
 
 #pricingGrid .price-card .price-card__title-period {
@@ -390,7 +409,7 @@
   }
 
   #pricingGrid .price-card .price-card__title {
-    min-height: 2.75em;
+    min-height: 2.6em;
   }
 
   #pricingGrid .price-card .sub.sub-top-list {
