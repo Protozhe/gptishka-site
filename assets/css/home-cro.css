@@ -157,29 +157,40 @@
 
 #pricingGrid .price-card .price-card__title {
   gap: 6px;
-  min-height: 3.55em;
+  min-height: 2.95em;
+  max-width: 100%;
 }
 
 #pricingGrid .price-card .price-card__title-mainline {
-  display: block;
-  max-width: 100%;
+  display: inline !important;
+  max-width: none;
+}
+
+#pricingGrid .price-card .price-card__title-mainline + .price-card__title-mainline::before {
+  content: " ";
 }
 
 #pricingGrid .price-card .price-card__title-main {
   display: inline !important;
   max-width: 100%;
   white-space: normal !important;
-  text-wrap: balance;
-  overflow-wrap: anywhere;
+  text-wrap: pretty;
+  overflow-wrap: normal;
   word-break: normal;
 }
 
-#pricingGrid .price-card .sub.sub-top-list {
-  min-height: 3.15em;
+#pricingGrid .price-card .price-card__title-period {
+  display: inline-flex !important;
+  margin-left: 0.36ch;
+  vertical-align: baseline;
 }
 
 #pricingGrid .price-card .price-actions {
   margin-top: auto;
+}
+
+#pricingGrid .price-card .sub.sub-top-list {
+  min-height: 5.1em;
 }
 
 #pricingGrid .price-card .price {
@@ -379,11 +390,11 @@
   }
 
   #pricingGrid .price-card .price-card__title {
-    min-height: 3.25em;
+    min-height: 2.75em;
   }
 
   #pricingGrid .price-card .sub.sub-top-list {
-    min-height: 2.85em;
+    min-height: 4.6em;
   }
 
   #pricingGrid .price-card .price {
