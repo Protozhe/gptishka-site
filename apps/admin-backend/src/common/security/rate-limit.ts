@@ -101,3 +101,43 @@ export const activationWriteRateLimit = rateLimit({
   legacyHeaders: false,
   handler: withScope("activation-write"),
 });
+
+export const accountMagicLinkRateLimit = rateLimit({
+  windowMs: 15 * 60_000,
+  max: 8,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: withScope("account-magic-link"),
+});
+
+export const accountSessionRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 90,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: withScope("account-session"),
+});
+
+export const accountRevealRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: withScope("account-reveal"),
+});
+
+export const accountTelegramLinkRateLimit = rateLimit({
+  windowMs: 15 * 60_000,
+  max: 12,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: withScope("account-telegram-link"),
+});
+
+export const telegramWebhookRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 180,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: withScope("telegram-webhook"),
+});

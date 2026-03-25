@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# Continue deployment even if the SSH session drops.
+trap '' HUP
 
 APP_DIR="/var/www/gptishka-new"
 ADMIN_ENV_FILE="$APP_DIR/apps/admin-backend/.env"
@@ -47,7 +49,13 @@ if [ "$SKIP_BACKEND_DEPLOY" -eq 0 ]; then
   # Ensure PM2 apps (and their PORTs) match repo config on every deploy.
   # This prevents port drift (e.g., storefront accidentally binding admin port).
   if [ -f ecosystem.config.js ]; then
-    pm2 startOrReload ecosystem.config.js --update-env
+    if ! pm2 startOrReload ecosystem.config.js --update-env; then
+      echo "WARN: pm2 startOrReload failed, attempting stale-port recovery"
+      if command -v fuser >/dev/null 2>&1; then
+        fuser -k 4000/tcp 4100/tcp >/dev/null 2>&1 || true
+      fi
+      pm2 startOrReload ecosystem.config.js --update-env
+    fi
   else
     pm2 restart gptishka-admin-api --update-env
     pm2 restart gptishka-storefront --update-env

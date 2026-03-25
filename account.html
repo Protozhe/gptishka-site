@@ -1,0 +1,843 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="description" content="Личный кабинет GPTishka: срок VPN подписки, статус и доступ к ключу." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="GPTishka" />
+  <meta property="og:title" content="Личный кабинет - GPTишка" />
+  <meta property="og:description" content="Управляйте VPN подпиской в личном кабинете GPTishka." />
+  <meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
+  <meta property="og:url" content="https://gptishka.shop/account.html" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <title>Личный кабинет - GPTишка</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/logo.min.css" />
+  <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260312fix2" />
+  <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260322-cardalign7" />
+  <link rel="stylesheet" href="/assets/css/support-widget.css?v=20260315b" />
+
+  <style>
+    :root {
+      --account-ink: #12263d;
+      --account-muted: #5b6f86;
+      --account-line: rgba(20, 35, 56, 0.14);
+      --account-line-soft: rgba(20, 35, 56, 0.08);
+      --account-success: #0f8f66;
+      --account-danger: #b84a46;
+    }
+
+    body.account-flow {
+      background:
+        radial-gradient(760px 360px at 8% -14%, rgba(42, 91, 255, 0.2), transparent 68%),
+        radial-gradient(680px 340px at 100% 2%, rgba(242, 155, 89, 0.18), transparent 66%),
+        linear-gradient(180deg, #f6faf9 0%, #f7f9fc 52%, #eef3f9 100%);
+      min-height: 100vh;
+    }
+
+    body.account-flow::before,
+    body.account-flow::after,
+    body.account-flow main.page::before,
+    body.account-flow main.page::after {
+      content: none !important;
+      display: none !important;
+      animation: none !important;
+      filter: none !important;
+    }
+
+    .page-overlay {
+      pointer-events: none;
+      opacity: 0 !important;
+      background: transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    .account-page {
+      max-width: 1120px;
+      margin: 14px auto 28px;
+      padding: 0 12px;
+    }
+
+    .account-shell {
+      display: grid;
+      gap: 14px;
+      padding: 26px !important;
+      border-radius: 30px !important;
+      border: 1px solid rgba(255, 255, 255, 0.78) !important;
+      background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 252, 255, 0.94) 40%, rgba(241, 250, 248, 0.92) 100%),
+        radial-gradient(circle at 1px 1px, rgba(10, 31, 53, 0.03) 1px, transparent 0);
+      background-size: auto, 16px 16px;
+      box-shadow:
+        0 24px 64px rgba(14, 28, 44, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.88) !important;
+    }
+
+    .account-hero {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .account-title {
+      margin: 0;
+      font-family: "Manrope", sans-serif;
+      font-weight: 800;
+      font-size: clamp(32px, 4.8vw, 46px);
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+      color: var(--account-ink);
+      max-width: 16ch;
+      text-wrap: balance;
+    }
+
+    .account-subtitle {
+      margin: 0;
+      color: var(--account-muted);
+      font-size: 15px;
+      line-height: 1.6;
+      max-width: 70ch;
+    }
+
+    .account-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .account-card {
+      position: relative;
+      border-radius: 18px;
+      border: 1px solid var(--account-line-soft);
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.94), rgba(248, 252, 255, 0.9));
+      box-shadow: 0 12px 28px rgba(13, 31, 46, 0.08);
+      padding: 16px;
+    }
+
+    .account-card::before {
+      content: "";
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      top: 0;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.88), rgba(42, 91, 255, 0.24), rgba(255, 255, 255, 0.88));
+      pointer-events: none;
+    }
+
+    .account-card h2 {
+      margin: 0;
+      font-size: 19px;
+      color: #19324a;
+      letter-spacing: -0.01em;
+    }
+
+    .account-email {
+      margin-top: 4px;
+      color: var(--account-muted);
+      font-size: 14px;
+    }
+
+    .account-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    .account-email-input {
+      flex: 1 1 280px;
+      min-width: 220px;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: 12px;
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.96), rgba(245, 251, 255, 0.9));
+      color: #18314b;
+      padding: 12px 14px;
+      font-size: 15px;
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .account-email-input:focus {
+      border-color: rgba(66, 120, 255, 0.48);
+      box-shadow:
+        0 0 0 3px rgba(56, 111, 255, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .account-btn-secondary {
+      --redeem-liquid-a: rgba(255, 255, 255, 0.92);
+      --redeem-liquid-b: rgba(233, 243, 252, 0.72);
+      --redeem-liquid-ink: #18324a;
+      color: var(--redeem-liquid-ink) !important;
+      border-color: rgba(255, 255, 255, 0.72) !important;
+      box-shadow:
+        0 10px 18px rgba(9, 20, 34, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.92),
+        inset 0 -8px 14px rgba(9, 20, 34, 0.08) !important;
+    }
+
+    .account-status {
+      margin-top: 10px;
+      font-size: 14px;
+      color: var(--account-muted);
+      min-height: 21px;
+    }
+
+    .account-status.error {
+      color: var(--account-danger);
+    }
+
+    .account-status.ok {
+      color: var(--account-success);
+    }
+
+    .account-table-wrap {
+      overflow-x: auto;
+      margin-top: 8px;
+    }
+
+    .account-table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 14px;
+    }
+
+    .account-table th,
+    .account-table td {
+      text-align: left;
+      padding: 10px 8px;
+      border-top: 1px solid var(--account-line-soft);
+      vertical-align: top;
+      color: #20384f;
+    }
+
+    .account-table th {
+      color: #4e6379;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .account-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .account-pill.active {
+      color: #0f6f54;
+      background: rgba(209, 250, 229, 0.82);
+      border-color: rgba(16, 185, 129, 0.38);
+    }
+
+    .account-pill.expired {
+      color: #965a09;
+      background: rgba(254, 240, 184, 0.84);
+      border-color: rgba(245, 158, 11, 0.36);
+    }
+
+    .account-pill.disabled {
+      color: #5f7489;
+      background: rgba(241, 245, 249, 0.88);
+      border-color: rgba(148, 163, 184, 0.34);
+    }
+
+    .account-hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 760px) {
+      .account-page {
+        margin-top: 10px;
+      }
+
+      .account-shell {
+        padding: 16px !important;
+        border-radius: 18px !important;
+      }
+
+      .account-card {
+        padding: 14px;
+      }
+
+      .account-title {
+        font-size: clamp(26px, 8vw, 34px);
+      }
+
+      .account-row .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body class="account-flow">
+  <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+  <div class="page-overlay"></div>
+
+  <header>
+    <div class="nav">
+      <a href="/index.html" class="logo-link">
+        <img src="/assets/img/logo.png" alt="GPTишка" class="logo-img" loading="eager" decoding="async" />
+      </a>
+      <nav>
+        <a href="/index.html">Главная</a>
+        <a href="/index.html#pricing">Тарифы</a>
+        <a href="/store/vpn">VPN</a>
+        <a href="/contact.html">Контакты</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page account-page">
+    <section class="pricing account-shell">
+      <div class="account-hero">
+        <h1 class="account-title">Личный кабинет</h1>
+        <p class="account-subtitle">Вход в личный кабинет через Telegram. После авторизации доступны ключ VPN, срок подписки и продление.</p>
+      </div>
+
+            <section id="loginCard" class="account-card">
+        <h2>Вход через Telegram</h2>
+        <div class="account-subtitle" style="margin-top:6px; font-size:14px;">
+          Нажмите кнопку, откройте бота и подтвердите вход командой Start. Вход работает для Telegram, который уже привязан к вашему кабинету.
+        </div>
+        <div class="account-row" style="margin-top:10px;">
+          <button id="telegramAuthBtn" class="btn button-primary" type="button">Войти через Telegram</button>
+          <button id="telegramAuthCheckBtn" class="btn account-btn-secondary" type="button">Проверить вход</button>
+        </div>
+        <div id="loginStatus" class="account-status"></div>
+      </section>
+
+      <section id="accountCard" class="account-card account-hidden">
+        <div class="account-row" style="justify-content: space-between;">
+          <div>
+            <h2>Ваш кабинет</h2>
+            <div id="accountEmail" class="account-email"></div>
+          </div>
+          <div class="account-row" style="margin-top:0;">
+            <button id="refreshBtn" class="btn account-btn-secondary" type="button">Обновить</button>
+            <button id="logoutBtn" class="btn account-btn-secondary" type="button">Выйти</button>
+          </div>
+        </div>
+        <div id="accountStatus" class="account-status"></div>
+      </section>
+
+      <section id="subsCard" class="account-card account-hidden">
+        <h2>Подписки VPN</h2>
+        <div class="account-table-wrap">
+          <table class="account-table">
+            <thead>
+              <tr>
+                <th>Тариф</th>
+                <th>Статус</th>
+                <th>Окончание</th>
+                <th>Осталось</th>
+                <th>Ключ</th>
+                <th>Действие</th>
+              </tr>
+            </thead>
+            <tbody id="subsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="telegramCard" class="account-card account-hidden">
+        <h2>Telegram</h2>
+        <div class="account-subtitle" style="margin-top:6px; font-size:14px;">
+          Привяжите Telegram, чтобы получать напоминания о продлении подписки.
+        </div>
+        <div id="telegramStatus" class="account-status" style="margin-top:10px;"></div>
+        <div class="account-row">
+          <button id="telegramLinkBtn" class="btn account-btn-secondary" type="button">Привязать Telegram</button>
+          <button id="telegramRefreshBtn" class="btn account-btn-secondary" type="button">Проверить статус</button>
+          <button id="telegramUnlinkBtn" class="btn account-btn-secondary" type="button">Отвязать</button>
+        </div>
+        <div id="telegramLinkHint" class="account-status"></div>
+      </section>
+
+      <section id="notifCard" class="account-card account-hidden">
+        <h2>Уведомления</h2>
+        <div class="account-subtitle" style="margin-top:6px; font-size:14px;">
+          Сервисные письма о сроке подписки. Маркетинговые письма здесь не настраиваются.
+        </div>
+        <div class="account-row" style="display:grid; gap:8px; margin-top:12px;">
+          <label><input id="prefEmailEnabled" type="checkbox" /> Включить email-уведомления</label>
+          <label><input id="prefReminder7d" type="checkbox" /> Напоминать за 7 дней</label>
+          <label><input id="prefReminder3d" type="checkbox" /> Напоминать за 3 дня</label>
+          <label><input id="prefReminder1d" type="checkbox" /> Напоминать за 1 день</label>
+          <label><input id="prefReminderExpired" type="checkbox" /> Уведомлять после истечения</label>
+        </div>
+        <div class="account-row">
+          <button id="savePrefsBtn" class="btn account-btn-secondary" type="button">Сохранить настройки</button>
+        </div>
+        <div id="prefStatus" class="account-status"></div>
+      </section>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-links-primary">
+      <a class="footer-link" href="/oferta.html">Публичная оферта</a> &middot;
+      <a class="footer-link" href="/politika.html">Политика конфиденциальности</a> &middot;
+      <a class="footer-link" href="/refund.html">Условия возврата</a>
+    </div>
+    <div class="footer-links-secondary">
+      <a class="footer-link" href="/about.html">О сервисе</a> &middot;
+      <a class="footer-link" href="/guarantee.html">Гарантия</a> &middot;
+      <a class="footer-link" href="/contact.html">Связь с нами</a>
+    </div>
+    <span class="footer-copy">&copy; 2026 GPTишка. Все права защищены.</span>
+  </footer>
+
+  <script>
+    (function () {
+      const telegramAuthBtn = document.getElementById("telegramAuthBtn");
+      const telegramAuthCheckBtn = document.getElementById("telegramAuthCheckBtn");
+      const loginStatus = document.getElementById("loginStatus");
+      const loginCard = document.getElementById("loginCard");
+      const accountCard = document.getElementById("accountCard");
+      const subsCard = document.getElementById("subsCard");
+      const accountEmail = document.getElementById("accountEmail");
+      const accountStatus = document.getElementById("accountStatus");
+      const subsBody = document.getElementById("subsBody");
+      const refreshBtn = document.getElementById("refreshBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const notifCard = document.getElementById("notifCard");
+      const savePrefsBtn = document.getElementById("savePrefsBtn");
+      const prefStatus = document.getElementById("prefStatus");
+      const prefEmailEnabled = document.getElementById("prefEmailEnabled");
+      const prefReminder7d = document.getElementById("prefReminder7d");
+      const prefReminder3d = document.getElementById("prefReminder3d");
+      const prefReminder1d = document.getElementById("prefReminder1d");
+      const prefReminderExpired = document.getElementById("prefReminderExpired");
+      const telegramCard = document.getElementById("telegramCard");
+      const telegramStatus = document.getElementById("telegramStatus");
+      const telegramLinkHint = document.getElementById("telegramLinkHint");
+      const telegramLinkBtn = document.getElementById("telegramLinkBtn");
+      const telegramRefreshBtn = document.getElementById("telegramRefreshBtn");
+      const telegramUnlinkBtn = document.getElementById("telegramUnlinkBtn");
+
+      let telegramAuthToken = "";
+      let telegramAuthPollTimer = null;
+      let telegramAuthPollAttempts = 0;
+
+      function setStatus(node, message, kind) {
+        node.textContent = String(message || "");
+        node.classList.remove("error", "ok");
+        if (kind) node.classList.add(kind);
+      }
+
+      function formatDate(value) {
+        const date = new Date(String(value || ""));
+        if (Number.isNaN(date.getTime())) return "—";
+        return date.toLocaleString("ru-RU");
+      }
+
+      function statusClass(status) {
+        if (status === "active") return "active";
+        if (status === "expired") return "expired";
+        return "disabled";
+      }
+
+            function stopTelegramAuthPolling() {
+        if (telegramAuthPollTimer) {
+          clearInterval(telegramAuthPollTimer);
+          telegramAuthPollTimer = null;
+        }
+        telegramAuthPollAttempts = 0;
+      }
+
+      async function consumeTelegramAuthOnce() {
+        if (!telegramAuthToken) {
+          setStatus(loginStatus, "Сначала нажмите «Войти через Telegram».", "error");
+          return false;
+        }
+
+        try {
+          const response = await fetch("/api/account/auth/telegram/consume", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: telegramAuthToken }),
+          });
+          const payload = await response.json().catch(() => ({}));
+
+          if (response.status === 202) {
+            setStatus(loginStatus, "Ожидаем подтверждение в Telegram...", "");
+            return false;
+          }
+
+          if (response.status === 409) {
+            stopTelegramAuthPolling();
+            setStatus(loginStatus, "Токен входа уже использован. Запросите вход снова.", "error");
+            return false;
+          }
+
+          if (response.status === 410) {
+            stopTelegramAuthPolling();
+            setStatus(loginStatus, "Ссылка входа устарела. Запросите новую.", "error");
+            return false;
+          }
+
+          if (!response.ok) {
+            stopTelegramAuthPolling();
+            setStatus(loginStatus, String(payload.message || "Не удалось завершить вход через Telegram."), "error");
+            return false;
+          }
+
+          stopTelegramAuthPolling();
+          telegramAuthToken = "";
+          setStatus(loginStatus, "Вход выполнен.", "ok");
+          await loadAccount();
+          return true;
+        } catch (_) {
+          setStatus(loginStatus, "Ошибка сети при входе через Telegram.", "error");
+          return false;
+        }
+      }
+
+      function startTelegramAuthPolling() {
+        stopTelegramAuthPolling();
+        telegramAuthPollTimer = setInterval(async () => {
+          telegramAuthPollAttempts += 1;
+          const done = await consumeTelegramAuthOnce();
+          if (done) return;
+          if (telegramAuthPollAttempts >= 120) {
+            stopTelegramAuthPolling();
+            setStatus(loginStatus, "Не получили подтверждение. Нажмите «Проверить вход» или запросите вход заново.", "error");
+          }
+        }, 2500);
+      }
+
+      async function requestTelegramAuth() {
+        telegramAuthBtn.disabled = true;
+        setStatus(loginStatus, "Генерируем ссылку Telegram...", "");
+        stopTelegramAuthPolling();
+        telegramAuthToken = "";
+
+        try {
+          const response = await fetch("/api/account/auth/telegram/request", {
+            method: "POST",
+            credentials: "include",
+          });
+          const payload = await response.json().catch(() => ({}));
+
+          if (!response.ok) {
+            setStatus(loginStatus, String(payload.message || "Не удалось создать Telegram-ссылку для входа."), "error");
+            return;
+          }
+
+          const deepLink = String(payload.deepLinkUrl || "").trim();
+          const token = String(payload.token || "").trim();
+          if (!deepLink || !token) {
+            setStatus(loginStatus, "Ссылка входа не получена.", "error");
+            return;
+          }
+
+          telegramAuthToken = token;
+          window.open(deepLink, "_blank", "noopener");
+          setStatus(loginStatus, "Откройте Telegram, нажмите Start в боте. Возвратитесь на сайт — вход завершится автоматически.", "ok");
+
+          await consumeTelegramAuthOnce();
+          startTelegramAuthPolling();
+        } catch (_) {
+          setStatus(loginStatus, "Ошибка сети при запросе Telegram-входа.", "error");
+        } finally {
+          telegramAuthBtn.disabled = false;
+        }
+      }
+
+      async function logout() {
+        stopTelegramAuthPolling();
+        telegramAuthToken = "";
+        logoutBtn.disabled = true;
+        try {
+          await fetch("/api/account/auth/logout", {
+            method: "POST",
+            credentials: "include",
+          });
+        } finally {
+          logoutBtn.disabled = false;
+          loginCard.classList.remove("account-hidden");
+          accountCard.classList.add("account-hidden");
+          subsCard.classList.add("account-hidden");
+          telegramCard.classList.add("account-hidden");
+          notifCard.classList.add("account-hidden");
+          setStatus(accountStatus, "", "");
+          setStatus(prefStatus, "", "");
+          setStatus(telegramStatus, "", "");
+          setStatus(telegramLinkHint, "", "");
+          subsBody.innerHTML = "";
+        }
+      }
+
+      function setNotificationPreferences(pref) {
+        prefEmailEnabled.checked = Boolean(pref && pref.emailEnabled);
+        prefReminder7d.checked = Boolean(pref && pref.reminder7d);
+        prefReminder3d.checked = Boolean(pref && pref.reminder3d);
+        prefReminder1d.checked = Boolean(pref && pref.reminder1d);
+        prefReminderExpired.checked = Boolean(pref && pref.reminderExpired);
+      }
+
+      function setTelegramStatus(payload) {
+        const linked = Boolean(payload && payload.linked);
+        if (!linked) {
+          setStatus(telegramStatus, "Telegram не привязан.", "");
+          telegramUnlinkBtn.disabled = true;
+          return;
+        }
+        const username = String(payload.link?.telegramUsername || "").trim();
+        const maskedId = String(payload.link?.telegramIdMasked || "").trim();
+        const label = username || maskedId || "привязан";
+        setStatus(telegramStatus, `Telegram привязан: ${label}`, "ok");
+        if (payload.link?.lastError) {
+          setStatus(telegramLinkHint, `Последняя ошибка: ${payload.link.lastError}`, "error");
+        } else {
+          setStatus(telegramLinkHint, "", "");
+        }
+        telegramUnlinkBtn.disabled = false;
+      }
+
+      async function loadTelegramStatus() {
+        try {
+          const response = await fetch("/api/account/telegram/status", {
+            credentials: "include",
+          });
+          if (response.status === 401) return;
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            setStatus(telegramStatus, String(payload.message || "Не удалось загрузить Telegram статус."), "error");
+            return;
+          }
+          setTelegramStatus(payload);
+        } catch (_) {
+          setStatus(telegramStatus, "Ошибка сети при получении Telegram статуса.", "error");
+        }
+      }
+
+      async function requestTelegramLink() {
+        telegramLinkBtn.disabled = true;
+        setStatus(telegramLinkHint, "Генерируем ссылку...", "");
+        try {
+          const response = await fetch("/api/account/telegram/link/request", {
+            method: "POST",
+            credentials: "include",
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            setStatus(telegramLinkHint, String(payload.message || "Не удалось создать Telegram ссылку."), "error");
+            return;
+          }
+          const deepLink = String(payload.deepLinkUrl || "").trim();
+          if (!deepLink) {
+            setStatus(telegramLinkHint, "Ссылка не получена.", "error");
+            return;
+          }
+          window.open(deepLink, "_blank", "noopener");
+          setStatus(telegramLinkHint, "Открыт Telegram. Нажмите Start в боте, затем обновите статус.", "ok");
+        } catch (_) {
+          setStatus(telegramLinkHint, "Ошибка сети при создании Telegram ссылки.", "error");
+        } finally {
+          telegramLinkBtn.disabled = false;
+        }
+      }
+
+      async function unlinkTelegram() {
+        telegramUnlinkBtn.disabled = true;
+        try {
+          const response = await fetch("/api/account/telegram/unlink", {
+            method: "POST",
+            credentials: "include",
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            setStatus(telegramLinkHint, String(payload.message || "Не удалось отвязать Telegram."), "error");
+            return;
+          }
+          setStatus(telegramLinkHint, "Telegram отвязан.", "ok");
+          await loadTelegramStatus();
+        } catch (_) {
+          setStatus(telegramLinkHint, "Ошибка сети при отвязке Telegram.", "error");
+        } finally {
+          telegramUnlinkBtn.disabled = false;
+        }
+      }
+
+      async function savePreferences() {
+        const payload = {
+          emailEnabled: Boolean(prefEmailEnabled.checked),
+          reminder7d: Boolean(prefReminder7d.checked),
+          reminder3d: Boolean(prefReminder3d.checked),
+          reminder1d: Boolean(prefReminder1d.checked),
+          reminderExpired: Boolean(prefReminderExpired.checked),
+        };
+        savePrefsBtn.disabled = true;
+        setStatus(prefStatus, "Сохраняем...", "");
+        try {
+          const response = await fetch("/api/account/notification-preferences", {
+            method: "PATCH",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            setStatus(prefStatus, String(data.message || "Не удалось сохранить настройки."), "error");
+            return;
+          }
+          setNotificationPreferences(data);
+          setStatus(prefStatus, "Настройки обновлены.", "ok");
+        } catch (_) {
+          setStatus(prefStatus, "Ошибка сети при сохранении.", "error");
+        } finally {
+          savePrefsBtn.disabled = false;
+        }
+      }
+
+      async function revealKey(id, targetNode) {
+        try {
+          targetNode.textContent = "Загрузка...";
+          const response = await fetch(`/api/account/vpn-accesses/${encodeURIComponent(id)}/key`, {
+            credentials: "include",
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            targetNode.textContent = String(payload.message || "Ошибка");
+            return;
+          }
+          targetNode.textContent = String(payload.accessLink || "—");
+        } catch (_) {
+          targetNode.textContent = "Ошибка сети";
+        }
+      }
+
+      function renderSubscriptions(items) {
+        subsBody.innerHTML = "";
+        if (!Array.isArray(items) || !items.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 6;
+          td.textContent = "Подписки не найдены.";
+          tr.appendChild(td);
+          subsBody.appendChild(tr);
+          return;
+        }
+
+        items.forEach((item) => {
+          const tr = document.createElement("tr");
+
+          const planTd = document.createElement("td");
+          planTd.textContent = String(item.plan || "VPN");
+          tr.appendChild(planTd);
+
+          const statusTd = document.createElement("td");
+          const pill = document.createElement("span");
+          pill.className = `account-pill ${statusClass(String(item.status || ""))}`;
+          pill.textContent = String(item.status || "unknown");
+          statusTd.appendChild(pill);
+          tr.appendChild(statusTd);
+
+          const expTd = document.createElement("td");
+          expTd.textContent = formatDate(item.expiresAt);
+          tr.appendChild(expTd);
+
+          const leftTd = document.createElement("td");
+          leftTd.textContent = item.daysLeft == null ? "—" : `${item.daysLeft} дн.`;
+          tr.appendChild(leftTd);
+
+          const keyTd = document.createElement("td");
+          keyTd.textContent = String(item.keyPreview || "—");
+          tr.appendChild(keyTd);
+
+          const actionTd = document.createElement("td");
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "btn account-btn-secondary";
+          btn.textContent = "Показать ключ";
+          btn.addEventListener("click", () => revealKey(item.id, keyTd));
+          actionTd.appendChild(btn);
+          tr.appendChild(actionTd);
+
+          subsBody.appendChild(tr);
+        });
+      }
+
+      async function loadAccount() {
+        setStatus(accountStatus, "Загрузка данных...", "");
+        try {
+          const response = await fetch("/api/account/me", {
+            credentials: "include",
+          });
+          if (response.status === 401) {
+            loginCard.classList.remove("account-hidden");
+            accountCard.classList.add("account-hidden");
+            subsCard.classList.add("account-hidden");
+            telegramCard.classList.add("account-hidden");
+            notifCard.classList.add("account-hidden");
+            setStatus(accountStatus, "", "");
+            setStatus(prefStatus, "", "");
+            setStatus(telegramStatus, "", "");
+            setStatus(telegramLinkHint, "", "");
+            return;
+          }
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            setStatus(accountStatus, String(payload.message || "Не удалось загрузить кабинет."), "error");
+            return;
+          }
+          loginCard.classList.add("account-hidden");
+          accountCard.classList.remove("account-hidden");
+          subsCard.classList.remove("account-hidden");
+          telegramCard.classList.remove("account-hidden");
+          notifCard.classList.remove("account-hidden");
+          accountEmail.textContent = String(payload.customer?.email || "");
+          renderSubscriptions(payload.subscriptions || []);
+          setNotificationPreferences(payload.notificationPreferences || {});
+          setTelegramStatus(payload.telegram || {});
+          setStatus(accountStatus, "Данные актуальны.", "ok");
+          setStatus(prefStatus, "", "");
+        } catch (_) {
+          setStatus(accountStatus, "Ошибка сети при загрузке кабинета.", "error");
+        }
+      }
+
+      telegramAuthBtn.addEventListener("click", requestTelegramAuth);
+      telegramAuthCheckBtn.addEventListener("click", consumeTelegramAuthOnce);
+      refreshBtn.addEventListener("click", loadAccount);
+      logoutBtn.addEventListener("click", logout);
+      savePrefsBtn.addEventListener("click", savePreferences);
+      telegramLinkBtn.addEventListener("click", requestTelegramLink);
+      telegramRefreshBtn.addEventListener("click", loadTelegramStatus);
+      telegramUnlinkBtn.addEventListener("click", unlinkTelegram);
+      void loadAccount();
+    })();
+  </script>
+  <script src="/assets/js/support-widget.js?v=20260315b" defer></script>
+</body>
+</html>
+
+
+
+
+
+
+
+

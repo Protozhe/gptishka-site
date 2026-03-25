@@ -2,7 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
-type ProductDeliveryType = "activation" | "credentials";
+type ProductDeliveryType = "activation" | "credentials" | "vpn" | "support";
 type CdkStatus = "unused" | "used";
 type CredentialStatus = "available" | "assigned";
 
@@ -12,7 +12,7 @@ type ProductItem = {
   title: string;
   tags?: string[];
   deliveryType?: ProductDeliveryType;
-  deliveryMethod?: 1 | 2 | "1" | "2";
+  deliveryMethod?: 1 | 2 | 3 | 4 | "1" | "2" | "3" | "4";
 };
 
 type ProductListResponse = {
@@ -57,7 +57,8 @@ type CredentialListResponse = {
 
 const TEXT = {
   title: "CDK ключи по товарам",
-  subtitle: "Для метода 1 храните CDK-ключи, для метода 2 храните пары логин/пароль.",
+  subtitle:
+    "Для метода 1 храните CDK-ключи, для метода 2 храните пары логин/пароль. Метод 3 (VPN) и метод 4 (поддержка) не требуют CDK.",
   searchPlaceholder: "Поиск по коду / логину / email / orderId",
   loading: "Загружаем...",
   empty: "Записей пока нет",
@@ -89,6 +90,10 @@ const TEXT = {
   password: "Пароль",
   modeActivation: "Метод 1: CDK-активация",
   modeCredentials: "Метод 2: Логин/пароль",
+  modeVpn: "Метод 3: Выдача VPN",
+  modeSupport: "Метод 4: Ручная выдача через поддержку",
+  vpnAutoInfo: "CDK ключи для этого товара не используются. VPN-доступ выдается автоматически после оплаты.",
+  supportAutoInfo: "CDK ключи для этого товара не используются. После оплаты клиенту показывается ссылка на поддержку для ручной выдачи.",
   show: "Развернуть",
   hide: "Свернуть",
   textareaPlaceholder:
@@ -99,20 +104,29 @@ const TEXT = {
 
 function resolveDeliveryType(product: ProductItem): ProductDeliveryType {
   const fromMethod = String(product.deliveryMethod || "").trim();
+  if (fromMethod === "4") return "support";
+  if (fromMethod === "3") return "vpn";
   if (fromMethod === "2") return "credentials";
   if (fromMethod === "1") return "activation";
 
   const fromType = String(product.deliveryType || "")
     .trim()
     .toLowerCase();
+  if (fromType === "support") return "support";
   if (fromType === "credentials") return "credentials";
+  if (fromType === "vpn") return "vpn";
   if (fromType === "activation") return "activation";
 
-  const hasCredentialsTag = (Array.isArray(product.tags) ? product.tags : [])
+  const tags = (Array.isArray(product.tags) ? product.tags : [])
     .map((tag) => String(tag || "").trim().toLowerCase())
-    .some((tag) => tag === "delivery:credentials");
+  const hasSupportTag = tags.some((tag) => tag === "delivery:support");
+  const hasCredentialsTag = tags.some((tag) => tag === "delivery:credentials");
+  const hasVpnTag = tags.some((tag) => tag === "delivery:vpn");
 
-  return hasCredentialsTag ? "credentials" : "activation";
+  if (hasSupportTag) return "support";
+  if (hasCredentialsTag) return "credentials";
+  if (hasVpnTag) return "vpn";
+  return "activation";
 }
 
 function CurtainBlock({
@@ -599,10 +613,50 @@ function CredentialsProductColumn({ product, search }: { product: ProductItem; s
   );
 }
 
+function VpnProductColumn({ product }: { product: ProductItem }) {
+  const productKey = normalizeProductKey(product.slug);
+
+  return (
+    <section className="card p-4 space-y-3">
+      <div>
+        <h3 className="text-base font-semibold">{product.title}</h3>
+        <p className="text-xs text-slate-500">productKey: {productKey}</p>
+        <p className="text-xs text-cyan-700 dark:text-cyan-400">{TEXT.modeVpn}</p>
+      </div>
+      <div className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs text-cyan-900 dark:border-cyan-900/40 dark:bg-cyan-900/20 dark:text-cyan-100">
+        {TEXT.vpnAutoInfo}
+      </div>
+    </section>
+  );
+}
+
+function SupportProductColumn({ product }: { product: ProductItem }) {
+  const productKey = normalizeProductKey(product.slug);
+
+  return (
+    <section className="card p-4 space-y-3">
+      <div>
+        <h3 className="text-base font-semibold">{product.title}</h3>
+        <p className="text-xs text-slate-500">productKey: {productKey}</p>
+        <p className="text-xs text-indigo-700 dark:text-indigo-300">{TEXT.modeSupport}</p>
+      </div>
+      <div className="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900 dark:border-indigo-900/40 dark:bg-indigo-900/20 dark:text-indigo-100">
+        {TEXT.supportAutoInfo}
+      </div>
+    </section>
+  );
+}
+
 function ProductColumn({ product, search }: { product: ProductItem; search: string }) {
   const deliveryType = resolveDeliveryType(product);
   if (deliveryType === "credentials") {
     return <CredentialsProductColumn product={product} search={search} />;
+  }
+  if (deliveryType === "vpn") {
+    return <VpnProductColumn product={product} />;
+  }
+  if (deliveryType === "support") {
+    return <SupportProductColumn product={product} />;
   }
 
   return <ActivationProductColumn product={product} search={search} />;

@@ -14,6 +14,7 @@
     "dev:admin:ui": "npm run dev --workspace @gptishka/admin-ui",
     "build:admin:api": "npm run build --workspace @gptishka/admin-backend",
     "build:admin:ui": "npm run build --workspace @gptishka/admin-ui",
+    "restore:modals": "npm run restore:modal-backup --workspace @gptishka/admin-backend --",
     "seed:admin": "npm run seed --workspace @gptishka/admin-backend",
     "migrate:admin": "npm run prisma:migrate --workspace @gptishka/admin-backend",
     "deploy:admin:init": "npm run prisma:deploy --workspace @gptishka/admin-backend && npm run seed --workspace @gptishka/admin-backend",

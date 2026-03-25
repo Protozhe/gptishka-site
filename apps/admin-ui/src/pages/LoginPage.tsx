@@ -20,7 +20,12 @@ export default function LoginPage() {
       await login(email, password);
       navigate("/");
     } catch (e: any) {
-      setError(e.response?.data?.message || "Не удалось войти");
+      const payload = e?.response?.data;
+      const message =
+        (typeof payload === "string" ? payload : payload?.message) ||
+        e?.message ||
+        "Не удалось войти";
+      setError(String(message));
     } finally {
       setPending(false);
     }

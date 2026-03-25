@@ -7,6 +7,11 @@ declare global {
         userId: string;
         role: RoleCode;
       };
+      customerAuth?: {
+        customerId: string;
+        customerEmail: string;
+        sessionId: string;
+      };
       requestMeta?: {
         ip?: string;
         userAgent?: string;

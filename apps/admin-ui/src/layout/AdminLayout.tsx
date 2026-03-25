@@ -1,4 +1,17 @@
-import { HandCoins, KeyRound, LayoutDashboard, Megaphone, Package, ScrollText, ShoppingCart, TicketPercent, Users, Wallet } from "lucide-react";
+import {
+  BellRing,
+  HandCoins,
+  KeyRound,
+  LayoutDashboard,
+  Megaphone,
+  Package,
+  ScrollText,
+  ShoppingCart,
+  TicketPercent,
+  UserSearch,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { useAuth } from "../hooks/useAuth";
@@ -14,6 +27,8 @@ const TEXT = {
   earnings: "\u041d\u0430\u0447\u0438\u0441\u043b\u0435\u043d\u0438\u044f",
   users: "\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0438",
   cdks: "CDK \u043a\u043b\u044e\u0447\u0438",
+  notifications: "\u0423\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u044f",
+  accountTools: "\u041a\u0430\u0431\u0438\u043d\u0435\u0442\u044b",
   panel: "\u041f\u0430\u043d\u0435\u043b\u044c \u0443\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0438\u044f",
   role: "\u0420\u043e\u043b\u044c",
   title: "\u0410\u0434\u043c\u0438\u043d-\u043f\u0430\u043d\u0435\u043b\u044c",
@@ -31,6 +46,8 @@ const nav = [
   { to: "/partner-earnings", label: TEXT.earnings, icon: Wallet },
   { to: "/users", label: TEXT.users, icon: Users },
   { to: "/cdks", label: TEXT.cdks, icon: KeyRound },
+  { to: "/account-tools", label: TEXT.accountTools, icon: UserSearch },
+  { to: "/notifications", label: TEXT.notifications, icon: BellRing },
 ];
 
 export function AdminLayout() {

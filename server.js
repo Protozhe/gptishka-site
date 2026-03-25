@@ -7,10 +7,18 @@ const compression = require("compression");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
-const PORT = Number(process.env.PORT || 3000);
+const PORT = Number(process.env.PORT || 4000);
+const HOST = String(process.env.HOST || process.env.BIND_HOST || "127.0.0.1").trim() || "127.0.0.1";
 const ONLINE_TTL_SECONDS = Number(process.env.ONLINE_TTL_SECONDS || 45);
 const ONLINE_TTL_MS = ONLINE_TTL_SECONDS * 1000;
 const ADMIN_BACKEND_URL = String(process.env.ADMIN_BACKEND_URL || "http://localhost:4100").replace(/\/$/, "");
+const ADMIN_BACKEND_FALLBACK_URLS = String(
+  process.env.ADMIN_BACKEND_FALLBACK_URLS || "http://127.0.0.1:4100,http://localhost:4100"
+)
+  .split(",")
+  .map(value => String(value || "").trim().replace(/\/$/, ""))
+  .filter(Boolean);
+const ADMIN_BACKEND_URLS = [...new Set([ADMIN_BACKEND_URL, ...ADMIN_BACKEND_FALLBACK_URLS])];
 const ENABLE_SYSTEM_ACTIVATIONS =
   String(process.env.ENABLE_SYSTEM_ACTIVATIONS || "false").toLowerCase() === "true";
 const SYSTEM_ACTIVATIONS_PER_DAY = Math.max(
@@ -19,11 +27,16 @@ const SYSTEM_ACTIVATIONS_PER_DAY = Math.max(
 );
 const INCLUDE_LEGACY_PURCHASES =
   String(process.env.INCLUDE_LEGACY_PURCHASES || "false").toLowerCase() === "true";
+const ALLOW_LEGACY_PURCHASE_EVENTS =
+  String(process.env.ALLOW_LEGACY_PURCHASE_EVENTS || "false").toLowerCase() === "true";
 const TICKER_EVENT_LIMIT = 12;
 const SEED_DEMO_STATS = String(
   process.env.SEED_DEMO_STATS || "false"
 ).toLowerCase() === "true";
 const IS_PRODUCTION = String(process.env.NODE_ENV || "").toLowerCase() === "production";
+const STRICT_BACKEND_STATS = String(
+  process.env.STRICT_BACKEND_STATS || (IS_PRODUCTION ? "true" : "false")
+).toLowerCase() === "true";
 const TELEGRAM_REVIEWS_CHANNEL_RAW = String(process.env.TELEGRAM_REVIEWS_CHANNEL || "otzivigptishkashop").trim();
 const TELEGRAM_REVIEWS_CHANNEL = /^[a-zA-Z0-9_]{5,64}$/.test(TELEGRAM_REVIEWS_CHANNEL_RAW)
   ? TELEGRAM_REVIEWS_CHANNEL_RAW
@@ -60,6 +73,7 @@ const NOINDEX_PUBLIC_PATHS = new Set([
 
 const dataDir = path.join(__dirname, "data");
 const dbPath = path.join(dataDir, "stats.sqlite");
+const LEGACY_PRODUCT_MODAL_BACKUP_PATH = path.join(__dirname, "_tmp_products_ru.json");
 
 let telegramReviewsCache = {
   channel: TELEGRAM_REVIEWS_CHANNEL,
@@ -68,10 +82,97 @@ let telegramReviewsCache = {
   items: [],
 };
 let telegramReviewsRefreshPromise = null;
+let legacyProductModalBackupMap = new Map();
+
+function normalizeLegacyLookupKey(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function normalizeLegacyMultiline(value) {
+  return String(value || "").replace(/\r/g, "").trim();
+}
+
+function loadLegacyProductModalBackup() {
+  const nextMap = new Map();
+
+  if (!fs.existsSync(LEGACY_PRODUCT_MODAL_BACKUP_PATH)) {
+    legacyProductModalBackupMap = nextMap;
+    return;
+  }
+
+  try {
+    const raw = fs.readFileSync(LEGACY_PRODUCT_MODAL_BACKUP_PATH, "utf-8");
+    const payload = JSON.parse(String(raw || "").replace(/^\uFEFF/, ""));
+    const items = Array.isArray(payload?.items) ? payload.items : [];
+    items.forEach((item) => {
+      const modalDescription = normalizeLegacyMultiline(item?.modalDescription);
+      if (!modalDescription) return;
+      const keys = [
+        normalizeLegacyLookupKey(item?.id),
+        normalizeLegacyLookupKey(item?.product),
+        normalizeLegacyLookupKey(item?.slug),
+        normalizeLegacyLookupKey(item?.title),
+      ].filter(Boolean);
+      keys.forEach((key) => nextMap.set(key, modalDescription));
+    });
+    legacyProductModalBackupMap = nextMap;
+    if (nextMap.size) {
+      logInfo(`Loaded legacy modal backup entries: ${nextMap.size}`);
+    }
+  } catch (error) {
+    legacyProductModalBackupMap = new Map();
+    logError("Failed to load legacy modal backup", error);
+  }
+}
+
+function resolveLegacyModalDescription(item) {
+  if (!item || !legacyProductModalBackupMap.size) return "";
+  const keys = [
+    normalizeLegacyLookupKey(item.id),
+    normalizeLegacyLookupKey(item.product),
+    normalizeLegacyLookupKey(item.slug),
+    normalizeLegacyLookupKey(item.title),
+  ].filter(Boolean);
+  for (const key of keys) {
+    const value = legacyProductModalBackupMap.get(key);
+    if (value) return value;
+  }
+  return "";
+}
+
+function withLegacyModalFallback(payload) {
+  if (!payload || typeof payload !== "object") return payload;
+  const items = Array.isArray(payload.items) ? payload.items : null;
+  if (!items || !items.length || !legacyProductModalBackupMap.size) return payload;
+
+  const nextItems = items.map((item) => {
+    const fallbackModal = resolveLegacyModalDescription(item);
+    if (!fallbackModal) return item;
+
+    const currentModal = normalizeLegacyMultiline(item?.modalDescription);
+    const shouldRestore = !currentModal;
+    if (!shouldRestore) return item;
+
+    return {
+      ...item,
+      modalDescription: fallbackModal,
+    };
+  });
+
+  return {
+    ...payload,
+    items: nextItems,
+  };
+}
 
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
+
+loadLegacyProductModalBackup();
 
 let db;
 
@@ -185,6 +286,50 @@ function logInfo(message) {
 function logError(message, error) {
   const suffix = error && error.message ? `: ${error.message}` : "";
   process.stderr.write(`[storefront] ${message}${suffix}\n`);
+}
+
+async function fetchAdminWithFallback(targetPath, fetchOptions = {}, options = {}) {
+  const safePath = String(targetPath || "").startsWith("/") ? String(targetPath || "") : `/${String(targetPath || "")}`;
+  const retryStatuses = new Set(
+    Array.isArray(options.retryStatuses) && options.retryStatuses.length
+      ? options.retryStatuses
+      : [502, 503, 504]
+  );
+  const timeoutMs = Math.max(1000, Number(options.timeoutMs || 12000));
+  const candidates = ADMIN_BACKEND_URLS.length ? ADMIN_BACKEND_URLS : [ADMIN_BACKEND_URL];
+  let lastResponse = null;
+  let lastError = null;
+
+  for (let index = 0; index < candidates.length; index += 1) {
+    const baseUrl = candidates[index];
+    const isLastCandidate = index === candidates.length - 1;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(`${baseUrl}${safePath}`, {
+        ...fetchOptions,
+        signal: controller.signal,
+      });
+      const shouldRetry = !isLastCandidate && retryStatuses.has(response.status);
+      if (!shouldRetry) {
+        return { response, baseUrl };
+      }
+      lastResponse = response;
+    } catch (error) {
+      lastError = error;
+      if (isLastCandidate) {
+        throw error;
+      }
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  if (lastResponse) {
+    return { response: lastResponse, baseUrl: candidates[candidates.length - 1] };
+  }
+
+  throw lastError || new Error("Admin API unavailable");
 }
 
 function decodeHtmlEntities(input) {
@@ -521,6 +666,13 @@ function createApp() {
   const app = express();
   const notFoundPagePath = path.join(__dirname, "404.html");
   const errorPagePath = path.join(__dirname, "500.html");
+  const hasNotFoundPage = fs.existsSync(notFoundPagePath);
+  const hasErrorPage = fs.existsSync(errorPagePath);
+  const faviconCandidates = [
+    path.join(__dirname, "favicon.ico"),
+    path.join(__dirname, "assets", "img", "favicon.ico"),
+  ];
+  const faviconPath = faviconCandidates.find(candidate => fs.existsSync(candidate)) || "";
 
   app.disable("x-powered-by");
   app.set("trust proxy", 1);
@@ -558,15 +710,11 @@ function createApp() {
   );
   app.use(express.json({ limit: "256kb" }));
   app.get("/favicon.ico", (_req, res) => {
-    const primaryIcon = path.join(__dirname, "favicon.ico");
-    const fallbackIcon = path.join(__dirname, "assets", "img", "favicon.ico");
-    const iconPath = fs.existsSync(primaryIcon) ? primaryIcon : fallbackIcon;
-
-    if (!fs.existsSync(iconPath)) {
+    if (!faviconPath) {
       return res.status(404).end();
     }
 
-    return res.sendFile(iconPath);
+    return res.sendFile(faviconPath);
   });
 
   app.get("/robots.txt", (_req, res) => {
@@ -626,6 +774,11 @@ function createApp() {
     if (req.headers.cookie) {
       headers.Cookie = req.headers.cookie;
     }
+    if (req.headers["x-telegram-bot-api-secret-token"]) {
+      headers["X-Telegram-Bot-Api-Secret-Token"] = String(
+        req.headers["x-telegram-bot-api-secret-token"]
+      );
+    }
 
     const forwardedFor = buildForwardedFor(req);
     if (forwardedFor) {
@@ -653,21 +806,54 @@ function createApp() {
     return headers;
   }
 
+  function extractQuerySuffix(req) {
+    const rawUrl = String(req.url || "");
+    const queryIndex = rawUrl.indexOf("?");
+    return queryIndex >= 0 ? rawUrl.slice(queryIndex) : "";
+  }
+
+  async function fetchAdminText(req, targetPath, options = {}) {
+    const method = String(options.method || req.method || "GET").toUpperCase();
+    const forceJson = Boolean(options.forceJson) || (method !== "GET" && method !== "HEAD");
+    const includeBody = method !== "GET" && method !== "HEAD";
+    const bodyPayload =
+      options.body !== undefined ? options.body : req.body || {};
+    const { response } = await fetchAdminWithFallback(
+      targetPath,
+      {
+        method,
+        headers: buildAdminProxyHeaders(req, { method, forceJson }),
+        body: includeBody ? JSON.stringify(bodyPayload) : undefined,
+      },
+      {
+        timeoutMs: Number(options.timeoutMs || 12000),
+        retryStatuses: Array.isArray(options.retryStatuses) && options.retryStatuses.length
+          ? options.retryStatuses
+          : [502, 503, 504],
+      }
+    );
+
+    return { response, body: await response.text() };
+  }
+
   async function proxyToAdminBackend(req, res, targetPath) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
     try {
-      const targetUrl = `${ADMIN_BACKEND_URL}${targetPath}`;
       const method = String(req.method || "GET").toUpperCase();
       const headers = buildAdminProxyHeaders(req, { method });
-      const response = await fetch(targetUrl, {
-        method,
-        headers,
-        body: method === "GET" || method === "HEAD" ? undefined : JSON.stringify(req.body || {}),
-        signal: controller.signal,
-      });
+      const { response } = await fetchAdminWithFallback(
+        targetPath,
+        {
+          method,
+          headers,
+          body: method === "GET" || method === "HEAD" ? undefined : JSON.stringify(req.body || {}),
+        },
+        {
+          timeoutMs: 15000,
+          // If ADMIN_BACKEND_URL points to the wrong service, fallback to localhost candidates.
+          retryStatuses: [404, 502, 503, 504],
+        }
+      );
       const body = await response.text();
-      clearTimeout(timeout);
 
       const contentType = response.headers.get("content-type");
       if (contentType) {
@@ -692,7 +878,6 @@ function createApp() {
 
       return res.status(response.status).send(body);
     } catch (_) {
-      clearTimeout(timeout);
       return res.status(502).json({ error: "Admin API unavailable" });
     }
   }
@@ -704,8 +889,20 @@ function createApp() {
   const heartbeatWriteTracker = new Map();
 
   app.use("/api/admin", async (req, res) => {
-    const query = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
+    const query = extractQuerySuffix(req);
     const basePath = `/api/admin${req.path}`;
+    return proxyToAdminBackend(req, res, `${basePath}${query}`);
+  });
+
+  app.use("/api/account", async (req, res) => {
+    const query = extractQuerySuffix(req);
+    const basePath = `/api/account${req.path}`;
+    return proxyToAdminBackend(req, res, `${basePath}${query}`);
+  });
+
+  app.use("/api/telegram", async (req, res) => {
+    const query = extractQuerySuffix(req);
+    const basePath = `/api/telegram${req.path}`;
     return proxyToAdminBackend(req, res, `${basePath}${query}`);
   });
 
@@ -749,6 +946,10 @@ function createApp() {
   });
 
   app.post("/api/purchases", async (req, res) => {
+    if (!ALLOW_LEGACY_PURCHASE_EVENTS) {
+      return res.json({ ok: true, ignored: true, reason: "legacy_purchases_disabled" });
+    }
+
     const email = String(req.body?.email || "").trim().toLowerCase();
     const orderId = String(req.body?.orderId || req.body?.order_id || "")
       .trim()
@@ -791,52 +992,58 @@ function createApp() {
 
 
   app.get("/api/public/products", async (req, res) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
     const lang = String(req.query?.lang || "ru").toLowerCase().startsWith("en") ? "en" : "ru";
 
     try {
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/public/products?lang=${lang}`, {
-        headers: buildAdminProxyHeaders(req, { method: "GET" }),
-        signal: controller.signal,
-      });
+      const { response } = await fetchAdminWithFallback(
+        `/api/public/products?lang=${lang}`,
+        {
+          headers: buildAdminProxyHeaders(req, { method: "GET" }),
+        },
+        {
+          timeoutMs: 8000,
+          retryStatuses: [404, 502, 503, 504],
+        }
+      );
 
       if (!response.ok) {
-        clearTimeout(timeout);
         return res.status(502).json({ error: "Failed to load products from admin backend" });
       }
 
       const payload = await response.json();
-      clearTimeout(timeout);
-      return res.json(payload);
+      return res.json(withLegacyModalFallback(payload));
     } catch (_) {
-      clearTimeout(timeout);
       return res.status(502).json({ error: "Products API unavailable" });
     }
   });
 
   app.post("/api/public/create-order", async (req, res) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
-
     try {
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/public/create-order`, {
-        method: "POST",
-        headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
-        body: JSON.stringify(req.body || {}),
-        signal: controller.signal,
-      });
+      const targetPaths = ["/api/public/create-order", "/api/public/orders/create"];
+      let fallbackStatus = 502;
+      let fallbackBody = "";
 
-      const body = await response.text();
-      clearTimeout(timeout);
+      for (const targetPath of targetPaths) {
+        const { response, body } = await fetchAdminText(req, targetPath, {
+          method: "POST",
+          forceJson: true,
+          timeoutMs: 12000,
+          retryStatuses: [404, 502, 503, 504],
+        });
+        fallbackStatus = response.status;
+        fallbackBody = body;
 
-      if (!response.ok) {
-        return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "Order create failed" }));
+        if ((response.status === 404 || response.status === 405) && targetPath === "/api/public/create-order") {
+          continue;
+        }
+        if (!response.ok) {
+          return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "Order create failed" }));
+        }
+        return res.status(response.status).type("application/json").send(body);
       }
 
-      return res.status(response.status).type("application/json").send(body);
+      return res.status(fallbackStatus).type("application/json").send(fallbackBody || JSON.stringify({ error: "Order create failed" }));
     } catch (_) {
-      clearTimeout(timeout);
       return res.status(502).json({ error: "Order API unavailable" });
     }
   });
@@ -846,47 +1053,55 @@ function createApp() {
   });
 
   app.post("/api/orders/create", async (req, res) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
-
     try {
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/public/orders/create`, {
-        method: "POST",
-        headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
-        body: JSON.stringify(req.body || {}),
-        signal: controller.signal,
-      });
+      const targetPaths = ["/api/public/orders/create", "/api/public/create-order"];
+      let fallbackStatus = 502;
+      let fallbackBody = "";
 
-      const body = await response.text();
-      clearTimeout(timeout);
+      for (const targetPath of targetPaths) {
+        const { response, body } = await fetchAdminText(req, targetPath, {
+          method: "POST",
+          forceJson: true,
+          timeoutMs: 12000,
+          retryStatuses: [404, 502, 503, 504],
+        });
+        fallbackStatus = response.status;
+        fallbackBody = body;
 
-      if (!response.ok) {
-        return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "Order create failed" }));
+        if ((response.status === 404 || response.status === 405) && targetPath === "/api/public/orders/create") {
+          continue;
+        }
+        if (!response.ok) {
+          return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "Order create failed" }));
+        }
+        return res.status(response.status).type("application/json").send(body);
       }
 
-      return res.status(response.status).type("application/json").send(body);
+      return res.status(fallbackStatus).type("application/json").send(fallbackBody || JSON.stringify({ error: "Order create failed" }));
     } catch (_) {
-      clearTimeout(timeout);
       return res.status(502).json({ error: "Order API unavailable" });
     }
   });
 
   app.post("/api/promo/validate", async (req, res) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
-
     try {
       const targetPaths = ["/api/promo/validate", "/api/public/promo/validate"];
       let fallbackStatus = 502;
       let fallbackBody = "";
 
       for (const targetPath of targetPaths) {
-        const response = await fetch(`${ADMIN_BACKEND_URL}${targetPath}`, {
-          method: "POST",
-          headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
-          body: JSON.stringify(req.body || {}),
-          signal: controller.signal,
-        });
+        const { response } = await fetchAdminWithFallback(
+          targetPath,
+          {
+            method: "POST",
+            headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
+            body: JSON.stringify(req.body || {}),
+          },
+          {
+            timeoutMs: 12000,
+            retryStatuses: [404, 502, 503, 504],
+          }
+        );
 
         const body = await response.text();
         fallbackStatus = response.status;
@@ -897,7 +1112,6 @@ function createApp() {
           continue;
         }
 
-        clearTimeout(timeout);
         if (!response.ok) {
           return res
             .status(response.status)
@@ -908,13 +1122,11 @@ function createApp() {
         return res.status(response.status).type("application/json").send(body);
       }
 
-      clearTimeout(timeout);
       return res
         .status(fallbackStatus)
         .type("application/json")
         .send(fallbackBody || JSON.stringify({ error: "Promo validate failed" }));
     } catch (_) {
-      clearTimeout(timeout);
       return res.status(502).json({ error: "Promo API unavailable" });
     }
   });
@@ -964,27 +1176,24 @@ function createApp() {
   }
 
   app.post("/api/payments/:provider/create", async (req, res) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
-
     try {
       const provider = normalizePublicPaymentProvider(req.params.provider);
       if (!/^[a-z0-9_-]{2,20}$/.test(provider)) {
-        clearTimeout(timeout);
         return res.status(400).json({ error: "Invalid payment provider" });
       }
 
       const normalizedPayload = normalizeCheckoutCreatePayload(req.body || {}, provider);
-
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/payments/${encodeURIComponent(provider)}/create`, {
-        method: "POST",
-        headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
-        body: JSON.stringify(normalizedPayload),
-        signal: controller.signal,
-      });
-
-      const body = await response.text();
-      clearTimeout(timeout);
+      const { response, body } = await fetchAdminText(
+        req,
+        `/api/payments/${encodeURIComponent(provider)}/create`,
+        {
+          method: "POST",
+          body: normalizedPayload,
+          forceJson: true,
+          timeoutMs: 12000,
+          retryStatuses: [404, 502, 503, 504],
+        }
+      );
 
       if (!response.ok) {
         return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "Payment create failed" }));
@@ -992,224 +1201,196 @@ function createApp() {
 
       return res.status(response.status).type("application/json").send(body);
     } catch (_) {
-      clearTimeout(timeout);
       return res.status(502).json({ error: "Payment API unavailable" });
     }
   });
 
   app.get("/api/orders/:orderId", async (req, res) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
-
     try {
       const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}`, {
+      const { response, body } = await fetchAdminText(req, `/api/orders/${orderId}`, {
         method: "GET",
-        headers: buildAdminProxyHeaders(req, { method: "GET" }),
-        signal: controller.signal,
+        timeoutMs: 12000,
+        retryStatuses: [404, 502, 503, 504],
       });
-
-      const body = await response.text();
-      clearTimeout(timeout);
-
       if (!response.ok) {
         return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "Order status failed" }));
       }
-
       return res.status(response.status).type("application/json").send(body);
     } catch (_) {
-      clearTimeout(timeout);
       return res.status(502).json({ error: "Order API unavailable" });
     }
   });
 
   app.get("/api/orders/:orderId/reconcile", async (req, res) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
-
     try {
       const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/reconcile`, {
+      const { response, body } = await fetchAdminText(req, `/api/orders/${orderId}/reconcile`, {
         method: "GET",
-        headers: buildAdminProxyHeaders(req, { method: "GET" }),
-        signal: controller.signal,
+        timeoutMs: 12000,
+        retryStatuses: [404, 502, 503, 504],
       });
-
-      const body = await response.text();
-      clearTimeout(timeout);
-
       if (!response.ok) {
         return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "Order reconcile failed" }));
       }
 
       return res.status(response.status).type("application/json").send(body);
     } catch (_) {
-      clearTimeout(timeout);
       return res.status(502).json({ error: "Order API unavailable" });
     }
   });
 
   app.get("/api/orders/:orderId/activation", async (req, res) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
     try {
       const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
-      const qs = String(req.url || "").includes("?") ? String(req.url || "").split("?")[1] : "";
-      const suffix = qs ? `?${qs}` : "";
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation${suffix}`, {
+      const suffix = extractQuerySuffix(req);
+      const { response, body } = await fetchAdminText(req, `/api/orders/${orderId}/activation${suffix}`, {
         method: "GET",
-        headers: buildAdminProxyHeaders(req, { method: "GET" }),
-        signal: controller.signal,
+        timeoutMs: 12000,
+        retryStatuses: [404, 502, 503, 504],
       });
-      const body = await response.text();
-      clearTimeout(timeout);
       if (!response.ok) {
         return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "Activation fetch failed" }));
       }
       return res.status(response.status).type("application/json").send(body);
     } catch (_) {
-      clearTimeout(timeout);
       return res.status(502).json({ error: "Order API unavailable" });
     }
   });
 
   app.post("/api/orders/:orderId/activation/validate-token", async (req, res) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
     try {
       const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
-      const qs = String(req.url || "").includes("?") ? String(req.url || "").split("?")[1] : "";
-      const suffix = qs ? `?${qs}` : "";
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation/validate-token${suffix}`, {
-        method: "POST",
-        headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
-        body: JSON.stringify(req.body || {}),
-        signal: controller.signal,
-      });
-      const body = await response.text();
-      clearTimeout(timeout);
+      const suffix = extractQuerySuffix(req);
+      const { response, body } = await fetchAdminText(
+        req,
+        `/api/orders/${orderId}/activation/validate-token${suffix}`,
+        {
+          method: "POST",
+          forceJson: true,
+          timeoutMs: 12000,
+          retryStatuses: [404, 502, 503, 504],
+        }
+      );
       if (!response.ok) {
         return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "Activation validate failed" }));
       }
       return res.status(response.status).type("application/json").send(body);
     } catch (_) {
-      clearTimeout(timeout);
       return res.status(502).json({ error: "Order API unavailable" });
     }
   });
 
   app.post("/api/orders/:orderId/activation/start", async (req, res) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20000);
     try {
       const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
-      const qs = String(req.url || "").includes("?") ? String(req.url || "").split("?")[1] : "";
-      const suffix = qs ? `?${qs}` : "";
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation/start${suffix}`, {
-        method: "POST",
-        headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
-        body: JSON.stringify(req.body || {}),
-        signal: controller.signal,
-      });
-      const body = await response.text();
-      clearTimeout(timeout);
+      const suffix = extractQuerySuffix(req);
+      const { response, body } = await fetchAdminText(
+        req,
+        `/api/orders/${orderId}/activation/start${suffix}`,
+        {
+          method: "POST",
+          forceJson: true,
+          timeoutMs: 20000,
+          retryStatuses: [404, 502, 503, 504],
+        }
+      );
       if (!response.ok) {
         return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "Activation start failed" }));
       }
       return res.status(response.status).type("application/json").send(body);
     } catch (_) {
-      clearTimeout(timeout);
       return res.status(502).json({ error: "Order API unavailable" });
     }
   });
 
   app.post("/api/orders/:orderId/activation/restart-with-new-key", async (req, res) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20000);
     try {
       const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
-      const qs = String(req.url || "").includes("?") ? String(req.url || "").split("?")[1] : "";
-      const suffix = qs ? `?${qs}` : "";
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation/restart-with-new-key${suffix}`, {
-        method: "POST",
-        headers: buildAdminProxyHeaders(req, { method: "POST", forceJson: true }),
-        body: JSON.stringify(req.body || {}),
-        signal: controller.signal,
-      });
-      const body = await response.text();
-      clearTimeout(timeout);
+      const suffix = extractQuerySuffix(req);
+      const { response, body } = await fetchAdminText(
+        req,
+        `/api/orders/${orderId}/activation/restart-with-new-key${suffix}`,
+        {
+          method: "POST",
+          forceJson: true,
+          timeoutMs: 20000,
+          retryStatuses: [404, 502, 503, 504],
+        }
+      );
       if (!response.ok) {
         return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "Activation restart failed" }));
       }
       return res.status(response.status).type("application/json").send(body);
     } catch (_) {
-      clearTimeout(timeout);
       return res.status(502).json({ error: "Order API unavailable" });
     }
   });
 
   app.get("/api/orders/:orderId/activation/task/:taskId", async (req, res) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
     try {
       const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
       const taskId = encodeURIComponent(String(req.params.taskId || "").trim());
-      const qs = String(req.url || "").includes("?") ? String(req.url || "").split("?")[1] : "";
-      const suffix = qs ? `?${qs}` : "";
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/orders/${orderId}/activation/task/${taskId}${suffix}`, {
-        method: "GET",
-        headers: buildAdminProxyHeaders(req, { method: "GET" }),
-        signal: controller.signal,
-      });
-      const body = await response.text();
-      clearTimeout(timeout);
+      const suffix = extractQuerySuffix(req);
+      const { response, body } = await fetchAdminText(
+        req,
+        `/api/orders/${orderId}/activation/task/${taskId}${suffix}`,
+        {
+          method: "GET",
+          timeoutMs: 12000,
+          retryStatuses: [404, 502, 503, 504],
+        }
+      );
       if (!response.ok) {
         return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "Activation task fetch failed" }));
       }
       return res.status(response.status).type("application/json").send(body);
     } catch (_) {
-      clearTimeout(timeout);
       return res.status(502).json({ error: "Order API unavailable" });
     }
   });
 
   app.get("/api/vpn/me", async (req, res) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
     try {
-      const qs = String(req.url || "").includes("?") ? String(req.url || "").split("?")[1] : "";
-      const suffix = qs ? `?${qs}` : "";
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/vpn/me${suffix}`, {
+      const suffix = extractQuerySuffix(req);
+      const { response, body } = await fetchAdminText(req, `/api/vpn/me${suffix}`, {
         method: "GET",
-        headers: buildAdminProxyHeaders(req, { method: "GET" }),
-        signal: controller.signal,
+        timeoutMs: 12000,
+        retryStatuses: [404, 502, 503, 504],
       });
-      const body = await response.text();
-      clearTimeout(timeout);
       if (!response.ok) {
         return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "VPN fetch failed" }));
       }
       return res.status(response.status).type("application/json").send(body);
     } catch (_) {
-      clearTimeout(timeout);
       return res.status(502).json({ error: "VPN API unavailable" });
     }
   });
+
 
   app.get("/vpn/me", (req, res) => {
     const qs = String(req.url || "").includes("?") ? String(req.url || "").split("?")[1] : "";
     return res.redirect(307, qs ? `/api/vpn/me?${qs}` : "/api/vpn/me");
   });
 
+  app.get("/api/public/storefront-stats", (req, res) => {
+    const suffix = extractQuerySuffix(req);
+    return res.redirect(307, suffix ? `/api/stats${suffix}` : "/api/stats");
+  });
+
   async function fetchStorefrontStatsFromAdmin(req) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000);
     try {
-      const response = await fetch(`${ADMIN_BACKEND_URL}/api/public/storefront-stats`, {
-        method: "GET",
-        headers: buildAdminProxyHeaders(req, { method: "GET" }),
-        signal: controller.signal,
-      });
+      const { response } = await fetchAdminWithFallback(
+        "/api/public/storefront-stats",
+        {
+          method: "GET",
+          headers: buildAdminProxyHeaders(req, { method: "GET" }),
+        },
+        {
+          timeoutMs: 6000,
+          retryStatuses: [404, 502, 503, 504],
+        }
+      );
       if (!response.ok) return null;
       const payload = await response.json();
       const sales = Number(payload?.sales || 0);
@@ -1227,9 +1408,20 @@ function createApp() {
       };
     } catch (_) {
       return null;
-    } finally {
-      clearTimeout(timeout);
     }
+  }
+
+  function buildDegradedStatsPayload(online = 0) {
+    const safeOnline = Number.isFinite(Number(online)) ? Math.max(0, Number(online)) : 0;
+    return {
+      sales: 0,
+      realSales: 0,
+      systemSales: 0,
+      online: safeOnline,
+      lastBuyers: [],
+      tickerEntries: [],
+      degraded: true,
+    };
   }
 
   app.get("/api/stats", async (req, res) => {
@@ -1243,7 +1435,7 @@ function createApp() {
         const payload = await statsPayloadPendingPromise;
         return res.json(payload);
       } catch (_) {
-        return res.status(500).json({ error: "Failed to load stats" });
+        return res.json(statsPayloadCache || buildDegradedStatsPayload(0));
       }
     }
 
@@ -1267,6 +1459,10 @@ function createApp() {
           lastBuyers: adminStats.tickerEntries.map(item => item.email),
           tickerEntries: adminStats.tickerEntries,
         };
+      }
+
+      if (STRICT_BACKEND_STATS) {
+        return buildDegradedStatsPayload(online);
       }
 
       if (ENABLE_SYSTEM_ACTIVATIONS) {
@@ -1339,7 +1535,7 @@ function createApp() {
       statsPayloadCacheTs = Date.now();
       return res.json(payload);
     } catch (_) {
-      return res.status(500).json({ error: "Failed to load stats" });
+      return res.json(statsPayloadCache || buildDegradedStatsPayload(0));
     } finally {
       statsPayloadPendingPromise = null;
     }
@@ -1446,13 +1642,17 @@ function createApp() {
     res.sendFile(path.join(__dirname, "store", "vpn", "index.html"));
   });
 
-  app.get("/store/vpn/activate", (_req, res) => {
+  const sendVpnActivationPage = (_req, res) => {
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
+    res.set("Surrogate-Control", "no-store");
     res.sendFile(path.join(__dirname, "store", "vpn", "activate", "index.html"));
-  });
+  };
 
-  app.get("/store/vpn/activate/", (_req, res) => {
-    res.sendFile(path.join(__dirname, "store", "vpn", "activate", "index.html"));
-  });
+  app.get("/store/vpn/activate", sendVpnActivationPage);
+
+  app.get("/store/vpn/activate/", sendVpnActivationPage);
 
   app.get("/vpn", (_req, res) => {
     res.sendFile(path.join(__dirname, "vpn", "index.html"));
@@ -1462,12 +1662,29 @@ function createApp() {
     res.sendFile(path.join(__dirname, "vpn", "index.html"));
   });
 
+  // Backward-compatible asset aliases used by older cached pages.
+  app.get("/style.css", (_req, res) => {
+    return res.sendFile(path.join(__dirname, "assets", "css", "theme.min.css"));
+  });
+
+  app.get("/main.js", (_req, res) => {
+    return res.sendFile(path.join(__dirname, "assets", "js", "app.min.js"));
+  });
+
+  // SPA-style fallback for routes without file extension.
+  // Important: do NOT serve index.html for asset/API paths.
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api/")) return next();
+    if (path.extname(req.path)) return next();
+    return res.sendFile(path.join(__dirname, "index.html"));
+  });
+
   app.use((req, res) => {
     if (req.path.startsWith("/api/")) {
       return res.status(404).json({ error: "Not found" });
     }
 
-    if (fs.existsSync(notFoundPagePath)) {
+    if (hasNotFoundPage) {
       return res.status(404).sendFile(notFoundPagePath);
     }
 
@@ -1481,7 +1698,7 @@ function createApp() {
       return res.status(500).json({ error: "Internal server error" });
     }
 
-    if (fs.existsSync(errorPagePath)) {
+    if (hasErrorPage) {
       return res.status(500).sendFile(errorPagePath);
     }
 
@@ -1500,15 +1717,16 @@ async function startServer(port = PORT) {
   await ensureSystemActivationEvents();
   const app = createApp();
 
-  return new Promise(resolve => {
-    const server = app.listen(port, () => resolve(server));
+  return new Promise((resolve, reject) => {
+    const server = app.listen(port, HOST, () => resolve(server));
+    server.once("error", reject);
   });
 }
 
 if (require.main === module) {
   startServer()
     .then(() => {
-      logInfo(`Server started on port ${PORT}`);
+      logInfo(`Server started on http://${HOST}:${PORT}`);
     })
     .catch(error => {
       logError("Failed to start server", error);
@@ -1517,6 +1735,7 @@ if (require.main === module) {
 }
 
 module.exports = { startServer };
+
 
 
 

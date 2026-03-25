@@ -20,6 +20,16 @@ function now() {
   return new Date();
 }
 
+async function resolveAuditUserId(userId?: string | null) {
+  const id = String(userId || "").trim();
+  if (!id) return null;
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { id: true },
+  });
+  return user?.id || null;
+}
+
 export const licenseService = {
   async createKey(productKey: string, keyValue: string, actor?: { userId?: string }, meta?: Record<string, unknown>) {
     const pk = canonicalProductKey(productKey);
@@ -36,11 +46,13 @@ export const licenseService = {
       select: { id: true, productKey: true, status: true, createdAt: true, updatedAt: true },
     });
 
+    const auditUserId = await resolveAuditUserId(actor?.userId);
+
     await prisma.licenseKeyAuditLog.create({
       data: {
         keyId: row.id,
         action: "create",
-        userId: actor?.userId || null,
+        userId: auditUserId,
         meta: meta ? asJson(meta) : undefined,
       },
     });
@@ -90,11 +102,13 @@ export const licenseService = {
     const inserted = created.count;
     const skipped = Math.max(0, unique.length - inserted);
 
+    const auditUserId = await resolveAuditUserId(actor?.userId);
+
     await prisma.licenseKeyAuditLog.create({
       data: {
         keyId: null,
         action: "import",
-        userId: actor?.userId || null,
+        userId: auditUserId,
         meta: asJson({ productKey: pk, inserted, skipped, conflicts, conflictsByProductKey }),
       },
     });
@@ -170,6 +184,8 @@ export const licenseService = {
     const ts = now();
     const exclude = normalizeKeyValue(String(opts?.excludeKeyValue || ""));
 
+    const auditUserId = await resolveAuditUserId(actor?.userId);
+
     // Postgres atomic pick: FOR UPDATE SKIP LOCKED.
     const rows = await prisma.$transaction(async (tx) => {
       const picked = await tx.$queryRaw<{ id: string }[]>`
@@ -202,7 +218,7 @@ export const licenseService = {
         data: {
           keyId: id,
           action: "assign",
-          userId: actor?.userId || null,
+          userId: auditUserId,
           meta: asJson({ orderId, productKey: pk }),
         },
       });
@@ -224,11 +240,13 @@ export const licenseService = {
       data: { status: "used", orderId: oid, usedAt: now() },
     });
 
+    const auditUserId = await resolveAuditUserId(actor?.userId);
+
     await prisma.licenseKeyAuditLog.create({
       data: {
         keyId: row.id,
         action: "mark_used",
-        userId: actor?.userId || null,
+        userId: auditUserId,
         meta: asJson({ orderId: oid }),
       },
     });
@@ -245,11 +263,13 @@ export const licenseService = {
       data: { status: "revoked", revokedAt: now() },
     });
 
+    const auditUserId = await resolveAuditUserId(actor?.userId);
+
     await prisma.licenseKeyAuditLog.create({
       data: {
         keyId: row.id,
         action: "revoke",
-        userId: actor?.userId || null,
+        userId: auditUserId,
         meta: meta ? asJson(meta) : undefined,
       },
     });
@@ -273,11 +293,13 @@ export const licenseService = {
       },
     });
 
+    const auditUserId = await resolveAuditUserId(actor?.userId);
+
     await prisma.licenseKeyAuditLog.create({
       data: {
         keyId: row.id,
         action: "return_available",
-        userId: actor?.userId || null,
+        userId: auditUserId,
       },
     });
 
@@ -292,14 +314,19 @@ export const licenseService = {
     if (!row) return { ok: false as const, reason: "not_found" as const };
     if (row.status !== "available") return { ok: false as const, reason: "not_available" as const };
 
-    await prisma.licenseKey.delete({ where: { id } });
-    await prisma.licenseKeyAuditLog.create({
-      data: {
-        keyId: id,
-        action: "delete_available",
-        userId: actor?.userId || null,
-        meta: asJson({ productKey: row.productKey }),
-      },
+    const auditUserId = await resolveAuditUserId(actor?.userId);
+
+    await prisma.$transaction(async (tx) => {
+      await tx.licenseKey.delete({ where: { id } });
+      await tx.licenseKeyAuditLog.create({
+        data: {
+          // Keep audit row after key deletion without FK violations.
+          keyId: null,
+          action: "delete_available",
+          userId: auditUserId,
+          meta: asJson({ deletedKeyId: id, keyValue: row.keyValue, productKey: row.productKey }),
+        },
+      });
     });
 
     return { ok: true as const };

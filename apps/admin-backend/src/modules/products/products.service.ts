@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import slugify from "../../common/utils/slugify";
 import { AppError } from "../../common/errors/app-error";
 import { applyProductDeliveryTypeTag, methodToDeliveryType } from "../../common/utils/product-delivery";
+import { prisma } from "../../config/prisma";
 import { productsRepository } from "./products.repository";
 import { writeAuditLog } from "../audit/audit.service";
 import { manualCredentialsStore, type ManualCredentialStatus } from "./manual-credentials.store";
@@ -207,13 +208,45 @@ export const productsService = {
       ...(input.isActive !== undefined ? { isActive: input.isActive } : {}),
     });
 
+    let rebindCount = 0;
+    if (before.slug !== updated.slug) {
+      // Keep CDK pools visible after slug changes by rebinding old productKey -> new slug.
+      const rebound = await prisma.licenseKey.updateMany({
+        where: {
+          OR: [{ productKey: before.slug }, { productId: updated.id }],
+        },
+        data: {
+          productKey: updated.slug,
+          productId: updated.id,
+        },
+      });
+      rebindCount = rebound.count;
+
+      await prisma.licenseKeyAuditLog.create({
+        data: {
+          keyId: null,
+          action: "product_slug_rebind",
+          userId: actor?.userId || null,
+          meta: {
+            productId: updated.id,
+            fromSlug: before.slug,
+            toSlug: updated.slug,
+            updatedKeys: rebindCount,
+          } as Prisma.InputJsonValue,
+        },
+      });
+    }
+
     await writeAuditLog({
       userId: actor?.userId,
       entityType: "product",
       entityId: updated.id,
       action: "update",
       before,
-      after: updated,
+      after: {
+        ...updated,
+        keyRebindCount: rebindCount,
+      },
       ip: actor?.ip,
       userAgent: actor?.userAgent,
     });
@@ -254,7 +287,10 @@ export const productsService = {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         (error.code === "P2003" || error.code === "P2014")
       ) {
-        throw new AppError("Нельзя удалить товар: есть связанные заказы. Отключите товар и отправьте его в архив.", 409);
+        throw new AppError(
+          "Cannot delete product: it has related orders. Disable and archive it instead.",
+          409
+        );
       }
       throw error;
     }

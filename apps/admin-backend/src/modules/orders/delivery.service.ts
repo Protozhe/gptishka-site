@@ -30,6 +30,7 @@ export async function deliverProduct(order: Order) {
       email: order.email,
       plan: vpnProvision.plan,
       durationDays: vpnProvision.durationDays,
+      limitIp: vpnProvision.limitIp,
       source: "bundle",
     });
     console.info(
@@ -67,6 +68,12 @@ export async function deliverProduct(order: Order) {
     return;
   }
 
+  if (deliveryType === "support") {
+    console.info(`[delivery] support-manual delivery selected for order=${order.id}`);
+    await ensureBundleVpnAccess();
+    return;
+  }
+
   if (deliveryType === "vpn") {
     if (!vpnProvision) {
       console.warn(`[delivery] vpn product config not resolved for order=${order.id}`);
@@ -78,6 +85,7 @@ export async function deliverProduct(order: Order) {
       email: order.email,
       plan: vpnProvision.plan,
       durationDays: vpnProvision.durationDays,
+      limitIp: vpnProvision.limitIp,
       source: vpnProvision.source,
     });
 

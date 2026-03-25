@@ -729,6 +729,10 @@
       gap: 10px;
     }
 
+    body.vpn-activation-flow .activation-bottom-cta.is-hidden {
+      display: none;
+    }
+
     body.vpn-activation-flow .activation-bottom-cta__text {
       margin: 0;
       color: #2a4360;
@@ -932,7 +936,7 @@
         </aside>
       </div>
 
-      <div class="activation-bottom-cta">
+      <div class="activation-bottom-cta is-hidden">
         <p class="activation-bottom-cta__text">After connecting VPN, proceed to the next step and finish account activation.</p>
         <a id="vpnGoActivationBtn" class="btn button-primary activation-bottom-cta__btn is-disabled" href="#" aria-disabled="true">Go to activation</a>
       </div>
@@ -1084,6 +1088,7 @@
       const downloadBtn = document.getElementById("vpnDownloadConfigBtn");
       const reloadBtn = document.getElementById("vpnReloadBtn");
       const goActivationBtn = document.getElementById("vpnGoActivationBtn");
+      const activationBottomCta = document.querySelector(".activation-bottom-cta");
       const feedbackEl = document.getElementById("vpnCopyFeedback");
 
       const uuidEl = document.getElementById("vpnUuid");
@@ -1160,6 +1165,9 @@
       function setActivationEntryLink(url) {
         const safeUrl = String(url || "").trim();
         const hasUrl = Boolean(safeUrl);
+        if (activationBottomCta) {
+          activationBottomCta.classList.toggle("is-hidden", !hasUrl);
+        }
         if (goActivationBtn) {
           goActivationBtn.classList.toggle("is-disabled", !hasUrl);
           goActivationBtn.setAttribute("aria-disabled", hasUrl ? "false" : "true");
@@ -1291,8 +1299,7 @@
 
       async function refreshActivationReminder() {
         const context = readOrderContext();
-        const activationUrl = context.orderId && context.token ? persistActivationResumeContext(context.orderId, context.token) : "";
-        setActivationEntryLink(activationUrl);
+        setActivationEntryLink("");
         if (!context.orderId || !context.token) return;
 
         try {
@@ -1311,11 +1318,15 @@
           const payload = await response.json().catch(() => ({}));
           const deliveryMode = String(payload && payload.deliveryMode || "").trim().toLowerCase();
           const status = String(payload && payload.status || "").trim().toLowerCase();
-          const activationCompleted = deliveryMode === "activation" ? status === "success" : true;
-          if (activationCompleted) {
+          const requiresActivation = deliveryMode === "activation" && status !== "success";
+          if (!requiresActivation) {
             clearActivationResumeContext(context.orderId);
             setActivationEntryLink("");
+            return;
           }
+
+          const activationUrl = persistActivationResumeContext(context.orderId, context.token);
+          setActivationEntryLink(activationUrl);
         } catch (_) {}
       }
 

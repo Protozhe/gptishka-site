@@ -3,9 +3,11 @@ import { AppError } from "../errors/app-error";
 import { getAllowedOrigins as getConfiguredAllowedOrigins } from "./origins";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+const ADMIN_CSRF_EXEMPT_PATHS = new Set(["/api/admin/auth/login"]);
 
 export function verifyAdminOrigin(req: Request, _res: Response, next: NextFunction) {
   if (!req.path.startsWith("/api/admin/")) return next();
+  if (ADMIN_CSRF_EXEMPT_PATHS.has(req.path)) return next();
   if (SAFE_METHODS.has(String(req.method || "").toUpperCase())) return next();
 
   const allowedOrigins = getConfiguredAllowedOrigins();

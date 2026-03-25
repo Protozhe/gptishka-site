@@ -4,6 +4,7 @@ import { Request, Response } from "express";
 import { AppError } from "../../common/errors/app-error";
 import { asyncHandler } from "../../common/http/async-handler";
 import { prisma } from "../../config/prisma";
+import { env } from "../../config/env";
 import { deliverProduct } from "../orders/delivery.service";
 import { ordersService } from "../orders/orders.service";
 import { resolveVpnProvisionPayload, toVpnMePayload, vpnService } from "../../services/vpn.service";
@@ -74,6 +75,7 @@ async function resolveVpnAccessByOrder(orderId: string, orderToken?: string) {
       email: order.email,
       plan: vpnProvision.plan,
       durationDays: vpnProvision.durationDays,
+      limitIp: vpnProvision.limitIp,
       source: vpnProvision.source,
     });
   }
@@ -196,6 +198,11 @@ export const getVpnMe = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (telegramId) {
+    const expectedLookupToken = String(env.VPN_TELEGRAM_LOOKUP_TOKEN || "").trim();
+    const providedLookupToken = String(req.headers["x-vpn-lookup-token"] || req.query.lookup_token || "").trim();
+    if (!expectedLookupToken || providedLookupToken !== expectedLookupToken) {
+      throw new AppError("Unauthorized", 401);
+    }
     const access = await vpnService.getByTelegramId(telegramId);
     return res.json(toVpnMePayload(access));
   }

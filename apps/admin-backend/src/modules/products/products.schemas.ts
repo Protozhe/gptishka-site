@@ -35,8 +35,10 @@ const productBody = z.object({
   tags: z.array(z.string().min(1).max(40)).max(20).default([]),
   stock: z.coerce.number().int().min(0).nullable().optional(),
   isActive: z.boolean().default(true),
-  deliveryType: z.enum(["activation", "credentials", "vpn"]).default("activation"),
-  deliveryMethod: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal("1"), z.literal("2"), z.literal("3")]).optional(),
+  deliveryType: z.enum(["activation", "credentials", "vpn", "support"]).default("activation"),
+  deliveryMethod: z
+    .union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal("1"), z.literal("2"), z.literal("3"), z.literal("4")])
+    .optional(),
 });
 
 export const createProductSchema = productBody;

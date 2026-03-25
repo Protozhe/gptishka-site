@@ -24,9 +24,10 @@ import {
 
 export const ordersRouter = Router();
 
-ordersRouter.post("/checkout", validateBody(createOrderSchema), createOrder);
-
 ordersRouter.use(requireAuth);
+// Keep this endpoint for authenticated admin tooling only.
+// Public checkout is served via /api/public/checkout (publicOrdersRouter).
+ordersRouter.post("/checkout", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateBody(createOrderSchema), createOrder);
 ordersRouter.get("/", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateQuery(ordersQuerySchema), listOrders);
 ordersRouter.get("/export/csv", allowRoles(["OWNER", "ADMIN"]), validateQuery(ordersQuerySchema), exportOrdersCsv);
 ordersRouter.get("/storefront/ticker-settings", allowRoles(["OWNER", "ADMIN", "MANAGER"]), getStorefrontTickerSettings);

@@ -15,7 +15,7 @@
   var ACTIVATION_ORDER_TOKEN_PREFIX = "gptishka_activation_order_token:";
   var ACTIVATION_RESUME_URL_KEY = "gptishka_activation_resume_url";
   var ACTIVATION_RESUME_SAVED_AT_KEY = "gptishka_activation_saved_at";
-  var ACTIVATION_RESUME_TTL_MS = 60 * 60 * 1000;
+  var ACTIVATION_RESUME_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 
   function trackWidgetEvent(eventName, payload) {
     if (typeof window.gptishkaTrackEvent === "function") {
@@ -131,6 +131,46 @@
     return buildActivationResumeUrl(ctx.orderId, ctx.token);
   }
 
+  function isActivationCompleted(payload) {
+    var deliveryMode = String(payload && payload.deliveryMode || "").trim().toLowerCase();
+    var status = String(payload && payload.status || "").trim().toLowerCase();
+    return deliveryMode === "activation" ? status === "success" : true;
+  }
+
+  function verifyActivationPending(orderId, token) {
+    var safeOrderId = String(orderId || "").trim();
+    var safeToken = String(token || "").trim();
+    if (!safeOrderId || !safeToken) {
+      return Promise.resolve(false);
+    }
+
+    var endpoint = "/api/orders/" + encodeURIComponent(safeOrderId) + "/activation?t=" + encodeURIComponent(safeToken);
+    return fetch(endpoint, { cache: "no-store" })
+      .then(function (response) {
+        if (response.status === 409) {
+          // VPN-only / credentials orders do not require token activation.
+          clearStoredActivationResumeContext(safeOrderId);
+          return false;
+        }
+        if (!response.ok) {
+          // If backend is temporarily unavailable, keep reminder visible.
+          return true;
+        }
+        return response.json().catch(function () {
+          return {};
+        }).then(function (payload) {
+          if (isActivationCompleted(payload)) {
+            clearStoredActivationResumeContext(safeOrderId);
+            return false;
+          }
+          return true;
+        });
+      })
+      .catch(function () {
+        return true;
+      });
+  }
+
   function clearLegacyResumeShortcut() {
     var nodes = document.querySelectorAll(".gptishka-resume-activation");
     nodes.forEach(function (node) {
@@ -158,9 +198,9 @@
           panelText: "Write to support, we will help you with activation.",
           panelMeta: "Average response: ~5 minutes",
           panelCta: "Write in Telegram",
-          resumeLead: "Looks like you forgot to finish activation.",
-          resumeCta: "Resume activation",
-          resumeAria: "Resume order activation"
+          resumeLead: "Account is not activated yet. Return to order activation.",
+          resumeCta: "Go to activation",
+          resumeAria: "Go to order activation"
         }
       : {
           rootLabel: "Кот-помощник",
@@ -168,11 +208,11 @@
           panelText: "Напишите нам в поддержку — поможем с подключением.",
           panelMeta: "Средний ответ: ~5 минут",
           panelCta: "Написать в Telegram",
-          resumeLead: "Похоже, вы забыли завершить активацию.",
-          resumeCta: "Продолжить активацию",
-          resumeAria: "Продолжить активацию заказа"
+          resumeLead: "Аккаунт еще не активирован. Вернитесь к активации по заказу.",
+          resumeCta: "Перейти к активации",
+          resumeAria: "Перейти к активации заказа"
         };
-    var resumeCancelLabel = en ? "Cancel" : "Отменить";
+    var resumeCancelLabel = en ? "Hide" : "Скрыть";
     var resumeCancelAria = en ? "Dismiss activation reminder" : "Скрыть напоминание об активации";
 
     var root = document.createElement("aside");
@@ -183,7 +223,7 @@
 
     root.innerHTML =
       '<div class="support-widget__mascot" aria-hidden="true">' +
-        '<img class="support-widget__mascot-image" src="/assets/img/assistant-cat-left.gif" alt="" width="112" height="168" loading="lazy" decoding="async" />' +
+        '<img class="support-widget__mascot-image" src="/assets/img/assistant-cat-left.png" data-gif-src="/assets/img/assistant-cat-left.gif" alt="" width="112" height="168" loading="eager" decoding="async" fetchpriority="low" />' +
       '</div>' +
       '<div class="support-widget__resume-bubble" data-resume-bubble hidden>' +
         '<span class="support-widget__resume-text" data-resume-text></span>' +
@@ -206,6 +246,10 @@
     var resumeText = root.querySelector("[data-resume-text]");
     var resumeContinue = root.querySelector("[data-resume-continue]");
     var resumeCancel = root.querySelector("[data-resume-cancel]");
+    var mascotImage = root.querySelector(".support-widget__mascot-image");
+    var gifSrc = mascotImage ? String(mascotImage.getAttribute("data-gif-src") || "").trim() : "";
+    var gifRequested = false;
+    var gifLoaded = false;
     var bubbleClosedBottom = "188px";
     var bubbleOpenBottom = "280px";
 
@@ -215,6 +259,56 @@
     };
 
     applyFallbackLayout();
+
+    var shouldAnimateMascot = function () {
+      try {
+        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          return false;
+        }
+      } catch (_) {
+        // Ignore media query runtime issues.
+      }
+      try {
+        var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        if (conn) {
+          if (conn.saveData) return false;
+          var type = String(conn.effectiveType || "").toLowerCase();
+          if (type === "2g" || type === "slow-2g") return false;
+        }
+      } catch (_) {
+        // Ignore connection API issues.
+      }
+      return true;
+    };
+
+    var loadAnimatedMascot = function () {
+      if (!mascotImage || !gifSrc || gifLoaded) return;
+      gifLoaded = true;
+      mascotImage.src = gifSrc;
+      mascotImage.removeAttribute("data-gif-src");
+    };
+
+    if (mascotImage && gifSrc) {
+      mascotImage.addEventListener("error", function () {
+        // If PNG placeholder is missing, immediately fallback to GIF.
+        if (String(mascotImage.src || "").indexOf("assistant-cat-left.gif") === -1) {
+          loadAnimatedMascot();
+        }
+      });
+    }
+
+    var requestAnimatedMascot = function (delay) {
+      if (gifRequested || !shouldAnimateMascot()) return;
+      gifRequested = true;
+      var doLoad = function () {
+        loadAnimatedMascot();
+      };
+      if (typeof window.requestIdleCallback === "function") {
+        window.requestIdleCallback(doLoad, { timeout: 2600 });
+        return;
+      }
+      window.setTimeout(doLoad, Math.max(0, Number(delay || 1400)));
+    };
 
     var panelTracked = false;
     var onPanelOpenTrack = function () {
@@ -255,7 +349,10 @@
     };
 
     if (mascot) {
-      mascot.addEventListener("mouseenter", openPanel);
+      mascot.addEventListener("mouseenter", function () {
+        loadAnimatedMascot();
+        openPanel();
+      });
       mascot.addEventListener("mouseleave", requestClosePanel);
     }
 
@@ -277,15 +374,27 @@
     }
 
     var resumeUrl = resolveActivationResumeUrl();
-    if (bubble && resumeText && resumeContinue && resumeCancel && resumeUrl) {
-      bubble.hidden = false;
-      bubble.classList.add("is-visible");
-      resumeText.textContent = text.resumeLead;
-      resumeContinue.textContent = text.resumeCta;
-      resumeContinue.href = resumeUrl;
-      resumeContinue.setAttribute("aria-label", text.resumeAria);
-      resumeCancel.textContent = resumeCancelLabel;
-      resumeCancel.setAttribute("aria-label", resumeCancelAria);
+    if (bubble && resumeText && resumeContinue && resumeCancel) {
+      var hideResumePrompt = function () {
+        bubble.classList.remove("is-visible");
+        bubble.hidden = true;
+      };
+
+      var showResumePrompt = function (url) {
+        var safeUrl = String(url || "").trim();
+        if (!safeUrl) {
+          hideResumePrompt();
+          return;
+        }
+        resumeText.textContent = text.resumeLead;
+        resumeContinue.textContent = text.resumeCta;
+        resumeContinue.href = safeUrl;
+        resumeContinue.setAttribute("aria-label", text.resumeAria);
+        resumeCancel.textContent = resumeCancelLabel;
+        resumeCancel.setAttribute("aria-label", resumeCancelAria);
+        bubble.hidden = false;
+        bubble.classList.add("is-visible");
+      };
 
       resumeContinue.addEventListener("click", function () {
         trackWidgetEvent("resume_activation_click", {
@@ -296,13 +405,27 @@
       resumeCancel.addEventListener("click", function (event) {
         event.preventDefault();
         clearStoredActivationResumeContext();
-        bubble.classList.remove("is-visible");
-        bubble.hidden = true;
+        hideResumePrompt();
         trackWidgetEvent("resume_activation_dismiss", {
           source: "mascot_prompt"
         });
       });
+
+      if (resumeUrl) {
+        var ctx = readStoredActivationResumeContext();
+        verifyActivationPending(ctx.orderId, ctx.token).then(function (shouldShowPrompt) {
+          if (!shouldShowPrompt) {
+            hideResumePrompt();
+            return;
+          }
+          showResumePrompt(resolveActivationResumeUrl());
+        });
+      } else {
+        hideResumePrompt();
+      }
     }
+
+    requestAnimatedMascot(1400);
 
     function applyFallbackLayout() {
       var isMobile = typeof window.matchMedia === "function"

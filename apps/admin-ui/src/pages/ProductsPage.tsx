@@ -1,12 +1,16 @@
 ﻿import { FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { AlignCenter, AlignLeft, AlignRight, type LucideIcon } from "lucide-react";
 import { api } from "../lib/api";
 import { money } from "../lib/format";
 
 type BadgeType = "none" | "best" | "new" | "hit" | "sale" | "popular" | "limited" | "gift" | "pro";
-type ProductDeliveryType = "activation" | "credentials" | "vpn";
+type ProductDeliveryType = "activation" | "credentials" | "vpn" | "support";
 type VpnBundlePlan = "vpn_month" | "vpn_halfyear" | "vpn_year";
+type TextAlignValue = "left" | "center" | "right";
+type CardTextBlock = "title" | "description" | "price" | "duration" | "features" | "meta";
+type CardTextAlignConfig = Record<CardTextBlock, TextAlignValue>;
 
 type Product = {
   id: string;
@@ -23,7 +27,7 @@ type Product = {
   tags: string[];
   isActive: boolean;
   deliveryType?: ProductDeliveryType;
-  deliveryMethod?: 1 | 2 | 3 | "1" | "2" | "3";
+  deliveryMethod?: 1 | 2 | 3 | 4 | "1" | "2" | "3" | "4";
 };
 
 type ManualCredential = {
@@ -37,9 +41,33 @@ type ManualCredential = {
 };
 
 const DEFAULT_PRODUCT_CATEGORY = "Подписки ChatGPT";
+const CARD_TEXT_ALIGN_BLOCKS: CardTextBlock[] = ["title", "description", "price", "duration", "features", "meta"];
+const CARD_TEXT_ALIGN_DEFAULT: CardTextAlignConfig = {
+  title: "left",
+  description: "left",
+  price: "left",
+  duration: "left",
+  features: "left",
+  meta: "left",
+};
+const CARD_TEXT_ALIGN_TAG_RE = /^align:(title|description|price|duration|features|meta):(left|center|right)$/i;
+const CARD_TEXT_ALIGN_OPTIONS: Array<{ value: TextAlignValue; label: string; icon: LucideIcon }> = [
+  { value: "left", label: "Слева", icon: AlignLeft },
+  { value: "center", label: "Центр", icon: AlignCenter },
+  { value: "right", label: "Справа", icon: AlignRight },
+];
+const CARD_TEXT_ALIGN_FIELDS: Array<{ key: CardTextBlock; label: string; hint: string }> = [
+  { key: "title", label: "Название", hint: "Заголовок товара" },
+  { key: "description", label: "Описание", hint: "Верхние строки под заголовком" },
+  { key: "price", label: "Цена", hint: "Число и валюта" },
+  { key: "duration", label: "Срок", hint: "Строка вида «Срок: ...»" },
+  { key: "features", label: "Преимущества", hint: "Список пунктов внизу карточки" },
+  { key: "meta", label: "Meta", hint: "Нижний блок «Авто / Безопасно / 24/7»" },
+];
 
 const LEGACY_MEDIA_LINE_RE = /^media\s*:\s*(image|video)\s*:\s*(.+)$/i;
 const LEGACY_MEDIA_CAPTION_RE = /^media-caption\s*:\s*(.+)$/i;
+const DURATION_LINE_RE = /^(?:[✓✔]\s*)?(?:срок|duration)\s*:/i;
 
 function parseDescriptionWithMedia(value: string): {
   cleanDescription: string;
@@ -75,6 +103,39 @@ function composeDescriptionWithMedia(baseDescription: string): string {
   return parseDescriptionWithMedia(baseDescription).cleanDescription;
 }
 
+function normalizeMultilineText(value: string): string {
+  return String(value || "").replace(/\r/g, "").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+function normalizeModalDescriptionText(value: string): string {
+  return normalizeMultilineText(value);
+}
+
+function hasModalMediaDirectives(value: string): boolean {
+  const lines = String(value || "").replace(/\r/g, "").split("\n");
+  return lines.some((line) => {
+    const trimmed = String(line || "").trim();
+    if (!trimmed) return false;
+    return LEGACY_MEDIA_LINE_RE.test(trimmed) || LEGACY_MEDIA_CAPTION_RE.test(trimmed);
+  });
+}
+
+function parseDurationLabel(value: string): string {
+  const lines = String(value || "").replace(/\r/g, "").split("\n");
+  const durationLine = lines.map((line) => String(line || "").trim()).find((line) => DURATION_LINE_RE.test(line));
+  if (!durationLine) return "";
+  return durationLine.replace(/^(?:[✓✔]\s*)?(?:срок|duration)\s*:\s*/i, "").trim();
+}
+
+function withDurationLine(description: string, durationLabel: string, lang: "ru" | "en"): string {
+  const cleanedDuration = String(durationLabel || "").trim();
+  const lines = String(description || "").replace(/\r/g, "").split("\n");
+  const withoutDuration = lines.filter((line) => !DURATION_LINE_RE.test(String(line || "").trim())).join("\n").trim();
+  if (!cleanedDuration) return withoutDuration;
+  const prefix = lang === "en" ? "Duration: " : "Срок: ";
+  return withoutDuration ? `${withoutDuration}\n${prefix}${cleanedDuration}` : `${prefix}${cleanedDuration}`;
+}
+
 function getBadgeFromTags(tags: string[] = []): BadgeType {
   const list = Array.isArray(tags) ? tags : [];
   const found = list
@@ -86,6 +147,41 @@ function getBadgeFromTags(tags: string[] = []): BadgeType {
   return allowed.includes(value as BadgeType) ? (value as BadgeType) : "none";
 }
 
+function buildDefaultCardTextAlign(): CardTextAlignConfig {
+  return { ...CARD_TEXT_ALIGN_DEFAULT };
+}
+
+function normalizeTextAlignValue(value: string): TextAlignValue {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "center") return "center";
+  if (normalized === "right") return "right";
+  return "left";
+}
+
+function parseCardTextAlignFromTags(tags: string[] = []): CardTextAlignConfig {
+  const result = buildDefaultCardTextAlign();
+  const list = Array.isArray(tags) ? tags : [];
+  list.forEach((tag) => {
+    const match = String(tag || "").trim().toLowerCase().match(CARD_TEXT_ALIGN_TAG_RE);
+    if (!match) return;
+    const block = match[1] as CardTextBlock;
+    result[block] = normalizeTextAlignValue(match[2]);
+  });
+  return result;
+}
+
+function withCardTextAlignTags(tags: string[] = [], alignConfig: CardTextAlignConfig): string[] {
+  const list = Array.isArray(tags) ? tags : [];
+  const cleaned = list.filter((tag) => !CARD_TEXT_ALIGN_TAG_RE.test(String(tag || "").trim().toLowerCase()));
+  const resolved = alignConfig || buildDefaultCardTextAlign();
+  const next = [...cleaned];
+  CARD_TEXT_ALIGN_BLOCKS.forEach((block) => {
+    const value = normalizeTextAlignValue(resolved[block]);
+    next.push(`align:${block}:${value}`);
+  });
+  return next;
+}
+
 function withBadgeTag(tags: string[] = [], badge: BadgeType): string[] {
   const list = Array.isArray(tags) ? tags : [];
   const cleaned = list.filter((tag) => !String(tag || "").toLowerCase().startsWith("badge:"));
@@ -95,29 +191,37 @@ function withBadgeTag(tags: string[] = [], badge: BadgeType): string[] {
 
 function resolveDeliveryType(item: Product): ProductDeliveryType {
   const fromMethod = String(item.deliveryMethod || "").trim();
+  if (fromMethod === "4") return "support";
   if (fromMethod === "2") return "credentials";
   if (fromMethod === "3") return "vpn";
   if (fromMethod === "1") return "activation";
 
   const fromItem = String(item.deliveryType || "").trim().toLowerCase();
+  if (fromItem === "support") return "support";
   if (fromItem === "credentials") return "credentials";
   if (fromItem === "vpn") return "vpn";
   const hasVpnTag = (item.tags || [])
     .map((tag) => String(tag || "").trim().toLowerCase())
     .some((tag) => tag === "delivery:vpn");
   if (hasVpnTag) return "vpn";
+  const hasSupportTag = (item.tags || [])
+    .map((tag) => String(tag || "").trim().toLowerCase())
+    .some((tag) => tag === "delivery:support");
+  if (hasSupportTag) return "support";
   const hasCredentialsTag = (item.tags || [])
     .map((tag) => String(tag || "").trim().toLowerCase())
     .some((tag) => tag === "delivery:credentials");
   return hasCredentialsTag ? "credentials" : "activation";
 }
 
-function deliveryMethodNumber(deliveryType: ProductDeliveryType): 1 | 2 | 3 {
+function deliveryMethodNumber(deliveryType: ProductDeliveryType): 1 | 2 | 3 | 4 {
+  if (deliveryType === "support") return 4;
   if (deliveryType === "vpn") return 3;
   return deliveryType === "credentials" ? 2 : 1;
 }
 
 function deliveryMethodLabel(deliveryType: ProductDeliveryType): string {
+  if (deliveryType === "support") return "Метод 4: Ручная выдача через поддержку";
   if (deliveryType === "credentials") return "Метод 2: Логин и пароль";
   if (deliveryType === "vpn") return "Метод 3: VPN (VLESS)";
   return "Метод 1: Активация по ключу";
@@ -126,6 +230,8 @@ function deliveryMethodLabel(deliveryType: ProductDeliveryType): string {
 const VPN_BUNDLE_FLAG_TAG = "bundle:vpn";
 const VPN_PLAN_TAG_PREFIX = "vpn:plan:";
 const VPN_DAYS_TAG_PREFIX = "vpn:days:";
+const VPN_USERS_TAG_PREFIX = "vpn:users:";
+const DEFAULT_VPN_USERS_LIMIT = 1;
 const VPN_BUNDLE_PLAN_DAYS: Record<VpnBundlePlan, number> = {
   vpn_month: 30,
   vpn_halfyear: 180,
@@ -139,23 +245,44 @@ function normalizePlanCandidate(value: string): VpnBundlePlan {
   return "vpn_month";
 }
 
-function parseVpnBundleConfig(tags: string[] = []): { enabled: boolean; plan: VpnBundlePlan } {
+function normalizeVpnUsersLimit(value: unknown) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return DEFAULT_VPN_USERS_LIMIT;
+  return Math.max(1, Math.min(16, Math.floor(parsed)));
+}
+
+function parseVpnUsersLimit(tags: string[] = []) {
+  const list = Array.isArray(tags) ? tags : [];
+  const normalized = list.map((tag) => String(tag || "").trim().toLowerCase());
+  const usersTag = normalized.find(
+    (tag) =>
+      tag.startsWith(VPN_USERS_TAG_PREFIX) ||
+      tag.startsWith("vpn_users:") ||
+      tag.startsWith("vpn-users:") ||
+      tag.startsWith("users:")
+  );
+  if (!usersTag) return DEFAULT_VPN_USERS_LIMIT;
+  return normalizeVpnUsersLimit(usersTag.split(":").pop() || "");
+}
+
+function parseVpnBundleConfig(tags: string[] = []): { enabled: boolean; plan: VpnBundlePlan; usersLimit: number } {
   const list = Array.isArray(tags) ? tags : [];
   const normalized = list.map((tag) => String(tag || "").trim().toLowerCase());
   const enabled = normalized.includes(VPN_BUNDLE_FLAG_TAG);
+  const usersLimit = parseVpnUsersLimit(list);
   const planTag = normalized.find((tag) => tag.startsWith(VPN_PLAN_TAG_PREFIX));
   if (planTag) {
-    return { enabled, plan: normalizePlanCandidate(planTag.slice(VPN_PLAN_TAG_PREFIX.length)) };
+    return { enabled, plan: normalizePlanCandidate(planTag.slice(VPN_PLAN_TAG_PREFIX.length)), usersLimit };
   }
 
   const daysTag = normalized.find((tag) => tag.startsWith(VPN_DAYS_TAG_PREFIX));
   const days = Number(daysTag?.slice(VPN_DAYS_TAG_PREFIX.length) || "");
-  if (days >= 365) return { enabled, plan: "vpn_year" };
-  if (days >= 180) return { enabled, plan: "vpn_halfyear" };
-  return { enabled, plan: "vpn_month" };
+  if (days >= 365) return { enabled, plan: "vpn_year", usersLimit };
+  if (days >= 180) return { enabled, plan: "vpn_halfyear", usersLimit };
+  return { enabled, plan: "vpn_month", usersLimit };
 }
 
-function withVpnBundleTags(tags: string[] = [], enabled: boolean, plan: VpnBundlePlan): string[] {
+function withVpnBundleTags(tags: string[] = [], enabled: boolean, plan: VpnBundlePlan, usersLimit: number): string[] {
   const list = Array.isArray(tags) ? tags : [];
   const cleaned = list.filter((tag) => {
     const normalized = String(tag || "").trim().toLowerCase();
@@ -163,15 +290,52 @@ function withVpnBundleTags(tags: string[] = [], enabled: boolean, plan: VpnBundl
     if (normalized === VPN_BUNDLE_FLAG_TAG) return false;
     if (normalized.startsWith(VPN_PLAN_TAG_PREFIX)) return false;
     if (normalized.startsWith(VPN_DAYS_TAG_PREFIX)) return false;
+    if (
+      normalized.startsWith(VPN_USERS_TAG_PREFIX) ||
+      normalized.startsWith("vpn_users:") ||
+      normalized.startsWith("vpn-users:") ||
+      normalized.startsWith("users:")
+    ) {
+      return false;
+    }
     return true;
   });
   if (!enabled) return cleaned;
-  return [...cleaned, VPN_BUNDLE_FLAG_TAG, `${VPN_PLAN_TAG_PREFIX}${plan}`, `${VPN_DAYS_TAG_PREFIX}${VPN_BUNDLE_PLAN_DAYS[plan]}`];
+  const normalizedUsersLimit = normalizeVpnUsersLimit(usersLimit);
+  return [
+    ...cleaned,
+    VPN_BUNDLE_FLAG_TAG,
+    `${VPN_PLAN_TAG_PREFIX}${plan}`,
+    `${VPN_DAYS_TAG_PREFIX}${VPN_BUNDLE_PLAN_DAYS[plan]}`,
+    `${VPN_USERS_TAG_PREFIX}${normalizedUsersLimit}`,
+  ];
 }
 
-function withoutVpnBundleFlag(tags: string[] = []): string[] {
+function withDirectVpnTags(tags: string[] = [], plan: VpnBundlePlan, usersLimit: number): string[] {
   const list = Array.isArray(tags) ? tags : [];
-  return list.filter((tag) => String(tag || "").trim().toLowerCase() !== VPN_BUNDLE_FLAG_TAG);
+  const cleaned = list.filter((tag) => {
+    const normalized = String(tag || "").trim().toLowerCase();
+    if (!normalized) return false;
+    if (normalized === VPN_BUNDLE_FLAG_TAG) return false;
+    if (normalized.startsWith(VPN_PLAN_TAG_PREFIX)) return false;
+    if (normalized.startsWith(VPN_DAYS_TAG_PREFIX)) return false;
+    if (
+      normalized.startsWith(VPN_USERS_TAG_PREFIX) ||
+      normalized.startsWith("vpn_users:") ||
+      normalized.startsWith("vpn-users:") ||
+      normalized.startsWith("users:")
+    ) {
+      return false;
+    }
+    return true;
+  });
+  const normalizedUsersLimit = normalizeVpnUsersLimit(usersLimit);
+  return [
+    ...cleaned,
+    `${VPN_PLAN_TAG_PREFIX}${plan}`,
+    `${VPN_DAYS_TAG_PREFIX}${VPN_BUNDLE_PLAN_DAYS[plan]}`,
+    `${VPN_USERS_TAG_PREFIX}${normalizedUsersLimit}`,
+  ];
 }
 
 function buildTags(title: string, badge: BadgeType): string[] {
@@ -240,13 +404,17 @@ export default function ProductsPage() {
   const [manualCategories, setManualCategories] = useState<string[]>([]);
   const [description, setDescription] = useState("");
   const [descriptionEn, setDescriptionEn] = useState("");
+  const [durationLabelRu, setDurationLabelRu] = useState("");
+  const [durationLabelEn, setDurationLabelEn] = useState("");
   const [modalDescription, setModalDescription] = useState("");
   const [modalDescriptionEn, setModalDescriptionEn] = useState("");
   const [badge, setBadge] = useState<BadgeType>("none");
   const [deliveryType, setDeliveryType] = useState<ProductDeliveryType>("activation");
   const [vpnBundleEnabled, setVpnBundleEnabled] = useState(false);
   const [vpnBundlePlan, setVpnBundlePlan] = useState<VpnBundlePlan>("vpn_month");
+  const [vpnUsersLimit, setVpnUsersLimit] = useState<number>(DEFAULT_VPN_USERS_LIMIT);
   const [editingTags, setEditingTags] = useState<string[]>([]);
+  const [cardTextAlign, setCardTextAlign] = useState<CardTextAlignConfig>(buildDefaultCardTextAlign());
   const [credentialsImportText, setCredentialsImportText] = useState("");
   const [credentialsMessage, setCredentialsMessage] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -432,13 +600,17 @@ export default function ProductsPage() {
     setCategoryNotice(null);
     setDescription("");
     setDescriptionEn("");
+    setDurationLabelRu("");
+    setDurationLabelEn("");
     setModalDescription("");
     setModalDescriptionEn("");
     setBadge("none");
     setDeliveryType("activation");
     setVpnBundleEnabled(false);
     setVpnBundlePlan("vpn_month");
+    setVpnUsersLimit(DEFAULT_VPN_USERS_LIMIT);
     setEditingTags([]);
+    setCardTextAlign(buildDefaultCardTextAlign());
     setCredentialsImportText("");
     setCredentialsMessage(null);
     setFormError(null);
@@ -459,8 +631,10 @@ export default function ProductsPage() {
   function onEdit(item: Product) {
     const parsedRu = parseDescriptionWithMedia(item.description || "");
     const parsedEn = parseDescriptionWithMedia(item.descriptionEn || "");
-    const parsedModalRu = parseDescriptionWithMedia(item.modalDescription || "");
-    const parsedModalEn = parseDescriptionWithMedia(item.modalDescriptionEn || "");
+    const parsedDurationRu = parseDurationLabel(item.description || "");
+    const parsedDurationEn = parseDurationLabel(item.descriptionEn || "");
+    const modalRuSource = String(item.modalDescription || item.description || "");
+    const modalEnSource = String(item.modalDescriptionEn || item.descriptionEn || modalRuSource || "");
 
     setEditingId(item.id);
     setTitle(item.title || "");
@@ -469,19 +643,30 @@ export default function ProductsPage() {
     setCategory(normalizeCategoryValue(item.category || "") || DEFAULT_PRODUCT_CATEGORY);
     setNewCategoryDraft("");
     setCategoryNotice(null);
-    setDescription(parsedRu.cleanDescription || "");
-    setDescriptionEn(parsedEn.cleanDescription || "");
-    setModalDescription(parsedModalRu.cleanDescription || "");
-    setModalDescriptionEn(parsedModalEn.cleanDescription || "");
+    setDescription(withDurationLine(parsedRu.cleanDescription || "", "", "ru"));
+    setDescriptionEn(withDurationLine(parsedEn.cleanDescription || "", "", "en"));
+    setDurationLabelRu(parsedDurationRu);
+    setDurationLabelEn(parsedDurationEn || parsedDurationRu);
+    setModalDescription(normalizeModalDescriptionText(modalRuSource));
+    setModalDescriptionEn(normalizeModalDescriptionText(modalEnSource));
     setBadge(getBadgeFromTags(item.tags || []));
     setDeliveryType(resolveDeliveryType(item));
     const bundleConfig = parseVpnBundleConfig(item.tags || []);
     setVpnBundleEnabled(bundleConfig.enabled);
     setVpnBundlePlan(bundleConfig.plan);
+    setVpnUsersLimit(bundleConfig.usersLimit);
     setEditingTags(Array.isArray(item.tags) ? item.tags : []);
+    setCardTextAlign(parseCardTextAlignFromTags(item.tags || []));
     setCredentialsImportText("");
     setCredentialsMessage(null);
     setFormError(null);
+  }
+
+  function onCardTextAlignChange(block: CardTextBlock, value: TextAlignValue) {
+    setCardTextAlign((prev) => ({
+      ...prev,
+      [block]: normalizeTextAlignValue(value),
+    }));
   }
 
   async function onSubmitProductForm(e: FormEvent) {
@@ -492,10 +677,14 @@ export default function ProductsPage() {
     const cleanTitle = title.trim();
     let cleanTitleEn = titleEn.trim();
     const cleanCategory = normalizeCategoryValue(category);
-    const cleanDescription = parseDescriptionWithMedia(description).cleanDescription.trim();
+    let cleanDescription = parseDescriptionWithMedia(description).cleanDescription.trim();
     let cleanDescriptionEn = parseDescriptionWithMedia(descriptionEn).cleanDescription.trim();
-    const cleanModalDescription = composeDescriptionWithMedia(modalDescription).trim();
-    let cleanModalDescriptionEn = composeDescriptionWithMedia(modalDescriptionEn).trim();
+    let cleanDurationRu = String(durationLabelRu || "").trim() || parseDurationLabel(cleanDescription);
+    let cleanDurationEn = String(durationLabelEn || "").trim() || parseDurationLabel(cleanDescriptionEn);
+    cleanDescription = withDurationLine(cleanDescription, "", "ru");
+    cleanDescriptionEn = withDurationLine(cleanDescriptionEn, "", "en");
+    const cleanModalDescription = normalizeModalDescriptionText(modalDescription);
+    let cleanModalDescriptionEn = normalizeModalDescriptionText(modalDescriptionEn);
     const normalizedPrice = Number(String(price).replace(",", "."));
 
     if (cleanTitle.length < 3) {
@@ -515,7 +704,11 @@ export default function ProductsPage() {
           description: cleanDescription,
         });
         cleanTitleEn = String(translated?.titleEn || "").trim();
-        cleanDescriptionEn = parseDescriptionWithMedia(String(translated?.descriptionEn || "")).cleanDescription.trim();
+        cleanDescriptionEn = withDurationLine(
+          parseDescriptionWithMedia(String(translated?.descriptionEn || "")).cleanDescription.trim(),
+          "",
+          "en"
+        );
         setTitleEn(cleanTitleEn);
         setDescriptionEn(cleanDescriptionEn);
       } catch {
@@ -548,26 +741,52 @@ export default function ProductsPage() {
       return;
     }
 
-    const finalDescriptionRu = composeDescriptionWithMedia(cleanDescription);
-    const finalDescriptionEn = composeDescriptionWithMedia(cleanDescriptionEn);
+    if (cleanDurationRu && !cleanDurationEn) {
+      try {
+        const translatedDuration = await autoTranslate.mutateAsync({
+          title: cleanTitle,
+          description: `Срок: ${cleanDurationRu}`,
+        });
+        const translatedDurationEn = parseDurationLabel(String(translatedDuration?.descriptionEn || ""));
+        cleanDurationEn = translatedDurationEn || cleanDurationRu;
+      } catch {
+        cleanDurationEn = cleanDurationRu;
+      }
+      setDurationLabelEn(cleanDurationEn);
+    }
+
+    if (!cleanDurationEn && cleanDurationRu) {
+      cleanDurationEn = cleanDurationRu;
+    }
+
+    const finalDescriptionRu = withDurationLine(composeDescriptionWithMedia(cleanDescription), cleanDurationRu, "ru");
+    const finalDescriptionEn = withDurationLine(composeDescriptionWithMedia(cleanDescriptionEn), cleanDurationEn, "en");
 
     if (cleanModalDescription && !cleanModalDescriptionEn) {
-      try {
-        const translatedModal = await autoTranslate.mutateAsync({
-          title: cleanTitle,
-          description: cleanModalDescription,
-        });
-        cleanModalDescriptionEn = parseDescriptionWithMedia(String(translatedModal?.descriptionEn || "")).cleanDescription.trim();
-      } catch {
+      if (hasModalMediaDirectives(cleanModalDescription)) {
         cleanModalDescriptionEn = cleanModalDescription;
+      } else {
+        try {
+          const translatedModal = await autoTranslate.mutateAsync({
+            title: cleanTitle,
+            description: cleanModalDescription,
+          });
+          cleanModalDescriptionEn = normalizeModalDescriptionText(String(translatedModal?.descriptionEn || ""));
+        } catch {
+          cleanModalDescriptionEn = cleanModalDescription;
+        }
       }
       setModalDescriptionEn(cleanModalDescriptionEn);
     }
 
+    const normalizedVpnUsersLimit = normalizeVpnUsersLimit(vpnUsersLimit);
+
     if (editingId) {
-      const preparedTags = deliveryType === "vpn"
-        ? withoutVpnBundleFlag(withBadgeTag(editingTags, badge))
-        : withVpnBundleTags(withBadgeTag(editingTags, badge), vpnBundleEnabled, vpnBundlePlan);
+      const tagsWithAlign = withCardTextAlignTags(withBadgeTag(editingTags, badge), cardTextAlign);
+      const preparedTags =
+        deliveryType === "vpn"
+          ? withDirectVpnTags(tagsWithAlign, vpnBundlePlan, normalizedVpnUsersLimit)
+          : withVpnBundleTags(tagsWithAlign, vpnBundleEnabled, vpnBundlePlan, normalizedVpnUsersLimit);
       await updateProduct.mutateAsync({
         id: editingId,
         payload: {
@@ -589,9 +808,11 @@ export default function ProductsPage() {
     }
 
     const createdBaseTags = buildTags(cleanTitle, badge);
-    const preparedTags = deliveryType === "vpn"
-      ? withoutVpnBundleFlag(createdBaseTags)
-      : withVpnBundleTags(createdBaseTags, vpnBundleEnabled, vpnBundlePlan);
+    const createdTagsWithAlign = withCardTextAlignTags(createdBaseTags, cardTextAlign);
+    const preparedTags =
+      deliveryType === "vpn"
+        ? withDirectVpnTags(createdTagsWithAlign, vpnBundlePlan, normalizedVpnUsersLimit)
+        : withVpnBundleTags(createdTagsWithAlign, vpnBundleEnabled, vpnBundlePlan, normalizedVpnUsersLimit);
     await createProduct.mutateAsync({
       title: cleanTitle,
       titleEn: cleanTitleEn,
@@ -839,7 +1060,9 @@ export default function ProductsPage() {
   async function onAutoTranslateClick() {
     setFormError(null);
     const cleanTitle = title.trim();
-    const cleanDescription = parseDescriptionWithMedia(description).cleanDescription.trim();
+    const cleanDescriptionRaw = parseDescriptionWithMedia(description).cleanDescription.trim();
+    const cleanDescription = withDurationLine(cleanDescriptionRaw, "", "ru");
+    const cleanDurationRu = String(durationLabelRu || "").trim() || parseDurationLabel(cleanDescriptionRaw);
 
     if (cleanTitle.length < 3) {
       setFormError("Сначала заполните название на русском (минимум 3 символа).");
@@ -856,17 +1079,36 @@ export default function ProductsPage() {
         description: cleanDescription,
       });
       setTitleEn(String(translated?.titleEn || "").trim());
-      setDescriptionEn(parseDescriptionWithMedia(String(translated?.descriptionEn || "")).cleanDescription.trim());
-      const cleanModalDescription = composeDescriptionWithMedia(modalDescription).trim();
-      if (cleanModalDescription) {
+      setDescriptionEn(
+        withDurationLine(parseDescriptionWithMedia(String(translated?.descriptionEn || "")).cleanDescription.trim(), "", "en")
+      );
+      if (cleanDurationRu) {
+        if (!String(durationLabelRu || "").trim()) setDurationLabelRu(cleanDurationRu);
         try {
-          const translatedModal = await autoTranslate.mutateAsync({
+          const translatedDuration = await autoTranslate.mutateAsync({
             title: cleanTitle,
-            description: cleanModalDescription,
+            description: `Срок: ${cleanDurationRu}`,
           });
-          setModalDescriptionEn(parseDescriptionWithMedia(String(translatedModal?.descriptionEn || "")).cleanDescription.trim());
+          const translatedDurationEn = parseDurationLabel(String(translatedDuration?.descriptionEn || ""));
+          setDurationLabelEn(translatedDurationEn || cleanDurationRu);
         } catch {
+          setDurationLabelEn(cleanDurationRu);
+        }
+      }
+      const cleanModalDescription = normalizeModalDescriptionText(modalDescription);
+      if (cleanModalDescription) {
+        if (hasModalMediaDirectives(cleanModalDescription)) {
           setModalDescriptionEn(cleanModalDescription);
+        } else {
+          try {
+            const translatedModal = await autoTranslate.mutateAsync({
+              title: cleanTitle,
+              description: cleanModalDescription,
+            });
+            setModalDescriptionEn(normalizeModalDescriptionText(String(translatedModal?.descriptionEn || "")));
+          } catch {
+            setModalDescriptionEn(cleanModalDescription);
+          }
         }
       }
     } catch {
@@ -919,8 +1161,18 @@ export default function ProductsPage() {
     <div className="space-y-4">
       <section className="card p-4">
         <form className="grid gap-2 md:grid-cols-4" onSubmit={onSubmitProductForm}>
-          <input className="input" placeholder="Название товара (RU)" value={title} onChange={(e) => setTitle(e.target.value)} />
-          <input className="input" placeholder="Product title (EN)" value={titleEn} onChange={(e) => setTitleEn(e.target.value)} />
+          <textarea
+            className="input min-h-12 resize-y md:col-span-2"
+            placeholder="Название товара (RU). Shift+Enter — перенос строки."
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <textarea
+            className="input min-h-12 resize-y md:col-span-2"
+            placeholder="Product title (EN). Shift+Enter for line break."
+            value={titleEn}
+            onChange={(e) => setTitleEn(e.target.value)}
+          />
           <input className="input" placeholder="Цена (RUB)" value={price} onChange={(e) => setPrice(e.target.value)} />
           <select className="input" value={badge} onChange={(e) => setBadge(e.target.value as BadgeType)}>
             <option value="none">Без плашки</option>
@@ -937,10 +1189,55 @@ export default function ProductsPage() {
             <option value="activation">Метод 1: Активация по ключу</option>
             <option value="credentials">Метод 2: Выдача логин/пароль</option>
             <option value="vpn">Метод 3: Выдача VPN</option>
+            <option value="support">Метод 4: Ручная выдача через поддержку</option>
           </select>
           <button className="btn-primary" type="submit" disabled={isSaving}>
             {isSaving ? "Сохраняем..." : editingId ? "Сохранить изменения" : "Добавить товар"}
           </button>
+
+          <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <span className="inline-flex items-center rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold tracking-wide text-cyan-700 dark:border-cyan-700/40 dark:bg-cyan-900/30 dark:text-cyan-200">
+                Выравнивание текста карточки
+              </span>
+              <span className="text-xs text-slate-600 dark:text-slate-300">Отдельно для каждого товара и каждого блока</span>
+            </div>
+            <div className="grid gap-2 md:grid-cols-2">
+              {CARD_TEXT_ALIGN_FIELDS.map((field) => (
+                <div
+                  key={field.key}
+                  className="rounded-lg border border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-950"
+                >
+                  <div className="mb-2">
+                    <div className="text-xs font-semibold text-slate-800 dark:text-slate-100">{field.label}</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">{field.hint}</div>
+                  </div>
+                  <div className="inline-flex overflow-hidden rounded-lg border border-slate-300 dark:border-slate-700">
+                    {CARD_TEXT_ALIGN_OPTIONS.map((option) => {
+                      const Icon = option.icon;
+                      const active = cardTextAlign[field.key] === option.value;
+                      return (
+                        <button
+                          key={`${field.key}:${option.value}`}
+                          type="button"
+                          className={`inline-flex items-center gap-1 border-r px-2 py-1 text-[11px] font-semibold transition last:border-r-0 ${
+                            active
+                              ? "border-cyan-500 bg-cyan-600 text-white"
+                              : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800"
+                          }`}
+                          onClick={() => onCardTextAlignChange(field.key, option.value)}
+                          title={`${field.label}: ${option.label}`}
+                        >
+                          <Icon size={14} />
+                          {option.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
@@ -1041,6 +1338,34 @@ export default function ProductsPage() {
             <div>
               Метод 3: после оплаты автоматически создается/продлевается VPN-доступ (VLESS Reality) через 3x-ui API.
             </div>
+            <div>
+              Метод 4: после оплаты клиент получает инструкцию написать в поддержку, выдача выполняется вручную в чате.
+            </div>
+            {deliveryType === "vpn" && (
+              <div className="mt-2 rounded-lg border border-slate-200 bg-white p-2 text-xs dark:border-slate-700 dark:bg-slate-950">
+                <div className="font-semibold">Настройки VPN-товара</div>
+                <div className="mt-2 grid gap-2 md:max-w-sm">
+                  <select className="input" value={vpnBundlePlan} onChange={(e) => setVpnBundlePlan(normalizePlanCandidate(e.target.value))}>
+                    <option value="vpn_month">{vpnBundlePlanLabel("vpn_month")}</option>
+                    <option value="vpn_halfyear">{vpnBundlePlanLabel("vpn_halfyear")}</option>
+                    <option value="vpn_year">{vpnBundlePlanLabel("vpn_year")}</option>
+                  </select>
+                  <input
+                    className="input"
+                    type="number"
+                    min={1}
+                    max={16}
+                    step={1}
+                    value={vpnUsersLimit}
+                    onChange={(e) => setVpnUsersLimit(normalizeVpnUsersLimit(e.target.value))}
+                    placeholder="Лимит устройств (1-16)"
+                  />
+                  <div className="text-xs text-slate-600 dark:text-slate-300">
+                    Для этого товара будет выдаваться VPN: срок по плану и максимум {normalizeVpnUsersLimit(vpnUsersLimit)} устройство(а) на один доступ.
+                  </div>
+                </div>
+              </div>
+            )}
             {deliveryType !== "vpn" && (
               <div className="mt-2 rounded-lg border border-slate-200 bg-white p-2 text-xs dark:border-slate-700 dark:bg-slate-950">
                 <label className="flex items-center gap-2">
@@ -1058,8 +1383,18 @@ export default function ProductsPage() {
                       <option value="vpn_halfyear">{vpnBundlePlanLabel("vpn_halfyear")}</option>
                       <option value="vpn_year">{vpnBundlePlanLabel("vpn_year")}</option>
                     </select>
+                    <input
+                      className="input"
+                      type="number"
+                      min={1}
+                      max={16}
+                      step={1}
+                      value={vpnUsersLimit}
+                      onChange={(e) => setVpnUsersLimit(normalizeVpnUsersLimit(e.target.value))}
+                      placeholder="Лимит устройств (1-16)"
+                    />
                     <div className="text-xs text-slate-600 dark:text-slate-300">
-                      При оплате этого товара клиент получит основную выдачу + VPN с источником <code>bundle</code>.
+                      При оплате этого товара клиент получит основную выдачу + VPN с источником <code>bundle</code> и лимитом {normalizeVpnUsersLimit(vpnUsersLimit)} устройство(а).
                     </div>
                   </div>
                 )}
@@ -1079,6 +1414,21 @@ export default function ProductsPage() {
             value={descriptionEn}
             onChange={(e) => setDescriptionEn(e.target.value)}
           />
+          <input
+            className="input md:col-span-2"
+            placeholder="Срок для карточки (RU), например: 1 год"
+            value={durationLabelRu}
+            onChange={(e) => setDurationLabelRu(e.target.value)}
+          />
+          <input
+            className="input md:col-span-2"
+            placeholder="Duration for card (EN), e.g. 1 year"
+            value={durationLabelEn}
+            onChange={(e) => setDurationLabelEn(e.target.value)}
+          />
+          <div className="md:col-span-4 text-xs text-slate-600 dark:text-slate-300">
+            Поле добавляет отдельную строку на карточке: <strong>✓ Срок: ...</strong> (для EN: <strong>✓ Duration: ...</strong>).
+          </div>
 
           <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
             <div className="mb-2 text-sm font-semibold">Описание для модального окна оплаты</div>
@@ -1098,6 +1448,9 @@ export default function ProductsPage() {
             </div>
             <div className="mt-2 text-xs text-slate-600 dark:text-slate-300">
               Этот текст показывается между блоком названия/цены и полями Email/Промокод в модальном окне оплаты.
+            </div>
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Поддерживаются служебные строки: <code>media:image:https://...</code>, <code>media:video:https://...</code>, <code>media-caption:...</code>.
             </div>
           </div>
 
@@ -1229,8 +1582,15 @@ export default function ProductsPage() {
                     <td className="px-4 py-3">{money(Number(item.price), item.currency)}</td>
                     <td className="px-4 py-3">
                       <div>{deliveryMethodLabel(itemDeliveryType)}</div>
+                      {itemDeliveryType === "vpn" && (
+                        <div className="text-xs text-indigo-700 dark:text-indigo-300">
+                          План: {vpnBundlePlanLabel(itemVpnBundle.plan)}, лимит устройств: {itemVpnBundle.usersLimit}
+                        </div>
+                      )}
                       {itemDeliveryType !== "vpn" && itemVpnBundle.enabled && (
-                        <div className="text-xs text-emerald-700 dark:text-emerald-400">+ VPN bundle: {vpnBundlePlanLabel(itemVpnBundle.plan)}</div>
+                        <div className="text-xs text-emerald-700 dark:text-emerald-400">
+                          + VPN bundle: {vpnBundlePlanLabel(itemVpnBundle.plan)}, лимит устройств: {itemVpnBundle.usersLimit}
+                        </div>
                       )}
                     </td>
                     <td className="px-4 py-3">{badgeLabel(itemBadge)}</td>

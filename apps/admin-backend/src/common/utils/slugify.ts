@@ -1,9 +1,13 @@
 export default function slugify(value: string) {
-  return String(value)
+  const normalized = String(value)
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
+    .replace(/^-+/, "")
+    .replace(/-+$/, "")
     .slice(0, 120);
+
+  return normalized || "product";
 }

@@ -9,6 +9,7 @@
   max-width: 760px;
   font-size: clamp(1rem, 1.8vw, 1.16rem);
   line-height: 1.58;
+  white-space: pre-line;
 }
 
 .hero .hero-react__actions {
@@ -159,12 +160,14 @@
 
 #pricingGrid .price-card .price-card__title {
   display: block !important;
+  font-family: "Montserrat", "Manrope", sans-serif !important;
+  font-weight: 800 !important;
   line-height: 1.16;
   min-height: 2.95em;
   width: 100%;
   max-width: 100%;
   padding-inline: 2px 4px;
-  text-align: center;
+  text-align: left;
 }
 
 #pricingGrid .price-card .badge + .price-card__title {
@@ -174,7 +177,7 @@
 #pricingGrid .price-card .price-card__title-mainline {
   display: block !important;
   max-width: none;
-  text-align: center;
+  text-align: left;
 }
 
 #pricingGrid .price-card .price-card__title-mainline + .price-card__title-mainline::before {
@@ -183,41 +186,44 @@
 
 #pricingGrid .price-card .price-card__title-main {
   display: inline !important;
+  font-family: "Montserrat", "Manrope", sans-serif !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.002em;
   max-width: 100%;
   white-space: normal !important;
   text-wrap: pretty;
   overflow-wrap: normal;
   word-break: normal;
-  font-size: clamp(1.08rem, 1.95vw, 1.34rem);
-  text-align: center;
+  font-size: 1.34rem !important;
+  text-align: left;
 }
 
 #pricingGrid .price-card .price-card__title-main.is-compact {
-  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  font-size: 1.34rem !important;
 }
 
 #pricingGrid .price-card .price-card__title-main.is-tight {
-  font-size: clamp(0.94rem, 1.68vw, 1.12rem);
+  font-size: 1.34rem !important;
 }
 
 #pricingGrid .price-card .price-card__title-main.is-x-tight {
-  font-size: clamp(0.9rem, 1.56vw, 1.04rem);
+  font-size: 1.34rem !important;
 }
 
 #pricingGrid .price-card.price-card--subscriptions .price-card__title-main {
-  font-size: clamp(1.22rem, 2.28vw, 1.56rem);
+  font-size: 1.34rem !important;
 }
 
 #pricingGrid .price-card.price-card--subscriptions .price-card__title-main.is-compact {
-  font-size: clamp(1.14rem, 2.1vw, 1.4rem);
+  font-size: 1.34rem !important;
 }
 
 #pricingGrid .price-card.price-card--subscriptions .price-card__title-main.is-tight {
-  font-size: clamp(1.06rem, 1.92vw, 1.24rem);
+  font-size: 1.34rem !important;
 }
 
 #pricingGrid .price-card.price-card--subscriptions .price-card__title-main.is-x-tight {
-  font-size: clamp(1rem, 1.8vw, 1.14rem);
+  font-size: 1.34rem !important;
 }
 
 #pricingGrid .price-card .price-card__title-chunk {
@@ -227,10 +233,32 @@
 #pricingGrid .price-card .price-card__title-period {
   display: flex !important;
   width: 100%;
-  justify-content: center;
-  text-align: center;
+  justify-content: flex-start;
+  text-align: left;
   margin: 4px 0 0;
   vertical-align: baseline;
+}
+
+#pricingGrid .price-card[data-align-title="center"] .price-card__title,
+#pricingGrid .price-card[data-align-title="center"] .price-card__title-mainline,
+#pricingGrid .price-card[data-align-title="center"] .price-card__title-main,
+#pricingGrid .price-card[data-align-title="center"] .price-card__title-period {
+  text-align: center;
+}
+
+#pricingGrid .price-card[data-align-title="center"] .price-card__title-period {
+  justify-content: center;
+}
+
+#pricingGrid .price-card[data-align-title="right"] .price-card__title,
+#pricingGrid .price-card[data-align-title="right"] .price-card__title-mainline,
+#pricingGrid .price-card[data-align-title="right"] .price-card__title-main,
+#pricingGrid .price-card[data-align-title="right"] .price-card__title-period {
+  text-align: right;
+}
+
+#pricingGrid .price-card[data-align-title="right"] .price-card__title-period {
+  justify-content: flex-end;
 }
 
 #pricingGrid .price-card .price-actions {
@@ -246,6 +274,11 @@
   font-size: clamp(2.1rem, 4vw, 2.7rem);
   font-weight: 800;
   line-height: 1.05;
+  width: 100%;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
 }
 
 #pricingGrid .price-card .price-duration {
@@ -527,19 +560,19 @@
   }
 
   #pricingGrid .price-card.price-card--subscriptions .price-card__title-main {
-    font-size: clamp(1.08rem, 4.9vw, 1.3rem);
+    font-size: 1.34rem !important;
   }
 
   #pricingGrid .price-card.price-card--subscriptions .price-card__title-main.is-compact {
-    font-size: clamp(1.04rem, 4.5vw, 1.24rem);
+    font-size: 1.34rem !important;
   }
 
   #pricingGrid .price-card.price-card--subscriptions .price-card__title-main.is-tight {
-    font-size: clamp(0.98rem, 4.1vw, 1.16rem);
+    font-size: 1.34rem !important;
   }
 
   #pricingGrid .price-card.price-card--subscriptions .price-card__title-main.is-x-tight {
-    font-size: clamp(0.94rem, 3.8vw, 1.08rem);
+    font-size: 1.34rem !important;
   }
 
   #pricingGrid .price-card .sub.sub-top-list {

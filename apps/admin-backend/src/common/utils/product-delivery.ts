@@ -1,5 +1,5 @@
-export type ProductDeliveryType = "activation" | "credentials" | "vpn";
-export type ProductDeliveryMethod = 1 | 2 | 3;
+export type ProductDeliveryType = "activation" | "credentials" | "vpn" | "support";
+export type ProductDeliveryMethod = 1 | 2 | 3 | 4;
 
 const DELIVERY_TAG_PREFIX = "delivery:";
 
@@ -7,6 +7,9 @@ function normalizeDeliveryType(value: string): ProductDeliveryType {
   const normalized = String(value || "").trim().toLowerCase();
   if (["credentials", "manual", "login-password", "login_password", "account"].includes(normalized)) {
     return "credentials";
+  }
+  if (["support", "manual-support", "manual_support", "support-chat", "support_chat", "telegram", "tg"].includes(normalized)) {
+    return "support";
   }
   if (["vpn", "vless", "xray", "reality"].includes(normalized)) {
     return "vpn";
@@ -32,6 +35,8 @@ export function applyProductDeliveryTypeTag(
   const normalized = normalizeDeliveryType(String(deliveryType || "activation"));
   if (normalized === "credentials") {
     cleaned.push("delivery:credentials");
+  } else if (normalized === "support") {
+    cleaned.push("delivery:support");
   } else if (normalized === "vpn") {
     cleaned.push("delivery:vpn");
   }
@@ -41,6 +46,7 @@ export function applyProductDeliveryTypeTag(
 export function deliveryTypeToMethod(deliveryType: ProductDeliveryType | null | undefined): ProductDeliveryMethod {
   const normalized = normalizeDeliveryType(String(deliveryType || "activation"));
   if (normalized === "credentials") return 2;
+  if (normalized === "support") return 4;
   if (normalized === "vpn") return 3;
   return 1;
 }
@@ -49,6 +55,16 @@ export function methodToDeliveryType(value: unknown): ProductDeliveryType {
   const raw = String(value ?? "").trim().toLowerCase();
   if (raw === "2" || raw === "credentials" || raw === "manual" || raw === "login_password" || raw === "login-password") {
     return "credentials";
+  }
+  if (
+    raw === "4" ||
+    raw === "support" ||
+    raw === "manual_support" ||
+    raw === "manual-support" ||
+    raw === "support_chat" ||
+    raw === "support-chat"
+  ) {
+    return "support";
   }
   if (raw === "3" || raw === "vpn" || raw === "vless" || raw === "xray" || raw === "reality") {
     return "vpn";

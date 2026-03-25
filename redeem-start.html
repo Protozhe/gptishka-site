@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
 <script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
@@ -1170,7 +1170,7 @@
   <header>
 <div class="nav">
       <a href="/index.html" class="logo-link">
-        <img loading="lazy" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTишка" class="logo-img">
+        <img loading="eager" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTишка" class="logo-img" onerror="this.onerror=null;this.src='/favicon.png';">
       </a>
 
             <nav>
@@ -1340,7 +1340,7 @@
     <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
   </footer>
 
-  <script src="/assets/js/app.min.js?v=20260310r" defer></script>
+  <script src="/assets/js/app.min.js?v=20260324-modalfix1" defer></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const orderId = String(params.get('order_id') || params.get('orderId') || '').trim();
@@ -1358,8 +1358,11 @@
     const clearBtn = document.getElementById('clearBtn');
     const actionsRow = document.getElementById('actionsRow');
     const manualCredentialsBlock = document.getElementById('manualCredentialsBlock');
+    const manualBlockLabel = manualCredentialsBlock ? manualCredentialsBlock.querySelector('.redeem-label') : null;
     const manualLoginValue = document.getElementById('manualLoginValue');
     const manualPasswordValue = document.getElementById('manualPasswordValue');
+    const manualLoginRow = manualLoginValue ? manualLoginValue.closest('.redeem-order-row') : null;
+    const manualPasswordRow = manualPasswordValue ? manualPasswordValue.closest('.redeem-order-row') : null;
     const manualCredentialsHint = document.getElementById('manualCredentialsHint');
     const manualCodeLinkRow = document.getElementById('manualCodeLinkRow');
     const manualCodeLink = document.getElementById('manualCodeLink');
@@ -1394,7 +1397,7 @@
     const TOKEN_VALIDATE_DEBOUNCE_MS = 600;
     const LAST_PAID_ORDER_KEY = 'gptishka_last_paid_order_id';
     const ACTIVATION_RESUME_SAVED_AT_KEY = 'gptishka_activation_saved_at';
-    const ACTIVATION_RESUME_TTL_MS = 60 * 60 * 1000;
+    const ACTIVATION_RESUME_TTL_MS = 365 * 24 * 60 * 60 * 1000;
     const CART_STORAGE_KEYS = [
       'gptishka_cart_v1',
       'gptishka_card_qty_v1',
@@ -1601,6 +1604,8 @@
       if (actionsRow) actionsRow.style.display = 'none';
       if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'block';
 
+      const deliveryMode = String(payload?.deliveryMode || '').trim().toLowerCase();
+      const isSupportDelivery = deliveryMode === 'support';
       const status = String(payload?.status || '').trim().toLowerCase();
       const credentials = payload?.credentials && typeof payload.credentials === 'object' ? payload.credentials : null;
       const login = String(credentials?.login || '').trim();
@@ -1608,14 +1613,26 @@
       const supportUrl = String(payload?.supportUrl || 'https://t.me/gptishkasupp').trim();
       const supportEmailRaw = String(payload?.supportEmail || payload?.support_email || payload?.emailSupport || '').trim();
       const supportEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supportEmailRaw) ? supportEmailRaw.toLowerCase() : '';
-      const defaultMessage = 'Свободные данные для входа сейчас отсутствуют. Напишите в поддержку или ожидайте письмо с данными на email.';
+      const defaultMessage = isSupportDelivery
+        ? 'After payment, activation is completed manually by support. Open the support chat and share your order id.'
+        : 'Login and password are not assigned yet. Please contact support or wait for manual assignment.';
       const message = String(payload?.message || '').trim() || defaultMessage;
+
+      if (manualBlockLabel) {
+        manualBlockLabel.textContent = isSupportDelivery ? 'Ручная активация через поддержку' : 'Данные для входа';
+      }
+      if (manualLoginRow) {
+        manualLoginRow.style.display = isSupportDelivery ? 'none' : 'flex';
+      }
+      if (manualPasswordRow) {
+        manualPasswordRow.style.display = isSupportDelivery ? 'none' : 'flex';
+      }
 
       if (manualLoginValue) manualLoginValue.textContent = login || 'Логин пока не назначен';
       if (manualPasswordValue) manualPasswordValue.textContent = password || 'Пароль пока не назначен';
       if (manualCredentialsHint) manualCredentialsHint.textContent = message;
 
-      const hasCredentials = status === 'credentials_ready' && login && password;
+      const hasCredentials = !isSupportDelivery && status === 'credentials_ready' && login && password;
       if (hasCredentials) markActivationCompleted();
       if (manualCredentialsHint) {
         manualCredentialsHint.classList.toggle('is-alert', !hasCredentials);
@@ -1623,6 +1640,7 @@
       }
       if (manualCodeLink) {
         manualCodeLink.href = supportUrl || 'https://t.me/gptishkasupp';
+        manualCodeLink.textContent = isSupportDelivery ? 'написать в поддержку' : 'получить код';
       }
       if (manualCodeLinkRow) {
         manualCodeLinkRow.style.display = hasCredentials ? 'none' : 'flex';
@@ -1630,21 +1648,23 @@
       if (manualEmailLink) {
         manualEmailLink.textContent = supportEmail || 'support@gptishka.shop';
         manualEmailLink.href = supportEmail
-          ? `mailto:${supportEmail}?subject=${encodeURIComponent(`Получение кода по заказу ${orderId}`)}`
+          ? `mailto:${supportEmail}?subject=${encodeURIComponent(`Ручная активация по заказу ${orderId}`)}`
           : 'mailto:support@gptishka.shop';
       }
       if (manualEmailLinkRow) {
-        manualEmailLinkRow.style.display = hasCredentials && supportEmail ? 'block' : 'none';
+        manualEmailLinkRow.style.display = !hasCredentials && supportEmail ? 'block' : 'none';
       }
       if (manualSupportBtn) {
         manualSupportBtn.href = supportUrl || 'https://t.me/gptishkasupp';
         manualSupportBtn.style.display = hasCredentials ? 'none' : 'inline-flex';
       }
+      if (copyLoginBtn) copyLoginBtn.style.display = isSupportDelivery ? 'none' : '';
+      if (copyPasswordBtn) copyPasswordBtn.style.display = isSupportDelivery ? 'none' : '';
 
       if (hasCredentials) {
         setStatus('success', 'Данные для входа готовы. Скопируйте логин и пароль ниже.', false);
       } else {
-        setStatus('pending', 'Ожидаем выдачу данных. Актуальная информация указана в блоке выше.', false);
+        setStatus('pending', isSupportDelivery ? 'Manual activation: contact support to receive access.' : 'Ожидаем выдачу данных для входа.', false);
       }
     }
 
@@ -1955,12 +1975,13 @@
           setStatus('error', payload?.message || 'Не удалось загрузить статус активации', false);
           return;
         }
-        if (String(payload?.deliveryMode || '').toLowerCase() === 'credentials') {
+        const deliveryMode = String(payload?.deliveryMode || '').toLowerCase();
+        if (deliveryMode === 'credentials' || deliveryMode === 'support') {
           handlePaidOrder(orderId);
           setCredentialsDeliveryMode(payload);
           return;
         }
-        if (String(payload?.deliveryMode || '').toLowerCase() === 'vpn') {
+        if (deliveryMode === 'vpn') {
           handlePaidOrder(orderId);
           const url = new URL('/store/vpn', window.location.origin);
           url.searchParams.set('order_id', orderId);
@@ -1970,7 +1991,7 @@
           return;
         }
         const hasBundleVpn = await maybeShowVpnOffer();
-        if (!skipBundleRedirect && String(payload?.deliveryMode || '').toLowerCase() === 'activation' && hasBundleVpn) {
+        if (!skipBundleRedirect && deliveryMode === 'activation' && hasBundleVpn) {
           const url = new URL('/bundle-activation.html', window.location.origin);
           url.searchParams.set('order_id', orderId);
           if (orderLinkToken) url.searchParams.set('t', orderLinkToken);
@@ -2296,9 +2317,14 @@
 
     setupLeaveGuard();
   </script>
-<script src="/assets/js/support-widget.js?v=20260310m" defer></script>
+<script src="/assets/js/support-widget.js?v=20260314a" defer></script>
 </body>
 </html>
+
+
+
+
+
 
 
 

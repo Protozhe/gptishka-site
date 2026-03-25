@@ -44,7 +44,13 @@ function assertTokenActivationDeliveryMode(activationInfo: any) {
   if (deliveryMode === "vpn") {
     throw new AppError("This product is delivered as VPN access. Token activation is not required.", 409);
   }
-  throw new AppError("This product is delivered via login/password. Token activation is not required.", 409);
+  if (deliveryMode === "credentials") {
+    throw new AppError("This product is delivered via login/password. Token activation is not required.", 409);
+  }
+  if (deliveryMode === "support") {
+    throw new AppError("This product is delivered manually via support chat. Token activation is not required.", 409);
+  }
+  throw new AppError("This product does not require token activation.", 409);
 }
 
 async function withActivationOrderLock<T>(orderId: string, job: () => Promise<T>) {
@@ -247,6 +253,20 @@ export const ordersService = {
     const fullOrder = await getOrderWithFirstItem(order.id);
     const firstItem = fullOrder?.items?.[0];
     const deliveryType = resolveProductDeliveryType(firstItem?.product?.tags || []);
+
+    if (deliveryType === "support") {
+      await deliverProduct(order);
+      const supportEmail = resolveSupportEmail();
+      return {
+        orderId: order.id,
+        deliveryMode: "support",
+        status: "manual_support",
+        supportUrl: DEFAULT_SUPPORT_URL,
+        supportEmail,
+        message:
+          "After payment, activation is completed manually by support. Open support chat and provide your order id to receive access.",
+      };
+    }
 
     if (deliveryType === "credentials") {
       await deliverProduct(order);
@@ -537,6 +557,43 @@ export const ordersService = {
     if (!order) throw new AppError("Order not found", 404);
     const product = order.items[0]?.product;
     const deliveryType = resolveProductDeliveryType(product?.tags || []);
+
+    if (deliveryType === "support") {
+      if (order.status === OrderStatus.PAID) {
+        await deliverProduct(order);
+      }
+      const supportEmail = resolveSupportEmail();
+      const certainty =
+        order.status !== OrderStatus.PAID
+          ? {
+              code: "ORDER_NOT_PAID",
+              label: "Заказ не оплачен",
+            }
+          : {
+              code: "MANUAL_SUPPORT_PENDING",
+              label: "Ожидает ручной активации через поддержку",
+            };
+
+      return {
+        orderId: order.id,
+        orderStatus: order.status,
+        emailMasked: maskEmail(order.email),
+        deliveryMode: "support",
+        product: product
+          ? {
+              id: product.id,
+              slug: product.slug,
+              title: product.title,
+            }
+          : null,
+        activation: null,
+        credentials: null,
+        supportUrl: DEFAULT_SUPPORT_URL,
+        supportEmail,
+        certainty,
+        isActivatedConfirmed: false,
+      };
+    }
 
     if (deliveryType === "credentials") {
       if (order.status === OrderStatus.PAID) {
