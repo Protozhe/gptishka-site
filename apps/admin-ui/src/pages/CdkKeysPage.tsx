@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
 type ProductDeliveryType = "activation" | "credentials" | "vpn" | "support";
-type CdkStatus = "unused" | "used";
+type CdkStatus = "unused" | "used" | "archived";
 type CredentialStatus = "available" | "assigned";
 
 type ProductItem = {
@@ -56,13 +56,14 @@ type CredentialListResponse = {
 };
 
 const TEXT = {
-  title: "CDK ключи по товарам",
+  title: "CDK / SDK ключи по товарам",
   subtitle:
-    "Для метода 1 храните CDK-ключи, для метода 2 храните пары логин/пароль. Метод 3 (VPN) и метод 4 (поддержка) не требуют CDK.",
+    "Метод 1: CDK-ключи. Метод 2: пары логин/пароль. Метод 3 (VPN): ключи не нужны. Метод 4: отдельный SDK-пул ключей для токен-активации.",
   searchPlaceholder: "Поиск по коду / логину / email / orderId",
   loading: "Загружаем...",
   empty: "Записей пока нет",
   fillKeys: "Введите хотя бы один CDK ключ",
+  fillSdkKeys: "Введите хотя бы один SDK ключ",
   fillCredentials: "Введите хотя бы одну пару login:password",
   importFailed: "Не удалось загрузить данные",
   returnFailed: "Не удалось вернуть ключ",
@@ -72,6 +73,7 @@ const TEXT = {
   skipped: "Пропущено",
   unused: "Неиспользованные",
   used: "Использованные",
+  archived: "Архив",
   status: "Статус",
   user: "Email клиента",
   order: "ID сделки",
@@ -79,9 +81,12 @@ const TEXT = {
   created: "Добавлен",
   actions: "Действия",
   returnToUnused: "Вернуть",
+  restoreFromArchive: "Восстановить",
+  archive: "В архив",
   remove: "Удалить",
   unusedItem: "Неиспользован",
   usedItem: "Использован",
+  archivedItem: "В архиве",
   unusedCredentials: "Свободные",
   usedCredentials: "Выданные",
   availableItem: "Свободен",
@@ -91,13 +96,14 @@ const TEXT = {
   modeActivation: "Метод 1: CDK-активация",
   modeCredentials: "Метод 2: Логин/пароль",
   modeVpn: "Метод 3: Выдача VPN",
-  modeSupport: "Метод 4: Ручная выдача через поддержку",
+  modeSupport: "Метод 4: SDK-ключи для Grok токена",
   vpnAutoInfo: "CDK ключи для этого товара не используются. VPN-доступ выдается автоматически после оплаты.",
-  supportAutoInfo: "CDK ключи для этого товара не используются. После оплаты клиенту показывается ссылка на поддержку для ручной выдачи.",
   show: "Развернуть",
   hide: "Свернуть",
   textareaPlaceholder:
     "Вставьте CDK ключи (по одному в строке)\nПример: 69742FA2-47A4-48C5-A7CC-71F334688FE7",
+  sdkTextareaPlaceholder:
+    "Вставьте SDK ключи для метода 4 (по одному в строке)\nПример: 69742FA2-47A4-48C5-A7CC-71F334688FE7",
   credentialsPlaceholder: "Вставьте пары login:password (по одной в строке)\nПример: user@mail.ru:Pass123",
   noProducts: "Товары не найдены. Сначала создайте товары в разделе «Товары».",
 };
@@ -166,6 +172,9 @@ function ActivationTable({
   returningId,
   onDelete,
   deletingId,
+  onRestore,
+  restoringId,
+  keyColumnLabel = "CDK",
 }: {
   items: CdkRow[];
   loading: boolean;
@@ -173,13 +182,16 @@ function ActivationTable({
   returningId?: string;
   onDelete?: (id: string) => void;
   deletingId?: string;
+  onRestore?: (id: string) => void;
+  restoringId?: string;
+  keyColumnLabel?: string;
 }) {
   return (
     <div className="max-h-[360px] overflow-auto">
       <table className="min-w-full text-sm">
         <thead className="bg-slate-100 text-left dark:bg-slate-800">
           <tr>
-            <th className="px-4 py-3">CDK</th>
+            <th className="px-4 py-3">{keyColumnLabel}</th>
             <th className="px-4 py-3">{TEXT.status}</th>
             <th className="px-4 py-3">{TEXT.user}</th>
             <th className="px-4 py-3">{TEXT.order}</th>
@@ -192,7 +204,9 @@ function ActivationTable({
           {items.map((item) => (
             <tr className="border-t border-slate-200 dark:border-slate-800" key={item.id}>
               <td className="px-4 py-3 font-semibold">{item.code}</td>
-              <td className="px-4 py-3">{item.status === "unused" ? TEXT.unusedItem : TEXT.usedItem}</td>
+              <td className="px-4 py-3">
+                {item.status === "unused" ? TEXT.unusedItem : item.status === "archived" ? TEXT.archivedItem : TEXT.usedItem}
+              </td>
               <td className="px-4 py-3">{item.email || "-"}</td>
               <td className="px-4 py-3">{item.orderId || "-"}</td>
               <td className="px-4 py-3">{item.assignedAt ? new Date(item.assignedAt).toLocaleString("ru-RU") : "-"}</td>
@@ -206,7 +220,12 @@ function ActivationTable({
                   ) : null}
                   {item.status === "unused" && onDelete ? (
                     <button className="btn-secondary" type="button" onClick={() => onDelete(item.id)} disabled={deletingId === item.id}>
-                      {deletingId === item.id ? `${TEXT.remove}...` : TEXT.remove}
+                      {deletingId === item.id ? `${TEXT.archive}...` : TEXT.archive}
+                    </button>
+                  ) : null}
+                  {item.status === "archived" && onRestore ? (
+                    <button className="btn-secondary" type="button" onClick={() => onRestore(item.id)} disabled={restoringId === item.id}>
+                      {restoringId === item.id ? `${TEXT.restoreFromArchive}...` : TEXT.restoreFromArchive}
                     </button>
                   ) : null}
                 </div>
@@ -286,15 +305,31 @@ function CredentialsTable({
   );
 }
 
-function ActivationProductColumn({ product, search }: { product: ProductItem; search: string }) {
+function KeyProductColumn({
+  product,
+  search,
+  mode = "activation",
+}: {
+  product: ProductItem;
+  search: string;
+  mode?: "activation" | "support";
+}) {
   const qc = useQueryClient();
-  const productKey = normalizeProductKey(product.slug);
+  const isSupportMode = mode === "support";
+  const baseProductKey = normalizeProductKey(product.slug);
+  const productKey = resolveKeyPoolProductKey(baseProductKey, mode);
+  const keyColumnLabel = isSupportMode ? "SDK" : "CDK";
+  const modeLabel = isSupportMode ? TEXT.modeSupport : TEXT.modeActivation;
+  const placeholder = isSupportMode ? TEXT.sdkTextareaPlaceholder : TEXT.textareaPlaceholder;
+  const fillErrorMessage = isSupportMode ? TEXT.fillSdkKeys : TEXT.fillKeys;
   const [text, setText] = useState("");
   const [error, setError] = useState("");
   const [returningId, setReturningId] = useState("");
   const [deletingId, setDeletingId] = useState("");
+  const [restoringId, setRestoringId] = useState("");
   const [showUnused, setShowUnused] = useState(true);
   const [showUsed, setShowUsed] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
 
   const unusedQuery = useQuery<CdkListResponse>({
     queryKey: ["cdks", productKey, "unused", search],
@@ -319,6 +354,22 @@ function ActivationProductColumn({ product, search }: { product: ProductItem; se
         await api.get("/cdks", {
           params: {
             status: "used",
+            productKey,
+            q: search || undefined,
+            page: 1,
+            limit: 200,
+          },
+        })
+      ).data,
+  });
+
+  const archivedQuery = useQuery<CdkListResponse>({
+    queryKey: ["cdks", productKey, "archived", search],
+    queryFn: async () =>
+      (
+        await api.get("/cdks", {
+          params: {
+            status: "archived",
             productKey,
             q: search || undefined,
             page: 1,
@@ -372,10 +423,23 @@ function ActivationProductColumn({ product, search }: { product: ProductItem; se
     },
   });
 
+  const restoreMutation = useMutation({
+    mutationFn: async (id: string) => (await api.post(`/cdks/${encodeURIComponent(id)}/restore`)).data,
+    onSuccess: () => {
+      setRestoringId("");
+      setError("");
+      qc.invalidateQueries({ queryKey: ["cdks", productKey] });
+    },
+    onError: (err: any) => {
+      setRestoringId("");
+      setError(err?.response?.data?.message || TEXT.returnFailed);
+    },
+  });
+
   const onImport = (e: FormEvent) => {
     e.preventDefault();
     if (!text.trim()) {
-      setError(TEXT.fillKeys);
+      setError(fillErrorMessage);
       return;
     }
     setError("");
@@ -388,25 +452,36 @@ function ActivationProductColumn({ product, search }: { product: ProductItem; se
   };
 
   const onDeleteUnused = (id: string) => {
-    if (!window.confirm("Удалить ключ? Это действие нельзя отменить.")) return;
+    if (!window.confirm("Отправить ключ в архив? Из архива его можно восстановить.")) return;
     setDeletingId(id);
     deleteMutation.mutate(id);
   };
 
+  const onRestoreArchived = (id: string) => {
+    setRestoringId(id);
+    restoreMutation.mutate(id);
+  };
+
   const unusedItems = unusedQuery.data?.items || [];
   const usedItems = usedQuery.data?.items || [];
-  const loading = unusedQuery.isLoading || usedQuery.isLoading;
+  const archivedItems = archivedQuery.data?.items || [];
+  const loading = unusedQuery.isLoading || usedQuery.isLoading || archivedQuery.isLoading;
 
   return (
     <section className="card p-4 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-base font-semibold">{product.title}</h3>
-          <p className="text-xs text-slate-500">productKey: {productKey}</p>
-          <p className="text-xs text-emerald-700 dark:text-emerald-400">{TEXT.modeActivation}</p>
+          <p className="text-xs text-slate-500">
+            poolKey: {productKey}
+            {isSupportMode ? ` (base: ${baseProductKey})` : ""}
+          </p>
+          <p className={isSupportMode ? "text-xs text-indigo-700 dark:text-indigo-300" : "text-xs text-emerald-700 dark:text-emerald-400"}>
+            {modeLabel}
+          </p>
         </div>
         <div className="text-xs text-slate-600">
-          {TEXT.unused}: <b>{unusedItems.length}</b> | {TEXT.used}: <b>{usedItems.length}</b>
+          {TEXT.unused}: <b>{unusedItems.length}</b> | {TEXT.used}: <b>{usedItems.length}</b> | {TEXT.archived}: <b>{archivedItems.length}</b>
         </div>
       </div>
 
@@ -415,7 +490,7 @@ function ActivationProductColumn({ product, search }: { product: ProductItem; se
           className="input min-h-[120px]"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder={TEXT.textareaPlaceholder}
+          placeholder={placeholder}
         />
         <div className="flex flex-wrap items-center gap-2">
           <button className="btn-primary" disabled={importMutation.isPending}>
@@ -446,6 +521,7 @@ function ActivationProductColumn({ product, search }: { product: ProductItem; se
             loading={loading}
             onDelete={onDeleteUnused}
             deletingId={deletingId}
+            keyColumnLabel={keyColumnLabel}
           />
         </CurtainBlock>
 
@@ -460,6 +536,22 @@ function ActivationProductColumn({ product, search }: { product: ProductItem; se
             loading={loading}
             onReturn={onReturnToUnused}
             returningId={returningId}
+            keyColumnLabel={keyColumnLabel}
+          />
+        </CurtainBlock>
+
+        <CurtainBlock
+          title={TEXT.archived}
+          count={archivedItems.length}
+          open={showArchived}
+          onToggle={() => setShowArchived((value) => !value)}
+        >
+          <ActivationTable
+            items={archivedItems}
+            loading={loading}
+            onRestore={onRestoreArchived}
+            restoringId={restoringId}
+            keyColumnLabel={keyColumnLabel}
           />
         </CurtainBlock>
       </div>
@@ -630,23 +722,6 @@ function VpnProductColumn({ product }: { product: ProductItem }) {
   );
 }
 
-function SupportProductColumn({ product }: { product: ProductItem }) {
-  const productKey = normalizeProductKey(product.slug);
-
-  return (
-    <section className="card p-4 space-y-3">
-      <div>
-        <h3 className="text-base font-semibold">{product.title}</h3>
-        <p className="text-xs text-slate-500">productKey: {productKey}</p>
-        <p className="text-xs text-indigo-700 dark:text-indigo-300">{TEXT.modeSupport}</p>
-      </div>
-      <div className="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900 dark:border-indigo-900/40 dark:bg-indigo-900/20 dark:text-indigo-100">
-        {TEXT.supportAutoInfo}
-      </div>
-    </section>
-  );
-}
-
 function ProductColumn({ product, search }: { product: ProductItem; search: string }) {
   const deliveryType = resolveDeliveryType(product);
   if (deliveryType === "credentials") {
@@ -656,10 +731,10 @@ function ProductColumn({ product, search }: { product: ProductItem; search: stri
     return <VpnProductColumn product={product} />;
   }
   if (deliveryType === "support") {
-    return <SupportProductColumn product={product} />;
+    return <KeyProductColumn product={product} search={search} mode="support" />;
   }
 
-  return <ActivationProductColumn product={product} search={search} />;
+  return <KeyProductColumn product={product} search={search} mode="activation" />;
 }
 
 export default function CdkKeysPage() {
@@ -725,4 +800,11 @@ function normalizeProductKey(value: string) {
     .replace(/^-+/, "")
     .replace(/-+$/, "");
   return normalized || "chatgpt";
+}
+
+function resolveKeyPoolProductKey(baseProductKey: string, mode: "activation" | "support") {
+  if (mode === "support") {
+    return normalizeProductKey(`${baseProductKey}-sdk4`);
+  }
+  return baseProductKey;
 }

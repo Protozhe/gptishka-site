@@ -7,7 +7,7 @@ import { cdkKeysStore } from "./cdk-keys.store";
 import { licenseService } from "../../services/licenseService";
 
 const listSchema = z.object({
-  status: z.enum(["unused", "used"]).optional(),
+  status: z.enum(["unused", "used", "archived"]).optional(),
   productKey: z.string().optional(),
   q: z.string().optional(),
   page: z.coerce.number().int().min(1).default(1),
@@ -79,6 +79,21 @@ cdkKeysRouter.post(
   })
 );
 
+cdkKeysRouter.post(
+  "/:id/restore",
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.id || "");
+    const result = await cdkKeysStore.restoreArchived(id, { userId: req.auth?.userId });
+    if (!result.ok) {
+      if (result.reason === "not_archived") {
+        return res.status(409).json({ message: "Only archived CDK keys can be restored" });
+      }
+      return res.status(404).json({ message: "CDK key not found" });
+    }
+    res.json(result.item);
+  })
+);
+
 cdkKeysRouter.delete(
   "/:id",
   asyncHandler(async (req, res) => {
@@ -86,7 +101,7 @@ cdkKeysRouter.delete(
     const result = await cdkKeysStore.removeUnused(id, { userId: req.auth?.userId });
     if (!result.ok) {
       if (result.reason === "not_unused") {
-        return res.status(409).json({ message: "Only unused CDK keys can be deleted" });
+        return res.status(409).json({ message: "Only unused CDK keys can be archived" });
       }
       return res.status(404).json({ message: "CDK key not found" });
     }

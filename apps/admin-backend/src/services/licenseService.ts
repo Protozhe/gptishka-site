@@ -306,7 +306,7 @@ export const licenseService = {
     return row;
   },
 
-  async deleteAvailable(keyId: string, actor?: { userId?: string }) {
+  async archiveAvailable(keyId: string, actor?: { userId?: string }) {
     const id = String(keyId || "").trim();
     if (!id) throw new Error("keyId is required");
 
@@ -315,21 +315,60 @@ export const licenseService = {
     if (row.status !== "available") return { ok: false as const, reason: "not_available" as const };
 
     const auditUserId = await resolveAuditUserId(actor?.userId);
+    const ts = now();
 
     await prisma.$transaction(async (tx) => {
-      await tx.licenseKey.delete({ where: { id } });
+      await tx.licenseKey.update({
+        where: { id },
+        data: {
+          status: "revoked",
+          revokedAt: ts,
+        },
+      });
       await tx.licenseKeyAuditLog.create({
         data: {
-          // Keep audit row after key deletion without FK violations.
-          keyId: null,
-          action: "delete_available",
+          keyId: id,
+          action: "archive_available",
           userId: auditUserId,
-          meta: asJson({ deletedKeyId: id, keyValue: row.keyValue, productKey: row.productKey }),
+          meta: asJson({ archivedKeyId: id, keyValue: row.keyValue, productKey: row.productKey }),
         },
       });
     });
 
     return { ok: true as const };
+  },
+
+  async restoreArchived(keyId: string, actor?: { userId?: string }) {
+    const id = String(keyId || "").trim();
+    if (!id) throw new Error("keyId is required");
+
+    const row = await prisma.licenseKey.findUnique({ where: { id } });
+    if (!row) return { ok: false as const, reason: "not_found" as const };
+    if (row.status !== "revoked") return { ok: false as const, reason: "not_archived" as const };
+
+    const auditUserId = await resolveAuditUserId(actor?.userId);
+
+    const updated = await prisma.licenseKey.update({
+      where: { id },
+      data: {
+        status: "available",
+        orderId: null,
+        email: null,
+        reservedAt: null,
+        usedAt: null,
+        revokedAt: null,
+      },
+    });
+
+    await prisma.licenseKeyAuditLog.create({
+      data: {
+        keyId: id,
+        action: "restore_archived",
+        userId: auditUserId,
+      },
+    });
+
+    return { ok: true as const, row: updated };
   },
 
   async stats() {

@@ -2,7 +2,7 @@ import { LicenseKey } from "@prisma/client";
 import { canonicalProductKey } from "../../common/utils/product-key";
 import { licenseService } from "../../services/licenseService";
 
-export type CdkStatus = "unused" | "used";
+export type CdkStatus = "unused" | "used" | "archived";
 
 export type CdkKeyRecord = {
   id: string;
@@ -17,7 +17,7 @@ export type CdkKeyRecord = {
 };
 
 function mapRow(row: LicenseKey): CdkKeyRecord {
-  const status: CdkStatus = row.status === "available" ? "unused" : "used";
+  const status: CdkStatus = row.status === "available" ? "unused" : row.status === "revoked" ? "archived" : "used";
   return {
     id: row.id,
     code: row.keyValue,
@@ -34,6 +34,7 @@ function mapRow(row: LicenseKey): CdkKeyRecord {
 function mapStatus(status?: CdkStatus) {
   if (status === "unused") return "available" as const;
   if (status === "used") return "used" as const;
+  if (status === "archived") return "revoked" as const;
   return undefined;
 }
 
@@ -91,11 +92,20 @@ export const cdkKeysStore = {
   },
 
   async removeUnused(id: string, actor?: { userId?: string }) {
-    const result = await licenseService.deleteAvailable(id, actor);
+    const result = await licenseService.archiveAvailable(id, actor);
     if (!result.ok) {
       if (result.reason === "not_available") return { ok: false as const, reason: "not_unused" as const };
       return { ok: false as const, reason: "not_found" as const };
     }
     return { ok: true as const };
+  },
+
+  async restoreArchived(id: string, actor?: { userId?: string }) {
+    const result = await licenseService.restoreArchived(id, actor);
+    if (!result.ok) {
+      if (result.reason === "not_archived") return { ok: false as const, reason: "not_archived" as const };
+      return { ok: false as const, reason: "not_found" as const };
+    }
+    return { ok: true as const, item: mapRow(result.row) };
   },
 };
