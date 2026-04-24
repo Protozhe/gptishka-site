@@ -10,6 +10,7 @@ import { paymentWebhookService } from "../payments/payment-webhook.service";
 import { activationStore, type ActivationRecord } from "./activation.store";
 import { deliverProduct } from "./delivery.service";
 import { resolveProductDeliveryType } from "../../common/utils/product-delivery";
+import { canonicalProductKey } from "../../common/utils/product-key";
 import { manualCredentialsStore } from "../products/manual-credentials.store";
 import { toVpnMePayload, vpnService } from "../../services/vpn.service";
 import crypto from "crypto";
@@ -30,7 +31,7 @@ const ORDER_FILE_LOCK_STALE_MS = 2 * 60 * 1000;
 const ORDER_FILE_LOCK_POLL_MS = 120;
 const activationLockDir = path.join(resolveRuntimeDir(), "order-locks");
 const DEFAULT_SUPPORT_URL = "https://t.me/gptishkasupp";
-const DEFAULT_SUPPORT_EMAIL = "support@gptishka.shop";
+const DEFAULT_SUPPORT_EMAIL = "";
 
 function resolveSupportEmail() {
   const raw = String(env.SMTP_FROM || "").trim();
@@ -41,16 +42,18 @@ function resolveSupportEmail() {
 function assertTokenActivationDeliveryMode(activationInfo: any) {
   const deliveryMode = String(activationInfo?.deliveryMode || "activation").trim().toLowerCase();
   if (deliveryMode === "activation") return;
+  if (deliveryMode === "support") return;
   if (deliveryMode === "vpn") {
     throw new AppError("This product is delivered as VPN access. Token activation is not required.", 409);
   }
   if (deliveryMode === "credentials") {
     throw new AppError("This product is delivered via login/password. Token activation is not required.", 409);
   }
-  if (deliveryMode === "support") {
-    throw new AppError("This product is delivered manually via support chat. Token activation is not required.", 409);
-  }
   throw new AppError("This product does not require token activation.", 409);
+}
+
+function isSupportTokenActivationMode(activationInfo: any) {
+  return String(activationInfo?.deliveryMode || "").trim().toLowerCase() === "support";
 }
 
 async function withActivationOrderLock<T>(orderId: string, job: () => Promise<T>) {
@@ -161,13 +164,16 @@ function sleep(ms: number) {
 export const ordersService = {
   async list(params: any) {
     const result = await ordersRepository.list(params);
-    const activationByOrder = new Map(
-      activationStore
-        .list()
-        .map((item) => normalizeActivationRecordForRead(item))
-        .filter((item): item is ActivationRecord => Boolean(item))
-        .map((item) => [String(item.orderId || ""), item] as const)
-    );
+    const orderIds = (Array.isArray(result.items) ? result.items : [])
+      .map((order: any) => String(order?.id || "").trim())
+      .filter(Boolean);
+    const activationSnapshot = activationStore.findByOrderIds(orderIds);
+    const activationByOrder = new Map<string, ActivationRecord>();
+    for (const orderId of orderIds) {
+      const activation = normalizeActivationRecordForRead(activationSnapshot.get(orderId));
+      if (activation) activationByOrder.set(orderId, activation);
+    }
+
     const items = result.items.map((order: any) => {
       const activation = activationByOrder.get(String(order.id || ""));
       return {
@@ -253,20 +259,7 @@ export const ordersService = {
     const fullOrder = await getOrderWithFirstItem(order.id);
     const firstItem = fullOrder?.items?.[0];
     const deliveryType = resolveProductDeliveryType(firstItem?.product?.tags || []);
-
-    if (deliveryType === "support") {
-      await deliverProduct(order);
-      const supportEmail = resolveSupportEmail();
-      return {
-        orderId: order.id,
-        deliveryMode: "support",
-        status: "manual_support",
-        supportUrl: DEFAULT_SUPPORT_URL,
-        supportEmail,
-        message:
-          "After payment, activation is completed manually by support. Open support chat and provide your order id to receive access.",
-      };
-    }
+    const isSupportTokenFlow = deliveryType === "support";
 
     if (deliveryType === "credentials") {
       await deliverProduct(order);
@@ -332,13 +325,17 @@ export const ordersService = {
 
     return {
       orderId: current.orderId,
-      deliveryMode: "activation",
+      deliveryMode: isSupportTokenFlow ? "support" : "activation",
+      activationFlow: isSupportTokenFlow ? "grok_token" : "chatgpt_token",
       product: current.productKey,
       status: current.status,
       taskId: current.taskId || null,
       verificationState: current.verificationState || "unknown",
       lastProviderMessage: current.lastProviderMessage || null,
       lastProviderCheckedAt: current.lastProviderCheckedAt || null,
+      processingHint: isSupportTokenFlow
+        ? "Activation usually takes 5-15 minutes after token submission."
+        : null,
     };
   },
 
@@ -352,10 +349,7 @@ export const ordersService = {
     const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
     assertTokenActivationDeliveryMode(activationInfo);
 
-    const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
-    if (!stored?.cdk) {
-      throw new AppError("Activation key is not issued yet", 409);
-    }
+    const stored = await ensureActivationRecordForTokenFlow(orderId, orderToken, activationInfo);
 
     const tokenInfo = parseClientTokenInput(token);
     const tokenMeta = buildTokenMeta(tokenInfo);
@@ -381,14 +375,22 @@ export const ordersService = {
         reasons.push("Token is expired");
       }
     }
+    if (isSupportTokenActivationMode(activationInfo)) {
+      const supportValidation = validateSupportSessionJwtToken(tokenInfo.extracted || tokenInfo.raw);
+      reasons.push(...supportValidation.reasons);
+    }
 
-    // Sanity: ensure we actually have a DB-issued CDK for this order/product.
-    const issued = await prisma.licenseKey.findFirst({
-      where: { orderId, productKey: stored.productKey, status: "used" },
-      select: { id: true },
-    });
-    if (!issued) {
+    if (!String(stored.cdk || "").trim()) {
       reasons.push("Activation key is not issued yet");
+    } else {
+      // Sanity: ensure we actually have a DB-issued CDK for this order/product.
+      const issued = await prisma.licenseKey.findFirst({
+        where: { orderId, productKey: stored.productKey, status: "used" },
+        select: { id: true },
+      });
+      if (!issued) {
+        reasons.push("Activation key is not issued yet");
+      }
     }
 
     if (tokenInfo.raw) {
@@ -435,6 +437,12 @@ export const ordersService = {
       const safeToken = tokenInfo.extracted || tokenInfo.raw;
       if (!safeToken) throw new AppError("Token is required", 400);
       if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
+      if (isSupportTokenActivationMode(activationInfo)) {
+        const supportValidation = validateSupportSessionJwtToken(safeToken);
+        if (supportValidation.reasons.length > 0) {
+          throw new AppError(`Invalid token format: ${supportValidation.reasons.join("; ")}`, 400);
+        }
+      }
       const nextTokenMeta = buildTokenMeta(tokenInfo);
       if (isTokenBoundToAnotherFingerprint(current?.tokenMeta, nextTokenMeta)) {
         throw new AppError("Order is already bound to another token", 409);
@@ -496,11 +504,19 @@ export const ordersService = {
     const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
     const payload = await fetchActivationTaskPayload(taskId, stored?.deviceId || null);
     updateActivationFromProviderPayload(orderId, taskId, payload);
+
+    const current = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
+
+    const isSuccess = current?.status === "success";
+    const isPending = current?.status === "processing" || current?.verificationState === "pending";
+    const responseTaskId = String(current?.taskId || payload.task_id || taskId);
+    const responseMessage = String(current?.lastProviderMessage || payload.message || "");
+
     return {
-      pending: Boolean(payload.pending),
-      success: Boolean(payload.success),
-      message: payload.message || "",
-      task_id: String(payload.task_id || taskId),
+      pending: Boolean(isPending && !isSuccess),
+      success: Boolean(isSuccess),
+      message: responseMessage,
+      task_id: responseTaskId,
     };
   },
 
@@ -510,7 +526,7 @@ export const ordersService = {
   ) {
     assertOrderId(orderId);
     const current = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
-    if (!current) throw new AppError("Activation data is not found for this order", 404);
+    if (!current) throw new AppError("Client token is not stored or expired", 404);
 
     const cleaned = cleanupExpiredStoredClientToken(current);
     if (cleaned.changed) {
@@ -557,44 +573,6 @@ export const ordersService = {
     if (!order) throw new AppError("Order not found", 404);
     const product = order.items[0]?.product;
     const deliveryType = resolveProductDeliveryType(product?.tags || []);
-
-    if (deliveryType === "support") {
-      if (order.status === OrderStatus.PAID) {
-        await deliverProduct(order);
-      }
-      const supportEmail = resolveSupportEmail();
-      const certainty =
-        order.status !== OrderStatus.PAID
-          ? {
-              code: "ORDER_NOT_PAID",
-              label: "Заказ не оплачен",
-            }
-          : {
-              code: "MANUAL_SUPPORT_PENDING",
-              label: "Ожидает ручной активации через поддержку",
-            };
-
-      return {
-        orderId: order.id,
-        orderStatus: order.status,
-        emailMasked: maskEmail(order.email),
-        deliveryMode: "support",
-        product: product
-          ? {
-              id: product.id,
-              slug: product.slug,
-              title: product.title,
-            }
-          : null,
-        activation: null,
-        credentials: null,
-        supportUrl: DEFAULT_SUPPORT_URL,
-        supportEmail,
-        certainty,
-        isActivatedConfirmed: false,
-      };
-    }
-
     if (deliveryType === "credentials") {
       if (order.status === OrderStatus.PAID) {
         await deliverProduct(order);
@@ -727,7 +705,8 @@ export const ordersService = {
       orderId: order.id,
       orderStatus: order.status,
       emailMasked: maskEmail(order.email),
-      deliveryMode: "activation",
+      deliveryMode: deliveryType === "support" ? "support" : "activation",
+      activationFlow: deliveryType === "support" ? "grok_token" : "chatgpt_token",
       product: product
         ? {
             id: product.id,
@@ -761,6 +740,10 @@ export const ordersService = {
         : null,
       certainty,
       isActivatedConfirmed: certainty.code === "ACTIVATED_CONFIRMED_PROVIDER",
+      processingHint:
+        deliveryType === "support"
+          ? "Activation usually takes 5-15 minutes after token submission."
+          : null,
     };
   },
 
@@ -1088,23 +1071,109 @@ function signLavaPayload(payload: unknown, secret: string) {
   return crypto.createHmac("sha256", secret).update(JSON.stringify(payload), "utf8").digest("hex");
 }
 
-async function startActivationUnsafe(orderId: string, token: string, orderToken?: string) {
-  await ordersService.getActivation(orderId, orderToken);
-  const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
-  if (!stored?.cdk) {
-    throw new AppError("Activation key is not issued yet", 409);
+function resolveActivationPoolProductKeyForOrder(orderWithItem: Awaited<ReturnType<typeof getOrderWithFirstItem>>) {
+  const firstItem = orderWithItem?.items?.[0];
+  const product = firstItem?.product || null;
+  const deliveryType = resolveProductDeliveryType(product?.tags || []);
+  const productSlug = String(product?.slug || "").trim().toLowerCase();
+  const productId = String(product?.id || "").trim().toLowerCase();
+  const baseProductKey = canonicalProductKey(productSlug || productId || "chatgpt");
+  if (!baseProductKey) return "chatgpt";
+  if (deliveryType === "support") {
+    return canonicalProductKey(`${baseProductKey}-sdk4`) || `${baseProductKey}-sdk4`;
   }
+  return baseProductKey;
+}
+
+async function ensureActivationRecordForTokenFlow(orderId: string, orderToken?: string, activationInfo?: any) {
+  const existing = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
+  if (existing) return existing;
+
+  const order = await assertPaidOrderAccess(orderId, orderToken);
+  const orderWithItem = await getOrderWithFirstItem(order.id);
+  const productKey = resolveActivationPoolProductKeyForOrder(orderWithItem);
+  const nowIso = new Date().toISOString();
+  const fallbackMessage =
+    String(activationInfo?.deliveryMode || "").toLowerCase() === "support"
+      ? "Waiting for SDK key assignment"
+      : "Activation key is not issued yet";
+
+  const skeleton: ActivationRecord = {
+    orderId: order.id,
+    email: order.email,
+    productKey,
+    cdk: "",
+    status: "issued",
+    taskId: null,
+    attempts: 0,
+    tokenValidationAttempts: 0,
+    verificationState: "unknown",
+    lastProviderMessage: fallbackMessage,
+    lastProviderCheckedAt: nowIso,
+    lastProviderPayload: null,
+    issuedAt: nowIso,
+    updatedAt: nowIso,
+  };
+  activationStore.upsert(skeleton);
+  return normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || skeleton;
+}
+
+async function startActivationUnsafe(orderId: string, token: string, orderToken?: string) {
+  const activationInfo = await ordersService.getActivation(orderId, orderToken);
+  assertTokenActivationDeliveryMode(activationInfo);
+  let stored = await ensureActivationRecordForTokenFlow(orderId, orderToken, activationInfo);
   const tokenInfo = parseClientTokenInput(token);
   if (!tokenInfo.raw) throw new AppError("Token is required", 400);
   if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
+  if (isSupportTokenActivationMode(activationInfo)) {
+    const supportValidation = validateSupportSessionJwtToken(tokenInfo.extracted || tokenInfo.raw);
+    if (supportValidation.reasons.length > 0) {
+      throw new AppError(`Invalid token format: ${supportValidation.reasons.join("; ")}`, 400);
+    }
+  }
   const storagePatch = buildStoredClientTokenPatch(tokenInfo.raw);
+  const nowIso = new Date().toISOString();
+  const latestBeforeStart = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
+  activationStore.upsert({
+    ...latestBeforeStart,
+    ...storagePatch,
+    lastTokenValidatedAt: nowIso,
+    tokenValidationAttempts: Math.max(0, Number(latestBeforeStart.tokenValidationAttempts || 0)) + 1,
+    updatedAt: nowIso,
+  });
+  stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || latestBeforeStart;
+
+  if (!String(stored.cdk || "").trim()) {
+    const paidOrder = await assertPaidOrderAccess(orderId, orderToken);
+    const nextCdk = await activationStore.reserveCdkForOrder({
+      productKey: String(stored.productKey || "chatgpt"),
+      orderId: paidOrder.id,
+      email: paidOrder.email,
+    });
+    if (nextCdk) {
+      const latest = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
+      activationStore.upsert({
+        ...latest,
+        cdk: nextCdk,
+        status: "issued",
+        taskId: null,
+        verificationState: "unknown",
+        lastProviderMessage: "Activation key issued",
+        lastProviderCheckedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || latest;
+    }
+  }
+  if (!String(stored.cdk || "").trim()) {
+    throw new AppError("Activation key is not issued yet", 409);
+  }
 
   // Upstream provider appears to bind tasks to a device id; keep it stable.
   const deviceId = String(env.ACTIVATION_DEVICE_ID || "web").trim() || "web";
 
   const userCandidates = buildUpstreamUserCandidates(tokenInfo);
   const tokenMeta = buildTokenMeta(tokenInfo);
-  const attempts = Math.max(0, Number(stored.attempts || 0));
 
   if (stored.status === "success") {
     throw new AppError("Activation is already completed", 409);
@@ -1116,6 +1185,40 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     // Idempotent behavior for repeated clicks with the same token.
     return { taskId: String(stored.taskId || ""), reused: true };
   }
+  if (stored.status === "failed" && Math.max(0, Number(stored.attempts || 0)) > 0) {
+    const canRotate = shouldAutoRotateAfterFailedAttempt(stored);
+    if (canRotate) {
+      const order = await assertPaidOrderAccess(orderId, orderToken);
+      const nextCdk = await activationStore.reserveCdkForOrder({
+        productKey: String(stored.productKey || "chatgpt"),
+        orderId: order.id,
+        email: order.email,
+        excludeCdk: stored.cdk || undefined,
+      });
+      if (nextCdk) {
+        const nowIso = new Date().toISOString();
+        const latest = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
+        activationStore.upsert({
+          ...latest,
+          cdk: nextCdk,
+          status: "issued",
+          taskId: null,
+          verificationState: "unknown",
+          lastProviderMessage: "Previous failed attempt detected. New key issued automatically.",
+          lastProviderCheckedAt: nowIso,
+          lastProviderPayload: {
+            source: "auto-key-rotation",
+            previousStatus: String(stored.status || ""),
+            previousTaskId: String(stored.taskId || ""),
+            previousMessage: String(stored.lastProviderMessage || ""),
+          },
+          updatedAt: nowIso,
+        });
+        stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
+      }
+    }
+  }
+  const attempts = Math.max(0, Number(stored.attempts || 0));
   if (stored.status === "failed" && attempts > 0) {
     throw new AppError("Previous activation attempt failed. Request a new key and retry.", 409);
   }
@@ -1173,6 +1276,20 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   });
 
   return { taskId };
+}
+
+function shouldAutoRotateAfterFailedAttempt(record: ActivationRecord | null | undefined) {
+  if (!record || record.status !== "failed") return false;
+  const message = String(record.lastProviderMessage || "").toLowerCase();
+  const payload = record.lastProviderPayload && typeof record.lastProviderPayload === "object"
+    ? JSON.stringify(record.lastProviderPayload).toLowerCase()
+    : "";
+  const joined = `${message}\n${payload}`;
+  return (
+    joined.includes("record not found") ||
+    joined.includes("get cdk failed") ||
+    joined.includes("cdk not found")
+  );
 }
 
 function buildStoredClientTokenPatch(token: string) {
@@ -1433,7 +1550,32 @@ function isTokenBoundToAnotherFingerprint(
   return currentFp !== nextFp;
 }
 
-function tryDecodeJwtPayload(token: string): { exp?: number; iat?: number } | null {
+function validateSupportSessionJwtToken(token: string) {
+  const value = String(token || "").trim();
+  const reasons: string[] = [];
+  const parts = value.split(".");
+  if (parts.length !== 3) {
+    reasons.push("JWT token format is required (header.payload.signature)");
+    return { reasons };
+  }
+
+  const payload = tryDecodeJwtPayloadObject(value);
+  if (!payload) {
+    reasons.push("JWT payload is invalid");
+    return { reasons };
+  }
+
+  const sessionId = typeof (payload as any)?.session_id === "string" ? String((payload as any).session_id).trim() : "";
+  if (!sessionId) {
+    reasons.push("JWT payload must include session_id");
+  } else if (!/^[a-z0-9-]{16,}$/i.test(sessionId)) {
+    reasons.push("session_id has an unexpected format");
+  }
+
+  return { reasons };
+}
+
+function tryDecodeJwtPayloadObject(token: string): Record<string, unknown> | null {
   const t = String(token || "").trim();
   const parts = t.split(".");
   if (parts.length !== 3) return null;
@@ -1442,14 +1584,20 @@ function tryDecodeJwtPayload(token: string): { exp?: number; iat?: number } | nu
 
   try {
     const json = Buffer.from(base64UrlToBase64(payload), "base64").toString("utf8");
-    const parsed = JSON.parse(json) as any;
-    const exp = typeof parsed?.exp === "number" ? parsed.exp : undefined;
-    const iat = typeof parsed?.iat === "number" ? parsed.iat : undefined;
-    if (!exp && !iat) return null;
-    return { exp, iat };
+    const parsed = JSON.parse(json);
+    return parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : null;
   } catch {
     return null;
   }
+}
+
+function tryDecodeJwtPayload(token: string): { exp?: number; iat?: number } | null {
+  const parsed = tryDecodeJwtPayloadObject(token) as any;
+  if (!parsed) return null;
+  const exp = typeof parsed?.exp === "number" ? parsed.exp : undefined;
+  const iat = typeof parsed?.iat === "number" ? parsed.iat : undefined;
+  if (!exp && !iat) return null;
+  return { exp, iat };
 }
 
 function base64UrlToBase64(value: string) {
@@ -1462,29 +1610,98 @@ function updateActivationFromProviderPayload(orderId: string, taskId: string, pa
   pending?: boolean;
   success?: boolean;
   message?: string;
+  status?: string;
+  state?: string;
+  error?: string;
+  progress?: number;
   task_id?: string;
   cdk?: string;
 }) {
   const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
   if (!stored) return;
   const nowIso = new Date().toISOString();
-  const nextStatus = payload.pending ? "processing" : payload.success ? "success" : "failed";
-  const verificationState = payload.pending ? "pending" : payload.success ? "success" : "failed";
+  const inferred = inferProviderTaskState(payload);
+  let nextStatus: ActivationRecord["status"] = stored.status;
+  let verificationState: NonNullable<ActivationRecord["verificationState"]> = stored.verificationState || "unknown";
+
+  if (inferred.success) {
+    nextStatus = "success";
+    verificationState = "success";
+  } else if (inferred.pending) {
+    nextStatus = "processing";
+    verificationState = "pending";
+  } else if (inferred.failed) {
+    nextStatus = "failed";
+    verificationState = "failed";
+  } else if (String(payload.task_id || taskId).trim() && stored.status === "issued") {
+    // Unknown provider payload but task exists: keep flow in-progress, don't downgrade to failed.
+    nextStatus = "processing";
+    verificationState = verificationState === "unknown" ? "pending" : verificationState;
+  }
+
+  const nextMessage = String(inferred.message || payload.message || payload.error || stored.lastProviderMessage || "");
   activationStore.upsert({
     ...stored,
     status: nextStatus,
     verificationState,
     taskId: String(payload.task_id || taskId),
-    lastProviderMessage: String(payload.message || ""),
+    lastProviderMessage: nextMessage,
     lastProviderCheckedAt: nowIso,
     lastProviderPayload: {
-      pending: Boolean(payload.pending),
-      success: Boolean(payload.success),
-      message: String(payload.message || ""),
+      pending: Boolean(inferred.pending),
+      success: Boolean(inferred.success),
+      failed: Boolean(inferred.failed),
+      status: String(inferred.status || ""),
+      message: nextMessage,
       task_id: String(payload.task_id || taskId),
+      raw: payload,
     },
     updatedAt: nowIso,
   });
+}
+
+function inferProviderTaskState(payload: {
+  pending?: boolean;
+  success?: boolean;
+  message?: string;
+  status?: string;
+  state?: string;
+  error?: string;
+}) {
+  const toBool = (value: unknown): boolean | null => {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "number") return value === 1 ? true : value === 0 ? false : null;
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (["true", "1", "yes", "ok", "success"].includes(normalized)) return true;
+      if (["false", "0", "no", "fail", "failed", "error"].includes(normalized)) return false;
+    }
+    return null;
+  };
+
+  const status = String(payload.status || payload.state || "").trim().toLowerCase();
+  const pendingStatuses = new Set(["created", "prepared", "pending", "processing", "running", "queued", "in_progress"]);
+  const successStatuses = new Set(["success", "succeeded", "done", "completed", "finish", "finished"]);
+  const failedStatuses = new Set(["failed", "error", "cancel", "canceled", "cancelled", "rejected", "expired"]);
+
+  const pendingFlag = toBool(payload.pending);
+  const successFlag = toBool(payload.success);
+  const hasError = Boolean(String(payload.error || "").trim());
+
+  const pending = pendingFlag === true || (!status ? false : pendingStatuses.has(status));
+  const success = successFlag === true || (!status ? false : successStatuses.has(status)) || (status === "finish" && !hasError);
+  const failed =
+    (!success && !pending && (successFlag === false && hasError)) ||
+    (!success && !pending && failedStatuses.has(status)) ||
+    (!success && !pending && status === "finish" && hasError);
+
+  return {
+    pending,
+    success,
+    failed,
+    status,
+    message: String(payload.message || payload.error || "").trim(),
+  };
 }
 
 function updateActivationFromProviderCdkPayload(orderId: string, productId: string, payload: ActivationCdkCheckPayload) {

@@ -52,6 +52,8 @@ function resolveDataDir() {
 
 const dataDir = resolveDataDir();
 const activationFile = path.join(dataDir, "order-activations.json");
+let cachedData: ActivationStoreData | null = null;
+let cachedMtimeMs: number | null = null;
 
 function ensureFiles() {
   fs.mkdirSync(dataDir, { recursive: true });
@@ -73,33 +75,85 @@ function writeJson(file: string, data: unknown) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2), "utf8");
 }
 
+function readStore(): ActivationStoreData {
+  ensureFiles();
+  try {
+    const stat = fs.statSync(activationFile);
+    const mtimeMs = Number(stat.mtimeMs || 0);
+    if (cachedData && cachedMtimeMs !== null && mtimeMs === cachedMtimeMs) {
+      return cachedData;
+    }
+    const fresh = readJson<ActivationStoreData>(activationFile, { items: [] });
+    cachedData = fresh;
+    cachedMtimeMs = mtimeMs;
+    return fresh;
+  } catch {
+    const fallback = { items: [] };
+    cachedData = fallback;
+    cachedMtimeMs = null;
+    return fallback;
+  }
+}
+
+function writeStore(data: ActivationStoreData) {
+  ensureFiles();
+  writeJson(activationFile, data);
+  cachedData = data;
+  try {
+    cachedMtimeMs = Number(fs.statSync(activationFile).mtimeMs || 0);
+  } catch {
+    cachedMtimeMs = null;
+  }
+}
+
 export const activationStore = {
   ensure() {
     ensureFiles();
   },
 
   findByOrderId(orderId: string) {
-    ensureFiles();
-    const data = readJson<ActivationStoreData>(activationFile, { items: [] });
+    const data = readStore();
     return data.items.find((item) => item.orderId === orderId) || null;
   },
 
   upsert(record: ActivationRecord) {
-    ensureFiles();
-    const data = readJson<ActivationStoreData>(activationFile, { items: [] });
+    const data = readStore();
     const index = data.items.findIndex((item) => item.orderId === record.orderId);
     if (index >= 0) {
       data.items[index] = record;
     } else {
       data.items.push(record);
     }
-    writeJson(activationFile, data);
+    writeStore(data);
   },
 
   list() {
-    ensureFiles();
-    const data = readJson<ActivationStoreData>(activationFile, { items: [] });
+    const data = readStore();
     return data.items.slice();
+  },
+
+  findByOrderIds(orderIds: string[]) {
+    const normalized = Array.from(
+      new Set(
+        (Array.isArray(orderIds) ? orderIds : [])
+          .map((value) => String(value || "").trim())
+          .filter(Boolean)
+      )
+    );
+    if (!normalized.length) return new Map<string, ActivationRecord>();
+
+    const wanted = new Set(normalized);
+    const result = new Map<string, ActivationRecord>();
+    const data = readStore();
+
+    for (const item of data.items) {
+      const key = String(item.orderId || "").trim();
+      if (!key || !wanted.has(key)) continue;
+      result.set(key, item);
+      if (result.size >= wanted.size) break;
+    }
+
+    return result;
   },
 
   async reserveCdkForOrder(input: { productKey: string; orderId: string; email: string; excludeCdk?: string }) {

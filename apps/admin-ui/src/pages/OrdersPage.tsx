@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { api } from "../lib/api";
@@ -20,6 +20,7 @@ function getCheckErrorMessage(error: unknown) {
 
 export default function OrdersPage() {
   const qc = useQueryClient();
+  const [qInput, setQInput] = useState("");
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
   const [checkMessage, setCheckMessage] = useState<string | null>(null);
@@ -29,9 +30,20 @@ export default function OrdersPage() {
 
   const params = useMemo(() => ({ page: 1, limit: 100, q, status: status || undefined }), [q, status]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setQ(qInput.trim());
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [qInput]);
+
   const orders = useQuery({
     queryKey: ["orders", params],
     queryFn: async () => (await api.get("/orders", { params })).data,
+    staleTime: 15_000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: 1,
   });
 
   const patch = useMutation({
@@ -103,7 +115,12 @@ export default function OrdersPage() {
   return (
     <div className="space-y-4">
       <section className="card p-4 flex flex-wrap items-center gap-2">
-        <input className="input max-w-sm" value={q} placeholder="Поиск по email / payment id" onChange={(e) => setQ(e.target.value)} />
+        <input
+          className="input max-w-sm"
+          value={qInput}
+          placeholder="Поиск по email / payment id"
+          onChange={(e) => setQInput(e.target.value)}
+        />
         <select className="input max-w-40" value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">Все статусы</option>
           <option value="PENDING">PENDING</option>

@@ -20,8 +20,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/css/logo.min.css" />
   <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260312fix2" />
-  <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260322-cardalign7" />
-  <link rel="stylesheet" href="/assets/css/support-widget.css?v=20260315b" />
+  <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260401-perf6" />
+  <link rel="stylesheet" href="/assets/css/support-widget.css?v=20260401-sw2" />
 
   <style>
     :root {
@@ -108,7 +108,29 @@
 
     .account-grid {
       display: grid;
-      gap: 12px;
+      gap: 14px;
+      grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.95fr);
+      align-items: start;
+    }
+
+    .account-card--subscriptions {
+      grid-column: 1 / 2;
+      grid-row: 1 / 4;
+    }
+
+    .account-card--account {
+      grid-column: 2 / 3;
+      grid-row: 1 / 2;
+    }
+
+    .account-card--telegram {
+      grid-column: 2 / 3;
+      grid-row: 2 / 3;
+    }
+
+    .account-card--notifications {
+      grid-column: 2 / 3;
+      grid-row: 3 / 4;
     }
 
     .account-card {
@@ -118,6 +140,12 @@
       background: linear-gradient(160deg, rgba(255, 255, 255, 0.94), rgba(248, 252, 255, 0.9));
       box-shadow: 0 12px 28px rgba(13, 31, 46, 0.08);
       padding: 16px;
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .account-card:hover {
+      box-shadow: 0 16px 34px rgba(13, 31, 46, 0.12);
+      transform: translateY(-1px);
     }
 
     .account-card::before {
@@ -129,6 +157,13 @@
       height: 1px;
       background: linear-gradient(90deg, rgba(255, 255, 255, 0.88), rgba(42, 91, 255, 0.24), rgba(255, 255, 255, 0.88));
       pointer-events: none;
+    }
+
+    .account-card--login {
+      border-color: rgba(56, 111, 255, 0.2);
+      background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(238, 247, 255, 0.9)),
+        radial-gradient(900px 220px at 100% 0, rgba(56, 111, 255, 0.1), transparent 65%);
     }
 
     .account-card h2 {
@@ -150,6 +185,43 @@
       flex-wrap: wrap;
       align-items: center;
       margin-top: 12px;
+    }
+
+    .account-row--head {
+      margin-top: 0;
+      justify-content: space-between;
+    }
+
+    .account-stats {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .account-stat {
+      border: 1px solid var(--account-line-soft);
+      border-radius: 12px;
+      padding: 8px 10px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(243, 249, 255, 0.74));
+      display: grid;
+      gap: 2px;
+    }
+
+    .account-stat-label {
+      font-size: 11px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #657b91;
+      font-weight: 700;
+    }
+
+    .account-stat-value {
+      font-size: 20px;
+      line-height: 1;
+      color: #18324a;
+      font-weight: 800;
+      font-family: "Space Grotesk", "Manrope", sans-serif;
     }
 
     .account-email-input {
@@ -184,6 +256,12 @@
         inset 0 -8px 14px rgba(9, 20, 34, 0.08) !important;
     }
 
+    .account-card .btn:focus-visible,
+    .account-card button:focus-visible {
+      outline: 3px solid rgba(56, 111, 255, 0.35);
+      outline-offset: 2px;
+    }
+
     .account-status {
       margin-top: 10px;
       font-size: 14px;
@@ -191,17 +269,32 @@
       min-height: 21px;
     }
 
+    .account-status:not(:empty) {
+      border-radius: 10px;
+      border: 1px solid rgba(103, 128, 153, 0.2);
+      background: rgba(248, 251, 255, 0.86);
+      padding: 8px 10px;
+    }
+
     .account-status.error {
       color: var(--account-danger);
+      border-color: rgba(184, 74, 70, 0.25);
+      background: rgba(255, 241, 240, 0.9);
     }
 
     .account-status.ok {
       color: var(--account-success);
+      border-color: rgba(15, 143, 102, 0.25);
+      background: rgba(235, 255, 247, 0.92);
     }
 
     .account-table-wrap {
       overflow-x: auto;
       margin-top: 8px;
+      border: 1px solid var(--account-line-soft);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.66);
+      max-height: 560px;
     }
 
     .account-table {
@@ -210,6 +303,8 @@
       border-collapse: separate;
       border-spacing: 0;
       font-size: 14px;
+      border-radius: 12px;
+      overflow: hidden;
     }
 
     .account-table th,
@@ -227,6 +322,27 @@
       font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: linear-gradient(180deg, #f2f6fb, #edf3f9);
+    }
+
+    .account-table tbody tr:nth-child(even) td {
+      background: rgba(244, 249, 255, 0.5);
+    }
+
+    .account-table tbody tr:hover td {
+      background: rgba(225, 239, 255, 0.36);
+    }
+
+    .account-key {
+      font-family: "Space Grotesk", "Manrope", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      color: #17304a;
+      word-break: break-all;
     }
 
     .account-pill {
@@ -279,12 +395,43 @@
         padding: 14px;
       }
 
+      .account-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .account-card--subscriptions,
+      .account-card--account,
+      .account-card--telegram,
+      .account-card--notifications {
+        grid-column: auto;
+        grid-row: auto;
+      }
+
       .account-title {
         font-size: clamp(26px, 8vw, 34px);
       }
 
       .account-row .btn {
         width: 100%;
+      }
+
+      .account-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 1060px) {
+      .account-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .account-card--subscriptions,
+      .account-card--account,
+      .account-card--telegram,
+      .account-card--notifications {
+        grid-column: auto;
+        grid-row: auto;
       }
     }
   </style>
@@ -314,7 +461,7 @@
         <p class="account-subtitle">Вход в личный кабинет через Telegram. После авторизации доступны ключ VPN, срок подписки и продление.</p>
       </div>
 
-            <section id="loginCard" class="account-card">
+            <section id="loginCard" class="account-card account-card--login">
         <h2>Вход через Telegram</h2>
         <div class="account-subtitle" style="margin-top:6px; font-size:14px;">
           Нажмите кнопку, откройте бота и подтвердите вход командой Start. Вход работает для Telegram, который уже привязан к вашему кабинету.
@@ -326,8 +473,9 @@
         <div id="loginStatus" class="account-status"></div>
       </section>
 
-      <section id="accountCard" class="account-card account-hidden">
-        <div class="account-row" style="justify-content: space-between;">
+      <div id="accountWorkspace" class="account-grid account-hidden">
+      <section id="accountCard" class="account-card account-card--account account-hidden">
+        <div class="account-row account-row--head">
           <div>
             <h2>Ваш кабинет</h2>
             <div id="accountEmail" class="account-email"></div>
@@ -337,10 +485,24 @@
             <button id="logoutBtn" class="btn account-btn-secondary" type="button">Выйти</button>
           </div>
         </div>
+        <div class="account-stats">
+          <div class="account-stat">
+            <span class="account-stat-label">Total</span>
+            <span id="subsTotal" class="account-stat-value">0</span>
+          </div>
+          <div class="account-stat">
+            <span class="account-stat-label">Active</span>
+            <span id="subsActive" class="account-stat-value">0</span>
+          </div>
+          <div class="account-stat">
+            <span class="account-stat-label">Expired</span>
+            <span id="subsExpired" class="account-stat-value">0</span>
+          </div>
+        </div>
         <div id="accountStatus" class="account-status"></div>
       </section>
 
-      <section id="subsCard" class="account-card account-hidden">
+      <section id="subsCard" class="account-card account-card--subscriptions account-hidden">
         <h2>Подписки VPN</h2>
         <div class="account-table-wrap">
           <table class="account-table">
@@ -359,7 +521,7 @@
         </div>
       </section>
 
-      <section id="telegramCard" class="account-card account-hidden">
+      <section id="telegramCard" class="account-card account-card--telegram account-hidden">
         <h2>Telegram</h2>
         <div class="account-subtitle" style="margin-top:6px; font-size:14px;">
           Привяжите Telegram, чтобы получать напоминания о продлении подписки.
@@ -373,7 +535,7 @@
         <div id="telegramLinkHint" class="account-status"></div>
       </section>
 
-      <section id="notifCard" class="account-card account-hidden">
+      <section id="notifCard" class="account-card account-card--notifications account-hidden">
         <h2>Уведомления</h2>
         <div class="account-subtitle" style="margin-top:6px; font-size:14px;">
           Сервисные письма о сроке подписки. Маркетинговые письма здесь не настраиваются.
@@ -390,6 +552,7 @@
         </div>
         <div id="prefStatus" class="account-status"></div>
       </section>
+      </div>
     </section>
   </main>
 
@@ -413,6 +576,7 @@
       const telegramAuthCheckBtn = document.getElementById("telegramAuthCheckBtn");
       const loginStatus = document.getElementById("loginStatus");
       const loginCard = document.getElementById("loginCard");
+      const accountWorkspace = document.getElementById("accountWorkspace");
       const accountCard = document.getElementById("accountCard");
       const subsCard = document.getElementById("subsCard");
       const accountEmail = document.getElementById("accountEmail");
@@ -434,6 +598,9 @@
       const telegramLinkBtn = document.getElementById("telegramLinkBtn");
       const telegramRefreshBtn = document.getElementById("telegramRefreshBtn");
       const telegramUnlinkBtn = document.getElementById("telegramUnlinkBtn");
+      const subsTotal = document.getElementById("subsTotal");
+      const subsActive = document.getElementById("subsActive");
+      const subsExpired = document.getElementById("subsExpired");
 
       let telegramAuthToken = "";
       let telegramAuthPollTimer = null;
@@ -455,6 +622,15 @@
         if (status === "active") return "active";
         if (status === "expired") return "expired";
         return "disabled";
+      }
+
+      function updateSubscriptionStats(items) {
+        const list = Array.isArray(items) ? items : [];
+        const activeCount = list.filter((item) => String(item?.status || "") === "active").length;
+        const expiredCount = list.filter((item) => String(item?.status || "") === "expired").length;
+        if (subsTotal) subsTotal.textContent = String(list.length);
+        if (subsActive) subsActive.textContent = String(activeCount);
+        if (subsExpired) subsExpired.textContent = String(expiredCount);
       }
 
             function stopTelegramAuthPolling() {
@@ -553,7 +729,7 @@
           }
 
           telegramAuthToken = token;
-          window.open(deepLink, "_blank", "noopener");
+          window.open(deepLink, "_blank", "noopener,noreferrer");
           setStatus(loginStatus, "Откройте Telegram, нажмите Start в боте. Возвратитесь на сайт — вход завершится автоматически.", "ok");
 
           await consumeTelegramAuthOnce();
@@ -577,6 +753,7 @@
         } finally {
           logoutBtn.disabled = false;
           loginCard.classList.remove("account-hidden");
+          accountWorkspace.classList.add("account-hidden");
           accountCard.classList.add("account-hidden");
           subsCard.classList.add("account-hidden");
           telegramCard.classList.add("account-hidden");
@@ -586,6 +763,7 @@
           setStatus(telegramStatus, "", "");
           setStatus(telegramLinkHint, "", "");
           subsBody.innerHTML = "";
+          updateSubscriptionStats([]);
         }
       }
 
@@ -651,7 +829,7 @@
             setStatus(telegramLinkHint, "Ссылка не получена.", "error");
             return;
           }
-          window.open(deepLink, "_blank", "noopener");
+          window.open(deepLink, "_blank", "noopener,noreferrer");
           setStatus(telegramLinkHint, "Открыт Telegram. Нажмите Start в боте, затем обновите статус.", "ok");
         } catch (_) {
           setStatus(telegramLinkHint, "Ошибка сети при создании Telegram ссылки.", "error");
@@ -730,6 +908,7 @@
       }
 
       function renderSubscriptions(items) {
+        updateSubscriptionStats(items);
         subsBody.innerHTML = "";
         if (!Array.isArray(items) || !items.length) {
           const tr = document.createElement("tr");
@@ -764,6 +943,7 @@
           tr.appendChild(leftTd);
 
           const keyTd = document.createElement("td");
+          keyTd.className = "account-key";
           keyTd.textContent = String(item.keyPreview || "—");
           tr.appendChild(keyTd);
 
@@ -788,6 +968,7 @@
           });
           if (response.status === 401) {
             loginCard.classList.remove("account-hidden");
+            accountWorkspace.classList.add("account-hidden");
             accountCard.classList.add("account-hidden");
             subsCard.classList.add("account-hidden");
             telegramCard.classList.add("account-hidden");
@@ -796,6 +977,8 @@
             setStatus(prefStatus, "", "");
             setStatus(telegramStatus, "", "");
             setStatus(telegramLinkHint, "", "");
+            subsBody.innerHTML = "";
+            updateSubscriptionStats([]);
             return;
           }
           const payload = await response.json().catch(() => ({}));
@@ -804,6 +987,7 @@
             return;
           }
           loginCard.classList.add("account-hidden");
+          accountWorkspace.classList.remove("account-hidden");
           accountCard.classList.remove("account-hidden");
           subsCard.classList.remove("account-hidden");
           telegramCard.classList.remove("account-hidden");
@@ -830,7 +1014,7 @@
       void loadAccount();
     })();
   </script>
-  <script src="/assets/js/support-widget.js?v=20260315b" defer></script>
+  <script src="/assets/js/support-widget.js?v=20260408-swfix1" defer></script>
 </body>
 </html>
 
