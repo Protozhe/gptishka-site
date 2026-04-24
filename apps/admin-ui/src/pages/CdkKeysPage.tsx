@@ -187,60 +187,69 @@ function ActivationTable({
   keyColumnLabel?: string;
 }) {
   return (
-    <div className="max-h-[360px] overflow-auto">
-      <table className="min-w-full text-sm">
-        <thead className="bg-slate-100 text-left dark:bg-slate-800">
-          <tr>
-            <th className="px-4 py-3">{keyColumnLabel}</th>
-            <th className="px-4 py-3">{TEXT.status}</th>
-            <th className="px-4 py-3">{TEXT.user}</th>
-            <th className="px-4 py-3">{TEXT.order}</th>
-            <th className="px-4 py-3">{TEXT.assigned}</th>
-            <th className="px-4 py-3">{TEXT.created}</th>
-            <th className="px-4 py-3">{TEXT.actions}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <tr className="border-t border-slate-200 dark:border-slate-800" key={item.id}>
-              <td className="px-4 py-3 font-semibold">{item.code}</td>
-              <td className="px-4 py-3">
-                {item.status === "unused" ? TEXT.unusedItem : item.status === "archived" ? TEXT.archivedItem : TEXT.usedItem}
-              </td>
-              <td className="px-4 py-3">{item.email || "-"}</td>
-              <td className="px-4 py-3">{item.orderId || "-"}</td>
-              <td className="px-4 py-3">{item.assignedAt ? new Date(item.assignedAt).toLocaleString("ru-RU") : "-"}</td>
-              <td className="px-4 py-3">{new Date(item.createdAt).toLocaleString("ru-RU")}</td>
-              <td className="px-4 py-3">
-                <div className="flex flex-wrap gap-2">
-                  {item.status === "used" && onReturn ? (
-                    <button className="btn-secondary" type="button" onClick={() => onReturn(item.id)} disabled={returningId === item.id}>
-                      {returningId === item.id ? `${TEXT.returnToUnused}...` : TEXT.returnToUnused}
-                    </button>
-                  ) : null}
-                  {item.status === "unused" && onDelete ? (
-                    <button className="btn-secondary" type="button" onClick={() => onDelete(item.id)} disabled={deletingId === item.id}>
-                      {deletingId === item.id ? `${TEXT.archive}...` : TEXT.archive}
-                    </button>
-                  ) : null}
-                  {item.status === "archived" && onRestore ? (
-                    <button className="btn-secondary" type="button" onClick={() => onRestore(item.id)} disabled={restoringId === item.id}>
-                      {restoringId === item.id ? `${TEXT.restoreFromArchive}...` : TEXT.restoreFromArchive}
-                    </button>
-                  ) : null}
+    <div className="max-h-[480px] overflow-auto px-3 py-3">
+      <div className="space-y-3">
+        {items.map((item) => {
+          const statusLabel =
+            item.status === "unused" ? TEXT.unusedItem : item.status === "archived" ? TEXT.archivedItem : TEXT.usedItem;
+
+          return (
+            <article
+              className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+              key={item.id}
+            >
+              <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <div className="text-[11px] uppercase tracking-wide text-slate-500">{keyColumnLabel}</div>
+                  <div className="break-all font-semibold">{item.code}</div>
                 </div>
-              </td>
-            </tr>
-          ))}
-          {!loading && !items.length ? (
-            <tr>
-              <td className="px-4 py-6 text-slate-500" colSpan={7}>
-                {TEXT.empty}
-              </td>
-            </tr>
-          ) : null}
-        </tbody>
-      </table>
+                <span className="rounded-full border border-slate-300 bg-slate-50 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800">
+                  {statusLabel}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 gap-x-3 gap-y-1 text-sm sm:grid-cols-2">
+                <div>
+                  <span className="text-slate-500">{TEXT.user}: </span>
+                  <span>{item.email || "-"}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500">{TEXT.order}: </span>
+                  <span className="break-all">{item.orderId || "-"}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500">{TEXT.assigned}: </span>
+                  <span>{item.assignedAt ? new Date(item.assignedAt).toLocaleString("ru-RU") : "-"}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500">{TEXT.created}: </span>
+                  <span>{new Date(item.createdAt).toLocaleString("ru-RU")}</span>
+                </div>
+              </div>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {item.status === "used" && onReturn ? (
+                  <button className="btn-secondary" type="button" onClick={() => onReturn(item.id)} disabled={returningId === item.id}>
+                    {returningId === item.id ? `${TEXT.returnToUnused}...` : TEXT.returnToUnused}
+                  </button>
+                ) : null}
+                {item.status === "unused" && onDelete ? (
+                  <button className="btn-secondary" type="button" onClick={() => onDelete(item.id)} disabled={deletingId === item.id}>
+                    {deletingId === item.id ? `${TEXT.archive}...` : TEXT.archive}
+                  </button>
+                ) : null}
+                {item.status === "archived" && onRestore ? (
+                  <button className="btn-secondary" type="button" onClick={() => onRestore(item.id)} disabled={restoringId === item.id}>
+                    {restoringId === item.id ? `${TEXT.restoreFromArchive}...` : TEXT.restoreFromArchive}
+                  </button>
+                ) : null}
+              </div>
+            </article>
+          );
+        })}
+
+        {!loading && !items.length ? <div className="rounded-xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">{TEXT.empty}</div> : null}
+      </div>
     </div>
   );
 }
@@ -257,50 +266,61 @@ function CredentialsTable({
   deletingId?: string;
 }) {
   return (
-    <div className="max-h-[360px] overflow-auto">
-      <table className="min-w-full text-sm">
-        <thead className="bg-slate-100 text-left dark:bg-slate-800">
-          <tr>
-            <th className="px-4 py-3">{TEXT.login}</th>
-            <th className="px-4 py-3">{TEXT.password}</th>
-            <th className="px-4 py-3">{TEXT.status}</th>
-            <th className="px-4 py-3">{TEXT.user}</th>
-            <th className="px-4 py-3">{TEXT.order}</th>
-            <th className="px-4 py-3">{TEXT.assigned}</th>
-            <th className="px-4 py-3">{TEXT.created}</th>
-            <th className="px-4 py-3">{TEXT.actions}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <tr className="border-t border-slate-200 dark:border-slate-800" key={item.id}>
-              <td className="px-4 py-3 font-mono">{item.login}</td>
-              <td className="px-4 py-3 font-mono">{item.password}</td>
-              <td className="px-4 py-3">{item.status === "available" ? TEXT.availableItem : TEXT.assignedItem}</td>
-              <td className="px-4 py-3">{item.email || "-"}</td>
-              <td className="px-4 py-3">{item.orderId || "-"}</td>
-              <td className="px-4 py-3">{item.assignedAt ? new Date(item.assignedAt).toLocaleString("ru-RU") : "-"}</td>
-              <td className="px-4 py-3">{new Date(item.createdAt).toLocaleString("ru-RU")}</td>
-              <td className="px-4 py-3">
-                {item.status === "available" && onDelete ? (
-                  <button className="btn-secondary" type="button" onClick={() => onDelete(item.id)} disabled={deletingId === item.id}>
-                    {deletingId === item.id ? `${TEXT.remove}...` : TEXT.remove}
-                  </button>
-                ) : (
-                  <span className="text-slate-400">-</span>
-                )}
-              </td>
-            </tr>
-          ))}
-          {!loading && !items.length ? (
-            <tr>
-              <td className="px-4 py-6 text-slate-500" colSpan={8}>
-                {TEXT.empty}
-              </td>
-            </tr>
-          ) : null}
-        </tbody>
-      </table>
+    <div className="max-h-[480px] overflow-auto px-3 py-3">
+      <div className="space-y-3">
+        {items.map((item) => (
+          <article
+            className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+            key={item.id}
+          >
+            <div className="mb-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <div>
+                <div className="text-[11px] uppercase tracking-wide text-slate-500">{TEXT.login}</div>
+                <div className="break-all font-mono text-sm font-semibold">{item.login}</div>
+              </div>
+              <div>
+                <div className="text-[11px] uppercase tracking-wide text-slate-500">{TEXT.password}</div>
+                <div className="break-all font-mono text-sm font-semibold">{item.password}</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-x-3 gap-y-1 text-sm sm:grid-cols-2">
+              <div>
+                <span className="text-slate-500">{TEXT.status}: </span>
+                <span>{item.status === "available" ? TEXT.availableItem : TEXT.assignedItem}</span>
+              </div>
+              <div>
+                <span className="text-slate-500">{TEXT.user}: </span>
+                <span>{item.email || "-"}</span>
+              </div>
+              <div>
+                <span className="text-slate-500">{TEXT.order}: </span>
+                <span className="break-all">{item.orderId || "-"}</span>
+              </div>
+              <div>
+                <span className="text-slate-500">{TEXT.assigned}: </span>
+                <span>{item.assignedAt ? new Date(item.assignedAt).toLocaleString("ru-RU") : "-"}</span>
+              </div>
+              <div className="sm:col-span-2">
+                <span className="text-slate-500">{TEXT.created}: </span>
+                <span>{new Date(item.createdAt).toLocaleString("ru-RU")}</span>
+              </div>
+            </div>
+
+            <div className="mt-3">
+              {item.status === "available" && onDelete ? (
+                <button className="btn-secondary" type="button" onClick={() => onDelete(item.id)} disabled={deletingId === item.id}>
+                  {deletingId === item.id ? `${TEXT.remove}...` : TEXT.remove}
+                </button>
+              ) : (
+                <span className="text-sm text-slate-400">-</span>
+              )}
+            </div>
+          </article>
+        ))}
+
+        {!loading && !items.length ? <div className="rounded-xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">{TEXT.empty}</div> : null}
+      </div>
     </div>
   );
 }
@@ -782,7 +802,7 @@ export default function CdkKeysPage() {
 
       {!productsQuery.isLoading && !products.length ? <div className="card p-4 text-sm text-rose-600">{TEXT.noProducts}</div> : null}
 
-      <div className="grid gap-4 xl:grid-cols-3">
+      <div className="grid gap-4 2xl:grid-cols-2">
         {products.map((product) => (
           <ProductColumn key={product.id} product={product} search={q} />
         ))}
