@@ -1,14 +1,20 @@
-// =========================
+﻿// =========================
 // PAGE TRANSITION - FIXED
 // =========================
 
-document.addEventListener("DOMContentLoaded", () => {
+let bootstrappedPageUi = false;
+let detachHomeGradientPointerTracking = null;
+let homeGradientInitVersion = 0;
+
+function bootstrapPageUi() {
+  if (bootstrappedPageUi) return;
+  if (!document.body) return;
+  bootstrappedPageUi = true;
   document.documentElement.classList.remove("is-leaving");
   const enteredWithTransition = initPageEnterTransition();
-  initHomeGradientBackground();
-  initPulseBeamButtons();
+  initAdaptiveVisualBudget();
+  initHomeGradientBackground({ deferPointerTracking: true });
   initLinkPageTransitions();
-  initProgressiveResourceWarmup();
   window.addEventListener("pageshow", () => {
     pageNavigationInProgress = false;
     document.documentElement.classList.remove("is-leaving");
@@ -39,27 +45,66 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initFaqAccordions();
   initLanguageSwitch();
-  initActivationResumeShortcut();
-  initReviewsSecurityBanner();
-  initSoftProgressivePageReveal(enteredWithTransition);
-});
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      initDeferredVideoPosters();
+      initPulseBeamButtons();
+      initActivationResumeShortcut();
+      initReviewsSecurityBanner();
+      initSoftProgressivePageReveal(enteredWithTransition);
+    });
+  });
+
+  runWhenIdle(() => {
+    initProgressiveResourceWarmup();
+  }, 2200);
+
+  runWhenIdle(() => {
+    initRuntimeFrameBudgetGuard();
+  }, 2600);
+}
+
+if (document.body) {
+  bootstrapPageUi();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", bootstrapPageUi, { once: true });
+} else {
+  bootstrapPageUi();
+}
 
 let pageNavigationInProgress = false;
 const PAGE_TRANSITION_LEAVE_MS = 260;
 const PAGE_TRANSITION_ENTER_MS = 480;
 const PAGE_TRANSITION_CLEANUP_MS = PAGE_TRANSITION_ENTER_MS + 80;
 const PAGE_TRANSITION_NAV_FLAG_KEY = "gptishka_nav_transition";
+const PAGE_TRANSITION_INTENT_TTL_MS = 6000;
 const WARMUP_START_DELAY_MS = 1600;
 const WARMUP_STEP_DELAY_MS = 1200;
 const WARMUP_MAX_ROUTES = 7;
 const WARMUP_PRODUCTS_DELAY_MS = 4400;
+const WARMUP_SEEN_KEY = "gptishka_warmup_seen_v1";
+const RUNTIME_VISUAL_BUDGET_KEY = "gptishka_runtime_visual_budget_v1";
+const RUNTIME_VISUAL_BUDGET_TS_KEY = "gptishka_runtime_visual_budget_ts_v1";
+const RUNTIME_VISUAL_BUDGET_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const RUNTIME_PERF_SAMPLING_START_DELAY_MS = 1800;
+const RUNTIME_PERF_SAMPLING_MS = 3200;
+const RUNTIME_PERF_BALANCED_FPS_THRESHOLD = 42;
+const RUNTIME_PERF_LOW_FPS_THRESHOLD = 24;
+const RUNTIME_PERF_APPLY_LIVE_SWITCH = false;
 const METRIKA_COUNTER_ID = 106969126;
 const TOP_MAIL_COUNTER_ID = "3744660";
 const prefetchedNavigationKeys = new Set();
 
 function markTransitionNavigationIntent() {
   try {
-    sessionStorage.setItem(PAGE_TRANSITION_NAV_FLAG_KEY, "1");
+    sessionStorage.setItem(
+      PAGE_TRANSITION_NAV_FLAG_KEY,
+      JSON.stringify({
+        ts: Date.now(),
+      })
+    );
   } catch (_) {
     // Ignore storage errors in strict privacy modes.
   }
@@ -67,11 +112,55 @@ function markTransitionNavigationIntent() {
 
 function consumeTransitionNavigationIntent() {
   try {
-    const value = sessionStorage.getItem(PAGE_TRANSITION_NAV_FLAG_KEY) === "1";
-    if (value) {
-      sessionStorage.removeItem(PAGE_TRANSITION_NAV_FLAG_KEY);
+    const raw = String(sessionStorage.getItem(PAGE_TRANSITION_NAV_FLAG_KEY) || "").trim();
+    if (!raw) return false;
+    sessionStorage.removeItem(PAGE_TRANSITION_NAV_FLAG_KEY);
+
+    let parsedTs = 0;
+    if (raw.startsWith("{")) {
+      try {
+        const parsed = JSON.parse(raw);
+        parsedTs = Number(parsed?.ts || 0);
+      } catch (_) {
+        parsedTs = 0;
+      }
+    } else {
+      // Legacy marker from older builds: treat as stale to avoid accidental transition flicker.
+      parsedTs = 0;
     }
-    return value;
+
+    if (!Number.isFinite(parsedTs) || parsedTs <= 0) return false;
+    if (Date.now() - parsedTs > PAGE_TRANSITION_INTENT_TTL_MS) return false;
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function hasSameOriginReferrer() {
+  try {
+    const ref = String(document.referrer || "").trim();
+    if (!ref) return false;
+    return new URL(ref).origin === window.location.origin;
+  } catch (_) {
+    return false;
+  }
+}
+
+function isReloadNavigation() {
+  try {
+    if (typeof performance !== "undefined" && typeof performance.getEntriesByType === "function") {
+      const entries = performance.getEntriesByType("navigation");
+      if (entries && entries.length) {
+        return String(entries[0]?.type || "").toLowerCase() === "reload";
+      }
+    }
+  } catch (_) {
+    // Ignore performance timing access issues.
+  }
+  try {
+    // Legacy fallback.
+    return Boolean(performance && performance.navigation && performance.navigation.type === 1);
   } catch (_) {
     return false;
   }
@@ -128,6 +217,14 @@ function navigateWithPageTransition(targetHref, delayMs = PAGE_TRANSITION_LEAVE_
 }
 
 function initPageEnterTransition() {
+  if (isReloadNavigation()) {
+    consumeTransitionNavigationIntent();
+    return false;
+  }
+  if (!hasSameOriginReferrer()) {
+    consumeTransitionNavigationIntent();
+    return false;
+  }
   const isTransitionNavigation = consumeTransitionNavigationIntent();
   if (!isTransitionNavigation) return false;
   const root = document.documentElement;
@@ -204,6 +301,279 @@ function runWhenIdle(callback, timeoutMs = 1400) {
     return;
   }
   window.setTimeout(callback, 220);
+}
+
+function readForcedLiteMode() {
+  const parseFlag = value => {
+    const normalized = String(value || "").trim().toLowerCase();
+    if (!normalized) return null;
+    if (["1", "true", "on", "yes", "lite"].includes(normalized)) return true;
+    if (["0", "false", "off", "no", "full"].includes(normalized)) return false;
+    return null;
+  };
+
+  try {
+    const params = new URLSearchParams(window.location.search || "");
+    const fromQuery = parseFlag(params.get("lite") ?? params.get("performance"));
+    if (fromQuery !== null) {
+      try {
+        localStorage.setItem("gptishka_force_lite", fromQuery ? "1" : "0");
+      } catch (_) {
+        // Ignore storage write errors.
+      }
+      return fromQuery;
+    }
+  } catch (_) {
+    // Ignore malformed URL/query issues.
+  }
+
+  try {
+    return parseFlag(localStorage.getItem("gptishka_force_lite"));
+  } catch (_) {
+    return null;
+  }
+}
+
+function detectAutoVisualBudgetMode() {
+  const prefersReducedMotion = window.matchMedia
+    ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    : false;
+  if (prefersReducedMotion) return "low";
+
+  const memoryGb = Number(navigator.deviceMemory || 0);
+  const cpuCores = Number(navigator.hardwareConcurrency || 0);
+  const isLowMemory = Number.isFinite(memoryGb) && memoryGb > 0 && memoryGb <= 4;
+  const isLowCpu = Number.isFinite(cpuCores) && cpuCores > 0 && cpuCores <= 4;
+  if (isLowMemory || isLowCpu) return "low";
+
+  const isMidMemory = Number.isFinite(memoryGb) && memoryGb > 0 && memoryGb <= 8;
+  const isMidCpu = Number.isFinite(cpuCores) && cpuCores > 0 && cpuCores <= 8;
+
+  const coarsePointer = window.matchMedia
+    ? window.matchMedia("(pointer: coarse)").matches
+    : false;
+  const canHover = window.matchMedia
+    ? window.matchMedia("(hover: hover)").matches
+    : true;
+  const isCompactViewport = window.matchMedia
+    ? window.matchMedia("(max-width: 1200px)").matches
+    : window.innerWidth <= 1200;
+  const isLaptopViewport = window.matchMedia
+    ? window.matchMedia("(max-width: 1920px)").matches
+    : window.innerWidth <= 1920;
+  const isLikelyMobile = /android|iphone|ipad|ipod|mobile|windows phone/i.test(String(navigator.userAgent || ""));
+  if (isLikelyMobile || (coarsePointer && !canHover && isCompactViewport)) return "low";
+
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (connection) {
+    if (connection.saveData) return "low";
+    const effectiveType = String(connection.effectiveType || "").toLowerCase();
+    if (effectiveType.includes("2g") || effectiveType.includes("3g")) return "low";
+  }
+
+  if ((isMidMemory || isMidCpu) && isLaptopViewport) return "balanced";
+
+  // Keep rich mode only for clearly capable desktops/laptops.
+  const isHighMemory = Number.isFinite(memoryGb) && memoryGb >= 12;
+  const isHighCpu = Number.isFinite(cpuCores) && cpuCores >= 10;
+  const isHighViewport = window.matchMedia
+    ? window.matchMedia("(min-width: 1400px)").matches
+    : window.innerWidth >= 1400;
+  if (isHighMemory && isHighCpu && canHover && isHighViewport) return "rich";
+
+  return "balanced";
+}
+
+function readRuntimeVisualBudgetOverride() {
+  try {
+    const rawMode = String(localStorage.getItem(RUNTIME_VISUAL_BUDGET_KEY) || "").trim().toLowerCase();
+    if (!rawMode) return null;
+    if (!["low", "balanced", "rich"].includes(rawMode)) return null;
+
+    const savedTs = Number(localStorage.getItem(RUNTIME_VISUAL_BUDGET_TS_KEY) || 0);
+    if (!Number.isFinite(savedTs) || savedTs <= 0) return null;
+    if (Date.now() - savedTs > RUNTIME_VISUAL_BUDGET_TTL_MS) {
+      localStorage.removeItem(RUNTIME_VISUAL_BUDGET_KEY);
+      localStorage.removeItem(RUNTIME_VISUAL_BUDGET_TS_KEY);
+      return null;
+    }
+    return rawMode;
+  } catch (_) {
+    return null;
+  }
+}
+
+function persistRuntimeVisualBudgetOverride(mode) {
+  const safeMode = String(mode || "").trim().toLowerCase();
+  if (!["low", "balanced", "rich"].includes(safeMode)) return;
+  try {
+    localStorage.setItem(RUNTIME_VISUAL_BUDGET_KEY, safeMode);
+    localStorage.setItem(RUNTIME_VISUAL_BUDGET_TS_KEY, String(Date.now()));
+  } catch (_) {
+    // Ignore storage write errors.
+  }
+}
+
+function applyVisualBudgetMode(mode) {
+  const body = document.body;
+  if (!body) return;
+  const safeMode = String(mode || "balanced").trim().toLowerCase();
+  const normalizedMode = ["low", "balanced", "rich"].includes(safeMode) ? safeMode : "balanced";
+  const prevMode = String(body.dataset.visualBudget || "").trim().toLowerCase();
+
+  body.classList.toggle("low-visual-budget", normalizedMode === "low");
+  body.classList.toggle("balanced-visual-budget", normalizedMode === "balanced");
+  body.dataset.visualBudget = normalizedMode;
+
+  if (prevMode && prevMode !== normalizedMode) {
+    try {
+      window.dispatchEvent(
+        new CustomEvent("gptishka:visual-budget-change", {
+          detail: {
+            previousMode: prevMode,
+            mode: normalizedMode,
+          },
+        })
+      );
+    } catch (_) {
+      // Ignore CustomEvent issues in older browsers.
+    }
+  }
+}
+
+function getVisualBudgetMode() {
+  const forcedMode = readForcedLiteMode();
+  if (forcedMode === true) return "low";
+  if (forcedMode === false) return "rich";
+
+  const runtimeOverride = readRuntimeVisualBudgetOverride();
+  if (runtimeOverride) return runtimeOverride;
+
+  const autoMode = detectAutoVisualBudgetMode();
+  try {
+    localStorage.setItem("gptishka_auto_lite_v1", autoMode === "low" ? "1" : "0");
+    localStorage.setItem("gptishka_auto_visual_budget_v2", autoMode);
+  } catch (_) {
+    // Ignore storage write errors.
+  }
+  return autoMode;
+}
+
+function initAdaptiveVisualBudget() {
+  const mode = getVisualBudgetMode();
+  applyVisualBudgetMode(mode);
+}
+
+function initDeferredVideoPosters() {
+  const videos = Array.from(document.querySelectorAll("video[data-poster]"));
+  if (!videos.length) return;
+
+  const applyPoster = videoEl => {
+    if (!(videoEl instanceof HTMLVideoElement)) return;
+    if (videoEl.dataset.posterApplied === "1") return;
+    const poster = String(videoEl.getAttribute("data-poster") || "").trim();
+    if (!poster) return;
+    videoEl.setAttribute("poster", poster);
+    videoEl.dataset.posterApplied = "1";
+  };
+
+  if (!("IntersectionObserver" in window)) {
+    videos.forEach(applyPoster);
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        applyPoster(entry.target);
+        observer.unobserve(entry.target);
+      });
+    },
+    {
+      rootMargin: "220px 0px",
+      threshold: 0.01,
+    }
+  );
+
+  videos.forEach(videoEl => observer.observe(videoEl));
+  window.addEventListener("pagehide", () => observer.disconnect(), { once: true });
+}
+
+function measureAverageFps(sampleMs) {
+  return new Promise(resolve => {
+    if (typeof window.requestAnimationFrame !== "function" || typeof performance === "undefined") {
+      resolve(null);
+      return;
+    }
+
+    let frameCount = 0;
+    let totalDelta = 0;
+    let firstTs = 0;
+    let lastTs = 0;
+
+    const step = ts => {
+      if (document.visibilityState === "hidden") {
+        resolve(null);
+        return;
+      }
+      if (!firstTs) {
+        firstTs = ts;
+        lastTs = ts;
+      } else {
+        const delta = Math.max(0, ts - lastTs);
+        totalDelta += delta;
+        lastTs = ts;
+      }
+      frameCount += 1;
+
+      if (ts - firstTs >= sampleMs) {
+        const avgFrameMs = totalDelta / Math.max(1, frameCount - 1);
+        const fps = avgFrameMs > 0 ? 1000 / avgFrameMs : 60;
+        resolve({
+          fps,
+          frameCount,
+          sampleMs,
+        });
+        return;
+      }
+
+      window.requestAnimationFrame(step);
+    };
+
+    window.requestAnimationFrame(step);
+  });
+}
+
+async function initRuntimeFrameBudgetGuard() {
+  const body = document.body;
+  if (!body) return;
+  if (document.visibilityState !== "visible") return;
+  if (readForcedLiteMode() !== null) return;
+
+  const currentMode = String(body.dataset.visualBudget || "").trim().toLowerCase();
+  if (currentMode !== "rich") return;
+
+  await new Promise(resolve => window.setTimeout(resolve, RUNTIME_PERF_SAMPLING_START_DELAY_MS));
+  if (document.visibilityState !== "visible") return;
+
+  const stats = await measureAverageFps(RUNTIME_PERF_SAMPLING_MS);
+  if (!stats || !Number.isFinite(stats.fps)) return;
+
+  let targetMode = null;
+  if (stats.fps < RUNTIME_PERF_LOW_FPS_THRESHOLD) {
+    targetMode = "low";
+  } else if (stats.fps < RUNTIME_PERF_BALANCED_FPS_THRESHOLD) {
+    targetMode = "balanced";
+  }
+  if (!targetMode) return;
+  if (currentMode === targetMode) return;
+
+  persistRuntimeVisualBudgetOverride(targetMode);
+  if (!RUNTIME_PERF_APPLY_LIVE_SWITCH) return;
+
+  applyVisualBudgetMode(targetMode);
+  initHomeGradientBackground();
 }
 
 function initSoftProgressivePageReveal(shouldRun) {
@@ -349,11 +719,31 @@ function collectWarmupRoutes() {
 }
 
 function canRunProgressiveWarmup() {
+  if (
+    document.body &&
+    (document.body.classList.contains("low-visual-budget") ||
+      document.body.classList.contains("balanced-visual-budget"))
+  ) {
+    return false;
+  }
+
   const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-  if (!connection) return true;
-  if (connection.saveData) return false;
-  const effectiveType = String(connection.effectiveType || "").toLowerCase();
-  if (effectiveType.includes("2g")) return false;
+  if (connection) {
+    if (connection.saveData) return false;
+    const effectiveType = String(connection.effectiveType || "").toLowerCase();
+    if (effectiveType.includes("2g") || effectiveType.includes("3g")) return false;
+  }
+
+  try {
+    const seenWarmup = localStorage.getItem(WARMUP_SEEN_KEY) === "1";
+    if (!seenWarmup) {
+      localStorage.setItem(WARMUP_SEEN_KEY, "1");
+      return false;
+    }
+  } catch (_) {
+    // Ignore storage restrictions and keep warmup enabled.
+  }
+
   return true;
 }
 
@@ -395,11 +785,18 @@ function initProgressiveResourceWarmup() {
   }, WARMUP_PRODUCTS_DELAY_MS);
 }
 
-function initHomeGradientBackground() {
+function initHomeGradientBackground(options = {}) {
   const body = document.body;
   if (!body) return;
   const hasHeroRoot = Boolean(document.querySelector("[data-hero-react-root]"));
   if (!hasHeroRoot) return;
+  const deferPointerTracking = Boolean(options && options.deferPointerTracking);
+  homeGradientInitVersion += 1;
+  const initVersion = homeGradientInitVersion;
+  if (typeof detachHomeGradientPointerTracking === "function") {
+    detachHomeGradientPointerTracking();
+    detachHomeGradientPointerTracking = null;
+  }
 
   const prefersReducedMotion = window.matchMedia
     ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -410,11 +807,18 @@ function initHomeGradientBackground() {
   const isCompactViewport = window.matchMedia
     ? window.matchMedia("(max-width: 900px)").matches
     : window.innerWidth <= 900;
+  const lowVisualBudget = body.classList.contains("low-visual-budget");
+  const balancedVisualBudget = body.classList.contains("balanced-visual-budget");
 
-  // On mobile/coarse pointer/reduced motion we keep a static premium gradient only.
-  if (prefersReducedMotion || !hasFinePointer || isCompactViewport) {
+  // Rich animation by default on capable devices.
+  // Force lite mode for reduced-motion, coarse pointer, compact viewport, or low visual budget.
+  if (prefersReducedMotion || !hasFinePointer || isCompactViewport || lowVisualBudget || balancedVisualBudget) {
     body.classList.remove("home-gradient-page");
     body.classList.add("home-gradient-page-lite");
+    const existingBg = document.querySelector(".home-gradient-bg");
+    if (existingBg) {
+      existingBg.remove();
+    }
     return;
   }
 
@@ -442,9 +846,24 @@ function initHomeGradientBackground() {
   let currentX = 0;
   let currentY = 0;
   let rafId = 0;
+  let lastPointerUpdateTs = 0;
+  const pointerThrottleMs = balancedVisualBudget ? 48 : 32;
+  const memoryGb = Number(navigator.deviceMemory || 0);
+  const cpuCores = Number(navigator.hardwareConcurrency || 0);
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  const connectionSaveData = Boolean(connection && connection.saveData);
+  const allowPointerTracking =
+    !prefersReducedMotion &&
+    !lowVisualBudget &&
+    !balancedVisualBudget &&
+    hasFinePointer &&
+    !isCompactViewport &&
+    !connectionSaveData &&
+    (!Number.isFinite(memoryGb) || memoryGb === 0 || memoryGb >= 16) &&
+    (!Number.isFinite(cpuCores) || cpuCores === 0 || cpuCores >= 10);
 
-  const pointerStrength = prefersReducedMotion ? 0.38 : 0.72;
-  const pointerEase = prefersReducedMotion ? 0.1 : 0.18;
+  const pointerStrength = prefersReducedMotion ? 0.38 : lowVisualBudget ? 0.46 : 0.72;
+  const pointerEase = prefersReducedMotion ? 0.1 : lowVisualBudget ? 0.11 : 0.18;
 
   const updatePointer = () => {
     currentX += (targetX - currentX) * pointerEase;
@@ -464,28 +883,66 @@ function initHomeGradientBackground() {
     }
   };
 
-  window.addEventListener(
-    "pointermove",
-    e => {
+  if (!allowPointerTracking) {
+    bg.style.setProperty("--home-pointer-x", "0px");
+    bg.style.setProperty("--home-pointer-y", "0px");
+    return;
+  }
+
+  const attachPointerTracking = () => {
+    if (initVersion !== homeGradientInitVersion) return;
+    if (!document.body || !document.body.classList.contains("home-gradient-page")) return;
+
+    const handlePointerMove = e => {
       if (document.visibilityState === "hidden") return;
+      const now = Date.now();
+      if (now - lastPointerUpdateTs < pointerThrottleMs) return;
+      lastPointerUpdateTs = now;
+
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
-      targetX = (e.clientX - centerX) * pointerStrength;
-      targetY = (e.clientY - centerY) * pointerStrength;
+      const nextX = (e.clientX - centerX) * pointerStrength;
+      const nextY = (e.clientY - centerY) * pointerStrength;
+      const deltaX = Math.abs(nextX - targetX);
+      const deltaY = Math.abs(nextY - targetY);
+      if (deltaX < 1 && deltaY < 1) return;
+      targetX = nextX;
+      targetY = nextY;
       queuePointerUpdate();
-    },
-    { passive: true }
-  );
+    };
 
-  window.addEventListener(
-    "pointerleave",
-    () => {
+    const handlePointerLeave = () => {
       targetX = 0;
       targetY = 0;
       queuePointerUpdate();
-    },
-    { passive: true }
-  );
+    };
+
+    window.addEventListener(
+      "pointermove",
+      handlePointerMove,
+      { passive: true }
+    );
+
+    window.addEventListener(
+      "pointerleave",
+      handlePointerLeave,
+      { passive: true }
+    );
+
+    const detach = () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerleave", handlePointerLeave);
+    };
+    detachHomeGradientPointerTracking = detach;
+    window.addEventListener("pagehide", detach, { once: true });
+  };
+
+  if (deferPointerTracking) {
+    runWhenIdle(attachPointerTracking, 1800);
+    return;
+  }
+
+  attachPointerTracking();
 }
 
 function initFaqAccordions() {
@@ -509,6 +966,8 @@ function initFaqAccordions() {
 function initPulseBeamButtons() {
   const root = document.body;
   if (!root) return;
+  const lowVisualBudget = root.classList.contains("low-visual-budget");
+  const balancedVisualBudget = root.classList.contains("balanced-visual-budget");
   const prefersReducedMotion = window.matchMedia
     ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
     : false;
@@ -518,7 +977,18 @@ function initPulseBeamButtons() {
   const isDesktopViewport = window.matchMedia
     ? window.matchMedia("(min-width: 1025px)").matches
     : window.innerWidth >= 1025;
-  if (prefersReducedMotion || !hasFinePointer || !isDesktopViewport) return;
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  const connectionSaveData = Boolean(connection && connection.saveData);
+  if (
+    prefersReducedMotion ||
+    !hasFinePointer ||
+    !isDesktopViewport ||
+    lowVisualBudget ||
+    balancedVisualBudget ||
+    connectionSaveData
+  ) {
+    return;
+  }
 
   const targetSelector = [
     "a.btn",
@@ -595,17 +1065,17 @@ function initReviewsSecurityBanner() {
 
   const title = isEnPage
     ? "For client privacy, we fully mask personal emails in activation logs."
-    : "В целях безопасности личных данных клиентов email в ленте активаций маскируется полностью.";
+    : "Р’ С†РµР»СЏС… Р±РµР·РѕРїР°СЃРЅРѕСЃС‚Рё Р»РёС‡РЅС‹С… РґР°РЅРЅС‹С… РєР»РёРµРЅС‚РѕРІ email РІ Р»РµРЅС‚Рµ Р°РєС‚РёРІР°С†РёР№ РјР°СЃРєРёСЂСѓРµС‚СЃСЏ РїРѕР»РЅРѕСЃС‚СЊСЋ.";
   const note = isEnPage
     ? "Do not share tokens, session keys, or payment screenshots in private messages. Use only official support contacts from the website."
-    : "Не передавайте токены, сессионные ключи и чеки в личные сообщения. Используйте только официальные контакты поддержки с сайта.";
-  const catLabel = isEnPage ? "Sad kitten" : "Грустный котёнок";
+    : "РќРµ РїРµСЂРµРґР°РІР°Р№С‚Рµ С‚РѕРєРµРЅС‹, СЃРµСЃСЃРёРѕРЅРЅС‹Рµ РєР»СЋС‡Рё Рё С‡РµРєРё РІ Р»РёС‡РЅС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ. РСЃРїРѕР»СЊР·СѓР№С‚Рµ С‚РѕР»СЊРєРѕ РѕС„РёС†РёР°Р»СЊРЅС‹Рµ РєРѕРЅС‚Р°РєС‚С‹ РїРѕРґРґРµСЂР¶РєРё СЃ СЃР°Р№С‚Р°.";
+  const catLabel = isEnPage ? "Sad kitten" : "Р“СЂСѓСЃС‚РЅС‹Р№ РєРѕС‚С‘РЅРѕРє";
 
   const banner = document.createElement("aside");
   banner.className = "reviews-security-banner";
   banner.setAttribute("role", "note");
   banner.innerHTML = [
-    `<div class="reviews-security-banner__cat" aria-label="${catLabel}">😿</div>`,
+    `<div class="reviews-security-banner__cat" aria-label="${catLabel}">рџї</div>`,
     '<div class="reviews-security-banner__body">',
     `  <p class="reviews-security-banner__title">${title}</p>`,
     `  <p class="reviews-security-banner__text">${note}</p>`,
@@ -659,6 +1129,7 @@ function initLanguageSwitch() {
       const targetUrl = new URL(targetPath, window.location.origin);
       targetUrl.search = "";
       targetUrl.hash = "";
+      targetUrl.searchParams.set("v", "20260410-cachefix1");
       navigateWithPageTransition(targetUrl.toString());
     });
   });
@@ -763,8 +1234,8 @@ function initActivationResumeShortcut() {
   const anchor = document.createElement("a");
   anchor.href = buildActivationResumeUrl(orderId, orderToken);
   anchor.className = "gptishka-resume-activation";
-  anchor.textContent = isEnPage ? "Resume activation" : "Продолжить активацию";
-  anchor.setAttribute("aria-label", isEnPage ? "Resume order activation" : "Продолжить активацию заказа");
+  anchor.textContent = isEnPage ? "Resume activation" : "РџСЂРѕРґРѕР»Р¶РёС‚СЊ Р°РєС‚РёРІР°С†РёСЋ";
+  anchor.setAttribute("aria-label", isEnPage ? "Resume order activation" : "РџСЂРѕРґРѕР»Р¶РёС‚СЊ Р°РєС‚РёРІР°С†РёСЋ Р·Р°РєР°Р·Р°");
   anchor.addEventListener("click", () => {
     trackAnalyticsEvent("resume_activation_click");
   });
@@ -862,52 +1333,52 @@ function initActivationResumeShortcut() {
         previewPromoApply: "Apply",
       }
     : {
-        promo10: "Скидка 10%",
-        promo5: "Скидка 5%",
-        badgeBest: "Лучший выбор",
-        badgeNew: "Новинка",
-        badgeHit: "Хит",
-        badgeSale: "Акция",
-        badgePopular: "Популярно",
-        badgeLimited: "Ограничено",
-        badgeGift: "Бонус",
+        promo10: "РЎРєРёРґРєР° 10%",
+        promo5: "РЎРєРёРґРєР° 5%",
+        badgeBest: "Р›СѓС‡С€РёР№ РІС‹Р±РѕСЂ",
+        badgeNew: "РќРѕРІРёРЅРєР°",
+        badgeHit: "РҐРёС‚",
+        badgeSale: "РђРєС†РёСЏ",
+        badgePopular: "РџРѕРїСѓР»СЏСЂРЅРѕ",
+        badgeLimited: "РћРіСЂР°РЅРёС‡РµРЅРѕ",
+        badgeGift: "Р‘РѕРЅСѓСЃ",
         badgePro: "Pro",
-        pillAutoIssue: "Автовыдача",
-        pillInstant: "Мгновенно",
-        pillWarranty: "Гарантия",
-        productsUnavailable: "Товары временно недоступны",
-        payNow: "Оплатить",
-        qtyDec: "Уменьшить количество",
-        qtyInc: "Увеличить количество",
-        metaAuto: "Автоматически",
-        metaSecure: "Безопасно",
-        metaSupport: "Поддержка 24/7",
-        panelCount: count => `${count} поз.`,
-        promoApplied: (label, discountLabel) => `${label} применена (-${discountLabel})`,
-        promoInvalid: "Промокод не найден",
-        promoChecking: "Проверяем промокод...",
-        promoAccepted: "Промокод принят",
-        remove: "Удалить",
-        paymentFallback: "Оплата заказа",
-        cartCheckoutDesc: "Оформление корзины",
-        cartSummaryPrefix: "Корзина: ",
-        emailPlaceholder: "Email для получения данных заказа",
-        invalidEmail: "Введите корректный email",
-        checkoutError: "Не удалось начать оплату. Попробуйте снова.",
-        lavaUnavailable: "Lava временно недоступна. Выберите Enot.io.",
-        checkoutProductMissing: "Товар в корзине устарел. Добавьте его заново из тарифов.",
-        multiCartCheckout: "Сейчас оплата доступна по одному товару. Оплатите позиции по отдельности.",
-        paymentMethodRequired: "Выберите способ оплаты",
-        previewTitle: "Детали тарифа",
-        previewIncluded: "Что входит",
-        previewPay: "Оплатить этот тариф",
-        previewPayWithAmount: amountLabel => `Оплатить (${amountLabel})`,
-        previewClose: "Закрыть",
-        previewNoDetails: "Описание появится в ближайшее время.",
-        cardPromoPlaceholder: "Промокод",
-        previewEmailLabel: "Email для получения данных заказа",
-        previewPromoLabel: "Промокод",
-        previewPromoApply: "Применить",
+        pillAutoIssue: "РђРІС‚РѕРІС‹РґР°С‡Р°",
+        pillInstant: "РњРіРЅРѕРІРµРЅРЅРѕ",
+        pillWarranty: "Р“Р°СЂР°РЅС‚РёСЏ",
+        productsUnavailable: "РўРѕРІР°СЂС‹ РІСЂРµРјРµРЅРЅРѕ РЅРµРґРѕСЃС‚СѓРїРЅС‹",
+        payNow: "РћРїР»Р°С‚РёС‚СЊ",
+        qtyDec: "РЈРјРµРЅСЊС€РёС‚СЊ РєРѕР»РёС‡РµСЃС‚РІРѕ",
+        qtyInc: "РЈРІРµР»РёС‡РёС‚СЊ РєРѕР»РёС‡РµСЃС‚РІРѕ",
+        metaAuto: "РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё",
+        metaSecure: "Р‘РµР·РѕРїР°СЃРЅРѕ",
+        metaSupport: "РџРѕРґРґРµСЂР¶РєР° 24/7",
+        panelCount: count => `${count} РїРѕР·.`,
+        promoApplied: (label, discountLabel) => `${label} РїСЂРёРјРµРЅРµРЅР° (-${discountLabel})`,
+        promoInvalid: "РџСЂРѕРјРѕРєРѕРґ РЅРµ РЅР°Р№РґРµРЅ",
+        promoChecking: "РџСЂРѕРІРµСЂСЏРµРј РїСЂРѕРјРѕРєРѕРґ...",
+        promoAccepted: "РџСЂРѕРјРѕРєРѕРґ РїСЂРёРЅСЏС‚",
+        remove: "РЈРґР°Р»РёС‚СЊ",
+        paymentFallback: "РћРїР»Р°С‚Р° Р·Р°РєР°Р·Р°",
+        cartCheckoutDesc: "РћС„РѕСЂРјР»РµРЅРёРµ РєРѕСЂР·РёРЅС‹",
+        cartSummaryPrefix: "РљРѕСЂР·РёРЅР°: ",
+        emailPlaceholder: "Email РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ РґР°РЅРЅС‹С… Р·Р°РєР°Р·Р°",
+        invalidEmail: "Р’РІРµРґРёС‚Рµ РєРѕСЂСЂРµРєС‚РЅС‹Р№ email",
+        checkoutError: "РќРµ СѓРґР°Р»РѕСЃСЊ РЅР°С‡Р°С‚СЊ РѕРїР»Р°С‚Сѓ. РџРѕРїСЂРѕР±СѓР№С‚Рµ СЃРЅРѕРІР°.",
+        lavaUnavailable: "Lava РІСЂРµРјРµРЅРЅРѕ РЅРµРґРѕСЃС‚СѓРїРЅР°. Р’С‹Р±РµСЂРёС‚Рµ Enot.io.",
+        checkoutProductMissing: "РўРѕРІР°СЂ РІ РєРѕСЂР·РёРЅРµ СѓСЃС‚Р°СЂРµР». Р”РѕР±Р°РІСЊС‚Рµ РµРіРѕ Р·Р°РЅРѕРІРѕ РёР· С‚Р°СЂРёС„РѕРІ.",
+        multiCartCheckout: "РЎРµР№С‡Р°СЃ РѕРїР»Р°С‚Р° РґРѕСЃС‚СѓРїРЅР° РїРѕ РѕРґРЅРѕРјСѓ С‚РѕРІР°СЂСѓ. РћРїР»Р°С‚РёС‚Рµ РїРѕР·РёС†РёРё РїРѕ РѕС‚РґРµР»СЊРЅРѕСЃС‚Рё.",
+        paymentMethodRequired: "Р’С‹Р±РµСЂРёС‚Рµ СЃРїРѕСЃРѕР± РѕРїР»Р°С‚С‹",
+        previewTitle: "Р”РµС‚Р°Р»Рё С‚Р°СЂРёС„Р°",
+        previewIncluded: "Р§С‚Рѕ РІС…РѕРґРёС‚",
+        previewPay: "РћРїР»Р°С‚РёС‚СЊ СЌС‚РѕС‚ С‚Р°СЂРёС„",
+        previewPayWithAmount: amountLabel => `РћРїР»Р°С‚РёС‚СЊ (${amountLabel})`,
+        previewClose: "Р—Р°РєСЂС‹С‚СЊ",
+        previewNoDetails: "РћРїРёСЃР°РЅРёРµ РїРѕСЏРІРёС‚СЃСЏ РІ Р±Р»РёР¶Р°Р№С€РµРµ РІСЂРµРјСЏ.",
+        cardPromoPlaceholder: "РџСЂРѕРјРѕРєРѕРґ",
+        previewEmailLabel: "Email РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ РґР°РЅРЅС‹С… Р·Р°РєР°Р·Р°",
+        previewPromoLabel: "РџСЂРѕРјРѕРєРѕРґ",
+        previewPromoApply: "РџСЂРёРјРµРЅРёС‚СЊ",
       };
   const PROMO_CODE_KEY = "gptishka_cart_promo_v1";
   const PROMO_CODE_TS_KEY = "gptishka_cart_promo_ts_v1";
@@ -915,7 +1386,16 @@ function initActivationResumeShortcut() {
   const DEFAULT_PAYMENT_METHOD = "enot";
   const AVAILABLE_PAYMENT_METHODS = new Set(["enot", "lava"]);
   const PROMO_TTL_MS = 30 * 60 * 1000;
-  const PRODUCTS_CACHE_TTL_MS = 15 * 1000;
+  const PRODUCTS_CACHE_TTL_MS = 45 * 1000;
+  const PRODUCTS_PERSISTED_CACHE_TTL_MS = 15 * 60 * 1000;
+  const PRODUCTS_PERSISTED_CACHE_KEY = isEnPage
+    ? "gptishka_products_payload_en_v3"
+    : "gptishka_products_payload_ru_v3";
+  const PRODUCTS_PERSISTED_CACHE_MIGRATION_KEY = "gptishka_products_payload_cache_migrated_v3";
+  const PRODUCTS_PERSISTED_CACHE_LEGACY_KEYS = [
+    "gptishka_products_payload_en_v2",
+    "gptishka_products_payload_ru_v2",
+  ];
   const PRODUCTS_FETCH_TIMEOUT_MS = 8000;
   let clickTimer = null;
   let productsPayloadCache = null;
@@ -939,6 +1419,21 @@ function initActivationResumeShortcut() {
   let productPreviewPriceEl = null;
   let previewItem = null;
 
+  function migratePersistedProductsCache() {
+    try {
+      if (localStorage.getItem(PRODUCTS_PERSISTED_CACHE_MIGRATION_KEY) === "1") return;
+      PRODUCTS_PERSISTED_CACHE_LEGACY_KEYS.forEach((key) => {
+        if (!key || key === PRODUCTS_PERSISTED_CACHE_KEY) return;
+        localStorage.removeItem(key);
+      });
+      localStorage.setItem(PRODUCTS_PERSISTED_CACHE_MIGRATION_KEY, "1");
+    } catch (_) {
+      // Ignore storage restrictions.
+    }
+  }
+
+  migratePersistedProductsCache();
+
   function normalizePromoCodeInput(value) {
     const raw = String(value || "").trim().toUpperCase();
     if (!raw) return "";
@@ -956,6 +1451,49 @@ function initActivationResumeShortcut() {
       return normalizePaymentMethod(localStorage.getItem(PAYMENT_METHOD_KEY) || DEFAULT_PAYMENT_METHOD);
     } catch (_) {
       return DEFAULT_PAYMENT_METHOD;
+    }
+  }
+
+  function normalizeProductsPayload(payload) {
+    if (!payload || typeof payload !== "object") return { items: [] };
+    return {
+      ...payload,
+      items: Array.isArray(payload.items) ? payload.items : [],
+    };
+  }
+
+  function readPersistedProductsPayload(options = {}) {
+    const allowStale = Boolean(options && options.allowStale);
+    try {
+      const raw = localStorage.getItem(PRODUCTS_PERSISTED_CACHE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return null;
+      const storedAt = Number(parsed.storedAt || 0);
+      if (!Number.isFinite(storedAt) || storedAt <= 0) return null;
+      const payload = normalizeProductsPayload(parsed.payload);
+      if (!payload.items.length) return null;
+      const isFresh = Date.now() - storedAt <= PRODUCTS_PERSISTED_CACHE_TTL_MS;
+      if (!isFresh && !allowStale) return null;
+      return payload;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writePersistedProductsPayload(payload) {
+    const normalized = normalizeProductsPayload(payload);
+    if (!normalized.items.length) return;
+    try {
+      localStorage.setItem(
+        PRODUCTS_PERSISTED_CACHE_KEY,
+        JSON.stringify({
+          storedAt: Date.now(),
+          payload: normalized,
+        })
+      );
+    } catch (_) {
+      // Ignore storage write errors.
     }
   }
 
@@ -1096,13 +1634,13 @@ function initActivationResumeShortcut() {
     if (!key) return "";
     if (key === "email") return isEnPage ? "Email" : "Email";
     if (key === "plan_id" || key === "planid" || key === "product_id" || key === "productid") {
-      return isEnPage ? "Product" : "Товар";
+      return isEnPage ? "Product" : "РўРѕРІР°СЂ";
     }
     if (key === "payment_method" || key === "paymentmethod") {
-      return isEnPage ? "Payment method" : "Способ оплаты";
+      return isEnPage ? "Payment method" : "РЎРїРѕСЃРѕР± РѕРїР»Р°С‚С‹";
     }
     if (key === "promo_code" || key === "promocode") {
-      return isEnPage ? "Promo code" : "Промокод";
+      return isEnPage ? "Promo code" : "РџСЂРѕРјРѕРєРѕРґ";
     }
     return fieldName;
   }
@@ -1122,7 +1660,7 @@ function initActivationResumeShortcut() {
       if (invalidFields.length) {
         const labels = invalidFields.map(mapCheckoutValidationField).filter(Boolean);
         if (labels.length) {
-          return isEnPage ? `Invalid fields: ${labels.join(", ")}` : `Проверьте поля: ${labels.join(", ")}`;
+          return isEnPage ? `Invalid fields: ${labels.join(", ")}` : `РџСЂРѕРІРµСЂСЊС‚Рµ РїРѕР»СЏ: ${labels.join(", ")}`;
         }
       }
     }
@@ -1167,11 +1705,11 @@ function initActivationResumeShortcut() {
 
   function escapeHtml(value) {
     return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   function setActivePromoCode(code, options = {}) {
@@ -1818,7 +2356,7 @@ function initActivationResumeShortcut() {
     const raw = String(value || "").replace(/\s+/g, " ").trim();
     if (!raw) return false;
     const safe = normalizeProductDurationLabel(raw).toLowerCase();
-    return /^(?:\d+\s*)(?:month|months|mo|yr|yrs|year|years|месяц|месяца|месяцев|мес\.?|год|года|лет|г\.)$/iu.test(safe);
+    return /^(?:\d+\s*)(?:month|months|mo|yr|yrs|year|years|РјРµСЃСЏС†|РјРµСЃСЏС†Р°|РјРµСЃСЏС†РµРІ|РјРµСЃ\.?|РіРѕРґ|РіРѕРґР°|Р»РµС‚|Рі\.)$/iu.test(safe);
   }
 
   function splitProductTitleParts(title, durationFallback) {
@@ -1841,9 +2379,9 @@ function initActivationResumeShortcut() {
       mainLines = titleLines.slice(0, -1);
     } else if (titleLines.length === 1) {
       const single = titleLines[0];
-      const trailingDurationMatch = single.match(/(\d+\s*(?:month|months|mo|yr|yrs|year|years|месяц|месяца|месяцев|мес\.?|год|года|лет|г\.))\s*$/iu);
+      const trailingDurationMatch = single.match(/(\d+\s*(?:month|months|mo|yr|yrs|year|years|РјРµСЃСЏС†|РјРµСЃСЏС†Р°|РјРµСЃСЏС†РµРІ|РјРµСЃ\.?|РіРѕРґ|РіРѕРґР°|Р»РµС‚|Рі\.))\s*$/iu);
       if (trailingDurationMatch && trailingDurationMatch.index !== undefined) {
-        const head = single.slice(0, trailingDurationMatch.index).replace(/[–—\-,:/|]+$/u, "").trim();
+        const head = single.slice(0, trailingDurationMatch.index).replace(/[вЂ“вЂ”\-,:/|]+$/u, "").trim();
         period = normalizeProductDurationLabel(trailingDurationMatch[1]);
         mainLines = head ? [head] : [single];
       }
@@ -1915,13 +2453,13 @@ function initActivationResumeShortcut() {
       const modalDescriptionRaw = String(item.modalDescription || descriptionModel.plainText).trim();
       const modalDescriptionModel = parseDescriptionModel(modalDescriptionRaw);
       const descriptionLines = descriptionModel.lines;
-    const durationLineRegex = /^(срок|duration)\s*:/i;
+    const durationLineRegex = /^(СЃСЂРѕРє|duration)\s*:/i;
     const durationLine = descriptionLines.find(line => durationLineRegex.test(line)) || "";
     const titleDisplay = buildProductTitleDisplay(title, durationLine);
     const category = String(item.category || "").trim();
     const normalizedCategoryLabel = normalizeProductCategoryLabel(category).toLowerCase();
     const isChatgptSubscriptionsCategory =
-      normalizedCategoryLabel.includes("подпис") || normalizedCategoryLabel.includes("subscription");
+      normalizedCategoryLabel.includes("РїРѕРґРїРёСЃ") || normalizedCategoryLabel.includes("subscription");
     const titleLinesMarkup = titleDisplay.lines
       .map((line) => (
         '<span class="price-card__title-mainline">' +
@@ -1944,7 +2482,7 @@ function initActivationResumeShortcut() {
     const cardTextAlign = readCardTextAlignConfig(tags);
     const displayTags = tags.filter(tag => !isTechnicalProductTag(tag));
     const term = category || (displayTags[0] ? displayTags[0].toUpperCase() : "DIGITAL");
-    const sub = displayTags.length ? displayTags.slice(0, 3).join(" • ") : String(nonDurationLines[0] || description).slice(0, 90);
+    const sub = displayTags.length ? displayTags.slice(0, 3).join(" вЂў ") : String(nonDurationLines[0] || description).slice(0, 90);
     const topHighlights = nonDurationLines.slice(0, 5);
     const topHighlightsHtml = topHighlights
       .map(line => '<div class="sub-top-line">' + escapeHtml(line) + "</div>")
@@ -1972,7 +2510,7 @@ function initActivationResumeShortcut() {
       .slice(0, 3)
       .map(v => {
         const normalized = String(v || "").toLowerCase();
-        const isDuration = normalized.startsWith("продолжительность") || normalized.startsWith("duration");
+        const isDuration = normalized.startsWith("РїСЂРѕРґРѕР»Р¶РёС‚РµР»СЊРЅРѕСЃС‚СЊ") || normalized.startsWith("duration");
         const liClass = isDuration ? "feature-line feature-duration" : "feature-line";
         return '<li class="' + liClass + '">&#10003; ' + escapeHtml(v) + "</li>";
       })
@@ -2018,6 +2556,14 @@ function initActivationResumeShortcut() {
     if (!forceRefresh && productsPayloadCache && now - productsPayloadCacheTs < PRODUCTS_CACHE_TTL_MS) {
       return productsPayloadCache;
     }
+    if (!forceRefresh) {
+      const persistedPayload = readPersistedProductsPayload();
+      if (persistedPayload) {
+        productsPayloadCache = persistedPayload;
+        productsPayloadCacheTs = now;
+        return persistedPayload;
+      }
+    }
     if (!forceRefresh && productsPayloadPendingPromise) {
       return productsPayloadPendingPromise;
     }
@@ -2034,11 +2580,20 @@ function initActivationResumeShortcut() {
         return response.json();
       })
       .then(payload => {
-        const normalizedPayload =
-          payload && typeof payload === "object" ? payload : { items: [] };
+        const normalizedPayload = normalizeProductsPayload(payload);
         productsPayloadCache = normalizedPayload;
         productsPayloadCacheTs = Date.now();
+        writePersistedProductsPayload(normalizedPayload);
         return normalizedPayload;
+      })
+      .catch(error => {
+        const fallbackPayload = readPersistedProductsPayload({ allowStale: true });
+        if (fallbackPayload) {
+          productsPayloadCache = fallbackPayload;
+          productsPayloadCacheTs = Date.now();
+          return fallbackPayload;
+        }
+        throw error;
       })
       .finally(() => {
         clearTimeout(timeoutId);
@@ -2053,7 +2608,8 @@ function initActivationResumeShortcut() {
     const fallback = isEnPage ? "ChatGPT Subscriptions" : "Подписки ChatGPT";
     if (!raw) return fallback;
 
-    const normalized = raw.toLowerCase();
+    const clean = raw.replace(/^\s*(\d{1,2})[\).:\-\s]+/, "").trim();
+    const normalized = clean.toLowerCase();
     const isSubscriptionsCategory =
       normalized === "subscriptions" ||
       normalized === "subscription" ||
@@ -2062,15 +2618,21 @@ function initActivationResumeShortcut() {
       normalized === "chatgpt subscriptions" ||
       normalized === "подписки chatgpt";
 
-    return isSubscriptionsCategory ? fallback : raw;
+    return isSubscriptionsCategory ? fallback : clean;
   }
 
   function categorySortScore(categoryLabel) {
-    const normalized = String(categoryLabel || "").trim().toLowerCase();
-    if (!normalized) return 1;
-    if (normalized.includes("подпис")) return 0;
-    if (normalized.includes("subscription")) return 0;
-    return 1;
+    const raw = String(categoryLabel || "").trim();
+    if (!raw) return 999;
+
+    const explicitOrder = raw.match(/^\s*(\d{1,2})[\).:\-\s]+/);
+    if (explicitOrder) return Number(explicitOrder[1]);
+
+    const normalized = raw.toLowerCase();
+    if (normalized.includes("chatgpt") || normalized.includes("подпис")) return 10;
+    if (normalized.includes("grok")) return 20;
+    if (normalized.includes("claude")) return 30;
+    return 100;
   }
 
   function groupProductsByCategory(items) {
@@ -2985,7 +3547,7 @@ function initActivationResumeShortcut() {
           escapeHtml(row.title || row.product) +
           "</div>" +
           '<div class="cart-item__meta">' +
-          escapeHtml((row.term ? row.term + " • " : "") + formatRub(toAmount(row.price)) + " x " + qty + " = " + formatRub(itemTotal)) +
+          escapeHtml((row.term ? row.term + " вЂў " : "") + formatRub(toAmount(row.price)) + " x " + qty + " = " + formatRub(itemTotal)) +
           "</div>" +
           "</div>" +
           '<div class="cart-item__controls">' +
@@ -3332,18 +3894,26 @@ document.addEventListener("click", e => {
 (() => {
   const API_STATS_URL = "/api/stats";
   const API_HEARTBEAT_URL = "/api/heartbeat";
-  const STATS_REFRESH_MS = 15000;
-  const HEARTBEAT_MS = 20000;
   const SESSION_KEY = "gptishka_session_id";
   const TICKER_CACHE_KEY = "gptishka_ticker_cache_v2";
   const TICKER_ANCHOR_KEY = "gptishka_ticker_anchor_v1";
+  const MAX_TICKER_ENTRIES = 24;
   const TICKER_CACHE_TTL_MS = 12 * 60 * 1000;
   const TICKER_MIN_VISUAL_UPDATE_MS = 60000;
-  const TICKER_WARM_FETCH_DELAY_MS = 12000;
   const DEFAULT_TICKER_CYCLE_MS = 130000;
+  let statsRefreshMs = 90000;
+  let heartbeatMs = 120000;
+  let tickerWarmFetchDelayMs = 12000;
 
   const pathname = String(window.location.pathname || "/").toLowerCase();
   if (pathname.startsWith("/admin")) return;
+  const isHomePage =
+    pathname === "/" ||
+    pathname === "/index.html" ||
+    pathname === "/en" ||
+    pathname === "/en/" ||
+    pathname === "/en/index.html";
+  if (!isHomePage) return;
   const isEnPage = pathname.startsWith("/en/");
   const numberLocale = isEnPage ? "en-US" : "ru-RU";
   const TEXT = isEnPage
@@ -3352,8 +3922,8 @@ document.addEventListener("click", e => {
         emptyTicker: "Activation feed is updating...",
       }
     : {
-        totalLabel: "всего активаций",
-        emptyTicker: "Лента активаций обновляется...",
+        totalLabel: "РІСЃРµРіРѕ Р°РєС‚РёРІР°С†РёР№",
+        emptyTicker: "Р›РµРЅС‚Р° Р°РєС‚РёРІР°С†РёР№ РѕР±РЅРѕРІР»СЏРµС‚СЃСЏ...",
       };
 
   let tickerTrack = null;
@@ -3364,6 +3934,27 @@ document.addEventListener("click", e => {
   let delayedFetchTimerId = 0;
   let lastTickerSignature = "";
   let tickerRenderedAt = 0;
+
+  function applyTickerCadenceByVisualBudget(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    if (normalized === "low") {
+      statsRefreshMs = 180000;
+      heartbeatMs = 240000;
+      tickerWarmFetchDelayMs = 26000;
+      return;
+    }
+    if (normalized === "balanced") {
+      statsRefreshMs = 150000;
+      heartbeatMs = 180000;
+      tickerWarmFetchDelayMs = 22000;
+      return;
+    }
+    statsRefreshMs = 90000;
+    heartbeatMs = 120000;
+    tickerWarmFetchDelayMs = 12000;
+  }
+
+  applyTickerCadenceByVisualBudget(document.body?.dataset?.visualBudget || "");
 
   function ensureSessionId() {
     try {
@@ -3395,15 +3986,20 @@ document.addEventListener("click", e => {
 
   function escapeHtml(value) {
     return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   function createTicker() {
-    if (document.getElementById("siteTicker")) return;
+    const existingTicker = document.getElementById("siteTicker");
+    if (existingTicker) {
+      tickerTrack = document.getElementById("siteTickerTrack");
+      totalValueEl = document.getElementById("siteTickerSales");
+      return;
+    }
     const header = document.querySelector("header");
     if (!header) return;
 
@@ -3431,6 +4027,16 @@ document.addEventListener("click", e => {
     totalValueEl = document.getElementById("siteTickerSales");
   }
 
+  function isTickerVisible() {
+    const ticker = document.getElementById("siteTicker");
+    if (!(ticker instanceof HTMLElement)) return false;
+    const style = window.getComputedStyle(ticker);
+    if (style.display === "none") return false;
+    if (style.visibility === "hidden") return false;
+    if (Number(style.opacity || "1") <= 0) return false;
+    return ticker.getClientRects().length > 0;
+  }
+
   function normalizeTickerEntries(stats) {
     if (Array.isArray(stats?.tickerEntries) && stats.tickerEntries.length) {
       return stats.tickerEntries
@@ -3439,13 +4045,15 @@ document.addEventListener("click", e => {
           if (!email) return null;
           return email;
         })
-        .filter(Boolean);
+        .filter(Boolean)
+        .slice(0, MAX_TICKER_ENTRIES);
     }
 
     if (Array.isArray(stats?.lastBuyers) && stats.lastBuyers.length) {
       return stats.lastBuyers
         .map(email => String(email || "").trim())
-        .filter(Boolean);
+        .filter(Boolean)
+        .slice(0, MAX_TICKER_ENTRIES);
     }
 
     return [];
@@ -3507,7 +4115,7 @@ document.addEventListener("click", e => {
         ? parsed.entries
             .map(v => String(v || "").trim())
             .filter(Boolean)
-            .slice(0, 28)
+            .slice(0, MAX_TICKER_ENTRIES)
         : [];
       const total = Number(parsed.total || 0);
       const renderedAt = Number(parsed.renderedAt || updatedAt || Date.now());
@@ -3528,7 +4136,7 @@ document.addEventListener("click", e => {
           ? entries
               .map(v => String(v || "").trim())
               .filter(Boolean)
-              .slice(0, 28)
+              .slice(0, MAX_TICKER_ENTRIES)
           : [],
         total: Number(total || 0),
         renderedAt: Number(renderedAt || Date.now()),
@@ -3549,6 +4157,7 @@ document.addEventListener("click", e => {
       ? entries
           .map(value => String(value || "").trim())
           .filter(Boolean)
+          .slice(0, MAX_TICKER_ENTRIES)
       : [];
     const signatureSource = normalizedEntries.length
       ? normalizedEntries.slice().sort((a, b) => a.localeCompare(b))
@@ -3571,7 +4180,7 @@ document.addEventListener("click", e => {
       `<span class="site-ticker__item">${escapeHtml(email)}</span>`
     ));
 
-    const separator = '<span class="site-ticker__sep">•</span>';
+    const separator = '<span class="site-ticker__sep">вЂў</span>';
     const joined = baseItems.join(separator);
     const repeated = new Array(4).fill(joined).join(separator);
 
@@ -3649,11 +4258,11 @@ document.addEventListener("click", e => {
     heartbeatTimerId = window.setInterval(() => {
       if (document.visibilityState === "hidden") return;
       sendHeartbeat(sessionId);
-    }, HEARTBEAT_MS);
+    }, heartbeatMs);
     statsTimerId = window.setInterval(() => {
       if (document.visibilityState === "hidden") return;
       fetchAndRenderStats();
-    }, STATS_REFRESH_MS);
+    }, statsRefreshMs);
   }
 
   function initLiveTicker() {
@@ -3661,6 +4270,10 @@ document.addEventListener("click", e => {
     isInitialized = true;
 
     createTicker();
+    if (!isTickerVisible()) {
+      stopTickerPolling();
+      return;
+    }
     const cached = readTickerCache();
     if (cached) {
       renderCounters({ sales: cached.total });
@@ -3671,19 +4284,42 @@ document.addEventListener("click", e => {
     }
 
     const sessionId = ensureSessionId();
-    sendHeartbeat(sessionId);
-    startTickerPolling(sessionId);
-    if (cached) {
-      delayedFetchTimerId = window.setTimeout(() => {
-        delayedFetchTimerId = 0;
+    runWhenIdle(() => {
+      if (document.visibilityState !== "visible") return;
+      sendHeartbeat(sessionId);
+      startTickerPolling(sessionId);
+      if (cached) {
+        delayedFetchTimerId = window.setTimeout(() => {
+          delayedFetchTimerId = 0;
+          fetchAndRenderStats();
+        }, tickerWarmFetchDelayMs);
+      } else {
         fetchAndRenderStats();
-      }, TICKER_WARM_FETCH_DELAY_MS);
-    } else {
+      }
+    }, 2200);
+
+    window.addEventListener("gptishka:visual-budget-change", event => {
+      const nextMode = String(event?.detail?.mode || "").trim().toLowerCase();
+      applyTickerCadenceByVisualBudget(nextMode);
+      if (!isTickerVisible()) {
+        stopTickerPolling();
+        return;
+      }
+      if (document.visibilityState !== "visible") {
+        stopTickerPolling();
+        return;
+      }
+      sendHeartbeat(sessionId);
       fetchAndRenderStats();
-    }
+      startTickerPolling(sessionId);
+    });
 
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState !== "visible") return;
+      if (!isTickerVisible()) {
+        stopTickerPolling();
+        return;
+      }
       sendHeartbeat(sessionId);
       fetchAndRenderStats();
       startTickerPolling(sessionId);
@@ -3692,8 +4328,10 @@ document.addEventListener("click", e => {
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initLiveTicker);
+    document.addEventListener("DOMContentLoaded", initLiveTicker, { once: true });
   } else {
     initLiveTicker();
   }
 })();
+
+

@@ -38,7 +38,6 @@
       {
         "@type": "ContactPoint",
         "contactType": "customer support",
-        "email": "support@gptishka.shop",
         "availableLanguage": ["ru", "en"]
       }
     ]
@@ -83,21 +82,106 @@
 <script>
   (function () {
     try {
-      var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      var fine = window.matchMedia ? window.matchMedia("(pointer: fine)").matches : true;
-      var compact = window.matchMedia ? window.matchMedia("(max-width: 900px)").matches : window.innerWidth <= 900;
-      var cls = (reduce || !fine || compact) ? "home-gradient-page-lite" : "home-gradient-page";
-      document.body.classList.add(cls);
+      var body = document.body;
+      if (!body) return;
+      var mm = typeof window.matchMedia === "function" ? window.matchMedia.bind(window) : null;
+
+      var parseFlag = function (value) {
+        var normalized = String(value || "").trim().toLowerCase();
+        if (!normalized) return null;
+        if (["1", "true", "on", "yes", "lite"].indexOf(normalized) !== -1) return true;
+        if (["0", "false", "off", "no", "full"].indexOf(normalized) !== -1) return false;
+        return null;
+      };
+
+      var forcedLite = null;
+      try {
+        var params = new URLSearchParams(window.location.search || "");
+        forcedLite = parseFlag(params.get("lite") || params.get("performance"));
+      } catch (_) {}
+      if (forcedLite === null) {
+        try {
+          forcedLite = parseFlag(localStorage.getItem("gptishka_force_lite"));
+        } catch (_) {}
+      }
+
+      var mode = "balanced";
+      if (forcedLite === true) {
+        mode = "low";
+      } else if (forcedLite === false) {
+        mode = "rich";
+      } else {
+        var reducedMotion = mm ? mm("(prefers-reduced-motion: reduce)").matches : false;
+        var memoryGb = Number(navigator.deviceMemory || 0);
+        var cpuCores = Number(navigator.hardwareConcurrency || 0);
+        var lowMemory = Number.isFinite(memoryGb) && memoryGb > 0 && memoryGb <= 4;
+        var lowCpu = Number.isFinite(cpuCores) && cpuCores > 0 && cpuCores <= 4;
+        var midMemory = Number.isFinite(memoryGb) && memoryGb > 0 && memoryGb <= 8;
+        var midCpu = Number.isFinite(cpuCores) && cpuCores > 0 && cpuCores <= 8;
+        var canHover = mm ? mm("(hover: hover)").matches : true;
+        var coarsePointer = mm ? mm("(pointer: coarse)").matches : false;
+        var compactViewport = mm ? mm("(max-width: 1200px)").matches : window.innerWidth <= 1200;
+        var laptopViewport = mm ? mm("(max-width: 1920px)").matches : window.innerWidth <= 1920;
+        var highViewport = mm ? mm("(min-width: 1400px)").matches : window.innerWidth >= 1400;
+        var highMemory = Number.isFinite(memoryGb) && memoryGb >= 12;
+        var highCpu = Number.isFinite(cpuCores) && cpuCores >= 10;
+        var isLikelyMobile = /android|iphone|ipad|ipod|mobile|windows phone/i.test(String(navigator.userAgent || ""));
+        var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        var saveData = Boolean(connection && connection.saveData);
+        var effectiveType = connection ? String(connection.effectiveType || "").toLowerCase() : "";
+
+        if (
+          reducedMotion ||
+          lowMemory ||
+          lowCpu ||
+          isLikelyMobile ||
+          (coarsePointer && !canHover && compactViewport) ||
+          saveData ||
+          effectiveType.indexOf("2g") !== -1 ||
+          effectiveType.indexOf("3g") !== -1
+        ) {
+          mode = "low";
+        } else if (highMemory && highCpu && canHover && highViewport) {
+          mode = "rich";
+        } else if ((midMemory || midCpu) && laptopViewport) {
+          mode = "balanced";
+        } else {
+          mode = "balanced";
+        }
+      }
+
+      body.dataset.visualBudget = mode;
+      if (mode === "low") body.classList.add("low-visual-budget");
+      if (mode === "balanced") body.classList.add("balanced-visual-budget");
+
+      var reduce = mm ? mm("(prefers-reduced-motion: reduce)").matches : false;
+      var fine = mm ? mm("(pointer: fine)").matches : true;
+      var compact = mm ? mm("(max-width: 900px)").matches : window.innerWidth <= 900;
+      var gradientClass = mode === "rich" && !reduce && fine && !compact
+        ? "home-gradient-page"
+        : "home-gradient-page-lite";
+      body.classList.add(gradientClass);
     } catch (_) {}
   })();
 </script>
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <div class="page-overlay"></div>
-    <header>
+<header>
+<div id="siteTicker" class="site-ticker" role="status" aria-live="polite">
+  <div class="site-ticker__marquee">
+    <div class="site-ticker__track" id="siteTickerTrack">
+      <div class="site-ticker__loop"><span class="site-ticker__item">Лента активаций обновляется...</span></div>
+      <div class="site-ticker__loop" aria-hidden="true"><span class="site-ticker__item">Лента активаций обновляется...</span></div>
+    </div>
+  </div>
+  <div class="site-ticker__stats">
+    <span class="site-ticker__stat"><span class="site-ticker__stat-label">всего активаций:</span> <strong id="siteTickerSales">0</strong></span>
+  </div>
+</div>
 <div class="nav">
       
           <a href="index.html" class="logo-link">
-            <img loading="eager" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTишка" class="logo-img" onerror="this.onerror=null;this.src='/favicon.png';">
+            <img loading="eager" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTишка" class="logo-img">
           </a>
       
                             <nav>
@@ -138,10 +222,9 @@
       
       <main class="page">
 <div class="hero">
-  <div data-hero-react-root data-lang="ru" data-hero-top="Купить подписку" data-hero-words="ChatGPT Plus|ChatGPT Go|ChatGPT Pro" data-hero-description="За ~2,5 года работы успешно подключили более 5000+ подписок.
-Не забудь использовать промокод &quot;WELCOME2026&quot;." data-hero-cta="Выбрать тариф" data-cta-href="/index.html#pricing" data-hero-interval="2200">
+  <div data-hero-react-root data-lang="ru" data-hero-top="Купить подписку" data-hero-words="ChatGPT Plus|ChatGPT Go|ChatGPT Pro" data-hero-description="За ~2,5 года работы успешно подключили более 5000+ подписок." data-hero-cta="Выбрать тариф" data-cta-href="/index.html#pricing" data-hero-interval="3200">
     <h1>Купить подписку ChatGPT Plus, Go или Pro</h1>
-    <p>За ~2,5 года работы успешно подключили более 5000+ подписок.<br>Не забудь использовать промокод "WELCOME2026".</p>
+    <p>За ~2,5 года работы успешно подключили более 5000+ подписок.</p>
     <a href="/index.html#pricing" class="btn">Выбрать тариф</a>
   </div>
   <ul class="hero-trust-pills" aria-label="Ключевые преимущества">
@@ -175,7 +258,7 @@
 
   <section class="pricing" id="pricing">
     <div class="pricing-header">
-      <h2>Выберите подписку ChatGPT</h2>
+      <h2>Выберите подписку</h2>
     </div>
   
     <div class="pricing-grid" id="pricingGrid" aria-live="polite">
@@ -350,7 +433,7 @@
     <p class="activation-video__subtitle">Дополнительная инструкция: можно посмотреть до оплаты или сразу после покупки.</p>
   </div>
   <div class="activation-video__frame">
-    <video class="activation-video__media" controls preload="metadata" playsinline poster="/assets/img/hero-activation-poster.png">
+    <video class="activation-video__media" controls preload="none" playsinline data-poster="/assets/img/hero-activation-poster.png">
       <source src="/assets/video/hero-activation.mp4" type="video/mp4">
       Ваш браузер не поддерживает встроенное видео.
     </video>
@@ -398,9 +481,9 @@
   </div>
   <span class="footer-copy">&copy; 2026 GPTishka. Все права защищены, копирование запрещено.</span>
 </footer>
-<script type="module" src="/assets/js/hero-react.mjs?v=20260310f"></script>
-<script src="/assets/js/app.min.js?v=20260324-modalfix3" defer></script>
-  <script src="/assets/js/support-widget.js?v=20260315b" defer></script>
+<script src="/assets/js/hero-lite.js?v=20260420-hotfix1" defer></script>
+<script src="/assets/js/app.min.js?v=20260420-hotfix1" defer></script>
+  <script src="/assets/js/support-widget.js?v=20260420-catanim1" defer></script>
 </body>
 </html>
 
