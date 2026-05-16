@@ -6,8 +6,7 @@ import { api } from "../lib/api";
 import { money } from "../lib/format";
 
 type BadgeType = "none" | "best" | "new" | "hit" | "sale" | "popular" | "limited" | "gift" | "pro";
-type ProductDeliveryType = "activation" | "credentials" | "vpn" | "support";
-type VpnBundlePlan = "vpn_month" | "vpn_halfyear" | "vpn_year";
+type ProductDeliveryType = "activation" | "credentials" | "vpn" | "support" | "support_claude";
 type TextAlignValue = "left" | "center" | "right";
 type CardTextBlock = "title" | "description" | "price" | "duration" | "features" | "meta";
 type CardTextAlignConfig = Record<CardTextBlock, TextAlignValue>;
@@ -27,7 +26,7 @@ type Product = {
   tags: string[];
   isActive: boolean;
   deliveryType?: ProductDeliveryType;
-  deliveryMethod?: 1 | 2 | 3 | 4 | "1" | "2" | "3" | "4";
+  deliveryMethod?: 1 | 2 | 3 | 4 | 5 | "1" | "2" | "3" | "4" | "5";
 };
 
 type ManualCredential = {
@@ -191,12 +190,14 @@ function withBadgeTag(tags: string[] = [], badge: BadgeType): string[] {
 
 function resolveDeliveryType(item: Product): ProductDeliveryType {
   const fromMethod = String(item.deliveryMethod || "").trim();
+  if (fromMethod === "5") return "support_claude";
   if (fromMethod === "4") return "support";
   if (fromMethod === "2") return "credentials";
   if (fromMethod === "3") return "vpn";
   if (fromMethod === "1") return "activation";
 
   const fromItem = String(item.deliveryType || "").trim().toLowerCase();
+  if (fromItem === "support_claude") return "support_claude";
   if (fromItem === "support") return "support";
   if (fromItem === "credentials") return "credentials";
   if (fromItem === "vpn") return "vpn";
@@ -204,6 +205,10 @@ function resolveDeliveryType(item: Product): ProductDeliveryType {
     .map((tag) => String(tag || "").trim().toLowerCase())
     .some((tag) => tag === "delivery:vpn");
   if (hasVpnTag) return "vpn";
+  const hasSupportClaudeTag = (item.tags || [])
+    .map((tag) => String(tag || "").trim().toLowerCase())
+    .some((tag) => tag === "delivery:support_claude");
+  if (hasSupportClaudeTag) return "support_claude";
   const hasSupportTag = (item.tags || [])
     .map((tag) => String(tag || "").trim().toLowerCase())
     .some((tag) => tag === "delivery:support");
@@ -214,14 +219,16 @@ function resolveDeliveryType(item: Product): ProductDeliveryType {
   return hasCredentialsTag ? "credentials" : "activation";
 }
 
-function deliveryMethodNumber(deliveryType: ProductDeliveryType): 1 | 2 | 3 | 4 {
+function deliveryMethodNumber(deliveryType: ProductDeliveryType): 1 | 2 | 3 | 4 | 5 {
+  if (deliveryType === "support_claude") return 5;
   if (deliveryType === "support") return 4;
   if (deliveryType === "vpn") return 3;
   return deliveryType === "credentials" ? 2 : 1;
 }
 
 function deliveryMethodLabel(deliveryType: ProductDeliveryType): string {
-  if (deliveryType === "support") return "Метод 4: Ручная выдача через поддержку";
+  if (deliveryType === "support_claude") return "Метод 5: Claude Pro активация по токену";
+  if (deliveryType === "support") return "Метод 4: Grok-активация по JWT-токену";
   if (deliveryType === "credentials") return "Метод 2: Логин и пароль";
   if (deliveryType === "vpn") return "Метод 3: VPN (VLESS)";
   return "Метод 1: Активация по ключу";
@@ -231,18 +238,28 @@ const VPN_BUNDLE_FLAG_TAG = "bundle:vpn";
 const VPN_PLAN_TAG_PREFIX = "vpn:plan:";
 const VPN_DAYS_TAG_PREFIX = "vpn:days:";
 const VPN_USERS_TAG_PREFIX = "vpn:users:";
-const DEFAULT_VPN_USERS_LIMIT = 1;
-const VPN_BUNDLE_PLAN_DAYS: Record<VpnBundlePlan, number> = {
-  vpn_month: 30,
-  vpn_halfyear: 180,
-  vpn_year: 365,
-};
+const DEFAULT_VPN_USERS_LIMIT = 7;
+const DEFAULT_VPN_DURATION_DAYS = 30;
+const MIN_VPN_DURATION_DAYS = 1;
+const MAX_VPN_DURATION_DAYS = 3650;
 
-function normalizePlanCandidate(value: string): VpnBundlePlan {
-  const normalized = String(value || "").trim().toLowerCase();
-  if (normalized === "vpn_halfyear") return "vpn_halfyear";
-  if (normalized === "vpn_year") return "vpn_year";
-  return "vpn_month";
+function normalizeVpnDurationDays(value: unknown) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return DEFAULT_VPN_DURATION_DAYS;
+  return Math.max(MIN_VPN_DURATION_DAYS, Math.min(MAX_VPN_DURATION_DAYS, Math.floor(parsed)));
+}
+
+function buildVpnPlanTag(days: number) {
+  return `days_${normalizeVpnDurationDays(days)}`;
+}
+
+function formatVpnDurationLabel(days: number) {
+  const value = normalizeVpnDurationDays(days);
+  const mod10 = value % 10;
+  const mod100 = value % 100;
+  if (mod10 === 1 && mod100 !== 11) return `${value} день`;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${value} дня`;
+  return `${value} дней`;
 }
 
 function normalizeVpnUsersLimit(value: unknown) {
@@ -265,24 +282,17 @@ function parseVpnUsersLimit(tags: string[] = []) {
   return normalizeVpnUsersLimit(usersTag.split(":").pop() || "");
 }
 
-function parseVpnBundleConfig(tags: string[] = []): { enabled: boolean; plan: VpnBundlePlan; usersLimit: number } {
+function parseVpnBundleConfig(tags: string[] = []): { enabled: boolean; durationDays: number; usersLimit: number } {
   const list = Array.isArray(tags) ? tags : [];
   const normalized = list.map((tag) => String(tag || "").trim().toLowerCase());
   const enabled = normalized.includes(VPN_BUNDLE_FLAG_TAG);
   const usersLimit = parseVpnUsersLimit(list);
-  const planTag = normalized.find((tag) => tag.startsWith(VPN_PLAN_TAG_PREFIX));
-  if (planTag) {
-    return { enabled, plan: normalizePlanCandidate(planTag.slice(VPN_PLAN_TAG_PREFIX.length)), usersLimit };
-  }
-
   const daysTag = normalized.find((tag) => tag.startsWith(VPN_DAYS_TAG_PREFIX));
-  const days = Number(daysTag?.slice(VPN_DAYS_TAG_PREFIX.length) || "");
-  if (days >= 365) return { enabled, plan: "vpn_year", usersLimit };
-  if (days >= 180) return { enabled, plan: "vpn_halfyear", usersLimit };
-  return { enabled, plan: "vpn_month", usersLimit };
+  const days = normalizeVpnDurationDays(daysTag?.slice(VPN_DAYS_TAG_PREFIX.length) || "");
+  return { enabled, durationDays: days, usersLimit };
 }
 
-function withVpnBundleTags(tags: string[] = [], enabled: boolean, plan: VpnBundlePlan, usersLimit: number): string[] {
+function withVpnBundleTags(tags: string[] = [], enabled: boolean, durationDays: number, usersLimit: number): string[] {
   const list = Array.isArray(tags) ? tags : [];
   const cleaned = list.filter((tag) => {
     const normalized = String(tag || "").trim().toLowerCase();
@@ -302,16 +312,17 @@ function withVpnBundleTags(tags: string[] = [], enabled: boolean, plan: VpnBundl
   });
   if (!enabled) return cleaned;
   const normalizedUsersLimit = normalizeVpnUsersLimit(usersLimit);
+  const normalizedDurationDays = normalizeVpnDurationDays(durationDays);
   return [
     ...cleaned,
     VPN_BUNDLE_FLAG_TAG,
-    `${VPN_PLAN_TAG_PREFIX}${plan}`,
-    `${VPN_DAYS_TAG_PREFIX}${VPN_BUNDLE_PLAN_DAYS[plan]}`,
+    `${VPN_PLAN_TAG_PREFIX}${buildVpnPlanTag(normalizedDurationDays)}`,
+    `${VPN_DAYS_TAG_PREFIX}${normalizedDurationDays}`,
     `${VPN_USERS_TAG_PREFIX}${normalizedUsersLimit}`,
   ];
 }
 
-function withDirectVpnTags(tags: string[] = [], plan: VpnBundlePlan, usersLimit: number): string[] {
+function withDirectVpnTags(tags: string[] = [], durationDays: number, usersLimit: number): string[] {
   const list = Array.isArray(tags) ? tags : [];
   const cleaned = list.filter((tag) => {
     const normalized = String(tag || "").trim().toLowerCase();
@@ -330,10 +341,11 @@ function withDirectVpnTags(tags: string[] = [], plan: VpnBundlePlan, usersLimit:
     return true;
   });
   const normalizedUsersLimit = normalizeVpnUsersLimit(usersLimit);
+  const normalizedDurationDays = normalizeVpnDurationDays(durationDays);
   return [
     ...cleaned,
-    `${VPN_PLAN_TAG_PREFIX}${plan}`,
-    `${VPN_DAYS_TAG_PREFIX}${VPN_BUNDLE_PLAN_DAYS[plan]}`,
+    `${VPN_PLAN_TAG_PREFIX}${buildVpnPlanTag(normalizedDurationDays)}`,
+    `${VPN_DAYS_TAG_PREFIX}${normalizedDurationDays}`,
     `${VPN_USERS_TAG_PREFIX}${normalizedUsersLimit}`,
   ];
 }
@@ -348,12 +360,6 @@ function buildTags(title: string, badge: BadgeType): string[] {
 
   const base = tags.length ? tags : ["subscription"];
   return withBadgeTag(base, badge);
-}
-
-function vpnBundlePlanLabel(plan: VpnBundlePlan): string {
-  if (plan === "vpn_halfyear") return "VPN 6 месяцев (180 дней)";
-  if (plan === "vpn_year") return "VPN 12 месяцев (365 дней)";
-  return "VPN 1 месяц (30 дней)";
 }
 
 function badgeLabel(badge: BadgeType): string {
@@ -411,7 +417,7 @@ export default function ProductsPage() {
   const [badge, setBadge] = useState<BadgeType>("none");
   const [deliveryType, setDeliveryType] = useState<ProductDeliveryType>("activation");
   const [vpnBundleEnabled, setVpnBundleEnabled] = useState(false);
-  const [vpnBundlePlan, setVpnBundlePlan] = useState<VpnBundlePlan>("vpn_month");
+  const [vpnDurationDays, setVpnDurationDays] = useState<number>(DEFAULT_VPN_DURATION_DAYS);
   const [vpnUsersLimit, setVpnUsersLimit] = useState<number>(DEFAULT_VPN_USERS_LIMIT);
   const [editingTags, setEditingTags] = useState<string[]>([]);
   const [cardTextAlign, setCardTextAlign] = useState<CardTextAlignConfig>(buildDefaultCardTextAlign());
@@ -607,7 +613,7 @@ export default function ProductsPage() {
     setBadge("none");
     setDeliveryType("activation");
     setVpnBundleEnabled(false);
-    setVpnBundlePlan("vpn_month");
+    setVpnDurationDays(DEFAULT_VPN_DURATION_DAYS);
     setVpnUsersLimit(DEFAULT_VPN_USERS_LIMIT);
     setEditingTags([]);
     setCardTextAlign(buildDefaultCardTextAlign());
@@ -653,7 +659,7 @@ export default function ProductsPage() {
     setDeliveryType(resolveDeliveryType(item));
     const bundleConfig = parseVpnBundleConfig(item.tags || []);
     setVpnBundleEnabled(bundleConfig.enabled);
-    setVpnBundlePlan(bundleConfig.plan);
+    setVpnDurationDays(bundleConfig.durationDays);
     setVpnUsersLimit(bundleConfig.usersLimit);
     setEditingTags(Array.isArray(item.tags) ? item.tags : []);
     setCardTextAlign(parseCardTextAlignFromTags(item.tags || []));
@@ -780,13 +786,14 @@ export default function ProductsPage() {
     }
 
     const normalizedVpnUsersLimit = normalizeVpnUsersLimit(vpnUsersLimit);
+    const normalizedVpnDurationDays = normalizeVpnDurationDays(vpnDurationDays);
 
     if (editingId) {
       const tagsWithAlign = withCardTextAlignTags(withBadgeTag(editingTags, badge), cardTextAlign);
       const preparedTags =
         deliveryType === "vpn"
-          ? withDirectVpnTags(tagsWithAlign, vpnBundlePlan, normalizedVpnUsersLimit)
-          : withVpnBundleTags(tagsWithAlign, vpnBundleEnabled, vpnBundlePlan, normalizedVpnUsersLimit);
+          ? withDirectVpnTags(tagsWithAlign, normalizedVpnDurationDays, normalizedVpnUsersLimit)
+          : withVpnBundleTags(tagsWithAlign, vpnBundleEnabled, normalizedVpnDurationDays, normalizedVpnUsersLimit);
       await updateProduct.mutateAsync({
         id: editingId,
         payload: {
@@ -811,8 +818,8 @@ export default function ProductsPage() {
     const createdTagsWithAlign = withCardTextAlignTags(createdBaseTags, cardTextAlign);
     const preparedTags =
       deliveryType === "vpn"
-        ? withDirectVpnTags(createdTagsWithAlign, vpnBundlePlan, normalizedVpnUsersLimit)
-        : withVpnBundleTags(createdTagsWithAlign, vpnBundleEnabled, vpnBundlePlan, normalizedVpnUsersLimit);
+        ? withDirectVpnTags(createdTagsWithAlign, normalizedVpnDurationDays, normalizedVpnUsersLimit)
+        : withVpnBundleTags(createdTagsWithAlign, vpnBundleEnabled, normalizedVpnDurationDays, normalizedVpnUsersLimit);
     await createProduct.mutateAsync({
       title: cleanTitle,
       titleEn: cleanTitleEn,
@@ -1189,7 +1196,8 @@ export default function ProductsPage() {
             <option value="activation">Метод 1: Активация по ключу</option>
             <option value="credentials">Метод 2: Выдача логин/пароль</option>
             <option value="vpn">Метод 3: Выдача VPN</option>
-            <option value="support">Метод 4: Ручная выдача через поддержку</option>
+            <option value="support">Метод 4: Grok-активация по JWT-токену</option>
+            <option value="support_claude">Метод 5: Claude Pro активация по токену</option>
           </select>
           <button className="btn-primary" type="submit" disabled={isSaving}>
             {isSaving ? "Сохраняем..." : editingId ? "Сохранить изменения" : "Добавить товар"}
@@ -1339,17 +1347,25 @@ export default function ProductsPage() {
               Метод 3: после оплаты автоматически создается/продлевается VPN-доступ (VLESS Reality) через 3x-ui API.
             </div>
             <div>
-              Метод 4: после оплаты клиент получает инструкцию написать в поддержку, выдача выполняется вручную в чате.
+              Метод 4: после оплаты выдается ключ строго по оплаченному товару, клиент вставляет JWT-токен Grok на странице активации и ожидает обработку 5-15 минут.
+            </div>
+            <div>
+              Метод 5: после оплаты выдается SDK-ключ из отдельного пула Claude, клиент вставляет токен Claude на странице активации. Далее запускается автоматическая активация через quickplus.vip.
             </div>
             {deliveryType === "vpn" && (
               <div className="mt-2 rounded-lg border border-slate-200 bg-white p-2 text-xs dark:border-slate-700 dark:bg-slate-950">
                 <div className="font-semibold">Настройки VPN-товара</div>
                 <div className="mt-2 grid gap-2 md:max-w-sm">
-                  <select className="input" value={vpnBundlePlan} onChange={(e) => setVpnBundlePlan(normalizePlanCandidate(e.target.value))}>
-                    <option value="vpn_month">{vpnBundlePlanLabel("vpn_month")}</option>
-                    <option value="vpn_halfyear">{vpnBundlePlanLabel("vpn_halfyear")}</option>
-                    <option value="vpn_year">{vpnBundlePlanLabel("vpn_year")}</option>
-                  </select>
+                  <input
+                    className="input"
+                    type="number"
+                    min={MIN_VPN_DURATION_DAYS}
+                    max={MAX_VPN_DURATION_DAYS}
+                    step={1}
+                    value={vpnDurationDays}
+                    onChange={(e) => setVpnDurationDays(normalizeVpnDurationDays(e.target.value))}
+                    placeholder="Срок подписки в днях"
+                  />
                   <input
                     className="input"
                     type="number"
@@ -1361,7 +1377,7 @@ export default function ProductsPage() {
                     placeholder="Лимит устройств (1-16)"
                   />
                   <div className="text-xs text-slate-600 dark:text-slate-300">
-                    Для этого товара будет выдаваться VPN: срок по плану и максимум {normalizeVpnUsersLimit(vpnUsersLimit)} устройство(а) на один доступ.
+                    Для этого товара будет выдаваться VPN на {normalizeVpnDurationDays(vpnDurationDays)} дн. с общим лимитом {normalizeVpnUsersLimit(vpnUsersLimit)} устройств на подписку.
                   </div>
                 </div>
               </div>
@@ -1378,11 +1394,16 @@ export default function ProductsPage() {
                 </label>
                 {vpnBundleEnabled && (
                   <div className="mt-2 grid gap-2 md:max-w-sm">
-                    <select className="input" value={vpnBundlePlan} onChange={(e) => setVpnBundlePlan(normalizePlanCandidate(e.target.value))}>
-                      <option value="vpn_month">{vpnBundlePlanLabel("vpn_month")}</option>
-                      <option value="vpn_halfyear">{vpnBundlePlanLabel("vpn_halfyear")}</option>
-                      <option value="vpn_year">{vpnBundlePlanLabel("vpn_year")}</option>
-                    </select>
+                    <input
+                      className="input"
+                      type="number"
+                      min={MIN_VPN_DURATION_DAYS}
+                      max={MAX_VPN_DURATION_DAYS}
+                      step={1}
+                      value={vpnDurationDays}
+                      onChange={(e) => setVpnDurationDays(normalizeVpnDurationDays(e.target.value))}
+                      placeholder="Срок VPN-бандла в днях"
+                    />
                     <input
                       className="input"
                       type="number"
@@ -1394,7 +1415,7 @@ export default function ProductsPage() {
                       placeholder="Лимит устройств (1-16)"
                     />
                     <div className="text-xs text-slate-600 dark:text-slate-300">
-                      При оплате этого товара клиент получит основную выдачу + VPN с источником <code>bundle</code> и лимитом {normalizeVpnUsersLimit(vpnUsersLimit)} устройство(а).
+                      При оплате этого товара клиент получит основную выдачу + VPN с источником <code>bundle</code> на {normalizeVpnDurationDays(vpnDurationDays)} дн. и лимитом {normalizeVpnUsersLimit(vpnUsersLimit)} устройств.
                     </div>
                   </div>
                 )}
@@ -1584,12 +1605,12 @@ export default function ProductsPage() {
                       <div>{deliveryMethodLabel(itemDeliveryType)}</div>
                       {itemDeliveryType === "vpn" && (
                         <div className="text-xs text-indigo-700 dark:text-indigo-300">
-                          План: {vpnBundlePlanLabel(itemVpnBundle.plan)}, лимит устройств: {itemVpnBundle.usersLimit}
+                          Срок: {formatVpnDurationLabel(itemVpnBundle.durationDays)}, лимит устройств: {itemVpnBundle.usersLimit}
                         </div>
                       )}
                       {itemDeliveryType !== "vpn" && itemVpnBundle.enabled && (
                         <div className="text-xs text-emerald-700 dark:text-emerald-400">
-                          + VPN bundle: {vpnBundlePlanLabel(itemVpnBundle.plan)}, лимит устройств: {itemVpnBundle.usersLimit}
+                          + VPN bundle: {formatVpnDurationLabel(itemVpnBundle.durationDays)}, лимит устройств: {itemVpnBundle.usersLimit}
                         </div>
                       )}
                     </td>

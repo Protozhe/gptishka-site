@@ -2,7 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
-type ProductDeliveryType = "activation" | "credentials" | "vpn" | "support";
+type ProductDeliveryType = "activation" | "credentials" | "vpn" | "support" | "support_claude";
 type CdkStatus = "unused" | "used" | "archived";
 type CredentialStatus = "available" | "assigned";
 
@@ -12,7 +12,7 @@ type ProductItem = {
   title: string;
   tags?: string[];
   deliveryType?: ProductDeliveryType;
-  deliveryMethod?: 1 | 2 | 3 | 4 | "1" | "2" | "3" | "4";
+  deliveryMethod?: 1 | 2 | 3 | 4 | 5 | "1" | "2" | "3" | "4" | "5";
 };
 
 type ProductListResponse = {
@@ -58,7 +58,7 @@ type CredentialListResponse = {
 const TEXT = {
   title: "CDK / SDK ключи по товарам",
   subtitle:
-    "Метод 1: CDK-ключи. Метод 2: пары логин/пароль. Метод 3 (VPN): ключи не нужны. Метод 4: отдельный SDK-пул ключей для токен-активации.",
+    "Метод 1: CDK-ключи. Метод 2: пары логин/пароль. Метод 3 (VPN): ключи не нужны. Метод 4: отдельный SDK-пул для Grok. Метод 5: отдельный SDK-пул для Claude.",
   searchPlaceholder: "Поиск по коду / логину / email / orderId",
   loading: "Загружаем...",
   empty: "Записей пока нет",
@@ -97,19 +97,21 @@ const TEXT = {
   modeCredentials: "Метод 2: Логин/пароль",
   modeVpn: "Метод 3: Выдача VPN",
   modeSupport: "Метод 4: SDK-ключи для Grok токена",
+  modeSupportClaude: "Метод 5: SDK-ключи для Claude токена",
   vpnAutoInfo: "CDK ключи для этого товара не используются. VPN-доступ выдается автоматически после оплаты.",
   show: "Развернуть",
   hide: "Свернуть",
   textareaPlaceholder:
     "Вставьте CDK ключи (по одному в строке)\nПример: 69742FA2-47A4-48C5-A7CC-71F334688FE7",
   sdkTextareaPlaceholder:
-    "Вставьте SDK ключи для метода 4 (по одному в строке)\nПример: 69742FA2-47A4-48C5-A7CC-71F334688FE7",
+    "Вставьте SDK ключи для метода 4/5 (по одному в строке)\nПример: 69742FA2-47A4-48C5-A7CC-71F334688FE7",
   credentialsPlaceholder: "Вставьте пары login:password (по одной в строке)\nПример: user@mail.ru:Pass123",
   noProducts: "Товары не найдены. Сначала создайте товары в разделе «Товары».",
 };
 
 function resolveDeliveryType(product: ProductItem): ProductDeliveryType {
   const fromMethod = String(product.deliveryMethod || "").trim();
+  if (fromMethod === "5") return "support_claude";
   if (fromMethod === "4") return "support";
   if (fromMethod === "3") return "vpn";
   if (fromMethod === "2") return "credentials";
@@ -118,6 +120,7 @@ function resolveDeliveryType(product: ProductItem): ProductDeliveryType {
   const fromType = String(product.deliveryType || "")
     .trim()
     .toLowerCase();
+  if (fromType === "support_claude") return "support_claude";
   if (fromType === "support") return "support";
   if (fromType === "credentials") return "credentials";
   if (fromType === "vpn") return "vpn";
@@ -125,10 +128,12 @@ function resolveDeliveryType(product: ProductItem): ProductDeliveryType {
 
   const tags = (Array.isArray(product.tags) ? product.tags : [])
     .map((tag) => String(tag || "").trim().toLowerCase())
+  const hasSupportClaudeTag = tags.some((tag) => tag === "delivery:support_claude");
   const hasSupportTag = tags.some((tag) => tag === "delivery:support");
   const hasCredentialsTag = tags.some((tag) => tag === "delivery:credentials");
   const hasVpnTag = tags.some((tag) => tag === "delivery:vpn");
 
+  if (hasSupportClaudeTag) return "support_claude";
   if (hasSupportTag) return "support";
   if (hasCredentialsTag) return "credentials";
   if (hasVpnTag) return "vpn";
@@ -332,14 +337,15 @@ function KeyProductColumn({
 }: {
   product: ProductItem;
   search: string;
-  mode?: "activation" | "support";
+  mode?: "activation" | "support" | "support_claude";
 }) {
   const qc = useQueryClient();
-  const isSupportMode = mode === "support";
+  const isSupportMode = mode === "support" || mode === "support_claude";
+  const isClaudeMode = mode === "support_claude";
   const baseProductKey = normalizeProductKey(product.slug);
   const productKey = resolveKeyPoolProductKey(baseProductKey, mode);
   const keyColumnLabel = isSupportMode ? "SDK" : "CDK";
-  const modeLabel = isSupportMode ? TEXT.modeSupport : TEXT.modeActivation;
+  const modeLabel = isSupportMode ? (isClaudeMode ? TEXT.modeSupportClaude : TEXT.modeSupport) : TEXT.modeActivation;
   const placeholder = isSupportMode ? TEXT.sdkTextareaPlaceholder : TEXT.textareaPlaceholder;
   const fillErrorMessage = isSupportMode ? TEXT.fillSdkKeys : TEXT.fillKeys;
   const [text, setText] = useState("");
@@ -753,6 +759,9 @@ function ProductColumn({ product, search }: { product: ProductItem; search: stri
   if (deliveryType === "support") {
     return <KeyProductColumn product={product} search={search} mode="support" />;
   }
+  if (deliveryType === "support_claude") {
+    return <KeyProductColumn product={product} search={search} mode="support_claude" />;
+  }
 
   return <KeyProductColumn product={product} search={search} mode="activation" />;
 }
@@ -822,7 +831,10 @@ function normalizeProductKey(value: string) {
   return normalized || "chatgpt";
 }
 
-function resolveKeyPoolProductKey(baseProductKey: string, mode: "activation" | "support") {
+function resolveKeyPoolProductKey(baseProductKey: string, mode: "activation" | "support" | "support_claude") {
+  if (mode === "support_claude") {
+    return normalizeProductKey(`${baseProductKey}-sdk5`);
+  }
   if (mode === "support") {
     return normalizeProductKey(`${baseProductKey}-sdk4`);
   }

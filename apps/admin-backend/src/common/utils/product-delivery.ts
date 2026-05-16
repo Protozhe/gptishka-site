@@ -1,5 +1,5 @@
-export type ProductDeliveryType = "activation" | "credentials" | "vpn" | "support";
-export type ProductDeliveryMethod = 1 | 2 | 3 | 4;
+export type ProductDeliveryType = "activation" | "credentials" | "vpn" | "support" | "support_claude";
+export type ProductDeliveryMethod = 1 | 2 | 3 | 4 | 5;
 
 const DELIVERY_TAG_PREFIX = "delivery:";
 
@@ -10,6 +10,9 @@ function normalizeDeliveryType(value: string): ProductDeliveryType {
   }
   if (["support", "manual-support", "manual_support", "support-chat", "support_chat", "telegram", "tg"].includes(normalized)) {
     return "support";
+  }
+  if (["support_claude", "support-claude", "manual-claude", "manual_claude", "claude-support", "claude_support"].includes(normalized)) {
+    return "support_claude";
   }
   if (["vpn", "vless", "xray", "reality"].includes(normalized)) {
     return "vpn";
@@ -37,6 +40,8 @@ export function applyProductDeliveryTypeTag(
     cleaned.push("delivery:credentials");
   } else if (normalized === "support") {
     cleaned.push("delivery:support");
+  } else if (normalized === "support_claude") {
+    cleaned.push("delivery:support_claude");
   } else if (normalized === "vpn") {
     cleaned.push("delivery:vpn");
   }
@@ -47,6 +52,7 @@ export function deliveryTypeToMethod(deliveryType: ProductDeliveryType | null | 
   const normalized = normalizeDeliveryType(String(deliveryType || "activation"));
   if (normalized === "credentials") return 2;
   if (normalized === "support") return 4;
+  if (normalized === "support_claude") return 5;
   if (normalized === "vpn") return 3;
   return 1;
 }
@@ -65,6 +71,17 @@ export function methodToDeliveryType(value: unknown): ProductDeliveryType {
     raw === "support-chat"
   ) {
     return "support";
+  }
+  if (
+    raw === "5" ||
+    raw === "support_claude" ||
+    raw === "support-claude" ||
+    raw === "manual_claude" ||
+    raw === "manual-claude" ||
+    raw === "claude_support" ||
+    raw === "claude-support"
+  ) {
+    return "support_claude";
   }
   if (raw === "3" || raw === "vpn" || raw === "vless" || raw === "xray" || raw === "reality") {
     return "vpn";

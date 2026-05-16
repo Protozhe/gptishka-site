@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="/assets/css/logo.min.css">
   
   <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2">
-<link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260310r" />
+<link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260401-perf6" />
 
   <style>
     body.redeem-flow::before,
@@ -236,6 +236,14 @@
     .redeem-meta .warn {
       color: #b42318;
       font-weight: 700;
+    }
+
+    .redeem-flow-hint {
+      margin: 8px 0 12px;
+      color: #2f4458;
+      font-size: 13px;
+      line-height: 1.5;
+      font-weight: 600;
     }
 
     .redeem-manual-hint {
@@ -802,6 +810,67 @@
       gap: 8px;
     }
 
+    .lang-switch {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .lang-current {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 104px;
+      padding: 10px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(186, 198, 224, 0.55);
+      background: rgba(255, 255, 255, 0.75);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .lang-current img,
+    .lang-item img {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex: 0 0 18px;
+    }
+
+    .lang-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 164px;
+      padding: 8px;
+      border-radius: 14px;
+      border: 1px solid rgba(186, 198, 224, 0.55);
+      background: rgba(252, 254, 255, 0.97);
+      box-shadow: 0 18px 36px rgba(16, 29, 46, 0.18);
+      display: none;
+      z-index: 80;
+    }
+
+    .lang-switch.open .lang-dropdown {
+      display: block;
+    }
+
+    .lang-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      color: #2f4057;
+      font-weight: 600;
+    }
+
+    .lang-item:hover {
+      background: rgba(93, 124, 255, 0.1);
+    }
+
     @media (max-width: 640px) {
       body.redeem-flow .redeem-page {
         padding: 14px 10px 0 !important;
@@ -813,7 +882,7 @@
     }
 
   </style>
-<link rel="stylesheet" href="/assets/css/support-widget.css?v=20260310l" />
+<link rel="stylesheet" href="/assets/css/support-widget.css?v=20260401-sw2" />
 </head>
 <body class="redeem-flow">
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
@@ -893,6 +962,7 @@
               <li>How it works / video instruction: <a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">watch</a></li>
             </ol>
           </details>
+          <p id="tokenFlowHint" class="redeem-flow-hint" hidden></p>
 
           <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
             <button id="toggleMaskBtn" type="button" class="redeem-btn">Show</button>
@@ -922,7 +992,7 @@
           <a
             id="manualSupportBtn"
             class="redeem-btn redeem-btn-primary"
-            href="https://t.me/gptishkasupp"
+            href="https://quickplus.vip/public/grok/"
             target="_blank"
             rel="noopener noreferrer"
             style="display:none; margin-top:8px;"
@@ -932,7 +1002,6 @@
 
       <section id="actionsRow" class="redeem-actions">
         <button id="checkBtn" type="button" class="redeem-btn">Check status</button>
-        <button id="retryNewKeyBtn" type="button" class="redeem-btn">Change key and retry</button>
         <button id="startBtn" type="button" class="redeem-btn redeem-btn-primary full" disabled>Activate</button>
         <button id="stopPollingBtn" type="button" class="redeem-btn full" style="display:none">Stop checking</button>
       </section>
@@ -967,11 +1036,11 @@
     </section>
   </main>
   <footer>
-    <a class="footer-link" href="/en/oferta.html">Public offer</a> В· <a class="footer-link" href="/en/politika.html">Privacy policy</a> В· <a class="footer-link" href="/en/refund.html">Refund policy</a>
-    <span class="footer-copy">В© 2026 GPTishka. All rights reserved.</span>
+    <a class="footer-link" href="/en/oferta.html">Public offer</a> · <a class="footer-link" href="/en/politika.html">Privacy policy</a> · <a class="footer-link" href="/en/refund.html">Refund policy</a>
+    <span class="footer-copy">© 2026 GPTishka. All rights reserved.</span>
   </footer>
 
-  <script src="/assets/js/app.min.js?v=20260324-modalfix1" defer></script>
+  <script src="/assets/js/app.min.js?v=20260408-hotfix2" defer></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const orderId = String(params.get('order_id') || params.get('orderId') || '').trim();
@@ -981,6 +1050,11 @@
     const orderIdEl = document.getElementById('orderId');
     const copyOrderIdBtn = document.getElementById('copyOrderIdBtn');
     const tokenBlock = document.getElementById('tokenBlock');
+    const tokenLabelEl = tokenBlock ? tokenBlock.querySelector('.redeem-label') : null;
+    const tokenGuideEl = tokenBlock ? tokenBlock.querySelector('.redeem-guide') : null;
+    const tokenGuideSummaryEl = tokenGuideEl ? tokenGuideEl.querySelector('summary') : null;
+    const tokenGuideListEl = tokenGuideEl ? tokenGuideEl.querySelector('ol') : null;
+    const tokenFlowHint = document.getElementById('tokenFlowHint');
     const tokenInput = document.getElementById('tokenInput');
     const tokenInfo = document.getElementById('tokenInfo');
     const tokenWarn = document.getElementById('tokenWarn');
@@ -1019,6 +1093,9 @@
     const POLL_INTERVAL_MS = 2000;
     // Provider processing may take a few minutes. Don't auto-restart tasks on short timeouts.
     const POLL_MAX_MS = 5 * 60 * 1000;
+    const SUPPORT_PROGRESS_MAX_MS = 15 * 60 * 1000;
+    const SUPPORT_POLL_INTERVAL_MS = 4000;
+    const POST_TIMEOUT_RECHECK_MS = 12000;
     const RETRY_COOLDOWN_MS = 20000;
     const TOKEN_VALIDATE_DEBOUNCE_MS = 600;
     const ACTIVATION_RESUME_SAVED_AT_KEY = 'gptishka_activation_saved_at';
@@ -1027,6 +1104,7 @@
     let currentTaskId = '';
     let pollTimer = null;
     let pollStartedAt = 0;
+    let pollRequestInFlight = false;
     let lastToken = '';
     let restartAttempts = 0;
     let isRetryRunning = false;
@@ -1036,8 +1114,11 @@
     let tokenValidatedOk = false;
     let lastValidateReason = '';
     let isCredentialsDelivery = false;
+    let isSupportTokenDelivery = false;
+    let supportProgressStartedAt = 0;
     let vpnOfferDismissed = false;
     let activationCompleted = false;
+    let postTimeoutRecheckTimer = 0;
     let leaveGuardBypass = false;
     let leaveConfirmModalEl = null;
     let leaveConfirmProceedBtn = null;
@@ -1045,9 +1126,10 @@
     let pendingLeaveHref = '';
 
     // By default, allow retry only after explicit failure or pending timeout.
-    retryNewKeyBtn.disabled = true;
+    if (retryNewKeyBtn) retryNewKeyBtn.disabled = true;
 
     const pollPauseKey = orderId ? `gptishka_activation_poll_paused:${orderId}` : '';
+    const supportProgressKey = orderId ? `gptishka_support_progress_started:${orderId}` : '';
     const reviewRewardReadyKey = orderId ? `gptishka_review_reward_ready:${orderId}` : '';
     const vpnOfferDismissKey = orderId ? `gptishka_vpn_offer_dismissed:${orderId}` : '';
 
@@ -1121,7 +1203,7 @@
       document.addEventListener('click', (event) => {
         const target = event.target;
         const langItem = target && target.closest ? target.closest('.lang-item[data-lang]') : null;
-        if (langItem && shouldBlockLeaving()) {
+        if (langItem) {
           const lang = String(langItem.getAttribute('data-lang') || '').trim().toLowerCase();
           const currentUrl = new URL(window.location.href);
           const isEnPath = currentUrl.pathname.startsWith('/en/');
@@ -1130,9 +1212,13 @@
           if (lang === 'ru' && isEnPath) nextPath = '/redeem-start.html';
           const nextHref = `${window.location.origin}${nextPath}${currentUrl.search}${currentUrl.hash}`;
           if (nextHref !== window.location.href) {
-            event.preventDefault();
-            event.stopPropagation();
-            openLeaveConfirm(nextHref);
+            if (shouldBlockLeaving()) {
+              event.preventDefault();
+              event.stopPropagation();
+              openLeaveConfirm(nextHref);
+            } else {
+              window.location.href = nextHref;
+            }
             return;
           }
         }
@@ -1175,6 +1261,24 @@
       });
     }
 
+    function setupLanguageSwitch() {
+      const langSwitch = document.getElementById('langSwitch');
+      const langCurrent = document.getElementById('langCurrent');
+      if (!langSwitch || !langCurrent) return;
+
+      langCurrent.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        langSwitch.classList.toggle('open');
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!langSwitch.contains(event.target)) {
+          langSwitch.classList.remove('open');
+        }
+      });
+    }
+
     function isPollPaused() {
       if (!pollPauseKey) return false;
       try { return localStorage.getItem(pollPauseKey) === '1'; } catch (_) { return false; }
@@ -1214,6 +1318,138 @@
 
     restoreReviewReward();
 
+    function applyTokenFlowMode(isSupportMode) {
+      isSupportTokenDelivery = Boolean(isSupportMode);
+      if (isSupportTokenDelivery) {
+        supportProgressStartedAt = readSupportProgressStartedAt();
+      } else {
+        resetSupportProgress();
+      }
+      isCredentialsDelivery = false;
+      if (tokenBlock) tokenBlock.style.display = 'block';
+      if (actionsRow) actionsRow.style.display = '';
+      if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'none';
+      syncRetryActionVisibility();
+
+      if (tokenLabelEl) {
+        tokenLabelEl.textContent = isSupportTokenDelivery ? 'Grok token' : 'Account token';
+      }
+      if (tokenGuideSummaryEl) {
+        tokenGuideSummaryEl.textContent = isSupportTokenDelivery ? 'Where to get the Grok token' : 'Where to get the account token';
+      }
+      if (tokenGuideListEl) {
+        if (isSupportTokenDelivery) {
+          tokenGuideListEl.innerHTML = [
+            '<li>Open <a href="https://receipt.nitro.xin/redeem/grok" target="_blank" rel="noreferrer noopener">receipt.nitro.xin/redeem/grok</a> and sign in.</li>',
+            '<li>Copy the full JWT token. Format examples:<br><code style="word-break:break-all;">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiNmY2Y2E1MmMtNTYzMi00ZTllLWJhOWEtNDM0MGRiYzUzYzU2In0.9mPNpCTt92yX3HaV3HsIu9KweNfXA-zzRZPDb6VIdlQ</code><br><code style="word-break:break-all;">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiYTA1MTE3MDEtZjRkOC00MDkzLWI2OTYtNjc1ZjUzZDg3ZDAwIn0.MIyBhMMaf5rqdZA_sTtqQXTVqucjDX3qtCHYoTTsYI8</code></li>',
+            '<li>Paste it into the field below and click "Activate".</li>',
+            '<li>Provider processing usually takes 5-15 minutes.</li>',
+          ].join('');
+        } else {
+          tokenGuideListEl.innerHTML = [
+            '<li>Sign in to ChatGPT in your browser.</li>',
+            '<li>Open <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>',
+            '<li>Copy the full content and paste it into the "Account token" field.</li>',
+            '<li>How it works / video instruction: <a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">watch</a></li>',
+          ].join('');
+        }
+      }
+      if (tokenInput) {
+        tokenInput.placeholder = isSupportTokenDelivery ? 'Grok JWT token' : 'Account token';
+      }
+      if (tokenFlowHint) {
+        tokenFlowHint.hidden = !isSupportTokenDelivery;
+        tokenFlowHint.textContent = isSupportTokenDelivery
+          ? 'Method 4 requires a Grok JWT token. After submission, processing usually takes 5-15 minutes.'
+          : '';
+      }
+    }
+
+    function syncRetryActionVisibility() {
+      if (!retryNewKeyBtn) return;
+      if (isSupportTokenDelivery) {
+        retryNewKeyBtn.style.display = 'none';
+        retryNewKeyBtn.disabled = true;
+        retryNewKeyBtn.classList.remove('loading');
+        return;
+      }
+      retryNewKeyBtn.style.display = '';
+    }
+
+    function getTokenSafeWarnText() {
+      return isSupportTokenDelivery
+        ? 'Token is used only for activation and is never stored in plain text.'
+        : 'We do not store the token. It is used only for activation.';
+    }
+
+    function getProcessingStatusText(taskId, providerMessage) {
+      const progress = isSupportTokenDelivery ? getSupportProgressPercent() : null;
+      const progressSuffix = isSupportTokenDelivery && Number.isFinite(progress) ? ` ${progress}%` : '';
+      const base = isSupportTokenDelivery ? `Processing${progressSuffix} (usually 5-15 minutes)` : 'Processing';
+      const suffix = providerMessage ? `. ${providerMessage}` : '';
+      return `${base}. Task: ${taskId}${suffix}`;
+    }
+
+    function getStartPendingStatusText() {
+      return isSupportTokenDelivery
+        ? 'Request sent. Method 4 processing usually takes 5-15 minutes.'
+        : 'Request sent...';
+    }
+
+    function readSupportProgressStartedAt() {
+      if (!supportProgressKey) return 0;
+      try {
+        const value = Number(localStorage.getItem(supportProgressKey) || '0');
+        return Number.isFinite(value) && value > 0 ? value : 0;
+      } catch (_) {
+        return 0;
+      }
+    }
+
+    function writeSupportProgressStartedAt(value) {
+      if (!supportProgressKey) return;
+      try {
+        localStorage.setItem(supportProgressKey, String(value));
+      } catch (_) {
+        // Ignore storage write failures.
+      }
+    }
+
+    function ensureSupportProgressStartedAt() {
+      if (!isSupportTokenDelivery) return 0;
+      if (supportProgressStartedAt > 0) return supportProgressStartedAt;
+      supportProgressStartedAt = readSupportProgressStartedAt();
+      if (supportProgressStartedAt > 0) return supportProgressStartedAt;
+      supportProgressStartedAt = Date.now();
+      writeSupportProgressStartedAt(supportProgressStartedAt);
+      return supportProgressStartedAt;
+    }
+
+    function markSupportProgressStarted() {
+      if (!isSupportTokenDelivery) return;
+      supportProgressStartedAt = Date.now();
+      writeSupportProgressStartedAt(supportProgressStartedAt);
+    }
+
+    function resetSupportProgress() {
+      supportProgressStartedAt = 0;
+      if (!supportProgressKey) return;
+      try {
+        localStorage.removeItem(supportProgressKey);
+      } catch (_) {
+        // Ignore storage cleanup failures.
+      }
+    }
+
+    function getSupportProgressPercent() {
+      if (!isSupportTokenDelivery) return null;
+      const startedAt = ensureSupportProgressStartedAt();
+      if (!startedAt) return null;
+      const elapsed = Math.max(0, Date.now() - startedAt);
+      const percent = Math.floor((elapsed / SUPPORT_PROGRESS_MAX_MS) * 100);
+      return Math.max(1, Math.min(99, percent));
+    }
+
     function setCredentialsDeliveryMode(payload) {
       isCredentialsDelivery = true;
       stopPolling();
@@ -1228,7 +1464,7 @@
       const credentials = payload?.credentials && typeof payload.credentials === 'object' ? payload.credentials : null;
       const login = String(credentials?.login || '').trim();
       const password = String(credentials?.password || '').trim();
-      const supportUrl = String(payload?.supportUrl || 'https://t.me/gptishkasupp').trim();
+      const supportUrl = String(payload?.supportUrl || 'https://quickplus.vip/public/grok/').trim();
       const defaultMessage = isSupportDelivery
         ? 'After payment, activation is completed manually by support. Open support chat and share your order id.'
         : 'No free login details are available right now. Contact support or wait for an email with your data.';
@@ -1250,7 +1486,7 @@
       const hasCredentials = !isSupportDelivery && status === 'credentials_ready' && login && password;
       if (hasCredentials) markActivationCompleted();
       if (manualSupportBtn) {
-        manualSupportBtn.href = supportUrl || 'https://t.me/gptishkasupp';
+        manualSupportBtn.href = supportUrl || 'https://quickplus.vip/public/grok/';
         manualSupportBtn.style.display = hasCredentials ? 'none' : 'inline-flex';
       }
       if (copyLoginBtn) copyLoginBtn.style.display = isSupportDelivery ? 'none' : '';
@@ -1365,7 +1601,7 @@
       setStatus('error', 'Missing order_id in the link.', false);
       startBtn.disabled = true;
       checkBtn.disabled = true;
-      retryNewKeyBtn.disabled = true;
+      if (retryNewKeyBtn) retryNewKeyBtn.disabled = true;
     } else {
       orderIdEl.textContent = orderId;
       try {
@@ -1457,7 +1693,7 @@
       restartAttempts = 0;
       setButtonLoading(startBtn, true);
       try {
-        setStatus('pending', 'Request sent...', true);
+        setStatus('pending', getStartPendingStatusText(), true);
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/start`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1480,7 +1716,8 @@
         }
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
-        setStatus('pending', `Processing. Task: ${currentTaskId}`, true);
+        markSupportProgressStarted();
+        setStatus('pending', getProcessingStatusText(currentTaskId, ''), true);
         startPolling();
       } catch {
         setStatus('error', 'Network error while starting activation', false);
@@ -1496,58 +1733,64 @@
         return;
       }
       setButtonLoading(checkBtn, true);
-      await checkTaskStatus();
+      const done = await checkTaskStatus();
+      if (!done) {
+        await resolveActivationSuccessFallback();
+      }
       setButtonLoading(checkBtn, false);
     });
 
-    retryNewKeyBtn.addEventListener('click', async () => {
-      if (isCredentialsDelivery) return;
-      if (isRetryRunning) return;
-      const now = Date.now();
-      const remain = RETRY_COOLDOWN_MS - (now - lastRetryAt);
-      if (remain > 0) {
-        setStatus('error', `Too often. Try again in ${Math.ceil(remain / 1000)} sec.`, false);
-        return;
-      }
-
-      const token = getTokenForSubmit();
-      if (!token) {
-        setStatus('error', 'Enter token', false);
-        return;
-      }
-
-      const validated = await validateTokenNow();
-      if (!validated) return;
-
-      setPollPaused(false);
-      lastRetryAt = now;
-      lastToken = token;
-      restartAttempts = 0;
-      isRetryRunning = true;
-      setButtonLoading(retryNewKeyBtn, true);
-      try {
-        setStatus('pending', 'Getting a new key and retrying...', true);
-        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/restart-with-new-key`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, orderToken: orderLinkToken }),
-        });
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          setStatus('error', payload?.message || 'Failed to retry', false);
+    if (retryNewKeyBtn) {
+      retryNewKeyBtn.addEventListener('click', async () => {
+        if (isCredentialsDelivery) return;
+        if (isRetryRunning) return;
+        const now = Date.now();
+        const remain = RETRY_COOLDOWN_MS - (now - lastRetryAt);
+        if (remain > 0) {
+          setStatus('error', `Too often. Try again in ${Math.ceil(remain / 1000)} sec.`, false);
           return;
         }
-        currentTaskId = String(payload.taskId || '');
-        renderTask(currentTaskId);
-        setStatus('pending', `Processing. Task: ${currentTaskId}`, true);
-        startPolling();
-      } catch {
-        setStatus('error', 'Network error while retrying', false);
-      } finally {
-        isRetryRunning = false;
-        setButtonLoading(retryNewKeyBtn, false);
-      }
-    });
+
+        const token = getTokenForSubmit();
+        if (!token) {
+          setStatus('error', 'Enter token', false);
+          return;
+        }
+
+        const validated = await validateTokenNow();
+        if (!validated) return;
+
+        setPollPaused(false);
+        lastRetryAt = now;
+        lastToken = token;
+        restartAttempts = 0;
+        isRetryRunning = true;
+        setButtonLoading(retryNewKeyBtn, true);
+        try {
+          setStatus('pending', 'Getting a new key and retrying...', true);
+          const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/restart-with-new-key`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, orderToken: orderLinkToken }),
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            setStatus('error', payload?.message || 'Failed to retry', false);
+            return;
+          }
+          currentTaskId = String(payload.taskId || '');
+          renderTask(currentTaskId);
+          markSupportProgressStarted();
+          setStatus('pending', getProcessingStatusText(currentTaskId, ''), true);
+          startPolling();
+        } catch {
+          setStatus('error', 'Network error while retrying', false);
+        } finally {
+          isRetryRunning = false;
+          setButtonLoading(retryNewKeyBtn, false);
+        }
+      });
+    }
 
     stopPollingBtn.addEventListener('click', () => {
       stopPolling();
@@ -1561,11 +1804,14 @@
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation${suffix}`);
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
+          const fallbackMode = await resolveOrderDeliveryMode();
+          if (fallbackMode) applyTokenFlowMode(fallbackMode === 'support');
           setStatus('error', payload?.message || 'Failed to load activation status', false);
           return;
         }
         const deliveryMode = String(payload?.deliveryMode || '').toLowerCase();
-        if (deliveryMode === 'credentials' || deliveryMode === 'support') {
+        applyTokenFlowMode(deliveryMode === 'support');
+        if (deliveryMode === 'credentials') {
           setCredentialsDeliveryMode(payload);
           return;
         }
@@ -1591,6 +1837,7 @@
           currentTaskId = String(payload.taskId || '');
           renderTask(currentTaskId);
           markActivationCompleted();
+          resetSupportProgress();
           setStatus('success', currentTaskId ? `Success. Task: ${currentTaskId}` : 'Activation completed successfully.', false);
           clearActivationResumeStorage();
           hideActionButtons();
@@ -1600,17 +1847,64 @@
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
         if (currentTaskId) {
+          if (isSupportTokenDelivery) ensureSupportProgressStartedAt();
           if (isPollPaused()) {
             setStatus('pending', `There is an active check. Task: ${currentTaskId}. Auto-check is stopped.`, false);
           } else {
-            setStatus('pending', `Processing. Task: ${currentTaskId}`, true);
+            setStatus('pending', getProcessingStatusText(currentTaskId, ''), true);
             startPolling();
           }
           return;
         }
         setStatus('pending', 'Waiting for action.', false);
       } catch {
+        const fallbackMode = await resolveOrderDeliveryMode();
+        if (fallbackMode) applyTokenFlowMode(fallbackMode === 'support');
         setStatus('error', 'Network error while loading activation', false);
+      }
+    }
+
+    async function resolveOrderDeliveryMode() {
+      if (!orderId) return '';
+      try {
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}`);
+        if (!response.ok) return '';
+        const payload = await response.json().catch(() => ({}));
+        return String(payload?.deliveryMode || '').trim().toLowerCase();
+      } catch {
+        return '';
+      }
+    }
+
+    async function resolveActivationSuccessFallback() {
+      if (!orderId) return false;
+      try {
+        const suffix = orderLinkToken ? `?t=${encodeURIComponent(orderLinkToken)}` : '';
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation${suffix}`);
+        if (!response.ok) return false;
+        const payload = await response.json().catch(() => ({}));
+
+        const deliveryMode = String(payload?.deliveryMode || '').trim().toLowerCase();
+        if (deliveryMode === 'credentials') {
+          setCredentialsDeliveryMode(payload);
+          return true;
+        }
+
+        const activationStatus = String(payload?.status || '').trim().toLowerCase();
+        if (activationStatus !== 'success') return false;
+
+        const finalizedTaskId = String(payload?.taskId || currentTaskId || '').trim();
+        currentTaskId = finalizedTaskId;
+        renderTask(currentTaskId);
+        markActivationCompleted();
+        resetSupportProgress();
+        setStatus('success', currentTaskId ? `Success. Task: ${currentTaskId}` : 'Activation completed successfully.', false);
+        clearActivationResumeStorage();
+        hideActionButtons();
+        showReviewReward();
+        return true;
+      } catch {
+        return false;
       }
     }
 
@@ -1619,17 +1913,38 @@
       setPollPaused(false);
       stopPollingBtn.style.display = 'inline-flex';
       pollStartedAt = Date.now();
+      pollRequestInFlight = false;
+      const pollLimitMs = isSupportTokenDelivery ? SUPPORT_PROGRESS_MAX_MS : POLL_MAX_MS;
+      const pollIntervalMs = isSupportTokenDelivery ? SUPPORT_POLL_INTERVAL_MS : POLL_INTERVAL_MS;
       pollTimer = setInterval(async () => {
+        if (pollRequestInFlight) return;
+        pollRequestInFlight = true;
+        try {
         const done = await checkTaskStatus();
-        const timeout = Date.now() - pollStartedAt >= POLL_MAX_MS;
+        const timeout = Date.now() - pollStartedAt >= pollLimitMs;
         if (done || timeout) {
           stopPolling();
           if (!done && timeout) {
-            setStatus('pending', `Still processing. Task: ${currentTaskId}. Click "Check status" later or "Change key and retry".`, false);
-            retryNewKeyBtn.disabled = false;
+            const resolved = await resolveActivationSuccessFallback();
+            if (resolved) return;
+            setStatus(
+              'pending',
+              isSupportTokenDelivery
+                ? `Still processing${(() => { const p = getSupportProgressPercent(); return Number.isFinite(p) ? ` (${p}%)` : ''; })()} (can take up to 15 minutes). Task: ${currentTaskId}. Click "Check status" later.`
+                : `Still processing. Task: ${currentTaskId}. Click "Check status" later.`,
+              false
+            );
+            if (isSupportTokenDelivery) {
+              schedulePostTimeoutRecheck();
+            } else {
+              if (retryNewKeyBtn) retryNewKeyBtn.disabled = false;
+            }
           }
         }
-      }, POLL_INTERVAL_MS);
+        } finally {
+          pollRequestInFlight = false;
+        }
+      }, pollIntervalMs);
     }
 
     function stopPolling() {
@@ -1637,39 +1952,72 @@
         clearInterval(pollTimer);
         pollTimer = null;
       }
+      pollRequestInFlight = false;
+      clearPostTimeoutRecheck();
       stopPollingBtn.style.display = 'none';
     }
 
+    function clearPostTimeoutRecheck() {
+      if (!postTimeoutRecheckTimer) return;
+      clearTimeout(postTimeoutRecheckTimer);
+      postTimeoutRecheckTimer = 0;
+    }
+
+    function schedulePostTimeoutRecheck() {
+      if (!isSupportTokenDelivery || !currentTaskId || activationCompleted) return;
+      clearPostTimeoutRecheck();
+      postTimeoutRecheckTimer = setTimeout(async () => {
+        postTimeoutRecheckTimer = 0;
+        if (!isSupportTokenDelivery || activationCompleted || !currentTaskId) return;
+        const done = await checkTaskStatus();
+        let resolved = false;
+        if (!done) {
+          resolved = await resolveActivationSuccessFallback();
+        }
+        if (!activationCompleted && !resolved && currentTaskId) {
+          schedulePostTimeoutRecheck();
+        }
+      }, POST_TIMEOUT_RECHECK_MS);
+    }
+
     async function checkTaskStatus() {
+      if (!currentTaskId) return true;
       try {
         const suffix = orderLinkToken ? `?t=${encodeURIComponent(orderLinkToken)}` : '';
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/task/${encodeURIComponent(currentTaskId)}${suffix}`);
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
+          const resolved = await resolveActivationSuccessFallback();
+          if (resolved) return true;
           setStatus('error', payload?.message || 'Failed to get status', false);
           return true;
         }
 
         if (payload.pending) {
           const msg = String(payload?.message || '').trim();
-          setStatus('pending', `Processing. Task: ${currentTaskId}${msg ? `. ${msg}` : ''}`, true);
-          retryNewKeyBtn.disabled = true;
+          setStatus('pending', getProcessingStatusText(currentTaskId, msg), true);
+          if (retryNewKeyBtn) retryNewKeyBtn.disabled = true;
           return false;
         }
 
         if (payload.success) {
           setStatus('success', `Success. Task: ${currentTaskId}`, false);
           markActivationCompleted();
+          resetSupportProgress();
           clearActivationResumeStorage();
           hideActionButtons();
           showReviewReward();
           return true;
         }
 
+        const resolved = await resolveActivationSuccessFallback();
+        if (resolved) return true;
         setStatus('error', payload?.message || 'Request failed', false);
-        retryNewKeyBtn.disabled = false;
+        if (retryNewKeyBtn) retryNewKeyBtn.disabled = false;
         return true;
       } catch {
+        const resolved = await resolveActivationSuccessFallback();
+        if (resolved) return true;
         setStatus('error', 'Network error while checking status', false);
         return false;
       }
@@ -1733,10 +2081,12 @@
       const token = extractTokenFromInput(raw);
       const length = token.length;
       tokenInfo.textContent = `Chars: ${length}`;
-      if (raw.startsWith('{') && token && token !== raw) {
+      if (!isSupportTokenDelivery && raw.startsWith('{') && token && token !== raw) {
         tokenWarn.textContent = 'JSON detected: extracted token will be used.';
+      } else if (isSupportTokenDelivery && raw.startsWith('{')) {
+        tokenWarn.textContent = 'For method 4, paste JWT as a plain string (header.payload.signature).';
       } else {
-        tokenWarn.textContent = 'We do not store the token. It is used only for activation.';
+        tokenWarn.textContent = getTokenSafeWarnText();
       }
       tokenWarn.className = '';
     }
@@ -1776,7 +2126,7 @@
       const token = getTokenForSubmit();
       if (!orderId || !token) {
         tokenValidatedOk = false;
-        lastValidateReason = 'Enter token';
+        lastValidateReason = isSupportTokenDelivery ? 'Enter JWT token' : 'Enter token';
         tokenWarn.textContent = lastValidateReason;
         tokenWarn.className = 'warn';
         updateStartButtonState();
@@ -1805,7 +2155,9 @@
         lastValidateReason = reasons.join('; ');
 
         if (ok) {
-          tokenWarn.textContent = 'Token format looks valid (not stored).';
+          tokenWarn.textContent = isSupportTokenDelivery
+            ? 'JWT format looks valid (not stored).'
+            : 'Token format looks valid (not stored).';
           tokenWarn.className = '';
         } else {
           tokenWarn.textContent = lastValidateReason || 'Token is not valid';
@@ -1877,10 +2229,12 @@
     }
 
     setupLeaveGuard();
+    setupLanguageSwitch();
   </script>
-<script src="/assets/js/support-widget.js?v=20260314a" defer></script>
+<script src="/assets/js/support-widget.js?v=20260408-swfix1" defer></script>
 </body>
 </html>
+
 
 
 

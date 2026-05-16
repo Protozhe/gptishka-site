@@ -19,6 +19,14 @@ import path from "path";
 
 const MAX_CLIENT_TOKEN_LENGTH = 500_000;
 const MAX_ACTIVATION_START_ATTEMPTS = 3;
+const ACTIVATION_OUTSTOCK_MAX_RETRIES = Math.min(
+  120,
+  Math.max(1, Number(env.ACTIVATION_OUTSTOCK_MAX_RETRIES || 40))
+);
+const ACTIVATION_OUTSTOCK_RETRY_DELAY_MS = Math.min(
+  10_000,
+  Math.max(500, Number(env.ACTIVATION_OUTSTOCK_RETRY_DELAY_MS || 2_000))
+);
 const MIN_STORED_CLIENT_TOKEN_TTL_HOURS = 24 * 7;
 const STORED_CLIENT_TOKEN_TTL_HOURS = Math.max(
   MIN_STORED_CLIENT_TOKEN_TTL_HOURS,
@@ -30,8 +38,19 @@ const ORDER_FILE_LOCK_TIMEOUT_MS = 45_000;
 const ORDER_FILE_LOCK_STALE_MS = 2 * 60 * 1000;
 const ORDER_FILE_LOCK_POLL_MS = 120;
 const activationLockDir = path.join(resolveRuntimeDir(), "order-locks");
-const DEFAULT_SUPPORT_URL = "https://t.me/gptishkasupp";
+const DEFAULT_SUPPORT_URL = "https://quickplus.vip/public/grok/";
 const DEFAULT_SUPPORT_EMAIL = "";
+
+function isSupportLikeDeliveryType(value: unknown) {
+  const normalized = String(value || "").trim().toLowerCase();
+  return normalized === "support" || normalized === "support_claude";
+}
+
+function resolveSupportActivationFlowByDeliveryType(value: unknown) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "support_claude") return "claude_token";
+  return "grok_token";
+}
 
 function resolveSupportEmail() {
   const raw = String(env.SMTP_FROM || "").trim();
@@ -259,7 +278,8 @@ export const ordersService = {
     const fullOrder = await getOrderWithFirstItem(order.id);
     const firstItem = fullOrder?.items?.[0];
     const deliveryType = resolveProductDeliveryType(firstItem?.product?.tags || []);
-    const isSupportTokenFlow = deliveryType === "support";
+    const isSupportTokenFlow = isSupportLikeDeliveryType(deliveryType);
+    const supportActivationFlow = resolveSupportActivationFlowByDeliveryType(deliveryType);
 
     if (deliveryType === "credentials") {
       await deliverProduct(order);
@@ -304,7 +324,7 @@ export const ordersService = {
         orderId: order.id,
         deliveryMode: "vpn",
         status: "vpn_ready",
-        ...toVpnMePayload(access),
+        ...(await toVpnMePayload(access)),
       };
     }
 
@@ -326,7 +346,7 @@ export const ordersService = {
     return {
       orderId: current.orderId,
       deliveryMode: isSupportTokenFlow ? "support" : "activation",
-      activationFlow: isSupportTokenFlow ? "grok_token" : "chatgpt_token",
+      activationFlow: isSupportTokenFlow ? supportActivationFlow : "chatgpt_token",
       product: current.productKey,
       status: current.status,
       taskId: current.taskId || null,
@@ -375,7 +395,7 @@ export const ordersService = {
         reasons.push("Token is expired");
       }
     }
-    if (isSupportTokenActivationMode(activationInfo)) {
+    if (isSupportTokenActivationMode(activationInfo) && String(activationInfo?.activationFlow || "") !== "claude_token") {
       const supportValidation = validateSupportSessionJwtToken(tokenInfo.extracted || tokenInfo.raw);
       reasons.push(...supportValidation.reasons);
     }
@@ -438,9 +458,11 @@ export const ordersService = {
       if (!safeToken) throw new AppError("Token is required", 400);
       if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
       if (isSupportTokenActivationMode(activationInfo)) {
-        const supportValidation = validateSupportSessionJwtToken(safeToken);
-        if (supportValidation.reasons.length > 0) {
-          throw new AppError(`Invalid token format: ${supportValidation.reasons.join("; ")}`, 400);
+        if (String(activationInfo?.activationFlow || "").trim().toLowerCase() !== "claude_token") {
+          const supportValidation = validateSupportSessionJwtToken(safeToken);
+          if (supportValidation.reasons.length > 0) {
+            throw new AppError(`Invalid token format: ${supportValidation.reasons.join("; ")}`, 400);
+          }
         }
       }
       const nextTokenMeta = buildTokenMeta(tokenInfo);
@@ -502,6 +524,16 @@ export const ordersService = {
     const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
     assertTokenActivationDeliveryMode(activationInfo);
     const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
+    if (String(taskId || "").startsWith("chongzhi-")) {
+      const isSuccess = stored?.status === "success";
+      const isPending = stored?.status === "processing" || stored?.verificationState === "pending";
+      return {
+        pending: Boolean(isPending && !isSuccess),
+        success: Boolean(isSuccess),
+        message: String(stored?.lastProviderMessage || ""),
+        task_id: String(stored?.taskId || taskId),
+      };
+    }
     const payload = await fetchActivationTaskPayload(taskId, stored?.deviceId || null);
     updateActivationFromProviderPayload(orderId, taskId, payload);
 
@@ -632,7 +664,7 @@ export const ordersService = {
         orderId: order.id,
         email: order.email,
       });
-      const vpnPayload = access ? toVpnMePayload(access) : null;
+      const vpnPayload = access ? await toVpnMePayload(access) : null;
       const certainty =
         order.status !== OrderStatus.PAID
           ? {
@@ -705,8 +737,10 @@ export const ordersService = {
       orderId: order.id,
       orderStatus: order.status,
       emailMasked: maskEmail(order.email),
-      deliveryMode: deliveryType === "support" ? "support" : "activation",
-      activationFlow: deliveryType === "support" ? "grok_token" : "chatgpt_token",
+      deliveryMode: isSupportLikeDeliveryType(deliveryType) ? "support" : "activation",
+      activationFlow: isSupportLikeDeliveryType(deliveryType)
+        ? resolveSupportActivationFlowByDeliveryType(deliveryType)
+        : "chatgpt_token",
       product: product
         ? {
             id: product.id,
@@ -741,7 +775,7 @@ export const ordersService = {
       certainty,
       isActivatedConfirmed: certainty.code === "ACTIVATED_CONFIRMED_PROVIDER",
       processingHint:
-        deliveryType === "support"
+        isSupportLikeDeliveryType(deliveryType)
           ? "Activation usually takes 5-15 minutes after token submission."
           : null,
     };
@@ -1079,7 +1113,10 @@ function resolveActivationPoolProductKeyForOrder(orderWithItem: Awaited<ReturnTy
   const productId = String(product?.id || "").trim().toLowerCase();
   const baseProductKey = canonicalProductKey(productSlug || productId || "chatgpt");
   if (!baseProductKey) return "chatgpt";
-  if (deliveryType === "support") {
+  if (String(deliveryType || "").trim().toLowerCase() === "support_claude") {
+    return canonicalProductKey(`${baseProductKey}-sdk5`) || `${baseProductKey}-sdk5`;
+  }
+  if (isSupportLikeDeliveryType(deliveryType)) {
     return canonicalProductKey(`${baseProductKey}-sdk4`) || `${baseProductKey}-sdk4`;
   }
   return baseProductKey;
@@ -1125,7 +1162,15 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   const tokenInfo = parseClientTokenInput(token);
   if (!tokenInfo.raw) throw new AppError("Token is required", 400);
   if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
-  if (isSupportTokenActivationMode(activationInfo)) {
+  const isSupportFlow = isSupportTokenActivationMode(activationInfo);
+  const isChongzhiProvider = String(env.ACTIVATION_PROVIDER || "nitro").trim().toLowerCase() === "chongzhi";
+  if (!isSupportFlow && isChongzhiProvider && !tokenInfo.raw.startsWith("{")) {
+    throw new AppError(
+      "For this activation method, paste the full JSON from https://chatgpt.com/api/auth/session",
+      400
+    );
+  }
+  if (isSupportFlow) {
     const supportValidation = validateSupportSessionJwtToken(tokenInfo.extracted || tokenInfo.raw);
     if (supportValidation.reasons.length > 0) {
       throw new AppError(`Invalid token format: ${supportValidation.reasons.join("; ")}`, 400);
@@ -1185,79 +1230,31 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     // Idempotent behavior for repeated clicks with the same token.
     return { taskId: String(stored.taskId || ""), reused: true };
   }
-  if (stored.status === "failed" && Math.max(0, Number(stored.attempts || 0)) > 0) {
-    const canRotate = shouldAutoRotateAfterFailedAttempt(stored);
-    if (canRotate) {
-      const order = await assertPaidOrderAccess(orderId, orderToken);
-      const nextCdk = await activationStore.reserveCdkForOrder({
-        productKey: String(stored.productKey || "chatgpt"),
-        orderId: order.id,
-        email: order.email,
-        excludeCdk: stored.cdk || undefined,
-      });
-      if (nextCdk) {
-        const nowIso = new Date().toISOString();
-        const latest = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
-        activationStore.upsert({
-          ...latest,
-          cdk: nextCdk,
-          status: "issued",
-          taskId: null,
-          verificationState: "unknown",
-          lastProviderMessage: "Previous failed attempt detected. New key issued automatically.",
-          lastProviderCheckedAt: nowIso,
-          lastProviderPayload: {
-            source: "auto-key-rotation",
-            previousStatus: String(stored.status || ""),
-            previousTaskId: String(stored.taskId || ""),
-            previousMessage: String(stored.lastProviderMessage || ""),
-          },
-          updatedAt: nowIso,
-        });
-        stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
-      }
-    }
-  }
   const attempts = Math.max(0, Number(stored.attempts || 0));
-  if (stored.status === "failed" && attempts > 0) {
-    throw new AppError("Previous activation attempt failed. Request a new key and retry.", 409);
-  }
   if (attempts >= MAX_ACTIVATION_START_ATTEMPTS) {
     throw new AppError("Activation attempts limit reached. Contact support.", 429);
   }
 
-  let createResponse: Response | null = null;
-  let lastBody = "";
-  for (const candidate of userCandidates) {
-    createResponse = await fetch("https://receipt-api.nitro.xin/stocks/public/outstock", {
-      method: "POST",
-      headers: {
-        Accept: "application/json, text/plain, */*",
-        "Content-Type": "application/json",
-        "X-Device-Id": deviceId,
-      },
-      body: JSON.stringify({
-        cdk: stored.cdk,
-        user: candidate,
-      }),
-    });
-
-    if (createResponse.ok) break;
-    // Some upstream failures return empty body; keep best-effort diagnostics.
-    lastBody = await createResponse.text().catch(() => "");
-    // If token was JSON, try alternate shapes on 400 only.
-    if (createResponse.status !== 400) break;
-  }
-
-  if (!createResponse || !createResponse.ok) {
+  const createResult = await startOutstockTaskWithRetry({
+    cdk: stored.cdk,
+    deviceId,
+    userCandidates,
+    supportFlow: isSupportFlow,
+  });
+  if (!createResult.ok) {
     throw new AppError("Activation start failed", 502, {
-      upstreamStatus: createResponse?.status || 0,
-      upstreamBody: String(lastBody || "").slice(0, 2000),
+      upstreamStatus: createResult.status || 0,
+      upstreamBody: String(createResult.body || "").slice(0, 2000),
+      retries: createResult.tries,
     });
   }
 
-  const taskId = String((await createResponse.text()).trim() || "");
+  const taskId = String(createResult.taskId || "").trim();
   if (!taskId) throw new AppError("Activation task id is empty", 502);
+  const nextStatus: ActivationRecord["status"] = createResult.immediateSuccess ? "success" : "processing";
+  const nextVerificationState: NonNullable<ActivationRecord["verificationState"]> = createResult.immediateSuccess
+    ? "success"
+    : "pending";
 
   const latest = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
   activationStore.upsert({
@@ -1265,31 +1262,293 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     ...storagePatch,
     deviceId,
     tokenMeta,
-    status: "processing",
+    status: nextStatus,
     taskId,
     attempts: attempts + 1,
-    verificationState: "pending",
-    lastProviderMessage: "Activation request sent",
+    verificationState: nextVerificationState,
+    lastProviderMessage: String(createResult.message || "Activation request sent"),
     lastProviderCheckedAt: new Date().toISOString(),
-    lastProviderPayload: null,
+    lastProviderPayload: createResult.providerPayload || null,
     updatedAt: new Date().toISOString(),
   });
 
   return { taskId };
 }
 
-function shouldAutoRotateAfterFailedAttempt(record: ActivationRecord | null | undefined) {
-  if (!record || record.status !== "failed") return false;
-  const message = String(record.lastProviderMessage || "").toLowerCase();
-  const payload = record.lastProviderPayload && typeof record.lastProviderPayload === "object"
-    ? JSON.stringify(record.lastProviderPayload).toLowerCase()
-    : "";
-  const joined = `${message}\n${payload}`;
-  return (
-    joined.includes("record not found") ||
-    joined.includes("get cdk failed") ||
-    joined.includes("cdk not found")
-  );
+async function startOutstockTaskWithRetry(input: {
+  cdk: string;
+  deviceId: string;
+  userCandidates: any[];
+  supportFlow?: boolean;
+}) {
+  if (input.supportFlow) {
+    return startQuickplusSupportTaskWithRetry(input);
+  }
+  if (String(env.ACTIVATION_PROVIDER || "nitro").trim().toLowerCase() === "chongzhi") {
+    return startChongzhiTaskWithRetry(input);
+  }
+  let lastStatus = 0;
+  let lastBody = "";
+  let tries = 0;
+
+  for (let attempt = 1; attempt <= ACTIVATION_OUTSTOCK_MAX_RETRIES; attempt += 1) {
+    for (const candidate of input.userCandidates) {
+      tries += 1;
+      const response = await fetch("https://receipt-api.nitro.xin/stocks/public/outstock", {
+        method: "POST",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+          "X-Device-Id": input.deviceId,
+        },
+        body: JSON.stringify({
+          cdk: input.cdk,
+          user: candidate,
+        }),
+      });
+
+      if (response.ok) {
+        const taskId = String((await response.text().catch(() => "")).trim() || "");
+        return {
+          ok: true as const,
+          taskId,
+          status: response.status,
+          body: "",
+          tries,
+          immediateSuccess: false,
+          message: "Activation request sent",
+          providerPayload: null,
+        };
+      }
+
+      lastStatus = response.status;
+      lastBody = await response.text().catch(() => "");
+      // If token was JSON, try alternate user shapes on 400 only.
+      if (response.status !== 400) break;
+    }
+
+    if (!shouldRetryOutstockFailure(lastStatus, lastBody)) {
+      break;
+    }
+    if (attempt >= ACTIVATION_OUTSTOCK_MAX_RETRIES) {
+      break;
+    }
+
+    const pauseMs = Math.min(12_000, ACTIVATION_OUTSTOCK_RETRY_DELAY_MS + (attempt - 1) * 250);
+    await sleep(pauseMs);
+  }
+
+  return {
+    ok: false as const,
+    taskId: "",
+    status: lastStatus,
+    body: lastBody,
+    tries,
+    immediateSuccess: false,
+    message: "",
+    providerPayload: null,
+  };
+}
+
+async function startQuickplusSupportTaskWithRetry(input: {
+  cdk: string;
+  deviceId: string;
+  userCandidates: any[];
+}) {
+  return startChongzhiTaskWithRetry(input, {
+    baseUrl: String(env.ACTIVATION_SUPPORT_BASE_URL || "https://quickplus.vip/public/grok").trim(),
+    sourceLabel: "quickplus.vip/public/grok",
+  });
+}
+
+function shouldRetryOutstockFailure(status: number, body: string) {
+  const normalized = String(body || "").toLowerCase();
+  if (status >= 500 || status === 429 || status === 408) return true;
+  if (status === 400 || status === 404 || status === 409) {
+    return (
+      normalized.includes("stock not found") ||
+      normalized.includes("out of stock") ||
+      normalized.includes("record not found") ||
+      normalized.includes("cdk not found") ||
+      normalized.includes("get cdk failed") ||
+      normalized.includes("temporary") ||
+      normalized.includes("try again")
+    );
+  }
+  return false;
+}
+
+async function startChongzhiTaskWithRetry(
+  input: { cdk: string; deviceId: string; userCandidates: any[] },
+  options?: { baseUrl?: string; sourceLabel?: string }
+) {
+  const base = String(options?.baseUrl || env.ACTIVATION_CHONGZHI_BASE_URL || "https://chongzhi.pro")
+    .trim()
+    .replace(/\/+$/, "");
+  const parsedBase = tryParseUrl(base);
+  const origin = parsedBase?.origin || base;
+  const refererBase = parsedBase ? `${parsedBase.origin}${parsedBase.pathname.replace(/\/+$/, "")}/` : `${base}/`;
+  const tokenCandidate =
+    input.userCandidates.find((candidate) => typeof candidate === "string" && String(candidate || "").trim().startsWith("{")) ||
+    input.userCandidates.find((candidate) => typeof candidate === "string" && String(candidate || "").trim());
+  const tokenRaw = String(tokenCandidate || "").trim();
+  if (!tokenRaw) {
+    return {
+      ok: false as const,
+      taskId: "",
+      status: 400,
+      body: "Token payload is empty",
+      tries: 0,
+      immediateSuccess: false,
+      message: "Token payload is empty",
+      providerPayload: null,
+    };
+  }
+
+  let lastStatus = 0;
+  let lastBody = "";
+  let lastMessage = "";
+  let tries = 0;
+
+  for (let attempt = 1; attempt <= ACTIVATION_OUTSTOCK_MAX_RETRIES; attempt += 1) {
+    tries += 1;
+    try {
+      const homeResponse = await fetch(`${base}/`, {
+        method: "GET",
+        headers: {
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        },
+      });
+      const setCookieHeader = homeResponse.headers.get("set-cookie") || "";
+      const sessionMatch = setCookieHeader.match(/ios_gpt_session=([^;]+)/i);
+      const session = String(sessionMatch?.[1] || "").trim();
+      if (!session) {
+        lastStatus = homeResponse.status || 502;
+        lastBody = "ios_gpt_session not found";
+      } else {
+        const commonHeaders = {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+          Origin: origin,
+          Referer: refererBase,
+          Cookie: `ios_gpt_session=${session}`,
+        } as Record<string, string>;
+
+        const verifyResponse = await fetch(`${base}/api-verify.php`, {
+          method: "POST",
+          headers: commonHeaders,
+          body: JSON.stringify({ activation_code: input.cdk }),
+        });
+        const verifyRaw = await verifyResponse.text().catch(() => "");
+        const verifyJson = tryParseJson(verifyRaw);
+        const verifyOk = Boolean(verifyJson?.success);
+        const codeStatus = String(verifyJson?.data?.code_status || "").trim().toLowerCase();
+
+        if (!verifyResponse.ok || !verifyOk) {
+          lastStatus = verifyResponse.status || 502;
+          lastBody = verifyRaw || "verify failed";
+        } else {
+          let actionResponse: Response | null = null;
+          let actionRaw = "";
+          let actionJson: any = null;
+
+          if (codeStatus === "used") {
+            actionResponse = await fetch(`${base}/api-recharge-reuse.php`, {
+              method: "POST",
+              headers: commonHeaders,
+              body: JSON.stringify({
+                action: "update_token_and_recharge",
+                card_code: input.cdk,
+                json_data: tokenRaw,
+              }),
+            });
+            actionRaw = await actionResponse.text().catch(() => "");
+            actionJson = tryParseJson(actionRaw);
+          } else {
+            // Try iOS endpoint first, then Android endpoint.
+            const endpoints = ["/simple-submit-recharge.php", "/simple-submit-rechargezero.php"];
+            for (const endpoint of endpoints) {
+              const resp = await fetch(`${base}${endpoint}`, {
+                method: "POST",
+                headers: commonHeaders,
+                body: JSON.stringify({ user_data: tokenRaw }),
+              });
+              const raw = await resp.text().catch(() => "");
+              const json = tryParseJson(raw);
+              if (resp.ok && Boolean(json?.success)) {
+                actionResponse = resp;
+                actionRaw = raw;
+                actionJson = json;
+                break;
+              }
+              actionResponse = resp;
+              actionRaw = raw;
+              actionJson = json;
+            }
+          }
+
+          if (actionResponse?.ok && Boolean(actionJson?.success)) {
+            const taskId = `chongzhi-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+            return {
+              ok: true as const,
+              taskId,
+              status: actionResponse.status,
+              body: actionRaw,
+              tries,
+              immediateSuccess: true,
+              message: String(actionJson?.message || "Activation completed"),
+              providerPayload: {
+                source: String(options?.sourceLabel || "chongzhi.pro"),
+                verify: verifyJson,
+                recharge: actionJson,
+              },
+            };
+          }
+
+          lastStatus = actionResponse?.status || 502;
+          lastBody = actionRaw || "recharge failed";
+          lastMessage = String(actionJson?.message || actionJson?.error || "");
+        }
+      }
+    } catch (error) {
+      lastStatus = 0;
+      lastBody = error instanceof Error ? error.message : String(error || "unknown error");
+    }
+
+    if (!shouldRetryOutstockFailure(lastStatus, `${lastBody}\n${lastMessage}`)) break;
+    if (attempt >= ACTIVATION_OUTSTOCK_MAX_RETRIES) break;
+    const pauseMs = Math.min(12_000, ACTIVATION_OUTSTOCK_RETRY_DELAY_MS + (attempt - 1) * 250);
+    await sleep(pauseMs);
+  }
+
+  return {
+    ok: false as const,
+    taskId: "",
+    status: lastStatus,
+    body: lastBody,
+    tries,
+    immediateSuccess: false,
+    message: lastMessage,
+    providerPayload: null,
+  };
+}
+
+function tryParseUrl(raw: string) {
+  try {
+    return new URL(String(raw || "").trim());
+  } catch {
+    return null;
+  }
+}
+
+function tryParseJson(raw: string) {
+  const value = String(raw || "").trim();
+  if (!value) return null;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
 }
 
 function buildStoredClientTokenPatch(token: string) {
@@ -1686,21 +1945,33 @@ function inferProviderTaskState(payload: {
 
   const pendingFlag = toBool(payload.pending);
   const successFlag = toBool(payload.success);
+  const messageText = String(payload.message || payload.error || "").trim();
+  const messageLower = messageText.toLowerCase();
   const hasError = Boolean(String(payload.error || "").trim());
+  const failedByMessage =
+    messageLower.includes("already been used") ||
+    messageLower.includes("already used") ||
+    messageLower.includes("validation failed") ||
+    messageLower.includes("redeem failed") ||
+    messageLower.includes("stock not found") ||
+    messageLower.includes("record not found") ||
+    messageLower.includes("cdk not found") ||
+    messageLower.includes("get cdk failed");
 
   const pending = pendingFlag === true || (!status ? false : pendingStatuses.has(status));
   const success = successFlag === true || (!status ? false : successStatuses.has(status)) || (status === "finish" && !hasError);
   const failed =
     (!success && !pending && (successFlag === false && hasError)) ||
     (!success && !pending && failedStatuses.has(status)) ||
-    (!success && !pending && status === "finish" && hasError);
+    (!success && !pending && status === "finish" && hasError) ||
+    (!success && !pending && failedByMessage);
 
   return {
     pending,
     success,
     failed,
     status,
-    message: String(payload.message || payload.error || "").trim(),
+    message: messageText,
   };
 }
 

@@ -142,6 +142,11 @@ const envSchema = z.object({
   STORAGE_DRIVER: z.enum(["local"]).default("local"),
   // Some upstream providers bind tasks to a device id. Use a stable value.
   ACTIVATION_DEVICE_ID: z.string().optional().default("web"),
+  ACTIVATION_OUTSTOCK_MAX_RETRIES: z.coerce.number().int().min(1).max(120).default(40),
+  ACTIVATION_OUTSTOCK_RETRY_DELAY_MS: z.coerce.number().int().min(500).max(10_000).default(2_000),
+  ACTIVATION_PROVIDER: z.enum(["nitro", "chongzhi"]).default("nitro"),
+  ACTIVATION_CHONGZHI_BASE_URL: z.string().url().default("https://chongzhi.pro"),
+  ACTIVATION_SUPPORT_BASE_URL: z.string().url().default("https://quickplus.vip/public/grok"),
   ACTIVATION_TOKEN_ENCRYPTION_KEY: z.string().optional().default(""),
   ACTIVATION_STORED_TOKEN_TTL_HOURS: z.coerce.number().int().min(1).max(24 * 30).default(24 * 7),
   VPN_SERVER_ID: z.string().min(2).default("eu-1"),

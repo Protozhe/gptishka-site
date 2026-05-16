@@ -68,10 +68,9 @@ export async function deliverProduct(order: Order) {
     return;
   }
 
-  if (deliveryType === "support") {
-    console.info(`[delivery] support-manual delivery selected for order=${order.id}`);
-    await ensureBundleVpnAccess();
-    return;
+  const isSupportTokenActivation = deliveryType === "support" || deliveryType === "support_claude";
+  if (isSupportTokenActivation) {
+    console.info(`[delivery] support-token activation selected for order=${order.id}`);
   }
 
   if (deliveryType === "vpn") {
@@ -108,7 +107,8 @@ export async function deliverProduct(order: Order) {
     .trim()
     .toLowerCase();
   const productId = String(product?.id || "").trim().toLowerCase();
-  const productKey = canonicalProductKey(productSlug || productId);
+  const baseProductKey = canonicalProductKey(productSlug || productId);
+  const productKey = resolveActivationKeyPoolProductKey(baseProductKey, deliveryType);
 
   if (!productKey) {
     console.warn(`[delivery] product key not resolved for order=${order.id}`);
@@ -145,4 +145,18 @@ export async function deliverProduct(order: Order) {
 
   console.info(`[delivery] issued CDK for order ${order.id} (${order.email}) product=${productKey}`);
   await ensureBundleVpnAccess();
+}
+
+function resolveActivationKeyPoolProductKey(baseProductKey: string, deliveryType: ReturnType<typeof resolveProductDeliveryType>) {
+  const normalizedBase = String(baseProductKey || "").trim();
+  if (!normalizedBase) return "";
+  // Method 5 (Claude token flow) uses a separate SDK pool.
+  if (deliveryType === "support_claude") {
+    return canonicalProductKey(`${normalizedBase}-sdk5`);
+  }
+  // Method 4 (support token flow) uses an isolated SDK pool.
+  if (deliveryType === "support") {
+    return canonicalProductKey(`${normalizedBase}-sdk4`);
+  }
+  return normalizedBase;
 }
