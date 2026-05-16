@@ -3330,7 +3330,7 @@ document.addEventListener("click", e => {
 
 // Live ticker with masked activation events and split counters.
 (() => {
-  const API_STATS_URL = "/api/stats";
+  const API_STATS_URL = "/api/public/storefront-stats";
   const API_HEARTBEAT_URL = "/api/heartbeat";
   const STATS_REFRESH_MS = 15000;
   const HEARTBEAT_MS = 20000;
@@ -3402,8 +3402,18 @@ document.addEventListener("click", e => {
       .replaceAll("'", "&#39;");
   }
 
+  function bindTickerElements(tickerRoot) {
+    if (!tickerRoot) return;
+    tickerTrack = tickerRoot.querySelector("#siteTickerTrack");
+    totalValueEl = tickerRoot.querySelector("#siteTickerSales");
+  }
+
   function createTicker() {
-    if (document.getElementById("siteTicker")) return;
+    const existingTicker = document.getElementById("siteTicker");
+    if (existingTicker) {
+      bindTickerElements(existingTicker);
+      return;
+    }
     const header = document.querySelector("header");
     if (!header) return;
 
@@ -3427,8 +3437,7 @@ document.addEventListener("click", e => {
       ticker.classList.remove("is-warmup");
     }, 900);
 
-    tickerTrack = document.getElementById("siteTickerTrack");
-    totalValueEl = document.getElementById("siteTickerSales");
+    bindTickerElements(ticker);
   }
 
   function normalizeTickerEntries(stats) {
