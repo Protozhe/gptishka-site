@@ -4,15 +4,15 @@
 <script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
 <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="GPTРёС€РєР°: РїСЂРѕРґР»РµРЅРёРµ Рё Р°РєС‚РёРІР°С†РёСЏ ChatGPT Plus." />
+  <meta name="description" content="GPTишка: продление и активация ChatGPT Plus." />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="GPTishka" />
-  <meta property="og:title" content="РџСЂРѕРґР»РёС‚СЊ / РђРєС‚РёРІРёСЂРѕРІР°С‚СЊ - GPTРёС€РєР°" />
-  <meta property="og:description" content="GPTРёС€РєР°: РїСЂРѕРґР»РµРЅРёРµ Рё Р°РєС‚РёРІР°С†РёСЏ ChatGPT Plus." />
+  <meta property="og:title" content="Продлить / Активировать - GPTишка" />
+  <meta property="og:description" content="GPTишка: продление и активация ChatGPT Plus." />
   <meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
   <meta property="og:url" content="https://gptishka.shop/redeem-start.html" />
   <link rel="icon" href="/favicon.ico" sizes="any">
-  <title>РџСЂРѕРґР»РёС‚СЊ / РђРєС‚РёРІРёСЂРѕРІР°С‚СЊ - GPTРёС€РєР°</title>
+  <title>Продлить / Активировать - GPTишка</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1150,67 +1150,6 @@
       gap: 8px;
     }
 
-    .lang-switch {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .lang-current {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 104px;
-      padding: 10px 14px;
-      border-radius: 16px;
-      border: 1px solid rgba(186, 198, 224, 0.55);
-      background: rgba(255, 255, 255, 0.75);
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .lang-current img,
-    .lang-item img {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      object-fit: cover;
-      flex: 0 0 18px;
-    }
-
-    .lang-dropdown {
-      position: absolute;
-      top: calc(100% + 8px);
-      right: 0;
-      min-width: 164px;
-      padding: 8px;
-      border-radius: 14px;
-      border: 1px solid rgba(186, 198, 224, 0.55);
-      background: rgba(252, 254, 255, 0.97);
-      box-shadow: 0 18px 36px rgba(16, 29, 46, 0.18);
-      display: none;
-      z-index: 80;
-    }
-
-    .lang-switch.open .lang-dropdown {
-      display: block;
-    }
-
-    .lang-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 10px;
-      border-radius: 10px;
-      cursor: pointer;
-      color: #2f4057;
-      font-weight: 600;
-    }
-
-    .lang-item:hover {
-      background: rgba(93, 124, 255, 0.1);
-    }
-
     @media (max-width: 640px) {
       body.redeem-flow .redeem-page {
         padding: 14px 10px 0 !important;
@@ -1231,29 +1170,29 @@
   <header>
 <div class="nav">
       <a href="/index.html" class="logo-link">
-        <img loading="eager" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTРёС€РєР°" class="logo-img" onerror="this.onerror=null;this.src='/favicon.png';">
+        <img loading="eager" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTишка" class="logo-img" onerror="this.onerror=null;this.src='/favicon.png';">
       </a>
 
             <nav>
-        <a href="/index.html">Р“Р»Р°РІРЅР°СЏ</a>
-        <a href="/index.html#pricing">РўР°СЂРёС„С‹</a>
-        <a href="/index.html#how">РљР°Рє СЌС‚Рѕ СЂР°Р±РѕС‚Р°РµС‚</a>
-        <a href="/index.html#payment">РћРїР»Р°С‚Р°</a>
-        <a href="/index.html#faq">Р’РѕРїСЂРѕСЃС‹ Рё РѕС‚РІРµС‚С‹</a>
+        <a href="/index.html">Главная</a>
+        <a href="/index.html#pricing">Тарифы</a>
+        <a href="/index.html#how">Как это работает</a>
+        <a href="/index.html#payment">Оплата</a>
+        <a href="/index.html#faq">Вопросы и ответы</a>
       </nav>
 
           <div class="header-tools">
 <div class="lang-switch" id="langSwitch">
         <div class="lang-current" id="langCurrent">
           <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
-          <span>Р СѓСЃСЃРєРёР№</span>
-          <span class="arrow">в–ѕ</span>
+          <span>Русский</span>
+          <span class="arrow">▾</span>
         </div>
 
         <div class="lang-dropdown">
           <div class="lang-item" data-lang="ru">
             <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
-            <span>Р СѓСЃСЃРєРёР№</span>
+            <span>Русский</span>
           </div>
           <div class="lang-item" data-lang="en">
             <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
@@ -1267,18 +1206,18 @@
 
   <main class="page redeem-page">
     <section class="redeem-card">
-      <h1 class="redeem-title">РџСЂРѕРґР»РёС‚СЊ / РђРєС‚РёРІРёСЂРѕРІР°С‚СЊ</h1>
-      <p class="redeem-subtitle">РџРѕСЃР»Рµ РѕРїР»Р°С‚С‹ Р·Р°РІРµСЂС€РёС‚Рµ РІС‹РґР°С‡Сѓ Р·Р°РєР°Р·Р° РїРѕ РёРЅСЃС‚СЂСѓРєС†РёРё РЅРёР¶Рµ.</p>
+      <h1 class="redeem-title">Продлить / Активировать</h1>
+      <p class="redeem-subtitle">После оплаты завершите выдачу заказа по инструкции ниже.</p>
 
       <section id="vpnOfferBlock" class="redeem-vpn-offer" hidden>
         <div class="redeem-vpn-offer-head">
-          <p class="redeem-label" style="margin-bottom:0;">VPN РІ СЌС‚РѕРј Р·Р°РєР°Р·Рµ</p>
-          <span class="redeem-vpn-pill">Р РµРєРѕРјРµРЅРґСѓРµРј</span>
+          <p class="redeem-label" style="margin-bottom:0;">VPN в этом заказе</p>
+          <span class="redeem-vpn-pill">Рекомендуем</span>
         </div>
-        <p class="redeem-vpn-offer-text">РЎРЅР°С‡Р°Р»Р° РЅР°СЃС‚СЂРѕР№С‚Рµ VPN-РґРѕСЃС‚СѓРї, Р·Р°С‚РµРј РІРµСЂРЅРёС‚РµСЃСЊ Рє Р°РєС‚РёРІР°С†РёРё ChatGPT РїРѕ С‚РѕРєРµРЅСѓ.</p>
+        <p class="redeem-vpn-offer-text">Сначала настройте VPN-доступ, затем вернитесь к активации ChatGPT по токену.</p>
         <div class="redeem-vpn-offer-actions">
-          <a id="vpnOfferSetupBtn" class="redeem-btn redeem-btn-primary" href="/store/vpn/activate" data-redeem-leave-bypass>РќР°СЃС‚СЂРѕРёС‚СЊ VPN</a>
-          <button id="vpnOfferSkipBtn" type="button" class="redeem-btn">РџСЂРѕРґРѕР»Р¶РёС‚СЊ Р°РєС‚РёРІР°С†РёСЋ</button>
+          <a id="vpnOfferSetupBtn" class="redeem-btn redeem-btn-primary" href="/store/vpn/activate" data-redeem-leave-bypass>Настроить VPN</a>
+          <button id="vpnOfferSkipBtn" type="button" class="redeem-btn">Продолжить активацию</button>
         </div>
       </section>
 
@@ -1287,53 +1226,53 @@
           <p class="redeem-label">Order ID</p>
           <div class="redeem-order-row">
             <span id="orderId" class="redeem-order-id">-</span>
-            <button id="copyOrderIdBtn" type="button" class="redeem-btn">РЎРєРѕРїРёСЂРѕРІР°С‚СЊ</button>
+            <button id="copyOrderIdBtn" type="button" class="redeem-btn">Скопировать</button>
           </div>
         </section>
 
         <section class="redeem-block" id="tokenBlock">
-          <p class="redeem-label">РўРѕРєРµРЅ Р°РєРєР°СѓРЅС‚Р°</p>
+          <p class="redeem-label">Токен аккаунта</p>
           <details class="redeem-guide" open>
-            <summary>Р“РґРµ РІР·СЏС‚СЊ С‚РѕРєРµРЅ Р°РєРєР°СѓРЅС‚Р°</summary>
+            <summary>Где взять токен аккаунта</summary>
             <ol>
-              <li>Р’РѕР№РґРёС‚Рµ С‡РµСЂРµР· Р±СЂР°СѓР·РµСЂ РІ Р°РєРєР°СѓРЅС‚ ChatGPT (РµСЃР»Рё РµС‰С‘ РЅРµ РІРѕС€Р»Рё вЂ” РїСЂРѕСЃС‚Рѕ Р°РІС‚РѕСЂРёР·СѓР№С‚РµСЃСЊ).</li>
-              <li>РћС‚РєСЂРѕР№С‚Рµ СЃСЃС‹Р»РєСѓ <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>
-              <li>РЎРєРѕРїРёСЂСѓР№С‚Рµ РІСЃРµ СЃРѕРґРµСЂР¶РёРјРѕРµ Рё РІСЃС‚Р°РІСЊС‚Рµ РµРіРѕ РІ РїРѕР»Рµ В«РўРѕРєРµРЅ Р°РєРєР°СѓРЅС‚Р°В».</li>
-              <li>РљР°Рє СЌС‚Рѕ СЂР°Р±РѕС‚Р°РµС‚ / РІРёРґРµРѕ РёРЅСЃС‚СЂСѓРєС†РёСЏ вЂ” <a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">СЃРјРѕС‚СЂРµС‚СЊ</a></li>
+              <li>Войдите через браузер в аккаунт ChatGPT (если ещё не вошли — просто авторизуйтесь).</li>
+              <li>Откройте ссылку <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>
+              <li>Скопируйте все содержимое и вставьте его в поле «Токен аккаунта».</li>
+              <li>Как это работает / видео инструкция — <a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">смотреть</a></li>
             </ol>
           </details>
 
           <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
-            <button id="toggleMaskBtn" type="button" class="redeem-btn">РџРѕРєР°Р·Р°С‚СЊ</button>
-            <button id="pasteBtn" type="button" class="redeem-btn">Р’СЃС‚Р°РІРёС‚СЊ</button>
-            <button id="clearBtn" type="button" class="redeem-btn">РћС‡РёСЃС‚РёС‚СЊ</button>
+            <button id="toggleMaskBtn" type="button" class="redeem-btn">Показать</button>
+            <button id="pasteBtn" type="button" class="redeem-btn">Вставить</button>
+            <button id="clearBtn" type="button" class="redeem-btn">Очистить</button>
           </div>
 
-          <textarea id="tokenInput" class="redeem-input masked" placeholder="РўРѕРєРµРЅ Р°РєРєР°СѓРЅС‚Р°" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
+          <textarea id="tokenInput" class="redeem-input masked" placeholder="Токен аккаунта" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
 
           <div class="redeem-meta">
-            <span id="tokenInfo">РЎРёРјРІРѕР»РѕРІ: 0</span>
-            <span id="tokenWarn">РњС‹ РЅРµ СЃРѕС…СЂР°РЅСЏРµРј С‚РѕРєРµРЅ Рё РёСЃРїРѕР»СЊР·СѓРµРј РµРіРѕ С‚РѕР»СЊРєРѕ РґР»СЏ РѕРїР»Р°С‚С‹.</span>
+            <span id="tokenInfo">Символов: 0</span>
+            <span id="tokenWarn">Мы не сохраняем токен и используем его только для оплаты.</span>
           </div>
         </section>
 
         <section class="redeem-block" id="manualCredentialsBlock" style="display:none">
-          <p class="redeem-label">Р”Р°РЅРЅС‹Рµ РґР»СЏ РІС…РѕРґР°</p>
+          <p class="redeem-label">Данные для входа</p>
           <div class="redeem-order-row">
             <span id="manualLoginValue" class="redeem-order-id">-</span>
-            <button id="copyLoginBtn" type="button" class="redeem-btn">РЎРєРѕРїРёСЂРѕРІР°С‚СЊ Р»РѕРіРёРЅ</button>
+            <button id="copyLoginBtn" type="button" class="redeem-btn">Скопировать логин</button>
           </div>
           <div class="redeem-order-row">
             <span id="manualPasswordValue" class="redeem-order-id">-</span>
-            <button id="copyPasswordBtn" type="button" class="redeem-btn">РЎРєРѕРїРёСЂРѕРІР°С‚СЊ РїР°СЂРѕР»СЊ</button>
+            <button id="copyPasswordBtn" type="button" class="redeem-btn">Скопировать пароль</button>
           </div>
           <div id="manualCodeLinkRow" class="redeem-order-row redeem-manual-code-row" style="display:none">
-            <span class="redeem-manual-code-label">РЎСЃС‹Р»РєР° РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ РєРѕРґР°:</span>
-            <a id="manualCodeLink" class="redeem-btn redeem-manual-link-btn" href="https://quickplus.vip/public/grok/" target="_blank" rel="noopener noreferrer">РїРѕР»СѓС‡РёС‚СЊ РєРѕРґ</a>
+            <span class="redeem-manual-code-label">Ссылка для получения кода:</span>
+            <a id="manualCodeLink" class="redeem-btn redeem-manual-link-btn" href="https://quickplus.vip/public/grok/" target="_blank" rel="noopener noreferrer">получить код</a>
           </div>
           <p id="manualCredentialsHint" class="redeem-manual-hint"></p>
           <p id="manualEmailLinkRow" class="redeem-manual-code-row" style="display:none">
-            Р•СЃР»Рё СѓРґРѕР±РЅРµРµ, РїРѕР»СѓС‡РёС‚Рµ РєРѕРґ РїРѕ РїРѕС‡С‚Рµ:
+            Если удобнее, получите код по почте:
             <a id="manualEmailLink" href="mailto:support@gptishka.shop">support@gptishka.shop</a>
           </p>
           <a
@@ -1343,65 +1282,65 @@
             target="_blank"
             rel="noopener noreferrer"
             style="display:none; margin-top:8px;"
-          >РќР°РїРёСЃР°С‚СЊ РІ РїРѕРґРґРµСЂР¶РєСѓ</a>
+          >Написать в поддержку</a>
         </section>
       </div>
 
       <section id="actionsRow" class="redeem-actions">
-        <button id="checkBtn" type="button" class="redeem-btn">РџСЂРѕРІРµСЂРёС‚СЊ СЃС‚Р°С‚СѓСЃ</button>
-        <button id="retryNewKeyBtn" type="button" class="redeem-btn">РЎРјРµРЅРёС‚СЊ РєР»СЋС‡ Рё РїРѕРІС‚РѕСЂРёС‚СЊ</button>
-        <button id="startBtn" type="button" class="redeem-btn redeem-btn-primary full" disabled>РђРєС‚РёРІРёСЂРѕРІР°С‚СЊ</button>
-        <button id="stopPollingBtn" type="button" class="redeem-btn full" style="display:none">РћСЃС‚Р°РЅРѕРІРёС‚СЊ РїСЂРѕРІРµСЂРєСѓ</button>
+        <button id="checkBtn" type="button" class="redeem-btn">Проверить статус</button>
+        <button id="retryNewKeyBtn" type="button" class="redeem-btn">Сменить ключ и повторить</button>
+        <button id="startBtn" type="button" class="redeem-btn redeem-btn-primary full" disabled>Активировать</button>
+        <button id="stopPollingBtn" type="button" class="redeem-btn full" style="display:none">Остановить проверку</button>
       </section>
 
       <section id="statusBox" class="redeem-status">
-        <span id="statusText">РћР¶РёРґР°СЋ РґРµР№СЃС‚РІРёСЏ.</span>
+        <span id="statusText">Ожидаю действия.</span>
         <span id="statusSpinner" class="redeem-spinner" aria-hidden="true"></span>
         <span id="taskWrap" style="display:none">Task: <strong id="taskIdValue"></strong></span>
-        <button id="copyTaskBtn" type="button" class="redeem-btn" style="display:none">РЎРєРѕРїРёСЂРѕРІР°С‚СЊ Task</button>
+        <button id="copyTaskBtn" type="button" class="redeem-btn" style="display:none">Скопировать Task</button>
       </section>
 
       <section id="reviewRewardBox" class="redeem-review-reward" hidden aria-modal="true" role="dialog" aria-live="polite" aria-labelledby="reviewRewardTitle">
         <div class="redeem-review-card">
           <div class="redeem-review-top">
-            <span class="redeem-review-badge">Р‘РѕРЅСѓСЃ 10% РЅР° СЃР»РµРґСѓСЋС‰РёР№ Р·Р°РєР°Р·</span>
-            <button id="reviewRewardCloseBtn" type="button" class="redeem-review-close" aria-label="Р—Р°РєСЂС‹С‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ" title="Р—Р°РєСЂС‹С‚СЊ">&times;</button>
+            <span class="redeem-review-badge">Бонус 10% на следующий заказ</span>
+            <button id="reviewRewardCloseBtn" type="button" class="redeem-review-close" aria-label="Закрыть сообщение" title="Закрыть">&times;</button>
           </div>
           <div class="redeem-review-body">
             <div class="redeem-review-head">
               <span class="redeem-review-mark-wrap" aria-hidden="true">
-                <span class="redeem-review-mark">вњ“</span>
+                <span class="redeem-review-mark">✓</span>
               </span>
               <div class="redeem-review-copy">
-                <h3 id="reviewRewardTitle">Р’Р°С€ С‚Р°СЂРёС„ СѓСЃРїРµС€РЅРѕ Р°РєС‚РёРІРёСЂРѕРІР°РЅ</h3>
-                <p class="redeem-review-lead">РЎРїР°СЃРёР±Рѕ Р·Р° РїРѕРєСѓРїРєСѓ. РћСЃС‚Р°РІСЊС‚Рµ РєРѕСЂРѕС‚РєРёР№ РѕС‚Р·С‹РІ РІ Telegram Рё РїРѕР»СѓС‡РёС‚Рµ РїРµСЂСЃРѕРЅР°Р»СЊРЅС‹Р№ РїСЂРѕРјРѕРєРѕРґ 10%.</p>
+                <h3 id="reviewRewardTitle">Ваш тариф успешно активирован</h3>
+                <p class="redeem-review-lead">Спасибо за покупку. Оставьте короткий отзыв в Telegram и получите персональный промокод 10%.</p>
               </div>
             </div>
             <ul class="redeem-review-points">
-              <li>РџСЂРѕРјРѕРєРѕРґ РґРµР№СЃС‚РІСѓРµС‚ РЅР° СЃР»РµРґСѓСЋС‰РёР№ Р·Р°РєР°Р· Рё СЃСѓРјРјРёСЂСѓРµС‚СЃСЏ СЃ С‚РµРєСѓС‰РёРјРё Р°РєС†РёСЏРјРё.</li>
-              <li>РџСЂРѕРІРµСЂРёРј РѕС‚Р·С‹РІ Рё РѕС‚РїСЂР°РІРёРј РІР°С€ РїРµСЂСЃРѕРЅР°Р»СЊРЅС‹Р№ РєРѕРґ РІ РїРѕРґРґРµСЂР¶РєСѓ Р±РµР· Р·Р°РґРµСЂР¶РµРє.</li>
+              <li>Промокод действует на следующий заказ и суммируется с текущими акциями.</li>
+              <li>Проверим отзыв и отправим ваш персональный код в поддержку без задержек.</li>
             </ul>
             <div class="redeem-review-links">
-              <a class="redeem-btn redeem-btn-primary" href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">РћСЃС‚Р°РІРёС‚СЊ РѕС‚Р·С‹РІ</a>
-              <button id="reviewRewardDismissBtn" type="button" class="redeem-btn redeem-btn-soft">РџРѕР·Р¶Рµ</button>
+              <a class="redeem-btn redeem-btn-primary" href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">Оставить отзыв</a>
+              <button id="reviewRewardDismissBtn" type="button" class="redeem-btn redeem-btn-soft">Позже</button>
             </div>
-            <p class="redeem-review-note">Р•СЃР»Рё РѕРєРЅРѕ РјРµС€Р°РµС‚, РЅР°Р¶РјРёС‚Рµ В«РџРѕР·Р¶РµВ» РёР»Рё РєР»Р°РІРёС€Сѓ Esc. Р‘РѕРЅСѓСЃ РѕСЃС‚Р°РЅРµС‚СЃСЏ РґРѕСЃС‚СѓРїРµРЅ.</p>
+            <p class="redeem-review-note">Если окно мешает, нажмите «Позже» или клавишу Esc. Бонус останется доступен.</p>
           </div>
         </div>
       </section>
 
       <section class="redeem-faq">
-        РћС€РёР±РєР°? РџСЂРѕРІРµСЂСЊС‚Рµ РѕРїР»Р°С‚Сѓ, РєРѕСЂСЂРµРєС‚РЅРѕСЃС‚СЊ <strong>order_id</strong> Рё РїРѕРїСЂРѕР±СѓР№С‚Рµ СЃРЅРѕРІР°.
+        Ошибка? Проверьте оплату, корректность <strong>order_id</strong> и попробуйте снова.
       </section>
     </section>
   </main>
 
   <footer>
-    <a class="footer-link" href="/oferta.html">РџСѓР±Р»РёС‡РЅР°СЏ РѕС„РµСЂС‚Р°</a> В· <a class="footer-link" href="/politika.html">РџРѕР»РёС‚РёРєР° РєРѕРЅС„РёРґРµРЅС†РёР°Р»СЊРЅРѕСЃС‚Рё</a> В· <a class="footer-link" href="/refund.html">РЈСЃР»РѕРІРёСЏ РІРѕР·РІСЂР°С‚Р°</a>
-    <span class="footer-copy">В© 2026 GPTishka. Р’СЃРµ РїСЂР°РІР° Р·Р°С‰РёС‰РµРЅС‹, РєРѕРїРёСЂРѕРІР°РЅРёРµ Р·Р°РїСЂРµС‰РµРЅРѕ.</span>
+    <a class="footer-link" href="/oferta.html">Публичная оферта</a> · <a class="footer-link" href="/politika.html">Политика конфиденциальности</a> · <a class="footer-link" href="/refund.html">Условия возврата</a>
+    <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
   </footer>
 
-  <script src="/assets/js/app.min.js?v=20260408-hotfix2" defer></script>
+  <script src="/assets/js/app.min.js?v=20260324-modalfix1" defer></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const orderId = String(params.get('order_id') || params.get('orderId') || '').trim();
@@ -1564,7 +1503,7 @@
       document.addEventListener('click', (event) => {
         const target = event.target;
         const langItem = target && target.closest ? target.closest('.lang-item[data-lang]') : null;
-        if (langItem) {
+        if (langItem && shouldBlockLeaving()) {
           const lang = String(langItem.getAttribute('data-lang') || '').trim().toLowerCase();
           const currentUrl = new URL(window.location.href);
           const isEnPath = currentUrl.pathname.startsWith('/en/');
@@ -1573,13 +1512,9 @@
           if (lang === 'ru' && isEnPath) nextPath = '/redeem-start.html';
           const nextHref = `${window.location.origin}${nextPath}${currentUrl.search}${currentUrl.hash}`;
           if (nextHref !== window.location.href) {
-            if (shouldBlockLeaving()) {
-              event.preventDefault();
-              event.stopPropagation();
-              openLeaveConfirm(nextHref);
-            } else {
-              window.location.href = nextHref;
-            }
+            event.preventDefault();
+            event.stopPropagation();
+            openLeaveConfirm(nextHref);
             return;
           }
         }
@@ -1619,24 +1554,6 @@
         if (!shouldBlockLeaving()) return;
         event.preventDefault();
         event.returnValue = '';
-      });
-    }
-
-    function setupLanguageSwitch() {
-      const langSwitch = document.getElementById('langSwitch');
-      const langCurrent = document.getElementById('langCurrent');
-      if (!langSwitch || !langCurrent) return;
-
-      langCurrent.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        langSwitch.classList.toggle('open');
-      });
-
-      document.addEventListener('click', (event) => {
-        if (!langSwitch.contains(event.target)) {
-          langSwitch.classList.remove('open');
-        }
       });
     }
 
@@ -1702,7 +1619,7 @@
       const message = String(payload?.message || '').trim() || defaultMessage;
 
       if (manualBlockLabel) {
-        manualBlockLabel.textContent = isSupportDelivery ? 'Р СѓС‡РЅР°СЏ Р°РєС‚РёРІР°С†РёСЏ С‡РµСЂРµР· РїРѕРґРґРµСЂР¶РєСѓ' : 'Р”Р°РЅРЅС‹Рµ РґР»СЏ РІС…РѕРґР°';
+        manualBlockLabel.textContent = isSupportDelivery ? 'Ручная активация через поддержку' : 'Данные для входа';
       }
       if (manualLoginRow) {
         manualLoginRow.style.display = isSupportDelivery ? 'none' : 'flex';
@@ -1711,8 +1628,8 @@
         manualPasswordRow.style.display = isSupportDelivery ? 'none' : 'flex';
       }
 
-      if (manualLoginValue) manualLoginValue.textContent = login || 'Р›РѕРіРёРЅ РїРѕРєР° РЅРµ РЅР°Р·РЅР°С‡РµРЅ';
-      if (manualPasswordValue) manualPasswordValue.textContent = password || 'РџР°СЂРѕР»СЊ РїРѕРєР° РЅРµ РЅР°Р·РЅР°С‡РµРЅ';
+      if (manualLoginValue) manualLoginValue.textContent = login || 'Логин пока не назначен';
+      if (manualPasswordValue) manualPasswordValue.textContent = password || 'Пароль пока не назначен';
       if (manualCredentialsHint) manualCredentialsHint.textContent = message;
 
       const hasCredentials = !isSupportDelivery && status === 'credentials_ready' && login && password;
@@ -1723,7 +1640,7 @@
       }
       if (manualCodeLink) {
         manualCodeLink.href = supportUrl || 'https://quickplus.vip/public/grok/';
-        manualCodeLink.textContent = isSupportDelivery ? 'РЅР°РїРёСЃР°С‚СЊ РІ РїРѕРґРґРµСЂР¶РєСѓ' : 'РїРѕР»СѓС‡РёС‚СЊ РєРѕРґ';
+        manualCodeLink.textContent = isSupportDelivery ? 'написать в поддержку' : 'получить код';
       }
       if (manualCodeLinkRow) {
         manualCodeLinkRow.style.display = hasCredentials ? 'none' : 'flex';
@@ -1731,7 +1648,7 @@
       if (manualEmailLink) {
         manualEmailLink.textContent = supportEmail || 'support@gptishka.shop';
         manualEmailLink.href = supportEmail
-          ? `mailto:${supportEmail}?subject=${encodeURIComponent(`Р СѓС‡РЅР°СЏ Р°РєС‚РёРІР°С†РёСЏ РїРѕ Р·Р°РєР°Р·Сѓ ${orderId}`)}`
+          ? `mailto:${supportEmail}?subject=${encodeURIComponent(`Ручная активация по заказу ${orderId}`)}`
           : 'mailto:support@gptishka.shop';
       }
       if (manualEmailLinkRow) {
@@ -1745,9 +1662,9 @@
       if (copyPasswordBtn) copyPasswordBtn.style.display = isSupportDelivery ? 'none' : '';
 
       if (hasCredentials) {
-        setStatus('success', 'Р”Р°РЅРЅС‹Рµ РґР»СЏ РІС…РѕРґР° РіРѕС‚РѕРІС‹. РЎРєРѕРїРёСЂСѓР№С‚Рµ Р»РѕРіРёРЅ Рё РїР°СЂРѕР»СЊ РЅРёР¶Рµ.', false);
+        setStatus('success', 'Данные для входа готовы. Скопируйте логин и пароль ниже.', false);
       } else {
-        setStatus('pending', isSupportDelivery ? 'Manual activation: contact support to receive access.' : 'РћР¶РёРґР°РµРј РІС‹РґР°С‡Сѓ РґР°РЅРЅС‹С… РґР»СЏ РІС…РѕРґР°.', false);
+        setStatus('pending', isSupportDelivery ? 'Manual activation: contact support to receive access.' : 'Ожидаем выдачу данных для входа.', false);
       }
     }
 
@@ -1856,7 +1773,7 @@
         }
       } catch (_) {}
 
-      setStatus('error', 'РќРµ СѓРєР°Р·Р°РЅ order_id РІ СЃСЃС‹Р»РєРµ.', false);
+      setStatus('error', 'Не указан order_id в ссылке.', false);
       startBtn.disabled = true;
       checkBtn.disabled = true;
       retryNewKeyBtn.disabled = true;
@@ -1891,7 +1808,7 @@
     toggleMaskBtn.addEventListener('click', () => {
       isMasked = !isMasked;
       tokenInput.classList.toggle('masked', isMasked);
-      toggleMaskBtn.textContent = isMasked ? 'РџРѕРєР°Р·Р°С‚СЊ' : 'РЎРєСЂС‹С‚СЊ';
+      toggleMaskBtn.textContent = isMasked ? 'Показать' : 'Скрыть';
     });
 
     pasteBtn.addEventListener('click', async () => {
@@ -1901,10 +1818,10 @@
           tokenInput.value = clipboard;
           updateTokenMeta();
           scheduleValidateToken();
-          setStatus('success', 'РўРѕРєРµРЅ РІСЃС‚Р°РІР»РµРЅ', false);
+          setStatus('success', 'Токен вставлен', false);
         }
       } catch {
-        setStatus('error', 'РќРµ СѓРґР°Р»РѕСЃСЊ РІСЃС‚Р°РІРёС‚СЊ РёР· Р±СѓС„РµСЂР° РѕР±РјРµРЅР°', false);
+        setStatus('error', 'Не удалось вставить из буфера обмена', false);
       }
     });
 
@@ -1912,16 +1829,16 @@
       tokenInput.value = '';
       updateTokenMeta();
       scheduleValidateToken();
-      setStatus('pending', 'РџРѕР»Рµ РѕС‡РёС‰РµРЅРѕ', false);
+      setStatus('pending', 'Поле очищено', false);
     });
 
-    copyOrderIdBtn.addEventListener('click', () => copyText(orderId, 'Order ID СЃРєРѕРїРёСЂРѕРІР°РЅ'));
-    copyTaskBtn.addEventListener('click', () => copyText(currentTaskId, 'Task ID СЃРєРѕРїРёСЂРѕРІР°РЅ'));
+    copyOrderIdBtn.addEventListener('click', () => copyText(orderId, 'Order ID скопирован'));
+    copyTaskBtn.addEventListener('click', () => copyText(currentTaskId, 'Task ID скопирован'));
     if (copyLoginBtn) {
-      copyLoginBtn.addEventListener('click', () => copyText(manualLoginValue ? manualLoginValue.textContent : '', 'Р›РѕРіРёРЅ СЃРєРѕРїРёСЂРѕРІР°РЅ'));
+      copyLoginBtn.addEventListener('click', () => copyText(manualLoginValue ? manualLoginValue.textContent : '', 'Логин скопирован'));
     }
     if (copyPasswordBtn) {
-      copyPasswordBtn.addEventListener('click', () => copyText(manualPasswordValue ? manualPasswordValue.textContent : '', 'РџР°СЂРѕР»СЊ СЃРєРѕРїРёСЂРѕРІР°РЅ'));
+      copyPasswordBtn.addEventListener('click', () => copyText(manualPasswordValue ? manualPasswordValue.textContent : '', 'Пароль скопирован'));
     }
     if (vpnOfferSetupBtn) {
       vpnOfferSetupBtn.addEventListener('click', (event) => {
@@ -1933,7 +1850,7 @@
     if (vpnOfferSkipBtn) {
       vpnOfferSkipBtn.addEventListener('click', () => {
         hideVpnOffer(true);
-        setStatus('pending', 'РњРѕР¶РЅРѕ РїСЂРѕРґРѕР»Р¶РёС‚СЊ Р°РєС‚РёРІР°С†РёСЋ ChatGPT РІ Р±Р»РѕРєРµ РЅРёР¶Рµ.', false);
+        setStatus('pending', 'Можно продолжить активацию ChatGPT в блоке ниже.', false);
       });
     }
 
@@ -1951,7 +1868,7 @@
       restartAttempts = 0;
       setButtonLoading(startBtn, true);
       try {
-        setStatus('pending', 'Р—Р°РїСЂРѕСЃ РѕС‚РїСЂР°РІР»РµРЅ...', true);
+        setStatus('pending', 'Запрос отправлен...', true);
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/start`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1969,15 +1886,15 @@
           }
           details = String(details || '').trim();
           if (details.length > 400) details = details.slice(0, 400) + '...';
-          setStatus('error', (payload?.message || 'РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РїСѓСЃС‚РёС‚СЊ Р°РєС‚РёРІР°С†РёСЋ') + (details ? `: ${details}` : ''), false);
+          setStatus('error', (payload?.message || 'Не удалось запустить активацию') + (details ? `: ${details}` : ''), false);
           return;
         }
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
-        setStatus('pending', `Р’ РѕР±СЂР°Р±РѕС‚РєРµ. Task: ${currentTaskId}`, true);
+        setStatus('pending', `В обработке. Task: ${currentTaskId}`, true);
         startPolling();
       } catch {
-        setStatus('error', 'РћС€РёР±РєР° СЃРµС‚Рё РїСЂРё Р·Р°РїСѓСЃРєРµ Р°РєС‚РёРІР°С†РёРё', false);
+        setStatus('error', 'Ошибка сети при запуске активации', false);
       } finally {
         setButtonLoading(startBtn, false);
       }
@@ -1986,7 +1903,7 @@
     checkBtn.addEventListener('click', async () => {
       if (isCredentialsDelivery) return;
       if (!currentTaskId) {
-        setStatus('pending', 'РЎРЅР°С‡Р°Р»Р° Р·Р°РїСѓСЃС‚РёС‚Рµ Р°РєС‚РёРІР°С†РёСЋ', false);
+        setStatus('pending', 'Сначала запустите активацию', false);
         return;
       }
       setButtonLoading(checkBtn, true);
@@ -2000,13 +1917,13 @@
       const now = Date.now();
       const remain = RETRY_COOLDOWN_MS - (now - lastRetryAt);
       if (remain > 0) {
-        setStatus('error', `РЎР»РёС€РєРѕРј С‡Р°СЃС‚Рѕ. РџРѕРІС‚РѕСЂРёС‚Рµ С‡РµСЂРµР· ${Math.ceil(remain / 1000)} СЃРµРє.`, false);
+        setStatus('error', `Слишком часто. Повторите через ${Math.ceil(remain / 1000)} сек.`, false);
         return;
       }
 
       const token = getTokenForSubmit();
       if (!token) {
-        setStatus('error', 'Р’РІРµРґРёС‚Рµ С‚РѕРєРµРЅ', false);
+        setStatus('error', 'Введите токен', false);
         return;
       }
 
@@ -2020,7 +1937,7 @@
       isRetryRunning = true;
       setButtonLoading(retryNewKeyBtn, true);
       try {
-        setStatus('pending', 'Р‘РµСЂРµРј РЅРѕРІС‹Р№ РєР»СЋС‡ Рё РїРµСЂРµР·Р°РїСѓСЃРєР°РµРј...', true);
+        setStatus('pending', 'Берем новый ключ и перезапускаем...', true);
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/restart-with-new-key`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2028,15 +1945,15 @@
         });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-          setStatus('error', payload?.message || 'РќРµ СѓРґР°Р»РѕСЃСЊ РїРµСЂРµР·Р°РїСѓСЃС‚РёС‚СЊ', false);
+          setStatus('error', payload?.message || 'Не удалось перезапустить', false);
           return;
         }
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
-        setStatus('pending', `Р’ РѕР±СЂР°Р±РѕС‚РєРµ. Task: ${currentTaskId}`, true);
+        setStatus('pending', `В обработке. Task: ${currentTaskId}`, true);
         startPolling();
       } catch {
-        setStatus('error', 'РћС€РёР±РєР° СЃРµС‚Рё РїСЂРё РїРµСЂРµР·Р°РїСѓСЃРєРµ', false);
+        setStatus('error', 'Ошибка сети при перезапуске', false);
       } finally {
         isRetryRunning = false;
         setButtonLoading(retryNewKeyBtn, false);
@@ -2046,7 +1963,7 @@
     stopPollingBtn.addEventListener('click', () => {
       stopPolling();
       setPollPaused(true);
-      setStatus('pending', 'РђРІС‚РѕРїСЂРѕРІРµСЂРєР° РѕСЃС‚Р°РЅРѕРІР»РµРЅР°', false);
+      setStatus('pending', 'Автопроверка остановлена', false);
     });
 
     async function loadActivation() {
@@ -2055,7 +1972,7 @@
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation${suffix}`);
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-          setStatus('error', payload?.message || 'РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ СЃС‚Р°С‚СѓСЃ Р°РєС‚РёРІР°С†РёРё', false);
+          setStatus('error', payload?.message || 'Не удалось загрузить статус активации', false);
           return;
         }
         const deliveryMode = String(payload?.deliveryMode || '').toLowerCase();
@@ -2088,7 +2005,7 @@
           currentTaskId = String(payload.taskId || '');
           renderTask(currentTaskId);
           markActivationCompleted();
-          setStatus('success', currentTaskId ? `РЈСЃРїРµС€РЅРѕ. Task: ${currentTaskId}` : 'РџРѕРґРєР»СЋС‡РµРЅРёРµ СѓСЃРїРµС€РЅРѕ Р·Р°РІРµСЂС€РµРЅРѕ.', false);
+          setStatus('success', currentTaskId ? `Успешно. Task: ${currentTaskId}` : 'Подключение успешно завершено.', false);
           clearActivationResumeStorage();
           hideActionButtons();
           showReviewReward();
@@ -2098,16 +2015,16 @@
         renderTask(currentTaskId);
         if (currentTaskId) {
           if (isPollPaused()) {
-            setStatus('pending', `Р•СЃС‚СЊ Р°РєС‚РёРІРЅР°СЏ РїСЂРѕРІРµСЂРєР°. Task: ${currentTaskId}. РђРІС‚РѕРїСЂРѕРІРµСЂРєР° РѕСЃС‚Р°РЅРѕРІР»РµРЅР°.`, false);
+            setStatus('pending', `Есть активная проверка. Task: ${currentTaskId}. Автопроверка остановлена.`, false);
           } else {
-            setStatus('pending', `Р’ РѕР±СЂР°Р±РѕС‚РєРµ. Task: ${currentTaskId}`, true);
+            setStatus('pending', `В обработке. Task: ${currentTaskId}`, true);
             startPolling();
           }
           return;
         }
-        setStatus('pending', 'РћР¶РёРґР°СЋ РґРµР№СЃС‚РІРёСЏ.', false);
+        setStatus('pending', 'Ожидаю действия.', false);
       } catch {
-        setStatus('error', 'РћС€РёР±РєР° СЃРµС‚Рё РїСЂРё Р·Р°РіСЂСѓР·РєРµ Р°РєС‚РёРІР°С†РёРё', false);
+        setStatus('error', 'Ошибка сети при загрузке активации', false);
       }
     }
 
@@ -2147,7 +2064,7 @@
         if (done || timeout) {
           stopPolling();
           if (!done && timeout) {
-            setStatus('pending', `Р’СЃРµ РµС‰Рµ РІ РѕР±СЂР°Р±РѕС‚РєРµ. Task: ${currentTaskId}. РќР°Р¶РјРёС‚Рµ В«РџСЂРѕРІРµСЂРёС‚СЊ СЃС‚Р°С‚СѓСЃВ» РїРѕР·Р¶Рµ РёР»Рё В«РЎРјРµРЅРёС‚СЊ РєР»СЋС‡ Рё РїРѕРІС‚РѕСЂРёС‚СЊВ».`, false);
+            setStatus('pending', `Все еще в обработке. Task: ${currentTaskId}. Нажмите «Проверить статус» позже или «Сменить ключ и повторить».`, false);
             retryNewKeyBtn.disabled = false;
           }
         }
@@ -2168,19 +2085,19 @@
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/task/${encodeURIComponent(currentTaskId)}${suffix}`);
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-          setStatus('error', payload?.message || 'РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ СЃС‚Р°С‚СѓСЃ', false);
+          setStatus('error', payload?.message || 'Не удалось получить статус', false);
           return true;
         }
 
         if (payload.pending) {
           const msg = String(payload?.message || '').trim();
-          setStatus('pending', `Р’ РѕР±СЂР°Р±РѕС‚РєРµ. Task: ${currentTaskId}${msg ? `. ${msg}` : ''}`, true);
+          setStatus('pending', `В обработке. Task: ${currentTaskId}${msg ? `. ${msg}` : ''}`, true);
           retryNewKeyBtn.disabled = true;
           return false;
         }
 
         if (payload.success) {
-          setStatus('success', `РЈСЃРїРµС€РЅРѕ. Task: ${currentTaskId}`, false);
+          setStatus('success', `Успешно. Task: ${currentTaskId}`, false);
           markActivationCompleted();
           clearActivationResumeStorage();
           hideActionButtons();
@@ -2188,11 +2105,11 @@
           return true;
         }
 
-        setStatus('error', payload?.message || 'Р—Р°РїСЂРѕСЃ РЅРµ РјРѕР¶РµС‚ РѕР±СЂР°Р±РѕС‚Р°С‚СЊСЃСЏ', false);
+        setStatus('error', payload?.message || 'Запрос не может обработаться', false);
         retryNewKeyBtn.disabled = false;
         return true;
       } catch {
-        setStatus('error', 'РћС€РёР±РєР° СЃРµС‚Рё РїСЂРё РїСЂРѕРІРµСЂРєРµ СЃС‚Р°С‚СѓСЃР°', false);
+        setStatus('error', 'Ошибка сети при проверке статуса', false);
         return false;
       }
     }
@@ -2254,11 +2171,11 @@
       const raw = String(tokenInput.value || '').trim();
       const token = extractTokenFromInput(raw);
       const length = token.length;
-      tokenInfo.textContent = `РЎРёРјРІРѕР»РѕРІ: ${length}`;
+      tokenInfo.textContent = `Символов: ${length}`;
       if (raw.startsWith('{') && token && token !== raw) {
-        tokenWarn.textContent = 'РћР±РЅР°СЂСѓР¶РµРЅ JSON: Р±СѓРґРµС‚ РёСЃРїРѕР»СЊР·РѕРІР°РЅ РёР·РІР»РµС‡РµРЅРЅС‹Р№ С‚РѕРєРµРЅ.';
+        tokenWarn.textContent = 'Обнаружен JSON: будет использован извлеченный токен.';
       } else {
-        tokenWarn.textContent = 'РњС‹ РЅРµ СЃРѕС…СЂР°РЅСЏРµРј С‚РѕРєРµРЅ Рё РёСЃРїРѕР»СЊР·СѓРµРј РµРіРѕ С‚РѕР»СЊРєРѕ РґР»СЏ РѕРїР»Р°С‚С‹.';
+        tokenWarn.textContent = 'Мы не сохраняем токен и используем его только для оплаты.';
       }
       tokenWarn.className = '';
     }
@@ -2298,7 +2215,7 @@
       const token = getTokenForSubmit();
       if (!orderId || !token) {
         tokenValidatedOk = false;
-        lastValidateReason = 'Р’РІРµРґРёС‚Рµ С‚РѕРєРµРЅ';
+        lastValidateReason = 'Введите токен';
         tokenWarn.textContent = lastValidateReason;
         tokenWarn.className = 'warn';
         updateStartButtonState();
@@ -2314,7 +2231,7 @@
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
           tokenValidatedOk = false;
-          lastValidateReason = payload?.message || 'РќРµ СѓРґР°Р»РѕСЃСЊ РїСЂРѕРІРµСЂРёС‚СЊ С‚РѕРєРµРЅ';
+          lastValidateReason = payload?.message || 'Не удалось проверить токен';
           tokenWarn.textContent = lastValidateReason;
           tokenWarn.className = 'warn';
           updateStartButtonState();
@@ -2327,10 +2244,10 @@
         lastValidateReason = reasons.join('; ');
 
         if (ok) {
-          tokenWarn.textContent = 'РўРѕРєРµРЅ РІС‹РіР»СЏРґРёС‚ РєРѕСЂСЂРµРєС‚РЅС‹Рј РїРѕ С„РѕСЂРјР°С‚Сѓ (Р±РµР· СЃРѕС…СЂР°РЅРµРЅРёСЏ).';
+          tokenWarn.textContent = 'Токен выглядит корректным по формату (без сохранения).';
           tokenWarn.className = '';
         } else {
-          tokenWarn.textContent = lastValidateReason || 'РўРѕРєРµРЅ РЅРµ РїРѕРґС…РѕРґРёС‚';
+          tokenWarn.textContent = lastValidateReason || 'Токен не подходит';
           tokenWarn.className = 'warn';
         }
 
@@ -2338,7 +2255,7 @@
         return ok;
       } catch {
         tokenValidatedOk = false;
-        lastValidateReason = 'РћС€РёР±РєР° СЃРµС‚Рё РїСЂРё РїСЂРѕРІРµСЂРєРµ С‚РѕРєРµРЅР°';
+        lastValidateReason = 'Ошибка сети при проверке токена';
         tokenWarn.textContent = lastValidateReason;
         tokenWarn.className = 'warn';
         updateStartButtonState();
@@ -2394,14 +2311,13 @@
         await navigator.clipboard.writeText(text);
         setStatus('success', okMessage, false);
       } catch {
-        setStatus('error', 'РќРµ СѓРґР°Р»РѕСЃСЊ СЃРєРѕРїРёСЂРѕРІР°С‚СЊ', false);
+        setStatus('error', 'Не удалось скопировать', false);
       }
     }
 
     setupLeaveGuard();
-    setupLanguageSwitch();
   </script>
-<script src="/assets/js/support-widget.js?v=20260408-swfix1" defer></script>
+<script src="/assets/js/support-widget.js?v=20260314a" defer></script>
 </body>
 </html>
 

@@ -1,4 +1,4 @@
-import { OrderStatus, PaymentStatus } from "@prisma/client";
+﻿import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { prisma } from "../../config/prisma";
 import { AppError } from "../../common/errors/app-error";
 import { ordersRepository } from "./orders.repository";
@@ -2081,7 +2081,7 @@ function deriveActivationCertainty(
   if (orderStatus !== OrderStatus.PAID) {
     return {
       code: "ORDER_NOT_PAID",
-      label: "Заказ не оплачен",
+      label: "Р—Р°РєР°Р· РЅРµ РѕРїР»Р°С‡РµРЅ",
     };
   }
   if (!activationStatus) {
