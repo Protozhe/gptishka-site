@@ -14,15 +14,15 @@
 <meta name="robots" content="index, follow">
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="GPTishka" />
-<meta property="og:title" content="Buy ChatGPT Plus by token — from 990 ? | Fast and guaranteed" />
+<meta property="og:title" content="Buy ChatGPT Plus by token вЂ” from 990 ? | Fast and guaranteed" />
 <meta property="og:description" content="Activate ChatGPT Plus in 5 minutes by token. Pricing from 990 ?, 1-month guarantee, and support after activation." />
 <meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
 <meta property="og:url" content="https://gptishka.shop/en/" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="GPTishka — ChatGPT Plus activation and renewal" />
+<meta name="twitter:title" content="GPTishka вЂ” ChatGPT Plus activation and renewal" />
 <meta name="twitter:description" content="Fast ChatGPT Plus activation and renewal with clear flow, support, and guarantee." />
 <meta name="twitter:image" content="https://gptishka.shop/assets/img/logo.png" />
-<title>Buy ChatGPT Plus by token — from 990 ? | Fast and guaranteed</title>
+<title>Buy ChatGPT Plus by token вЂ” from 990 ? | Fast and guaranteed</title>
 <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -38,7 +38,7 @@
       {
         "@type": "ContactPoint",
         "contactType": "customer support",
-        "email": "support@gptishka.shop",
+        "url": "https://t.me/aimarket_gpt",
         "availableLanguage": ["ru", "en"]
       }
     ]
@@ -71,29 +71,126 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/logo.min.css">
-<link rel="stylesheet" href="/assets/css/theme.min.css?v=20260313cat7">
-  <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260322-cardalign7" />
+<link rel="stylesheet" href="/assets/css/theme.min.css?v=20260516fix1">
+  <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260408-herosmooth1" />
 <link rel="stylesheet" href="/assets/css/trust-promo.css?v=20260305g">
-<link rel="stylesheet" href="/assets/css/support-widget.css?v=20260315b" />
+<link rel="stylesheet" href="/assets/css/support-widget.css?v=20260401-sw2" />
+<style>
+  body.home-gradient-page {
+    background:
+      radial-gradient(160% 120% at 50% -20%, rgba(244, 249, 255, 0.99) 0%, rgba(232, 241, 255, 0.9) 44%, rgba(226, 235, 252, 0.94) 100%),
+      linear-gradient(168deg, #edf3ff 0%, #e7efff 48%, #dfe8fb 100%) !important;
+  }
+  #siteTicker.site-ticker {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+</style>
 </head>
 <body>
 <script>
   (function () {
     try {
-      var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      var fine = window.matchMedia ? window.matchMedia("(pointer: fine)").matches : true;
-      var compact = window.matchMedia ? window.matchMedia("(max-width: 900px)").matches : window.innerWidth <= 900;
-      var cls = (reduce || !fine || compact) ? "home-gradient-page-lite" : "home-gradient-page";
-      document.body.classList.add(cls);
+      var body = document.body;
+      if (!body) return;
+      var mm = typeof window.matchMedia === "function" ? window.matchMedia.bind(window) : null;
+
+      var parseFlag = function (value) {
+        var normalized = String(value || "").trim().toLowerCase();
+        if (!normalized) return null;
+        if (["1", "true", "on", "yes", "lite"].indexOf(normalized) !== -1) return true;
+        if (["0", "false", "off", "no", "full"].indexOf(normalized) !== -1) return false;
+        return null;
+      };
+
+      var forcedLite = null;
+      try {
+        var params = new URLSearchParams(window.location.search || "");
+        forcedLite = parseFlag(params.get("lite") || params.get("performance"));
+      } catch (_) {}
+      if (forcedLite === null) {
+        try {
+          forcedLite = parseFlag(localStorage.getItem("gptishka_force_lite"));
+        } catch (_) {}
+      }
+
+      var mode = "balanced";
+      if (forcedLite === true) {
+        mode = "low";
+      } else if (forcedLite === false) {
+        mode = "rich";
+      } else {
+        var reducedMotion = mm ? mm("(prefers-reduced-motion: reduce)").matches : false;
+        var memoryGb = Number(navigator.deviceMemory || 0);
+        var cpuCores = Number(navigator.hardwareConcurrency || 0);
+        var lowMemory = Number.isFinite(memoryGb) && memoryGb > 0 && memoryGb <= 4;
+        var lowCpu = Number.isFinite(cpuCores) && cpuCores > 0 && cpuCores <= 4;
+        var midMemory = Number.isFinite(memoryGb) && memoryGb > 0 && memoryGb <= 8;
+        var midCpu = Number.isFinite(cpuCores) && cpuCores > 0 && cpuCores <= 8;
+        var canHover = mm ? mm("(hover: hover)").matches : true;
+        var coarsePointer = mm ? mm("(pointer: coarse)").matches : false;
+        var compactViewport = mm ? mm("(max-width: 1200px)").matches : window.innerWidth <= 1200;
+        var laptopViewport = mm ? mm("(max-width: 1920px)").matches : window.innerWidth <= 1920;
+        var highViewport = mm ? mm("(min-width: 1400px)").matches : window.innerWidth >= 1400;
+        var highMemory = Number.isFinite(memoryGb) && memoryGb >= 12;
+        var highCpu = Number.isFinite(cpuCores) && cpuCores >= 10;
+        var isLikelyMobile = /android|iphone|ipad|ipod|mobile|windows phone/i.test(String(navigator.userAgent || ""));
+        var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        var saveData = Boolean(connection && connection.saveData);
+        var effectiveType = connection ? String(connection.effectiveType || "").toLowerCase() : "";
+
+        if (
+          reducedMotion ||
+          lowMemory ||
+          lowCpu ||
+          isLikelyMobile ||
+          (coarsePointer && !canHover && compactViewport) ||
+          saveData ||
+          effectiveType.indexOf("2g") !== -1 ||
+          effectiveType.indexOf("3g") !== -1
+        ) {
+          mode = "low";
+        } else if (highMemory && highCpu && canHover && highViewport) {
+          mode = "rich";
+        } else if ((midMemory || midCpu) && laptopViewport) {
+          mode = "balanced";
+        } else {
+          mode = "balanced";
+        }
+      }
+
+      body.dataset.visualBudget = mode;
+      if (mode === "low") body.classList.add("low-visual-budget");
+      if (mode === "balanced") body.classList.add("balanced-visual-budget");
+
+      var reduce = mm ? mm("(prefers-reduced-motion: reduce)").matches : false;
+      var fine = mm ? mm("(pointer: fine)").matches : true;
+      var compact = mm ? mm("(max-width: 900px)").matches : window.innerWidth <= 900;
+      var gradientClass = mode === "rich" && !reduce && fine && !compact
+        ? "home-gradient-page"
+        : "home-gradient-page-lite";
+      body.classList.add(gradientClass);
     } catch (_) {}
   })();
 </script>
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
   <div class="page-overlay"></div>
   <header>
+<div id="siteTicker" class="site-ticker" role="status" aria-live="polite">
+  <div class="site-ticker__marquee">
+    <div class="site-ticker__track" id="siteTickerTrack">
+      <div class="site-ticker__loop"><span class="site-ticker__item">Activation feed is updating...</span></div>
+      <div class="site-ticker__loop" aria-hidden="true"><span class="site-ticker__item">Activation feed is updating...</span></div>
+    </div>
+  </div>
+  <div class="site-ticker__stats">
+    <span class="site-ticker__stat"><span class="site-ticker__stat-label">total activations:</span> <strong id="siteTickerSales">0</strong></span>
+  </div>
+</div>
 <div class="nav">
       <a href="/en/index.html" class="logo-link">
-        <img loading="eager" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTishka" class="logo-img" onerror="this.onerror=null;this.src='/favicon.png';">
+        <img loading="eager" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTishka" class="logo-img">
       </a>
 
       <nav>
@@ -133,16 +230,29 @@
 
   <main class="page">
     <div class="hero">
-      <div data-hero-react-root data-lang="en" data-hero-words="ChatGPT|In a few minutes|Automatically|VPN as a gift" data-cta-href="/en/index.html#pricing" data-hero-interval="2000">
-        <h1>Connect and renew ChatGPT in a few minutes</h1>
-        <p>Fast subscription activation without extra steps. Convenient, secure, and supported at every stage.</p>
-        <a href="/en/index.html#pricing" class="btn">View plans</a>
+      <div data-hero-react-root data-lang="en" data-hero-top="Connect and renew" data-hero-words="ChatGPT Plus|ChatGPT Go|ChatGPT Pro" data-hero-description="Fast subscription activation without extra steps. Convenient, secure, and supported at every stage." data-hero-cta="View plans" data-cta-href="/en/index.html#pricing" data-hero-interval="3200">
+        <div class="hero-react">
+          <div class="hero-react__headline">
+            <h1 class="hero-react__title">
+              <span class="hero-react__top">Connect and renew</span>
+              <span class="hero-react__viewport" aria-live="polite">
+                <span class="hero-react__word is-active" data-hero-word-index="0">ChatGPT Plus</span>
+                <span class="hero-react__word" data-hero-word-index="1">ChatGPT Go</span>
+                <span class="hero-react__word" data-hero-word-index="2">ChatGPT Pro</span>
+              </span>
+            </h1>
+            <p class="hero-react__description">Fast subscription activation without extra steps. Convenient, secure, and supported at every stage.</p>
+          </div>
+          <div class="hero-react__actions">
+            <a href="/en/index.html#pricing" class="btn hero-react__btn">View plans</a>
+          </div>
+        </div>
       </div>
     </div>
 
     <section class="pricing" id="pricing">
       <div class="pricing-header">
-        <h2>Choose a plan</h2>
+        <h2>Choose subscription</h2>
         <p>Pick your option and continue to checkout.</p>
       </div>
 
@@ -159,7 +269,7 @@
         <p class="activation-video__subtitle">Tutorial video with an activation example</p>
       </div>
       <div class="activation-video__frame">
-        <video class="activation-video__media" controls preload="metadata" playsinline poster="/assets/img/hero-activation-poster.png">
+        <video class="activation-video__media" controls preload="none" playsinline data-poster="/assets/img/hero-activation-poster.png">
           <source src="/assets/video/hero-activation.mp4" type="video/mp4">
           Your browser does not support embedded video.
         </video>
@@ -282,11 +392,12 @@
     <span class="footer-copy">&copy; 2026 GPTishka. All rights reserved.</span>
   </footer>
 
-  <script type="module" src="/assets/js/hero-react.mjs?v=20260310f"></script>
-  <script src="/assets/js/app.min.js?v=20260324-modalfix3" defer></script>
-  <script src="/assets/js/support-widget.js?v=20260315b" defer></script>
+  <script src="/assets/js/hero-lite.js?v=20260420-hotfix1" defer></script>
+  <script src="/assets/js/app.min.js?v=20260516fix1" defer></script>
+  <script src="/assets/js/support-widget.js?v=20260420-catanim1" defer></script>
 </body>
 </html>
+
 
 
 
