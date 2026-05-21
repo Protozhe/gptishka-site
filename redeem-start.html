@@ -1231,10 +1231,10 @@
         </section>
 
         <section class="redeem-block" id="tokenBlock">
-          <p class="redeem-label">Токен аккаунта</p>
+          <p class="redeem-label" id="tokenLabel">Токен аккаунта</p>
           <details class="redeem-guide" open>
-            <summary>Где взять токен аккаунта</summary>
-            <ol>
+            <summary id="tokenGuideSummary">Где взять токен аккаунта</summary>
+            <ol id="tokenGuideList">
               <li>Войдите через браузер в аккаунт ChatGPT (если ещё не вошли — просто авторизуйтесь).</li>
               <li>Откройте ссылку <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>
               <li>Скопируйте все содержимое и вставьте его в поле «Токен аккаунта».</li>
@@ -1252,7 +1252,7 @@
 
           <div class="redeem-meta">
             <span id="tokenInfo">Символов: 0</span>
-            <span id="tokenWarn">Мы не сохраняем токен и используем его только для оплаты.</span>
+            <span id="tokenWarn">Мы не сохраняем токен и используем его только для активации.</span>
           </div>
         </section>
 
@@ -1349,6 +1349,9 @@
     const orderIdEl = document.getElementById('orderId');
     const copyOrderIdBtn = document.getElementById('copyOrderIdBtn');
     const tokenBlock = document.getElementById('tokenBlock');
+    const tokenLabelEl = document.getElementById('tokenLabel');
+    const tokenGuideSummaryEl = document.getElementById('tokenGuideSummary');
+    const tokenGuideListEl = document.getElementById('tokenGuideList');
     const tokenInput = document.getElementById('tokenInput');
     const tokenInfo = document.getElementById('tokenInfo');
     const tokenWarn = document.getElementById('tokenWarn');
@@ -1417,6 +1420,7 @@
     let tokenValidatedOk = false;
     let lastValidateReason = '';
     let isCredentialsDelivery = false;
+    let isSupportTokenDelivery = false;
     let vpnOfferDismissed = false;
     let activationCompleted = false;
     let leaveGuardBypass = false;
@@ -1665,6 +1669,50 @@
       } else {
         setStatus('pending', isSupportDelivery ? 'Manual activation: contact support to receive access.' : 'Ожидаем выдачу данных для входа.', false);
       }
+    }
+
+    function applyTokenFlowMode(isSupportMode) {
+      isSupportTokenDelivery = Boolean(isSupportMode);
+      isCredentialsDelivery = false;
+
+      if (tokenBlock) tokenBlock.style.display = 'block';
+      if (actionsRow) actionsRow.style.display = '';
+      if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'none';
+
+      if (tokenLabelEl) {
+        tokenLabelEl.textContent = isSupportTokenDelivery ? 'ID аккаунта для активации SuperGrok' : 'Токен аккаунта';
+      }
+      if (tokenGuideSummaryEl) {
+        tokenGuideSummaryEl.textContent = isSupportTokenDelivery ? 'Где взять ID аккаунта Grok' : 'Где взять токен аккаунта';
+      }
+      if (tokenGuideListEl) {
+        if (isSupportTokenDelivery) {
+          tokenGuideListEl.innerHTML = [
+            '<li>Перейдите на сайт Grok и войдите в свой аккаунт.</li>',
+            '<li>Откройте настройки аккаунта.</li>',
+            '<li>В настройках найдите ваш ID аккаунта.</li>',
+            '<li>ID отображается мелким серым текстом. Скопируйте его полностью, например: <code>a7d2c1f4-5b8e-4a91-9d3f-1c2e7b6a9f40</code>.</li>',
+            '<li>Вставьте ID в поле ниже и нажмите «Активировать».</li>',
+          ].join('');
+        } else {
+          tokenGuideListEl.innerHTML = [
+            '<li>Войдите через браузер в аккаунт ChatGPT (если ещё не вошли — просто авторизуйтесь).</li>',
+            '<li>Откройте ссылку <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>',
+            '<li>Скопируйте все содержимое и вставьте его в поле «Токен аккаунта».</li>',
+            '<li>Как это работает / видео инструкция — <a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">смотреть</a></li>',
+          ].join('');
+        }
+      }
+
+      if (tokenInput) {
+        tokenInput.placeholder = isSupportTokenDelivery ? 'ID аккаунта Grok (UUID)' : 'Токен аккаунта';
+      }
+      if (toggleMaskBtn) {
+        toggleMaskBtn.style.display = isSupportTokenDelivery ? 'none' : '';
+      }
+      isMasked = !isSupportTokenDelivery;
+      if (tokenInput) tokenInput.classList.toggle('masked', isMasked);
+      if (toggleMaskBtn) toggleMaskBtn.textContent = isMasked ? 'Показать' : 'Скрыть';
     }
 
     function buildVpnActivateUrl() {
@@ -1975,7 +2023,8 @@
           return;
         }
         const deliveryMode = String(payload?.deliveryMode || '').toLowerCase();
-        if (deliveryMode === 'credentials' || deliveryMode === 'support') {
+        applyTokenFlowMode(deliveryMode === 'support');
+        if (deliveryMode === 'credentials') {
           handlePaidOrder(orderId);
           setCredentialsDeliveryMode(payload);
           return;
@@ -2171,10 +2220,12 @@
       const token = extractTokenFromInput(raw);
       const length = token.length;
       tokenInfo.textContent = `Символов: ${length}`;
-      if (raw.startsWith('{') && token && token !== raw) {
+      if (!isSupportTokenDelivery && raw.startsWith('{') && token && token !== raw) {
         tokenWarn.textContent = 'Обнаружен JSON: будет использован извлеченный токен.';
+      } else if (isSupportTokenDelivery) {
+        tokenWarn.textContent = 'Для метода SuperGrok используется только ID аккаунта в формате UUID.';
       } else {
-        tokenWarn.textContent = 'Мы не сохраняем токен и используем его только для оплаты.';
+        tokenWarn.textContent = 'Мы не сохраняем токен и используем его только для активации.';
       }
       tokenWarn.className = '';
     }
@@ -2214,7 +2265,7 @@
       const token = getTokenForSubmit();
       if (!orderId || !token) {
         tokenValidatedOk = false;
-        lastValidateReason = 'Введите токен';
+        lastValidateReason = isSupportTokenDelivery ? 'Введите ID аккаунта' : 'Введите токен';
         tokenWarn.textContent = lastValidateReason;
         tokenWarn.className = 'warn';
         updateStartButtonState();
@@ -2243,7 +2294,9 @@
         lastValidateReason = reasons.join('; ');
 
         if (ok) {
-          tokenWarn.textContent = 'Токен выглядит корректным по формату (без сохранения).';
+          tokenWarn.textContent = isSupportTokenDelivery
+            ? 'ID аккаунта выглядит корректным (без сохранения).'
+            : 'Токен выглядит корректным по формату (без сохранения).';
           tokenWarn.className = '';
         } else {
           tokenWarn.textContent = lastValidateReason || 'Токен не подходит';

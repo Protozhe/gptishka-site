@@ -1331,18 +1331,19 @@
       syncRetryActionVisibility();
 
       if (tokenLabelEl) {
-        tokenLabelEl.textContent = isSupportTokenDelivery ? 'Grok token' : 'Account token';
+        tokenLabelEl.textContent = isSupportTokenDelivery ? 'SuperGrok account ID' : 'Account token';
       }
       if (tokenGuideSummaryEl) {
-        tokenGuideSummaryEl.textContent = isSupportTokenDelivery ? 'Where to get the Grok token' : 'Where to get the account token';
+        tokenGuideSummaryEl.textContent = isSupportTokenDelivery ? 'Where to get your Grok account ID' : 'Where to get the account token';
       }
       if (tokenGuideListEl) {
         if (isSupportTokenDelivery) {
           tokenGuideListEl.innerHTML = [
-            '<li>Open <a href="https://receipt.nitro.xin/redeem/grok" target="_blank" rel="noreferrer noopener">receipt.nitro.xin/redeem/grok</a> and sign in.</li>',
-            '<li>Copy the full JWT token. Format examples:<br><code style="word-break:break-all;">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiNmY2Y2E1MmMtNTYzMi00ZTllLWJhOWEtNDM0MGRiYzUzYzU2In0.9mPNpCTt92yX3HaV3HsIu9KweNfXA-zzRZPDb6VIdlQ</code><br><code style="word-break:break-all;">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoiYTA1MTE3MDEtZjRkOC00MDkzLWI2OTYtNjc1ZjUzZDg3ZDAwIn0.MIyBhMMaf5rqdZA_sTtqQXTVqucjDX3qtCHYoTTsYI8</code></li>',
-            '<li>Paste it into the field below and click "Activate".</li>',
-            '<li>Provider processing usually takes 5-15 minutes.</li>',
+            '<li>Open Grok and sign in to your account.</li>',
+            '<li>Go to account settings.</li>',
+            '<li>Find your account ID (small gray text) and copy it in full.</li>',
+            '<li>Example format: <code>a7d2c1f4-5b8e-4a91-9d3f-1c2e7b6a9f40</code>.</li>',
+            '<li>Paste it below and click "Activate".</li>',
           ].join('');
         } else {
           tokenGuideListEl.innerHTML = [
@@ -1354,12 +1355,12 @@
         }
       }
       if (tokenInput) {
-        tokenInput.placeholder = isSupportTokenDelivery ? 'Grok JWT token' : 'Account token';
+        tokenInput.placeholder = isSupportTokenDelivery ? 'Grok account ID (UUID)' : 'Account token';
       }
       if (tokenFlowHint) {
         tokenFlowHint.hidden = !isSupportTokenDelivery;
         tokenFlowHint.textContent = isSupportTokenDelivery
-          ? 'Method 4 requires a Grok JWT token. After submission, processing usually takes 5-15 minutes.'
+          ? 'Method 4 requires your Grok account ID. After submission, processing usually takes 5-15 minutes.'
           : '';
       }
     }
@@ -1377,7 +1378,7 @@
 
     function getTokenSafeWarnText() {
       return isSupportTokenDelivery
-        ? 'Token is used only for activation and is never stored in plain text.'
+        ? 'Account ID is used only for activation.'
         : 'We do not store the token. It is used only for activation.';
     }
 
@@ -2082,8 +2083,8 @@
       tokenInfo.textContent = `Chars: ${length}`;
       if (!isSupportTokenDelivery && raw.startsWith('{') && token && token !== raw) {
         tokenWarn.textContent = 'JSON detected: extracted token will be used.';
-      } else if (isSupportTokenDelivery && raw.startsWith('{')) {
-        tokenWarn.textContent = 'For method 4, paste JWT as a plain string (header.payload.signature).';
+      } else if (isSupportTokenDelivery) {
+        tokenWarn.textContent = 'For method 4, paste your Grok account ID in UUID format.';
       } else {
         tokenWarn.textContent = getTokenSafeWarnText();
       }
@@ -2125,7 +2126,7 @@
       const token = getTokenForSubmit();
       if (!orderId || !token) {
         tokenValidatedOk = false;
-        lastValidateReason = isSupportTokenDelivery ? 'Enter JWT token' : 'Enter token';
+        lastValidateReason = isSupportTokenDelivery ? 'Enter account ID' : 'Enter token';
         tokenWarn.textContent = lastValidateReason;
         tokenWarn.className = 'warn';
         updateStartButtonState();
@@ -2155,7 +2156,7 @@
 
         if (ok) {
           tokenWarn.textContent = isSupportTokenDelivery
-            ? 'JWT format looks valid (not stored).'
+            ? 'Account ID format looks valid.'
             : 'Token format looks valid (not stored).';
           tokenWarn.className = '';
         } else {

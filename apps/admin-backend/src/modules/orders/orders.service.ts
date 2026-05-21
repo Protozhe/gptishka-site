@@ -1812,23 +1812,15 @@ function isTokenBoundToAnotherFingerprint(
 function validateSupportSessionJwtToken(token: string) {
   const value = String(token || "").trim();
   const reasons: string[] = [];
-  const parts = value.split(".");
-  if (parts.length !== 3) {
-    reasons.push("JWT token format is required (header.payload.signature)");
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+  if (!value) {
+    reasons.push("Account ID is required");
     return { reasons };
   }
 
-  const payload = tryDecodeJwtPayloadObject(value);
-  if (!payload) {
-    reasons.push("JWT payload is invalid");
-    return { reasons };
-  }
-
-  const sessionId = typeof (payload as any)?.session_id === "string" ? String((payload as any).session_id).trim() : "";
-  if (!sessionId) {
-    reasons.push("JWT payload must include session_id");
-  } else if (!/^[a-z0-9-]{16,}$/i.test(sessionId)) {
-    reasons.push("session_id has an unexpected format");
+  if (!uuidRegex.test(value)) {
+    reasons.push("Account ID must be UUID format (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)");
   }
 
   return { reasons };
