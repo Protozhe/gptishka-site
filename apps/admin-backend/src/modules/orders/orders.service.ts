@@ -1235,12 +1235,42 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     throw new AppError("Activation attempts limit reached. Contact support.", 429);
   }
 
-  const createResult = await startOutstockTaskWithRetry({
+  let createResult = await startOutstockTaskWithRetry({
     cdk: stored.cdk,
     deviceId,
     userCandidates,
     supportFlow: isSupportFlow,
   });
+  // For support-flow providers (SuperGrok/Claude), automatically rotate CDK once
+  // when upstream reports "key already used"/validation-type errors.
+  if (!createResult.ok && isSupportFlow && shouldRotateCdkAfterStartFailure(createResult)) {
+    const paidOrder = await assertPaidOrderAccess(orderId, orderToken);
+    const nextCdk = await activationStore.reserveCdkForOrder({
+      productKey: String(stored.productKey || "chatgpt"),
+      orderId: paidOrder.id,
+      email: paidOrder.email,
+    });
+    if (nextCdk) {
+      const latestForRotate = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
+      activationStore.upsert({
+        ...latestForRotate,
+        cdk: nextCdk,
+        status: "issued",
+        taskId: null,
+        verificationState: "unknown",
+        lastProviderMessage: "Previous key rejected by provider. New key issued automatically.",
+        lastProviderCheckedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || latestForRotate;
+      createResult = await startOutstockTaskWithRetry({
+        cdk: nextCdk,
+        deviceId,
+        userCandidates,
+        supportFlow: isSupportFlow,
+      });
+    }
+  }
   if (!createResult.ok) {
     throw new AppError("Activation start failed", 502, {
       upstreamStatus: createResult.status || 0,
@@ -1824,6 +1854,20 @@ function validateSupportSessionJwtToken(token: string) {
   }
 
   return { reasons };
+}
+
+function shouldRotateCdkAfterStartFailure(result: { status?: number; body?: string; message?: string }) {
+  const status = Number(result?.status || 0);
+  const normalized = `${String(result?.body || "")}\n${String(result?.message || "")}`.toLowerCase();
+  if (status === 0) return false;
+  return (
+    normalized.includes("already been used") ||
+    normalized.includes("code has already been used") ||
+    normalized.includes("this cdk has already been used") ||
+    normalized.includes("validation failed") ||
+    normalized.includes("invalid cdk") ||
+    normalized.includes("cdk invalid")
+  );
 }
 
 function tryDecodeJwtPayloadObject(token: string): Record<string, unknown> | null {
