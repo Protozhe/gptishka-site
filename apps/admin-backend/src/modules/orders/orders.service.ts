@@ -1240,6 +1240,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     deviceId,
     userCandidates,
     supportFlow: isSupportFlow,
+    productKey: String(stored.productKey || ""),
   });
   // For support-flow providers (SuperGrok/Claude), automatically rotate CDK once
   // when upstream reports "key already used"/validation-type errors.
@@ -1268,6 +1269,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
         deviceId,
         userCandidates,
         supportFlow: isSupportFlow,
+        productKey: String(stored.productKey || ""),
       });
     }
   }
@@ -1310,6 +1312,7 @@ async function startOutstockTaskWithRetry(input: {
   deviceId: string;
   userCandidates: any[];
   supportFlow?: boolean;
+  productKey?: string;
 }) {
   if (input.supportFlow) {
     return startQuickplusSupportTaskWithRetry(input);
@@ -1384,11 +1387,141 @@ async function startQuickplusSupportTaskWithRetry(input: {
   cdk: string;
   deviceId: string;
   userCandidates: any[];
+  productKey?: string;
 }) {
-  return startChongzhiTaskWithRetry(input, {
-    baseUrl: String(env.ACTIVATION_SUPPORT_BASE_URL || "https://quickplus.vip/public/grok").trim(),
-    sourceLabel: "quickplus.vip/public/grok",
+  const base = String(env.ACTIVATION_SUPPORT_BASE_URL || "https://quickplus.vip/public/grok")
+    .trim()
+    .replace(/\/+$/, "");
+  const parsedBase = tryParseUrl(base);
+  const origin = parsedBase?.origin || "https://quickplus.vip";
+  const apiUrl = `${origin}/api.php`;
+  const accountId =
+    input.userCandidates.find((candidate) => typeof candidate === "string" && /^[0-9a-f-]{36}$/i.test(String(candidate || "").trim())) ||
+    input.userCandidates.find((candidate) => typeof candidate === "string" && String(candidate || "").trim());
+  const accountIdRaw = String(accountId || "").trim();
+  if (!accountIdRaw) {
+    return {
+      ok: false as const,
+      taskId: "",
+      status: 400,
+      body: "Account ID is empty",
+      tries: 0,
+      immediateSuccess: false,
+      message: "Account ID is empty",
+      providerPayload: null,
+    };
+  }
+
+  const lowerProductKey = String(input.productKey || "").toLowerCase();
+  const productType = lowerProductKey.includes("claude")
+    ? "claude_pro"
+    : lowerProductKey.includes("xpremium") || lowerProductKey.includes("x-premium")
+    ? "x_premium"
+    : "grok_pro";
+
+  let lastStatus = 0;
+  let lastBody = "";
+  let lastMessage = "";
+  let tries = 0;
+
+  for (let attempt = 1; attempt <= ACTIVATION_OUTSTOCK_MAX_RETRIES; attempt += 1) {
+    tries += 1;
+    try {
+      const activateCard = await quickplusApiCall(apiUrl, "activate_card", {
+        card_code: input.cdk,
+        product_type: productType,
+      });
+      if (!activateCard.success) {
+        lastStatus = activateCard.status || 502;
+        lastBody = activateCard.raw || "activate_card failed";
+        lastMessage = String(activateCard.json?.message || "");
+      } else {
+        const bindUser = await quickplusApiCall(apiUrl, "bind_user", {
+          card_code: input.cdk,
+          claude_user_id: accountIdRaw,
+          product_type: productType,
+        });
+        // If user is already bound for this card, provider may respond with success=false but valid state.
+        const bindMessage = String(bindUser.json?.message || "").toLowerCase();
+        const bindAlreadyBound = bindMessage.includes("already") && bindMessage.includes("bind");
+        if (!bindUser.success && !bindAlreadyBound) {
+          lastStatus = bindUser.status || 502;
+          lastBody = bindUser.raw || "bind_user failed";
+          lastMessage = String(bindUser.json?.message || "");
+        } else {
+          const startRecharge = await quickplusApiCall(apiUrl, "start_recharge", {
+            claude_user_id: accountIdRaw,
+            product_type: productType,
+          });
+          if (startRecharge.success) {
+            const taskId = String(startRecharge.json?.data?.task_id || "").trim() || `quickplus-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+            return {
+              ok: true as const,
+              taskId,
+              status: startRecharge.status || 200,
+              body: startRecharge.raw || "",
+              tries,
+              immediateSuccess: false,
+              message: String(startRecharge.json?.message || "Activation request sent"),
+              providerPayload: {
+                source: "quickplus.vip/public/grok",
+                activate: activateCard.json || null,
+                bind: bindUser.json || null,
+                recharge: startRecharge.json || null,
+              },
+            };
+          }
+
+          lastStatus = startRecharge.status || 502;
+          lastBody = startRecharge.raw || "start_recharge failed";
+          lastMessage = String(startRecharge.json?.message || "");
+        }
+      }
+    } catch (error) {
+      lastStatus = 0;
+      lastBody = error instanceof Error ? error.message : String(error || "unknown error");
+      lastMessage = "";
+    }
+
+    if (!shouldRetryOutstockFailure(lastStatus, `${lastBody}\n${lastMessage}`)) break;
+    if (attempt >= ACTIVATION_OUTSTOCK_MAX_RETRIES) break;
+    const pauseMs = Math.min(12_000, ACTIVATION_OUTSTOCK_RETRY_DELAY_MS + (attempt - 1) * 250);
+    await sleep(pauseMs);
+  }
+
+  return {
+    ok: false as const,
+    taskId: "",
+    status: lastStatus,
+    body: lastBody,
+    tries,
+    immediateSuccess: false,
+    message: lastMessage,
+    providerPayload: null,
+  };
+}
+
+async function quickplusApiCall(apiUrl: string, action: string, data: Record<string, string>) {
+  const timestamp = Date.now();
+  const response = await fetch(`${apiUrl}?action=${encodeURIComponent(action)}&_t=${timestamp}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json, text/plain, */*",
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
+    },
+    body: new URLSearchParams(data).toString(),
   });
+  const raw = await response.text().catch(() => "");
+  const json = tryParseJson(raw) as any;
+  return {
+    status: response.status,
+    raw,
+    json,
+    success: Boolean(json?.success),
+  };
 }
 
 function shouldRetryOutstockFailure(status: number, body: string) {

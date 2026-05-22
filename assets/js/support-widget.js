@@ -14,7 +14,7 @@
   var ACTIVATION_LAST_ORDER_ID_KEY = "gptishka_activation_order_id";
   var ACTIVATION_ORDER_TOKEN_PREFIX = "gptishka_activation_order_token:";
   var ACTIVATION_RESUME_URL_KEY = "gptishka_activation_resume_url";
-  var ACTIVATION_RESUME_SAVED_AT_KEY = "gptishka_activation_saved_at";
+  var SUPPORT_WIDGET_ACTIVATION_SAVED_AT_KEY = "gptishka_activation_saved_at";
   var ACTIVATION_RESUME_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 
   function trackWidgetEvent(eventName, payload) {
@@ -66,7 +66,7 @@
       }
       localStorage.removeItem(ACTIVATION_LAST_ORDER_ID_KEY);
       localStorage.removeItem(ACTIVATION_RESUME_URL_KEY);
-      localStorage.removeItem(ACTIVATION_RESUME_SAVED_AT_KEY);
+      localStorage.removeItem(SUPPORT_WIDGET_ACTIVATION_SAVED_AT_KEY);
     } catch (_) {
       // localStorage may be blocked in privacy mode.
     }
@@ -74,7 +74,7 @@
 
   function readStoredActivationResumeContext() {
     try {
-      var savedAt = Number(localStorage.getItem(ACTIVATION_RESUME_SAVED_AT_KEY) || "0");
+      var savedAt = Number(localStorage.getItem(SUPPORT_WIDGET_ACTIVATION_SAVED_AT_KEY) || "0");
       if (!Number.isFinite(savedAt) || savedAt <= 0 || Date.now() - savedAt > ACTIVATION_RESUME_TTL_MS) {
         clearStoredActivationResumeContext();
         return { orderId: "", token: "" };
@@ -178,13 +178,26 @@
     });
   }
 
+  function removeLegacyResumeShortcutInside(rootNode) {
+    if (!(rootNode instanceof Element)) return;
+    if (rootNode.classList && rootNode.classList.contains("gptishka-resume-activation")) {
+      rootNode.remove();
+      return;
+    }
+    var nested = rootNode.querySelectorAll(".gptishka-resume-activation");
+    if (!nested.length) return;
+    nested.forEach(function (node) {
+      node.remove();
+    });
+  }
+
   function escapeHtml(value) {
     return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   function createWidget() {
@@ -223,7 +236,7 @@
 
     root.innerHTML =
       '<div class="support-widget__mascot" aria-hidden="true">' +
-        '<img class="support-widget__mascot-image" src="/assets/img/assistant-cat-left.png" data-gif-src="/assets/img/assistant-cat-left.gif" alt="" width="112" height="168" loading="eager" decoding="async" fetchpriority="low" />' +
+        '<img class="support-widget__mascot-image" src="/assets/img/assistant-cat-left.png" data-gif-src="/assets/img/assistant-cat-left.gif" alt="" width="112" height="168" loading="lazy" decoding="async" fetchpriority="low" />' +
       '</div>' +
       '<div class="support-widget__resume-bubble" data-resume-bubble hidden>' +
         '<span class="support-widget__resume-text" data-resume-text></span>' +
@@ -267,6 +280,25 @@
         }
       } catch (_) {
         // Ignore media query runtime issues.
+      }
+      try {
+        if (
+          document.body &&
+          document.body.classList.contains("low-visual-budget")
+        ) {
+          return false;
+        }
+      } catch (_) {
+        // Ignore runtime/classlist issues.
+      }
+      try {
+        var memoryGb = Number(navigator.deviceMemory || 0);
+        var cpuCores = Number(navigator.hardwareConcurrency || 0);
+        if ((memoryGb > 0 && memoryGb <= 6) || (cpuCores > 0 && cpuCores <= 4)) {
+          return false;
+        }
+      } catch (_) {
+        // Ignore device capability API issues.
       }
       try {
         var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
@@ -350,14 +382,17 @@
 
     if (mascot) {
       mascot.addEventListener("mouseenter", function () {
-        loadAnimatedMascot();
+        requestAnimatedMascot(260);
         openPanel();
       });
       mascot.addEventListener("mouseleave", requestClosePanel);
     }
 
     if (panel) {
-      panel.addEventListener("mouseenter", openPanel);
+      panel.addEventListener("mouseenter", function () {
+        requestAnimatedMascot(120);
+        openPanel();
+      });
       panel.addEventListener("mouseleave", requestClosePanel);
       panel.addEventListener("focusin", openPanel);
       panel.addEventListener("focusout", function () {
@@ -425,7 +460,8 @@
       }
     }
 
-    requestAnimatedMascot(1400);
+    // Performance guard:
+    // do not auto-load heavy GIF on page load; load only on explicit user interaction.
 
     function applyFallbackLayout() {
       var isMobile = typeof window.matchMedia === "function"
@@ -493,8 +529,14 @@
     showWidget();
     clearLegacyResumeShortcut();
 
-    var cleanupObserver = new MutationObserver(function () {
-      clearLegacyResumeShortcut();
+    var cleanupObserver = new MutationObserver(function (records) {
+      for (var i = 0; i < records.length; i += 1) {
+        var record = records[i];
+        if (!record || !record.addedNodes || !record.addedNodes.length) continue;
+        for (var j = 0; j < record.addedNodes.length; j += 1) {
+          removeLegacyResumeShortcutInside(record.addedNodes[j]);
+        }
+      }
     });
     cleanupObserver.observe(document.body, { childList: true, subtree: true });
     window.setTimeout(function () {
