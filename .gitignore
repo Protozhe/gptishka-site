@@ -15,6 +15,7 @@ admin/assets/
 admin/index.html
 apps/admin-ui/tsconfig.tsbuildinfo
 apps/admin-backend/data/backups/
+.superpowers/
 apps/admin-ui/.env.production
 data/cdk-keys.json
 apps/admin-backend/data/cdk-keys.json
