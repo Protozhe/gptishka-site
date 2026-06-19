@@ -2,31 +2,14 @@ import axios from "axios";
 
 const API_URL = import.meta.env.VITE_ADMIN_API_URL || "/api/admin";
 
-function safeGet(key: string): string | null {
-  try {
-    return window.localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function safeSet(key: string, value: string | null): void {
-  try {
-    if (value === null) {
-      window.localStorage.removeItem(key);
-    } else {
-      window.localStorage.setItem(key, value);
-    }
-  } catch {
-    // Ignore storage errors (private mode / blocked storage).
-  }
-}
-
-let accessToken: string | null = safeGet("admin_access_token");
+let accessToken: string | null = null;
 
 export function setAccessToken(token: string | null) {
   accessToken = token;
-  safeSet("admin_access_token", token);
+}
+
+export function getAccessToken() {
+  return accessToken;
 }
 
 export const api = axios.create({

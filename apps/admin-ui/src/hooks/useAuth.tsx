@@ -27,12 +27,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const idleTimerRef = useRef<number | null>(null);
+  const restorePromiseRef = useRef<Promise<void> | null>(null);
+  const authVersionRef = useRef(0);
+
+  const restoreSession = useCallback(async () => {
+    if (restorePromiseRef.current) return restorePromiseRef.current;
+
+    const restoreVersion = authVersionRef.current;
+    const restorePromise = (async () => {
+      try {
+        const refreshRes = await api.post("/auth/refresh");
+        if (authVersionRef.current !== restoreVersion) return;
+        setAccessToken(refreshRes.data.accessToken);
+        const { data } = await api.get("/auth/me");
+        if (authVersionRef.current !== restoreVersion) return;
+        setUser(data);
+      } catch {
+        if (authVersionRef.current !== restoreVersion) return;
+        setAccessToken(null);
+        setUser(null);
+      } finally {
+        if (authVersionRef.current === restoreVersion) {
+          setLoading(false);
+        }
+        restorePromiseRef.current = null;
+      }
+    })();
+
+    restorePromiseRef.current = restorePromise;
+    return restorePromise;
+  }, []);
 
   const refreshMe = useCallback(async () => {
     try {
       const { data } = await api.get("/auth/me");
       setUser(data);
     } catch {
+      setAccessToken(null);
       setUser(null);
     } finally {
       setLoading(false);
@@ -40,21 +71,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    refreshMe();
-  }, [refreshMe]);
+    restoreSession();
+  }, [restoreSession]);
 
   const login = useCallback(async (email: string, password: string) => {
+    authVersionRef.current += 1;
     const { data } = await api.post("/auth/login", { email, password });
     setAccessToken(data.accessToken);
     setUser(data.user);
+    setLoading(false);
   }, []);
 
   const logout = useCallback(async () => {
+    authVersionRef.current += 1;
     try {
       await api.post("/auth/logout");
     } finally {
       setAccessToken(null);
       setUser(null);
+      setLoading(false);
     }
   }, []);
 
