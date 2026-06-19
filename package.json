@@ -18,7 +18,10 @@
     "seed:admin": "npm run seed --workspace @gptishka/admin-backend",
     "migrate:admin": "npm run prisma:migrate --workspace @gptishka/admin-backend",
     "deploy:admin:init": "npm run prisma:deploy --workspace @gptishka/admin-backend && npm run seed --workspace @gptishka/admin-backend",
-    "bootstrap:admin:user": "npm run bootstrap:user --workspace @gptishka/admin-backend"
+    "bootstrap:admin:user": "npm run bootstrap:user --workspace @gptishka/admin-backend",
+    "test:admin:api": "npm run test --workspace @gptishka/admin-backend",
+    "test:security": "npm run test:security --workspace @gptishka/admin-backend && npm run security:scan",
+    "security:scan": "node scripts/security-scan.mjs"
   },
   "dependencies": {
     "compression": "^1.8.1",
