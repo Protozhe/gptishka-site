@@ -5,6 +5,7 @@ const sqlite3 = require("sqlite3").verbose();
 const helmet = require("helmet");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
+const { applyContentSecurityPolicy } = require("./server/security-headers");
 require("dotenv").config();
 
 const PORT = Number(process.env.PORT || 4000);
@@ -694,6 +695,7 @@ function createApp() {
       crossOriginResourcePolicy: { policy: "cross-origin" },
     })
   );
+  app.use(applyContentSecurityPolicy);
   app.use(compression());
   app.use(
     "/api",
