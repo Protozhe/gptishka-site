@@ -31,6 +31,7 @@ const INCLUDE_LEGACY_PURCHASES =
 const ALLOW_LEGACY_PURCHASE_EVENTS =
   String(process.env.ALLOW_LEGACY_PURCHASE_EVENTS || "false").toLowerCase() === "true";
 const TICKER_EVENT_LIMIT = 12;
+const TICKER_EVENT_LOOKBACK_LIMIT = TICKER_EVENT_LIMIT * 8;
 const SEED_DEMO_STATS = String(
   process.env.SEED_DEMO_STATS || "false"
 ).toLowerCase() === "true";
@@ -274,6 +275,30 @@ function maskEmail(email) {
   const providerMaskLength = Math.max(5, Math.min(10, (domainParts[0] || "").length || 5));
   const providerMask = "*".repeat(providerMaskLength);
   return topLevel ? `${localMask}@${providerMask}.${topLevel}` : `${localMask}@${providerMask}`;
+}
+
+function isPublicTickerEmailDisplayable(email) {
+  const safe = String(email || "").trim().toLowerCase();
+  if (!safe) return false;
+  if (safe.endsWith("@telegram.local")) return false;
+  if (safe.endsWith(".local")) return false;
+  return true;
+}
+
+function normalizePublicTickerEntries(rows, limit = TICKER_EVENT_LIMIT) {
+  const safeLimit = Math.max(0, Number(limit) || 0);
+  if (!safeLimit || !Array.isArray(rows)) return [];
+
+  return rows
+    .filter(row => isPublicTickerEmailDisplayable(String(row?.email || "")))
+    .slice(0, safeLimit)
+    .map(row => {
+      const source = String(row?.source || "real").toLowerCase() === "system" ? "system" : "real";
+      return {
+        source,
+        email: maskEmail(String(row?.email || "")),
+      };
+    });
 }
 
 function isValidEmail(email) {
@@ -1402,7 +1427,8 @@ function createApp() {
               email: String(entry?.email || "").trim(),
               source: "real",
             }))
-            .filter(entry => entry.email)
+            .filter(entry => isPublicTickerEmailDisplayable(entry.email))
+            .slice(0, TICKER_EVENT_LIMIT)
         : [];
       return {
         sales: Number.isFinite(sales) && sales >= 0 ? sales : 0,
@@ -1497,7 +1523,7 @@ function createApp() {
             FROM purchases
           )
           ORDER BY datetime(created_at) DESC
-          LIMIT ${TICKER_EVENT_LIMIT}
+          LIMIT ${TICKER_EVENT_LOOKBACK_LIMIT}
           `
         );
       } else {
@@ -1508,18 +1534,12 @@ function createApp() {
           FROM activation_events
           ${sourceFilter}
           ORDER BY datetime(created_at) DESC
-          LIMIT ${TICKER_EVENT_LIMIT}
+          LIMIT ${TICKER_EVENT_LOOKBACK_LIMIT}
           `
         );
       }
 
-      const tickerEntries = buyerRows.map(row => {
-        const source = String(row?.source || "real").toLowerCase() === "system" ? "system" : "real";
-        return {
-          source,
-          email: maskEmail(String(row?.email || "")),
-        };
-      });
+      const tickerEntries = normalizePublicTickerEntries(buyerRows, TICKER_EVENT_LIMIT);
 
       return {
         sales: realSales + systemSales,
@@ -1736,7 +1756,7 @@ if (require.main === module) {
     });
 }
 
-module.exports = { startServer };
+module.exports = { normalizePublicTickerEntries, startServer };
 
 
 
