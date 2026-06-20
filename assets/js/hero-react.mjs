@@ -5,14 +5,14 @@ import { motion } from "https://esm.sh/framer-motion@11.11.17";
 const COPY = {
   ru: {
     top: "Подключение и продление",
-    titles: ["ChatGPT", "За несколько минут", "Автоматически"],
+    titles: ["ChatGPT Plus", "SuperGrok", "Claude PRO"],
     description:
       "Быстрая активация подписки без лишних действий. Удобно, безопасно и с поддержкой на каждом этапе.",
     cta: "Открыть тарифы",
   },
   en: {
     top: "Connect and renew",
-    titles: ["ChatGPT", "In a few minutes", "Automatically"],
+    titles: ["ChatGPT Plus", "SuperGrok", "Claude PRO"],
     description:
       "Fast subscription activation without extra steps. Convenient, secure, and supported at every stage.",
     cta: "View plans",
@@ -119,7 +119,7 @@ function mountHero(node) {
 
   const lang = getLang(node);
   const copy = buildCopy(node);
-  const defaultHref = lang === "en" ? "/en/index.html#pricing" : "/index.html#pricing";
+  const defaultHref = lang === "en" ? "/en/#pricing" : "/#pricing";
   const ctaHref = String(node.getAttribute("data-cta-href") || defaultHref).trim() || defaultHref;
   const rawInterval = Number(node.getAttribute("data-hero-interval") || 2000);
   const intervalMs = Number.isFinite(rawInterval) && rawInterval >= 1200 ? rawInterval : 2000;

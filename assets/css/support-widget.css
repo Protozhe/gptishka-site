@@ -293,6 +293,29 @@
   outline: none;
 }
 
+body.low-visual-budget .support-widget__resume-bubble,
+body.low-visual-budget .support-widget__panel {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 8px 18px rgba(31, 39, 49, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+body.balanced-visual-budget .support-widget__resume-bubble,
+body.balanced-visual-budget .support-widget__panel {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+body.low-visual-budget .support-widget__panel:hover,
+body.low-visual-budget .support-widget__resume-bubble:hover,
+body.low-visual-budget .support-widget__resume-bubble:focus-visible {
+  box-shadow: 0 10px 20px rgba(31, 39, 49, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+body.low-visual-budget .support-widget__mascot-image {
+  filter: drop-shadow(0 8px 16px rgba(19, 138, 120, 0.18));
+}
+
 .gptishka-resume-activation {
   display: none !important;
 }

@@ -3,6 +3,13 @@
 .hero [data-hero-react-root] {
   max-width: 940px;
   margin-inline: auto;
+  text-align: center;
+}
+
+.hero [data-hero-react-root] > p,
+.hero [data-hero-react-root] > h1 {
+  text-align: center;
+  margin-inline: auto;
 }
 
 .hero .hero-react__description {
@@ -10,6 +17,43 @@
   font-size: clamp(1rem, 1.8vw, 1.16rem);
   line-height: 1.58;
   white-space: pre-line;
+}
+
+.hero .hero-react__word {
+  opacity: 0;
+  transform: translateY(130%);
+  transition: opacity 0.42s ease, transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.hero .hero-react__word.is-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Adaptive visual budget for weaker devices. */
+
+body.low-visual-budget .hero,
+body.low-visual-budget .pricing,
+body.low-visual-budget .how,
+body.low-visual-budget .faq,
+body.low-visual-budget .about,
+body.low-visual-budget .contact,
+body.low-visual-budget .reviews {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.low-visual-budget .price-card,
+body.low-visual-budget .how-card,
+body.low-visual-budget .faq-item,
+body.low-visual-budget .faq-sticky,
+body.low-visual-budget .review,
+body.low-visual-budget .contact-card,
+body.low-visual-budget .block,
+body.low-visual-budget .card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .hero .hero-react__actions {

@@ -157,16 +157,6 @@ header.is-scrolled {
   gap: 2px;
 }
 
-.site-ticker__lead {
-  display: inline-flex;
-  align-items: center;
-  min-height: 18px;
-  font-size: 11px;
-  letter-spacing: 0.01em;
-  color: #4d637d;
-  white-space: nowrap;
-}
-
 .site-ticker__item {
   font-size: 13px;
   font-weight: 600;
@@ -177,18 +167,6 @@ header.is-scrolled {
   background: rgba(255, 255, 255, 0.58);
   border: 1px solid rgba(213, 229, 244, 0.92);
   box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
-}
-
-.site-ticker__item-prefix {
-  font-weight: 700;
-}
-
-.site-ticker__item--real .site-ticker__item-prefix {
-  color: #2a57db;
-}
-
-.site-ticker__item--system .site-ticker__item-prefix {
-  color: #8a5b1a;
 }
 
 .site-ticker__stats {
@@ -724,6 +702,22 @@ header.is-scrolled {
   font-weight: 700;
   color: #101010;
   white-space: nowrap;
+  opacity: 0;
+  transform: translate3d(0, 120%, 0);
+  transition: opacity 0.42s ease, transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+}
+
+.hero .hero-react__word.is-active {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+body.balanced-visual-budget .hero .hero-react__word,
+body.low-visual-budget .hero .hero-react__word {
+  transform: translate3d(0, 0, 0);
+  transition: opacity 0.34s ease;
 }
 
 .hero .hero-react__description {
@@ -803,57 +797,6 @@ a:hover {
 .header-cart-panel__promo button,
 .hero-promo-inline__btn {
   background: rgba(255, 255, 255, 0.9);
-}
-
-.cart-payment-methods {
-  grid-column: 1 / -1;
-  display: grid;
-  gap: 8px;
-}
-
-.cart-payment-methods__title {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--premium-muted);
-}
-
-.cart-payment-method {
-  position: relative;
-}
-
-.cart-payment-method input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.cart-payment-method__card {
-  display: grid;
-  gap: 2px;
-  min-height: 56px;
-  padding: 11px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(196, 210, 226, 0.86);
-  background: rgba(255, 255, 255, 0.8);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-  cursor: pointer;
-}
-
-.cart-payment-method__name {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--premium-text);
-}
-
-.cart-payment-method__desc {
-  font-size: 12px;
-  color: var(--premium-muted);
-}
-
-.cart-payment-method.is-active .cart-payment-method__card {
-  border-color: rgba(42, 91, 255, 0.52);
-  box-shadow: 0 8px 20px rgba(19, 138, 120, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.92);
-  transform: translateY(-1px);
 }
 
 body.is-payment-modal-open {
@@ -969,11 +912,6 @@ body.is-product-modal-open {
   line-height: 1.1;
 }
 
-.product-preview-modal__section {
-  display: grid;
-  gap: 10px;
-}
-
 .product-preview-modal__checkout {
   display: grid;
   gap: 8px;
@@ -1033,13 +971,6 @@ body.is-product-modal-open {
   font-size: 12px;
   line-height: 1.4;
   min-height: 16px;
-}
-
-.product-preview-modal__section-title {
-  margin: 0;
-  color: #0f172a;
-  font-size: 15px;
-  font-weight: 700;
 }
 
 .product-preview-modal__list {
@@ -1224,23 +1155,6 @@ body.is-product-modal-open {
 .payment-method-modal__option.is-active {
   border-color: rgba(42, 91, 255, 0.52);
   box-shadow: 0 10px 22px rgba(19, 138, 120, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.96);
-}
-
-.payment-method-modal__icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(205, 217, 232, 0.8);
-}
-
-.payment-method-modal__icon img {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  display: block;
 }
 
 .payment-method-modal__text {
@@ -1558,10 +1472,6 @@ footer {
     border-radius: 16px 16px 0 0;
   }
 
-  .site-ticker__lead {
-    display: none;
-  }
-
   .site-ticker__stats {
     gap: 6px;
     flex-wrap: wrap;
@@ -1595,11 +1505,6 @@ footer {
   .seo-article {
     margin-top: 14px;
     border-radius: 22px;
-  }
-
-  .cart-payment-method__card {
-    min-height: 52px;
-    padding: 10px 11px;
   }
 
   .payment-method-modal {
@@ -2411,7 +2316,6 @@ header,
   background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(133, 166, 255, 0.06), rgba(255, 255, 255, 0)) !important;
 }
 
-.site-ticker__lead,
 .site-ticker__stat-label {
   color: #9aa9c6 !important;
 }
@@ -2421,14 +2325,6 @@ header,
   border-color: rgba(255, 255, 255, 0.08) !important;
   background: rgba(255, 255, 255, 0.03) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
-}
-
-.site-ticker__item--real .site-ticker__item-prefix {
-  color: #8fb2ff !important;
-}
-
-.site-ticker__item--system .site-ticker__item-prefix {
-  color: #f8c888 !important;
 }
 
 .site-ticker__stats {
@@ -2582,7 +2478,6 @@ header,
 .product-preview-modal__title,
 .product-preview-modal__price,
 .product-preview-modal__price-current,
-.product-preview-modal__section-title,
 .payment-method-modal__title,
 .payment-method-modal__name {
   color: var(--saas-text) !important;
@@ -2619,27 +2514,6 @@ header,
 
 .payment-method-modal__option {
   color: #dce6ff !important;
-}
-
-.payment-method-modal__icon {
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  background: rgba(255, 255, 255, 0.03) !important;
-}
-
-.cart-payment-method__card {
-  border-color: rgba(255, 255, 255, 0.06) !important;
-  border-radius: 16px !important;
-  background: rgba(20, 22, 28, 0.6) !important;
-  box-shadow:
-    0 10px 40px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
-}
-
-.cart-payment-method.is-active .cart-payment-method__card {
-  border-color: rgba(88, 101, 242, 0.42) !important;
-  box-shadow:
-    0 10px 40px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
 }
 
 .seo-note {
@@ -2869,7 +2743,6 @@ header .logo-img {
   background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(124, 140, 255, 0.12), rgba(255, 255, 255, 0)) !important;
 }
 
-.site-ticker__lead,
 .site-ticker__item,
 .site-ticker__stat-label {
   color: var(--text-soft) !important;
@@ -3064,15 +2937,13 @@ header .logo-img {
   filter: none !important;
 }
 
-.payment-method-modal__option,
-.cart-payment-method__card {
+.payment-method-modal__option {
   border: 1px solid var(--border-soft) !important;
   background: var(--surface-2) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
 }
 
-.payment-method-modal__option:hover,
-.cart-payment-method.is-active .cart-payment-method__card {
+.payment-method-modal__option:hover {
   border-color: rgba(124, 140, 255, 0.34) !important;
   background: rgba(26, 31, 42, 0.94) !important;
 }
@@ -3330,10 +3201,6 @@ footer {
     rgba(255, 255, 255, 0) 62%
   );
   pointer-events: none;
-}
-
-.site-ticker__item-prefix {
-  color: rgba(224, 233, 255, 0.84) !important;
 }
 
 /* optional small floating control */
@@ -3657,8 +3524,7 @@ header .logo-img {
 .faq-sticky,
 .contact-card,
 .review,
-.cart-box,
-.cart-payment-method__card {
+.cart-box {
   background: var(--lp-surface-card) !important;
   border: 1px solid rgba(255, 255, 255, 0.72) !important;
   box-shadow: var(--lp-shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.74) !important;
@@ -3750,7 +3616,6 @@ header .logo-img {
   opacity: 0.44 !important;
 }
 
-.site-ticker__lead,
 .site-ticker__item,
 .site-ticker__stat-label {
   color: #5d6a83 !important;
@@ -4516,7 +4381,6 @@ body.home-gradient-page main.page::after {
 .faq-chat-btn,
 .redeem-btn-primary,
 .gptishka-resume-activation,
-.support-widget__fab,
 .support-widget__cta,
 #manualSupportBtn.redeem-btn-primary {
   border-color: rgba(140, 173, 255, 0.56) !important;
@@ -4531,7 +4395,6 @@ body.home-gradient-page main.page::after {
 .faq-chat-btn:hover,
 .redeem-btn-primary:hover,
 .gptishka-resume-activation:hover,
-.support-widget__fab:hover,
 .support-widget__cta:hover,
 #manualSupportBtn.redeem-btn-primary:hover {
   filter: saturate(108%) brightness(1.04) !important;
@@ -4702,7 +4565,6 @@ body.home-gradient-page::after {
   .faq-chat-btn,
   .redeem-btn,
   .redeem-btn-primary,
-  .support-widget__fab,
   .support-widget__cta,
   .btn-primary,
   .btn-secondary
@@ -4719,7 +4581,6 @@ body.home-gradient-page::after {
   .faq-chat-btn,
   .redeem-btn,
   .redeem-btn-primary,
-  .support-widget__fab,
   .support-widget__cta,
   .btn-primary,
   .btn-secondary
@@ -4758,7 +4619,6 @@ body.home-gradient-page::after {
   .faq-chat-btn,
   .redeem-btn,
   .redeem-btn-primary,
-  .support-widget__fab,
   .support-widget__cta,
   .btn-primary,
   .btn-secondary
@@ -4770,7 +4630,6 @@ body.home-gradient-page::after {
   .faq-chat-btn,
   .redeem-btn,
   .redeem-btn-primary,
-  .support-widget__fab,
   .support-widget__cta,
   .btn-primary,
   .btn-secondary
@@ -4836,7 +4695,6 @@ header {
 .faq-chat-btn,
 .redeem-btn-primary,
 .gptishka-resume-activation,
-.support-widget__fab,
 .support-widget__cta,
 #manualSupportBtn.redeem-btn-primary {
   border-color: rgba(170, 196, 255, 0.58) !important;
@@ -4870,7 +4728,6 @@ header {
 .faq-chat-btn:hover,
 .redeem-btn-primary:hover,
 .gptishka-resume-activation:hover,
-.support-widget__fab:hover,
 .support-widget__cta:hover,
 #manualSupportBtn.redeem-btn-primary:hover {
   filter: saturate(106%) brightness(1.03) !important;
@@ -5011,6 +4868,89 @@ body.home-gradient-page .home-gradient-bg__pointer {
   opacity: 0.52 !important;
 }
 
+/* Non-home pages: keep ambient depth but disable endless body/page haze animation. */
+body:not(.home-gradient-page):not(.home-gradient-page-lite)::before,
+body:not(.home-gradient-page):not(.home-gradient-page-lite)::after,
+body:not(.home-gradient-page):not(.home-gradient-page-lite) main.page::before,
+body:not(.home-gradient-page):not(.home-gradient-page-lite) main.page::after {
+  animation: none !important;
+}
+
+/* Balanced visual budget: keep premium look but cut the heaviest compositing paths. */
+body.balanced-visual-budget::before,
+body.balanced-visual-budget::after,
+body.balanced-visual-budget main.page::before,
+body.balanced-visual-budget main.page::after {
+  animation: none !important;
+}
+
+body.balanced-visual-budget .home-gradient-bg__layer--4,
+body.balanced-visual-budget .home-gradient-bg__layer--5 {
+  display: none !important;
+}
+
+body.balanced-visual-budget .home-gradient-bg__layer {
+  filter: blur(64px) saturate(110%) !important;
+  opacity: 0.66 !important;
+}
+
+body.balanced-visual-budget .home-gradient-bg__pointer {
+  display: none !important;
+}
+
+body.balanced-visual-budget .lp-pulse-beam-target .lp-pulse-beams,
+body.balanced-visual-budget :where(
+  a.btn,
+  button.btn,
+  .buy-btn,
+  .faq-chat-btn,
+  .redeem-btn,
+  .redeem-btn-primary,
+  .support-widget__cta,
+  .btn-primary,
+  .btn-secondary
+):not(.lp-pulse-beam-target)::after {
+  display: none !important;
+  animation: none !important;
+  opacity: 0 !important;
+}
+
+body.balanced-visual-budget header,
+body.balanced-visual-budget .site-ticker,
+body.balanced-visual-budget .site-ticker__stats {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.balanced-visual-budget .site-ticker::before {
+  animation: none !important;
+  opacity: 0.46 !important;
+  transform: none !important;
+}
+
+/* Low visual budget: hard-disable ambient background layers and expensive blur filters. */
+body.low-visual-budget::before,
+body.low-visual-budget::after,
+body.low-visual-budget main.page::before,
+body.low-visual-budget main.page::after {
+  display: none !important;
+  animation: none !important;
+  filter: none !important;
+}
+
+body.low-visual-budget .home-gradient-bg,
+body.low-visual-budget .home-gradient-bg__layer,
+body.low-visual-budget .home-gradient-bg__pointer {
+  display: none !important;
+  animation: none !important;
+  filter: none !important;
+}
+
+body.low-visual-budget header {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 @media (max-width: 900px) {
   #siteTicker {
     display: grid !important;
@@ -5055,7 +4995,6 @@ body.home-gradient-page .home-gradient-bg__pointer {
   .faq-chat-btn,
   .redeem-btn-primary,
   .gptishka-resume-activation,
-  .support-widget__fab,
   .support-widget__cta,
   #manualSupportBtn.redeem-btn-primary {
     backdrop-filter: none !important;

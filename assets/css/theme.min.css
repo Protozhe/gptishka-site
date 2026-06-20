@@ -7,3 +7,14 @@
 
 
 /* category layout override */ .pricing-grid.pricing-grid--categorized{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;align-items:start}.pricing-grid.pricing-grid--categorized .pricing-category{height:100%}.pricing-grid--category{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}.pricing-grid--category.is-single{max-width:none}@media (max-width:1100px){.pricing-grid.pricing-grid--categorized{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:760px){.pricing-grid.pricing-grid--categorized{grid-template-columns:1fr}}
+/* hotfix-2026-05-16: hero overlap + ticker clipping + category row */
+.hero .hero-react__viewport { overflow: hidden !important; }
+.hero .hero-react__word { opacity: 0 !important; pointer-events: none; }
+.hero .hero-react__word.is-active { opacity: 1 !important; }
+.site-ticker__marquee { min-width: 0 !important; overflow: hidden !important; }
+.site-ticker__track { display: inline-flex !important; min-width: max-content !important; }
+.site-ticker__loop { display: inline-flex !important; align-items: center !important; }
+.pricing-grid.pricing-grid--categorized { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important; }
+@media (min-width: 1101px) {
+  .pricing-grid.pricing-grid--categorized { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+}

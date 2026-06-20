@@ -2,6 +2,16 @@
    Goal: deterministic hero animation, visible ticker, stable pricing rows. */
 
 /* Keep ticker visible even if older rules hide it. */
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 #siteTicker.site-ticker {
   display: grid !important;
   visibility: visible !important;
@@ -17,6 +27,9 @@
   display: inline-flex !important;
   align-items: center !important;
   min-width: 200% !important;
+  animation: ticker-scroll 130s linear infinite !important;
+  animation-play-state: running;
+  will-change: transform !important;
 }
 
 .site-ticker__loop {
@@ -24,6 +37,26 @@
   align-items: center !important;
   flex: 0 0 auto !important;
   padding-right: 38px !important;
+}
+
+/* Safety net: if transition/reveal classes get stuck, keep main content visible. */
+html.is-entering main.page,
+html.is-entering.is-entering-active main.page,
+html.is-leaving main.page {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+main.page > .soft-reveal-item,
+main.page > .soft-reveal-item.is-soft-visible {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+  visibility: visible !important;
+  transition: none !important;
 }
 
 /* Ensure only one active hero word is visible with smooth transition. */
@@ -68,6 +101,20 @@ body.balanced-visual-budget .hero .hero-react__word {
   align-items: stretch !important;
 }
 
+#pricingGrid.pricing-grid.pricing-grid--categorized {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 18px !important;
+  align-items: stretch !important;
+}
+
+#pricingGrid.pricing-grid.pricing-grid--categorized > .product-showcase-section {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+
 .pricing-category {
   width: 100% !important;
 }
@@ -83,9 +130,2608 @@ body.balanced-visual-budget .hero .hero-react__word {
   max-width: none !important;
 }
 
+.pricing-category--ai {
+  display: grid !important;
+  gap: 18px !important;
+}
+
+.pricing-category__header--ai {
+  margin-bottom: 0 !important;
+}
+
+.pricing-category__subtitle {
+  margin: 6px 0 0;
+  max-width: 720px;
+  color: rgba(29, 39, 58, 0.68);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.ai-service-picker {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ai-service-card {
+  appearance: none;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: center;
+  min-height: 134px;
+  padding: 18px;
+  border: 1px solid rgba(124, 145, 184, 0.22);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 12% 16%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 42%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(240, 246, 255, 0.72));
+  box-shadow: 0 16px 36px rgba(28, 48, 92, 0.08);
+  color: #172033;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  isolation: isolate;
+}
+
+.ai-service-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -22px -34px auto;
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  background: rgba(99, 145, 255, 0.13);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ai-service-card:hover,
+.ai-service-card.is-active {
+  transform: translateY(-2px);
+  border-color: rgba(91, 126, 255, 0.48);
+  box-shadow: 0 22px 48px rgba(28, 48, 92, 0.14);
+}
+
+.ai-service-card.is-active {
+  background:
+    radial-gradient(circle at 12% 16%, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0) 42%),
+    linear-gradient(135deg, rgba(238, 244, 255, 0.98), rgba(229, 252, 255, 0.82));
+}
+
+.ai-service-card:focus-visible {
+  outline: 2px solid rgba(42, 91, 255, 0.58);
+  outline-offset: 3px;
+}
+
+.ai-service-card__icon,
+.ai-service-card__body,
+.ai-service-card__cta {
+  position: relative;
+  z-index: 1;
+}
+
+.ai-service-card__icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 14px 24px rgba(24, 41, 82, 0.18);
+}
+
+.ai-service-card__icon--chatgpt {
+  background: linear-gradient(135deg, #0e8f6f, #2ed3a7);
+}
+
+.ai-service-card__icon--claude {
+  background: linear-gradient(135deg, #d9773f, #ffbd7b);
+}
+
+.ai-service-card__icon--grok {
+  background: linear-gradient(135deg, #161a25, #69738a);
+}
+
+.ai-service-card__body {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.ai-service-card__name {
+  font-size: clamp(1.12rem, 2vw, 1.36rem);
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.ai-service-card__desc {
+  color: rgba(29, 39, 58, 0.66);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.ai-service-card__meta {
+  color: rgba(18, 91, 121, 0.88);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.ai-service-card__cta {
+  grid-column: 1 / -1;
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(76, 124, 255, 0.1);
+  color: #2854b9;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.ai-service-panels {
+  display: grid;
+  gap: 14px;
+}
+
+.ai-service-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.ai-service-panel[hidden] {
+  display: none !important;
+}
+
+.ai-service-panel__header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.ai-service-panel__eyebrow {
+  color: rgba(40, 84, 185, 0.72);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ai-service-panel__title {
+  margin: 0;
+  color: #172033;
+  font-size: clamp(1.05rem, 1.8vw, 1.22rem);
+  font-weight: 900;
+}
+
+.ai-service-plan-grid {
+  animation: aiServicePanelIn 0.22s ease both;
+}
+
+.ai-service-plan-grid .price-card .price-card__title {
+  min-height: 2.55em !important;
+}
+
+.ai-service-plan-grid .price-card .price-card__title-main,
+.ai-service-plan-grid .price-card.price-card--subscriptions .price-card__title-main {
+  font-size: clamp(1.16rem, 1.55vw, 1.28rem) !important;
+  text-wrap: balance;
+}
+
+.product-showcase-section {
+  display: grid;
+  gap: 16px;
+}
+
+.product-showcase-section + .product-showcase-section {
+  margin-top: 10px;
+}
+
+.product-showcase-section__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.product-showcase-section__lead {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.product-showcase-section__title {
+  margin: 0;
+  color: #172033;
+  font-size: clamp(1.32rem, 2.2vw, 1.76rem);
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.product-showcase-section__description {
+  margin: 0;
+  max-width: 680px;
+  color: rgba(29, 39, 58, 0.66);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.product-showcase-section__all {
+  appearance: none;
+  min-height: 40px;
+  border: 1px solid rgba(42, 91, 255, 0.2);
+  border-radius: 999px;
+  padding: 0 16px;
+  background: rgba(255, 255, 255, 0.84);
+  color: #2854b9;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 8px 18px rgba(17, 35, 70, 0.08);
+}
+
+.product-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.product-showcase-section.is-collapsed .product-showcase-card:nth-child(n + 11) {
+  display: none;
+}
+
+.product-showcase-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 28px;
+  background: #111;
+  color: #fff;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.product-showcase-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 24px 55px rgba(15, 23, 42, 0.34);
+}
+
+.product-showcase-card__imageWrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1 / 1;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--showcase-card-bg, #181818);
+}
+
+.product-showcase-card__image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.product-showcase-card__image--hover {
+  opacity: 0;
+}
+
+.product-showcase-card:hover .product-showcase-card__imageWrap.has-hover .product-showcase-card__image--primary,
+.product-showcase-card:focus-within .product-showcase-card__imageWrap.has-hover .product-showcase-card__image--primary {
+  opacity: 0;
+  transform: scale(1.012);
+}
+
+.product-showcase-card:hover .product-showcase-card__imageWrap.has-hover .product-showcase-card__image--hover,
+.product-showcase-card:focus-within .product-showcase-card__imageWrap.has-hover .product-showcase-card__image--hover {
+  opacity: 1;
+  transform: scale(1.012);
+}
+
+.product-showcase-card__image-placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.22), transparent 38%),
+    var(--showcase-card-bg, #181818);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 950;
+  letter-spacing: 0.04em;
+}
+
+.product-showcase-card__badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #111827;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.product-showcase-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 9px;
+  padding: 14px 4px 2px;
+}
+
+.product-showcase-card__title {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.02rem, 1.25vw, 1.16rem);
+  font-weight: 900;
+  line-height: 1.16;
+  text-wrap: balance;
+}
+
+.product-showcase-card__description {
+  display: -webkit-box;
+  min-height: 2.75em;
+  margin: 0;
+  overflow: hidden;
+  color: rgba(226, 232, 240, 0.78);
+  font-size: 13px;
+  line-height: 1.38;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.product-showcase-card .product-showcase-card__description.sub {
+  display: -webkit-box !important;
+  min-height: 2.75em !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  color: rgba(226, 232, 240, 0.78) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1.38 !important;
+  text-align: left !important;
+  white-space: normal !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+}
+
+.product-showcase-card__price {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 950;
+  line-height: 1.15;
+}
+
+.product-showcase-card .product-showcase-card__price.price {
+  margin: 0 !important;
+  color: #fff !important;
+  font-size: 18px !important;
+  font-weight: 950 !important;
+  line-height: 1.15 !important;
+  text-align: left !important;
+}
+
+.product-showcase-card__button {
+  width: 100%;
+  min-height: 52px;
+  margin-top: auto;
+  border: 0;
+  border-radius: 14px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(22, 163, 74, 0.24);
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-showcase-card .product-showcase-card__button.pay-now-btn {
+  width: 100% !important;
+  min-height: 52px !important;
+  margin-top: auto !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  background: #16a34a !important;
+  color: #fff !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  line-height: 1.1 !important;
+  text-align: center !important;
+  box-shadow: 0 12px 24px rgba(22, 163, 74, 0.24) !important;
+}
+
+.product-showcase-card__button:hover {
+  transform: translateY(-1px);
+  background: #15803d;
+  box-shadow: 0 16px 30px rgba(22, 163, 74, 0.32);
+}
+
+.ai-directory-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  gap: 18px;
+  width: 100%;
+  max-width: none;
+}
+
+#pricingGrid .ai-directory-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(260px, 1fr)) !important;
+  gap: 18px !important;
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.ai-directory-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  padding: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0) 34%),
+    linear-gradient(180deg, #ffffff, #f4f7fb);
+  box-shadow: 0 20px 46px rgba(15, 23, 42, 0.12);
+  overflow: hidden;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+#pricingGrid .ai-directory-card {
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+.ai-directory-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(42, 91, 255, 0.18);
+  box-shadow: 0 28px 60px rgba(15, 23, 42, 0.18);
+}
+
+.ai-directory-card__media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1 / 1;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--ai-directory-bg, #111827);
+  text-decoration: none;
+}
+
+.ai-directory-card__image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.16s ease;
+  will-change: opacity;
+}
+
+.ai-directory-card__image--hover {
+  opacity: 0;
+}
+
+.ai-directory-card:hover .ai-directory-card__media.has-hover .ai-directory-card__image--primary,
+.ai-directory-card:focus-within .ai-directory-card__media.has-hover .ai-directory-card__image--primary {
+  opacity: 0;
+  transform: none;
+}
+
+.ai-directory-card:hover .ai-directory-card__media.has-hover .ai-directory-card__image--hover,
+.ai-directory-card:focus-within .ai-directory-card__media.has-hover .ai-directory-card__image--hover {
+  opacity: 1;
+  transform: none;
+}
+
+.ai-directory-card--chatgpt,
+.ai-directory-card--claude,
+.ai-directory-card--grok,
+.ai-directory-card--vpn {
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ai-directory-card--chatgpt:hover,
+.ai-directory-card--claude:hover,
+.ai-directory-card--grok:hover,
+.ai-directory-card--vpn:hover {
+  transform: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.ai-directory-card--chatgpt .ai-directory-card__media,
+.ai-directory-card--claude .ai-directory-card__media,
+.ai-directory-card--grok .ai-directory-card__media,
+.ai-directory-card--vpn .ai-directory-card__media {
+  border-radius: 26px;
+  background: transparent;
+}
+
+.ai-directory-card--chatgpt .ai-directory-card__body,
+.ai-directory-card--claude .ai-directory-card__body,
+.ai-directory-card--grok .ai-directory-card__body,
+.ai-directory-card--vpn .ai-directory-card__body {
+  padding: 16px 4px 4px;
+}
+
+.ai-directory-card--chatgpt .ai-directory-card__top,
+.ai-directory-card--claude .ai-directory-card__top,
+.ai-directory-card--grok .ai-directory-card__top,
+.ai-directory-card--vpn .ai-directory-card__top {
+  display: none;
+}
+
+.ai-directory-card--chatgpt .ai-directory-card__bottom,
+.ai-directory-card--claude .ai-directory-card__bottom,
+.ai-directory-card--grok .ai-directory-card__bottom,
+.ai-directory-card--vpn .ai-directory-card__bottom {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.ai-directory-card--chatgpt .ai-directory-card__price,
+.ai-directory-card--claude .ai-directory-card__price,
+.ai-directory-card--grok .ai-directory-card__price,
+.ai-directory-card--vpn .ai-directory-card__price {
+  display: block;
+  color: #111827;
+  font-size: 21px;
+  font-weight: 950;
+  line-height: 1.05;
+  text-align: left;
+}
+
+.ai-directory-card--chatgpt .ai-directory-card__button,
+.ai-directory-card--claude .ai-directory-card__button,
+.ai-directory-card--grok .ai-directory-card__button,
+.ai-directory-card--vpn .ai-directory-card__button {
+  width: 100%;
+  min-height: 54px;
+}
+
+.ai-directory-card__image-placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.28), transparent 38%),
+    var(--ai-directory-bg, #111827);
+  color: #fff;
+  font-size: clamp(2.2rem, 4.4vw, 3.6rem);
+  font-weight: 950;
+  letter-spacing: 0.04em;
+}
+
+.ai-directory-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 4px 4px;
+}
+
+.ai-directory-card__top,
+.ai-directory-card__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ai-directory-card__icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.03em;
+}
+
+.ai-directory-card__count {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(42, 91, 255, 0.08);
+  color: #2854b9;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.ai-directory-card__name {
+  margin: 0;
+  color: #111827;
+  font-size: clamp(1.28rem, 2.2vw, 1.72rem);
+  font-weight: 950;
+  line-height: 1.05;
+}
+
+.ai-directory-card__desc,
+.ai-directory-card__plans {
+  margin: 0;
+  color: rgba(29, 39, 58, 0.68);
+  font-size: 14px;
+  line-height: 1.42;
+}
+
+.ai-directory-card__plans {
+  color: rgba(17, 24, 39, 0.82);
+  font-weight: 850;
+}
+
+.ai-directory-card__bottom {
+  margin-top: auto;
+}
+
+.ai-directory-card__price {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.ai-directory-card__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(170, 196, 255, 0.58);
+  background: linear-gradient(
+    132deg,
+    var(--lp-btn-a, #5865f2) 0%,
+    var(--lp-btn-c, #2a5bff) 44%,
+    var(--lp-btn-b, #4facfe) 100%
+  );
+  color: #fff;
+  font-size: 14px;
+  font-weight: 950;
+  text-decoration: none;
+  box-shadow: var(--lp-btn-shadow, 0 16px 34px rgba(42, 91, 255, 0.24)), inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  backdrop-filter: blur(10px) saturate(128%);
+  -webkit-backdrop-filter: blur(10px) saturate(128%);
+  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ai-directory-card__button:hover {
+  transform: translateY(-1px);
+  color: #fff;
+  filter: saturate(106%) brightness(1.03);
+  box-shadow: var(--lp-btn-shadow-hover, 0 20px 42px rgba(42, 91, 255, 0.3)), inset 0 1px 0 rgba(255, 255, 255, 0.42);
+}
+
+.product-showcase-grid--mixed {
+  margin-top: 18px;
+}
+
+.service-page {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: clamp(28px, 4vw, 54px) 0 72px;
+}
+
+.service-page--constructor {
+  font-family: "Montserrat", Arial, sans-serif;
+}
+
+.service-hero {
+  position: relative;
+  display: grid;
+  gap: 22px;
+  margin-bottom: 28px;
+  padding: clamp(26px, 5vw, 52px);
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(45, 212, 191, 0.32), transparent 38%),
+    radial-gradient(circle at 88% 8%, rgba(34, 197, 94, 0.28), transparent 34%),
+    linear-gradient(135deg, #08111f 0%, #0f2f2b 54%, #102014 100%);
+  color: #fff;
+  overflow: hidden;
+  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.24);
+}
+
+.service-hero.service-hero--chatgpt {
+  border-radius: 34px;
+  background: #050505;
+  isolation: isolate;
+}
+
+.service-hero > *:not(.service-hero__video):not(.service-hero__green-overlay):not(.service-hero__orange-overlay):not(.service-hero__black-overlay):not(.service-hero__blue-overlay):not(.service-hero__dark-overlay) {
+  position: relative;
+  z-index: 3;
+}
+
+.service-hero__video {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  z-index: 0;
+}
+
+.service-hero__green-overlay,
+.service-hero__orange-overlay,
+.service-hero__black-overlay,
+.service-hero__blue-overlay,
+.service-hero__dark-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.service-hero__green-overlay {
+  background:
+    radial-gradient(circle at 28% 18%, rgba(0, 255, 120, 0.34), transparent 34%),
+    linear-gradient(135deg, rgba(0, 255, 120, 0.36), rgba(0, 130, 80, 0.24), rgba(0, 0, 0, 0.28));
+  mix-blend-mode: screen;
+  z-index: 1;
+}
+
+.service-hero__orange-overlay {
+  background:
+    radial-gradient(circle at 24% 16%, rgba(255, 177, 90, 0.38), transparent 34%),
+    radial-gradient(circle at 78% 22%, rgba(249, 115, 22, 0.26), transparent 38%),
+    linear-gradient(135deg, rgba(255, 177, 90, 0.32), rgba(249, 115, 22, 0.28), rgba(52, 18, 5, 0.18));
+  mix-blend-mode: screen;
+  z-index: 1;
+}
+
+.service-hero__black-overlay {
+  background:
+    radial-gradient(circle at 20% 14%, rgba(248, 250, 252, 0.16), transparent 32%),
+    radial-gradient(circle at 82% 22%, rgba(148, 163, 184, 0.12), transparent 34%),
+    linear-gradient(135deg, rgba(5, 7, 10, 0.48), rgba(17, 24, 39, 0.52), rgba(0, 0, 0, 0.64));
+  mix-blend-mode: multiply;
+  z-index: 1;
+}
+
+.service-hero__blue-overlay {
+  background:
+    radial-gradient(circle at 22% 14%, rgba(59, 130, 246, 0.38), transparent 34%),
+    radial-gradient(circle at 82% 22%, rgba(14, 165, 233, 0.22), transparent 38%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.46), rgba(29, 78, 216, 0.28), rgba(2, 6, 23, 0.44));
+  mix-blend-mode: screen;
+  z-index: 1;
+}
+
+.service-hero__dark-overlay {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.58)),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.38));
+  z-index: 2;
+}
+
+.service-hero--claude {
+  background:
+    radial-gradient(circle at 12% 12%, rgba(251, 146, 60, 0.34), transparent 38%),
+    linear-gradient(135deg, #1c1917 0%, #6f3a15 58%, #27150d 100%);
+}
+
+.service-hero--supergrok {
+  background:
+    radial-gradient(circle at 16% 12%, rgba(248, 250, 252, 0.12), transparent 38%),
+    radial-gradient(circle at 86% 18%, rgba(148, 163, 184, 0.1), transparent 34%),
+    linear-gradient(135deg, #05070a 0%, #111827 58%, #000000 100%);
+}
+
+.service-hero--vpn {
+  background:
+    radial-gradient(circle at 16% 12%, rgba(59, 130, 246, 0.24), transparent 38%),
+    radial-gradient(circle at 86% 18%, rgba(14, 165, 233, 0.14), transparent 34%),
+    linear-gradient(135deg, #020617 0%, #061a3f 58%, #030712 100%);
+}
+
+.service-back-link {
+  display: inline-flex;
+  width: max-content;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 13px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.service-hero__content {
+  display: grid;
+  gap: 14px;
+  max-width: 760px;
+}
+
+.service-hero__eyebrow {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.service-hero h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(2.4rem, 7vw, 5.3rem);
+  font-weight: 950;
+  letter-spacing: -0.055em;
+  line-height: 0.9;
+}
+
+.service-hero p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: clamp(1rem, 1.8vw, 1.18rem);
+  line-height: 1.62;
+}
+
+.service-hero.service-hero--chatgpt {
+  font-family: "Manrope", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.service-hero.service-hero--chatgpt .service-hero__content {
+  gap: 0;
+  max-width: 760px;
+}
+
+.service-hero.service-hero--chatgpt .service-hero__eyebrow {
+  display: block;
+  margin: 0 0 14px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.service-hero.service-hero--chatgpt h1 {
+  margin: 0 0 22px;
+  color: #fff;
+  font-size: clamp(48px, 7vw, 96px);
+  line-height: 0.92;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+}
+
+.service-hero.service-hero--chatgpt p {
+  max-width: 760px;
+  font-size: clamp(17px, 1.6vw, 22px);
+  line-height: 1.45;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .service-hero.service-hero--chatgpt h1 {
+    font-size: clamp(44px, 15vw, 64px);
+    letter-spacing: -0.04em;
+  }
+
+  .service-hero.service-hero--chatgpt p {
+    font-size: 16px;
+    line-height: 1.5;
+    max-width: 100%;
+  }
+
+  .service-hero.service-hero--chatgpt .service-hero__eyebrow {
+    font-size: 12px;
+  }
+}
+
+.service-hero__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.service-hero__stat {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.service-plans-section,
+.service-info-section {
+  display: grid;
+  gap: 18px;
+  margin-top: 22px;
+  padding: clamp(18px, 3vw, 28px);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.service-page--constructor .service-plans-section {
+  margin-top: 22px;
+  padding: clamp(18px, 3vw, 28px);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.service-section-title {
+  display: grid;
+  gap: 8px;
+}
+
+.service-section-title h2 {
+  margin: 0;
+  color: #111827;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 950;
+  line-height: 1.05;
+}
+
+.service-section-title p {
+  margin: 0;
+  max-width: 760px;
+  color: rgba(29, 39, 58, 0.68);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.service-filter-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.service-filter-group {
+  display: grid;
+  gap: 9px;
+}
+
+.service-filter-group__label {
+  color: rgba(17, 24, 39, 0.72);
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.service-filter-group__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.service-filter-chip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(124, 145, 184, 0.28);
+  border-radius: 999px;
+  background: #fff;
+  color: #172033;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+}
+
+.service-filter-chip small {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(42, 91, 255, 0.08);
+  color: #2854b9;
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.service-filter-chip:hover,
+.service-filter-chip.is-active {
+  transform: translateY(-1px);
+  border-color: rgba(22, 163, 74, 0.42);
+  background: rgba(240, 253, 244, 0.96);
+  box-shadow: 0 12px 24px rgba(22, 163, 74, 0.12);
+}
+
+.service-filter-chip.is-active small {
+  background: #16a34a;
+  color: #fff;
+}
+
+.pricing-grid--category.service-plans-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  align-items: stretch;
+}
+
+.service-constructor-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 42%) minmax(0, 58%);
+  gap: 0;
+  width: 100%;
+  align-items: stretch;
+}
+
+.service-constructor-card,
+.service-faq-section {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+.service-constructor-card,
+.service-constructor-description {
+  padding: clamp(18px, 3vw, 30px) clamp(18px, 3.4vw, 40px);
+}
+
+.service-page--constructor .service-constructor-card {
+  display: grid;
+  align-content: start;
+  padding: 18px 0 18px 34px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.service-product-gallery {
+  display: grid;
+  place-items: start center;
+  min-height: 460px;
+  padding: 18px 34px 18px 0;
+  background: transparent;
+}
+
+.service-product-gallery img {
+  display: block;
+  width: min(100%, 470px);
+  aspect-ratio: 1 / 1;
+  border-radius: 34px;
+  object-fit: cover;
+  box-shadow: none;
+}
+
+.service-constructor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.service-constructor-brand {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.service-constructor-brand span,
+.service-checkout-card__label {
+  display: block;
+  color: rgba(29, 39, 58, 0.58);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.service-constructor-brand h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.service-constructor-price {
+  display: block;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  text-align: right;
+}
+
+.service-constructor-price strong {
+  color: #111827;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.service-filter-stack--constructor {
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.service-filter-stack--constructor .service-filter-group {
+  gap: 6px;
+  margin: 0;
+}
+
+.service-filter-stack--constructor .service-filter-group__label {
+  color: #111827;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.service-filter-stack--constructor .service-filter-chip {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(124, 145, 184, 0.28);
+  border-radius: 10px;
+  background: #ffffff;
+  color: #172033;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.service-filter-stack--constructor .service-filter-chip small {
+  display: none;
+}
+
+.service-filter-stack--constructor .service-filter-chip:hover,
+.service-filter-stack--constructor .service-filter-chip.is-active {
+  border-color: #1bacea;
+  background: #1bacea;
+  color: #fff;
+  box-shadow: none;
+}
+
+.service-filter-stack--constructor .service-filter-chip.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+  transform: none;
+  background: #ffffff;
+  color: rgba(29, 39, 58, 0.62);
+  border-color: rgba(124, 145, 184, 0.22);
+  box-shadow: none;
+}
+
+.service-selected-plan {
+  margin-top: 20px;
+}
+
+.service-checkout-card {
+  display: grid;
+  gap: 20px;
+  width: 100%;
+  max-width: none;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.service-checkout-card:hover,
+.service-checkout-card:focus-within {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.service-selected-plan,
+.service-selected-plan:hover,
+.service-selected-plan:focus-within {
+  transform: none !important;
+}
+
+.service-checkout-card__summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.service-checkout-card__summary > div {
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 10px;
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.service-checkout-card__summary strong {
+  display: block;
+  margin-top: 4px;
+  color: #111827;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.service-checkout-card .buy-btn {
+  min-height: 45px;
+  margin-top: 0;
+  border-radius: 10px;
+  background: #1bacea !important;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: none !important;
+}
+
+.service-checkout-card .buy-btn:hover {
+  background: #1993c8 !important;
+}
+
+.chatgpt-order-card {
+  gap: 14px !important;
+  color: #172033;
+}
+
+.chatgpt-go-order-modal__dialog {
+  width: min(920px, calc(100vw - 24px));
+  max-height: min(88vh, 980px);
+  overflow: hidden;
+  padding: 0 !important;
+  border-radius: 28px !important;
+}
+
+.chatgpt-go-order-modal__content {
+  display: grid;
+  gap: 16px;
+  max-height: min(88vh, 980px);
+  overflow-y: auto;
+  padding: clamp(18px, 3vw, 28px);
+  overscroll-behavior: contain;
+}
+
+.chatgpt-go-order-modal__head {
+  display: grid;
+  gap: 6px;
+  padding-right: 42px;
+}
+
+.chatgpt-go-order-modal__head span {
+  color: #117568;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.chatgpt-go-order-modal__head h3 {
+  margin: 0;
+  color: #111827;
+  font-family: "Space Grotesk", "Manrope", sans-serif;
+  font-size: clamp(1.55rem, 3vw, 2.15rem);
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.chatgpt-go-order-modal__head p {
+  margin: 0;
+  max-width: 680px;
+  color: rgba(29, 39, 58, 0.66);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-card {
+  width: 100%;
+  max-width: none;
+}
+
+.chatgpt-order-section {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.chatgpt-order-section--summary {
+  background:
+    linear-gradient(135deg, rgba(19, 138, 120, 0.1), rgba(231, 125, 79, 0.08)),
+    rgba(255, 255, 255, 0.84);
+}
+
+.chatgpt-order-section--notice,
+.chatgpt-order-section--legal {
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.chatgpt-order-section--notice p,
+.chatgpt-order-section--legal p {
+  margin: 0;
+  color: rgba(29, 39, 58, 0.74);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.chatgpt-order-section--legal a {
+  color: #117568;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.chatgpt-order-section__head {
+  display: grid;
+  gap: 4px;
+}
+
+.chatgpt-order-section__head h3 {
+  margin: 0;
+  color: #111827;
+  font-family: "Space Grotesk", "Manrope", sans-serif;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.chatgpt-order-section__head p {
+  margin: 0;
+  color: rgba(29, 39, 58, 0.66);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.chatgpt-order-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.chatgpt-order-summary > div {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.chatgpt-order-summary > div[hidden] {
+  display: none;
+}
+
+.chatgpt-order-summary span,
+.chatgpt-order-footer span {
+  display: block;
+  color: rgba(29, 39, 58, 0.58);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.chatgpt-order-summary strong,
+.chatgpt-order-footer strong {
+  display: block;
+  margin-top: 4px;
+  color: #111827;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.chatgpt-order-summary__total {
+  border-color: rgba(19, 138, 120, 0.24) !important;
+  background: rgba(235, 248, 245, 0.92) !important;
+}
+
+.chatgpt-order-summary__total strong,
+.chatgpt-order-footer strong {
+  color: #117568;
+  font-size: 20px;
+}
+
+.chatgpt-order-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+.chatgpt-order-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.chatgpt-order-field span,
+.chatgpt-order-question {
+  color: #111827;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.chatgpt-order-field small {
+  color: rgba(29, 39, 58, 0.58);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.chatgpt-order-field__control {
+  width: 100%;
+  min-height: 45px;
+  padding: 11px 12px;
+  border: 1px solid rgba(124, 145, 184, 0.32);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #111827;
+  font: inherit;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+textarea.chatgpt-order-field__control {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.chatgpt-order-field__control::placeholder {
+  color: rgba(29, 39, 58, 0.4);
+}
+
+.chatgpt-order-field__control:focus {
+  border-color: rgba(19, 138, 120, 0.62);
+  box-shadow: 0 0 0 4px rgba(19, 138, 120, 0.13);
+  outline: 0;
+}
+
+.chatgpt-order-field__control.is-invalid {
+  border-color: rgba(206, 49, 49, 0.78);
+  box-shadow: 0 0 0 4px rgba(206, 49, 49, 0.12);
+}
+
+.chatgpt-order-error,
+.chatgpt-order-promo-msg,
+.chatgpt-order-status {
+  min-height: 18px;
+  margin: -2px 0 0;
+  color: rgba(29, 39, 58, 0.58);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.chatgpt-order-error {
+  color: #c62828;
+}
+
+.chatgpt-order-promo-msg.is-error,
+.chatgpt-order-status.is-error {
+  color: #c62828;
+}
+
+.chatgpt-order-promo-msg.is-success,
+.chatgpt-order-status.is-success {
+  color: #0f766e;
+}
+
+.chatgpt-order-promo-msg.is-loading,
+.chatgpt-order-status.is-loading {
+  color: #117568;
+}
+
+.chatgpt-order-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.chatgpt-order-check input,
+.chatgpt-order-options input,
+.chatgpt-order-payment input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #138a78;
+}
+
+.chatgpt-order-referral-extra {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 12px;
+  padding: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.13);
+  border-radius: 14px;
+  background: rgba(241, 245, 249, 0.74);
+}
+
+.chatgpt-order-referral-extra[hidden] {
+  display: none !important;
+}
+
+.chatgpt-order-referral-extra strong {
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.chatgpt-order-referral-extra p {
+  margin: 0;
+  color: rgba(15, 23, 42, 0.66);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.chatgpt-order-gift-extra[hidden] {
+  display: none;
+}
+
+.chatgpt-order-section[hidden] {
+  display: none !important;
+}
+
+.chatgpt-order-gift-note {
+  display: grid;
+  gap: 6px;
+  margin-top: 9px;
+  padding: 10px 12px;
+  border-left: 3px solid #138a78;
+  background: rgba(19, 138, 120, 0.07);
+  color: rgba(15, 23, 42, 0.74);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.chatgpt-order-gift-note strong {
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.chatgpt-order-gift-note p {
+  margin: 0;
+}
+
+.chatgpt-order-gift-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(15, 23, 42, 0.16);
+}
+
+.chatgpt-order-gift-time-note {
+  margin: 2px 0 0;
+  color: rgba(15, 23, 42, 0.66);
+  font-size: 10px;
+  line-height: 1.28;
+}
+
+.chatgpt-order-gift-time-note strong {
+  color: #000;
+  font-weight: 850;
+}
+
+.chatgpt-order-design-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.chatgpt-order-design-option {
+  position: relative;
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  color: rgba(15, 23, 42, 0.72);
+  font-size: 10px;
+  line-height: 1.15;
+  cursor: pointer;
+}
+
+.chatgpt-order-design-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chatgpt-order-design-option__thumb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1 / 1;
+  border: 1px solid rgba(15, 23, 42, 0.22);
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.9), transparent 40%),
+    linear-gradient(135deg, rgba(19, 138, 120, 0.12), rgba(231, 125, 79, 0.16));
+  font-size: 26px;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.chatgpt-order-design-option__thumb::after {
+  content: "✓";
+  position: absolute;
+  top: -7px;
+  left: -7px;
+  display: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #000;
+  color: #fff;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.chatgpt-order-design-option input:checked + .chatgpt-order-design-option__thumb {
+  border-color: #000;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
+}
+
+.chatgpt-order-design-option input:checked + .chatgpt-order-design-option__thumb::after {
+  display: block;
+}
+
+.chatgpt-order-design-option:hover .chatgpt-order-design-option__thumb {
+  transform: translateY(-1px);
+}
+
+.chatgpt-order-options,
+.chatgpt-order-payment {
+  display: grid;
+  gap: 8px;
+}
+
+.chatgpt-order-options label,
+.chatgpt-order-payment label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 46px;
+  padding: 12px;
+  border: 1px solid rgba(124, 145, 184, 0.28);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.84);
+  color: #172033;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.chatgpt-order-options label:hover,
+.chatgpt-order-payment label:hover {
+  border-color: rgba(19, 138, 120, 0.42);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+  transform: translateY(-1px);
+}
+
+.chatgpt-order-payment {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.chatgpt-order-payment label span {
+  display: grid;
+  gap: 3px;
+}
+
+.chatgpt-order-payment label strong {
+  color: #111827;
+  font-size: 14px;
+}
+
+.chatgpt-order-payment label small {
+  color: rgba(29, 39, 58, 0.58);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.chatgpt-order-promo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.chatgpt-order-promo .btn {
+  min-height: 45px;
+  border-radius: 12px;
+  padding: 0 16px;
+}
+
+.chatgpt-order-promo .btn:disabled,
+.chatgpt-order-submit:disabled {
+  cursor: wait;
+  opacity: 0.72;
+  transform: none;
+}
+
+.chatgpt-order-footer {
+  position: sticky;
+  bottom: 12px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid rgba(19, 138, 120, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+}
+
+.chatgpt-order-submit {
+  min-height: 48px;
+  border-radius: 14px;
+  background: var(--primary) !important;
+  box-shadow: 0 12px 24px rgba(19, 138, 120, 0.22) !important;
+  white-space: nowrap;
+}
+
+.chatgpt-order-submit:hover {
+  background: var(--primary-2) !important;
+}
+
+.chatgpt-go-order-modal__dialog {
+  width: min(560px, calc(100vw - 18px));
+  max-height: 94vh;
+  border: 1px solid rgba(255, 255, 255, 0.78) !important;
+  border-radius: 24px !important;
+  background:
+    radial-gradient(circle at 18% -8%, rgba(42, 91, 255, 0.13), transparent 38%),
+    radial-gradient(circle at 92% 8%, rgba(231, 125, 79, 0.14), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 255, 0.96)) !important;
+  box-shadow: 0 28px 80px rgba(31, 39, 49, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+  font-family: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.chatgpt-go-order-modal__content {
+  gap: 0;
+  max-height: 94vh;
+  padding: 30px 32px 26px;
+  background: transparent;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-card {
+  display: block;
+  color: #1f2731;
+  font-size: 13px;
+  font-weight: 520;
+  letter-spacing: -0.006em;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-section {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-section + .chatgpt-order-section {
+  margin-top: 24px;
+}
+
+.chatgpt-order-title,
+.chatgpt-order-section-title {
+  margin: 0 0 14px;
+  color: #1f2731;
+  font-family: "Space Grotesk", "Manrope", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.chatgpt-order-title {
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.22);
+}
+
+.chatgpt-order-item {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) 28px 92px 24px;
+  gap: 11px;
+  align-items: center;
+  padding: 14px 0 16px;
+  border-bottom: 1px solid rgba(31, 39, 49, 0.16);
+}
+
+.chatgpt-order-item__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 7px;
+  object-fit: cover;
+}
+
+.chatgpt-order-item__body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.chatgpt-order-item__body strong {
+  color: #1f2731;
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.chatgpt-order-item__body span {
+  color: rgba(31, 39, 49, 0.62);
+  font-size: 10.5px;
+  line-height: 1.28;
+}
+
+.chatgpt-order-item__qty {
+  color: rgba(31, 39, 49, 0.72);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.chatgpt-order-item__qty::before {
+  content: none;
+}
+
+.chatgpt-order-item__qty-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: rgba(15, 23, 42, 0.74);
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.chatgpt-order-item__qty-control button {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(15, 23, 42, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
+  color: rgba(15, 23, 42, 0.82);
+  font: inherit;
+  font-weight: 800;
+  cursor: default;
+}
+
+.chatgpt-order-item__close {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(15, 23, 42, 0.36);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.16s ease, background 0.16s ease;
+}
+
+.chatgpt-order-item__close:hover,
+.chatgpt-order-item__close:focus-visible {
+  background: rgba(15, 23, 42, 0.07);
+  color: rgba(15, 23, 42, 0.82);
+}
+
+.chatgpt-order-item__price {
+  color: #1f2731;
+  font-size: 12px;
+  font-weight: 850;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.chatgpt-order-summary-lines {
+  display: grid;
+  justify-content: end;
+  gap: 4px;
+  margin-top: 12px;
+}
+
+.chatgpt-order-summary-lines > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  color: #000;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.chatgpt-order-summary-lines > div[hidden] {
+  display: none;
+}
+
+.chatgpt-order-summary-lines strong {
+  color: #000;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
+  align-items: end;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-field {
+  gap: 6px;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-field--full {
+  display: grid;
+  margin-top: 2px;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-field span,
+.chatgpt-go-order-modal .chatgpt-order-question {
+  color: #1f2731;
+  font-size: 12.5px;
+  font-weight: 820;
+  letter-spacing: -0.01em;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-field small {
+  min-height: 14px;
+  color: rgba(31, 39, 49, 0.55);
+  font-size: 10.5px;
+  line-height: 1.32;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-field__control {
+  box-sizing: border-box;
+  min-height: 46px;
+  padding: 12px 14px;
+  border: 1px solid rgba(124, 145, 184, 0.26);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 250, 255, 0.92)),
+    rgba(255, 255, 255, 0.94);
+  color: #1f2731;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.25;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 8px 20px rgba(31, 39, 49, 0.055);
+  appearance: none;
+}
+
+.chatgpt-go-order-modal textarea.chatgpt-order-field__control {
+  min-height: 96px;
+  line-height: 1.42;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-field__control:focus {
+  border-color: rgba(42, 91, 255, 0.5);
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 0 0 4px rgba(42, 91, 255, 0.12), 0 12px 26px rgba(31, 39, 49, 0.08);
+}
+
+.chatgpt-go-order-modal .chatgpt-order-check {
+  margin-top: 8px;
+  gap: 8px;
+  color: rgba(31, 39, 49, 0.78);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-check input,
+.chatgpt-go-order-modal .chatgpt-order-options input,
+.chatgpt-go-order-modal .chatgpt-order-payment input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--primary, #2a5bff);
+}
+
+.chatgpt-order-alert {
+  margin: 0 0 6px;
+  color: #ff0000;
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-options,
+.chatgpt-go-order-modal .chatgpt-order-payment {
+  gap: 9px;
+  margin-top: 8px;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-options label,
+.chatgpt-go-order-modal .chatgpt-order-payment label {
+  min-height: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(124, 145, 184, 0.22);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 8px 20px rgba(31, 39, 49, 0.045);
+  color: rgba(31, 39, 49, 0.78);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-options label:hover,
+.chatgpt-go-order-modal .chatgpt-order-payment label:hover {
+  border-color: rgba(42, 91, 255, 0.34);
+  box-shadow: 0 12px 26px rgba(31, 39, 49, 0.08);
+  transform: translateY(-1px);
+}
+
+.chatgpt-go-order-modal .chatgpt-order-payment {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.chatgpt-go-order-modal .chatgpt-order-payment label strong,
+.chatgpt-go-order-modal .chatgpt-order-payment label small {
+  color: rgba(31, 39, 49, 0.74);
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-options label:has(input:checked),
+.chatgpt-go-order-modal .chatgpt-order-payment label:has(input:checked) {
+  border-color: rgba(42, 91, 255, 0.46);
+  background: linear-gradient(135deg, rgba(42, 91, 255, 0.1), rgba(19, 138, 120, 0.08)), rgba(255, 255, 255, 0.88);
+}
+
+.chatgpt-go-order-modal .chatgpt-order-promo {
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  margin-top: 6px;
+  align-items: stretch;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-promo .btn {
+  min-height: 46px;
+  padding: 0 16px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-error,
+.chatgpt-go-order-modal .chatgpt-order-promo-msg,
+.chatgpt-go-order-modal .chatgpt-order-status {
+  min-height: 14px;
+  margin: 3px 0 0;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-footer {
+  position: static;
+  display: grid;
+  gap: 12px;
+  margin-top: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.chatgpt-order-footer__total {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  color: #1f2731;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.chatgpt-order-footer__total span,
+.chatgpt-order-footer__total strong {
+  display: inline;
+  margin: 0;
+  color: #1f2731;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-submit {
+  width: 100%;
+  min-height: 50px;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--primary, #2a5bff), var(--primary-2, #2148d6)) !important;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  box-shadow: 0 16px 32px rgba(42, 91, 255, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-submit:hover {
+  background: linear-gradient(135deg, var(--primary-2, #2148d6), var(--primary, #2a5bff)) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 20px 38px rgba(42, 91, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+}
+
+.chatgpt-order-processing-note {
+  margin: 10px 0 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(42, 91, 255, 0.14);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(42, 91, 255, 0.07), rgba(19, 138, 120, 0.06));
+  color: rgba(31, 39, 49, 0.74);
+  font-size: 11.5px;
+  font-weight: 650;
+  line-height: 1.48;
+  text-align: left;
+}
+
+.chatgpt-order-legal-note {
+  margin: 8px 0 0;
+  color: rgba(15, 23, 42, 0.45);
+  font-size: 9px;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.chatgpt-order-legal-note a {
+  color: rgba(15, 23, 42, 0.7);
+  text-decoration: underline;
+}
+
+.service-constructor-description {
+  display: grid;
+  gap: 14px;
+  padding: 20px 0 0;
+  border-top: 0;
+}
+
+.service-constructor-description h3,
+.service-constructor-description h4 {
+  margin: 0;
+  color: #111827;
+  font-weight: 800;
+}
+
+.service-constructor-description h3 {
+  font-size: 16px;
+}
+
+.service-constructor-description h4 {
+  font-size: 16px;
+}
+
+.service-constructor-description p {
+  margin: 0;
+  color: rgba(29, 39, 58, 0.72);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.service-delivery-help {
+  display: grid;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 0;
+}
+
+.service-faq-section {
+  display: grid;
+  gap: 18px;
+  margin-top: 22px;
+  padding: clamp(18px, 3vw, 28px);
+}
+
+.service-faq-list {
+  display: grid;
+  gap: 12px;
+}
+
+.service-faq-item {
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 20px;
+  background: #fff;
+}
+
+.service-faq-question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  border: 0;
+  background: transparent;
+  color: #111827;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 950;
+  text-align: left;
+  cursor: pointer;
+}
+
+.service-faq-question span {
+  width: 12px;
+  height: 12px;
+  border-right: 2px solid rgba(29, 39, 58, 0.62);
+  border-bottom: 2px solid rgba(29, 39, 58, 0.62);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.service-faq-item.active .service-faq-question span {
+  transform: rotate(225deg);
+}
+
+.service-faq-answer {
+  display: none;
+  padding: 0 20px 18px;
+}
+
+.service-faq-item.active .service-faq-answer {
+  display: grid;
+  gap: 10px;
+}
+
+.service-faq-answer p {
+  margin: 0;
+  color: rgba(29, 39, 58, 0.72);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.service-empty-state {
+  grid-column: 1 / -1;
+  padding: 28px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #172033;
+  text-align: center;
+}
+
+.service-info-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 18px;
+}
+
+.service-info-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 24px;
+  background: #fff;
+}
+
+.service-info-card h3 {
+  margin: 0;
+  color: #111827;
+  font-size: 1.1rem;
+  font-weight: 950;
+}
+
+.service-info-card p,
+.service-info-card li {
+  margin: 0;
+  color: rgba(29, 39, 58, 0.72);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.service-info-card ul,
+.service-info-card ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+@keyframes aiServicePanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1180px) {
+  .ai-directory-grid,
+  .pricing-grid--category.service-plans-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .service-constructor-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .service-product-gallery {
+    min-height: 0;
+    padding: 0 20px 30px;
+  }
+
+  .service-product-gallery img {
+    width: min(100%, 420px);
+  }
+
+  .service-page--constructor .service-constructor-card {
+    padding: 0 20px 30px;
+  }
+
+  #pricingGrid .ai-directory-grid {
+    grid-template-columns: repeat(2, minmax(240px, 1fr)) !important;
+  }
+
+  .product-showcase-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 760px) {
+  #pricing {
+    scroll-margin-top: 220px !important;
+  }
+
+  .ai-service-picker {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  .ai-service-card {
+    grid-template-columns: 50px minmax(0, 1fr);
+    row-gap: 8px;
+    column-gap: 12px;
+    min-height: 0;
+    border-radius: 20px;
+    padding: 14px;
+  }
+
+  .ai-service-card__icon {
+    grid-row: 1 / span 2;
+    align-self: start;
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+  }
+
+  .ai-service-card__desc {
+    display: none;
+  }
+
+  .ai-service-card__name {
+    font-size: 1.18rem;
+  }
+
+  .ai-service-card__cta {
+    grid-column: 2;
+    padding: 7px 10px;
+  }
+
+  .ai-service-panel__header {
+    display: grid;
+    gap: 4px;
+  }
+
+  .ai-service-plan-grid .price-card .price-card__title {
+    min-height: 0 !important;
+  }
+
   .pricing-grid--category {
     grid-template-columns: 1fr !important;
+  }
+
+  .product-showcase-section__header {
+    align-items: start;
+  }
+
+  .product-showcase-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-showcase-card {
+    border-radius: 24px;
+  }
+
+  .ai-directory-grid,
+  .pricing-grid--category.service-plans-grid,
+  .service-info-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  #pricingGrid .ai-directory-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ai-directory-card {
+    border-radius: 24px;
+    padding: 10px;
+  }
+
+  .ai-directory-card__media {
+    border-radius: 20px;
+  }
+
+  .ai-directory-card__bottom {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .ai-directory-card__button {
+    width: 100%;
+  }
+
+  .service-page {
+    width: min(100% - 20px, 1180px);
+    padding-top: 18px;
+  }
+
+  .service-hero {
+    border-radius: 26px;
+    padding: 24px;
+  }
+
+  .service-hero.service-hero--chatgpt {
+    border-radius: 26px;
+  }
+
+  .service-plans-section,
+  .service-info-section,
+  .service-faq-section {
+    border-radius: 24px;
+    padding: 16px;
+  }
+
+  .service-filter-group__chips {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .service-filter-chip {
+    justify-content: center;
+    padding: 0 10px;
+  }
+
+  .service-constructor-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .service-constructor-price {
+    width: 100%;
+    text-align: left;
+  }
+
+  .service-checkout-card__summary {
+    grid-template-columns: 1fr;
+  }
+
+  .chatgpt-order-section {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .chatgpt-go-order-modal__dialog {
+    width: calc(100vw - 12px);
+    max-height: 92vh;
+    border-radius: 22px !important;
+  }
+
+  .chatgpt-go-order-modal__content {
+    max-height: 92vh;
+    padding: 22px 18px 18px;
+  }
+
+  .chatgpt-go-order-modal__head {
+    padding-right: 36px;
+  }
+
+  .chatgpt-order-item {
+    grid-template-columns: 46px minmax(0, 1fr) auto 68px 20px;
+    gap: 6px;
+  }
+
+  .chatgpt-order-item__icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .chatgpt-order-design-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .chatgpt-order-summary,
+  .chatgpt-order-grid,
+  .chatgpt-order-payment {
+    grid-template-columns: 1fr;
+  }
+
+  .chatgpt-order-promo {
+    grid-template-columns: 1fr;
+  }
+
+  .chatgpt-order-promo .btn {
+    width: 100%;
+  }
+
+  .chatgpt-order-footer {
+    position: static;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .chatgpt-order-submit {
+    width: 100%;
+    white-space: normal;
+  }
+
+  .service-faq-question {
+    padding: 16px;
+  }
+
+  .service-faq-answer {
+    padding: 0 16px 16px;
   }
 
   .hero .hero-react__word {
@@ -95,4 +2741,4029 @@ body.balanced-visual-budget .hero .hero-react__word {
     font-size: clamp(1.62rem, 8.5vw, 2.3rem) !important;
     padding-inline: 4px !important;
   }
+}
+
+@media (max-width: 640px) {
+  #gptishka-support-widget.support-widget {
+    right: 2px !important;
+    bottom: calc(2px + env(safe-area-inset-bottom, 0px)) !important;
+    width: 34px !important;
+    height: 51px !important;
+  }
+
+  #gptishka-support-widget .support-widget__mascot {
+    width: 34px !important;
+    height: 51px !important;
+  }
+
+  #gptishka-support-widget .support-widget__panel {
+    right: 32px !important;
+    bottom: 6px !important;
+    width: min(292px, calc(100vw - 48px)) !important;
+  }
+
+  #gptishka-support-widget .support-widget__resume-bubble {
+    right: 4px !important;
+    bottom: 58px !important;
+    width: min(276px, calc(100vw - 48px)) !important;
+  }
+}
+
+/* Render optimization for long homepage sections.
+   Keeps above-the-fold unchanged and delays off-screen paint. */
+@supports (content-visibility: auto) {
+  main.page > section.pricing,
+  main.page > section.how,
+  main.page > section.faq,
+  main.page > section.activation-video {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 900px;
+  }
+}
+
+/* ChatGPT GO checkout modal — calm mobile-first layout */
+.chatgpt-go-order-modal {
+  --font-sans: "Manrope", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --order-blue: var(--primary, #2a5bff);
+  --order-blue-2: var(--primary-2, #4fa3ff);
+  --order-bg: #eef5ff;
+  --order-surface: rgba(255, 255, 255, 0.94);
+  --order-soft: #f7faff;
+  --order-line: #dbe6f5;
+  --order-line-strong: #c7d7ec;
+  --order-text: #121827;
+  --order-muted: #68758b;
+  padding: 12px !important;
+  overflow: hidden !important;
+}
+
+.chatgpt-go-order-modal,
+.chatgpt-go-order-modal *,
+.chatgpt-go-order-modal *::before,
+.chatgpt-go-order-modal *::after {
+  box-sizing: border-box;
+}
+
+.chatgpt-go-order-modal__dialog {
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+  width: min(620px, calc(100vw - 24px)) !important;
+  min-width: 0 !important;
+  max-width: calc(100vw - 24px) !important;
+  max-height: min(92vh, 980px) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  overflow: clip !important;
+  border-radius: 28px !important;
+  background: linear-gradient(180deg, #f9fbff 0%, #edf5ff 100%) !important;
+  box-shadow: 0 28px 78px rgba(31, 66, 122, 0.22) !important;
+}
+
+.chatgpt-go-order-modal__content {
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: min(92vh, 980px) !important;
+  max-height: min(92vh, 980px) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  overflow: clip !important;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-card {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  gap: 0 !important;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: min(92vh, 980px);
+  max-height: min(92vh, 980px);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  overflow: clip;
+  border: 0;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(79, 163, 255, 0.16), transparent 36%),
+    linear-gradient(180deg, #f9fbff 0%, #eef5ff 100%);
+  color: var(--order-text);
+  font-family: var(--font-sans);
+  opacity: 1 !important;
+  transform: none !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transition: none !important;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-card:hover,
+.chatgpt-go-order-modal .chatgpt-order-card:focus-within {
+  transform: none !important;
+}
+
+.chatgpt-order-scroll {
+  display: grid;
+  gap: 12px;
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding: 18px 18px 10px;
+  scrollbar-width: thin;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-scroll > *,
+.chatgpt-go-order-modal .chatgpt-order-grid,
+.chatgpt-go-order-modal .chatgpt-order-payment,
+.chatgpt-go-order-modal .chatgpt-order-design-grid,
+.chatgpt-go-order-modal .chatgpt-order-soft-actions,
+.chatgpt-go-order-modal .chatgpt-order-soft-action {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-section {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--order-line);
+  border-radius: 18px;
+  background: var(--order-surface);
+  box-shadow: 0 14px 34px rgba(43, 75, 122, 0.075);
+}
+
+.chatgpt-go-order-modal .chatgpt-order-section__head {
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-section__head p {
+  margin: 0;
+  color: var(--order-muted);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-title,
+.chatgpt-go-order-modal .chatgpt-order-section-title {
+  font-family: var(--font-sans);
+  letter-spacing: -0.025em;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-section-title {
+  margin: 0;
+  color: var(--order-text);
+  font-size: 16px;
+  font-weight: 850;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-summary-card {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px;
+  border-color: rgba(162, 179, 205, 0.28);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(79, 163, 255, 0.12), transparent 42%),
+    linear-gradient(135deg, #ffffff 0%, #f7fbff 56%, #f2f7ff 100%);
+  box-shadow: 0 18px 44px rgba(31, 66, 122, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+.chatgpt-order-summary-card__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+
+.chatgpt-order-summary-card__logo {
+  flex: 0 0 auto;
+  width: 64px !important;
+  height: 64px !important;
+  border-radius: 17px !important;
+  object-fit: cover;
+  box-shadow: 0 10px 22px rgba(16, 185, 129, 0.14);
+}
+
+.chatgpt-order-summary-card__body {
+  flex: 1 1 auto;
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.chatgpt-order-summary-card__headline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.chatgpt-order-summary-card__body .chatgpt-order-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  color: var(--order-text);
+  font-size: clamp(19px, 3vw, 22px);
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.chatgpt-order-summary-card__meta {
+  margin: 0;
+  color: rgba(65, 81, 106, 0.72);
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.32;
+  overflow-wrap: anywhere;
+}
+
+.chatgpt-order-summary-card__price {
+  flex: 0 0 auto;
+  color: var(--order-text);
+  font-size: clamp(22px, 4.8vw, 26px);
+  font-weight: 950;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.chatgpt-order-summary-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  margin: 0 0 0 78px;
+}
+
+.chatgpt-order-summary-card__chips span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 0 9px;
+  border: 1px solid rgba(190, 207, 231, 0.58);
+  border-radius: 999px;
+  background: rgba(248, 251, 255, 0.72);
+  color: rgba(65, 81, 106, 0.74);
+  font-size: 11px;
+  font-weight: 760;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-summary-lines {
+  justify-content: start;
+  margin: 0 0 0 78px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 14px;
+  background: rgba(42, 91, 255, 0.06);
+}
+
+.chatgpt-go-order-modal .chatgpt-order-summary-lines:has(> [hidden]:only-child) {
+  display: none;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-grid > *,
+.chatgpt-go-order-modal .chatgpt-order-payment > *,
+.chatgpt-go-order-modal .chatgpt-order-promo > * {
+  min-width: 0;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-field {
+  display: grid;
+  gap: 6px;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-field--full {
+  grid-column: 1 / -1;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-field span,
+.chatgpt-go-order-modal .chatgpt-order-question {
+  color: #1d2738;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-field small {
+  color: var(--order-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-field__control {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--order-line-strong);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fff 0%, #f8fbff 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 8px 18px rgba(17, 24, 39, 0.035);
+  color: var(--order-text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.chatgpt-order-password-wrap {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.chatgpt-order-password-wrap .chatgpt-order-field__control {
+  padding-right: 48px;
+}
+
+.chatgpt-order-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #66758a;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transform: translateY(-50%);
+}
+
+.chatgpt-order-password-toggle:hover,
+.chatgpt-order-password-toggle:focus-visible {
+  background: rgba(74, 109, 255, 0.09);
+  color: #294fff;
+  outline: none;
+}
+
+.chatgpt-order-password-toggle:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.chatgpt-go-order-modal textarea.chatgpt-order-field__control {
+  min-height: 92px;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-field__control:focus {
+  border-color: var(--order-blue);
+  box-shadow: 0 0 0 4px rgba(42, 91, 255, 0.12);
+}
+
+.chatgpt-order-info-alert {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 10px;
+  align-items: start;
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid rgba(42, 91, 255, 0.14);
+  border-radius: 15px;
+  background: rgba(42, 91, 255, 0.075);
+  color: #375072;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.42;
+}
+
+.chatgpt-order-info-alert span {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 11px;
+  background: #fff;
+  color: var(--order-blue);
+  font-weight: 950;
+}
+
+.chatgpt-order-info-alert p {
+  margin: 0;
+}
+
+.chatgpt-order-create-note {
+  grid-template-columns: 1fr;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-options label,
+.chatgpt-go-order-modal .chatgpt-order-payment label {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 10px;
+  align-items: start;
+  min-height: auto;
+  padding: 12px;
+  border: 1px solid var(--order-line);
+  border-radius: 15px;
+  background: #fbfdff;
+  box-shadow: none;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-options label:has(input:checked),
+.chatgpt-go-order-modal .chatgpt-order-payment label:has(input:checked) {
+  border-color: rgba(42, 91, 255, 0.48);
+  background: linear-gradient(180deg, #f5f9ff 0%, #edf4ff 100%);
+  box-shadow: 0 8px 20px rgba(42, 91, 255, 0.08);
+}
+
+.chatgpt-go-order-modal .chatgpt-order-options input,
+.chatgpt-go-order-modal .chatgpt-order-payment input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-options label strong,
+.chatgpt-go-order-modal .chatgpt-order-payment label strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--order-text);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-options label small,
+.chatgpt-go-order-modal .chatgpt-order-payment label small {
+  display: block;
+  color: var(--order-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.chatgpt-order-soft-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+.chatgpt-order-soft-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+  align-self: stretch;
+  padding: 13px 0;
+  border-top: 1px solid #e8eef8;
+  cursor: pointer;
+}
+
+.chatgpt-order-soft-action > span {
+  min-width: 0;
+}
+
+.chatgpt-order-soft-action:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.chatgpt-order-soft-action strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--order-text);
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.chatgpt-order-soft-action small {
+  display: block;
+  color: var(--order-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.chatgpt-order-soft-action input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chatgpt-order-soft-action i {
+  position: relative;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 27px;
+  border-radius: 999px;
+  background: #d6e1ef;
+  transition: background-color 0.18s ease;
+}
+
+.chatgpt-order-soft-action i::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.18);
+  transition: transform 0.18s ease;
+}
+
+.chatgpt-order-soft-action input:checked + i {
+  background: linear-gradient(135deg, var(--order-blue), var(--order-blue-2));
+}
+
+.chatgpt-order-soft-action input:checked + i::after {
+  transform: translateX(19px);
+}
+
+.chatgpt-go-order-modal .chatgpt-order-gift-extra,
+.chatgpt-go-order-modal .chatgpt-order-referral-extra {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  align-self: stretch;
+  justify-self: stretch;
+  margin: 4px 0 0;
+  padding: 14px;
+  border: 1px solid var(--order-line);
+  border-radius: 16px;
+  background: #f9fcff;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-gift-extra[hidden],
+.chatgpt-go-order-modal .chatgpt-order-referral-extra[hidden] {
+  display: none !important;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-gift-panel {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-design-grid {
+  grid-template-columns: repeat(auto-fit, minmax(74px, 1fr));
+  min-width: 0;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-referral-extra .chatgpt-order-field__control {
+  min-width: 0;
+}
+
+.chatgpt-order-collapsible {
+  padding-top: 12px;
+  border-top: 1px solid #e8eef8;
+}
+
+.chatgpt-order-collapsible summary {
+  cursor: pointer;
+  color: #41516a;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.chatgpt-order-collapsible[open] summary {
+  margin-bottom: 10px;
+  color: var(--order-blue);
+}
+
+.chatgpt-order-collapsible p {
+  margin: 0;
+  color: var(--order-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.48;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-payment {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-promo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-promo .btn {
+  min-height: 48px;
+  border-radius: 14px;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-footer {
+  position: static;
+  bottom: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  align-items: center;
+  margin: 0;
+  padding: 12px 18px max(14px, env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(219, 230, 245, 0.92);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 -16px 36px rgba(25, 51, 88, 0.12);
+  backdrop-filter: blur(18px);
+}
+
+.chatgpt-order-footer__total {
+  display: grid;
+  gap: 2px;
+}
+
+.chatgpt-order-footer__total span {
+  color: var(--order-muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.chatgpt-order-footer__total strong {
+  color: var(--order-text);
+  font-size: 22px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-submit {
+  min-width: 188px;
+  min-height: 50px;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--order-blue), var(--order-blue-2)) !important;
+  box-shadow: 0 14px 28px rgba(42, 91, 255, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 34px rgba(42, 91, 255, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+
+.chatgpt-go-order-modal .chatgpt-order-legal-note {
+  margin: 0 2px 4px;
+  color: rgba(15, 23, 42, 0.58);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .chatgpt-go-order-modal__dialog {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+    border-radius: 22px 22px 0 0 !important;
+  }
+
+  .chatgpt-go-order-modal {
+    padding: 0 !important;
+  }
+
+  .chatgpt-go-order-modal__content,
+  .chatgpt-go-order-modal .chatgpt-order-card {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+  }
+
+  .chatgpt-order-scroll {
+    padding: 14px 12px 8px;
+  }
+
+  .chatgpt-go-order-modal .chatgpt-order-section {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .chatgpt-go-order-modal .chatgpt-order-summary-card {
+    gap: 11px;
+    padding: 14px;
+    border-radius: 24px;
+  }
+
+  .chatgpt-order-summary-card__top {
+    gap: 12px;
+  }
+
+  .chatgpt-order-summary-card__logo {
+    width: 52px !important;
+    height: 52px !important;
+  }
+
+  .chatgpt-order-summary-card__headline {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .chatgpt-order-summary-card__price {
+    text-align: left;
+  }
+
+  .chatgpt-order-summary-card__chips,
+  .chatgpt-go-order-modal .chatgpt-order-summary-lines {
+    margin-left: 64px;
+  }
+
+  .chatgpt-go-order-modal .chatgpt-order-grid,
+  .chatgpt-go-order-modal .chatgpt-order-payment,
+  .chatgpt-go-order-modal .chatgpt-order-promo {
+    grid-template-columns: 1fr;
+  }
+
+  .chatgpt-go-order-modal .chatgpt-order-footer {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-inline: 12px;
+  }
+
+  .chatgpt-go-order-modal .chatgpt-order-submit {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .chatgpt-order-summary-card__chips,
+  .chatgpt-go-order-modal .chatgpt-order-summary-lines {
+    margin-left: 0;
+  }
+}
+
+.chatgpt-go-order-modal .chatgpt-order-soft-actions {
+  display: grid;
+}
+
+/* ChatGPT page scoped emerald controls */
+[data-service-page="chatgpt"],
+.service-page[data-service-page="chatgpt"] ~ .payment-method-modal,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal {
+  --gpt-green: #35f28f;
+  --gpt-green-2: #18c878;
+  --gpt-green-3: #0f8f5c;
+  --gpt-green-soft: rgba(53, 242, 143, 0.14);
+  --gpt-green-border: rgba(53, 242, 143, 0.32);
+  --gpt-button-dark: rgba(255, 255, 255, 0.065);
+  --gpt-button-dark-hover: rgba(255, 255, 255, 0.095);
+  --gpt-button-border: rgba(255, 255, 255, 0.13);
+  --gpt-button-text: #ffffff;
+  --gpt-button-text-dark: #03130b;
+}
+
+[data-service-page="chatgpt"] .buy-btn,
+[data-service-page="chatgpt"] .pay-now-btn,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-submit {
+  position: relative;
+  min-height: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-color: rgba(3, 19, 11, 0.1) !important;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--gpt-green) 0%, var(--gpt-green-2) 52%, var(--gpt-green-3) 100%) !important;
+  color: var(--gpt-button-text-dark) !important;
+  font-family: inherit;
+  font-weight: 850;
+  letter-spacing: -0.015em;
+  box-shadow:
+    0 14px 34px rgba(24, 200, 120, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38) !important;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    filter 180ms ease;
+}
+
+[data-service-page="chatgpt"] .buy-btn:hover:not(:disabled),
+[data-service-page="chatgpt"] .pay-now-btn:hover:not(:disabled),
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: saturate(1.08) brightness(1.03);
+  box-shadow:
+    0 18px 44px rgba(24, 200, 120, 0.36),
+    0 0 0 4px rgba(53, 242, 143, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.44) !important;
+}
+
+[data-service-page="chatgpt"] .buy-btn:active:not(:disabled),
+[data-service-page="chatgpt"] .pay-now-btn:active:not(:disabled),
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-submit:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
+  box-shadow:
+    0 8px 24px rgba(24, 200, 120, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32) !important;
+}
+
+[data-service-page="chatgpt"] .service-filter-chip {
+  min-height: 44px;
+  border-color: rgba(15, 143, 92, 0.22);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 250, 247, 0.9));
+  color: #122018;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 10px 24px rgba(10, 30, 18, 0.06);
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease,
+    filter 180ms ease;
+}
+
+[data-service-page="chatgpt"] .service-filter-chip:hover:not(.is-disabled),
+[data-service-page="chatgpt"] .service-filter-chip.is-active,
+[data-service-page="chatgpt"] .service-filter-chip[aria-pressed="true"] {
+  transform: translateY(-1px);
+  border-color: rgba(53, 242, 143, 0.54);
+  background: linear-gradient(135deg, var(--gpt-green) 0%, var(--gpt-green-2) 52%, var(--gpt-green-3) 100%);
+  color: var(--gpt-button-text-dark);
+  box-shadow:
+    0 14px 32px rgba(24, 200, 120, 0.22),
+    0 0 0 4px rgba(53, 242, 143, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38);
+}
+
+[data-service-page="chatgpt"] .service-filter-chip.is-disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  transform: none;
+  filter: grayscale(0.16);
+  box-shadow: none;
+}
+
+[data-service-page="chatgpt"] .service-back-link,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle,
+.service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__close {
+  border: 1px solid var(--gpt-button-border);
+  border-color: var(--gpt-button-border) !important;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.045));
+  color: rgba(255, 255, 255, 0.86);
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.11),
+    0 10px 28px rgba(0, 0, 0, 0.2);
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+[data-service-page="chatgpt"] .service-back-link:hover,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn:hover:not(:disabled),
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle:hover:not(:disabled),
+.service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__close:hover {
+  transform: translateY(-1px);
+  border-color: var(--gpt-green-border);
+  background:
+    linear-gradient(180deg, rgba(53, 242, 143, 0.13), rgba(255, 255, 255, 0.055));
+  color: #ffffff;
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.26),
+    0 0 0 4px rgba(53, 242, 143, 0.055),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn {
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.84), rgba(15, 23, 42, 0.7)) !important;
+  border-color: var(--gpt-button-border) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__option,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label {
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.76)) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    0 14px 36px rgba(0, 0, 0, 0.24) !important;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__option:hover,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label:hover {
+  transform: translateY(-1px);
+  border-color: rgba(53, 242, 143, 0.36) !important;
+  background:
+    linear-gradient(180deg, rgba(53, 242, 143, 0.105), rgba(15, 23, 42, 0.78)) !important;
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.3),
+    0 0 0 4px rgba(53, 242, 143, 0.055),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__option.is-active,
+.service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__option[aria-pressed="true"],
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label:has(input:checked) {
+  border-color: rgba(53, 242, 143, 0.58) !important;
+  background:
+    linear-gradient(180deg, rgba(53, 242, 143, 0.16), rgba(15, 23, 42, 0.82)) !important;
+  box-shadow:
+    0 18px 48px rgba(24, 200, 120, 0.18),
+    0 0 0 4px rgba(53, 242, 143, 0.075),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__name,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label strong {
+  color: #ffffff !important;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__hint,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label small {
+  color: rgba(255, 255, 255, 0.68) !important;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment input {
+  accent-color: var(--gpt-green-2);
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-extra {
+  display: grid;
+  gap: 12px;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-extra[hidden] {
+  display: none;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-note {
+  padding: 12px 14px;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-note p {
+  margin-bottom: 0;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.52);
+  overflow: hidden;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 13px 14px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 760;
+  letter-spacing: -0.01em;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary::after {
+  content: "＋";
+  color: rgba(53, 242, 143, 0.82);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details[open] > summary::after {
+  content: "−";
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details__body {
+  display: grid;
+  gap: 12px;
+  padding: 0 14px 14px;
+}
+
+/* ChatGPT order modal compact premium visual refresh */
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal {
+  font-family: "Manrope", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__dialog {
+  position: relative;
+  background:
+    radial-gradient(circle at 14% 0%, rgba(53, 242, 143, 0.11), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(247, 250, 255, 0.94)) !important;
+  border: 1px solid rgba(142, 160, 190, 0.24);
+  box-shadow:
+    0 28px 90px rgba(25, 42, 70, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close {
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  border: 1px solid rgba(142, 160, 190, 0.3) !important;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86) !important;
+  color: rgba(21, 32, 51, 0.62) !important;
+  box-shadow:
+    0 10px 26px rgba(35, 55, 85, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88) !important;
+  transform: none !important;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close:hover,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close:active {
+  background: rgba(245, 251, 248, 0.96) !important;
+  color: #101827 !important;
+  transform: none !important;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-card {
+  color: #101827;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-section {
+  border-color: rgba(142, 160, 190, 0.2);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow:
+    0 10px 30px rgba(35, 55, 85, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-section__head h4,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-section-title {
+  color: #101827;
+  font-weight: 850;
+  letter-spacing: -0.025em;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-section__head p,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-field small {
+  color: rgba(21, 32, 51, 0.58);
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px 18px;
+  align-items: center;
+  padding: 18px 58px 18px 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(142, 160, 190, 0.26);
+  background:
+    radial-gradient(circle at 0 0, rgba(53, 242, 143, 0.14), transparent 36%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(244, 249, 255, 0.91));
+  box-shadow:
+    0 16px 42px rgba(35, 55, 85, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::before,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::after,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::before,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::after {
+  content: none;
+  display: none;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__top {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+  min-width: 0;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-main {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: #07130d;
+  box-shadow: 0 14px 30px rgba(24, 200, 120, 0.18);
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__body {
+  min-width: 0;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__body .chatgpt-order-title {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: #101827;
+  font-size: clamp(22px, 3vw, 27px);
+  line-height: 1.05;
+  font-weight: 880;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__meta,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-meta {
+  margin: 4px 0 0;
+  color: rgba(21, 32, 51, 0.62);
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 650;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-total {
+  align-self: center;
+  justify-self: end;
+  min-width: 132px;
+  max-width: 170px;
+  box-sizing: border-box;
+  padding: 0;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+  color: #101827;
+  text-align: right;
+  box-shadow: none;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price::before {
+  content: none;
+  display: none;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-total span {
+  display: block;
+  margin: 0;
+  color: rgba(21, 32, 51, 0.5);
+  font-size: 10px;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-total strong {
+  display: block;
+  margin-top: 5px;
+  color: #101827;
+  font-size: clamp(23px, 3vw, 28px);
+  line-height: 1;
+  font-weight: 850;
+  letter-spacing: -0.055em;
+  white-space: nowrap;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 10px 0 0;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips span {
+  min-height: 25px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(24, 200, 120, 0.18);
+  background: rgba(24, 200, 120, 0.08);
+  color: rgba(21, 32, 51, 0.72);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 760;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
+  grid-column: 1 / -1;
+  margin: 0 0 0 63px;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option {
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 10px;
+  min-height: 68px;
+  padding: 12px 14px;
+  border: 1px solid rgba(142, 160, 190, 0.34) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 249, 255, 0.88)) !important;
+  color: #152033 !important;
+  text-align: left;
+  box-shadow:
+    0 10px 26px rgba(35, 55, 85, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85) !important;
+  transform: none;
+  cursor: pointer;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option:hover {
+  transform: translateY(-1px);
+  border-color: rgba(24, 200, 120, 0.42) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(235, 255, 246, 0.9)) !important;
+  box-shadow:
+    0 14px 34px rgba(24, 200, 120, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option:has(input:checked),
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option[aria-checked="true"] {
+  border-color: rgba(24, 200, 120, 0.62) !important;
+  background:
+    linear-gradient(180deg, rgba(248, 255, 251, 1), rgba(230, 255, 242, 0.94)) !important;
+  box-shadow:
+    0 14px 36px rgba(24, 200, 120, 0.16),
+    0 0 0 3px rgba(53, 242, 143, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(15, 25, 40, 0.06);
+  overflow: hidden;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-logo img {
+  width: 22px;
+  height: 22px;
+  display: block;
+  object-fit: contain;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-name {
+  display: block;
+  color: #111827 !important;
+  font-size: 14px;
+  line-height: 1.15;
+  font-weight: 850;
+  letter-spacing: -0.01em;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-caption {
+  display: block;
+  color: rgba(21, 32, 51, 0.72) !important;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 650;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-name {
+  color: #111827 !important;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-caption {
+  color: rgba(21, 32, 51, 0.72) !important;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-check {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(142, 160, 190, 0.5);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check {
+  border-color: rgba(24, 200, 120, 0.85);
+  background: #18c878;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-check::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 4px;
+  width: 5px;
+  height: 9px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  opacity: 0;
+  transform: rotate(45deg);
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check::after,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check::after {
+  opacity: 1;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-password-wrap {
+  position: relative;
+  display: block;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-password-wrap .chatgpt-order-field__control {
+  padding-right: 48px;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0 !important;
+  border-radius: 11px;
+  background: transparent !important;
+  color: rgba(21, 32, 51, 0.58) !important;
+  box-shadow: none !important;
+  transform: translateY(-50%) !important;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:hover:not(:disabled),
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:active:not(:disabled),
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:focus-visible {
+  background: rgba(21, 32, 51, 0.06) !important;
+  color: #101827 !important;
+  box-shadow: none !important;
+  transform: translateY(-50%) !important;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-note {
+  border: 1px solid rgba(142, 160, 190, 0.22);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: none;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-panel {
+  gap: 10px;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details {
+  border: 1px solid rgba(142, 160, 190, 0.28);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(245, 249, 255, 0.86));
+  box-shadow:
+    0 10px 28px rgba(35, 55, 85, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  overflow: hidden;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary {
+  min-height: 52px;
+  padding: 14px 16px;
+  color: #1b2a41;
+  font-size: 14px;
+  font-weight: 850;
+  list-style: none;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary::after {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(24, 200, 120, 0.1);
+  color: #18c878;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details__body {
+  gap: 12px;
+  padding: 0 16px 16px;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details__body .chatgpt-order-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-time-note {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(142, 160, 190, 0.2);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(21, 32, 51, 0.58);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-design-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  gap: 8px;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-design-option {
+  min-height: 66px;
+  padding: 8px;
+  border: 1px solid rgba(142, 160, 190, 0.3);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: none;
+  color: rgba(21, 32, 51, 0.66);
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-design-option:has(input:checked) {
+  border-color: rgba(24, 200, 120, 0.7);
+  box-shadow: 0 0 0 3px rgba(53, 242, 143, 0.1);
+}
+
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-design-option__thumb {
+  width: 30px;
+  height: 30px;
+  font-size: 18px;
+}
+
+@media (max-width: 640px) {
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
+    grid-template-columns: 1fr;
+    padding: 16px 54px 16px 14px;
+  }
+
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__top {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-main {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline {
+    grid-template-columns: 1fr;
+  }
+
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price,
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-total {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    justify-self: stretch;
+    text-align: left;
+  }
+
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips,
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-chips,
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
+    margin-left: 0;
+  }
+
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment {
+    grid-template-columns: 1fr;
+  }
+
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details__body .chatgpt-order-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-design-grid {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-snap-type: x proximity;
+  }
+
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-design-option {
+    flex: 0 0 76px;
+    scroll-snap-align: start;
+  }
+}
+
+[data-service-page="chatgpt"] button:focus-visible,
+[data-service-page="chatgpt"] .buy-btn:focus-visible,
+[data-service-page="chatgpt"] a:focus-visible,
+.service-page[data-service-page="chatgpt"] ~ .payment-method-modal button:focus-visible,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(5, 5, 5, 0.9),
+    0 0 0 6px rgba(53, 242, 143, 0.72) !important;
+}
+
+[data-service-page="chatgpt"] button:disabled,
+[data-service-page="chatgpt"] .buy-btn:disabled,
+[data-service-page="chatgpt"] .pay-now-btn:disabled,
+.service-page[data-service-page="chatgpt"] ~ .payment-method-modal button:disabled,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button:disabled,
+.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal [aria-busy="true"] {
+  opacity: 0.52;
+  cursor: not-allowed;
+  transform: none;
+  filter: grayscale(0.2);
+  box-shadow: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-service-page="chatgpt"] button,
+  [data-service-page="chatgpt"] .buy-btn,
+  [data-service-page="chatgpt"] .pay-now-btn,
+  [data-service-page="chatgpt"] .service-filter-chip,
+  [data-service-page="chatgpt"] .service-back-link,
+  .service-page[data-service-page="chatgpt"] ~ .payment-method-modal button,
+  .service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__option,
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button,
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label {
+    transition: none;
+  }
+
+  [data-service-page="chatgpt"] button:hover,
+  [data-service-page="chatgpt"] .buy-btn:hover,
+  [data-service-page="chatgpt"] .pay-now-btn:hover,
+  [data-service-page="chatgpt"] .service-filter-chip:hover,
+  [data-service-page="chatgpt"] .service-back-link:hover,
+  .service-page[data-service-page="chatgpt"] ~ .payment-method-modal button:hover,
+  .service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__option:hover,
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button:hover,
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  [data-service-page="chatgpt"] button,
+  [data-service-page="chatgpt"] .buy-btn,
+  [data-service-page="chatgpt"] .pay-now-btn,
+  [data-service-page="chatgpt"] .service-filter-chip,
+  [data-service-page="chatgpt"] .service-back-link,
+  .service-page[data-service-page="chatgpt"] ~ .payment-method-modal button,
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button {
+    min-height: 48px;
+    font-size: 15px;
+  }
+
+  [data-service-page="chatgpt"] .service-checkout-card .buy-btn,
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-submit {
+    width: 100%;
+  }
+
+  .service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__option,
+  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label {
+    min-height: 58px;
+  }
+}
+/* End ChatGPT page scoped emerald controls */
+
+/* Claude page scoped orange controls */
+[data-service-page="claude"],
+.service-page[data-service-page="claude"] ~ .payment-method-modal,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal {
+  --claude-orange: #ffb15a;
+  --claude-orange-2: #f97316;
+  --claude-orange-3: #c2410c;
+  --claude-orange-soft: rgba(249, 115, 22, 0.14);
+  --claude-orange-border: rgba(249, 115, 22, 0.36);
+  --claude-button-text-dark: #201006;
+}
+
+.service-hero.service-hero--claude {
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at 18% 10%, rgba(255, 177, 90, 0.36), transparent 34%),
+    radial-gradient(circle at 82% 18%, rgba(249, 115, 22, 0.28), transparent 36%),
+    linear-gradient(135deg, #160d09 0%, #3a1b0e 48%, #090605 100%);
+  background-size: 150% 150%;
+  animation: claudeHeroBackgroundShift 9s ease-in-out infinite alternate;
+  font-family: "Manrope", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.service-hero.service-hero--claude .service-hero__video {
+  filter: saturate(1.12) contrast(1.04) brightness(0.9);
+}
+
+.service-hero.service-hero--claude::before,
+.service-hero.service-hero--claude::after {
+  content: "";
+  position: absolute;
+  inset: -24%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.service-hero.service-hero--claude::before {
+  background:
+    conic-gradient(from 145deg at 52% 52%, rgba(255, 177, 90, 0.32), rgba(249, 115, 22, 0.12), transparent, rgba(255, 177, 90, 0.26));
+  filter: blur(20px);
+  opacity: 0.82;
+  animation: claudeHeroGlow 8s ease-in-out infinite alternate;
+}
+
+.service-hero.service-hero--claude::after {
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.14), rgba(0, 0, 0, 0.62)),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.16), rgba(40, 16, 4, 0.36));
+  z-index: 2;
+}
+
+.service-hero.service-hero--claude::before,
+.service-hero.service-hero--claude::after {
+  content: none;
+  display: none;
+}
+
+.service-hero.service-hero--claude .service-hero__content {
+  gap: 0;
+  max-width: 760px;
+}
+
+.service-hero.service-hero--claude .service-hero__eyebrow {
+  display: block;
+  margin: 0 0 14px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.service-hero.service-hero--claude h1 {
+  margin: 0 0 22px;
+  color: #fff;
+  font-size: clamp(48px, 7vw, 96px);
+  line-height: 0.92;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+}
+
+.service-hero.service-hero--claude p {
+  max-width: 760px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: clamp(17px, 1.6vw, 22px);
+  line-height: 1.45;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+@keyframes claudeHeroGlow {
+  0% {
+    transform: translate3d(-2%, -1%, 0) rotate(0deg) scale(1);
+    opacity: 0.68;
+  }
+  100% {
+    transform: translate3d(2%, 1%, 0) rotate(9deg) scale(1.06);
+    opacity: 0.92;
+  }
+}
+
+@keyframes claudeHeroBackgroundShift {
+  0% {
+    background-position: 0% 28%, 100% 12%, 0% 50%;
+  }
+
+  100% {
+    background-position: 100% 72%, 8% 88%, 100% 50%;
+  }
+}
+
+[data-service-page="claude"] .service-product-gallery img {
+  box-shadow:
+    0 24px 70px rgba(124, 45, 18, 0.16),
+    0 0 0 1px rgba(249, 115, 22, 0.08);
+}
+
+[data-service-page="claude"] .buy-btn,
+[data-service-page="claude"] .pay-now-btn,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-submit {
+  position: relative;
+  min-height: 48px;
+  border: 1px solid rgba(32, 16, 6, 0.12);
+  border-color: rgba(32, 16, 6, 0.12) !important;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--claude-orange) 0%, var(--claude-orange-2) 52%, var(--claude-orange-3) 100%) !important;
+  color: var(--claude-button-text-dark) !important;
+  font-family: inherit;
+  font-weight: 850;
+  letter-spacing: -0.015em;
+  box-shadow:
+    0 14px 34px rgba(249, 115, 22, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34) !important;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    filter 180ms ease;
+}
+
+[data-service-page="claude"] .buy-btn:hover:not(:disabled),
+[data-service-page="claude"] .pay-now-btn:hover:not(:disabled),
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: saturate(1.08) brightness(1.03);
+  box-shadow:
+    0 18px 44px rgba(249, 115, 22, 0.36),
+    0 0 0 4px rgba(255, 177, 90, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42) !important;
+}
+
+[data-service-page="claude"] .buy-btn:active:not(:disabled),
+[data-service-page="claude"] .pay-now-btn:active:not(:disabled),
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-submit:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
+  box-shadow:
+    0 8px 24px rgba(249, 115, 22, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+[data-service-page="claude"] .service-filter-chip {
+  min-height: 44px;
+  border-color: rgba(249, 115, 22, 0.2);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 247, 237, 0.92));
+  color: #241107;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 10px 24px rgba(69, 26, 3, 0.06);
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease,
+    filter 180ms ease;
+}
+
+[data-service-page="claude"] .service-filter-chip:hover:not(.is-disabled),
+[data-service-page="claude"] .service-filter-chip.is-active,
+[data-service-page="claude"] .service-filter-chip[aria-pressed="true"] {
+  transform: translateY(-1px);
+  border-color: rgba(255, 177, 90, 0.62);
+  background: linear-gradient(135deg, var(--claude-orange) 0%, var(--claude-orange-2) 52%, var(--claude-orange-3) 100%);
+  color: var(--claude-button-text-dark);
+  box-shadow:
+    0 14px 32px rgba(249, 115, 22, 0.22),
+    0 0 0 4px rgba(255, 177, 90, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.36);
+}
+
+[data-service-page="claude"] .service-filter-chip.is-disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  transform: none;
+  filter: grayscale(0.14);
+  box-shadow: none;
+}
+
+[data-service-page="claude"] .service-back-link,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle,
+.service-page[data-service-page="claude"] ~ .payment-method-modal .payment-method-modal__close {
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.045));
+  color: rgba(255, 255, 255, 0.88);
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.11),
+    0 10px 28px rgba(0, 0, 0, 0.2);
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+[data-service-page="claude"] .service-back-link:hover,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn:hover:not(:disabled),
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle:hover:not(:disabled),
+.service-page[data-service-page="claude"] ~ .payment-method-modal .payment-method-modal__close:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 177, 90, 0.38) !important;
+  background: linear-gradient(180deg, rgba(249, 115, 22, 0.14), rgba(255, 255, 255, 0.055));
+  color: #ffffff;
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.26),
+    0 0 0 4px rgba(255, 177, 90, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal {
+  font-family: "Manrope", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__dialog {
+  position: relative;
+  background:
+    radial-gradient(circle at 14% 0%, rgba(249, 115, 22, 0.13), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(255, 248, 241, 0.94)) !important;
+  border: 1px solid rgba(194, 65, 12, 0.18);
+  box-shadow:
+    0 28px 90px rgba(69, 26, 3, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close {
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  border: 1px solid rgba(194, 65, 12, 0.2) !important;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86) !important;
+  color: rgba(55, 24, 9, 0.66) !important;
+  box-shadow:
+    0 10px 26px rgba(69, 26, 3, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88) !important;
+  transform: none !important;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close:hover,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close:active {
+  background: rgba(255, 247, 237, 0.96) !important;
+  color: #241107 !important;
+  transform: none !important;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card {
+  color: #241107;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-section {
+  border-color: rgba(194, 65, 12, 0.16);
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow:
+    0 10px 30px rgba(69, 26, 3, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-section__head h4,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-section-title {
+  color: #241107;
+  font-weight: 850;
+  letter-spacing: -0.025em;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-section__head p,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-field small {
+  color: rgba(55, 24, 9, 0.58);
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px 18px;
+  align-items: center;
+  padding: 18px 58px 18px 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(194, 65, 12, 0.22);
+  background:
+    radial-gradient(circle at 0 0, rgba(249, 115, 22, 0.14), transparent 36%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 248, 241, 0.94));
+  box-shadow:
+    0 16px 42px rgba(69, 26, 3, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::before,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::after,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::before,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::after {
+  content: none;
+  display: none;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__top,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-main {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+  min-width: 0;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: #241107;
+  box-shadow: 0 14px 30px rgba(249, 115, 22, 0.2);
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__body,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-info {
+  min-width: 0;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__body .chatgpt-order-title {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: #241107;
+  font-size: clamp(22px, 3vw, 27px);
+  line-height: 1.05;
+  font-weight: 880;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__meta,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-meta {
+  margin: 4px 0 0;
+  color: rgba(55, 24, 9, 0.62);
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 650;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-total {
+  align-self: center;
+  justify-self: end;
+  min-width: 132px;
+  max-width: 170px;
+  box-sizing: border-box;
+  padding: 0;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+  color: #241107;
+  text-align: right;
+  box-shadow: none;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price::before {
+  content: none;
+  display: none;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-total span {
+  display: block;
+  margin: 0;
+  color: rgba(55, 24, 9, 0.5);
+  font-size: 10px;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-total strong {
+  display: block;
+  margin-top: 5px;
+  color: #241107;
+  font-size: clamp(23px, 3vw, 28px);
+  line-height: 1;
+  font-weight: 850;
+  letter-spacing: -0.055em;
+  white-space: nowrap;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 10px 0 0;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips span {
+  min-height: 25px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(249, 115, 22, 0.22);
+  background: rgba(249, 115, 22, 0.09);
+  color: rgba(55, 24, 9, 0.74);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 760;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
+  grid-column: 1 / -1;
+  margin: 0 0 0 63px;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-payment {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+[data-service-page="claude"] .payment-method,
+[data-service-page="claude"] .payment-option,
+.service-page[data-service-page="claude"] ~ .payment-method-modal .payment-method-modal__option,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option {
+  position: relative;
+  border: 1px solid rgba(194, 65, 12, 0.24) !important;
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 247, 237, 0.9)) !important;
+  color: #241107 !important;
+  box-shadow:
+    0 10px 26px rgba(69, 26, 3, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86) !important;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 10px;
+  min-height: 68px;
+  padding: 12px 14px;
+  text-align: left;
+  transform: none;
+  cursor: pointer;
+}
+
+[data-service-page="claude"] .payment-method:hover,
+[data-service-page="claude"] .payment-option:hover,
+.service-page[data-service-page="claude"] ~ .payment-method-modal .payment-method-modal__option:hover,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option:hover {
+  transform: translateY(-1px);
+  border-color: rgba(249, 115, 22, 0.48) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 237, 213, 0.9)) !important;
+  box-shadow:
+    0 14px 34px rgba(249, 115, 22, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
+}
+
+.service-page[data-service-page="claude"] ~ .payment-method-modal .payment-method-modal__option.is-active,
+.service-page[data-service-page="claude"] ~ .payment-method-modal .payment-method-modal__option[aria-pressed="true"],
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option:has(input:checked),
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option[aria-checked="true"] {
+  border-color: rgba(249, 115, 22, 0.66) !important;
+  background: linear-gradient(180deg, rgba(255, 251, 235, 1), rgba(255, 237, 213, 0.94)) !important;
+  box-shadow:
+    0 14px 36px rgba(249, 115, 22, 0.16),
+    0 0 0 3px rgba(255, 177, 90, 0.11),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-payment-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(67, 20, 7, 0.06);
+  overflow: hidden;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-payment-logo img {
+  width: 22px;
+  height: 22px;
+  display: block;
+  object-fit: contain;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-payment-text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-payment-name,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-name {
+  display: block;
+  color: #241107 !important;
+  font-size: 14px;
+  line-height: 1.15;
+  font-weight: 850;
+  letter-spacing: -0.01em;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-payment-caption,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-caption {
+  display: block;
+  color: rgba(55, 24, 9, 0.72) !important;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 650;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-payment-check {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(194, 65, 12, 0.38);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check {
+  border-color: rgba(249, 115, 22, 0.9);
+  background: #f97316;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-payment-check::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 4px;
+  width: 5px;
+  height: 9px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  opacity: 0;
+  transform: rotate(45deg);
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check::after,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check::after {
+  opacity: 1;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-password-wrap {
+  position: relative;
+  display: block;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-password-wrap .chatgpt-order-field__control {
+  padding-right: 48px;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0 !important;
+  border-radius: 11px;
+  background: transparent !important;
+  color: rgba(55, 24, 9, 0.58) !important;
+  box-shadow: none !important;
+  transform: translateY(-50%) !important;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:hover:not(:disabled),
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:active:not(:disabled),
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:focus-visible {
+  background: rgba(55, 24, 9, 0.06) !important;
+  color: #241107 !important;
+  box-shadow: none !important;
+  transform: translateY(-50%) !important;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-note,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details {
+  border: 1px solid rgba(194, 65, 12, 0.2);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: none;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary {
+  min-height: 52px;
+  padding: 14px 16px;
+  color: #241107;
+  font-size: 14px;
+  font-weight: 850;
+  list-style: none;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary::after {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(249, 115, 22, 0.1);
+  color: #f97316;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+[data-service-page="claude"] button:focus-visible,
+[data-service-page="claude"] .buy-btn:focus-visible,
+[data-service-page="claude"] a:focus-visible,
+.service-page[data-service-page="claude"] ~ .payment-method-modal button:focus-visible,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal button:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(5, 5, 5, 0.9),
+    0 0 0 6px rgba(249, 115, 22, 0.7) !important;
+}
+
+[data-service-page="claude"] button:disabled,
+[data-service-page="claude"] .buy-btn:disabled,
+[data-service-page="claude"] .pay-now-btn:disabled,
+.service-page[data-service-page="claude"] ~ .payment-method-modal button:disabled,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal button:disabled,
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal [aria-busy="true"] {
+  opacity: 0.52;
+  cursor: not-allowed;
+  transform: none;
+  filter: grayscale(0.2);
+  box-shadow: none !important;
+}
+
+@media (max-width: 640px) {
+  .service-hero.service-hero--claude h1 {
+    font-size: clamp(44px, 15vw, 64px);
+    letter-spacing: -0.04em;
+  }
+
+  .service-hero.service-hero--claude p {
+    max-width: 100%;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .service-hero.service-hero--claude .service-hero__eyebrow {
+    font-size: 12px;
+  }
+
+  [data-service-page="claude"] button,
+  [data-service-page="claude"] .buy-btn,
+  [data-service-page="claude"] .pay-now-btn,
+  [data-service-page="claude"] .service-filter-chip,
+  [data-service-page="claude"] .service-back-link,
+  .service-page[data-service-page="claude"] ~ .payment-method-modal button,
+  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal button {
+    min-height: 48px;
+    font-size: 15px;
+  }
+
+  [data-service-page="claude"] .service-checkout-card .buy-btn,
+  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-submit {
+    width: 100%;
+  }
+
+  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
+    grid-template-columns: 1fr;
+    padding: 16px 54px 16px 14px;
+  }
+
+  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__top,
+  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-main {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline,
+  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-payment {
+    grid-template-columns: 1fr;
+  }
+
+  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price,
+  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-total {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    justify-self: stretch;
+    text-align: left;
+  }
+
+  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips,
+  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-chips,
+  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-hero.service-hero--claude::before {
+    animation: none;
+  }
+
+  .service-hero.service-hero--claude {
+    animation: none;
+  }
+
+  [data-service-page="claude"] button,
+  [data-service-page="claude"] .buy-btn,
+  [data-service-page="claude"] .pay-now-btn,
+  [data-service-page="claude"] .service-filter-chip,
+  [data-service-page="claude"] .service-back-link,
+  .service-page[data-service-page="claude"] ~ .payment-method-modal button,
+  .service-page[data-service-page="claude"] ~ .payment-method-modal .payment-method-modal__option,
+  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal button,
+  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label {
+    transition: none;
+  }
+
+  [data-service-page="claude"] button:hover,
+  [data-service-page="claude"] .buy-btn:hover,
+  [data-service-page="claude"] .pay-now-btn:hover,
+  [data-service-page="claude"] .service-filter-chip:hover,
+  [data-service-page="claude"] .service-back-link:hover,
+  .service-page[data-service-page="claude"] ~ .payment-method-modal button:hover,
+  .service-page[data-service-page="claude"] ~ .payment-method-modal .payment-method-modal__option:hover,
+  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal button:hover,
+  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label:hover {
+    transform: none;
+  }
+}
+/* End Claude page scoped orange controls */
+
+/* Grok page scoped black controls */
+[data-service-page="grok"],
+.service-page[data-service-page="grok"] ~ .payment-method-modal,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal {
+  --grok-black: #05070a;
+  --grok-black-2: #111827;
+  --grok-black-3: #000000;
+  --grok-ink: #f8fafc;
+  --grok-muted: rgba(248, 250, 252, 0.68);
+  --grok-line: rgba(15, 23, 42, 0.22);
+  --grok-soft: rgba(15, 23, 42, 0.08);
+}
+
+.service-hero.service-hero--supergrok {
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at 18% 10%, rgba(248, 250, 252, 0.14), transparent 34%),
+    radial-gradient(circle at 82% 18%, rgba(148, 163, 184, 0.12), transparent 36%),
+    linear-gradient(135deg, #05070a 0%, #111827 48%, #000000 100%);
+  background-size: 150% 150%;
+  animation: grokHeroBackgroundShift 10s ease-in-out infinite alternate;
+  font-family: "Manrope", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.service-hero.service-hero--supergrok .service-hero__video {
+  filter: grayscale(1) saturate(0.55) contrast(1.12) brightness(0.72);
+}
+
+.service-hero.service-hero--supergrok .service-hero__content {
+  gap: 0;
+  max-width: 760px;
+}
+
+.service-hero.service-hero--supergrok .service-hero__eyebrow {
+  display: block;
+  margin: 0 0 14px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.service-hero.service-hero--supergrok h1 {
+  margin: 0 0 22px;
+  color: #fff;
+  font-size: clamp(48px, 7vw, 96px);
+  line-height: 0.92;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+}
+
+.service-hero.service-hero--supergrok p {
+  max-width: 760px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: clamp(17px, 1.6vw, 22px);
+  line-height: 1.45;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+@keyframes grokHeroBackgroundShift {
+  0% {
+    background-position: 0% 28%, 100% 12%, 0% 50%;
+  }
+
+  100% {
+    background-position: 100% 72%, 8% 88%, 100% 50%;
+  }
+}
+
+[data-service-page="grok"] .service-product-gallery img {
+  background: #05070a;
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.18),
+    0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+[data-service-page="grok"] .buy-btn,
+[data-service-page="grok"] .pay-now-btn,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-submit {
+  position: relative;
+  min-height: 48px;
+  border: 1px solid rgba(248, 250, 252, 0.16);
+  border-color: rgba(248, 250, 252, 0.16) !important;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--grok-black) 0%, var(--grok-black-2) 52%, var(--grok-black-3) 100%) !important;
+  color: var(--grok-ink) !important;
+  font-family: inherit;
+  font-weight: 850;
+  letter-spacing: -0.015em;
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    filter 180ms ease;
+}
+
+[data-service-page="grok"] .buy-btn:hover:not(:disabled),
+[data-service-page="grok"] .pay-now-btn:hover:not(:disabled),
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.12);
+  border-color: rgba(248, 250, 252, 0.26) !important;
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.34),
+    0 0 0 4px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
+}
+
+[data-service-page="grok"] .buy-btn:active:not(:disabled),
+[data-service-page="grok"] .pay-now-btn:active:not(:disabled),
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-submit:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+}
+
+[data-service-page="grok"] .service-filter-chip {
+  min-height: 44px;
+  border-color: rgba(15, 23, 42, 0.18);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.92));
+  color: #111827;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 10px 24px rgba(0, 0, 0, 0.055);
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease,
+    filter 180ms ease;
+}
+
+[data-service-page="grok"] .service-filter-chip:hover:not(.is-disabled),
+[data-service-page="grok"] .service-filter-chip.is-active,
+[data-service-page="grok"] .service-filter-chip[aria-pressed="true"] {
+  transform: translateY(-1px);
+  border-color: rgba(15, 23, 42, 0.72);
+  background: linear-gradient(135deg, var(--grok-black) 0%, var(--grok-black-2) 52%, var(--grok-black-3) 100%);
+  color: var(--grok-ink);
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.18),
+    0 0 0 4px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+[data-service-page="grok"] .service-filter-chip.is-disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  transform: none;
+  filter: grayscale(0.18);
+  box-shadow: none;
+}
+
+[data-service-page="grok"] .service-back-link,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle,
+.service-page[data-service-page="grok"] ~ .payment-method-modal .payment-method-modal__close {
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.045));
+  color: rgba(255, 255, 255, 0.88);
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.11),
+    0 10px 28px rgba(0, 0, 0, 0.22);
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+[data-service-page="grok"] .service-back-link:hover,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn:hover:not(:disabled),
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle:hover:not(:disabled),
+.service-page[data-service-page="grok"] ~ .payment-method-modal .payment-method-modal__close:hover {
+  transform: translateY(-1px);
+  border-color: rgba(248, 250, 252, 0.28) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.055));
+  color: #ffffff;
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.3),
+    0 0 0 4px rgba(255, 255, 255, 0.035),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal {
+  font-family: "Manrope", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__dialog {
+  position: relative;
+  background:
+    radial-gradient(circle at 14% 0%, rgba(15, 23, 42, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 248, 251, 0.94)) !important;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  box-shadow:
+    0 28px 90px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close {
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  border: 1px solid rgba(15, 23, 42, 0.18) !important;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88) !important;
+  color: rgba(15, 23, 42, 0.66) !important;
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  transform: none !important;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close:hover,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close:active {
+  background: rgba(248, 250, 252, 0.98) !important;
+  color: #05070a !important;
+  transform: none !important;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card {
+  color: #05070a;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-section {
+  border-color: rgba(15, 23, 42, 0.14);
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.055),
+    inset 0 1px 0 rgba(255, 255, 255, 0.84);
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-section__head h4,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-section-title {
+  color: #05070a;
+  font-weight: 850;
+  letter-spacing: -0.025em;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-section__head p,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-field small {
+  color: rgba(15, 23, 42, 0.58);
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px 18px;
+  align-items: center;
+  padding: 18px 58px 18px 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  background:
+    radial-gradient(circle at 0 0, rgba(15, 23, 42, 0.1), transparent 36%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.94));
+  box-shadow:
+    0 16px 42px rgba(0, 0, 0, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::before,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::after,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::before,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::after {
+  content: none;
+  display: none;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__top,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-main {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+  min-width: 0;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: #05070a;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__body,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-info {
+  min-width: 0;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__body .chatgpt-order-title {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: #05070a;
+  font-size: clamp(22px, 3vw, 27px);
+  line-height: 1.05;
+  font-weight: 880;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__meta,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-meta {
+  margin: 4px 0 0;
+  color: rgba(15, 23, 42, 0.62);
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 650;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-total {
+  align-self: center;
+  justify-self: end;
+  min-width: 132px;
+  max-width: 170px;
+  box-sizing: border-box;
+  padding: 0;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+  color: #05070a;
+  text-align: right;
+  box-shadow: none;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price::before {
+  content: none;
+  display: none;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-total span {
+  display: block;
+  margin: 0;
+  color: rgba(15, 23, 42, 0.5);
+  font-size: 10px;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-total strong {
+  display: block;
+  margin-top: 5px;
+  color: #05070a;
+  font-size: clamp(23px, 3vw, 28px);
+  line-height: 1;
+  font-weight: 850;
+  letter-spacing: -0.055em;
+  white-space: nowrap;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 10px 0 0;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips span {
+  min-height: 25px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  background: rgba(15, 23, 42, 0.07);
+  color: rgba(15, 23, 42, 0.74);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 760;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
+  grid-column: 1 / -1;
+  margin: 0 0 0 63px;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+[data-service-page="grok"] .payment-method,
+[data-service-page="grok"] .payment-option,
+.service-page[data-service-page="grok"] ~ .payment-method-modal .payment-method-modal__option,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option {
+  position: relative;
+  border: 1px solid rgba(15, 23, 42, 0.2) !important;
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(248, 250, 252, 0.92)) !important;
+  color: #05070a !important;
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88) !important;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 10px;
+  min-height: 68px;
+  padding: 12px 14px;
+  text-align: left;
+  transform: none;
+  cursor: pointer;
+}
+
+[data-service-page="grok"] .payment-method:hover,
+[data-service-page="grok"] .payment-option:hover,
+.service-page[data-service-page="grok"] ~ .payment-method-modal .payment-method-modal__option:hover,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option:hover {
+  transform: translateY(-1px);
+  border-color: rgba(15, 23, 42, 0.42) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(241, 245, 249, 0.92)) !important;
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.94) !important;
+}
+
+.service-page[data-service-page="grok"] ~ .payment-method-modal .payment-method-modal__option.is-active,
+.service-page[data-service-page="grok"] ~ .payment-method-modal .payment-method-modal__option[aria-pressed="true"],
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option:has(input:checked),
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option[aria-checked="true"] {
+  border-color: rgba(15, 23, 42, 0.62) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(226, 232, 240, 0.92)) !important;
+  box-shadow:
+    0 14px 36px rgba(0, 0, 0, 0.14),
+    0 0 0 3px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.94) !important;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-logo img {
+  width: 22px;
+  height: 22px;
+  display: block;
+  object-fit: contain;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-name,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-name {
+  display: block;
+  color: #05070a !important;
+  font-size: 14px;
+  line-height: 1.15;
+  font-weight: 850;
+  letter-spacing: -0.01em;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-caption,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-caption {
+  display: block;
+  color: rgba(15, 23, 42, 0.72) !important;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 650;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-check {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.38);
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check {
+  border-color: rgba(15, 23, 42, 0.9);
+  background: #05070a;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-check::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 4px;
+  width: 5px;
+  height: 9px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  opacity: 0;
+  transform: rotate(45deg);
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check::after,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check::after {
+  opacity: 1;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-password-wrap {
+  position: relative;
+  display: block;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-password-wrap .chatgpt-order-field__control {
+  padding-right: 48px;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0 !important;
+  border-radius: 11px;
+  background: transparent !important;
+  color: rgba(15, 23, 42, 0.58) !important;
+  box-shadow: none !important;
+  transform: translateY(-50%) !important;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:hover:not(:disabled),
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:active:not(:disabled),
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:focus-visible {
+  background: rgba(15, 23, 42, 0.06) !important;
+  color: #05070a !important;
+  box-shadow: none !important;
+  transform: translateY(-50%) !important;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-note,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details {
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: none;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary {
+  min-height: 52px;
+  padding: 14px 16px;
+  color: #05070a;
+  font-size: 14px;
+  font-weight: 850;
+  list-style: none;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary::after {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(15, 23, 42, 0.09);
+  color: #05070a;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+[data-service-page="grok"] .service-checkout-card .buy-btn:hover:not(:disabled),
+[data-service-page="grok"] .service-checkout-card .pay-now-btn:hover:not(:disabled) {
+  transform: none;
+  background: linear-gradient(135deg, #111827 0%, #1f2937 52%, #05070a 100%) !important;
+  filter: none;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.22),
+    0 0 0 3px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+[data-service-page="grok"] button:focus-visible,
+[data-service-page="grok"] .buy-btn:focus-visible,
+[data-service-page="grok"] a:focus-visible,
+.service-page[data-service-page="grok"] ~ .payment-method-modal button:focus-visible,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(248, 250, 252, 0.9),
+    0 0 0 6px rgba(15, 23, 42, 0.72) !important;
+}
+
+[data-service-page="grok"] button:disabled,
+[data-service-page="grok"] .buy-btn:disabled,
+[data-service-page="grok"] .pay-now-btn:disabled,
+.service-page[data-service-page="grok"] ~ .payment-method-modal button:disabled,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button:disabled,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal [aria-busy="true"] {
+  opacity: 0.52;
+  cursor: not-allowed;
+  transform: none;
+  filter: grayscale(0.2);
+  box-shadow: none !important;
+}
+
+@media (max-width: 640px) {
+  .service-hero.service-hero--supergrok h1 {
+    font-size: clamp(44px, 15vw, 64px);
+    letter-spacing: -0.04em;
+  }
+
+  .service-hero.service-hero--supergrok p {
+    max-width: 100%;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .service-hero.service-hero--supergrok .service-hero__eyebrow {
+    font-size: 12px;
+  }
+
+  [data-service-page="grok"] button,
+  [data-service-page="grok"] .buy-btn,
+  [data-service-page="grok"] .pay-now-btn,
+  [data-service-page="grok"] .service-filter-chip,
+  [data-service-page="grok"] .service-back-link,
+  .service-page[data-service-page="grok"] ~ .payment-method-modal button,
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button {
+    min-height: 48px;
+    font-size: 15px;
+  }
+
+  [data-service-page="grok"] .service-checkout-card .buy-btn,
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-submit {
+    width: 100%;
+  }
+
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
+    grid-template-columns: 1fr;
+    padding: 16px 54px 16px 14px;
+  }
+
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__top,
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-main {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline,
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment {
+    grid-template-columns: 1fr;
+  }
+
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price,
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-total {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    justify-self: stretch;
+    text-align: left;
+  }
+
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips,
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-chips,
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-hero.service-hero--supergrok {
+    animation: none;
+  }
+
+  [data-service-page="grok"] button,
+  [data-service-page="grok"] .buy-btn,
+  [data-service-page="grok"] .pay-now-btn,
+  [data-service-page="grok"] .service-filter-chip,
+  [data-service-page="grok"] .service-back-link,
+  .service-page[data-service-page="grok"] ~ .payment-method-modal button,
+  .service-page[data-service-page="grok"] ~ .payment-method-modal .payment-method-modal__option,
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button,
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label {
+    transition: none;
+  }
+
+  [data-service-page="grok"] button:hover,
+  [data-service-page="grok"] .buy-btn:hover,
+  [data-service-page="grok"] .pay-now-btn:hover,
+  [data-service-page="grok"] .service-filter-chip:hover,
+  [data-service-page="grok"] .service-back-link:hover,
+  .service-page[data-service-page="grok"] ~ .payment-method-modal button:hover,
+  .service-page[data-service-page="grok"] ~ .payment-method-modal .payment-method-modal__option:hover,
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button:hover,
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label:hover {
+    transform: none;
+  }
+}
+/* End Grok page scoped black controls */
+
+[data-service-page="chatgpt"] .service-checkout-card .buy-btn:hover:not(:disabled),
+[data-service-page="chatgpt"] .service-checkout-card .pay-now-btn:hover:not(:disabled) {
+  transform: none;
+}
+
+[data-service-page="claude"] .service-checkout-card .buy-btn:hover:not(:disabled),
+[data-service-page="claude"] .service-checkout-card .pay-now-btn:hover:not(:disabled) {
+  transform: none;
+  background: linear-gradient(135deg, #ffc27a 0%, #f68b2f 52%, #d85a11 100%) !important;
+  filter: none;
+  box-shadow:
+    0 12px 30px rgba(246, 139, 47, 0.24),
+    0 0 0 3px rgba(255, 194, 122, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.36) !important;
+}
+
+/* VPN page scoped dark-blue controls */
+[data-service-page="vpn"],
+.service-page[data-service-page="vpn"] ~ .payment-method-modal,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal {
+  --vpn-blue: #06142f;
+  --vpn-blue-2: #0b2f66;
+  --vpn-blue-3: #1d4ed8;
+  --vpn-blue-soft: rgba(37, 99, 235, 0.14);
+  --vpn-ink: #f8fbff;
+  --vpn-text: #07111f;
+  --vpn-muted: rgba(15, 23, 42, 0.62);
+}
+
+.service-hero.service-hero--vpn {
+  border-radius: 34px;
+  background: #020617;
+  isolation: isolate;
+}
+
+.service-hero.service-hero--vpn .service-hero__content {
+  font-family: "Manrope", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.service-hero.service-hero--vpn .service-hero__eyebrow {
+  display: inline-flex;
+  margin-bottom: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.service-hero.service-hero--vpn h1 {
+  margin: 0 0 22px;
+  color: #ffffff;
+  font-size: clamp(48px, 7vw, 96px);
+  line-height: 0.92;
+  font-weight: 780;
+  letter-spacing: -0.055em;
+}
+
+.service-hero.service-hero--vpn p {
+  max-width: 780px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: clamp(17px, 1.6vw, 22px);
+  line-height: 1.45;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+[data-service-page="vpn"] .service-product-gallery img {
+  background: #06142f;
+  box-shadow:
+    0 24px 70px rgba(11, 47, 102, 0.2),
+    0 0 0 1px rgba(29, 78, 216, 0.12);
+}
+
+[data-service-page="vpn"] .buy-btn,
+[data-service-page="vpn"] .pay-now-btn,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-submit {
+  position: relative;
+  min-height: 48px;
+  border: 1px solid rgba(147, 197, 253, 0.34) !important;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--vpn-blue) 0%, var(--vpn-blue-2) 52%, var(--vpn-blue-3) 100%) !important;
+  color: var(--vpn-ink) !important;
+  font-family: inherit;
+  font-weight: 850;
+  letter-spacing: -0.015em;
+  box-shadow:
+    0 16px 38px rgba(29, 78, 216, 0.28),
+    0 0 0 4px rgba(37, 99, 235, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    filter 180ms ease;
+}
+
+[data-service-page="vpn"] .buy-btn:hover:not(:disabled),
+[data-service-page="vpn"] .pay-now-btn:hover:not(:disabled),
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.12);
+  border-color: rgba(191, 219, 254, 0.54) !important;
+  box-shadow:
+    0 20px 48px rgba(29, 78, 216, 0.34),
+    0 0 0 5px rgba(37, 99, 235, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
+}
+
+[data-service-page="vpn"] .buy-btn:active:not(:disabled),
+[data-service-page="vpn"] .pay-now-btn:active:not(:disabled),
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-submit:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
+  box-shadow:
+    0 9px 24px rgba(29, 78, 216, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+}
+
+[data-service-page="vpn"] .service-filter-chip {
+  min-height: 44px;
+  border-color: rgba(30, 64, 175, 0.18);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 255, 0.9));
+  color: #07111f;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 10px 24px rgba(29, 78, 216, 0.07);
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease,
+    filter 180ms ease;
+}
+
+[data-service-page="vpn"] .service-filter-chip:hover:not(.is-disabled),
+[data-service-page="vpn"] .service-filter-chip.is-active,
+[data-service-page="vpn"] .service-filter-chip[aria-pressed="true"] {
+  transform: translateY(-1px);
+  border-color: rgba(29, 78, 216, 0.72);
+  background: linear-gradient(135deg, var(--vpn-blue) 0%, var(--vpn-blue-2) 52%, var(--vpn-blue-3) 100%);
+  color: var(--vpn-ink);
+  box-shadow:
+    0 14px 32px rgba(29, 78, 216, 0.22),
+    0 0 0 4px rgba(37, 99, 235, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+[data-service-page="vpn"] .service-filter-chip.is-disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  transform: none;
+  filter: grayscale(0.18);
+  box-shadow: none;
+}
+
+[data-service-page="vpn"] .service-back-link,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle,
+.service-page[data-service-page="vpn"] ~ .payment-method-modal .payment-method-modal__close {
+  border: 1px solid rgba(191, 219, 254, 0.18) !important;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(147, 197, 253, 0.12), rgba(255, 255, 255, 0.045));
+  color: rgba(255, 255, 255, 0.9);
+  font-family: inherit;
+  font-weight: 740;
+  letter-spacing: -0.01em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 10px 28px rgba(2, 6, 23, 0.24);
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+[data-service-page="vpn"] .service-back-link:hover,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn:hover:not(:disabled),
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle:hover:not(:disabled),
+.service-page[data-service-page="vpn"] ~ .payment-method-modal .payment-method-modal__close:hover {
+  transform: translateY(-1px);
+  border-color: rgba(219, 234, 254, 0.32) !important;
+  background: linear-gradient(180deg, rgba(147, 197, 253, 0.18), rgba(255, 255, 255, 0.07));
+  color: #ffffff;
+  box-shadow:
+    0 14px 34px rgba(2, 6, 23, 0.32),
+    0 0 0 4px rgba(37, 99, 235, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal {
+  font-family: "Manrope", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__dialog {
+  position: relative;
+  background:
+    radial-gradient(circle at 14% 0%, rgba(37, 99, 235, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 255, 0.94)) !important;
+  border: 1px solid rgba(29, 78, 216, 0.18);
+  box-shadow:
+    0 28px 90px rgba(2, 6, 23, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close {
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  border: 1px solid rgba(29, 78, 216, 0.18) !important;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: rgba(15, 23, 42, 0.66) !important;
+  box-shadow:
+    0 10px 26px rgba(2, 6, 23, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  transform: none !important;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-card {
+  color: var(--vpn-text);
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-section {
+  border-color: rgba(29, 78, 216, 0.14);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow:
+    0 10px 30px rgba(29, 78, 216, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.84);
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-section__head h4,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-section-title {
+  color: var(--vpn-text);
+  font-weight: 850;
+  letter-spacing: -0.025em;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-section__head p,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-field small {
+  color: var(--vpn-muted);
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px 18px;
+  align-items: center;
+  padding: 18px 58px 18px 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(29, 78, 216, 0.18);
+  background:
+    radial-gradient(circle at 0 0, rgba(37, 99, 235, 0.12), transparent 36%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(239, 246, 255, 0.94));
+  box-shadow:
+    0 16px 42px rgba(29, 78, 216, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::before,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::after,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::before,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::after {
+  content: none;
+  display: none;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__top,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-main {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+  min-width: 0;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: #06142f;
+  box-shadow: 0 14px 30px rgba(29, 78, 216, 0.22);
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__body .chatgpt-order-title {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--vpn-text);
+  font-size: clamp(22px, 3vw, 27px);
+  line-height: 1.05;
+  font-weight: 880;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__meta,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-meta {
+  margin: 4px 0 0;
+  color: rgba(15, 23, 42, 0.62);
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 650;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-total {
+  align-self: center;
+  justify-self: end;
+  min-width: 132px;
+  max-width: 170px;
+  box-sizing: border-box;
+  padding: 0;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+  color: var(--vpn-text);
+  text-align: right;
+  box-shadow: none;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-total span {
+  display: block;
+  margin: 0;
+  color: rgba(15, 23, 42, 0.5);
+  font-size: 10px;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-total strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--vpn-text);
+  font-size: clamp(23px, 3vw, 28px);
+  line-height: 1;
+  font-weight: 850;
+  letter-spacing: -0.055em;
+  white-space: nowrap;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 10px 0 0;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips span {
+  min-height: 25px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(29, 78, 216, 0.2);
+  background: rgba(37, 99, 235, 0.08);
+  color: rgba(15, 23, 42, 0.76);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 760;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
+  grid-column: 1 / -1;
+  margin: 0 0 0 63px;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-payment {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+[data-service-page="vpn"] .payment-method,
+[data-service-page="vpn"] .payment-option,
+.service-page[data-service-page="vpn"] ~ .payment-method-modal .payment-method-modal__option,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option {
+  position: relative;
+  border: 1px solid rgba(29, 78, 216, 0.2) !important;
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 255, 0.92)) !important;
+  color: var(--vpn-text) !important;
+  box-shadow:
+    0 10px 26px rgba(29, 78, 216, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 10px;
+  min-height: 68px;
+  padding: 12px 14px;
+  text-align: left;
+  transform: none;
+  cursor: pointer;
+}
+
+[data-service-page="vpn"] .payment-method:hover,
+[data-service-page="vpn"] .payment-option:hover,
+.service-page[data-service-page="vpn"] ~ .payment-method-modal .payment-method-modal__option:hover,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option:hover {
+  transform: translateY(-1px);
+  border-color: rgba(29, 78, 216, 0.48) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(219, 234, 254, 0.94)) !important;
+  box-shadow:
+    0 14px 34px rgba(29, 78, 216, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.94) !important;
+}
+
+.service-page[data-service-page="vpn"] ~ .payment-method-modal .payment-method-modal__option.is-active,
+.service-page[data-service-page="vpn"] ~ .payment-method-modal .payment-method-modal__option[aria-pressed="true"],
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option:has(input:checked),
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option[aria-checked="true"] {
+  border-color: rgba(29, 78, 216, 0.68) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(191, 219, 254, 0.92)) !important;
+  box-shadow:
+    0 14px 36px rgba(29, 78, 216, 0.16),
+    0 0 0 3px rgba(37, 99, 235, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.94) !important;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-payment-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(29, 78, 216, 0.08);
+  overflow: hidden;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-payment-logo img {
+  width: 22px;
+  height: 22px;
+  display: block;
+  object-fit: contain;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-payment-name,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-name {
+  display: block;
+  color: var(--vpn-text) !important;
+  font-size: 14px;
+  line-height: 1.15;
+  font-weight: 850;
+  letter-spacing: -0.01em;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-payment-caption,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-caption {
+  display: block;
+  color: rgba(15, 23, 42, 0.72) !important;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 650;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-payment-check {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(29, 78, 216, 0.42);
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check {
+  border-color: rgba(29, 78, 216, 0.9);
+  background: var(--vpn-blue-3);
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-payment-check::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 4px;
+  width: 5px;
+  height: 9px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  opacity: 0;
+  transform: rotate(45deg);
+}
+
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check::after,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check::after {
+  opacity: 1;
+}
+
+[data-service-page="vpn"] button:focus-visible,
+[data-service-page="vpn"] .buy-btn:focus-visible,
+[data-service-page="vpn"] a:focus-visible,
+.service-page[data-service-page="vpn"] ~ .payment-method-modal button:focus-visible,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal button:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.92),
+    0 0 0 6px rgba(29, 78, 216, 0.72) !important;
+}
+
+[data-service-page="vpn"] button:disabled,
+[data-service-page="vpn"] .buy-btn:disabled,
+[data-service-page="vpn"] .pay-now-btn:disabled,
+.service-page[data-service-page="vpn"] ~ .payment-method-modal button:disabled,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal button:disabled,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal [aria-busy="true"] {
+  opacity: 0.54;
+  cursor: not-allowed;
+  transform: none;
+  filter: grayscale(0.2);
+  box-shadow: none !important;
+}
+
+@media (max-width: 640px) {
+  .service-hero.service-hero--vpn h1 {
+    font-size: clamp(44px, 15vw, 64px);
+    letter-spacing: -0.04em;
+  }
+
+  .service-hero.service-hero--vpn p {
+    max-width: 100%;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .service-hero.service-hero--vpn .service-hero__eyebrow {
+    font-size: 12px;
+  }
+
+  [data-service-page="vpn"] button,
+  [data-service-page="vpn"] .buy-btn,
+  [data-service-page="vpn"] .pay-now-btn,
+  [data-service-page="vpn"] .service-filter-chip,
+  [data-service-page="vpn"] .service-back-link,
+  .service-page[data-service-page="vpn"] ~ .payment-method-modal button,
+  .service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal button {
+    min-height: 48px;
+    font-size: 15px;
+  }
+
+  [data-service-page="vpn"] .service-checkout-card .buy-btn,
+  .service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-submit {
+    width: 100%;
+  }
+
+  .service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
+    grid-template-columns: 1fr;
+    padding: 16px 54px 16px 14px;
+  }
+
+  .service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__top,
+  .service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-main {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  .service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-payment {
+    grid-template-columns: 1fr;
+  }
+
+  .service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price,
+  .service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-total {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    justify-self: stretch;
+    text-align: left;
+  }
+
+  .service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips,
+  .service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-chips,
+  .service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-hero.service-hero--vpn {
+    animation: none;
+  }
+
+  [data-service-page="vpn"] button,
+  [data-service-page="vpn"] .buy-btn,
+  [data-service-page="vpn"] .pay-now-btn,
+  [data-service-page="vpn"] .service-filter-chip,
+  [data-service-page="vpn"] .service-back-link,
+  .service-page[data-service-page="vpn"] ~ .payment-method-modal button,
+  .service-page[data-service-page="vpn"] ~ .payment-method-modal .payment-method-modal__option,
+  .service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal button,
+  .service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label {
+    transition: none;
+  }
+
+  [data-service-page="vpn"] button:hover,
+  [data-service-page="vpn"] .buy-btn:hover,
+  [data-service-page="vpn"] .pay-now-btn:hover,
+  [data-service-page="vpn"] .service-filter-chip:hover,
+  [data-service-page="vpn"] .service-back-link:hover,
+  .service-page[data-service-page="vpn"] ~ .payment-method-modal button:hover,
+  .service-page[data-service-page="vpn"] ~ .payment-method-modal .payment-method-modal__option:hover,
+  .service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal button:hover,
+  .service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label:hover {
+    transform: none;
+  }
+}
+/* End VPN page scoped dark-blue controls */
+
+/* Dynamic admin-driven service pages */
+.service-page--dynamic .service-hero__green-overlay {
+  background: var(--service-color-overlay, linear-gradient(135deg, rgba(0, 255, 120, .28), rgba(0, 130, 80, .18), rgba(0, 0, 0, .20)));
+}
+
+.service-page--dynamic .service-hero__dark-overlay {
+  background: var(--service-dark-overlay, linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .58)));
+}
+
+.service-page--dynamic .buy-btn,
+.service-page--dynamic .pay-now-btn,
+.service-page--dynamic .chatgpt-order-submit {
+  background: var(--service-accent-gradient, linear-gradient(135deg, #35f28f, #18c878, #0f8f5c));
+}
+
+.service-page--dynamic .service-filter-chip.is-active,
+.service-page--dynamic .chatgpt-payment-option:has(input:checked),
+.service-page--dynamic .payment-option:has(input:checked) {
+  border-color: color-mix(in srgb, var(--service-accent, #35f28f) 70%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--service-accent, #35f28f) 36%, transparent);
+}
+
+.service-page--dynamic .service-filter-chip:hover,
+.service-page--dynamic .payment-option:hover,
+.service-page--dynamic .chatgpt-payment-option:hover {
+  border-color: color-mix(in srgb, var(--service-accent, #35f28f) 58%, transparent);
 }

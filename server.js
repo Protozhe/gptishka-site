@@ -1637,12 +1637,32 @@ function createApp() {
     });
   });
 
+  const sendFreshHtml = (res, pagePath) => {
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
+    res.set("Surrogate-Control", "no-store");
+    return res.sendFile(pagePath);
+  };
+
   app.get("/", (_req, res) => {
-    res.sendFile(path.join(__dirname, "index.html"));
+    sendFreshHtml(res, path.join(__dirname, "index.html"));
+  });
+
+  app.get(["/chatgpt", "/chatgpt/"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "chatgpt.html"));
+  });
+
+  app.get(["/claude", "/claude/"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "claude.html"));
+  });
+
+  app.get(["/supergrok", "/supergrok/"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "supergrok.html"));
   });
 
   app.get("/en", (_req, res) => {
-    res.sendFile(path.join(__dirname, "en", "index.html"));
+    sendFreshHtml(res, path.join(__dirname, "en", "index.html"));
   });
 
   app.get("/admin", (_req, res) => {
@@ -1698,7 +1718,7 @@ function createApp() {
   app.get("*", (req, res, next) => {
     if (req.path.startsWith("/api/")) return next();
     if (path.extname(req.path)) return next();
-    return res.sendFile(path.join(__dirname, "index.html"));
+    return sendFreshHtml(res, path.join(__dirname, "index.html"));
   });
 
   app.use((req, res) => {

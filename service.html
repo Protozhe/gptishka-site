@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
+<meta charset="UTF-8" />
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="512x512" href="/assets/img/site-icon.png">
+<link rel="apple-touch-icon" href="/assets/img/site-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Тарифные планы GPTishka: выберите подходящий сервис, оплатите заказ и получите подключение с поддержкой." />
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="GPTishka" />
+<meta property="og:title" content="GPTishka — тарифные планы" />
+<meta property="og:description" content="Выберите тариф, оплатите заказ, а GPTishka возьмёт подключение на себя." />
+<meta property="og:image" content="https://gptishka.shop/assets/img/og-ai-subscriptions-vpn.png" />
+<title>GPTishka — тарифные планы</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/logo.min.css">
+<link rel="stylesheet" href="/assets/css/theme.min.css?v=20260516fix4">
+<link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260322-cardalign7" />
+<link rel="stylesheet" href="/assets/css/trust-promo.css?v=20260305g">
+<link rel="preload" href="/assets/css/support-widget.css?v=20260315b" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="/assets/css/support-widget.css?v=20260315b" /></noscript>
+<link rel="stylesheet" href="/assets/css/home-cro.css?v=20260324-cro12" />
+<link rel="stylesheet" href="/assets/css/home-stability-hotfix.css?v=20260619-service-constructor1" />
+</head>
+<body>
+<div class="page-overlay"></div>
+<header>
+  <div id="siteTicker" class="site-ticker" role="status" aria-live="polite">
+    <div class="site-ticker__marquee">
+      <div class="site-ticker__track" id="siteTickerTrack">
+        <div class="site-ticker__loop"><span class="site-ticker__item">Лента активаций обновляется...</span></div>
+        <div class="site-ticker__loop" aria-hidden="true"><span class="site-ticker__item">Лента активаций обновляется...</span></div>
+      </div>
+    </div>
+    <div class="site-ticker__stats">
+      <span class="site-ticker__stat"><span class="site-ticker__stat-label">всего активаций:</span> <strong id="siteTickerSales">0</strong></span>
+    </div>
+  </div>
+  <div class="nav">
+    <a href="/" class="logo-link">
+      <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo.png?v=20260531lcp1" alt="GPTишка" class="logo-img">
+    </a>
+    <nav>
+      <a href="/">Главная</a>
+      <a href="/#pricing" class="active">Тарифы</a>
+      <a href="/#how">Как это работает</a>
+      <a href="/#activationVideo">Как активировать</a>
+      <a href="/#faq">Вопросы и ответы</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page service-page service-page--constructor service-page--dynamic" data-service-page="" data-service-layout="constructor">
+  <section class="service-hero service-hero--dynamic">
+    <video class="service-hero__video" autoplay muted loop playsinline preload="auto" hidden></video>
+    <div class="service-hero__green-overlay"></div>
+    <div class="service-hero__dark-overlay"></div>
+    <a class="service-back-link" href="/#pricing">← Все сервисы</a>
+    <div class="service-hero__content">
+      <span class="service-hero__eyebrow">Тарифные планы</span>
+      <h1>GPTishka</h1>
+      <p>Выберите тариф, оплатите заказ, а GPTishka возьмёт подключение на себя.</p>
+    </div>
+  </section>
+
+  <section class="service-plans-section" id="plans">
+    <div class="service-constructor-shell">
+      <div class="service-product-gallery" aria-hidden="true"></div>
+      <div class="service-constructor-card">
+        <div class="service-constructor-head">
+          <div class="service-constructor-brand">
+            <span>Тарифные планы</span>
+            <h2>GPTishka</h2>
+          </div>
+          <div class="service-constructor-price">
+            <strong id="serviceConstructorPrice">—</strong>
+          </div>
+        </div>
+        <div class="service-filter-stack service-filter-stack--constructor" aria-label="Фильтры тарифов">
+          <div id="servicePlanFilters"></div>
+          <div id="serviceDeliveryFilters"></div>
+          <div id="serviceDurationFilters"></div>
+        </div>
+        <div class="service-selected-plan" id="servicePlansGrid" aria-live="polite"></div>
+        <div class="service-constructor-description">
+          <h3>GPTishka</h3>
+          <p>Описание появится после загрузки настроек страницы.</p>
+          <div class="service-delivery-help"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="service-info-section service-info-section--dynamic" data-service-info-section></section>
+  <section class="service-faq-section" id="faq" data-service-faq-section></section>
+</main>
+
+<div class="payment-method-modal" id="cartPaymentModal" hidden aria-hidden="true"></div>
+
+<footer>
+  <div class="footer-links-primary">
+    <a class="footer-link" href="/oferta.html">Публичная оферта</a> &middot;
+    <a class="footer-link" href="/politika.html">Политика конфиденциальности</a> &middot;
+    <a class="footer-link" href="/refund.html">Условия возврата</a>
+  </div>
+  <span class="footer-copy">&copy; 2026 GPTishka. Все права защищены, копирование запрещено.</span>
+</footer>
+<script src="/assets/js/app.min.js?v=20260619-service-constructor1" defer></script>
+<script src="/assets/js/support-widget.js?v=20260609-aiiisupport1" defer></script>
+</body>
+</html>

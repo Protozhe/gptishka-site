@@ -1,6 +1,6 @@
 (function () {
   var WIDGET_ID = "gptishka-support-widget";
-  var SUPPORT_URL = "https://t.me/gptishkasupp";
+  var SUPPORT_URL = "https://t.me/aiiisupport";
   var FORCE_SHOW_QUERY_KEY = "supportWidget";
   var HIDE_PATHS = [
     "/404.html",
@@ -236,7 +236,7 @@
 
     root.innerHTML =
       '<div class="support-widget__mascot" aria-hidden="true">' +
-        '<img class="support-widget__mascot-image" src="/assets/img/assistant-cat-left.png" data-gif-src="/assets/img/assistant-cat-left.gif" alt="" width="112" height="168" loading="lazy" decoding="async" fetchpriority="low" />' +
+        '<img class="support-widget__mascot-image" src="/assets/img/assistant-cat-left.png?v=20260531lcp1" data-gif-src="/assets/img/assistant-cat-left.gif" alt="" width="112" height="168" loading="lazy" decoding="async" fetchpriority="low" />' +
       '</div>' +
       '<div class="support-widget__resume-bubble" data-resume-bubble hidden>' +
         '<span class="support-widget__resume-text" data-resume-text></span>' +
@@ -544,6 +544,50 @@
     }, 20000);
   }
 
+  var supportWidgetInitStarted = false;
+  function startSupportWidgetInit() {
+    if (supportWidgetInitStarted) return;
+    supportWidgetInitStarted = true;
+    initSupportWidget();
+  }
+
+  function scheduleSupportWidgetInit() {
+    if (hasForceShowFlag()) {
+      startSupportWidgetInit();
+      return;
+    }
+
+    var interactionEvents = ["pointerdown", "keydown", "touchstart", "scroll"];
+    var detached = false;
+    var timeoutId = 0;
+
+    var detach = function () {
+      if (detached) return;
+      detached = true;
+      for (var i = 0; i < interactionEvents.length; i += 1) {
+        window.removeEventListener(interactionEvents[i], onInteraction, { passive: true });
+      }
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+        timeoutId = 0;
+      }
+    };
+
+    var onInteraction = function () {
+      detach();
+      startSupportWidgetInit();
+    };
+
+    for (var i = 0; i < interactionEvents.length; i += 1) {
+      window.addEventListener(interactionEvents[i], onInteraction, { passive: true });
+    }
+
+    timeoutId = window.setTimeout(function () {
+      detach();
+      startSupportWidgetInit();
+    }, 8000);
+  }
+
   window.gptishkaSupportWidget = {
     showNow: function () {
       showWidget();
@@ -560,13 +604,9 @@
   };
   Object.freeze(window.gptishkaSupportWidget);
 
-  if (hasForceShowFlag()) {
-    window.console.info("[support-widget] force show mode is enabled via ?supportWidget=1");
-  }
-
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initSupportWidget);
+    document.addEventListener("DOMContentLoaded", scheduleSupportWidgetInit);
   } else {
-    initSupportWidget();
+    scheduleSupportWidgetInit();
   }
 })();

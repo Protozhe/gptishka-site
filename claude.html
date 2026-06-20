@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
+<meta charset="UTF-8" />
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="512x512" href="/assets/img/site-icon.png">
+<link rel="apple-touch-icon" href="/assets/img/site-icon.png">
+<link rel="canonical" href="https://gptishka.shop/claude">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Тарифные планы Claude и Claude Pro с быстрым подключением, гарантией и поддержкой GPTishka." />
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="GPTishka" />
+<meta property="og:title" content="Claude — тарифные планы | GPTishka" />
+<meta property="og:description" content="Выберите тариф Claude, оплатите заказ через GPTishka, а мы подключим подписку выбранным способом." />
+<meta property="og:image" content="https://gptishka.shop/assets/img/og-ai-subscriptions-vpn.png" />
+<meta property="og:url" content="https://gptishka.shop/claude" />
+<title>Claude — тарифные планы | GPTishka</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/logo.min.css">
+<link rel="stylesheet" href="/assets/css/theme.min.css?v=20260516fix4">
+<link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260322-cardalign7" />
+<link rel="stylesheet" href="/assets/css/trust-promo.css?v=20260305g">
+<link rel="preload" href="/assets/css/support-widget.css?v=20260315b" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="/assets/css/support-widget.css?v=20260315b" /></noscript>
+<link rel="stylesheet" href="/assets/css/home-cro.css?v=20260324-cro12" />
+<link rel="stylesheet" href="/assets/css/home-stability-hotfix.css?v=20260618-claude-logo2" />
+</head>
+<body>
+<div class="page-overlay"></div>
+<header>
+  <div id="siteTicker" class="site-ticker" role="status" aria-live="polite">
+    <div class="site-ticker__marquee">
+      <div class="site-ticker__track" id="siteTickerTrack">
+        <div class="site-ticker__loop"><span class="site-ticker__item">Лента активаций обновляется...</span></div>
+        <div class="site-ticker__loop" aria-hidden="true"><span class="site-ticker__item">Лента активаций обновляется...</span></div>
+      </div>
+    </div>
+    <div class="site-ticker__stats">
+      <span class="site-ticker__stat"><span class="site-ticker__stat-label">всего активаций:</span> <strong id="siteTickerSales">0</strong></span>
+    </div>
+  </div>
+  <div class="nav">
+    <a href="/" class="logo-link">
+      <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo.png?v=20260531lcp1" alt="GPTишка" class="logo-img">
+    </a>
+    <nav>
+      <a href="/">Главная</a>
+      <a href="/#pricing" class="active">Тарифы</a>
+      <a href="/#how">Как это работает</a>
+      <a href="/#activationVideo">Как активировать</a>
+      <a href="/#faq">Вопросы и ответы</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page service-page service-page--constructor" data-service-page="claude" data-service-layout="constructor">
+  <section class="service-hero service-hero--claude">
+    <video class="service-hero__video" autoplay muted loop playsinline preload="auto">
+      <source src="/assets/video/chatgpt-plans-bg.mp4?v=20260618-0618" type="video/mp4">
+    </video>
+    <div class="service-hero__orange-overlay"></div>
+    <div class="service-hero__dark-overlay"></div>
+    <a class="service-back-link" href="/#pricing">← Все сервисы</a>
+    <div class="service-hero__content">
+      <span class="service-hero__eyebrow">Тарифные планы</span>
+      <h1>Claude</h1>
+      <p>Оформите подписку Claude без лишних сложностей. Выберите тариф, оплатите заказ, а GPTishka возьмёт подключение на себя — с поддержкой и гарантией на весь срок подписки.</p>
+    </div>
+  </section>
+
+  <section class="service-plans-section" id="plans">
+    <div class="service-constructor-shell">
+      <div class="service-product-gallery" aria-hidden="true">
+        <img src="/assets/img/services/claude-card.png?v=20260618-claude-logo2" alt="" loading="lazy" decoding="async">
+      </div>
+      <div class="service-constructor-card">
+        <div class="service-constructor-head">
+          <div class="service-constructor-brand">
+            <span>Тарифные планы</span>
+            <h2>Claude</h2>
+          </div>
+          <div class="service-constructor-price">
+            <strong id="serviceConstructorPrice">—</strong>
+          </div>
+        </div>
+        <div class="service-filter-stack service-filter-stack--constructor" aria-label="Фильтры тарифов">
+          <div id="servicePlanFilters"></div>
+          <div id="serviceDeliveryFilters"></div>
+          <div id="serviceDurationFilters"></div>
+        </div>
+        <div class="service-selected-plan" id="servicePlansGrid" aria-live="polite">
+          <div class="price-card price-card-skeleton" aria-hidden="true">
+            <div class="price-card-skeleton__title"></div>
+            <div class="price-card-skeleton__price"></div>
+            <div class="price-card-skeleton__line"></div>
+            <div class="price-card-skeleton__button"></div>
+          </div>
+        </div>
+        <div class="service-constructor-description">
+          <h3>Claude</h3>
+          <p>Claude помогает писать тексты, разбирать документы, анализировать большие материалы, готовить код и быстрее закрывать рабочие задачи. Выберите тариф, а мы подключим его через текущий checkout GPTishka.</p>
+          <div class="service-delivery-help">
+            <h4>Со входом</h4>
+            <p>Подключение через вход в аккаунт Claude. После оплаты понадобятся логин и пароль.</p>
+            <h4>Без входа</h4>
+            <p>Если для товара доступен вариант без входа, после оплаты мы покажем дальнейшую инструкцию по активации.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="service-info-section service-info-section--claude">
+    <div class="service-section-title">
+      <h2>📑 Возможности</h2>
+      <p>Claude подходит для текстов, кода, документов, аналитики и повседневной работы с ИИ.</p>
+    </div>
+    <div class="service-info-grid">
+      <article class="service-info-card">
+        <h3>Как получить подписку</h3>
+        <ol>
+          <li>Выбираете тариф Claude и способ подключения.</li>
+          <li>Оформляете заказ на gptishka.shop и оплачиваете удобным способом.</li>
+          <li>Мы подключаем выбранную подписку и сообщаем вам о завершении.</li>
+          <li>Пользуетесь Claude весь оплаченный срок.</li>
+        </ol>
+      </article>
+      <article class="service-info-card">
+        <h3>Почему GPTishka</h3>
+        <ul>
+          <li>✅ Работаем с 2023 года</li>
+          <li>✅ Поддерживаем клиентов после оплаты</li>
+          <li>✅ Подключаем подписку по выбранному способу</li>
+          <li>✅ Даём гарантию на весь срок подписки</li>
+          <li>✅ Помогаем с продлением и повторной активацией</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="service-faq-section" id="faq">
+    <div class="service-section-title">
+      <h2>Часто задаваемые вопросы</h2>
+      <p>Короткие ответы на самые частые вопросы</p>
+    </div>
+    <div class="service-faq-list">
+      <article class="service-faq-item active">
+        <button class="service-faq-question" type="button">Какие способы оплаты доступны?<span></span></button>
+        <div class="service-faq-answer">
+          <p>На gptishka.shop доступны СБП и банковские карты через платёжные шлюзы Enot и Lava.</p>
+          <p>Мы не сохраняем платёжные данные — обработка оплаты выполняется на стороне платёжной системы.</p>
+        </div>
+      </article>
+      <article class="service-faq-item">
+        <button class="service-faq-question" type="button">Сколько времени занимает подключение?<span></span></button>
+        <div class="service-faq-answer">
+          <p>В среднем подключение занимает от 5 минут до 2 часов после оплаты. Максимальное время ожидания — до 48 часов.</p>
+          <p>Заказы обрабатываются ежедневно с 10:00 до 20:00 по МСК. Если заказ оформлен ночью, подключение будет выполнено утром.</p>
+        </div>
+      </article>
+      <article class="service-faq-item">
+        <button class="service-faq-question" type="button">Можно ли вам доверять?<span></span></button>
+        <div class="service-faq-answer">
+          <p>Да. GPTishka подключает подписки и сопровождает заказ после оплаты: если возникнет вопрос по доступу, менеджер поможет разобраться.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-links-primary">
+    <a class="footer-link" href="/oferta.html">Публичная оферта</a> &middot; <a class="footer-link" href="/politika.html">Политика конфиденциальности</a> &middot; <a class="footer-link" href="/refund.html">Условия возврата</a>
+  </div>
+  <div class="footer-links-secondary">
+    <a class="footer-link" href="/about.html">О сервисе</a> &middot; <a class="footer-link" href="/guarantee.html">Гарантия</a> &middot; <a class="footer-link" href="/contact.html">Связь с нами</a>
+  </div>
+  <span class="footer-copy">&copy; 2026 GPTishka. Все права защищены, копирование запрещено.</span>
+</footer>
+<script src="/assets/js/app.min.js?v=20260618-claude-logo2" defer></script>
+<script src="/assets/js/support-widget.js?v=20260609-aiiisupport1" defer></script>
+</body>
+</html>
