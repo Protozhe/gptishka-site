@@ -54,7 +54,7 @@ mkdir -p "$BACKUP_DIR/apps/admin-backend"
 cp -a apps/admin-backend/dist "$BACKUP_DIR/apps/admin-backend/dist" 2>/dev/null || true
 
 # Publish latest admin UI only after the stale-admin safety gate passes.
-rsync -a --delete apps/admin-ui/dist/ admin/
+rsync -a --delete --exclude='.htaccess' apps/admin-ui/dist/ admin/
 
 SKIP_BACKEND_DEPLOY=0
 if [ ! -f "$ADMIN_ENV_FILE" ]; then

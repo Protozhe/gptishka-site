@@ -20,3 +20,25 @@ apps/admin-ui/.env.production
 data/cdk-keys.json
 apps/admin-backend/data/cdk-keys.json
 data/backups/
+
+# Production/runtime leftovers and manual backups
+.npm/
+.pm2/
+_codex-backups/
+local-backups/
+admin.bak-*/
+admin.old/
+admin.prev/
+apps/admin-ui/dist.old/
+apps/admin-backend/data/*backup*.json
+*.bak
+*.bak-*
+*.bak.*
+*.old
+*.pre-*
+tmp_*
+_tmp*
+_head_*
+
+# Large downloadable artifacts are kept on production storage, not in git.
+assets/downloads/
