@@ -22,6 +22,14 @@ export const changeUserStatus = asyncHandler(async (req: Request, res: Response)
   res.json(user);
 });
 
+export const revokeUserSessions = asyncHandler(async (req: Request, res: Response) => {
+  const result = await usersService.revokeSessions(String(req.params.id), req.auth?.userId, {
+    ip: req.requestMeta?.ip,
+    userAgent: req.requestMeta?.userAgent,
+  });
+  res.json(result);
+});
+
 export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
   await usersService.remove(String(req.params.id), req.auth?.userId);
   res.status(204).send();

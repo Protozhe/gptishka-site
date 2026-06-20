@@ -82,6 +82,12 @@ const envSchema = z.object({
   JWT_ACCESS_TTL: z.string().default("15m"),
   JWT_REFRESH_TTL_DAYS: z.coerce.number().int().min(1).default(30),
   REFRESH_COOKIE_NAME: z.string().default("admin_refresh_token"),
+  ADMIN_BOOTSTRAP_REGISTRATION_ENABLED: z
+    .union([z.boolean(), z.string()])
+    .transform((value) =>
+      typeof value === "boolean" ? value : ["true", "1", "yes"].includes(String(value).trim().toLowerCase())
+    )
+    .default(false),
   BCRYPT_ROUNDS: z.coerce.number().int().min(10).max(15).default(12),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(120),

@@ -8,6 +8,9 @@ import { sha256 } from "../../common/utils/hash";
 import { AppError } from "../../common/errors/app-error";
 import bcrypt from "bcrypt";
 import { RoleCode } from "@prisma/client";
+import { assertBootstrapRegistrationEnabled, authAuditMeta } from "./auth.security";
+import { revokeAllUserRefreshTokens, revokeRefreshToken, withUserRefreshTokenLock } from "./session.service";
+import { writeAuditLog } from "../audit/audit.service";
 
 function refreshCookieOptions() {
   return {
@@ -51,6 +54,8 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const registerAdmin = asyncHandler(async (req: Request, res: Response) => {
+  assertBootstrapRegistrationEnabled(env.ADMIN_BOOTSTRAP_REGISTRATION_ENABLED);
+
   const { email, password, firstName, lastName } = req.body as {
     email: string;
     password: string;
@@ -139,12 +144,17 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
 
   if (!stored || !stored.user.isActive) throw new AppError("Unauthorized", 401);
 
+  const now = new Date();
   const nextRefresh = signRefreshToken(stored.userId);
   const nextAccess = signAccessToken(stored.userId, stored.user.role.code);
 
-  await prisma.$transaction([
-    prisma.refreshToken.update({ where: { id: stored.id }, data: { revokedAt: new Date() } }),
-    prisma.refreshToken.create({
+  const rotation = await withUserRefreshTokenLock(stored.userId, async (tx) => {
+    const revoked = await tx.refreshToken.updateMany({
+      where: { id: stored.id, revokedAt: null, expiresAt: { gt: now } },
+      data: { revokedAt: now },
+    });
+    if (revoked.count !== 1) return false;
+    await tx.refreshToken.create({
       data: {
         tokenHash: sha256(nextRefresh),
         userId: stored.userId,
@@ -152,8 +162,11 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
         ip: req.ip,
         expiresAt: new Date(Date.now() + env.JWT_REFRESH_TTL_DAYS * 24 * 60 * 60 * 1000),
       },
-    }),
-  ]);
+    });
+    return true;
+  });
+
+  if (!rotation) throw new AppError("Unauthorized", 401);
 
   res.cookie(env.REFRESH_COOKIE_NAME, nextRefresh, refreshCookieOptions());
   res.json({ accessToken: nextAccess });
@@ -162,12 +175,32 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
 export const logout = asyncHandler(async (req: Request, res: Response) => {
   const token = String(req.cookies?.[env.REFRESH_COOKIE_NAME] || "");
   if (token) {
-    await prisma.refreshToken.updateMany({
-      where: { tokenHash: sha256(token), revokedAt: null },
-      data: { revokedAt: new Date() },
-    });
+    const result = await revokeRefreshToken(token);
+    if (result.userId) {
+      await writeAuditLog({
+        userId: result.userId,
+        entityType: "auth_session",
+        entityId: result.userId,
+        action: "logout",
+        ...authAuditMeta(req),
+      });
+    }
   }
 
+  res.clearCookie(env.REFRESH_COOKIE_NAME, refreshCookieOptions());
+  res.status(204).send();
+});
+
+export const logoutAll = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.auth) throw new AppError("Unauthorized", 401);
+  await revokeAllUserRefreshTokens(req.auth.userId);
+  await writeAuditLog({
+    userId: req.auth.userId,
+    entityType: "auth_session",
+    entityId: req.auth.userId,
+    action: "logout_all",
+    ...authAuditMeta(req),
+  });
   res.clearCookie(env.REFRESH_COOKIE_NAME, refreshCookieOptions());
   res.status(204).send();
 });
