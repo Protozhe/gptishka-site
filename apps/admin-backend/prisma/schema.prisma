@@ -361,6 +361,24 @@ model Payment {
   @@index([status])
 }
 
+model PaymentWebhookEvent {
+  id             String    @id @default(cuid())
+  provider       String
+  eventKey       String    @map("event_key")
+  orderId        String?   @map("order_id")
+  paymentId      String?   @map("payment_id")
+  status         String
+  payloadHash    String    @map("payload_hash")
+  duplicateCount Int       @default(0) @map("duplicate_count")
+  processedAt    DateTime? @map("processed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@unique([provider, eventKey])
+  @@index([orderId])
+  @@index([createdAt])
+  @@map("payment_webhook_events")
+}
+
 model PromoCode {
   id               String   @id @default(cuid())
   code             String   @unique

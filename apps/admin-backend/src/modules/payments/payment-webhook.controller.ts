@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../../common/http/async-handler";
 import { AppError } from "../../common/errors/app-error";
 import { paymentWebhookService } from "./payment-webhook.service";
+import { runPaymentWebhookOnce } from "./webhook-idempotency.service";
 
 export const handlePaymentWebhook = asyncHandler(async (req: Request, res: Response) => {
   if (!Buffer.isBuffer(req.body)) {
@@ -17,7 +18,8 @@ export const handlePaymentWebhook = asyncHandler(async (req: Request, res: Respo
 
   let result;
   try {
-    result = await paymentWebhookService.handle(payload as any);
+    const provider = String((payload as any)?.provider || (payload as any)?.payment_provider || "gateway");
+    result = await runPaymentWebhookOnce(provider, payload as any, () => paymentWebhookService.handle(payload as any));
   } catch (error) {
     console.error("[payment-webhook] processing error", error);
     throw error;
