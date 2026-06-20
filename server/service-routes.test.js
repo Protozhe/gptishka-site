@@ -28,3 +28,21 @@ test("service landing routes serve their dedicated static pages", async () => {
     }
   });
 });
+
+test("vpn store route serves the current branded landing page", async () => {
+  await withServer(async (baseUrl) => {
+    for (const route of ["/store/vpn", "/store/vpn/"]) {
+      const response = await fetch(`${baseUrl}${route}`);
+      const body = await response.text();
+
+      assert.equal(response.status, 200, route);
+      assert.ok(body.includes("GPTishka VPN"), route);
+      assert.ok(body.includes("/assets/img/services/vpn-card.png?v=20260620-vpn-page1"), route);
+      assert.ok(body.includes("/assets/img/services/vpn-card-hover.png?v=20260620-vpn-page1"), route);
+      assert.ok(body.includes("VLESS Reality"), route);
+      assert.ok(body.includes("Подключение за 1 минуту"), route);
+      assert.equal(body.includes("Рџ"), false, route);
+      assert.equal(response.headers.get("cache-control")?.includes("no-store"), true, route);
+    }
+  });
+});

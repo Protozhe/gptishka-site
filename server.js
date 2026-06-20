@@ -1676,12 +1676,8 @@ function createApp() {
     return res.sendFile(path.join(__dirname, "admin", "index.html"));
   });
 
-  app.get("/store/vpn", (_req, res) => {
-    res.sendFile(path.join(__dirname, "store", "vpn", "index.html"));
-  });
-
-  app.get("/store/vpn/", (_req, res) => {
-    res.sendFile(path.join(__dirname, "store", "vpn", "index.html"));
+  app.get(["/store/vpn", "/store/vpn/"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "store", "vpn", "index.html"));
   });
 
   const sendVpnActivationPage = (_req, res) => {

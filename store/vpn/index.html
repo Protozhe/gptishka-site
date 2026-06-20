@@ -7,48 +7,170 @@
   <meta name="description" content="GPTishka VPN: VLESS Reality, быстрый запуск и стабильный доступ." />
   <meta name="robots" content="index,follow" />
   <link rel="icon" href="/favicon.ico" sizes="any" />
-  <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260312fix2" />
-  <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260312fix2" />
+  <link rel="preload" as="image" href="/assets/img/services/vpn-card.png?v=20260620-vpn-page1" />
+  <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260620-vpn-page1" />
+  <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260620-vpn-page1" />
   <style>
-    .vpn-page-wrap,
-    .vpn-page-wrap * {
-      min-width: 0;
+    :root {
+      --vpn-ink: #111827;
+      --vpn-muted: #64748b;
+      --vpn-line: rgba(15, 23, 42, 0.1);
+      --vpn-blue: #2563eb;
+      --vpn-cyan: #06b6d4;
+      --vpn-green: #10b981;
     }
 
-    .vpn-page-wrap {
-      width: min(1120px, calc(100% - 24px));
-      margin: 16px auto 40px;
+    body {
+      background:
+        radial-gradient(circle at 18% 10%, rgba(59, 130, 246, 0.2), transparent 28%),
+        radial-gradient(circle at 84% 8%, rgba(16, 185, 129, 0.16), transparent 26%),
+        linear-gradient(135deg, #eef5ff 0%, #f8fbff 42%, #eefdf9 100%);
+      color: var(--vpn-ink);
+    }
+
+    .vpn-page {
+      width: min(1180px, calc(100% - 28px));
+      margin: 18px auto 44px;
       display: grid;
       gap: 18px;
     }
 
-    .vpn-page-wrap .pricing,
-    .vpn-page-wrap .price-card {
+    .vpn-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(260px, 0.92fr);
+      gap: 22px;
+      align-items: center;
+      padding: clamp(18px, 3vw, 34px);
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 30px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(238, 246, 255, 0.8)),
+        linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(16, 185, 129, 0.08));
+      box-shadow: 0 28px 80px rgba(15, 23, 42, 0.14);
       overflow: hidden;
     }
 
-    .vpn-page-wrap .pricing-grid {
-      grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
-      gap: 18px;
+    .vpn-hero__content {
+      display: grid;
+      gap: 16px;
+      align-content: center;
     }
 
-    .vpn-page-wrap .pricing-header h1,
-    .vpn-page-wrap .pricing-header h2,
-    .vpn-page-wrap .pricing-header p,
-    .vpn-page-wrap .price-card h3,
-    .vpn-page-wrap .price-card .term,
-    .vpn-page-wrap .price-card .price,
-    .vpn-page-wrap .price-card .sub {
-      overflow-wrap: anywhere;
-      word-break: break-word;
+    .vpn-hero__eyebrow {
+      width: fit-content;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid rgba(37, 99, 235, 0.16);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.76);
+      color: #1d4ed8;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0;
     }
 
-    .vpn-page-wrap .price-card .sub {
-      white-space: normal;
-      overflow: visible;
-      text-overflow: clip;
-      line-height: 1.55;
-      min-height: 44px;
+    .vpn-hero h1 {
+      margin: 0;
+      font-size: clamp(2.15rem, 5vw, 4.65rem);
+      line-height: 0.95;
+      letter-spacing: 0;
+    }
+
+    .vpn-hero p {
+      max-width: 660px;
+      margin: 0;
+      color: #334155;
+      font-size: clamp(1rem, 1.6vw, 1.2rem);
+      line-height: 1.62;
+    }
+
+    .vpn-hero__facts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .vpn-hero__facts li {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: rgba(255, 255, 255, 0.82);
+      color: #0f172a;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .vpn-hero__media {
+      position: relative;
+      display: block;
+      width: min(100%, 460px);
+      justify-self: center;
+      aspect-ratio: 1 / 1;
+      border-radius: 32px;
+      overflow: hidden;
+      background: #06142f;
+      box-shadow: 0 30px 74px rgba(37, 99, 235, 0.26);
+    }
+
+    .vpn-hero__image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity 0.18s ease;
+    }
+
+    .vpn-hero__image--hover {
+      opacity: 0;
+    }
+
+    .vpn-hero__media:hover .vpn-hero__image--primary,
+    .vpn-hero__media:focus-visible .vpn-hero__image--primary {
+      opacity: 0;
+    }
+
+    .vpn-hero__media:hover .vpn-hero__image--hover,
+    .vpn-hero__media:focus-visible .vpn-hero__image--hover {
+      opacity: 1;
+    }
+
+    .vpn-panel {
+      padding: clamp(16px, 2.4vw, 24px);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.78);
+      box-shadow: 0 18px 54px rgba(15, 23, 42, 0.1);
+      backdrop-filter: blur(16px);
+    }
+
+    .vpn-section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      margin-bottom: 16px;
+    }
+
+    .vpn-section-head h2 {
+      margin: 0;
+      font-size: clamp(1.45rem, 3vw, 2.1rem);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .vpn-section-head p {
+      margin: 6px 0 0;
+      color: var(--vpn-muted);
+      line-height: 1.5;
     }
 
     .vpn-toolbar {
@@ -60,14 +182,19 @@
     }
 
     .vpn-toolbar .input {
-      min-width: min(360px, 100%);
+      flex: 1 1 320px;
+      min-height: 48px;
+      border-radius: 14px;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      background: rgba(255, 255, 255, 0.92);
     }
 
     .vpn-status {
       min-height: 22px;
+      margin: 0 0 12px;
+      color: var(--vpn-muted);
       font-size: 13px;
-      color: var(--muted);
-      transition: all .2s ease;
+      transition: all 0.2s ease;
     }
 
     .vpn-status.error,
@@ -75,124 +202,190 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 10px;
+      padding: 7px 11px;
       border-radius: 999px;
       border: 1px solid transparent;
-      margin-top: 6px;
-      font-weight: 600;
+      font-weight: 700;
       background: rgba(255, 255, 255, 0.82);
     }
 
     .vpn-status.error {
       color: #b42318;
       border-color: rgba(196, 77, 59, 0.26);
-      background: rgba(255, 245, 243, 0.9);
+      background: rgba(255, 245, 243, 0.92);
     }
 
     .vpn-status.success {
       color: #0f766e;
       border-color: rgba(15, 118, 110, 0.24);
-      background: rgba(238, 252, 249, 0.92);
+      background: rgba(238, 252, 249, 0.94);
     }
 
-    .vpn-cabinet-wrap {
-      width: min(860px, 100%);
-      margin: 0 auto;
-    }
-
-    .vpn-profile-grid {
+    .vpn-plans-grid {
       display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .vpn-plan-card {
+      position: relative;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+      min-height: 100%;
+      padding: 18px;
+      border: 1px solid var(--vpn-line);
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.86), transparent 36%),
+        linear-gradient(180deg, #ffffff, #f7fbff);
+      box-shadow: 0 16px 38px rgba(15, 23, 42, 0.08);
+    }
+
+    .vpn-plan-card.featured {
+      border-color: rgba(37, 99, 235, 0.25);
+      box-shadow: 0 22px 50px rgba(37, 99, 235, 0.14);
+    }
+
+    .vpn-plan-card h3 {
+      margin: 0;
+      font-size: 1.12rem;
+      line-height: 1.18;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .vpn-plan-card__term,
+    .vpn-plan-card__sub {
+      margin: 0;
+      color: var(--vpn-muted);
+      line-height: 1.48;
+      overflow-wrap: anywhere;
+    }
+
+    .vpn-plan-card__term {
+      font-size: 13px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .vpn-plan-card__price {
+      color: #0f172a;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      font-weight: 950;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .vpn-plan-card .btn {
+      width: 100%;
+      min-height: 48px;
+      border-radius: 14px;
+    }
+
+    .vpn-badge {
+      width: fit-content;
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #dbeafe, #ccfbf1);
+      color: #0f3d8a;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .vpn-cabinet-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
-      margin-top: 10px;
+      margin-top: 12px;
     }
 
     .vpn-profile-item {
-      font-size: 14px;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      border-bottom: 1px dashed rgba(31, 39, 49, 0.14);
-      padding-bottom: 8px;
+      display: grid;
+      gap: 5px;
+      padding: 12px;
+      border: 1px solid var(--vpn-line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.72);
       overflow: hidden;
     }
 
+    .vpn-profile-item span {
+      color: var(--vpn-muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
     .vpn-profile-item strong {
-      text-align: right;
+      color: #0f172a;
       overflow-wrap: anywhere;
       word-break: break-word;
     }
 
-    .vpn-copy-wrap {
+    .vpn-copy-wrap,
+    .vpn-cabinet-actions {
       display: flex;
-      gap: 10px;
       flex-wrap: wrap;
+      gap: 10px;
       margin-top: 14px;
     }
 
-    .vpn-copy-wrap .btn {
-      min-width: 220px;
-    }
-
-    .vpn-cabinet-actions {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+    .vpn-copy-wrap .btn,
+    .vpn-cabinet-actions .btn {
+      min-width: 210px;
     }
 
     .vpn-soft-btn {
-      border-color: rgba(19, 138, 120, 0.22) !important;
-      background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(238, 252, 249, 0.86)) !important;
-      color: #155a52 !important;
+      border-color: rgba(37, 99, 235, 0.18) !important;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(239, 246, 255, 0.9)) !important;
+      color: #1d4ed8 !important;
       box-shadow: 0 10px 22px rgba(31, 39, 49, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.92);
-      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
     }
 
-    .vpn-soft-btn:hover {
-      transform: translateY(-1px);
-      border-color: rgba(19, 138, 120, 0.34) !important;
-      box-shadow: 0 14px 28px rgba(19, 138, 120, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    @media (max-width: 860px) {
+      .vpn-hero {
+        grid-template-columns: 1fr;
+      }
+
+      .vpn-hero__media {
+        width: min(100%, 360px);
+      }
+
+      .vpn-section-head {
+        display: grid;
+        align-items: start;
+      }
+
+      .vpn-plans-grid,
+      .vpn-cabinet-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
-    .vpn-soft-btn:disabled {
-      opacity: .65;
-      transform: none;
-      box-shadow: none;
-    }
-
-    @media (max-width: 720px) {
-      .vpn-page-wrap .price-card {
-        padding: 18px;
-      }
-
-      .vpn-page-wrap .price-card h3 {
-        margin-top: 0;
-      }
-
-      .vpn-page-wrap .price-card .price {
-        font-size: clamp(2rem, 11vw, 2.45rem);
-      }
-
-      .vpn-page-wrap .price-card .sub {
-        min-height: 0;
-      }
-
-      .vpn-profile-item {
-        flex-direction: column;
-      }
-
-      .vpn-copy-wrap .btn {
-        width: 100%;
-        min-width: 0;
-      }
-
-      .vpn-toolbar .input {
-        min-width: 100%;
-      }
-
-      .vpn-page-wrap {
+    @media (max-width: 560px) {
+      .vpn-page {
         width: calc(100% - 16px);
-        gap: 12px;
+        margin-top: 10px;
+      }
+
+      .vpn-hero,
+      .vpn-panel {
+        border-radius: 22px;
+      }
+
+      .vpn-hero__media {
+        border-radius: 24px;
+      }
+
+      .vpn-toolbar .input,
+      .vpn-copy-wrap .btn,
+      .vpn-cabinet-actions .btn {
+        flex-basis: 100%;
+        min-width: 0;
       }
     }
   </style>
@@ -213,46 +406,66 @@
     </div>
   </header>
 
-  <main class="page vpn-page-wrap">
-    <section class="pricing" id="vpnCatalogSection">
-      <div class="pricing-header">
+  <main class="page vpn-page">
+    <section class="vpn-hero" id="vpnHero">
+      <div class="vpn-hero__content">
+        <span class="vpn-hero__eyebrow">VLESS Reality</span>
         <h1>GPTishka VPN</h1>
-        <p>Работает при блокировках. VLESS Reality. Подключение за 1 минуту.</p>
+        <p>Работает при блокировках, выдает ключ автоматически после оплаты и подходит для телефона, компьютера и роутера. Подключение за 1 минуту.</p>
+        <ul class="vpn-hero__facts" aria-label="Преимущества GPTishka VPN">
+          <li>VLESS-ключ после оплаты</li>
+          <li>1 / 6 / 12 месяцев</li>
+          <li>Поддержка рядом</li>
+        </ul>
+      </div>
+      <a class="vpn-hero__media" href="#vpnPlansGrid" aria-label="Выбрать тариф GPTishka VPN">
+        <img class="vpn-hero__image vpn-hero__image--primary" src="/assets/img/services/vpn-card.png?v=20260620-vpn-page1" alt="GPTishka VPN" loading="eager" decoding="async">
+        <img class="vpn-hero__image vpn-hero__image--hover" src="/assets/img/services/vpn-card-hover.png?v=20260620-vpn-page1" alt="GPTishka VPN" loading="lazy" decoding="async">
+      </a>
+    </section>
+
+    <section class="vpn-panel" id="vpnCatalogSection">
+      <div class="vpn-section-head">
+        <div>
+          <h2>Выберите тариф</h2>
+          <p>Введите email, выберите срок и перейдите к оплате.</p>
+        </div>
       </div>
 
       <div class="vpn-toolbar">
         <input id="vpnEmailInput" class="input" type="email" autocomplete="email" placeholder="Email для оплаты и выдачи доступа" />
       </div>
       <div id="vpnCheckoutStatus" class="vpn-status"></div>
-      <div class="pricing-grid" id="vpnPlansGrid">
-        <article class="price-card">
+      <div class="vpn-plans-grid" id="vpnPlansGrid">
+        <article class="vpn-plan-card">
           <h3>Загрузка VPN-тарифов...</h3>
+          <p class="vpn-plan-card__sub">Проверяем актуальные сроки и цены.</p>
         </article>
       </div>
     </section>
 
-    <section class="pricing vpn-cabinet-wrap" id="vpnCabinetSection" hidden>
-      <div class="pricing-header">
-        <h2>Личный кабинет VPN</h2>
-        <p>Данные подтягиваются из <code>/vpn/me</code> по заказу после оплаты.</p>
+    <section class="vpn-panel" id="vpnCabinetSection" hidden>
+      <div class="vpn-section-head">
+        <div>
+          <h2>Личный кабинет VPN</h2>
+          <p>Данные подтягиваются по заказу после оплаты.</p>
+        </div>
         <div class="vpn-cabinet-actions">
           <button id="vpnShowPlansBtn" type="button" class="btn secondary vpn-soft-btn" hidden>Показать тарифы</button>
         </div>
       </div>
-      <article class="price-card">
-        <div class="vpn-profile-grid">
-          <div class="vpn-profile-item"><span>UUID</span><strong id="vpnUuid">—</strong></div>
-          <div class="vpn-profile-item"><span>План</span><strong id="vpnPlan">—</strong></div>
-          <div class="vpn-profile-item"><span>Действует до</span><strong id="vpnExpiresAt">—</strong></div>
-          <div class="vpn-profile-item"><span>Трафик</span><strong id="vpnTrafficUsed">—</strong></div>
-          <div class="vpn-profile-item"><span>Статус</span><strong id="vpnActive">—</strong></div>
-        </div>
-        <div class="vpn-copy-wrap">
-          <button id="vpnCopyConfigBtn" type="button" class="btn" disabled>Скопировать конфиг</button>
-          <button id="vpnRefreshBtn" type="button" class="btn secondary vpn-soft-btn">Обновить</button>
-        </div>
-        <div id="vpnMeStatus" class="vpn-status"></div>
-      </article>
+      <div class="vpn-cabinet-grid">
+        <div class="vpn-profile-item"><span>UUID</span><strong id="vpnUuid">-</strong></div>
+        <div class="vpn-profile-item"><span>План</span><strong id="vpnPlan">-</strong></div>
+        <div class="vpn-profile-item"><span>Действует до</span><strong id="vpnExpiresAt">-</strong></div>
+        <div class="vpn-profile-item"><span>Трафик</span><strong id="vpnTrafficUsed">-</strong></div>
+        <div class="vpn-profile-item"><span>Статус</span><strong id="vpnActive">-</strong></div>
+      </div>
+      <div class="vpn-copy-wrap">
+        <button id="vpnCopyConfigBtn" type="button" class="btn" disabled>Скопировать VLESS-ключ</button>
+        <button id="vpnRefreshBtn" type="button" class="btn secondary vpn-soft-btn">Обновить</button>
+      </div>
+      <div id="vpnMeStatus" class="vpn-status"></div>
     </section>
   </main>
 
@@ -270,6 +483,7 @@
   <script>
     (function () {
       const CHECKOUT_EMAIL_KEY = "checkout_email";
+      const CHECKOUT_PAYMENT_KEY = "checkout_payment_method";
 
       const planMap = new Map();
       const emailInput = document.getElementById("vpnEmailInput");
@@ -299,13 +513,11 @@
       }
 
       function setCatalogVisible(visible) {
-        if (!catalogSection) return;
-        catalogSection.hidden = !visible;
+        if (catalogSection) catalogSection.hidden = !visible;
       }
 
       function setCabinetVisible(visible) {
-        if (!cabinetSection) return;
-        cabinetSection.hidden = !visible;
+        if (cabinetSection) cabinetSection.hidden = !visible;
       }
 
       function applyCabinetFocusMode() {
@@ -349,13 +561,13 @@
 
       function formatRub(amount) {
         const value = Number(amount || 0);
-        if (!Number.isFinite(value)) return "—";
+        if (!Number.isFinite(value)) return "-";
         return `${value.toLocaleString("ru-RU")} ₽`;
       }
 
       function formatDate(value) {
         const date = new Date(String(value || ""));
-        if (Number.isNaN(date.getTime())) return "—";
+        if (Number.isNaN(date.getTime())) return "-";
         return date.toLocaleString("ru-RU");
       }
 
@@ -388,7 +600,7 @@
 
       function isVpnProduct(item) {
         if (!item || typeof item !== "object") return false;
-        const slug = normalizeSlug(item.product);
+        const slug = normalizeSlug(item.product || item.slug || item.id);
         const category = normalizeSlug(item.category);
         const deliveryType = normalizeSlug(item.deliveryType);
         const deliveryMethod = Number(item.deliveryMethod || 0);
@@ -399,6 +611,7 @@
           || deliveryMethod === 3
           || tags.includes("delivery:vpn")
           || slug.startsWith("vpn")
+          || slug.includes("gptishka-vpn")
           || category.includes("vpn")
         );
       }
@@ -406,11 +619,10 @@
       function formatDaysLabel(days) {
         const value = Number(days || 0);
         if (!Number.isFinite(value) || value <= 0) return "";
-        const mod10 = value % 10;
-        const mod100 = value % 100;
-        if (mod10 === 1 && mod100 !== 11) return `${value} день`;
-        if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${value} дня`;
-        return `${value} дней`;
+        if (value >= 330) return "12 месяцев";
+        if (value >= 170) return "6 месяцев";
+        if (value >= 55) return "2 месяца";
+        return "1 месяц";
       }
 
       function getPlanTerm(item) {
@@ -431,7 +643,7 @@
 
       function getPlanSubtitle(item) {
         const raw = String((item && (item.modalDescription || item.description)) || "").replace(/\s+/g, " ").trim();
-        if (!raw) return "VLESS Reality • Один конфиг • Быстрый запуск";
+        if (!raw) return "VLESS Reality. Один ключ, быстрый запуск после оплаты.";
         return raw;
       }
 
@@ -452,8 +664,16 @@
 
         return {
           type,
-          label: labels[type] || String(item && item.badge || type).toUpperCase(),
+          label: labels[type] || String((item && item.badge) || type).toUpperCase(),
         };
+      }
+
+      function getPlanSortScore(item) {
+        const term = getPlanTerm(item).toLowerCase();
+        if (term.includes("12")) return 30;
+        if (term.includes("6")) return 20;
+        if (term.includes("2")) return 15;
+        return 10;
       }
 
       function renderPlans(items) {
@@ -462,38 +682,36 @@
 
         const vpnItems = (Array.isArray(items) ? items : [])
           .filter(isVpnProduct)
-          .sort((a, b) => Number(a && a.price || 0) - Number(b && b.price || 0));
+          .sort((a, b) => getPlanSortScore(a) - getPlanSortScore(b) || Number(a && a.price || 0) - Number(b && b.price || 0));
 
         if (!vpnItems.length) {
-          plansGrid.innerHTML = '<article class="price-card"><h3>Сейчас нет активных VPN-тарифов</h3><div class="sub">Добавьте и включите товар VPN в админке.</div></article>';
+          plansGrid.innerHTML = '<article class="vpn-plan-card"><h3>Сейчас нет активных VPN-тарифов</h3><p class="vpn-plan-card__sub">Проверьте статус VPN-товаров в админке.</p></article>';
           return;
         }
 
         plansGrid.innerHTML = vpnItems.map((item) => {
-          const slug = normalizeSlug(item && item.product);
-          const title = String(item && item.title || slug || "VPN тариф");
+          const slug = normalizeSlug((item && (item.product || item.slug || item.id)) || "");
+          const title = String((item && item.title) || slug || "VPN тариф");
           const badge = getPlanBadge(item);
-          const featuredClass = badge && badge.type === "best" ? " featured" : "";
-          const badgeMarkup = badge ? `<span class="badge ${escapeHtml(badge.type)}">${escapeHtml(badge.label)}</span>` : "";
+          const featuredClass = badge && (badge.type === "best" || badge.type === "popular") ? " featured" : "";
+          const badgeMarkup = badge ? `<span class="vpn-badge">${escapeHtml(badge.label)}</span>` : "";
           const price = formatRub(item && item.price);
           const term = getPlanTerm(item);
           const subtitle = getPlanSubtitle(item);
           return `
-            <article class="price-card${featuredClass}" data-plan-slug="${escapeHtml(slug)}">
+            <article class="vpn-plan-card${featuredClass}" data-plan-slug="${escapeHtml(slug)}">
               ${badgeMarkup}
               <h3>${escapeHtml(title)}</h3>
-              <div class="term">${escapeHtml(term)}</div>
-              <div class="price">${escapeHtml(price)}</div>
-              <div class="sub">${escapeHtml(subtitle)}</div>
-              <div class="price-actions">
-                <button type="button" class="btn" data-vpn-buy="${escapeHtml(slug)}">Подключить VPN</button>
-              </div>
+              <p class="vpn-plan-card__term">${escapeHtml(term)}</p>
+              <div class="vpn-plan-card__price">${escapeHtml(price)}</div>
+              <p class="vpn-plan-card__sub">${escapeHtml(subtitle)}</p>
+              <button type="button" class="btn" data-vpn-buy="${escapeHtml(slug)}">Подключить VPN</button>
             </article>
           `;
         }).join("");
 
         vpnItems.forEach((item) => {
-          const slug = normalizeSlug(item && item.product);
+          const slug = normalizeSlug((item && (item.product || item.slug || item.id)) || "");
           if (!slug) return;
           planMap.set(slug, item);
         });
@@ -514,13 +732,13 @@
           setStatus(checkoutStatus, "", "");
         } catch (_) {
           planMap.clear();
-          plansGrid.innerHTML = '<article class="price-card"><h3>Не удалось загрузить VPN-тарифы</h3><div class="sub">Обновите страницу через 5-10 секунд.</div></article>';
+          plansGrid.innerHTML = '<article class="vpn-plan-card"><h3>Не удалось загрузить VPN-тарифы</h3><p class="vpn-plan-card__sub">Обновите страницу через 5-10 секунд.</p></article>';
           setStatus(checkoutStatus, "Ошибка загрузки тарифов VPN.", "error");
         }
       }
 
       function getPreferredPaymentMethod() {
-        const fromLocal = String(localStorage.getItem("checkout_payment_method") || localStorage.getItem("payment_method") || "").trim().toLowerCase();
+        const fromLocal = String(localStorage.getItem(CHECKOUT_PAYMENT_KEY) || localStorage.getItem("payment_method") || "").trim().toLowerCase();
         if (fromLocal === "enot" || fromLocal === "lava") return fromLocal;
         return "lava";
       }
@@ -538,7 +756,7 @@
       }
 
       async function createPayment(planSlug, button) {
-        const email = String(emailInput && emailInput.value || "").trim().toLowerCase();
+        const email = String((emailInput && emailInput.value) || "").trim().toLowerCase();
         if (!isValidEmail(email)) {
           setStatus(checkoutStatus, "Введите корректный email для оплаты.", "error");
           if (emailInput) emailInput.focus();
@@ -557,11 +775,27 @@
         const payload = {
           email,
           plan_id: String(plan.id),
+          planId: String(plan.id),
+          product_id: String(plan.id),
+          productId: String(plan.id),
           payment_method: paymentMethod,
+          paymentMethod,
+          qty: 1,
+          quantity: 1,
+          order_details: {
+            source: "vpn-store-page",
+            selection: {
+              serviceKey: "vpn",
+              product: String(plan.product || plan.slug || ""),
+              plan: String(plan.title || ""),
+              deliveryMethod: "vpn",
+              duration: getPlanTerm(plan),
+            },
+          },
         };
 
         setBusyButton(button, true);
-        setStatus(checkoutStatus, "Создаём счёт на оплату...", "");
+        setStatus(checkoutStatus, "Создаем счет на оплату...", "");
 
         try {
           const response = await fetch(`/api/payments/${encodeURIComponent(paymentMethod)}/create`, {
@@ -572,7 +806,7 @@
           const result = await response.json().catch(() => ({}));
 
           if (!response.ok || !result.pay_url) {
-            const message = String(result && (result.message || result.error) || "Не удалось создать платёж.");
+            const message = String((result && (result.message || result.error)) || "Не удалось создать платеж.");
             setStatus(checkoutStatus, message, "error");
             return;
           }
@@ -587,13 +821,13 @@
       }
 
       function renderVpnPayload(payload) {
-        currentAccessLink = String(payload && payload.accessLink || "").trim();
-        copyBtn.disabled = !currentAccessLink;
+        currentAccessLink = String((payload && payload.accessLink) || "").trim();
+        if (copyBtn) copyBtn.disabled = !currentAccessLink;
 
-        uuidEl.textContent = String(payload && payload.uuid || "—");
-        planEl.textContent = String(payload && payload.plan || "—");
+        uuidEl.textContent = String((payload && payload.uuid) || "-");
+        planEl.textContent = String((payload && payload.plan) || "-");
         expiresAtEl.textContent = formatDate(payload && payload.expiresAt);
-        trafficEl.textContent = formatBytes(payload && payload.trafficUsedBytes || 0);
+        trafficEl.textContent = formatBytes((payload && payload.trafficUsedBytes) || 0);
         activeEl.textContent = payload && payload.isActive ? "Активен" : "Неактивен";
       }
 
@@ -616,7 +850,7 @@
           const payload = await response.json().catch(() => ({}));
 
           if (!response.ok) {
-            const message = String(payload && (payload.message || payload.error) || "Не удалось получить VPN-доступ.");
+            const message = String((payload && (payload.message || payload.error)) || "Не удалось получить VPN-доступ.");
             setStatus(vpnMeStatus, message, "error");
             renderVpnPayload({});
             return;
@@ -634,18 +868,13 @@
         if (!currentAccessLink) return;
         try {
           await navigator.clipboard.writeText(currentAccessLink);
-          setStatus(vpnMeStatus, "VLESS ссылка скопирована.", "success");
+          setStatus(vpnMeStatus, "VLESS-ключ скопирован.", "success");
         } catch (_) {
-          setStatus(vpnMeStatus, "Не удалось скопировать ссылку. Скопируйте вручную.", "error");
+          setStatus(vpnMeStatus, "Не удалось скопировать ключ. Скопируйте вручную.", "error");
         }
       }
 
       function bindEvents() {
-        const storedEmail = String(localStorage.getItem(CHECKOUT_EMAIL_KEY) || "").trim().toLowerCase();
-        if (emailInput && !emailInput.value && storedEmail) {
-          emailInput.value = storedEmail;
-        }
-
         if (plansGrid) {
           plansGrid.addEventListener("click", (event) => {
             const target = event.target;
@@ -666,6 +895,13 @@
             isCatalogShownManually = !isCatalogShownManually;
             applyCabinetFocusMode();
           });
+        }
+
+        if (emailInput) {
+          try {
+            const savedEmail = String(localStorage.getItem(CHECKOUT_EMAIL_KEY) || "").trim();
+            if (savedEmail) emailInput.value = savedEmail;
+          } catch (_) {}
         }
       }
 
