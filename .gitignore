@@ -39,6 +39,8 @@ apps/admin-backend/data/*backup*.json
 tmp_*
 _tmp*
 _head_*
+/main.js
+/style.css
 
 # Large downloadable artifacts are kept on production storage, not in git.
 assets/downloads/
