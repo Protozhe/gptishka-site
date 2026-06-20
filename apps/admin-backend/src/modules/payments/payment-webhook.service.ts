@@ -74,6 +74,73 @@ function firstNumberLike(...values: unknown[]): number | string | undefined {
   return undefined;
 }
 
+export type PaymentWebhookMappedStatus = ReturnType<typeof toStatus>;
+
+export type OrderTransitionClaim = {
+  nextPaymentStatus: PaymentStatus;
+  nextOrderStatus: OrderStatus;
+  orderUpdateArgs: {
+    where: {
+      id: string;
+      status: { notIn: OrderStatus[] } | { not: OrderStatus };
+    };
+    data: {
+      status: OrderStatus;
+      paymentId: string;
+    };
+  };
+  runPaidSideEffectsOnClaim: boolean;
+  runRefundSideEffectsOnClaim: boolean;
+};
+
+export function buildOrderTransitionClaim(input: {
+  mapped: PaymentWebhookMappedStatus;
+  orderId: string;
+  paymentId: string;
+}): OrderTransitionClaim {
+  const isRefund = input.mapped === "refunded";
+  const nextPaymentStatus = isRefund
+    ? PaymentStatus.REFUNDED
+    : input.mapped === "success"
+    ? PaymentStatus.SUCCESS
+    : input.mapped === "failed"
+    ? PaymentStatus.FAILED
+    : PaymentStatus.PROCESSING;
+  const nextOrderStatus = isRefund
+    ? OrderStatus.REFUNDED
+    : input.mapped === "success"
+    ? OrderStatus.PAID
+    : input.mapped === "failed"
+    ? OrderStatus.FAILED
+    : OrderStatus.PENDING;
+
+  return {
+    nextPaymentStatus,
+    nextOrderStatus,
+    orderUpdateArgs: {
+      where: {
+        id: input.orderId,
+        status: isRefund ? { not: OrderStatus.REFUNDED } : { notIn: [OrderStatus.PAID, OrderStatus.REFUNDED] },
+      },
+      data: {
+        status: nextOrderStatus,
+        paymentId: input.paymentId,
+      },
+    },
+    runPaidSideEffectsOnClaim: nextOrderStatus === OrderStatus.PAID,
+    runRefundSideEffectsOnClaim: nextOrderStatus === OrderStatus.REFUNDED,
+  };
+}
+
+export function resolveOrderTransitionClaim(claim: OrderTransitionClaim, updateCount: number) {
+  const claimed = updateCount === 1;
+  return {
+    duplicate: !claimed,
+    runPaidSideEffects: claimed && claim.runPaidSideEffectsOnClaim,
+    runRefundSideEffects: claimed && claim.runRefundSideEffectsOnClaim,
+  };
+}
+
 export const paymentWebhookService = {
   async handle(rawPayload: WebhookPayload) {
     const payload = normalizeWebhookPayload(rawPayload);
@@ -116,8 +183,6 @@ export const paymentWebhookService = {
       }
     }
 
-    const isRefund = mapped === "refunded";
-
     // Prevent replay/downgrade attacks on terminal states.
     if (order.status === OrderStatus.REFUNDED) {
       return { ok: true, duplicate: true, orderId: order.id };
@@ -125,20 +190,13 @@ export const paymentWebhookService = {
     if (order.status === OrderStatus.PAID && mapped !== "refunded") {
       return { ok: true, duplicate: true, orderId: order.id };
     }
-    const nextPaymentStatus = isRefund
-      ? PaymentStatus.REFUNDED
-      : mapped === "success"
-      ? PaymentStatus.SUCCESS
-      : mapped === "failed"
-      ? PaymentStatus.FAILED
-      : PaymentStatus.PROCESSING;
-    const nextOrderStatus = isRefund
-      ? OrderStatus.REFUNDED
-      : mapped === "success"
-      ? OrderStatus.PAID
-      : mapped === "failed"
-      ? OrderStatus.FAILED
-      : OrderStatus.PENDING;
+    const transition = buildOrderTransitionClaim({
+      mapped,
+      orderId: order.id,
+      paymentId: paymentRef || targetPayment.providerRef || targetPayment.id,
+    });
+    const nextPaymentStatus = transition.nextPaymentStatus;
+    const nextOrderStatus = transition.nextOrderStatus;
 
     if (targetPayment.status === PaymentStatus.SUCCESS && nextPaymentStatus === PaymentStatus.SUCCESS) {
       return { ok: true, duplicate: true, orderId: order.id };
@@ -173,8 +231,14 @@ export const paymentWebhookService = {
       });
     }
 
-    await prisma.$transaction([
-      prisma.payment.update({
+    const transitionResult = await prisma.$transaction(async tx => {
+      const orderUpdate = await tx.order.updateMany(transition.orderUpdateArgs);
+      const claimResult = resolveOrderTransitionClaim(transition, orderUpdate.count);
+      if (claimResult.duplicate) {
+        return claimResult;
+      }
+
+      await tx.payment.update({
         where: { id: targetPayment.id },
         data: {
           status: nextPaymentStatus,
@@ -182,17 +246,16 @@ export const paymentWebhookService = {
           processedAt: mapped === "processing" ? null : new Date(),
           payload: rawPayload as any,
         },
-      }),
-      prisma.order.update({
-        where: { id: order.id },
-        data: {
-          status: nextOrderStatus,
-          paymentId: paymentRef || targetPayment.providerRef || targetPayment.id,
-        },
-      }),
-    ]);
+      });
 
-    if (nextOrderStatus === OrderStatus.PAID && order.status !== OrderStatus.PAID) {
+      return claimResult;
+    });
+
+    if (transitionResult.duplicate) {
+      return { ok: true, duplicate: true, orderId: order.id };
+    }
+
+    if (transitionResult.runPaidSideEffects) {
       if (order.promoCodeId) {
         await prisma.promoCode.update({
           where: { id: order.promoCodeId },
@@ -245,7 +308,7 @@ export const paymentWebhookService = {
       console.info(`[payment] order ${order.id} marked as FAILED via webhook`);
     }
 
-    if (nextOrderStatus === OrderStatus.REFUNDED) {
+    if (transitionResult.runRefundSideEffects) {
       await prisma.partnerEarning.updateMany({
         where: {
           orderId: order.id,

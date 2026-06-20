@@ -15,7 +15,7 @@ import { promoCodesRouter } from "./modules/promocodes/promocodes.routes";
 import { errorHandler, notFoundHandler } from "./common/errors/error-handler";
 import { publicOrdersRouter } from "./modules/orders/public-orders.routes";
 import { allowLavaWebhookIp, allowWebhookIp, verifyLavaWebhookSignature, verifyWebhookSignature } from "./common/security/webhook-security";
-import { handlePaymentWebhook } from "./modules/payments/payment-webhook.controller";
+import { createPaymentWebhookHandler } from "./modules/payments/payment-webhook.controller";
 import { publicPromoCodesRouter } from "./modules/promocodes/public-promocodes.routes";
 import { partnerEarningsRouter, partnersRouter } from "./modules/partners/partners.routes";
 import { publicPaymentsRouter } from "./modules/payments/public-payments.routes";
@@ -35,8 +35,10 @@ export function createApp() {
 
   applySecurity(app);
   app.use(globalRateLimit);
-  const enotWebhookStack = [allowWebhookIp, express.raw({ type: "application/json" }), verifyWebhookSignature, handlePaymentWebhook] as const;
-  const lavaWebhookStack = [allowLavaWebhookIp, express.raw({ type: "application/json" }), verifyLavaWebhookSignature, handlePaymentWebhook] as const;
+  const gatewayPaymentWebhookHandler = createPaymentWebhookHandler("gateway");
+  const lavaPaymentWebhookHandler = createPaymentWebhookHandler("lava");
+  const enotWebhookStack = [allowWebhookIp, express.raw({ type: "application/json" }), verifyWebhookSignature, gatewayPaymentWebhookHandler] as const;
+  const lavaWebhookStack = [allowLavaWebhookIp, express.raw({ type: "application/json" }), verifyLavaWebhookSignature, lavaPaymentWebhookHandler] as const;
   app.post("/api/public/webhook/payment", ...enotWebhookStack);
   app.post("/api/webhooks/payment", ...enotWebhookStack);
   app.post("/api/public/webhook/lava", ...lavaWebhookStack);
