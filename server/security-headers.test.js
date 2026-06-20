@@ -55,6 +55,15 @@ function inlineScriptHashes(filePath) {
     .map(source => `'sha256-${crypto.createHash("sha256").update(source).digest("base64")}'`);
 }
 
+function adminIndexHtml() {
+  return fs.readFileSync(path.join(__dirname, "..", "apps", "admin-ui", "index.html"), "utf8");
+}
+
+function adminMetaCspContent() {
+  const match = adminIndexHtml().match(/<meta\s+http-equiv="Content-Security-Policy"\s+content="([^"]+)"/i);
+  return match ? match[1] : "";
+}
+
 test("getCspHeaderName defaults to report-only", () => {
   assert.equal(getCspHeaderName({ reportOnly: true }), "Content-Security-Policy-Report-Only");
   assert.equal(getCspHeaderName({ reportOnly: false }), "Content-Security-Policy");
@@ -127,6 +136,21 @@ test("admin csp allows current external and hashed inline assets without unsafe-
   assert.ok(admin["style-src"].includes("https://fonts.googleapis.com"));
   assert.ok(admin["font-src"].includes("https://fonts.gstatic.com"));
   assert.ok(admin["img-src"].includes("https://top-fwz1.mail.ru"));
+});
+
+test("admin static HTML includes CSP meta fallback before inline scripts", () => {
+  const html = adminIndexHtml();
+  const metaCsp = adminMetaCspContent();
+  const firstScriptIndex = html.search(/<script\b/i);
+  const metaIndex = html.search(/<meta\s+http-equiv="Content-Security-Policy"/i);
+  const { "frame-ancestors": _frameAncestors, ...metaDirectives } = getCspDirectivesForPath("/admin");
+
+  assert.ok(metaCsp, "missing admin CSP meta tag");
+  assert.ok(metaIndex !== -1 && metaIndex < firstScriptIndex, "admin CSP meta must appear before scripts");
+  assert.equal(metaCsp, buildCspHeader(metaDirectives));
+  assert.equal(metaCsp.includes("frame-ancestors"), false);
+  assert.equal(metaCsp.includes("'unsafe-inline'"), true);
+  assert.equal(/script-src[^;]*'unsafe-inline'/.test(metaCsp), false);
 });
 
 test("storefront csp allows Google Fonts and YouTube embeds", () => {

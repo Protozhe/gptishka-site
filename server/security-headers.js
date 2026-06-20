@@ -1,5 +1,5 @@
 const ADMIN_INLINE_SCRIPT_HASHES = [
-  "'sha256-0EmvM5Y5ElZ/IxI9dtvRnNeKZe8VZ8XPJGfovZ1vgng='",
+  "'sha256-KkVaDlptswTDyvzOLDAq/AxTW+JG7HR5Uaeu/UZfjNg='",
   "'sha256-j/AzaJP4t+MaBTLn/KnjQJ2fP42g6/Q8LyxwMRUXL9k='",
 ];
 
