@@ -11,6 +11,7 @@ cd "$APP_DIR"
 
 git fetch origin main
 git reset --hard origin/main
+git clean -fd -- apps/admin-backend/src apps/admin-backend/prisma
 npm install --include=dev
 
 # Always publish latest admin UI first, even if backend deploy is skipped/fails.

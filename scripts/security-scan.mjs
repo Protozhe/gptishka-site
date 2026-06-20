@@ -305,6 +305,14 @@ function fail(message) {
 
 const failures = [];
 
+const deployScript = read("deploy.sh").replace(/\\/g, "/");
+if (!/git\s+clean\s+-fd\s+--[^\n]*apps\/admin-backend\/src[^\n]*apps\/admin-backend\/prisma/.test(deployScript)) {
+  fail("deploy.sh must remove untracked backend source/prisma files before production build.");
+}
+if (/git\s+clean\s+-[^\s\n]*x\b/.test(deployScript) || /git\s+clean\s+-fd\s+--\s+(?:\.|\$APP_DIR)\b/.test(deployScript)) {
+  fail("deploy.sh must not run broad or ignored-file git clean in the production app directory.");
+}
+
 const adminApi = stripComments(read("apps/admin-ui/src/lib/api.ts"));
 if (/admin_access_token/.test(adminApi) || /localStorage\.(?:getItem|setItem|removeItem)\(\s*["']admin_access_token/.test(adminApi)) {
   fail("Admin access token must not be stored in localStorage.");
