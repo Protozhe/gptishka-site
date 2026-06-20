@@ -19,6 +19,11 @@ async function bootstrap() {
       console.error("[vpn] failed to ensure vpn catalog products", error);
     }
   }
+  try {
+    await vpnService.ensureVpnServerCatalog();
+  } catch (error) {
+    console.error("[vpn] failed to ensure vpn server catalog", error);
+  }
   accountNotificationsService.startScheduler();
   const app = createApp();
   const bindHost = String(env.HOST || "127.0.0.1").trim() || "127.0.0.1";

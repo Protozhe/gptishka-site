@@ -93,7 +93,7 @@ export async function sendOrderPaidEmail(
   // If SMTP is enabled, this URL will still work for legacy orders without a secret.
   const activationUrl = `${siteOrigin}/redeem-start.html?order_id=${encodeURIComponent(payload.orderId)}`;
   const successUrl = `${siteOrigin}/success.html?order_id=${encodeURIComponent(payload.orderId)}`;
-  const supportEmail = "support@gptishka.shop";
+  const supportContact = "https://t.me/aiiisupport";
   const fromAddress = resolveFromAddress();
   const amountLabel = `${Number(payload.amount).toLocaleString("ru-RU", {
     minimumFractionDigits: 2,
@@ -113,7 +113,7 @@ export async function sendOrderPaidEmail(
       `Перейти к активации: ${activationUrl}`,
       `Проверка статуса оплаты: ${successUrl}`,
       ``,
-      `Если возникнут вопросы: ${supportEmail}`,
+      `Если возникнут вопросы: ${supportContact}`,
     ].join("\n"),
     html: `
       <div style="font-family: Arial, sans-serif; color:#1f2937; line-height:1.5;">
@@ -130,7 +130,7 @@ export async function sendOrderPaidEmail(
         <p style="margin:0 0 12px;"><a href="${escapeHtml(activationUrl)}">${escapeHtml(activationUrl)}</a></p>
         <p style="margin:0 0 8px;">Проверка статуса оплаты:</p>
         <p style="margin:0 0 12px;"><a href="${escapeHtml(successUrl)}">${escapeHtml(successUrl)}</a></p>
-        <p style="margin:0;">Поддержка: <a href="mailto:${supportEmail}">${supportEmail}</a></p>
+        <p style="margin:0;">Поддержка: <a href="${supportContact}" target="_blank" rel="noopener noreferrer">${supportContact}</a></p>
       </div>
     `,
   });
@@ -148,7 +148,7 @@ export async function sendCustomerMagicLinkEmail(
 
   const fromAddress = resolveFromAddress();
   const expiresAtLabel = new Date(payload.expiresAt).toLocaleString("ru-RU");
-  const supportEmail = "support@gptishka.shop";
+  const supportContact = "https://t.me/aiiisupport";
   const safeMagicUrl = String(payload.magicUrl || "").trim();
   const safeNextPath = String(payload.nextPath || "").trim() || "/account.html";
 
@@ -164,7 +164,7 @@ export async function sendCustomerMagicLinkEmail(
       `После входа вы попадете на: ${safeNextPath}`,
       "",
       `Если это были не вы, просто проигнорируйте письмо.`,
-      `Поддержка: ${supportEmail}`,
+      `Поддержка: ${supportContact}`,
     ].join("\n"),
     html: `
       <div style="font-family: Arial, sans-serif; color:#1f2937; line-height:1.5;">
@@ -181,7 +181,7 @@ export async function sendCustomerMagicLinkEmail(
         <p style="margin:0 0 8px;"><a href="${escapeHtml(safeMagicUrl)}">${escapeHtml(safeMagicUrl)}</a></p>
         <p style="margin:0 0 8px;"><strong>Ссылка действует до:</strong> ${escapeHtml(expiresAtLabel)}</p>
         <p style="margin:0 0 8px;"><strong>Целевая страница:</strong> ${escapeHtml(safeNextPath)}</p>
-        <p style="margin:0;">Поддержка: <a href="mailto:${supportEmail}">${supportEmail}</a></p>
+        <p style="margin:0;">Поддержка: <a href="${supportContact}" target="_blank" rel="noopener noreferrer">${supportContact}</a></p>
       </div>
     `,
   });
@@ -207,7 +207,7 @@ export async function sendCustomerSubscriptionReminderEmail(
   }
 
   const fromAddress = resolveFromAddress();
-  const supportEmail = "support@gptishka.shop";
+  const supportContact = "https://t.me/aiiisupport";
   const expiresAtLabel = new Date(payload.expiresAt).toLocaleString("ru-RU");
   const planLabel = String(payload.plan || "VPN").trim() || "VPN";
   const accountUrl = String(payload.accountUrl || "").trim() || `${resolveSiteOrigin()}/account.html`;
@@ -241,7 +241,7 @@ export async function sendCustomerSubscriptionReminderEmail(
       `Продлить подписку: ${renewUrl}`,
       `Личный кабинет: ${accountUrl}`,
       "",
-      `Поддержка: ${supportEmail}`,
+      `Поддержка: ${supportContact}`,
     ].join("\n"),
     html: `
       <div style="font-family: Arial, sans-serif; color:#1f2937; line-height:1.5;">
@@ -260,7 +260,7 @@ export async function sendCustomerSubscriptionReminderEmail(
         <p style="margin:0 0 8px;">Если кнопки не открываются:</p>
         <p style="margin:0 0 4px;">Продлить: <a href="${escapeHtml(renewUrl)}">${escapeHtml(renewUrl)}</a></p>
         <p style="margin:0 0 12px;">Кабинет: <a href="${escapeHtml(accountUrl)}">${escapeHtml(accountUrl)}</a></p>
-        <p style="margin:0;">Поддержка: <a href="mailto:${supportEmail}">${supportEmail}</a></p>
+        <p style="margin:0;">Поддержка: <a href="${supportContact}" target="_blank" rel="noopener noreferrer">${supportContact}</a></p>
       </div>
     `,
   });
@@ -297,7 +297,7 @@ function resolveSiteOrigin() {
 function resolveFromAddress() {
   const raw = String(env.SMTP_FROM || "").trim();
   if (!raw || raw.endsWith("@gptishka.local")) {
-    return "support@gptishka.shop";
+    return "no-reply@gptishka.shop";
   }
   return raw;
 }

@@ -58,6 +58,14 @@ export const startOrderActivation = asyncHandler(async (req: Request, res: Respo
   res.json(data);
 });
 
+export const storeOrderActivationClientToken = asyncHandler(async (req: Request, res: Response) => {
+  const orderId = String(req.params.orderId || "");
+  const token = String((req.body as any)?.token || "");
+  const orderToken = String((req.body as any)?.orderToken || (req.body as any)?.t || (req.query as any)?.t || "");
+  const data = await ordersService.storeActivationClientToken(orderId, token, orderToken);
+  res.json(data);
+});
+
 export const validateOrderActivationToken = asyncHandler(async (req: Request, res: Response) => {
   const orderId = String(req.params.orderId || "");
   const token = String((req.body as any)?.token || "");
@@ -92,6 +100,13 @@ export const getOrderActivationProof = asyncHandler(async (req: Request, res: Re
 export const getOrderActivationToken = asyncHandler(async (req: Request, res: Response) => {
   const orderId = String(req.params.id || "");
   const data = await ordersService.getActivationClientToken(orderId, actor(req));
+  res.json(data);
+});
+
+export const manuallyCompleteOrderActivation = asyncHandler(async (req: Request, res: Response) => {
+  const orderId = String(req.params.id || "");
+  const note = String((req.body as any)?.note || "");
+  const data = await ordersService.manuallyCompleteActivation(orderId, { note }, actor(req));
   res.json(data);
 });
 
@@ -133,28 +148,58 @@ export const exportOrdersCsv = asyncHandler(async (req: Request, res: Response) 
 
   const header = [
     "id",
+    "source",
+    "bot_type",
+    "telegram_user_id",
+    "telegram_username",
+    "telegram_chat_id",
     "email",
+    "product_title",
     "status",
+    "payment_status",
+    "payment_provider",
+    "payment_ref",
     "payment_method",
     "payment_id",
     "country",
     "ip",
     "total_amount",
     "currency",
+    "paid_at",
+    "completed_at",
+    "activation_status",
+    "activation_state",
+    "activation_message",
+    "telegram_last_error",
     "created_at",
   ];
 
   const rows = result.items.map((o) =>
     [
       o.id,
+      o.source || "",
+      o.botType || "",
+      o.telegramUserId || "",
+      o.telegramUsername || "",
+      o.telegramChatId || "",
       o.email,
+      o.product?.title || "",
       o.status,
+      o.paymentStatus || "",
+      o.paymentProvider || "",
+      o.paymentRef || "",
       o.paymentMethod || "",
       o.paymentId || "",
       o.country || "",
       o.ip || "",
       o.totalAmount,
       o.currency,
+      o.paidAt ? new Date(o.paidAt).toISOString() : "",
+      o.completedAt ? new Date(o.completedAt).toISOString() : "",
+      o.activation?.status || "",
+      o.activation?.verificationState || "",
+      o.activation?.lastProviderMessage || "",
+      o.telegramLastError || "",
       o.createdAt.toISOString(),
     ]
       .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)

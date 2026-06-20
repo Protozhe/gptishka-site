@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma";
+import { normalizeActivationSiteUrl } from "../common/utils/activation-site";
 import { canonicalProductKey } from "../common/utils/product-key";
 
 export type LicenseKeyStatus = "available" | "reserved" | "used" | "revoked";
@@ -31,9 +32,15 @@ async function resolveAuditUserId(userId?: string | null) {
 }
 
 export const licenseService = {
-  async createKey(productKey: string, keyValue: string, actor?: { userId?: string }, meta?: Record<string, unknown>) {
+  async createKey(
+    productKey: string,
+    keyValue: string,
+    actor?: { userId?: string },
+    meta?: Record<string, unknown> & { activationSiteUrl?: string }
+  ) {
     const pk = canonicalProductKey(productKey);
     const kv = normalizeKeyValue(keyValue);
+    const activationSiteUrl = normalizeActivationSiteUrl(meta?.activationSiteUrl);
     if (!pk) throw new Error("productKey is required");
     if (!kv) throw new Error("keyValue is required");
 
@@ -41,6 +48,7 @@ export const licenseService = {
       data: {
         productKey: pk,
         keyValue: kv,
+        activationSiteUrl,
         status: "available",
       },
       select: { id: true, productKey: true, status: true, createdAt: true, updatedAt: true },
@@ -60,13 +68,35 @@ export const licenseService = {
     return row;
   },
 
-  async importKeys(productKey: string, codes: string[], actor?: { userId?: string }) {
+  async importKeys(
+    productKey: string,
+    codes: string[],
+    actor?: { userId?: string },
+    options?: { activationSiteUrl?: string }
+  ) {
     const pk = canonicalProductKey(productKey);
+    const activationSiteUrl = normalizeActivationSiteUrl(options?.activationSiteUrl);
     const normalized = (codes || []).map(normalizeKeyValue).filter(Boolean);
     const unique = Array.from(new Set(normalized));
 
     if (!pk) throw new Error("productKey is required");
-    if (unique.length === 0) return { inserted: 0, skipped: 0, conflicts: 0, conflictsByProductKey: {} as Record<string, number> };
+    if (unique.length === 0) {
+      return {
+        inserted: 0,
+        skipped: 0,
+        activationSiteUrl,
+        conflicts: 0,
+        conflictsByProductKey: {} as Record<string, number>,
+        conflictDetails: [] as Array<{
+          code: string;
+          productKey: string;
+          status: LicenseKeyStatus;
+          orderId: string | null;
+          email: string | null;
+          activationSiteUrl: string;
+        }>,
+      };
+    }
 
     // If the product exists by slug, keep a stable FK for future audits/queries.
     const product = await prisma.product.findUnique({
@@ -77,14 +107,30 @@ export const licenseService = {
     // Detect conflicts: the same key already exists under another productKey.
     const existing = await prisma.licenseKey.findMany({
       where: { keyValue: { in: unique } },
-      select: { productKey: true },
+      select: { keyValue: true, productKey: true, activationSiteUrl: true, status: true, orderId: true, email: true },
     });
     const conflictsByProductKey: Record<string, number> = {};
+    const conflictDetails: Array<{
+      code: string;
+      productKey: string;
+      activationSiteUrl: string;
+      status: LicenseKeyStatus;
+      orderId: string | null;
+      email: string | null;
+    }> = [];
     let conflicts = 0;
     for (const row of existing) {
       if (row.productKey !== pk) {
         conflicts++;
         conflictsByProductKey[row.productKey] = (conflictsByProductKey[row.productKey] || 0) + 1;
+        conflictDetails.push({
+          code: row.keyValue,
+          productKey: row.productKey,
+          activationSiteUrl: row.activationSiteUrl || "",
+          status: row.status,
+          orderId: row.orderId,
+          email: row.email,
+        });
       }
     }
 
@@ -94,6 +140,7 @@ export const licenseService = {
         productKey: pk,
         productId: product?.id || null,
         keyValue: kv,
+        activationSiteUrl,
         status: "available",
       })),
       skipDuplicates: true,
@@ -109,11 +156,11 @@ export const licenseService = {
         keyId: null,
         action: "import",
         userId: auditUserId,
-        meta: asJson({ productKey: pk, inserted, skipped, conflicts, conflictsByProductKey }),
+        meta: asJson({ productKey: pk, activationSiteUrl, inserted, skipped, conflicts, conflictsByProductKey, conflictDetails }),
       },
     });
 
-    return { inserted, skipped, conflicts, conflictsByProductKey };
+    return { inserted, skipped, conflicts, conflictsByProductKey, conflictDetails, activationSiteUrl };
   },
 
   async getKeysByProduct(productKey: string, params?: { status?: LicenseKeyStatus; q?: string; page?: number; limit?: number }) {
@@ -132,6 +179,7 @@ export const licenseService = {
         { email: { contains: q, mode: "insensitive" } },
         { orderId: { contains: q, mode: "insensitive" } },
         { productKey: { contains: q, mode: "insensitive" } },
+        { activationSiteUrl: { contains: q, mode: "insensitive" } },
       ];
     }
 
@@ -173,9 +221,10 @@ export const licenseService = {
     productKey: string,
     input: { orderId: string; email?: string },
     actor?: { userId?: string },
-    opts?: { excludeKeyValue?: string }
+    opts?: { excludeKeyValue?: string; activationSiteUrl?: string }
   ) {
     const pk = canonicalProductKey(productKey);
+    const activationSiteUrl = normalizeActivationSiteUrl(opts?.activationSiteUrl);
     const orderId = String(input.orderId || "").trim();
     if (!pk) throw new Error("productKey is required");
     if (!orderId) throw new Error("orderId is required");
@@ -192,6 +241,7 @@ export const licenseService = {
         SELECT id
         FROM license_keys
         WHERE product_key = ${pk}
+          AND activation_site_url = ${activationSiteUrl}
           AND status = 'available'
           AND (${exclude} = '' OR key_value <> ${exclude})
         FOR UPDATE SKIP LOCKED
@@ -219,7 +269,7 @@ export const licenseService = {
           keyId: id,
           action: "assign",
           userId: auditUserId,
-          meta: asJson({ orderId, productKey: pk }),
+          meta: asJson({ orderId, productKey: pk, activationSiteUrl }),
         },
       });
 
@@ -369,6 +419,31 @@ export const licenseService = {
     });
 
     return { ok: true as const, row: updated };
+  },
+
+  async deleteArchived(keyId: string, actor?: { userId?: string }) {
+    const id = String(keyId || "").trim();
+    if (!id) throw new Error("keyId is required");
+
+    const row = await prisma.licenseKey.findUnique({ where: { id } });
+    if (!row) return { ok: false as const, reason: "not_found" as const };
+    if (row.status !== "revoked") return { ok: false as const, reason: "not_archived" as const };
+
+    const auditUserId = await resolveAuditUserId(actor?.userId);
+
+    await prisma.$transaction(async (tx) => {
+      await tx.licenseKeyAuditLog.create({
+        data: {
+          keyId: id,
+          action: "delete_archived",
+          userId: auditUserId,
+          meta: asJson({ keyValue: row.keyValue, productKey: row.productKey }),
+        },
+      });
+      await tx.licenseKey.delete({ where: { id } });
+    });
+
+    return { ok: true as const };
   },
 
   async stats() {

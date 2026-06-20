@@ -1,6 +1,23 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../config/prisma";
 
+const productInclude = {
+  images: true,
+  visualConfig: true,
+  showcasePlacements: {
+    include: {
+      section: true,
+    },
+    orderBy: [{ isPinned: "desc" as const }, { sortOrder: "asc" as const }],
+  },
+  servicePagePlacements: {
+    include: {
+      servicePage: true,
+    },
+    orderBy: [{ isPinned: "desc" as const }, { sortOrder: "asc" as const }],
+  },
+};
+
 export type ProductListParams = {
   page: number;
   limit: number;
@@ -35,7 +52,7 @@ export const productsRepository = {
     const [items, total] = await prisma.$transaction([
       prisma.product.findMany({
         where,
-        include: { images: true },
+        include: productInclude,
         orderBy: { [params.sortBy]: params.sortDir },
         skip: (params.page - 1) * params.limit,
         take: params.limit,
@@ -47,7 +64,10 @@ export const productsRepository = {
   },
 
   findById(id: string) {
-    return prisma.product.findUnique({ where: { id }, include: { images: true } });
+    return prisma.product.findUnique({
+      where: { id },
+      include: productInclude,
+    });
   },
 
   findBySlug(slug: string) {
@@ -55,11 +75,18 @@ export const productsRepository = {
   },
 
   create(data: Prisma.ProductCreateInput) {
-    return prisma.product.create({ data, include: { images: true } });
+    return prisma.product.create({
+      data,
+      include: productInclude,
+    });
   },
 
   update(id: string, data: Prisma.ProductUpdateInput) {
-    return prisma.product.update({ where: { id }, data, include: { images: true } });
+    return prisma.product.update({
+      where: { id },
+      data,
+      include: productInclude,
+    });
   },
 
   remove(id: string) {
@@ -77,6 +104,9 @@ export const productsRepository = {
       await prisma.product.update({ where: { id: p.id }, data: { price: nextPrice } });
     }
 
-    return prisma.product.findMany({ where: { id: { in: productIds } }, include: { images: true } });
+    return prisma.product.findMany({
+      where: { id: { in: productIds } },
+      include: productInclude,
+    });
   },
 };

@@ -5,16 +5,17 @@
   "type": "commonjs",
   "scripts": {
     "dev": "tsx watch src/main.ts",
+    "dev:telegram-bots": "tsx watch src/telegram-bots.main.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/main.js",
+    "start:telegram-bots": "node dist/telegram-bots.main.js",
     "restore:modal-backup": "node scripts/restore-product-modals-from-backup.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
     "seed": "tsx prisma/seed.ts",
     "bootstrap:user": "tsx scripts/upsert-admin-user.ts",
-    "test": "node --import tsx --test \"src/**/*.test.ts\"",
-    "test:security": "node --import tsx --test \"src/**/*.test.ts\""
+    "backfill:service-pages": "tsx scripts/backfill-service-pages.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.3.1",

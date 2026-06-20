@@ -1,32 +1,113 @@
 ﻿import { FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import axios from "axios";
-import { AlignCenter, AlignLeft, AlignRight, type LucideIcon } from "lucide-react";
 import { api } from "../lib/api";
 import { money } from "../lib/format";
 
-type BadgeType = "none" | "best" | "new" | "hit" | "sale" | "popular" | "limited" | "gift" | "pro";
-type ProductDeliveryType = "activation" | "credentials" | "vpn" | "support" | "support_claude";
-type TextAlignValue = "left" | "center" | "right";
-type CardTextBlock = "title" | "description" | "price" | "duration" | "features" | "meta";
-type CardTextAlignConfig = Record<CardTextBlock, TextAlignValue>;
+type ProductDeliveryType = "activation" | "credentials" | "manual_login" | "vpn" | "support" | "support_claude";
+type ProductVisualBackgroundType = "solid" | "gradient" | "image";
+type ActivationVariantKey = "withLogin" | "withoutLogin";
+type ActivationVariantConfig = {
+  enabled: boolean;
+  price: number | string;
+  deliveryType: ProductDeliveryType;
+  activationSiteUrl?: string;
+};
+
+type ProductVisualConfig = {
+  cardTitle?: string;
+  cardDescription?: string;
+  imageUrl?: string;
+  imageAlt?: string;
+  hoverImageUrl?: string;
+  hoverImageAlt?: string;
+  backgroundType?: ProductVisualBackgroundType;
+  backgroundColor?: string;
+  backgroundGradient?: string;
+  buttonText?: string;
+  buttonStyle?: string;
+  isVisible?: boolean;
+};
+
+type ProductShowcasePlacement = {
+  id: string;
+  sectionId: string;
+  sortOrder: number;
+  isActive: boolean;
+  isPinned: boolean;
+  section?: {
+    title?: string;
+    slug?: string;
+  };
+};
+
+type ServicePageProductPlacement = {
+  id: string;
+  servicePageId: string;
+  productId: string;
+  sortOrder: number;
+  isActive: boolean;
+  isPinned: boolean;
+  servicePage?: {
+    id: string;
+    title?: string;
+    path?: string;
+    serviceKey?: string;
+  };
+};
+
+type ServicePage = {
+  id: string;
+  slug: string;
+  path: string;
+  serviceKey: string;
+  title: string;
+  titleEn?: string;
+  heroEyebrow?: string;
+  heroTitle?: string;
+  heroDescription?: string;
+  heroVideoUrl?: string;
+  heroImageUrl?: string;
+  heroLogoUrl?: string;
+  theme?: string;
+  accentColor?: string;
+  accentGradient?: string;
+  darkOverlay?: string;
+  colorOverlay?: string;
+  constructorTitle?: string;
+  constructorDescription?: string;
+  infoSections?: unknown[];
+  faqItems?: unknown[];
+  paymentCaptionLava?: string;
+  paymentCaptionEnot?: string;
+  isActive: boolean;
+  isIndexed: boolean;
+  sortOrder: number;
+  placements?: ServicePageProductPlacement[];
+};
 
 type Product = {
   id: string;
   slug: string;
   title: string;
   titleEn: string;
+  iconPngUrl?: string;
   description: string;
   descriptionEn: string;
   modalDescription?: string;
   modalDescriptionEn?: string;
   price: number | string;
+  activationVariants?: Record<ActivationVariantKey, ActivationVariantConfig> | null;
   currency: string;
   category: string;
   tags: string[];
   isActive: boolean;
   deliveryType?: ProductDeliveryType;
   deliveryMethod?: 1 | 2 | 3 | 4 | 5 | "1" | "2" | "3" | "4" | "5";
+  visualConfig?: ProductVisualConfig | null;
+  showcasePlacements?: ProductShowcasePlacement[];
+  servicePagePlacements?: ServicePageProductPlacement[];
 };
 
 type ManualCredential = {
@@ -40,29 +121,71 @@ type ManualCredential = {
 };
 
 const DEFAULT_PRODUCT_CATEGORY = "Подписки ChatGPT";
-const CARD_TEXT_ALIGN_BLOCKS: CardTextBlock[] = ["title", "description", "price", "duration", "features", "meta"];
-const CARD_TEXT_ALIGN_DEFAULT: CardTextAlignConfig = {
-  title: "left",
-  description: "left",
-  price: "left",
-  duration: "left",
-  features: "left",
-  meta: "left",
+const DEFAULT_SERVICE_PAGE_DRAFT: Partial<ServicePage> = {
+  title: "",
+  slug: "",
+  path: "",
+  serviceKey: "",
+  theme: "custom",
+  accentColor: "#35f28f",
+  accentGradient: "linear-gradient(135deg,#35f28f,#18c878,#0f8f5c)",
+  darkOverlay: "linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.58))",
+  colorOverlay: "linear-gradient(135deg,rgba(0,255,120,.28),rgba(0,130,80,.18),rgba(0,0,0,.20))",
+  heroEyebrow: "Тарифные планы",
+  heroTitle: "",
+  heroDescription: "",
+  heroVideoUrl: "",
+  heroImageUrl: "",
+  heroLogoUrl: "",
+  constructorTitle: "",
+  constructorDescription: "",
+  paymentCaptionLava: "СБП 0% и карты 3.2%",
+  paymentCaptionEnot: "Карты 3.2% и СБП 0%",
+  isActive: true,
+  isIndexed: true,
+  sortOrder: 100,
 };
-const CARD_TEXT_ALIGN_TAG_RE = /^align:(title|description|price|duration|features|meta):(left|center|right)$/i;
-const CARD_TEXT_ALIGN_OPTIONS: Array<{ value: TextAlignValue; label: string; icon: LucideIcon }> = [
-  { value: "left", label: "Слева", icon: AlignLeft },
-  { value: "center", label: "Центр", icon: AlignCenter },
-  { value: "right", label: "Справа", icon: AlignRight },
-];
-const CARD_TEXT_ALIGN_FIELDS: Array<{ key: CardTextBlock; label: string; hint: string }> = [
-  { key: "title", label: "Название", hint: "Заголовок товара" },
-  { key: "description", label: "Описание", hint: "Верхние строки под заголовком" },
-  { key: "price", label: "Цена", hint: "Число и валюта" },
-  { key: "duration", label: "Срок", hint: "Строка вида «Срок: ...»" },
-  { key: "features", label: "Преимущества", hint: "Список пунктов внизу карточки" },
-  { key: "meta", label: "Meta", hint: "Нижний блок «Авто / Безопасно / 24/7»" },
-];
+
+const SERVICE_PAGE_THEME_PRESETS: Record<
+  string,
+  Pick<ServicePage, "theme" | "accentColor" | "accentGradient" | "darkOverlay" | "colorOverlay">
+> = {
+  emerald: {
+    theme: "emerald",
+    accentColor: "#35f28f",
+    accentGradient: "linear-gradient(135deg,#35f28f,#18c878,#0f8f5c)",
+    darkOverlay: "linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.58))",
+    colorOverlay: "linear-gradient(135deg,rgba(0,255,120,.34),rgba(0,130,80,.22),rgba(0,0,0,.22))",
+  },
+  orange: {
+    theme: "orange",
+    accentColor: "#ff8a3d",
+    accentGradient: "linear-gradient(135deg,#ffb36a,#ff7a2f,#d94a17)",
+    darkOverlay: "linear-gradient(180deg,rgba(0,0,0,.16),rgba(0,0,0,.56))",
+    colorOverlay: "linear-gradient(135deg,rgba(255,138,61,.34),rgba(255,91,34,.24),rgba(0,0,0,.22))",
+  },
+  black: {
+    theme: "black",
+    accentColor: "#f5f7fb",
+    accentGradient: "linear-gradient(135deg,#f5f7fb,#8b95a7,#111827)",
+    darkOverlay: "linear-gradient(180deg,rgba(0,0,0,.24),rgba(0,0,0,.68))",
+    colorOverlay: "linear-gradient(135deg,rgba(255,255,255,.16),rgba(80,90,110,.18),rgba(0,0,0,.34))",
+  },
+  "dark-blue": {
+    theme: "dark-blue",
+    accentColor: "#4aa8ff",
+    accentGradient: "linear-gradient(135deg,#66c7ff,#2479ff,#102a7a)",
+    darkOverlay: "linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.62))",
+    colorOverlay: "linear-gradient(135deg,rgba(74,168,255,.30),rgba(28,70,180,.24),rgba(0,0,0,.28))",
+  },
+  custom: {
+    theme: "custom",
+    accentColor: "#35f28f",
+    accentGradient: "linear-gradient(135deg,#35f28f,#18c878,#0f8f5c)",
+    darkOverlay: "linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.58))",
+    colorOverlay: "linear-gradient(135deg,rgba(0,255,120,.28),rgba(0,130,80,.18),rgba(0,0,0,.20))",
+  },
+};
 
 const LEGACY_MEDIA_LINE_RE = /^media\s*:\s*(image|video)\s*:\s*(.+)$/i;
 const LEGACY_MEDIA_CAPTION_RE = /^media-caption\s*:\s*(.+)$/i;
@@ -135,59 +258,6 @@ function withDurationLine(description: string, durationLabel: string, lang: "ru"
   return withoutDuration ? `${withoutDuration}\n${prefix}${cleanedDuration}` : `${prefix}${cleanedDuration}`;
 }
 
-function getBadgeFromTags(tags: string[] = []): BadgeType {
-  const list = Array.isArray(tags) ? tags : [];
-  const found = list
-    .map((tag) => String(tag || "").toLowerCase())
-    .find((tag) => tag.startsWith("badge:"));
-  if (!found) return "none";
-  const value = found.split(":")[1] || "none";
-  const allowed: BadgeType[] = ["none", "best", "new", "hit", "sale", "popular", "limited", "gift", "pro"];
-  return allowed.includes(value as BadgeType) ? (value as BadgeType) : "none";
-}
-
-function buildDefaultCardTextAlign(): CardTextAlignConfig {
-  return { ...CARD_TEXT_ALIGN_DEFAULT };
-}
-
-function normalizeTextAlignValue(value: string): TextAlignValue {
-  const normalized = String(value || "").trim().toLowerCase();
-  if (normalized === "center") return "center";
-  if (normalized === "right") return "right";
-  return "left";
-}
-
-function parseCardTextAlignFromTags(tags: string[] = []): CardTextAlignConfig {
-  const result = buildDefaultCardTextAlign();
-  const list = Array.isArray(tags) ? tags : [];
-  list.forEach((tag) => {
-    const match = String(tag || "").trim().toLowerCase().match(CARD_TEXT_ALIGN_TAG_RE);
-    if (!match) return;
-    const block = match[1] as CardTextBlock;
-    result[block] = normalizeTextAlignValue(match[2]);
-  });
-  return result;
-}
-
-function withCardTextAlignTags(tags: string[] = [], alignConfig: CardTextAlignConfig): string[] {
-  const list = Array.isArray(tags) ? tags : [];
-  const cleaned = list.filter((tag) => !CARD_TEXT_ALIGN_TAG_RE.test(String(tag || "").trim().toLowerCase()));
-  const resolved = alignConfig || buildDefaultCardTextAlign();
-  const next = [...cleaned];
-  CARD_TEXT_ALIGN_BLOCKS.forEach((block) => {
-    const value = normalizeTextAlignValue(resolved[block]);
-    next.push(`align:${block}:${value}`);
-  });
-  return next;
-}
-
-function withBadgeTag(tags: string[] = [], badge: BadgeType): string[] {
-  const list = Array.isArray(tags) ? tags : [];
-  const cleaned = list.filter((tag) => !String(tag || "").toLowerCase().startsWith("badge:"));
-  if (badge === "none") return cleaned;
-  return [...cleaned, `badge:${badge}`];
-}
-
 function resolveDeliveryType(item: Product): ProductDeliveryType {
   const fromMethod = String(item.deliveryMethod || "").trim();
   if (fromMethod === "5") return "support_claude";
@@ -197,6 +267,7 @@ function resolveDeliveryType(item: Product): ProductDeliveryType {
   if (fromMethod === "1") return "activation";
 
   const fromItem = String(item.deliveryType || "").trim().toLowerCase();
+  if (fromItem === "manual_login" || fromItem === "manual-login" || fromItem === "with_login" || fromItem === "with-login") return "manual_login";
   if (fromItem === "support_claude") return "support_claude";
   if (fromItem === "support") return "support";
   if (fromItem === "credentials") return "credentials";
@@ -216,6 +287,10 @@ function resolveDeliveryType(item: Product): ProductDeliveryType {
   const hasCredentialsTag = (item.tags || [])
     .map((tag) => String(tag || "").trim().toLowerCase())
     .some((tag) => tag === "delivery:credentials");
+  const hasManualLoginTag = (item.tags || [])
+    .map((tag) => String(tag || "").trim().toLowerCase())
+    .some((tag) => tag === "delivery:manual_login" || tag === "delivery:manual-login");
+  if (hasManualLoginTag) return "manual_login";
   return hasCredentialsTag ? "credentials" : "activation";
 }
 
@@ -223,12 +298,13 @@ function deliveryMethodNumber(deliveryType: ProductDeliveryType): 1 | 2 | 3 | 4 
   if (deliveryType === "support_claude") return 5;
   if (deliveryType === "support") return 4;
   if (deliveryType === "vpn") return 3;
-  return deliveryType === "credentials" ? 2 : 1;
+  return deliveryType === "credentials" || deliveryType === "manual_login" ? 2 : 1;
 }
 
 function deliveryMethodLabel(deliveryType: ProductDeliveryType): string {
   if (deliveryType === "support_claude") return "Метод 5: Claude Pro активация по токену";
   if (deliveryType === "support") return "Метод 4: Grok-активация по JWT-токену";
+  if (deliveryType === "manual_login") return "Метод 2A: Ручная заявка со входом";
   if (deliveryType === "credentials") return "Метод 2: Логин и пароль";
   if (deliveryType === "vpn") return "Метод 3: VPN (VLESS)";
   return "Метод 1: Активация по ключу";
@@ -350,7 +426,7 @@ function withDirectVpnTags(tags: string[] = [], durationDays: number, usersLimit
   ];
 }
 
-function buildTags(title: string, badge: BadgeType): string[] {
+function buildTags(title: string): string[] {
   const tags = title
     .toLowerCase()
     .split(/[^a-z0-9а-яё]+/i)
@@ -358,20 +434,7 @@ function buildTags(title: string, badge: BadgeType): string[] {
     .filter(Boolean)
     .slice(0, 6);
 
-  const base = tags.length ? tags : ["subscription"];
-  return withBadgeTag(base, badge);
-}
-
-function badgeLabel(badge: BadgeType): string {
-  if (badge === "best") return "Лучший выбор";
-  if (badge === "new") return "Новинка";
-  if (badge === "hit") return "Хит";
-  if (badge === "sale") return "Акция";
-  if (badge === "popular") return "Популярно";
-  if (badge === "limited") return "Ограничено";
-  if (badge === "gift") return "Бонус";
-  if (badge === "pro") return "Pro";
-  return "Без плашки";
+  return tags.length ? tags : ["subscription"];
 }
 
 function getRequestErrorMessage(error: unknown, fallback: string): string {
@@ -387,12 +450,133 @@ function getRequestErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
+function buildDefaultVisualConfig(productTitle = "", productDescription = ""): ProductVisualConfig {
+  return {
+    cardTitle: productTitle,
+    cardDescription: productDescription,
+    imageUrl: "",
+    imageAlt: productTitle,
+    hoverImageUrl: "",
+    hoverImageAlt: productTitle,
+    backgroundType: "solid",
+    backgroundColor: "#111111",
+    backgroundGradient: "",
+    buttonText: "Выбрать тариф",
+    buttonStyle: "primary",
+    isVisible: true,
+  };
+}
+
+function mergeVisualConfig(product: Pick<Product, "title" | "description" | "visualConfig">): ProductVisualConfig {
+  return {
+    ...buildDefaultVisualConfig(product.title || "", product.description || ""),
+    ...(product.visualConfig || {}),
+  };
+}
+
+function ProductVisualPreview({
+  visual,
+  fallbackTitle,
+  fallbackDescription,
+  price,
+  currency,
+}: {
+  visual: ProductVisualConfig;
+  fallbackTitle: string;
+  fallbackDescription: string;
+  price: string;
+  currency: string;
+}) {
+  const title = visual.cardTitle || fallbackTitle || "Название товара";
+  const description = visual.cardDescription || fallbackDescription || "Короткое описание товара";
+  const background =
+    visual.backgroundType === "gradient" && visual.backgroundGradient
+      ? visual.backgroundGradient
+      : visual.backgroundColor || "#111111";
+  const imageBackground =
+    visual.backgroundType === "image" && visual.imageUrl
+      ? `linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.54)), url(${visual.imageUrl}) center/cover`
+      : background;
+
+  return (
+    <article className="overflow-hidden rounded-[28px] bg-[#111] p-3 text-white shadow-xl">
+      <div className="group relative aspect-square overflow-hidden rounded-[24px]" style={{ background: imageBackground }}>
+        {visual.imageUrl && (
+          <img
+            src={visual.imageUrl}
+            alt={visual.imageAlt || title}
+            className={`h-full w-full object-cover transition-opacity duration-200 ${visual.hoverImageUrl ? "group-hover:opacity-0" : ""}`}
+            loading="lazy"
+          />
+        )}
+        {visual.hoverImageUrl && (
+          <img
+            src={visual.hoverImageUrl}
+            alt={visual.hoverImageAlt || title}
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-200 ${visual.imageUrl ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
+            loading="lazy"
+          />
+        )}
+      </div>
+      <div className="grid gap-2 p-2">
+        <h3 className="text-lg font-extrabold leading-tight">{title}</h3>
+        <p className="line-clamp-2 text-sm text-slate-300">{description}</p>
+        <div className="text-base font-bold">{Number(price) > 0 ? `от ${money(Number(price), currency)}` : "цена на витрине"}</div>
+        <button type="button" className="h-12 rounded-xl bg-emerald-600 text-sm font-bold text-white">
+          {visual.buttonText || "Выбрать тариф"}
+        </button>
+      </div>
+    </article>
+  );
+}
+
 function normalizeCategoryValue(value: string): string {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
 
 function categoryKey(value: string): string {
   return normalizeCategoryValue(value).toLocaleLowerCase("ru");
+}
+
+function buildDefaultServicePageDraft(overrides: Partial<ServicePage> = {}): Partial<ServicePage> {
+  return {
+    ...DEFAULT_SERVICE_PAGE_DRAFT,
+    ...overrides,
+    infoSections: Array.isArray(overrides.infoSections) ? overrides.infoSections : [],
+    faqItems: Array.isArray(overrides.faqItems) ? overrides.faqItems : [],
+  };
+}
+
+function servicePageToDraft(page?: ServicePage | null): Partial<ServicePage> {
+  if (!page) return buildDefaultServicePageDraft();
+  return buildDefaultServicePageDraft({
+    id: page.id,
+    slug: page.slug || "",
+    path: page.path || "",
+    serviceKey: page.serviceKey || "",
+    title: page.title || "",
+    titleEn: page.titleEn || "",
+    heroEyebrow: page.heroEyebrow || "Тарифные планы",
+    heroTitle: page.heroTitle || page.title || "",
+    heroDescription: page.heroDescription || "",
+    heroVideoUrl: page.heroVideoUrl || "",
+    heroImageUrl: page.heroImageUrl || "",
+    heroLogoUrl: page.heroLogoUrl || "",
+    theme: page.theme || "custom",
+    accentColor: page.accentColor || "",
+    accentGradient: page.accentGradient || "",
+    darkOverlay: page.darkOverlay || "",
+    colorOverlay: page.colorOverlay || "",
+    constructorTitle: page.constructorTitle || page.title || "",
+    constructorDescription: page.constructorDescription || "",
+    infoSections: Array.isArray(page.infoSections) ? page.infoSections : [],
+    faqItems: Array.isArray(page.faqItems) ? page.faqItems : [],
+    paymentCaptionLava: page.paymentCaptionLava || "СБП 0% и карты 3.2%",
+    paymentCaptionEnot: page.paymentCaptionEnot || "Карты 3.2% и СБП 0%",
+    isActive: page.isActive !== false,
+    isIndexed: page.isIndexed !== false,
+    sortOrder: Number(page.sortOrder || 100),
+  });
 }
 
 export default function ProductsPage() {
@@ -403,7 +587,14 @@ export default function ProductsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [titleEn, setTitleEn] = useState("");
-  const [price, setPrice] = useState("");
+  const [activationVariantTab, setActivationVariantTab] = useState<ActivationVariantKey>("withLogin");
+  const [withLoginEnabled, setWithLoginEnabled] = useState(true);
+  const [withLoginPrice, setWithLoginPrice] = useState("");
+  const [withLoginDeliveryType, setWithLoginDeliveryType] = useState<ProductDeliveryType>("manual_login");
+  const [withoutLoginEnabled, setWithoutLoginEnabled] = useState(true);
+  const [withoutLoginPrice, setWithoutLoginPrice] = useState("");
+  const [withoutLoginDeliveryType, setWithoutLoginDeliveryType] = useState<ProductDeliveryType>("activation");
+  const [withoutLoginActivationSiteUrl, setWithoutLoginActivationSiteUrl] = useState("");
   const [category, setCategory] = useState(DEFAULT_PRODUCT_CATEGORY);
   const [newCategoryDraft, setNewCategoryDraft] = useState("");
   const [categoryNotice, setCategoryNotice] = useState<string | null>(null);
@@ -414,13 +605,17 @@ export default function ProductsPage() {
   const [durationLabelEn, setDurationLabelEn] = useState("");
   const [modalDescription, setModalDescription] = useState("");
   const [modalDescriptionEn, setModalDescriptionEn] = useState("");
-  const [badge, setBadge] = useState<BadgeType>("none");
-  const [deliveryType, setDeliveryType] = useState<ProductDeliveryType>("activation");
   const [vpnBundleEnabled, setVpnBundleEnabled] = useState(false);
   const [vpnDurationDays, setVpnDurationDays] = useState<number>(DEFAULT_VPN_DURATION_DAYS);
   const [vpnUsersLimit, setVpnUsersLimit] = useState<number>(DEFAULT_VPN_USERS_LIMIT);
   const [editingTags, setEditingTags] = useState<string[]>([]);
-  const [cardTextAlign, setCardTextAlign] = useState<CardTextAlignConfig>(buildDefaultCardTextAlign());
+  const [visualConfig, setVisualConfig] = useState<ProductVisualConfig>(buildDefaultVisualConfig());
+  const [visualMessage, setVisualMessage] = useState<string | null>(null);
+  const [servicePageMode, setServicePageMode] = useState<"existing" | "new">("existing");
+  const [selectedServicePageId, setSelectedServicePageId] = useState("");
+  const [servicePageDraft, setServicePageDraft] = useState<Partial<ServicePage>>(buildDefaultServicePageDraft());
+  const [servicePagePlacementEnabled, setServicePagePlacementEnabled] = useState(true);
+  const [servicePagePlacementSortOrder, setServicePagePlacementSortOrder] = useState("100");
   const [credentialsImportText, setCredentialsImportText] = useState("");
   const [credentialsMessage, setCredentialsMessage] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -451,6 +646,12 @@ export default function ProductsPage() {
           params: { page: 1, limit: 100, sortBy: "title", sortDir: "asc", isArchived: false },
         })
       ).data,
+    staleTime: 60_000,
+  });
+
+  const servicePages = useQuery({
+    queryKey: ["service-pages"],
+    queryFn: async () => (await api.get("/service-pages")).data as { items: ServicePage[] },
     staleTime: 60_000,
   });
 
@@ -500,9 +701,21 @@ export default function ProductsPage() {
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name, "ru"));
   }, [categoriesSource.data?.items, categorySuggestions]);
 
+  useEffect(() => {
+    if (servicePageMode !== "existing") return;
+    if (!selectedServicePageId) {
+      setServicePageDraft(buildDefaultServicePageDraft());
+      return;
+    }
+    const page = (servicePages.data?.items || []).find((item) => item.id === selectedServicePageId);
+    if (page) {
+      setServicePageDraft(servicePageToDraft(page));
+    }
+  }, [selectedServicePageId, servicePageMode, servicePages.data?.items]);
+
   const credentials = useQuery({
     queryKey: ["product-credentials", editingId],
-    enabled: Boolean(editingId && deliveryType === "credentials"),
+    enabled: Boolean(editingId && withLoginEnabled && withLoginDeliveryType === "credentials"),
     queryFn: async () =>
       (await api.get(`/products/${editingId}/credentials`, { params: { status: undefined } })).data as {
         items: ManualCredential[];
@@ -538,6 +751,114 @@ export default function ProductsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["products-categories"] });
+    },
+  });
+
+  const saveProductVisual = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: ProductVisualConfig }) => api.put(`/products/${id}/visual`, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+
+  const createServicePage = useMutation({
+    mutationFn: async (payload: Partial<ServicePage>) => (await api.post("/service-pages", payload)).data as ServicePage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["service-pages"] });
+    },
+  });
+
+  const updateServicePage = useMutation({
+    mutationFn: async ({ id, payload }: { id: string; payload: Partial<ServicePage> }) =>
+      (await api.put(`/service-pages/${id}`, payload)).data as ServicePage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["service-pages"] });
+    },
+  });
+
+  const addServicePagePlacement = useMutation({
+    mutationFn: async ({
+      servicePageId,
+      productId,
+      sortOrder,
+      isActive,
+    }: {
+      servicePageId: string;
+      productId: string;
+      sortOrder: number;
+      isActive: boolean;
+    }) =>
+      (
+        await api.post(`/service-pages/${servicePageId}/products`, {
+          productId,
+          sortOrder,
+          isActive,
+          isPinned: false,
+        })
+      ).data,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["service-pages"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+
+  const removeServicePagePlacement = useMutation({
+    mutationFn: async (placementId: string) => api.delete(`/service-pages/placements/${placementId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["service-pages"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+
+  const uploadProductVisualImageMutation = useMutation({
+    mutationFn: ({ id, file }: { id: string; file: File }) => {
+      const formData = new FormData();
+      formData.append("image", file);
+      return api.post(`/products/${id}/visual/image`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    },
+    onSuccess: (response) => {
+      const nextVisual = response.data?.visual as ProductVisualConfig | undefined;
+      if (nextVisual) {
+        setVisualConfig((prev) => ({ ...prev, ...nextVisual }));
+      }
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+
+  const deleteProductVisualImageMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/products/${id}/visual/image`),
+    onSuccess: (response) => {
+      const nextVisual = response.data?.visual as ProductVisualConfig | undefined;
+      setVisualConfig((prev) => ({ ...prev, ...(nextVisual || {}), imageUrl: "", imageAlt: "" }));
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+
+  const uploadProductVisualHoverImageMutation = useMutation({
+    mutationFn: ({ id, file }: { id: string; file: File }) => {
+      const formData = new FormData();
+      formData.append("image", file);
+      return api.post(`/products/${id}/visual/hover-image`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    },
+    onSuccess: (response) => {
+      const nextVisual = response.data?.visual as ProductVisualConfig | undefined;
+      if (nextVisual) {
+        setVisualConfig((prev) => ({ ...prev, ...nextVisual }));
+      }
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+
+  const deleteProductVisualHoverImageMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/products/${id}/visual/hover-image`),
+    onSuccess: (response) => {
+      const nextVisual = response.data?.visual as ProductVisualConfig | undefined;
+      setVisualConfig((prev) => ({ ...prev, ...(nextVisual || {}), hoverImageUrl: "", hoverImageAlt: "" }));
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
   });
 
@@ -600,7 +921,14 @@ export default function ProductsPage() {
     setEditingId(null);
     setTitle("");
     setTitleEn("");
-    setPrice("");
+    setActivationVariantTab("withLogin");
+    setWithLoginEnabled(true);
+    setWithLoginPrice("");
+    setWithLoginDeliveryType("manual_login");
+    setWithoutLoginEnabled(true);
+    setWithoutLoginPrice("");
+    setWithoutLoginDeliveryType("activation");
+    setWithoutLoginActivationSiteUrl("");
     setCategory(DEFAULT_PRODUCT_CATEGORY);
     setNewCategoryDraft("");
     setCategoryNotice(null);
@@ -610,13 +938,17 @@ export default function ProductsPage() {
     setDurationLabelEn("");
     setModalDescription("");
     setModalDescriptionEn("");
-    setBadge("none");
-    setDeliveryType("activation");
     setVpnBundleEnabled(false);
     setVpnDurationDays(DEFAULT_VPN_DURATION_DAYS);
     setVpnUsersLimit(DEFAULT_VPN_USERS_LIMIT);
     setEditingTags([]);
-    setCardTextAlign(buildDefaultCardTextAlign());
+    setVisualConfig(buildDefaultVisualConfig());
+    setVisualMessage(null);
+    setServicePageMode("existing");
+    setSelectedServicePageId("");
+    setServicePageDraft(buildDefaultServicePageDraft());
+    setServicePagePlacementEnabled(true);
+    setServicePagePlacementSortOrder("100");
     setCredentialsImportText("");
     setCredentialsMessage(null);
     setFormError(null);
@@ -645,7 +977,16 @@ export default function ProductsPage() {
     setEditingId(item.id);
     setTitle(item.title || "");
     setTitleEn(item.titleEn || "");
-    setPrice(String(item.price ?? ""));
+    const legacyDeliveryType = resolveDeliveryType(item);
+    const savedVariants = item.activationVariants;
+    setActivationVariantTab("withLogin");
+    setWithLoginEnabled(savedVariants ? savedVariants.withLogin?.enabled !== false : legacyDeliveryType === "manual_login");
+    setWithLoginPrice(String(savedVariants?.withLogin?.price ?? item.price ?? ""));
+    setWithLoginDeliveryType(savedVariants?.withLogin?.deliveryType || "manual_login");
+    setWithoutLoginEnabled(savedVariants ? savedVariants.withoutLogin?.enabled !== false : legacyDeliveryType !== "manual_login");
+    setWithoutLoginPrice(String(savedVariants?.withoutLogin?.price ?? item.price ?? ""));
+    setWithoutLoginDeliveryType(savedVariants?.withoutLogin?.deliveryType || "activation");
+    setWithoutLoginActivationSiteUrl(String(savedVariants?.withoutLogin?.activationSiteUrl || ""));
     setCategory(normalizeCategoryValue(item.category || "") || DEFAULT_PRODUCT_CATEGORY);
     setNewCategoryDraft("");
     setCategoryNotice(null);
@@ -655,24 +996,187 @@ export default function ProductsPage() {
     setDurationLabelEn(parsedDurationEn || parsedDurationRu);
     setModalDescription(normalizeModalDescriptionText(modalRuSource));
     setModalDescriptionEn(normalizeModalDescriptionText(modalEnSource));
-    setBadge(getBadgeFromTags(item.tags || []));
-    setDeliveryType(resolveDeliveryType(item));
     const bundleConfig = parseVpnBundleConfig(item.tags || []);
     setVpnBundleEnabled(bundleConfig.enabled);
     setVpnDurationDays(bundleConfig.durationDays);
     setVpnUsersLimit(bundleConfig.usersLimit);
     setEditingTags(Array.isArray(item.tags) ? item.tags : []);
-    setCardTextAlign(parseCardTextAlignFromTags(item.tags || []));
+    setVisualConfig(mergeVisualConfig(item));
+    setVisualMessage(null);
+    const directServicePlacement = Array.isArray(item.servicePagePlacements) ? item.servicePagePlacements[0] : null;
+    const pageWithPlacement = (servicePages.data?.items || []).find((page) =>
+      (page.placements || []).some((placement) => placement.productId === item.id)
+    );
+    const servicePlacement =
+      directServicePlacement ||
+      pageWithPlacement?.placements?.find((placement) => placement.productId === item.id) ||
+      null;
+    if (servicePlacement || pageWithPlacement) {
+      const linkedPage =
+        (servicePages.data?.items || []).find((page) => page.id === (servicePlacement?.servicePageId || pageWithPlacement?.id)) ||
+        pageWithPlacement ||
+        null;
+      setServicePageMode("existing");
+      setSelectedServicePageId(linkedPage?.id || servicePlacement?.servicePageId || "");
+      setServicePageDraft(servicePageToDraft(linkedPage));
+      setServicePagePlacementEnabled(servicePlacement?.isActive !== false);
+      setServicePagePlacementSortOrder(String(servicePlacement?.sortOrder ?? 100));
+    } else {
+      setServicePageMode("existing");
+      setSelectedServicePageId("");
+      setServicePageDraft(buildDefaultServicePageDraft({ title: item.category || item.title || "", heroTitle: item.category || item.title || "" }));
+      setServicePagePlacementEnabled(true);
+      setServicePagePlacementSortOrder("100");
+    }
     setCredentialsImportText("");
     setCredentialsMessage(null);
     setFormError(null);
   }
 
-  function onCardTextAlignChange(block: CardTextBlock, value: TextAlignValue) {
-    setCardTextAlign((prev) => ({
+  function updateVisualConfig(patch: ProductVisualConfig) {
+    setVisualConfig((prev) => ({
       ...prev,
-      [block]: normalizeTextAlignValue(value),
+      ...patch,
     }));
+  }
+
+  function updateServicePageDraft(patch: Partial<ServicePage>) {
+    setServicePageDraft((prev) => ({
+      ...prev,
+      ...patch,
+    }));
+  }
+
+  function onServicePageThemeChange(theme: string) {
+    const preset = SERVICE_PAGE_THEME_PRESETS[theme] || SERVICE_PAGE_THEME_PRESETS.custom;
+    updateServicePageDraft(preset);
+  }
+
+  function onStartNewServicePage() {
+    setServicePageMode("new");
+    setSelectedServicePageId("");
+    setServicePageDraft(
+      buildDefaultServicePageDraft({
+        title: category || title || "",
+        heroTitle: category || title || "",
+        constructorTitle: category || title || "",
+        heroDescription:
+          title.trim()
+            ? `Оформите ${title.trim()} без лишних сложностей. Выберите тариф, оплатите заказ, а GPTishka возьмёт подключение на себя.`
+            : "",
+      })
+    );
+  }
+
+  async function onUploadVisualImage(file: File | null) {
+    setVisualMessage(null);
+    if (!file) return;
+    if (!editingId) {
+      setVisualMessage("Сначала сохраните товар, затем загрузите изображение витрины.");
+      return;
+    }
+    try {
+      await uploadProductVisualImageMutation.mutateAsync({ id: editingId, file });
+      setVisualMessage("Изображение загружено.");
+    } catch (error) {
+      setVisualMessage(getRequestErrorMessage(error, "Не удалось загрузить изображение."));
+    }
+  }
+
+  async function onDeleteVisualImage() {
+    setVisualMessage(null);
+    if (!editingId) {
+      updateVisualConfig({ imageUrl: "", imageAlt: "" });
+      return;
+    }
+    try {
+      await deleteProductVisualImageMutation.mutateAsync(editingId);
+      setVisualMessage("Изображение удалено.");
+    } catch (error) {
+      setVisualMessage(getRequestErrorMessage(error, "Не удалось удалить изображение."));
+    }
+  }
+
+  async function onUploadVisualHoverImage(file: File | null) {
+    setVisualMessage(null);
+    if (!file) return;
+    if (!editingId) {
+      setVisualMessage("Сначала сохраните товар, затем загрузите hover-изображение.");
+      return;
+    }
+    try {
+      await uploadProductVisualHoverImageMutation.mutateAsync({ id: editingId, file });
+      setVisualMessage("Hover-изображение загружено.");
+    } catch (error) {
+      setVisualMessage(getRequestErrorMessage(error, "Не удалось загрузить hover-изображение."));
+    }
+  }
+
+  async function onDeleteVisualHoverImage() {
+    setVisualMessage(null);
+    if (!editingId) {
+      updateVisualConfig({ hoverImageUrl: "", hoverImageAlt: "" });
+      return;
+    }
+    try {
+      await deleteProductVisualHoverImageMutation.mutateAsync(editingId);
+      setVisualMessage("Hover-изображение удалено.");
+    } catch (error) {
+      setVisualMessage(getRequestErrorMessage(error, "Не удалось удалить hover-изображение."));
+    }
+  }
+
+  function findServicePagePlacementsForProduct(productId: string) {
+    return (servicePages.data?.items || [])
+      .flatMap((page) => (page.placements || []).map((placement) => ({ ...placement, servicePageId: placement.servicePageId || page.id })))
+      .filter((placement) => placement.productId === productId);
+  }
+
+  async function saveServicePagePlacementForProduct(productId: string, productTitle: string) {
+    const cleanProductTitle = String(productTitle || title || "").trim();
+    let servicePageId = selectedServicePageId;
+    const draftTitle = String(servicePageDraft.title || cleanProductTitle || category || "").trim();
+
+    if (servicePageMode === "new") {
+      const createdPage = await createServicePage.mutateAsync({
+        ...servicePageDraft,
+        title: draftTitle,
+        heroTitle: String(servicePageDraft.heroTitle || draftTitle).trim(),
+        constructorTitle: String(servicePageDraft.constructorTitle || draftTitle).trim(),
+      });
+      servicePageId = createdPage.id;
+      setSelectedServicePageId(createdPage.id);
+      setServicePageDraft(servicePageToDraft(createdPage));
+    } else if (selectedServicePageId && servicePageDraft.id === selectedServicePageId) {
+      await updateServicePage.mutateAsync({
+        id: selectedServicePageId,
+        payload: {
+          ...servicePageDraft,
+          title: draftTitle,
+          heroTitle: String(servicePageDraft.heroTitle || draftTitle).trim(),
+          constructorTitle: String(servicePageDraft.constructorTitle || draftTitle).trim(),
+        },
+      });
+    }
+
+    const existingPlacements = findServicePagePlacementsForProduct(productId);
+    const placementSortOrder = Number(servicePagePlacementSortOrder || 100);
+    const normalizedSortOrder = Number.isFinite(placementSortOrder) ? Math.max(0, Math.floor(placementSortOrder)) : 100;
+
+    for (const placement of existingPlacements) {
+      if (!servicePageId || placement.servicePageId !== servicePageId) {
+        await removeServicePagePlacement.mutateAsync(placement.id);
+      }
+    }
+
+    if (!servicePageId) return;
+
+    await addServicePagePlacement.mutateAsync({
+      servicePageId,
+      productId,
+      sortOrder: normalizedSortOrder,
+      isActive: servicePagePlacementEnabled,
+    });
   }
 
   async function onSubmitProductForm(e: FormEvent) {
@@ -691,7 +1195,13 @@ export default function ProductsPage() {
     cleanDescriptionEn = withDurationLine(cleanDescriptionEn, "", "en");
     const cleanModalDescription = normalizeModalDescriptionText(modalDescription);
     let cleanModalDescriptionEn = normalizeModalDescriptionText(modalDescriptionEn);
-    const normalizedPrice = Number(String(price).replace(",", "."));
+    const normalizedWithLoginPrice = Number(String(withLoginPrice).replace(",", "."));
+    const normalizedWithoutLoginPrice = Number(String(withoutLoginPrice).replace(",", "."));
+    const enabledVariantPrices = [
+      ...(withLoginEnabled ? [normalizedWithLoginPrice] : []),
+      ...(withoutLoginEnabled ? [normalizedWithoutLoginPrice] : []),
+    ];
+    const normalizedPrice = enabledVariantPrices.length ? Math.min(...enabledVariantPrices) : 0;
 
     if (cleanTitle.length < 3) {
       setFormError("Название должно быть не короче 3 символов.");
@@ -733,8 +1243,18 @@ export default function ProductsPage() {
       return;
     }
 
-    if (!Number.isFinite(normalizedPrice) || normalizedPrice <= 0) {
-      setFormError("Укажите корректную цену больше 0.");
+    if (!withLoginEnabled && !withoutLoginEnabled) {
+      setFormError("Включите хотя бы один вариант активации.");
+      return;
+    }
+
+    if (withLoginEnabled && (!Number.isFinite(normalizedWithLoginPrice) || normalizedWithLoginPrice <= 0)) {
+      setFormError("Укажите корректную цену для варианта «Со входом».");
+      return;
+    }
+
+    if (withoutLoginEnabled && (!Number.isFinite(normalizedWithoutLoginPrice) || normalizedWithoutLoginPrice <= 0)) {
+      setFormError("Укажите корректную цену для варианта «Без входа».");
       return;
     }
 
@@ -787,13 +1307,41 @@ export default function ProductsPage() {
 
     const normalizedVpnUsersLimit = normalizeVpnUsersLimit(vpnUsersLimit);
     const normalizedVpnDurationDays = normalizeVpnDurationDays(vpnDurationDays);
+    const preparedVisual: ProductVisualConfig = {
+      cardTitle: String(visualConfig.cardTitle || "").trim(),
+      cardDescription: String(visualConfig.cardDescription || "").trim(),
+      imageUrl: String(visualConfig.imageUrl || "").trim(),
+      imageAlt: String(visualConfig.imageAlt || "").trim(),
+      hoverImageUrl: String(visualConfig.hoverImageUrl || "").trim(),
+      hoverImageAlt: String(visualConfig.hoverImageAlt || "").trim(),
+      backgroundType: visualConfig.backgroundType || "solid",
+      backgroundColor: String(visualConfig.backgroundColor || "").trim(),
+      backgroundGradient: String(visualConfig.backgroundGradient || "").trim(),
+      buttonText: String(visualConfig.buttonText || "").trim(),
+      buttonStyle: String(visualConfig.buttonStyle || "").trim(),
+      isVisible: visualConfig.isVisible !== false,
+    };
+    const activationVariants = {
+      withLogin: {
+        enabled: withLoginEnabled,
+        price: normalizedWithLoginPrice > 0 ? normalizedWithLoginPrice : normalizedPrice,
+        deliveryType: withLoginDeliveryType,
+        activationSiteUrl: "",
+      },
+      withoutLogin: {
+        enabled: withoutLoginEnabled,
+        price: normalizedWithoutLoginPrice > 0 ? normalizedWithoutLoginPrice : normalizedPrice,
+        deliveryType: withoutLoginDeliveryType,
+        activationSiteUrl: String(withoutLoginActivationSiteUrl || "").trim(),
+      },
+    };
+    const primaryDeliveryType = withoutLoginEnabled ? withoutLoginDeliveryType : withLoginDeliveryType;
 
     if (editingId) {
-      const tagsWithAlign = withCardTextAlignTags(withBadgeTag(editingTags, badge), cardTextAlign);
       const preparedTags =
-        deliveryType === "vpn"
-          ? withDirectVpnTags(tagsWithAlign, normalizedVpnDurationDays, normalizedVpnUsersLimit)
-          : withVpnBundleTags(tagsWithAlign, vpnBundleEnabled, normalizedVpnDurationDays, normalizedVpnUsersLimit);
+        primaryDeliveryType === "vpn"
+          ? withDirectVpnTags(editingTags, normalizedVpnDurationDays, normalizedVpnUsersLimit)
+          : withVpnBundleTags(editingTags, vpnBundleEnabled, normalizedVpnDurationDays, normalizedVpnUsersLimit);
       await updateProduct.mutateAsync({
         id: editingId,
         payload: {
@@ -805,22 +1353,24 @@ export default function ProductsPage() {
           modalDescription: cleanModalDescription,
           modalDescriptionEn: cleanModalDescriptionEn,
           price: normalizedPrice,
+          activationVariants,
           tags: preparedTags,
-          deliveryType,
-          deliveryMethod: deliveryMethodNumber(deliveryType),
+          deliveryType: primaryDeliveryType,
+          deliveryMethod: deliveryMethodNumber(primaryDeliveryType),
         },
       });
+      await saveProductVisual.mutateAsync({ id: editingId, payload: preparedVisual });
+      await saveServicePagePlacementForProduct(editingId, cleanTitle);
       resetForm();
       return;
     }
 
-    const createdBaseTags = buildTags(cleanTitle, badge);
-    const createdTagsWithAlign = withCardTextAlignTags(createdBaseTags, cardTextAlign);
+    const createdBaseTags = buildTags(cleanTitle);
     const preparedTags =
-      deliveryType === "vpn"
-        ? withDirectVpnTags(createdTagsWithAlign, normalizedVpnDurationDays, normalizedVpnUsersLimit)
-        : withVpnBundleTags(createdTagsWithAlign, vpnBundleEnabled, normalizedVpnDurationDays, normalizedVpnUsersLimit);
-    await createProduct.mutateAsync({
+      primaryDeliveryType === "vpn"
+        ? withDirectVpnTags(createdBaseTags, normalizedVpnDurationDays, normalizedVpnUsersLimit)
+        : withVpnBundleTags(createdBaseTags, vpnBundleEnabled, normalizedVpnDurationDays, normalizedVpnUsersLimit);
+    const created = await createProduct.mutateAsync({
       title: cleanTitle,
       titleEn: cleanTitleEn,
       description: finalDescriptionRu,
@@ -828,15 +1378,21 @@ export default function ProductsPage() {
       modalDescription: cleanModalDescription,
       modalDescriptionEn: cleanModalDescriptionEn,
       price: normalizedPrice,
+      activationVariants,
       oldPrice: null,
       currency: "RUB",
       category: cleanCategory,
       tags: preparedTags,
       stock: null,
       isActive: true,
-      deliveryType,
-      deliveryMethod: deliveryMethodNumber(deliveryType),
+      deliveryType: primaryDeliveryType,
+      deliveryMethod: deliveryMethodNumber(primaryDeliveryType),
     });
+    const createdId = String(created.data?.id || "").trim();
+    if (createdId) {
+      await saveProductVisual.mutateAsync({ id: createdId, payload: preparedVisual });
+      await saveServicePagePlacementForProduct(createdId, cleanTitle);
+    }
 
     resetForm();
   }
@@ -1129,7 +1685,7 @@ export default function ProductsPage() {
       setCredentialsMessage("Сначала выберите товар через «Редактировать».");
       return;
     }
-    if (deliveryType !== "credentials") {
+    if (!withLoginEnabled || withLoginDeliveryType !== "credentials") {
       setCredentialsMessage("Импорт доступен только для типа «Логин/пароль».");
       return;
     }
@@ -1158,8 +1714,22 @@ export default function ProductsPage() {
     }
   }
 
-  const isSaving = createProduct.isPending || updateProduct.isPending;
-  const saveError = createProduct.error || updateProduct.error;
+  const isSaving =
+    createProduct.isPending ||
+    updateProduct.isPending ||
+    saveProductVisual.isPending ||
+    createServicePage.isPending ||
+    updateServicePage.isPending ||
+    addServicePagePlacement.isPending ||
+    removeServicePagePlacement.isPending;
+  const saveError =
+    createProduct.error ||
+    updateProduct.error ||
+    saveProductVisual.error ||
+    createServicePage.error ||
+    updateServicePage.error ||
+    addServicePagePlacement.error ||
+    removeServicePagePlacement.error;
   const saveErrorMessage = saveError
     ? getRequestErrorMessage(saveError, "Не удалось сохранить товар. Проверьте данные и соединение с API.")
     : null;
@@ -1180,72 +1750,6 @@ export default function ProductsPage() {
             value={titleEn}
             onChange={(e) => setTitleEn(e.target.value)}
           />
-          <input className="input" placeholder="Цена (RUB)" value={price} onChange={(e) => setPrice(e.target.value)} />
-          <select className="input" value={badge} onChange={(e) => setBadge(e.target.value as BadgeType)}>
-            <option value="none">Без плашки</option>
-            <option value="best">Лучший выбор</option>
-            <option value="new">Новинка</option>
-            <option value="hit">Хит</option>
-            <option value="sale">Акция</option>
-            <option value="popular">Популярно</option>
-            <option value="limited">Ограничено</option>
-            <option value="gift">Бонус</option>
-            <option value="pro">Pro</option>
-          </select>
-          <select className="input" value={deliveryType} onChange={(e) => setDeliveryType(e.target.value as ProductDeliveryType)}>
-            <option value="activation">Метод 1: Активация по ключу</option>
-            <option value="credentials">Метод 2: Выдача логин/пароль</option>
-            <option value="vpn">Метод 3: Выдача VPN</option>
-            <option value="support">Метод 4: Grok-активация по JWT-токену</option>
-            <option value="support_claude">Метод 5: Claude Pro активация по токену</option>
-          </select>
-          <button className="btn-primary" type="submit" disabled={isSaving}>
-            {isSaving ? "Сохраняем..." : editingId ? "Сохранить изменения" : "Добавить товар"}
-          </button>
-
-          <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <span className="inline-flex items-center rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold tracking-wide text-cyan-700 dark:border-cyan-700/40 dark:bg-cyan-900/30 dark:text-cyan-200">
-                Выравнивание текста карточки
-              </span>
-              <span className="text-xs text-slate-600 dark:text-slate-300">Отдельно для каждого товара и каждого блока</span>
-            </div>
-            <div className="grid gap-2 md:grid-cols-2">
-              {CARD_TEXT_ALIGN_FIELDS.map((field) => (
-                <div
-                  key={field.key}
-                  className="rounded-lg border border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-950"
-                >
-                  <div className="mb-2">
-                    <div className="text-xs font-semibold text-slate-800 dark:text-slate-100">{field.label}</div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400">{field.hint}</div>
-                  </div>
-                  <div className="inline-flex overflow-hidden rounded-lg border border-slate-300 dark:border-slate-700">
-                    {CARD_TEXT_ALIGN_OPTIONS.map((option) => {
-                      const Icon = option.icon;
-                      const active = cardTextAlign[field.key] === option.value;
-                      return (
-                        <button
-                          key={`${field.key}:${option.value}`}
-                          type="button"
-                          className={`inline-flex items-center gap-1 border-r px-2 py-1 text-[11px] font-semibold transition last:border-r-0 ${
-                            active
-                              ? "border-cyan-500 bg-cyan-600 text-white"
-                              : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800"
-                          }`}
-                          onClick={() => onCardTextAlignChange(field.key, option.value)}
-                          title={`${field.label}: ${option.label}`}
-                        >
-                          <Icon size={14} />
-                          {option.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
 
           <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
@@ -1335,90 +1839,433 @@ export default function ProductsPage() {
             {dangerActionMessage && <div className="mt-2 text-xs text-slate-600 dark:text-slate-300">{dangerActionMessage}</div>}
           </div>
 
-          <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-            <div className="font-semibold">Текущий режим выдачи: {deliveryMethodLabel(deliveryType)}</div>
-            <div>
-              Метод 1: после оплаты клиент проходит активацию ключом на странице активации.
+          <div className="md:col-span-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+            <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div className="text-base font-bold">Страница сервиса</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">
+                  Привяжите товар к готовой странице или создайте новую страницу с нужным цветом, hero и видео-фоном.
+                </div>
+              </div>
+              <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-800 dark:bg-slate-900">
+                <button
+                  type="button"
+                  className={`rounded-lg px-3 py-2 text-sm font-semibold ${
+                    servicePageMode === "existing" ? "bg-cyan-600 text-white" : "text-slate-600 dark:text-slate-300"
+                  }`}
+                  onClick={() => setServicePageMode("existing")}
+                >
+                  Выбрать
+                </button>
+                <button
+                  type="button"
+                  className={`rounded-lg px-3 py-2 text-sm font-semibold ${
+                    servicePageMode === "new" ? "bg-cyan-600 text-white" : "text-slate-600 dark:text-slate-300"
+                  }`}
+                  onClick={onStartNewServicePage}
+                >
+                  Создать
+                </button>
+              </div>
             </div>
-            <div>
-              Метод 2: после оплаты клиент получает логин/пароль из вашего пула. Если пул пустой, показывается сообщение обратиться в поддержку.
-            </div>
-            <div>
-              Метод 3: после оплаты автоматически создается/продлевается VPN-доступ (VLESS Reality) через 3x-ui API.
-            </div>
-            <div>
-              Метод 4: после оплаты выдается ключ строго по оплаченному товару, клиент вставляет JWT-токен Grok на странице активации и ожидает обработку 5-15 минут.
-            </div>
-            <div>
-              Метод 5: после оплаты выдается SDK-ключ из отдельного пула Claude, клиент вставляет токен Claude на странице активации. Далее запускается автоматическая активация через quickplus.vip.
-            </div>
-            {deliveryType === "vpn" && (
-              <div className="mt-2 rounded-lg border border-slate-200 bg-white p-2 text-xs dark:border-slate-700 dark:bg-slate-950">
-                <div className="font-semibold">Настройки VPN-товара</div>
-                <div className="mt-2 grid gap-2 md:max-w-sm">
-                  <input
-                    className="input"
-                    type="number"
-                    min={MIN_VPN_DURATION_DAYS}
-                    max={MAX_VPN_DURATION_DAYS}
-                    step={1}
-                    value={vpnDurationDays}
-                    onChange={(e) => setVpnDurationDays(normalizeVpnDurationDays(e.target.value))}
-                    placeholder="Срок подписки в днях"
-                  />
-                  <input
-                    className="input"
-                    type="number"
-                    min={1}
-                    max={16}
-                    step={1}
-                    value={vpnUsersLimit}
-                    onChange={(e) => setVpnUsersLimit(normalizeVpnUsersLimit(e.target.value))}
-                    placeholder="Лимит устройств (1-16)"
-                  />
-                  <div className="text-xs text-slate-600 dark:text-slate-300">
-                    Для этого товара будет выдаваться VPN на {normalizeVpnDurationDays(vpnDurationDays)} дн. с общим лимитом {normalizeVpnUsersLimit(vpnUsersLimit)} устройств на подписку.
+
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="grid gap-3 md:grid-cols-2">
+                {servicePageMode === "existing" && (
+                  <label className="grid gap-1 md:col-span-2">
+                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Готовая страница</span>
+                    <select className="input" value={selectedServicePageId} onChange={(e) => setSelectedServicePageId(e.target.value)}>
+                      <option value="">Не привязывать к странице</option>
+                      {(servicePages.data?.items || []).map((page) => (
+                        <option key={page.id} value={page.id}>
+                          {page.title} — {page.path}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="text-[11px] text-slate-500">
+                      Если выбрать существующую страницу, поля ниже редактируют её настройки. ChatGPT уже настроен — не меняйте его без необходимости.
+                    </span>
+                  </label>
+                )}
+
+                <input
+                  className="input"
+                  placeholder="Название страницы, например Midjourney"
+                  value={servicePageDraft.title || ""}
+                  onChange={(e) => updateServicePageDraft({ title: e.target.value })}
+                />
+                <input
+                  className="input"
+                  placeholder="URL страницы, например /midjourney"
+                  value={servicePageDraft.path || ""}
+                  onChange={(e) => updateServicePageDraft({ path: e.target.value })}
+                />
+                <input
+                  className="input"
+                  placeholder="serviceKey, например midjourney"
+                  value={servicePageDraft.serviceKey || ""}
+                  onChange={(e) => updateServicePageDraft({ serviceKey: e.target.value })}
+                />
+                <select className="input" value={servicePageDraft.theme || "custom"} onChange={(e) => onServicePageThemeChange(e.target.value)}>
+                  <option value="emerald">ChatGPT / зелёный</option>
+                  <option value="orange">Claude / оранжевый</option>
+                  <option value="black">Grok / чёрный</option>
+                  <option value="dark-blue">VPN / тёмно-синий</option>
+                  <option value="custom">Свой цвет</option>
+                </select>
+                <input
+                  className="input"
+                  placeholder="#35f28f"
+                  value={servicePageDraft.accentColor || ""}
+                  onChange={(e) => updateServicePageDraft({ accentColor: e.target.value, theme: "custom" })}
+                />
+                <input
+                  className="input"
+                  placeholder="linear-gradient(135deg,#35f28f,#18c878,#0f8f5c)"
+                  value={servicePageDraft.accentGradient || ""}
+                  onChange={(e) => updateServicePageDraft({ accentGradient: e.target.value, theme: "custom" })}
+                />
+                <input
+                  className="input"
+                  placeholder="Hero label, например Тарифные планы"
+                  value={servicePageDraft.heroEyebrow || ""}
+                  onChange={(e) => updateServicePageDraft({ heroEyebrow: e.target.value })}
+                />
+                <input
+                  className="input"
+                  placeholder="Hero title, например ChatGPT"
+                  value={servicePageDraft.heroTitle || ""}
+                  onChange={(e) => updateServicePageDraft({ heroTitle: e.target.value })}
+                />
+                <textarea
+                  className="input min-h-20 md:col-span-2"
+                  placeholder="Описание hero-блока"
+                  value={servicePageDraft.heroDescription || ""}
+                  onChange={(e) => updateServicePageDraft({ heroDescription: e.target.value })}
+                />
+                <input
+                  className="input md:col-span-2"
+                  placeholder="URL видео hero, например /assets/video/chatgpt-plans-bg.mp4"
+                  value={servicePageDraft.heroVideoUrl || ""}
+                  onChange={(e) => updateServicePageDraft({ heroVideoUrl: e.target.value })}
+                />
+                <input
+                  className="input md:col-span-2"
+                  placeholder="URL логотипа/картинки hero"
+                  value={servicePageDraft.heroImageUrl || ""}
+                  onChange={(e) => updateServicePageDraft({ heroImageUrl: e.target.value, heroLogoUrl: e.target.value })}
+                />
+                <input
+                  className="input"
+                  placeholder="LAVA: СБП 0% и карты 3.2%"
+                  value={servicePageDraft.paymentCaptionLava || ""}
+                  onChange={(e) => updateServicePageDraft({ paymentCaptionLava: e.target.value })}
+                />
+                <input
+                  className="input"
+                  placeholder="ENOT: Карты 3.2% и СБП 0%"
+                  value={servicePageDraft.paymentCaptionEnot || ""}
+                  onChange={(e) => updateServicePageDraft({ paymentCaptionEnot: e.target.value })}
+                />
+                <textarea
+                  className="input min-h-20 md:col-span-2"
+                  placeholder="Описание конструктора тарифов под карточкой"
+                  value={servicePageDraft.constructorDescription || ""}
+                  onChange={(e) => updateServicePageDraft({ constructorDescription: e.target.value })}
+                />
+
+                <div className="grid gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 md:col-span-2 dark:border-slate-800 dark:bg-slate-900">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" checked={servicePagePlacementEnabled} onChange={(e) => setServicePagePlacementEnabled(e.target.checked)} />
+                    Показывать этот товар на выбранной странице
+                  </label>
+                  <label className="grid gap-1">
+                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Порядок товара на странице</span>
+                    <input
+                      className="input"
+                      inputMode="numeric"
+                      placeholder="100"
+                      value={servicePagePlacementSortOrder}
+                      onChange={(e) => setServicePagePlacementSortOrder(e.target.value)}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-800 dark:bg-slate-900">
+                <div className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Preview</div>
+                <div
+                  className="mt-3 overflow-hidden rounded-2xl p-4 text-white shadow-lg"
+                  style={{ background: servicePageDraft.accentGradient || servicePageDraft.accentColor || "#111827" }}
+                >
+                  <div className="text-xs uppercase tracking-[0.18em] opacity-75">{servicePageDraft.heroEyebrow || "Тарифные планы"}</div>
+                  <div className="mt-2 text-2xl font-black leading-none">
+                    {servicePageDraft.heroTitle || servicePageDraft.title || title || "Название сервиса"}
+                  </div>
+                  <p className="mt-3 text-xs leading-relaxed opacity-85">
+                    {servicePageDraft.heroDescription || "Описание страницы будет здесь. Видео и overlay подтянутся на публичной странице."}
+                  </p>
+                </div>
+                <div className="mt-3 space-y-2 text-xs text-slate-600 dark:text-slate-300">
+                  <div>
+                    URL: <strong>{servicePageDraft.path || "будет создан автоматически"}</strong>
+                  </div>
+                  <div>
+                    Тема: <strong>{servicePageDraft.theme || "custom"}</strong>
+                  </div>
+                  <div>
+                    Товар: <strong>{servicePagePlacementEnabled ? "показывается" : "привязка сохранится выключенной"}</strong>
                   </div>
                 </div>
               </div>
-            )}
-            {deliveryType !== "vpn" && (
-              <div className="mt-2 rounded-lg border border-slate-200 bg-white p-2 text-xs dark:border-slate-700 dark:bg-slate-950">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={vpnBundleEnabled}
-                    onChange={(e) => setVpnBundleEnabled(e.target.checked)}
-                  />
-                  <span className="font-semibold">Выдать VPN в пакете (bundle)</span>
+            </div>
+          </div>
+
+          <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div className="text-sm font-semibold">Визуал карточки на витрине</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">
+                  Только внешний вид. Product.id, цена, tags и выдача сохраняются отдельно.
+                </div>
+              </div>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={visualConfig.isVisible !== false}
+                  onChange={(e) => updateVisualConfig({ isVisible: e.target.checked })}
+                />
+                Показывать карточку
+              </label>
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_280px]">
+              <div className="grid gap-2 md:grid-cols-2">
+                <input
+                  className="input"
+                  placeholder="Заголовок карточки"
+                  value={visualConfig.cardTitle || ""}
+                  onChange={(e) => updateVisualConfig({ cardTitle: e.target.value })}
+                />
+                <input
+                  className="input"
+                  placeholder="Текст кнопки"
+                  value={visualConfig.buttonText || ""}
+                  onChange={(e) => updateVisualConfig({ buttonText: e.target.value })}
+                />
+                <textarea
+                  className="input min-h-20 md:col-span-2"
+                  placeholder="Короткое описание карточки"
+                  value={visualConfig.cardDescription || ""}
+                  onChange={(e) => updateVisualConfig({ cardDescription: e.target.value })}
+                />
+                <input
+                  className="input"
+                  placeholder="Alt обычного изображения"
+                  value={visualConfig.imageAlt || ""}
+                  onChange={(e) => updateVisualConfig({ imageAlt: e.target.value })}
+                />
+                <input
+                  className="input"
+                  placeholder="URL обычного изображения (без курсора)"
+                  value={visualConfig.imageUrl || ""}
+                  onChange={(e) => updateVisualConfig({ imageUrl: e.target.value })}
+                />
+                <input
+                  className="input"
+                  placeholder="Alt hover-изображения"
+                  value={visualConfig.hoverImageAlt || ""}
+                  onChange={(e) => updateVisualConfig({ hoverImageAlt: e.target.value })}
+                />
+                <input
+                  className="input"
+                  placeholder="URL hover-изображения (при наведении)"
+                  value={visualConfig.hoverImageUrl || ""}
+                  onChange={(e) => updateVisualConfig({ hoverImageUrl: e.target.value })}
+                />
+                <select
+                  className="input"
+                  value={visualConfig.backgroundType || "solid"}
+                  onChange={(e) => updateVisualConfig({ backgroundType: e.target.value as ProductVisualBackgroundType })}
+                >
+                  <option value="solid">Фон: цвет</option>
+                  <option value="gradient">Фон: градиент</option>
+                  <option value="image">Фон: изображение</option>
+                </select>
+                <input
+                  className="input"
+                  placeholder="Цвет фона, например #111111"
+                  value={visualConfig.backgroundColor || ""}
+                  onChange={(e) => updateVisualConfig({ backgroundColor: e.target.value })}
+                />
+                <input
+                  className="input md:col-span-2"
+                  placeholder="CSS градиент, например linear-gradient(135deg,#111,#243)"
+                  value={visualConfig.backgroundGradient || ""}
+                  onChange={(e) => updateVisualConfig({ backgroundGradient: e.target.value })}
+                />
+                <div className="flex flex-wrap items-center gap-2">
+                  <label className="btn-secondary cursor-pointer">
+                    Загрузить 1 картинку
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.webp,.svg,image/jpeg,image/png,image/webp,image/svg+xml"
+                      className="hidden"
+                      onChange={(e) => {
+                        void onUploadVisualImage(e.target.files?.[0] || null);
+                        e.currentTarget.value = "";
+                      }}
+                    />
+                  </label>
+                  <button type="button" className="btn-secondary" onClick={onDeleteVisualImage}>
+                    Удалить 1 картинку
+                  </button>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <label className="btn-secondary cursor-pointer">
+                    Загрузить 2 картинку hover
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.webp,.svg,image/jpeg,image/png,image/webp,image/svg+xml"
+                      className="hidden"
+                      onChange={(e) => {
+                        void onUploadVisualHoverImage(e.target.files?.[0] || null);
+                        e.currentTarget.value = "";
+                      }}
+                    />
+                  </label>
+                  <button type="button" className="btn-secondary" onClick={onDeleteVisualHoverImage}>
+                    Удалить hover
+                  </button>
+                </div>
+                {visualMessage && <div className="text-xs text-slate-600 dark:text-slate-300 md:col-span-2">{visualMessage}</div>}
+              </div>
+
+              <ProductVisualPreview
+                visual={visualConfig}
+                fallbackTitle={title}
+                fallbackDescription={description}
+                price={
+                  activationVariantTab === "withLogin"
+                    ? withLoginPrice
+                    : withoutLoginPrice
+                }
+                currency="RUB"
+              />
+            </div>
+          </div>
+
+          <div className="md:col-span-4 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900">
+            <div className="mb-3">
+              <div className="text-sm font-semibold">Варианты покупки и активации</div>
+              <div className="text-xs text-slate-500">
+                Название, категория, описание и визуал общие. Цена и способ активации задаются отдельно.
+              </div>
+            </div>
+
+            <div className="mb-3 inline-flex rounded-lg border border-slate-300 p-1 dark:border-slate-700">
+              <button
+                type="button"
+                className={`rounded-md px-4 py-2 text-sm font-semibold ${
+                  activationVariantTab === "withLogin" ? "bg-cyan-600 text-white" : "text-slate-600 dark:text-slate-300"
+                }`}
+                onClick={() => setActivationVariantTab("withLogin")}
+              >
+                Со входом
+              </button>
+              <button
+                type="button"
+                className={`rounded-md px-4 py-2 text-sm font-semibold ${
+                  activationVariantTab === "withoutLogin" ? "bg-cyan-600 text-white" : "text-slate-600 dark:text-slate-300"
+                }`}
+                onClick={() => setActivationVariantTab("withoutLogin")}
+              >
+                Без входа
+              </button>
+            </div>
+
+            {activationVariantTab === "withLogin" ? (
+              <div className="grid gap-3 md:grid-cols-2">
+                <label className="flex items-center gap-2 md:col-span-2">
+                  <input type="checkbox" checked={withLoginEnabled} onChange={(e) => setWithLoginEnabled(e.target.checked)} />
+                  <span className="font-semibold">Вариант «Со входом» доступен клиентам</span>
                 </label>
-                {vpnBundleEnabled && (
-                  <div className="mt-2 grid gap-2 md:max-w-sm">
-                    <input
-                      className="input"
-                      type="number"
-                      min={MIN_VPN_DURATION_DAYS}
-                      max={MAX_VPN_DURATION_DAYS}
-                      step={1}
-                      value={vpnDurationDays}
-                      onChange={(e) => setVpnDurationDays(normalizeVpnDurationDays(e.target.value))}
-                      placeholder="Срок VPN-бандла в днях"
-                    />
-                    <input
-                      className="input"
-                      type="number"
-                      min={1}
-                      max={16}
-                      step={1}
-                      value={vpnUsersLimit}
-                      onChange={(e) => setVpnUsersLimit(normalizeVpnUsersLimit(e.target.value))}
-                      placeholder="Лимит устройств (1-16)"
-                    />
-                    <div className="text-xs text-slate-600 dark:text-slate-300">
-                      При оплате этого товара клиент получит основную выдачу + VPN с источником <code>bundle</code> на {normalizeVpnDurationDays(vpnDurationDays)} дн. и лимитом {normalizeVpnUsersLimit(vpnUsersLimit)} устройств.
-                    </div>
-                  </div>
-                )}
+                <label className="grid gap-1">
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Цена, RUB</span>
+                  <input
+                    className="input"
+                    inputMode="decimal"
+                    value={withLoginPrice}
+                    onChange={(e) => setWithLoginPrice(e.target.value)}
+                    placeholder="1290"
+                    disabled={!withLoginEnabled}
+                  />
+                </label>
+                <label className="grid gap-1">
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Метод активации</span>
+                  <select
+                    className="input"
+                    value={withLoginDeliveryType}
+                    onChange={(e) => setWithLoginDeliveryType(e.target.value as ProductDeliveryType)}
+                    disabled={!withLoginEnabled}
+                  >
+                    <option value="manual_login">Ручная активация по данным клиента</option>
+                    <option value="credentials">Автоматическая выдача готового логина и пароля</option>
+                  </select>
+                </label>
+                <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600 md:col-span-2 dark:bg-slate-950 dark:text-slate-300">
+                  Клиент заполняет контактные данные и данные своего аккаунта. При ручном методе заказ обрабатывается менеджером.
+                </div>
+              </div>
+            ) : (
+              <div className="grid gap-3 md:grid-cols-2">
+                <label className="flex items-center gap-2 md:col-span-2">
+                  <input type="checkbox" checked={withoutLoginEnabled} onChange={(e) => setWithoutLoginEnabled(e.target.checked)} />
+                  <span className="font-semibold">Вариант «Без входа» доступен клиентам</span>
+                </label>
+                <label className="grid gap-1">
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Цена, RUB</span>
+                  <input
+                    className="input"
+                    inputMode="decimal"
+                    value={withoutLoginPrice}
+                    onChange={(e) => setWithoutLoginPrice(e.target.value)}
+                    placeholder="990"
+                    disabled={!withoutLoginEnabled}
+                  />
+                </label>
+                <label className="grid gap-1">
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Метод активации</span>
+                  <select
+                    className="input"
+                    value={withoutLoginDeliveryType}
+                    onChange={(e) => setWithoutLoginDeliveryType(e.target.value as ProductDeliveryType)}
+                    disabled={!withoutLoginEnabled}
+                  >
+                    <option value="activation">Метод 1: активация по CDK-ключу</option>
+                    <option value="support">Метод 4: активация через поддержку</option>
+                    <option value="support_claude">Метод 5: Claude по токену</option>
+                    <option value="vpn">Метод 3: VPN</option>
+                  </select>
+                </label>
+                <label className="grid gap-1 md:col-span-2">
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                    Сайт активации для CDK-ключей
+                  </span>
+                  <input
+                    className="input"
+                    value={withoutLoginActivationSiteUrl}
+                    onChange={(e) => setWithoutLoginActivationSiteUrl(e.target.value)}
+                    placeholder="https://vip.sxzfd.com/"
+                    disabled={!withoutLoginEnabled || withoutLoginDeliveryType !== "activation"}
+                  />
+                  <span className="text-[11px] text-slate-500">
+                    Метод 1 будет брать CDK только из этого товара и только с таким же сайтом активации.
+                  </span>
+                </label>
+                <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600 md:col-span-2 dark:bg-slate-950 dark:text-slate-300">
+                  Для ChatGPT используйте «Метод 1». После оплаты резервируется ключ из раздела «CDK ключи», а клиент завершает активацию самостоятельно.
+                </div>
               </div>
             )}
           </div>
@@ -1475,7 +2322,7 @@ export default function ProductsPage() {
             </div>
           </div>
 
-          {editingId && deliveryType === "credentials" && (
+          {editingId && withLoginEnabled && withLoginDeliveryType === "credentials" && (
             <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
               <div className="mb-2 text-sm font-semibold">Логин/пароль для автоматической выдачи</div>
               <textarea
@@ -1540,6 +2387,10 @@ export default function ProductsPage() {
             </div>
           )}
 
+          <button className="btn-primary md:col-span-4" type="submit" disabled={isSaving}>
+            {isSaving ? "Сохраняем..." : editingId ? "Сохранить изменения" : "Добавить товар"}
+          </button>
+
           <button className="btn-secondary md:col-span-4" type="button" onClick={onAutoTranslateClick} disabled={autoTranslate.isPending || isSaving}>
             {autoTranslate.isPending ? "Переводим RU -> EN..." : "Автоперевод RU -> EN"}
           </button>
@@ -1583,14 +2434,12 @@ export default function ProductsPage() {
                 <th className="px-4 py-3">Категория</th>
                 <th className="px-4 py-3">Цена</th>
                 <th className="px-4 py-3">Выдача</th>
-                <th className="px-4 py-3">Плашка</th>
                 <th className="px-4 py-3">Статус</th>
                 <th className="px-4 py-3">Действия</th>
               </tr>
             </thead>
             <tbody>
               {(Array.isArray(products.data?.items) ? products.data.items : []).map((item: Product) => {
-                const itemBadge = getBadgeFromTags(item.tags || []);
                 const itemDeliveryType = resolveDeliveryType(item);
                 const itemVpnBundle = parseVpnBundleConfig(item.tags || []);
                 return (
@@ -1614,7 +2463,6 @@ export default function ProductsPage() {
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3">{badgeLabel(itemBadge)}</td>
                     <td className="px-4 py-3">
                       <span className={`badge ${item.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-700"}`}>
                         {item.isActive ? "Активен" : "Отключен"}

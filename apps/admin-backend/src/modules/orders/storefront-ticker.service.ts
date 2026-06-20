@@ -5,6 +5,10 @@ import { storefrontTickerStore } from "./storefront-ticker.store";
 const PUBLIC_TICKER_LIMIT = 12;
 const ADMIN_PREVIEW_LIMIT = 150;
 
+function isTelegramLocalEmail(email: string) {
+  return storefrontTickerStore.normalizeEmail(email).endsWith("@telegram.local");
+}
+
 export function maskStorefrontEmail(email: string) {
   const safe = storefrontTickerStore.normalizeEmail(email);
   const atIndex = safe.indexOf("@");
@@ -35,6 +39,8 @@ function buildPaidOrderWhereFilter() {
   if (settings.hiddenOrderIds.length) {
     andClauses.push({ NOT: { id: { in: settings.hiddenOrderIds } } });
   }
+
+  andClauses.push({ NOT: { email: { endsWith: "@telegram.local", mode: "insensitive" } } });
 
   const where: Prisma.OrderWhereInput = {
     status: "PAID",
@@ -107,7 +113,7 @@ export const storefrontTickerService = {
     });
 
     const visiblePreview = rows
-      .filter((row) => !row.hidden)
+      .filter((row) => !row.hidden && !isTelegramLocalEmail(row.email))
       .slice(0, PUBLIC_TICKER_LIMIT)
       .map((row) => ({
         orderId: row.orderId,

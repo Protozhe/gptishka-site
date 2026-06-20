@@ -5,12 +5,14 @@ import {
   LayoutDashboard,
   Megaphone,
   Package,
+  PanelsTopLeft,
   ScrollText,
   ShoppingCart,
   TicketPercent,
   UserSearch,
   Users,
   Wallet,
+  Bot,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { ThemeToggle } from "../components/ThemeToggle";
@@ -19,6 +21,7 @@ import { useAuth } from "../hooks/useAuth";
 const TEXT = {
   dashboard: "\u0414\u0430\u0448\u0431\u043e\u0440\u0434",
   products: "\u0422\u043e\u0432\u0430\u0440\u044b",
+  showcase: "\u0412\u0438\u0442\u0440\u0438\u043d\u0430",
   orders: "\u0417\u0430\u043a\u0430\u0437\u044b",
   storefront: "\u041f\u043b\u0430\u0448\u043a\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u043e\u0432",
   audit: "\u0410\u0443\u0434\u0438\u0442",
@@ -28,6 +31,8 @@ const TEXT = {
   users: "\u041f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0438",
   cdks: "CDK \u043a\u043b\u044e\u0447\u0438",
   notifications: "\u0423\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u044f",
+  telegramBots: "Telegram Bots",
+  telegramCdks: "Telegram CDK",
   accountTools: "\u041a\u0430\u0431\u0438\u043d\u0435\u0442\u044b",
   panel: "\u041f\u0430\u043d\u0435\u043b\u044c \u0443\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0438\u044f",
   role: "\u0420\u043e\u043b\u044c",
@@ -38,6 +43,7 @@ const TEXT = {
 const nav = [
   { to: "/", label: TEXT.dashboard, icon: LayoutDashboard },
   { to: "/products", label: TEXT.products, icon: Package },
+  { to: "/showcase", label: TEXT.showcase, icon: PanelsTopLeft },
   { to: "/orders", label: TEXT.orders, icon: ShoppingCart },
   { to: "/storefront", label: TEXT.storefront, icon: Megaphone },
   { to: "/audit", label: TEXT.audit, icon: ScrollText },
@@ -46,8 +52,10 @@ const nav = [
   { to: "/partner-earnings", label: TEXT.earnings, icon: Wallet },
   { to: "/users", label: TEXT.users, icon: Users },
   { to: "/cdks", label: TEXT.cdks, icon: KeyRound },
+  { to: "/telegram-cdks", label: TEXT.telegramCdks, icon: KeyRound },
   { to: "/account-tools", label: TEXT.accountTools, icon: UserSearch },
   { to: "/notifications", label: TEXT.notifications, icon: BellRing },
+  { to: "/telegram-bots", label: TEXT.telegramBots, icon: Bot },
 ];
 
 export function AdminLayout() {

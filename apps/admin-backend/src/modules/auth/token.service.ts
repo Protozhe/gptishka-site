@@ -1,10 +1,9 @@
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
 import { env } from "../../config/env";
 import { RoleCode } from "@prisma/client";
 
 export type AccessPayload = { sub: string; role: RoleCode; type: "access" };
-export type RefreshPayload = { sub: string; type: "refresh"; jti?: string };
+export type RefreshPayload = { sub: string; type: "refresh" };
 
 export function signAccessToken(userId: string, role: RoleCode) {
   return jwt.sign({ sub: userId, role, type: "access" }, env.JWT_ACCESS_SECRET, {
@@ -13,7 +12,7 @@ export function signAccessToken(userId: string, role: RoleCode) {
 }
 
 export function signRefreshToken(userId: string) {
-  return jwt.sign({ sub: userId, type: "refresh", jti: crypto.randomUUID() }, env.JWT_REFRESH_SECRET, {
+  return jwt.sign({ sub: userId, type: "refresh" }, env.JWT_REFRESH_SECRET, {
     expiresIn: `${env.JWT_REFRESH_TTL_DAYS}d` as jwt.SignOptions["expiresIn"],
   });
 }

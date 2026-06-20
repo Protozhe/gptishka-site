@@ -3,8 +3,6 @@ import bcrypt from "bcrypt";
 import { prisma } from "../../config/prisma";
 import { env } from "../../config/env";
 import { AppError } from "../../common/errors/app-error";
-import { revokeAllUserRefreshTokens } from "../auth/session.service";
-import { writeAuditLog } from "../audit/audit.service";
 
 const safeUserSelect = {
   id: true,
@@ -73,27 +71,6 @@ export const usersService = {
       data: { isActive },
       select: safeUserSelect,
     });
-  },
-
-  async revokeSessions(
-    userId: string,
-    actorUserId?: string,
-    actor?: { ip?: string; userAgent?: string }
-  ) {
-    if (userId === actorUserId) throw new AppError("Use logout-all for your own sessions", 400);
-    const user = await prisma.user.findUnique({ where: { id: userId }, select: safeUserSelect });
-    if (!user) throw new AppError("User not found", 404);
-    const revoked = await revokeAllUserRefreshTokens(userId);
-    await writeAuditLog({
-      userId: actorUserId,
-      entityType: "auth_session",
-      entityId: userId,
-      action: "admin_revoke_sessions",
-      after: { revoked },
-      ip: actor?.ip,
-      userAgent: actor?.userAgent,
-    });
-    return { user, revoked };
   },
 
   async remove(userId: string, actorUserId?: string) {

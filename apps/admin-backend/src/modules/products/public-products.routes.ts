@@ -1,31 +1,9 @@
-﻿import { Currency } from "@prisma/client";
 import { Router } from "express";
 import { asyncHandler } from "../../common/http/async-handler";
-import { deliveryTypeToMethod, resolveProductDeliveryType } from "../../common/utils/product-delivery";
-import { toRub } from "../../common/utils/fx";
 import { prisma } from "../../config/prisma";
+import { buildPublicProducts, fallbackSectionsFromProducts } from "./public-product-presenter";
 
 export const publicProductsRouter = Router();
-
-function resolveBadge(tags: string[]): "best" | "new" | "hit" | "sale" | "popular" | "limited" | "gift" | "pro" | null {
-  const found = tags
-    .map((tag) => String(tag || "").toLowerCase())
-    .find((tag) => tag.startsWith("badge:"));
-  if (!found) return null;
-  const value = found.split(":")[1] || "";
-  const allowed = new Set(["best", "new", "hit", "sale", "popular", "limited", "gift", "pro"]);
-  return allowed.has(value) ? (value as any) : null;
-}
-
-function localizedCategory(category: string, lang: "ru" | "en"): string {
-  const normalized = String(category || "").trim().toLowerCase();
-
-  if (lang === "ru") {
-    if (normalized === "subscriptions") return "Подписки";
-  }
-
-  return category;
-}
 
 publicProductsRouter.get(
   "/products",
@@ -48,34 +26,123 @@ publicProductsRouter.get(
         modalDescriptionEn: true,
         price: true,
         oldPrice: true,
+        activationVariants: true,
         currency: true,
         category: true,
         tags: true,
+        stock: true,
+        visualConfig: true,
+        showcasePlacements: {
+          where: {
+            isActive: true,
+          },
+          select: {
+            sectionId: true,
+            sortOrder: true,
+            isPinned: true,
+            isActive: true,
+            section: {
+              select: {
+                id: true,
+                slug: true,
+                title: true,
+                sortOrder: true,
+                isActive: true,
+              },
+            },
+          },
+        },
       },
     });
 
     res.json({
-      items: items.map(item => {
-        const deliveryType = resolveProductDeliveryType(item.tags);
-        return {
-          id: item.id,
-          product: item.slug,
-          title: lang === "en" ? item.titleEn || item.title : item.title,
-          description: lang === "en" ? item.descriptionEn || item.description : item.description,
-          modalDescription:
-            lang === "en"
-              ? item.modalDescriptionEn || item.modalDescription || item.descriptionEn || item.description
-              : item.modalDescription || item.description,
-          price: toRub(Number(item.price), item.currency),
-          oldPrice: item.oldPrice ? toRub(Number(item.oldPrice), item.currency) : null,
-          currency: Currency.RUB,
-          category: localizedCategory(item.category, lang),
-          tags: item.tags,
-          badge: resolveBadge(item.tags),
-          deliveryType,
-          deliveryMethod: deliveryTypeToMethod(deliveryType),
-        };
-      }),
+      items: items.flatMap((item) => buildPublicProducts(item, lang)),
+    });
+  })
+);
+
+publicProductsRouter.get(
+  "/showcase",
+  asyncHandler(async (req, res) => {
+    const lang = String(req.query.lang || "ru").toLowerCase().startsWith("en") ? "en" : "ru";
+    const target = String(req.query.target || "homepage").toLowerCase();
+    const sectionWhere =
+      target === "catalog"
+        ? { isActive: true, showInCatalog: true }
+        : { isActive: true, showOnHomepage: true };
+
+    const sections = await prisma.productShowcaseSection.findMany({
+      where: sectionWhere,
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      include: {
+        placements: {
+          where: {
+            isActive: true,
+            product: {
+              isActive: true,
+              isArchived: false,
+            },
+          },
+          orderBy: [{ isPinned: "desc" }, { sortOrder: "asc" }, { createdAt: "asc" }],
+          include: {
+            product: {
+              include: {
+                visualConfig: true,
+                showcasePlacements: {
+                  where: {
+                    isActive: true,
+                  },
+                  include: {
+                    section: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const grouped = sections
+      .map((section) => ({
+        id: section.id,
+        slug: section.slug,
+        title: section.title,
+        description: section.description,
+        sortOrder: section.sortOrder,
+        products: section.placements
+          .flatMap((placement) => buildPublicProducts(placement.product, lang))
+          .filter((product) => product.visual.isVisible),
+      }))
+      .filter((section) => section.products.length > 0);
+
+    if (grouped.length) {
+      return res.json({ sections: grouped });
+    }
+
+    const products = await prisma.product.findMany({
+      where: {
+        isActive: true,
+        isArchived: false,
+      },
+      orderBy: [{ createdAt: "asc" }],
+      include: {
+        visualConfig: true,
+        showcasePlacements: {
+          where: {
+            isActive: true,
+          },
+          include: {
+            section: true,
+          },
+        },
+      },
+    });
+
+    res.json({
+      sections: fallbackSectionsFromProducts(products, lang).filter((section) =>
+        section.products.some((product) => product.visual.isVisible)
+      ),
     });
   })
 );

@@ -1,4 +1,4 @@
-﻿import { FormEvent, useMemo, useState } from "react";
+﻿import { Fragment, FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
@@ -13,6 +13,11 @@ type ProductItem = {
   tags?: string[];
   deliveryType?: ProductDeliveryType;
   deliveryMethod?: 1 | 2 | 3 | 4 | 5 | "1" | "2" | "3" | "4" | "5";
+  activationVariants?: {
+    withoutLogin?: {
+      activationSiteUrl?: string;
+    } | null;
+  } | null;
 };
 
 type ProductListResponse = {
@@ -23,6 +28,7 @@ type CdkRow = {
   id: string;
   code: string;
   productKey: string;
+  activationSiteUrl?: string;
   status: CdkStatus;
   email?: string | null;
   orderId?: string | null;
@@ -32,6 +38,32 @@ type CdkRow = {
 
 type CdkListResponse = {
   items: CdkRow[];
+  stats?: {
+    byProduct?: Record<
+      string,
+      {
+        unused: number;
+        used: number;
+        total: number;
+      }
+    >;
+  };
+};
+
+type CdkImportResult = {
+  inserted: number;
+  skipped: number;
+  activationSiteUrl?: string;
+  conflicts?: number;
+  conflictsByProductKey?: Record<string, number>;
+  conflictDetails?: Array<{
+    code: string;
+    productKey: string;
+    activationSiteUrl?: string;
+    status: string;
+    orderId?: string | null;
+    email?: string | null;
+  }>;
 };
 
 type CredentialRow = {
@@ -63,6 +95,7 @@ const TEXT = {
   loading: "Загружаем...",
   empty: "Записей пока нет",
   fillKeys: "Введите хотя бы один CDK ключ",
+  fillActivationSite: "Укажите сайт активации для этой партии CDK ключей",
   fillSdkKeys: "Введите хотя бы один SDK ключ",
   fillCredentials: "Введите хотя бы одну пару login:password",
   importFailed: "Не удалось загрузить данные",
@@ -84,6 +117,13 @@ const TEXT = {
   restoreFromArchive: "Восстановить",
   archive: "В архив",
   remove: "Удалить",
+  removeForever: "Удалить навсегда",
+  products: "Товары",
+  legacyPools: "Старые / неактивные пулы",
+  legacyPoolsHint: "Эти пулы есть в базе ключей, но не привязаны к текущему списку товаров на этой странице.",
+  openKeys: "Открыть ключи",
+  selected: "Открыт",
+  method: "Метод",
   unusedItem: "Неиспользован",
   usedItem: "Использован",
   archivedItem: "В архиве",
@@ -103,11 +143,41 @@ const TEXT = {
   hide: "Свернуть",
   textareaPlaceholder:
     "Вставьте CDK ключи (по одному в строке)\nПример: 69742FA2-47A4-48C5-A7CC-71F334688FE7",
+  activationSitePlaceholder: "https://vip.sxzfd.com/",
   sdkTextareaPlaceholder:
     "Вставьте SDK ключи для метода 4/5 (по одному в строке)\nПример: 69742FA2-47A4-48C5-A7CC-71F334688FE7",
   credentialsPlaceholder: "Вставьте пары login:password (по одной в строке)\nПример: user@mail.ru:Pass123",
   noProducts: "Товары не найдены. Сначала создайте товары в разделе «Товары».",
 };
+
+function CdkImportSummary({ result }: { result: CdkImportResult }) {
+  const details = Array.isArray(result.conflictDetails) ? result.conflictDetails : [];
+
+  return (
+    <div className="space-y-2 text-xs">
+      <div className={result.inserted > 0 ? "text-emerald-600" : "text-amber-700 dark:text-amber-300"}>
+        {TEXT.added}: {result.inserted}, {TEXT.skipped}: {result.skipped}
+        {typeof result.conflicts === "number" && result.conflicts > 0 ? `, Конфликты: ${result.conflicts}` : ""}
+        {result.activationSiteUrl ? `, сайт: ${result.activationSiteUrl}` : ""}
+      </div>
+      {details.length ? (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-2 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
+          <div className="font-semibold">Эти ключи уже есть в других пулах:</div>
+          <div className="mt-1 space-y-1">
+            {details.map((item) => (
+              <div className="break-all" key={`${item.code}-${item.productKey}`}>
+                <span className="font-mono">{item.code}</span> {"->"} <span className="font-mono">{item.productKey}</span>, статус: {item.status}
+                {item.activationSiteUrl ? `, сайт: ${item.activationSiteUrl}` : ""}
+                {item.orderId ? `, заказ: ${item.orderId}` : ""}
+                {item.email ? `, email: ${item.email}` : ""}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 function resolveDeliveryType(product: ProductItem): ProductDeliveryType {
   const fromMethod = String(product.deliveryMethod || "").trim();
@@ -179,6 +249,8 @@ function ActivationTable({
   deletingId,
   onRestore,
   restoringId,
+  onPermanentDelete,
+  permanentDeletingId,
   keyColumnLabel = "CDK",
 }: {
   items: CdkRow[];
@@ -189,6 +261,8 @@ function ActivationTable({
   deletingId?: string;
   onRestore?: (id: string) => void;
   restoringId?: string;
+  onPermanentDelete?: (id: string) => void;
+  permanentDeletingId?: string;
   keyColumnLabel?: string;
 }) {
   return (
@@ -222,6 +296,10 @@ function ActivationTable({
                   <span className="text-slate-500">{TEXT.order}: </span>
                   <span className="break-all">{item.orderId || "-"}</span>
                 </div>
+                <div className="sm:col-span-2">
+                  <span className="text-slate-500">Сайт активации: </span>
+                  <span className="break-all font-mono text-xs">{item.activationSiteUrl || "-"}</span>
+                </div>
                 <div>
                   <span className="text-slate-500">{TEXT.assigned}: </span>
                   <span>{item.assignedAt ? new Date(item.assignedAt).toLocaleString("ru-RU") : "-"}</span>
@@ -246,6 +324,16 @@ function ActivationTable({
                 {item.status === "archived" && onRestore ? (
                   <button className="btn-secondary" type="button" onClick={() => onRestore(item.id)} disabled={restoringId === item.id}>
                     {restoringId === item.id ? `${TEXT.restoreFromArchive}...` : TEXT.restoreFromArchive}
+                  </button>
+                ) : null}
+                {item.status === "archived" && onPermanentDelete ? (
+                  <button
+                    className="btn-secondary"
+                    type="button"
+                    onClick={() => onPermanentDelete(item.id)}
+                    disabled={permanentDeletingId === item.id}
+                  >
+                    {permanentDeletingId === item.id ? `${TEXT.removeForever}...` : TEXT.removeForever}
                   </button>
                 ) : null}
               </div>
@@ -334,25 +422,30 @@ function KeyProductColumn({
   product,
   search,
   mode = "activation",
+  productKeyOverride,
 }: {
   product: ProductItem;
   search: string;
   mode?: "activation" | "support" | "support_claude";
+  productKeyOverride?: string;
 }) {
   const qc = useQueryClient();
   const isSupportMode = mode === "support" || mode === "support_claude";
   const isClaudeMode = mode === "support_claude";
   const baseProductKey = normalizeProductKey(product.slug);
-  const productKey = resolveKeyPoolProductKey(baseProductKey, mode);
+  const productKey = productKeyOverride || resolveKeyPoolProductKey(baseProductKey, mode);
   const keyColumnLabel = isSupportMode ? "SDK" : "CDK";
   const modeLabel = isSupportMode ? (isClaudeMode ? TEXT.modeSupportClaude : TEXT.modeSupport) : TEXT.modeActivation;
   const placeholder = isSupportMode ? TEXT.sdkTextareaPlaceholder : TEXT.textareaPlaceholder;
   const fillErrorMessage = isSupportMode ? TEXT.fillSdkKeys : TEXT.fillKeys;
+  const defaultActivationSiteUrl = String(product.activationVariants?.withoutLogin?.activationSiteUrl || "").trim();
   const [text, setText] = useState("");
+  const [activationSiteUrl, setActivationSiteUrl] = useState(defaultActivationSiteUrl);
   const [error, setError] = useState("");
   const [returningId, setReturningId] = useState("");
   const [deletingId, setDeletingId] = useState("");
   const [restoringId, setRestoringId] = useState("");
+  const [permanentDeletingId, setPermanentDeletingId] = useState("");
   const [showUnused, setShowUnused] = useState(true);
   const [showUsed, setShowUsed] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
@@ -410,9 +503,10 @@ function KeyProductColumn({
       (
         await api.post("/cdks/import", {
           productKey,
+          activationSiteUrl: isSupportMode ? "" : activationSiteUrl,
           text,
         })
-      ).data as { inserted: number; skipped: number; conflicts?: number; conflictsByProductKey?: Record<string, number> },
+      ).data as CdkImportResult,
     onSuccess: () => {
       setText("");
       setError("");
@@ -462,10 +556,27 @@ function KeyProductColumn({
     },
   });
 
+  const permanentDeleteMutation = useMutation({
+    mutationFn: async (id: string) => api.delete(`/cdks/${encodeURIComponent(id)}/permanent`),
+    onSuccess: () => {
+      setPermanentDeletingId("");
+      setError("");
+      qc.invalidateQueries({ queryKey: ["cdks", productKey] });
+    },
+    onError: (err: any) => {
+      setPermanentDeletingId("");
+      setError(err?.response?.data?.message || TEXT.deleteFailed);
+    },
+  });
+
   const onImport = (e: FormEvent) => {
     e.preventDefault();
     if (!text.trim()) {
       setError(fillErrorMessage);
+      return;
+    }
+    if (!isSupportMode && !activationSiteUrl.trim()) {
+      setError(TEXT.fillActivationSite);
       return;
     }
     setError("");
@@ -486,6 +597,12 @@ function KeyProductColumn({
   const onRestoreArchived = (id: string) => {
     setRestoringId(id);
     restoreMutation.mutate(id);
+  };
+
+  const onPermanentDeleteArchived = (id: string) => {
+    if (!window.confirm("Удалить архивный ключ навсегда? Это действие нельзя отменить.")) return;
+    setPermanentDeletingId(id);
+    permanentDeleteMutation.mutate(id);
   };
 
   const unusedItems = unusedQuery.data?.items || [];
@@ -512,6 +629,22 @@ function KeyProductColumn({
       </div>
 
       <form onSubmit={onImport} className="space-y-2">
+        {!isSupportMode ? (
+          <label className="grid gap-1">
+            <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+              Сайт активации для этой партии CDK
+            </span>
+            <input
+              className="input"
+              value={activationSiteUrl}
+              onChange={(e) => setActivationSiteUrl(e.target.value)}
+              placeholder={TEXT.activationSitePlaceholder}
+            />
+            <span className="text-[11px] text-slate-500">
+              Эти ключи будут выдаваться только заказам этого товара и только если в товаре выбран этот же сайт.
+            </span>
+          </label>
+        ) : null}
         <textarea
           className="input min-h-[120px]"
           value={text}
@@ -522,15 +655,8 @@ function KeyProductColumn({
           <button className="btn-primary" disabled={importMutation.isPending}>
             {importMutation.isPending ? TEXT.loading : TEXT.importBtn}
           </button>
-          {importMutation.data ? (
-            <span className="text-xs text-emerald-600">
-              {TEXT.added}: {importMutation.data.inserted}, {TEXT.skipped}: {importMutation.data.skipped}
-              {typeof importMutation.data.conflicts === "number" && importMutation.data.conflicts > 0
-                ? `, Конфликты: ${importMutation.data.conflicts}`
-                : ""}
-            </span>
-          ) : null}
         </div>
+        {importMutation.data ? <CdkImportSummary result={importMutation.data} /> : null}
       </form>
 
       {error ? <div className="text-sm text-rose-600">{error}</div> : null}
@@ -577,6 +703,8 @@ function KeyProductColumn({
             loading={loading}
             onRestore={onRestoreArchived}
             restoringId={restoringId}
+            onPermanentDelete={onPermanentDeleteArchived}
+            permanentDeletingId={permanentDeletingId}
             keyColumnLabel={keyColumnLabel}
           />
         </CurtainBlock>
@@ -766,8 +894,119 @@ function ProductColumn({ product, search }: { product: ProductItem; search: stri
   return <KeyProductColumn product={product} search={search} mode="activation" />;
 }
 
+function productModeLabel(product: ProductItem) {
+  const deliveryType = resolveDeliveryType(product);
+  if (deliveryType === "credentials") return TEXT.modeCredentials;
+  if (deliveryType === "vpn") return TEXT.modeVpn;
+  if (deliveryType === "support") return TEXT.modeSupport;
+  if (deliveryType === "support_claude") return TEXT.modeSupportClaude;
+  return TEXT.modeActivation;
+}
+
+function productPoolHint(product: ProductItem) {
+  const deliveryType = resolveDeliveryType(product);
+  const baseProductKey = normalizeProductKey(product.slug);
+  if (deliveryType === "credentials") return `productId: ${product.id}`;
+  if (deliveryType === "vpn") return `productKey: ${baseProductKey}`;
+  if (deliveryType === "support") return `poolKey: ${resolveKeyPoolProductKey(baseProductKey, "support")}`;
+  if (deliveryType === "support_claude") return `poolKey: ${resolveKeyPoolProductKey(baseProductKey, "support_claude")}`;
+  return `poolKey: ${baseProductKey}`;
+}
+
+function cleanProductTitle(title: string) {
+  return String(title || "")
+    .replace(/\s+впн\s+в\s+подарок/gi, "")
+    .replace(/\s+vpn\s+в\s+подарок/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function ProductsTable({
+  products,
+  activeProductId,
+  onSelect,
+  renderDetails,
+  title = TEXT.products,
+  hint = "Нажмите на товар, чтобы открыть коробку с ключами.",
+}: {
+  products: ProductItem[];
+  activeProductId?: string;
+  onSelect: (id: string) => void;
+  renderDetails: (product: ProductItem) => React.ReactNode;
+  title?: string;
+  hint?: string;
+}) {
+  return (
+    <section className="card overflow-hidden">
+      <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+        <h3 className="text-base font-semibold">{title}</h3>
+        <p className="mt-1 text-xs text-slate-500">{hint}</p>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[760px] text-left text-sm">
+          <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-900/60">
+            <tr>
+              <th className="px-4 py-3">Название</th>
+              <th className="px-4 py-3">{TEXT.method}</th>
+              <th className="px-4 py-3">Пул</th>
+              <th className="px-4 py-3 text-right">Действие</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+            {products.map((product) => {
+              const isActive = product.id === activeProductId;
+              const title = cleanProductTitle(product.title) || product.title;
+
+              return (
+                <Fragment key={product.id}>
+                  <tr
+                    className={
+                      isActive
+                        ? "bg-cyan-50/80 dark:bg-cyan-950/30"
+                        : "cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-900/60"
+                    }
+                    onClick={() => onSelect(product.id)}
+                  >
+                    <td className="px-4 py-3">
+                      <div className="font-semibold">{title}</div>
+                      <div className="text-xs text-slate-500">{product.slug}</div>
+                    </td>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{productModeLabel(product)}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-slate-500">{productPoolHint(product)}</td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        className={isActive ? "btn-primary" : "btn-secondary"}
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onSelect(product.id);
+                        }}
+                      >
+                        {isActive ? TEXT.selected : TEXT.openKeys}
+                      </button>
+                    </td>
+                  </tr>
+                  {isActive ? (
+                    <tr className="bg-slate-50/80 dark:bg-slate-950/40">
+                      <td className="px-4 py-4" colSpan={4}>
+                        {renderDetails(product)}
+                      </td>
+                    </tr>
+                  ) : null}
+                </Fragment>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
 export default function CdkKeysPage() {
   const [q, setQ] = useState("");
+  const [selectedProductId, setSelectedProductId] = useState("");
+  const [selectedLegacyPoolId, setSelectedLegacyPoolId] = useState("");
 
   const productsQuery = useQuery<ProductListResponse>({
     queryKey: ["products", "cdk-page"],
@@ -785,6 +1024,19 @@ export default function CdkKeysPage() {
       ).data,
   });
 
+  const poolStatsQuery = useQuery<CdkListResponse>({
+    queryKey: ["cdks", "all-pool-stats"],
+    queryFn: async () =>
+      (
+        await api.get("/cdks", {
+          params: {
+            page: 1,
+            limit: 1,
+          },
+        })
+      ).data,
+  });
+
   const products = useMemo(() => {
     const rows = productsQuery.data?.items || [];
     return rows
@@ -796,8 +1048,64 @@ export default function CdkKeysPage() {
         tags: Array.isArray(item.tags) ? item.tags : [],
         deliveryType: item.deliveryType,
         deliveryMethod: item.deliveryMethod,
+        activationVariants: item.activationVariants,
       }));
   }, [productsQuery.data]);
+
+  const activeProduct = useMemo(() => {
+    if (!products.length || !selectedProductId) return null;
+    return products.find((product) => product.id === selectedProductId) || null;
+  }, [products, selectedProductId]);
+
+  const visiblePoolKeys = useMemo(() => {
+    const keys = new Set<string>();
+    for (const product of products) {
+      const deliveryType = resolveDeliveryType(product);
+      const base = normalizeProductKey(product.slug);
+      if (deliveryType === "credentials") continue;
+      if (deliveryType === "vpn") {
+        keys.add(base);
+        continue;
+      }
+      if (deliveryType === "support") {
+        keys.add(resolveKeyPoolProductKey(base, "support"));
+        continue;
+      }
+      if (deliveryType === "support_claude") {
+        keys.add(resolveKeyPoolProductKey(base, "support_claude"));
+        continue;
+      }
+      keys.add(base);
+    }
+    return keys;
+  }, [products]);
+
+  const legacyPools = useMemo(() => {
+    const byProduct = poolStatsQuery.data?.stats?.byProduct || {};
+    return Object.entries(byProduct)
+      .filter(([key, value]) => !key.startsWith("tgbot-") && value.total > 0 && !visiblePoolKeys.has(key))
+      .map(([key, value]) => ({
+        id: key,
+        slug: key,
+        title: `${key} (${TEXT.unused}: ${value.unused}, ${TEXT.used}: ${value.used}, total: ${value.total})`,
+        tags: ["delivery:support"],
+        deliveryType: "support" as ProductDeliveryType,
+      }))
+      .sort((a, b) => a.slug.localeCompare(b.slug));
+  }, [poolStatsQuery.data?.stats?.byProduct, visiblePoolKeys]);
+
+  const activeLegacyPool = useMemo(() => {
+    if (!legacyPools.length || !selectedLegacyPoolId) return null;
+    return legacyPools.find((pool) => pool.id === selectedLegacyPoolId) || null;
+  }, [legacyPools, selectedLegacyPoolId]);
+
+  const toggleSelectedProduct = (id: string) => {
+    setSelectedProductId((current) => (current === id ? "" : id));
+  };
+
+  const toggleSelectedLegacyPool = (id: string) => {
+    setSelectedLegacyPoolId((current) => (current === id ? "" : id));
+  };
 
   return (
     <div className="space-y-4">
@@ -811,11 +1119,35 @@ export default function CdkKeysPage() {
 
       {!productsQuery.isLoading && !products.length ? <div className="card p-4 text-sm text-rose-600">{TEXT.noProducts}</div> : null}
 
-      <div className="grid gap-4 2xl:grid-cols-2">
-        {products.map((product) => (
-          <ProductColumn key={product.id} product={product} search={q} />
-        ))}
-      </div>
+      {products.length ? (
+        <ProductsTable
+          products={products}
+          activeProductId={activeProduct?.id}
+          onSelect={toggleSelectedProduct}
+          renderDetails={(product) => <ProductColumn key={product.id} product={product} search={q} />}
+        />
+      ) : null}
+
+      {poolStatsQuery.isLoading ? <div className="card p-4 text-sm text-slate-500">{TEXT.loading}</div> : null}
+
+      {!poolStatsQuery.isLoading && legacyPools.length ? (
+        <ProductsTable
+          title={TEXT.legacyPools}
+          hint={TEXT.legacyPoolsHint}
+          products={legacyPools}
+          activeProductId={activeLegacyPool?.id}
+          onSelect={toggleSelectedLegacyPool}
+          renderDetails={(pool) => (
+            <KeyProductColumn
+              key={pool.id}
+              product={pool}
+              search={q}
+              mode="support"
+              productKeyOverride={pool.slug}
+            />
+          )}
+        />
+      ) : null}
     </div>
   );
 }

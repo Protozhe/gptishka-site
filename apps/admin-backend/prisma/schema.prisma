@@ -61,6 +61,12 @@ enum LicenseKeyStatus {
   revoked
 }
 
+enum ProductVisualBackgroundType {
+  solid
+  gradient
+  image
+}
+
 model Role {
   id        String   @id @default(cuid())
   code      RoleCode @unique
@@ -108,12 +114,14 @@ model Product {
   slug        String         @unique
   title       String
   titleEn     String         @default("")
+  iconPngUrl  String         @default("")
   description String
   descriptionEn String       @default("")
   modalDescription String    @default("")
   modalDescriptionEn String  @default("")
   price       Decimal        @db.Decimal(12, 2)
   oldPrice    Decimal?       @db.Decimal(12, 2)
+  activationVariants Json?   @map("activation_variants")
   currency    Currency       @default(USD)
   category    String
   tags        String[]
@@ -121,6 +129,9 @@ model Product {
   isActive    Boolean        @default(true)
   isArchived  Boolean        @default(false)
   images      ProductImage[]
+  visualConfig ProductVisualConfig?
+  showcasePlacements ProductShowcasePlacement[]
+  servicePagePlacements ServicePageProductPlacement[]
   orderItems  OrderItem[]
   licenseKeys LicenseKey[]
   createdAt   DateTime       @default(now())
@@ -129,6 +140,145 @@ model Product {
   @@index([isActive])
   @@index([category])
   @@index([createdAt])
+}
+
+model ProductVisualConfig {
+  id                 String                      @id @default(cuid())
+  productId          String                      @unique
+  product            Product                     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cardTitle          String                      @default("")
+  cardDescription    String                      @default("")
+  imageUrl           String                      @default("")
+  imageAlt           String                      @default("")
+  hoverImageUrl      String                      @default("")
+  hoverImageAlt      String                      @default("")
+  backgroundType     ProductVisualBackgroundType @default(solid)
+  backgroundColor    String                      @default("")
+  backgroundGradient String                      @default("")
+  buttonText         String                      @default("")
+  buttonStyle        String                      @default("")
+  isVisible          Boolean                     @default(true)
+  createdAt          DateTime                    @default(now())
+  updatedAt          DateTime                    @updatedAt
+
+  @@index([isVisible])
+  @@index([updatedAt])
+}
+
+model ProductShowcaseSection {
+  id             String                     @id @default(cuid())
+  slug           String                     @unique
+  title          String
+  description    String                     @default("")
+  sortOrder      Int                        @default(100)
+  isActive       Boolean                    @default(true)
+  showOnHomepage Boolean                    @default(true)
+  showInCatalog  Boolean                    @default(true)
+  placements     ProductShowcasePlacement[]
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
+
+  @@index([isActive, sortOrder])
+  @@index([showOnHomepage])
+  @@index([showInCatalog])
+}
+
+model ProductShowcasePlacement {
+  id        String                 @id @default(cuid())
+  productId String
+  product   Product                @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sectionId String
+  section   ProductShowcaseSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sortOrder Int                    @default(100)
+  isActive  Boolean                @default(true)
+  isPinned  Boolean                @default(false)
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+
+  @@unique([productId, sectionId])
+  @@index([productId])
+  @@index([sectionId, isActive, sortOrder])
+  @@index([isPinned])
+}
+
+model ServicePage {
+  id                 String                        @id @default(cuid())
+  slug               String                        @unique
+  path               String                        @unique
+  serviceKey         String                        @map("service_key")
+  title              String
+  titleEn            String                        @default("") @map("title_en")
+  heroEyebrow        String                        @default("Тарифные планы") @map("hero_eyebrow")
+  heroTitle          String                        @default("") @map("hero_title")
+  heroDescription    String                        @default("") @map("hero_description")
+  heroVideoUrl       String                        @default("") @map("hero_video_url")
+  heroImageUrl       String                        @default("") @map("hero_image_url")
+  heroLogoUrl        String                        @default("") @map("hero_logo_url")
+  theme              String                        @default("custom")
+  accentColor        String                        @default("#35f28f") @map("accent_color")
+  accentGradient     String                        @default("") @map("accent_gradient")
+  darkOverlay        String                        @default("") @map("dark_overlay")
+  colorOverlay       String                        @default("") @map("color_overlay")
+  constructorTitle   String                        @default("") @map("constructor_title")
+  constructorDescription String                    @default("") @map("constructor_description")
+  infoSections       Json?                         @map("info_sections")
+  faqItems           Json?                         @map("faq_items")
+  paymentCaptionLava String                        @default("СБП 0% и карты 3.2%") @map("payment_caption_lava")
+  paymentCaptionEnot String                        @default("Карты 3.2% и СБП 0%") @map("payment_caption_enot")
+  isActive           Boolean                       @default(true) @map("is_active")
+  isIndexed          Boolean                       @default(true) @map("is_indexed")
+  sortOrder          Int                           @default(100) @map("sort_order")
+  placements         ServicePageProductPlacement[]
+  createdAt          DateTime                      @default(now()) @map("created_at")
+  updatedAt          DateTime                      @updatedAt @map("updated_at")
+
+  @@index([isActive, sortOrder])
+  @@index([serviceKey])
+  @@map("service_pages")
+}
+
+model ServicePageProductPlacement {
+  id            String      @id @default(cuid())
+  servicePageId String      @map("service_page_id")
+  servicePage   ServicePage @relation(fields: [servicePageId], references: [id], onDelete: Cascade)
+  productId     String      @map("product_id")
+  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sortOrder     Int         @default(100) @map("sort_order")
+  isActive      Boolean     @default(true) @map("is_active")
+  isPinned      Boolean     @default(false) @map("is_pinned")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  @@unique([servicePageId, productId])
+  @@index([productId])
+  @@index([servicePageId, isActive, sortOrder])
+  @@index([isPinned])
+  @@map("service_page_product_placements")
+}
+
+model VpnServer {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  countryCode String?  @map("country_code")
+  city        String?
+  hostname    String
+  port        Int      @default(443)
+  sni         String?
+  fp          String?  @default("chrome")
+  pbk         String?
+  sid         String?
+  path        String?  @default("/")
+  accessType  String   @default("vless_reality") @map("access_type")
+  isActive    Boolean  @default(true) @map("is_active")
+  isDefault   Boolean  @default(false) @map("is_default")
+  sortOrder   Int      @default(100) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive, sortOrder])
+  @@index([isDefault])
+  @@map("vpn_servers")
 }
 
 model ProductImage {
@@ -146,9 +296,16 @@ model Order {
   id            String       @id @default(cuid())
   email         String
   status        OrderStatus  @default(PENDING)
+  source        String       @default("site")
+  botType       String?
+  telegramUserId String?     @map("telegram_user_id")
+  telegramUsername String?   @map("telegram_username")
+  telegramChatId String?     @map("telegram_chat_id")
+  telegramLastError String?  @map("telegram_last_error")
   redeemTokenHash String?    @map("redeem_token_hash")
   paymentMethod String?
   paymentId     String?
+  orderDetails  Json?        @map("order_details")
   country       String?
   ip            String?
   subtotalAmount Decimal      @default(0) @db.Decimal(12, 2)
@@ -167,13 +324,40 @@ model Order {
   partnerEarning PartnerEarning?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+  telegramBotEvents TelegramBotEvent[]
 
   @@index([status])
+  @@index([source])
+  @@index([botType])
+  @@index([telegramUserId])
+  @@index([source, botType])
   @@index([email])
   @@index([createdAt])
   @@index([paymentId])
   @@index([promoCodeId])
   @@index([partnerId])
+}
+
+model TelegramBotEvent {
+  id               String   @id @default(cuid())
+  botType          String   @map("bot_type")
+  eventType        String   @map("event_type")
+  source           String   @default("telegram")
+  orderId          String?  @map("order_id")
+  order            Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  telegramUserId   String?  @map("telegram_user_id")
+  telegramUsername String?  @map("telegram_username")
+  telegramChatId   String?  @map("telegram_chat_id")
+  messageText      String?  @map("message_text")
+  callbackData     String?  @map("callback_data")
+  meta             Json?
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([botType, createdAt])
+  @@index([eventType, createdAt])
+  @@index([orderId])
+  @@index([telegramUserId, createdAt])
+  @@map("telegram_bot_events")
 }
 
 model Customer {
@@ -361,24 +545,6 @@ model Payment {
   @@index([status])
 }
 
-model PaymentWebhookEvent {
-  id             String    @id @default(cuid())
-  provider       String
-  eventKey       String    @map("event_key")
-  orderId        String?   @map("order_id")
-  paymentId      String?   @map("payment_id")
-  status         String
-  payloadHash    String    @map("payload_hash")
-  duplicateCount Int       @default(0) @map("duplicate_count")
-  processedAt    DateTime? @map("processed_at")
-  createdAt      DateTime  @default(now()) @map("created_at")
-
-  @@unique([provider, eventKey])
-  @@index([orderId])
-  @@index([createdAt])
-  @@map("payment_webhook_events")
-}
-
 model PromoCode {
   id               String   @id @default(cuid())
   code             String   @unique
@@ -500,6 +666,7 @@ model LicenseKey {
   productId String?          @map("product_id")
   product   Product?         @relation(fields: [productId], references: [id], onDelete: SetNull)
   keyValue  String           @unique @map("key_value")
+  activationSiteUrl String   @default("") @map("activation_site_url")
   status    LicenseKeyStatus @default(available)
   orderId   String?          @map("order_id")
   order     Order?           @relation(fields: [orderId], references: [id], onDelete: SetNull)
@@ -512,6 +679,7 @@ model LicenseKey {
   auditLogs LicenseKeyAuditLog[]
 
   @@index([productKey, status])
+  @@index([productKey, activationSiteUrl, status])
   @@index([orderId])
   @@map("license_keys")
 }

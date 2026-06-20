@@ -1,14 +1,11 @@
 import { PaymentProvider, PaymentCreateInput } from "../payment-provider";
-import { env } from "../../../config/env";
+import { buildPaymentReturnUrls } from "../payment-return-url";
 
 export class StubProvider implements PaymentProvider {
   readonly code = "stub";
 
   async createPayment(input: PaymentCreateInput) {
-    const successUrl = new URL(env.PAYMENT_SUCCESS_URL);
-    successUrl.searchParams.set("order_id", input.orderId);
-    const redeemToken = typeof input.metadata?.redeemToken === "string" ? input.metadata.redeemToken.trim() : "";
-    if (redeemToken) successUrl.searchParams.set("t", redeemToken);
+    const { successUrl } = buildPaymentReturnUrls(input);
     successUrl.searchParams.set("mock", "1");
     return {
       provider: this.code,

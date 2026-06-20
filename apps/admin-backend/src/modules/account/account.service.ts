@@ -4,6 +4,7 @@ import { AppError } from "../../common/errors/app-error";
 import { sha256 } from "../../common/utils/hash";
 import { env } from "../../config/env";
 import { prisma } from "../../config/prisma";
+import { toVpnMePayload } from "../../services/vpn.service";
 import { writeAuditLog } from "../audit/audit.service";
 import { sendCustomerMagicLinkEmail } from "../notifications/notifications.service";
 import { telegramSender } from "../telegram/telegram.sender";
@@ -561,6 +562,7 @@ export const accountService = {
       id: item.id,
       plan: item.plan,
       source: item.source,
+      serverId: item.serverId,
       uuid: item.uuid,
       orderId: item.orderId || item.order?.id || null,
       status: resolveVpnStatus(item.isActive, item.expiresAt),
@@ -905,13 +907,6 @@ export const accountService = {
           { order: { email: customer.email, status: OrderStatus.PAID } },
         ],
       },
-      select: {
-        id: true,
-        accessLink: true,
-        expiresAt: true,
-        plan: true,
-        isActive: true,
-      },
     });
     if (!access) throw new AppError("VPN access not found", 404);
 
@@ -929,12 +924,19 @@ export const accountService = {
       userAgent: input.userAgent,
     });
 
+    const payload = await toVpnMePayload(access);
     return {
       id: access.id,
-      accessLink: access.accessLink,
-      expiresAt: access.expiresAt,
-      isActive: access.isActive,
-      plan: access.plan,
+      accessLink: payload.accessLink,
+      deeplinkUrl: payload.deeplinkUrl,
+      subscriptionConfig: payload.subscriptionConfig,
+      servers: payload.servers,
+      expiresAt: payload.expiresAt,
+      isActive: payload.isActive,
+      plan: payload.plan,
+      uuid: payload.uuid,
+      serverId: payload.serverId,
+      server: payload.server,
     };
   },
 

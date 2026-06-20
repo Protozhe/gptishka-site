@@ -5,6 +5,7 @@ import { AppError } from "../../common/errors/app-error";
 import { sendOrderPaidEmail, sendTelegramNotification } from "../notifications/notifications.service";
 import { deliverProduct } from "../orders/delivery.service";
 import { env } from "../../config/env";
+import { resolveLavaCredentials } from "./lava.credentials";
 
 type WebhookPayload = {
   paymentId?: string;
@@ -56,6 +57,17 @@ function normalizeWebhookPayload(rawPayload: WebhookPayload): WebhookPayload {
   };
 }
 
+function preserveCheckoutDetailsOnWebhook(rawPayload: WebhookPayload, currentPayload: unknown): WebhookPayload {
+  const existing =
+    currentPayload && typeof currentPayload === "object" && !Array.isArray(currentPayload)
+      ? (currentPayload as Record<string, unknown>)
+      : null;
+  const currentDetails = existing?.orderDetails;
+  if (!currentDetails || typeof currentDetails !== "object" || Array.isArray(currentDetails)) return rawPayload;
+  if (rawPayload.orderDetails && typeof rawPayload.orderDetails === "object" && !Array.isArray(rawPayload.orderDetails)) return rawPayload;
+  return { ...rawPayload, orderDetails: currentDetails };
+}
+
 function firstString(...values: unknown[]) {
   for (const value of values) {
     const normalized = String(value || "").trim();
@@ -72,73 +84,6 @@ function firstNumberLike(...values: unknown[]): number | string | undefined {
     }
   }
   return undefined;
-}
-
-export type PaymentWebhookMappedStatus = ReturnType<typeof toStatus>;
-
-export type OrderTransitionClaim = {
-  nextPaymentStatus: PaymentStatus;
-  nextOrderStatus: OrderStatus;
-  orderUpdateArgs: {
-    where: {
-      id: string;
-      status: { notIn: OrderStatus[] } | { not: OrderStatus };
-    };
-    data: {
-      status: OrderStatus;
-      paymentId: string;
-    };
-  };
-  runPaidSideEffectsOnClaim: boolean;
-  runRefundSideEffectsOnClaim: boolean;
-};
-
-export function buildOrderTransitionClaim(input: {
-  mapped: PaymentWebhookMappedStatus;
-  orderId: string;
-  paymentId: string;
-}): OrderTransitionClaim {
-  const isRefund = input.mapped === "refunded";
-  const nextPaymentStatus = isRefund
-    ? PaymentStatus.REFUNDED
-    : input.mapped === "success"
-    ? PaymentStatus.SUCCESS
-    : input.mapped === "failed"
-    ? PaymentStatus.FAILED
-    : PaymentStatus.PROCESSING;
-  const nextOrderStatus = isRefund
-    ? OrderStatus.REFUNDED
-    : input.mapped === "success"
-    ? OrderStatus.PAID
-    : input.mapped === "failed"
-    ? OrderStatus.FAILED
-    : OrderStatus.PENDING;
-
-  return {
-    nextPaymentStatus,
-    nextOrderStatus,
-    orderUpdateArgs: {
-      where: {
-        id: input.orderId,
-        status: isRefund ? { not: OrderStatus.REFUNDED } : { notIn: [OrderStatus.PAID, OrderStatus.REFUNDED] },
-      },
-      data: {
-        status: nextOrderStatus,
-        paymentId: input.paymentId,
-      },
-    },
-    runPaidSideEffectsOnClaim: nextOrderStatus === OrderStatus.PAID,
-    runRefundSideEffectsOnClaim: nextOrderStatus === OrderStatus.REFUNDED,
-  };
-}
-
-export function resolveOrderTransitionClaim(claim: OrderTransitionClaim, updateCount: number) {
-  const claimed = updateCount === 1;
-  return {
-    duplicate: !claimed,
-    runPaidSideEffects: claimed && claim.runPaidSideEffectsOnClaim,
-    runRefundSideEffects: claimed && claim.runRefundSideEffectsOnClaim,
-  };
 }
 
 export const paymentWebhookService = {
@@ -183,6 +128,8 @@ export const paymentWebhookService = {
       }
     }
 
+    const isRefund = mapped === "refunded";
+
     // Prevent replay/downgrade attacks on terminal states.
     if (order.status === OrderStatus.REFUNDED) {
       return { ok: true, duplicate: true, orderId: order.id };
@@ -190,13 +137,20 @@ export const paymentWebhookService = {
     if (order.status === OrderStatus.PAID && mapped !== "refunded") {
       return { ok: true, duplicate: true, orderId: order.id };
     }
-    const transition = buildOrderTransitionClaim({
-      mapped,
-      orderId: order.id,
-      paymentId: paymentRef || targetPayment.providerRef || targetPayment.id,
-    });
-    const nextPaymentStatus = transition.nextPaymentStatus;
-    const nextOrderStatus = transition.nextOrderStatus;
+    const nextPaymentStatus = isRefund
+      ? PaymentStatus.REFUNDED
+      : mapped === "success"
+      ? PaymentStatus.SUCCESS
+      : mapped === "failed"
+      ? PaymentStatus.FAILED
+      : PaymentStatus.PROCESSING;
+    const nextOrderStatus = isRefund
+      ? OrderStatus.REFUNDED
+      : mapped === "success"
+      ? OrderStatus.PAID
+      : mapped === "failed"
+      ? OrderStatus.FAILED
+      : OrderStatus.PENDING;
 
     if (targetPayment.status === PaymentStatus.SUCCESS && nextPaymentStatus === PaymentStatus.SUCCESS) {
       return { ok: true, duplicate: true, orderId: order.id };
@@ -228,34 +182,30 @@ export const paymentWebhookService = {
         orderId: order.id,
         expectedAmount,
         expectedCurrency: String(order.currency).toUpperCase(),
+        botType: order.botType,
       });
     }
 
-    const transitionResult = await prisma.$transaction(async tx => {
-      const orderUpdate = await tx.order.updateMany(transition.orderUpdateArgs);
-      const claimResult = resolveOrderTransitionClaim(transition, orderUpdate.count);
-      if (claimResult.duplicate) {
-        return claimResult;
-      }
-
-      await tx.payment.update({
+    await prisma.$transaction([
+      prisma.payment.update({
         where: { id: targetPayment.id },
         data: {
           status: nextPaymentStatus,
           providerRef: paymentRef || targetPayment.providerRef,
           processedAt: mapped === "processing" ? null : new Date(),
-          payload: rawPayload as any,
+          payload: preserveCheckoutDetailsOnWebhook(rawPayload, targetPayment.payload) as any,
         },
-      });
+      }),
+      prisma.order.update({
+        where: { id: order.id },
+        data: {
+          status: nextOrderStatus,
+          paymentId: paymentRef || targetPayment.providerRef || targetPayment.id,
+        },
+      }),
+    ]);
 
-      return claimResult;
-    });
-
-    if (transitionResult.duplicate) {
-      return { ok: true, duplicate: true, orderId: order.id };
-    }
-
-    if (transitionResult.runPaidSideEffects) {
+    if (nextOrderStatus === OrderStatus.PAID && order.status !== OrderStatus.PAID) {
       if (order.promoCodeId) {
         await prisma.promoCode.update({
           where: { id: order.promoCodeId },
@@ -308,7 +258,7 @@ export const paymentWebhookService = {
       console.info(`[payment] order ${order.id} marked as FAILED via webhook`);
     }
 
-    if (transitionResult.runRefundSideEffects) {
+    if (nextOrderStatus === OrderStatus.REFUNDED) {
       await prisma.partnerEarning.updateMany({
         where: {
           orderId: order.id,
@@ -397,6 +347,7 @@ async function verifyPaymentWithProvider(input: {
   orderId: string;
   expectedAmount: number;
   expectedCurrency: string;
+  botType?: string | null;
 }) {
   const provider = String(input.provider || "").trim().toLowerCase();
   if (provider === "gateway") {
@@ -429,20 +380,20 @@ async function verifyLavaInvoice(input: {
   orderId: string;
   expectedAmount: number;
   expectedCurrency: string;
+  botType?: string | null;
 }) {
   const paymentRef = String(input.paymentRef || "").trim();
   if (!paymentRef) throw new AppError("Missing payment reference for provider verification", 409);
 
-  const secretKey = String(env.LAVA_SECRET_KEY || "").trim();
-  const shopId = String(env.LAVA_SHOP_ID || "").trim();
-  if (!secretKey || !shopId) throw new AppError("Lava provider credentials are not configured", 500);
+  const credentials = resolveLavaCredentials({ botType: input.botType });
+  if (!credentials) throw new AppError("Lava provider credentials are not configured", 500);
 
   const payload = {
-    shopId,
+    shopId: credentials.shopId,
     orderId: String(input.orderId),
     invoiceId: paymentRef,
   };
-  const signature = signLavaPayload(payload, secretKey);
+  const signature = signLavaPayload(payload, credentials.secretKey);
 
   const response = await fetch(new URL(env.LAVA_STATUS_PATH, env.LAVA_API_BASE_URL).toString(), {
     method: "POST",

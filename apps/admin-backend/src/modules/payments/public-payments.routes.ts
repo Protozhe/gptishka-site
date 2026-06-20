@@ -5,8 +5,6 @@ import { asyncHandler } from "../../common/http/async-handler";
 import { AppError } from "../../common/errors/app-error";
 import { paymentsService } from "./payments.service";
 import { checkoutCreateRateLimit } from "../../common/security/rate-limit";
-import { prisma } from "../../config/prisma";
-import { resolveProductDeliveryType } from "../../common/utils/product-delivery";
 
 const createPaymentSchema = z.object({
   email: z.preprocess((value) => String(value || "").trim().toLowerCase(), z.string().email()),
@@ -26,7 +24,9 @@ const createPaymentSchema = z.object({
   quantity: z.coerce.number().int().min(1).max(100).optional(),
   payment_method: z.preprocess((value) => String(value || "").trim().toLowerCase(), z.string().optional()),
   paymentMethod: z.preprocess((value) => String(value || "").trim().toLowerCase(), z.string().optional()),
-});
+  order_details: z.unknown().optional(),
+  orderDetails: z.unknown().optional(),
+}).passthrough();
 
 const allowedPublicPaymentMethods = new Set(["enot", "lava"]);
 
@@ -35,6 +35,100 @@ function normalizePublicPaymentMethod(input: string) {
   if (raw === "enot.io") return "enot";
   if (raw === "gateway") return "enot";
   return raw;
+}
+
+function sanitizePublicOrderDetails(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  try {
+    const json = JSON.stringify(value);
+    if (!json || json.length > 12000) return undefined;
+    return JSON.parse(json);
+  } catch {
+    return undefined;
+  }
+}
+
+function stringField(body: Record<string, unknown>, key: string) {
+  return String(body[key] || "").trim();
+}
+
+function boolField(body: Record<string, unknown>, key: string) {
+  const value = body[key];
+  if (typeof value === "boolean") return value;
+  const normalized = String(value || "").trim().toLowerCase();
+  return normalized === "true" || normalized === "1" || normalized === "yes" || normalized === "on";
+}
+
+function buildOrderDetailsFromFlatBody(body: Record<string, unknown>, productId: string) {
+  const hasAnyCheckoutField = [
+    "contactEmail",
+    "telegram",
+    "deliveryMethod",
+    "duration",
+    "accountStatus",
+    "serviceLogin",
+    "servicePassword",
+    "isGift",
+    "giftSender",
+    "giftRecipient",
+    "giftDeliveryMethod",
+    "giftRecipientContact",
+    "giftSendDate",
+    "giftSendTime",
+    "giftMessage",
+    "giftCertificateDesign",
+    "cameByRecommendation",
+    "referrerContact",
+    "orderComment",
+  ].some(key => body[key] !== undefined && String(body[key] ?? "").trim() !== "");
+  if (!hasAnyCheckoutField) return undefined;
+
+  return sanitizePublicOrderDetails({
+    source: "flat-checkout-fields",
+    capturedAt: new Date().toISOString(),
+    product: {
+      id: productId,
+      title: stringField(body, "productTitle") || stringField(body, "title"),
+      price: Number(body.price || 0) || undefined,
+      currency: stringField(body, "currency") || undefined,
+    },
+    selection: {
+      product: stringField(body, "product") || "ChatGPT",
+      plan: stringField(body, "plan"),
+      deliveryMethod: stringField(body, "deliveryMethod"),
+      duration: stringField(body, "duration"),
+      quantity: Number(body.quantity || body.qty || 1) || 1,
+      paymentMethod: stringField(body, "paymentMethod") || stringField(body, "payment_method"),
+      promoCode: stringField(body, "promoCode") || stringField(body, "promo_code") || null,
+    },
+    contact: {
+      email: stringField(body, "contactEmail") || stringField(body, "email"),
+      telegram: stringField(body, "telegram"),
+    },
+    gift: boolField(body, "isGift")
+      ? {
+          isGift: true,
+          sender: stringField(body, "giftSender"),
+          recipient: stringField(body, "giftRecipient"),
+          deliveryMethod: stringField(body, "giftDeliveryMethod"),
+          recipientContact: stringField(body, "giftRecipientContact"),
+          sendDate: stringField(body, "giftSendDate"),
+          sendTime: stringField(body, "giftSendTime"),
+          message: stringField(body, "giftMessage"),
+          certificateDesign: stringField(body, "giftCertificateDesign"),
+        }
+      : { isGift: false },
+    account: {
+      status: stringField(body, "accountStatus"),
+      login: stringField(body, "serviceLogin"),
+      password: stringField(body, "servicePassword"),
+    },
+    recommendation: {
+      cameByRecommendation: boolField(body, "cameByRecommendation"),
+      referrerContact: stringField(body, "referrerContact"),
+    },
+    comment: stringField(body, "orderComment"),
+  });
 }
 
 function resolvePublicOrigin(req: any) {
@@ -76,6 +170,9 @@ publicPaymentsRouter.post(
     }
     const promoCode = String(body.promo_code || body.promoCode || "").trim() || undefined;
     const paymentMethod = normalizePublicPaymentMethod(String(body.payment_method || body.paymentMethod || provider));
+    const orderDetails =
+      sanitizePublicOrderDetails(body.order_details ?? body.orderDetails) ||
+      buildOrderDetailsFromFlatBody(body as Record<string, unknown>, productId);
 
     const created = await paymentsService.createOrderWithPayment({
       email: body.email,
@@ -83,6 +180,7 @@ publicPaymentsRouter.post(
       quantity: 1,
       paymentMethod,
       promoCode,
+      orderDetails,
       ip: req.ip,
     });
 
@@ -91,12 +189,7 @@ publicPaymentsRouter.post(
     }
 
     const publicOrigin = resolvePublicOrigin(req) || `${req.protocol}://${req.get("host")}`;
-    const product = await prisma.product.findUnique({
-      where: { id: productId },
-      select: { tags: true },
-    });
-    const deliveryType = resolveProductDeliveryType(product?.tags || []);
-    const activationUrl = new URL(deliveryType === "vpn" ? "/store/vpn/activate" : "/redeem-start.html", publicOrigin);
+    const activationUrl = new URL(created.deliveryType === "vpn" ? "/store/vpn/activate" : "/redeem-start.html", publicOrigin);
     activationUrl.searchParams.set("order_id", created.orderId);
     if (created.redeemToken) {
       activationUrl.searchParams.set("t", created.redeemToken);
@@ -111,7 +204,7 @@ publicPaymentsRouter.post(
       base_amount: created.basePrice,
       discount: created.discountAmount,
       promo_code: created.promoCode,
-      payment_method: paymentMethod,
+      payment_method: created.paymentProvider,
     });
   })
 );

@@ -61,6 +61,16 @@ export const updateProduct = asyncHandler(async (req: Request, res: Response) =>
   res.json(withDeliveryType(item as any));
 });
 
+export const uploadProductIconPng = asyncHandler(async (req: Request, res: Response) => {
+  const item = await productsService.uploadIconPng(String(req.params.id), req.file as Express.Multer.File | undefined, actor(req));
+  res.json(withDeliveryType(item as any));
+});
+
+export const deleteProductIconPng = asyncHandler(async (req: Request, res: Response) => {
+  const item = await productsService.deleteIconPng(String(req.params.id), actor(req));
+  res.json(withDeliveryType(item as any));
+});
+
 export const patchProductStatus = asyncHandler(async (req: Request, res: Response) => {
   const item = await productsService.patchStatus(String(req.params.id), req.body, actor(req));
   res.json(item);

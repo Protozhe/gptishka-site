@@ -1,10 +1,25 @@
-export type ProductDeliveryType = "activation" | "credentials" | "vpn" | "support" | "support_claude";
+export type ProductDeliveryType = "activation" | "credentials" | "manual_login" | "vpn" | "support" | "support_claude";
 export type ProductDeliveryMethod = 1 | 2 | 3 | 4 | 5;
 
 const DELIVERY_TAG_PREFIX = "delivery:";
 
-function normalizeDeliveryType(value: string): ProductDeliveryType {
+export function normalizeDeliveryType(value: string): ProductDeliveryType {
   const normalized = String(value || "").trim().toLowerCase();
+  if (
+    [
+      "manual_login",
+      "manual-login",
+      "with_login",
+      "with-login",
+      "customer-login",
+      "customer_login",
+      "client-login",
+      "client_login",
+      "login",
+    ].includes(normalized)
+  ) {
+    return "manual_login";
+  }
   if (["credentials", "manual", "login-password", "login_password", "account"].includes(normalized)) {
     return "credentials";
   }
@@ -29,6 +44,42 @@ export function resolveProductDeliveryType(tags: string[] | null | undefined): P
   return normalizeDeliveryType(raw.slice(DELIVERY_TAG_PREFIX.length));
 }
 
+export function resolveOrderDeliveryType(
+  orderDetails: unknown,
+  tags: string[] | null | undefined
+): ProductDeliveryType {
+  if (orderDetails && typeof orderDetails === "object" && !Array.isArray(orderDetails)) {
+    const selection = (orderDetails as Record<string, any>).selection;
+    if (selection && typeof selection === "object" && !Array.isArray(selection)) {
+      const serverDeliveryType = String((selection as Record<string, any>).serverDeliveryType || "").trim();
+      if (serverDeliveryType) return normalizeDeliveryType(serverDeliveryType);
+
+      const activationVariant = String((selection as Record<string, any>).activationVariant || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[\s_-]+/g, "");
+      if (activationVariant === "withoutlogin") return "activation";
+      if (activationVariant === "withlogin") return "manual_login";
+
+      const deliveryMethod = String(
+        (selection as Record<string, any>).deliveryKey ||
+          (selection as Record<string, any>).deliveryMethod ||
+          ""
+      )
+        .trim()
+        .toLowerCase()
+        .replace(/[\s_-]+/g, "");
+      if (["link", "withoutlogin", "nologin", "token", "key", "activation", "id", "1"].includes(deliveryMethod)) {
+        return "activation";
+      }
+      if (["login", "withlogin", "manuallogin", "customerlogin", "clientlogin"].includes(deliveryMethod)) {
+        return "manual_login";
+      }
+    }
+  }
+  return resolveProductDeliveryType(tags);
+}
+
 export function applyProductDeliveryTypeTag(
   tags: string[] | null | undefined,
   deliveryType: ProductDeliveryType | null | undefined
@@ -36,7 +87,9 @@ export function applyProductDeliveryTypeTag(
   const list = Array.isArray(tags) ? tags : [];
   const cleaned = list.filter((tag) => !String(tag || "").trim().toLowerCase().startsWith(DELIVERY_TAG_PREFIX));
   const normalized = normalizeDeliveryType(String(deliveryType || "activation"));
-  if (normalized === "credentials") {
+  if (normalized === "manual_login") {
+    cleaned.push("delivery:manual_login");
+  } else if (normalized === "credentials") {
     cleaned.push("delivery:credentials");
   } else if (normalized === "support") {
     cleaned.push("delivery:support");
@@ -50,6 +103,7 @@ export function applyProductDeliveryTypeTag(
 
 export function deliveryTypeToMethod(deliveryType: ProductDeliveryType | null | undefined): ProductDeliveryMethod {
   const normalized = normalizeDeliveryType(String(deliveryType || "activation"));
+  if (normalized === "manual_login") return 2;
   if (normalized === "credentials") return 2;
   if (normalized === "support") return 4;
   if (normalized === "support_claude") return 5;
@@ -59,6 +113,19 @@ export function deliveryTypeToMethod(deliveryType: ProductDeliveryType | null | 
 
 export function methodToDeliveryType(value: unknown): ProductDeliveryType {
   const raw = String(value ?? "").trim().toLowerCase();
+  if (
+    raw === "manual_login" ||
+    raw === "manual-login" ||
+    raw === "with_login" ||
+    raw === "with-login" ||
+    raw === "customer-login" ||
+    raw === "customer_login" ||
+    raw === "client-login" ||
+    raw === "client_login" ||
+    raw === "login"
+  ) {
+    return "manual_login";
+  }
   if (raw === "2" || raw === "credentials" || raw === "manual" || raw === "login_password" || raw === "login-password") {
     return "credentials";
   }

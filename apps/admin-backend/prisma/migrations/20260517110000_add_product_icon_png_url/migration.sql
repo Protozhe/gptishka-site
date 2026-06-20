@@ -1,0 +1,1 @@
+ALTER TABLE "Product" ADD COLUMN "iconPngUrl" TEXT NOT NULL DEFAULT '';

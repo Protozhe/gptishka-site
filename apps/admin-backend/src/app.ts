@@ -15,7 +15,7 @@ import { promoCodesRouter } from "./modules/promocodes/promocodes.routes";
 import { errorHandler, notFoundHandler } from "./common/errors/error-handler";
 import { publicOrdersRouter } from "./modules/orders/public-orders.routes";
 import { allowLavaWebhookIp, allowWebhookIp, verifyLavaWebhookSignature, verifyWebhookSignature } from "./common/security/webhook-security";
-import { createPaymentWebhookHandler } from "./modules/payments/payment-webhook.controller";
+import { handlePaymentWebhook } from "./modules/payments/payment-webhook.controller";
 import { publicPromoCodesRouter } from "./modules/promocodes/public-promocodes.routes";
 import { partnerEarningsRouter, partnersRouter } from "./modules/partners/partners.routes";
 import { publicPaymentsRouter } from "./modules/payments/public-payments.routes";
@@ -26,6 +26,9 @@ import { accountRouter } from "./modules/account/account.routes";
 import { accountAdminRouter } from "./modules/account/account.admin.routes";
 import { systemAdminRouter } from "./modules/system/system.routes";
 import { telegramRouter } from "./modules/telegram/telegram.routes";
+import { telegramBotsAdminRouter } from "./modules/telegram-bots/telegram-bots.admin.routes";
+import { productVisualRouter, showcaseAdminRouter } from "./modules/showcase/showcase.routes";
+import { servicePagesAdminRouter, servicePagesPublicRouter } from "./modules/service-pages/service-pages.routes";
 
 export function createApp() {
   const app = express();
@@ -35,10 +38,8 @@ export function createApp() {
 
   applySecurity(app);
   app.use(globalRateLimit);
-  const gatewayPaymentWebhookHandler = createPaymentWebhookHandler("gateway");
-  const lavaPaymentWebhookHandler = createPaymentWebhookHandler("lava");
-  const enotWebhookStack = [allowWebhookIp, express.raw({ type: "application/json" }), verifyWebhookSignature, gatewayPaymentWebhookHandler] as const;
-  const lavaWebhookStack = [allowLavaWebhookIp, express.raw({ type: "application/json" }), verifyLavaWebhookSignature, lavaPaymentWebhookHandler] as const;
+  const enotWebhookStack = [allowWebhookIp, express.raw({ type: "application/json" }), verifyWebhookSignature, handlePaymentWebhook] as const;
+  const lavaWebhookStack = [allowLavaWebhookIp, express.raw({ type: "application/json" }), verifyLavaWebhookSignature, handlePaymentWebhook] as const;
   app.post("/api/public/webhook/payment", ...enotWebhookStack);
   app.post("/api/webhooks/payment", ...enotWebhookStack);
   app.post("/api/public/webhook/lava", ...lavaWebhookStack);
@@ -60,7 +61,11 @@ export function createApp() {
   });
 
   app.use("/api/admin/auth", authRouter);
+  app.use("/api/admin/products/:id/visual", productVisualRouter);
   app.use("/api/admin/products", productsRouter);
+  app.use("/api/admin/showcase", showcaseAdminRouter);
+  app.use("/api/admin/service-pages", servicePagesAdminRouter);
+  app.use("/api/public", servicePagesPublicRouter);
   app.use("/api/public", publicProductsRouter);
   app.use("/api/public", publicOrdersRouter);
   app.use("/api/public", publicPromoCodesRouter);
@@ -82,6 +87,7 @@ export function createApp() {
   app.use("/api/admin/vpn", vpnAdminRouter);
   app.use("/api/admin/account", accountAdminRouter);
   app.use("/api/admin/system", systemAdminRouter);
+  app.use("/api/admin/telegram-bots", telegramBotsAdminRouter);
   app.use("/admin/vpn", vpnAdminRouter);
 
   app.use(notFoundHandler);

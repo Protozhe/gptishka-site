@@ -1,14 +1,23 @@
 import { Prisma } from "@prisma/client";
 import slugify from "../../common/utils/slugify";
 import { AppError } from "../../common/errors/app-error";
-import { applyProductDeliveryTypeTag, methodToDeliveryType } from "../../common/utils/product-delivery";
+import { applyProductDeliveryTypeTag, methodToDeliveryType, resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { prisma } from "../../config/prisma";
 import { productsRepository } from "./products.repository";
 import { writeAuditLog } from "../audit/audit.service";
+import { activationVariantsToJson, normalizeProductActivationVariants } from "../../common/utils/product-activation-variants";
 import { manualCredentialsStore, type ManualCredentialStatus } from "./manual-credentials.store";
+import { deleteProductImageByUrl, saveProductPngImage } from "../files/files.service";
 
 const TRANSLATE_ENDPOINT = "https://translate.googleapis.com/translate_a/single";
 const TRANSLATE_TIMEOUT_MS = 7000;
+const PNG_URL_RE = /\.png(?:\?.*)?(?:#.*)?$/i;
+
+function normalizeIconPngUrl(value: unknown): string {
+  const normalized = String(value || "").trim();
+  if (!normalized) return "";
+  return PNG_URL_RE.test(normalized) ? normalized : "";
+}
 
 function normalizeTranslationText(value: string): string {
   return String(value || "")
@@ -146,17 +155,23 @@ export const productsService = {
     const requestedDeliveryType =
       input.deliveryType !== undefined ? input.deliveryType : methodToDeliveryType(input.deliveryMethod);
     const nextTags = applyProductDeliveryTypeTag(input.tags ?? [], requestedDeliveryType);
+    const activationVariants = normalizeProductActivationVariants(input.activationVariants, {
+      price: Number(input.price),
+      deliveryType: requestedDeliveryType,
+    });
 
     const created = await productsRepository.create({
       slug: uniqueSlug,
       title: input.title,
       titleEn: input.titleEn,
+      iconPngUrl: normalizeIconPngUrl(input.iconPngUrl),
       description: input.description,
       descriptionEn: input.descriptionEn,
       modalDescription: input.modalDescription ?? "",
       modalDescriptionEn: input.modalDescriptionEn ?? "",
       price: input.price,
       oldPrice: input.oldPrice ?? null,
+      activationVariants: activationVariantsToJson(activationVariants),
       currency: input.currency,
       category: input.category,
       tags: nextTags,
@@ -191,16 +206,25 @@ export const productsService = {
       input.tags !== undefined || requestedDeliveryType !== undefined
         ? applyProductDeliveryTypeTag(input.tags !== undefined ? input.tags : before.tags, requestedDeliveryType)
         : undefined;
+    const activationVariants =
+      input.activationVariants !== undefined
+        ? normalizeProductActivationVariants(input.activationVariants, {
+            price: Number(input.price ?? before.price),
+            deliveryType: requestedDeliveryType ?? resolveProductDeliveryType(before.tags),
+          })
+        : undefined;
 
     const updated = await productsRepository.update(id, {
       ...(input.title ? { title: input.title, slug: nextSlug } : {}),
       ...(input.titleEn !== undefined ? { titleEn: input.titleEn } : {}),
+      ...(input.iconPngUrl !== undefined ? { iconPngUrl: normalizeIconPngUrl(input.iconPngUrl) } : {}),
       ...(input.description !== undefined ? { description: input.description } : {}),
       ...(input.descriptionEn !== undefined ? { descriptionEn: input.descriptionEn } : {}),
       ...(input.modalDescription !== undefined ? { modalDescription: input.modalDescription } : {}),
       ...(input.modalDescriptionEn !== undefined ? { modalDescriptionEn: input.modalDescriptionEn } : {}),
       ...(input.price !== undefined ? { price: input.price } : {}),
       ...(input.oldPrice !== undefined ? { oldPrice: input.oldPrice } : {}),
+      ...(activationVariants !== undefined ? { activationVariants: activationVariantsToJson(activationVariants) } : {}),
       ...(input.currency !== undefined ? { currency: input.currency } : {}),
       ...(input.category !== undefined ? { category: input.category } : {}),
       ...(tagsForUpdate !== undefined ? { tags: tagsForUpdate } : {}),
@@ -247,6 +271,63 @@ export const productsService = {
         ...updated,
         keyRebindCount: rebindCount,
       },
+      ip: actor?.ip,
+      userAgent: actor?.userAgent,
+    });
+
+    return updated;
+  },
+
+  async uploadIconPng(id: string, file: Express.Multer.File | undefined, actor?: { userId?: string; ip?: string; userAgent?: string }) {
+    const before = await productsRepository.findById(id);
+    if (!before) throw new AppError("Product not found", 404);
+    if (!file) throw new AppError("PNG image file is required", 400);
+
+    let iconPngUrl = "";
+    try {
+      iconPngUrl = saveProductPngImage(file);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Allowed image format: png";
+      throw new AppError(message, 400);
+    }
+
+    const updated = await productsRepository.update(id, { iconPngUrl });
+
+    if (before.iconPngUrl && before.iconPngUrl !== iconPngUrl) {
+      deleteProductImageByUrl(before.iconPngUrl);
+    }
+
+    await writeAuditLog({
+      userId: actor?.userId,
+      entityType: "product",
+      entityId: updated.id,
+      action: "upload_icon_png",
+      before,
+      after: updated,
+      ip: actor?.ip,
+      userAgent: actor?.userAgent,
+    });
+
+    return updated;
+  },
+
+  async deleteIconPng(id: string, actor?: { userId?: string; ip?: string; userAgent?: string }) {
+    const before = await productsRepository.findById(id);
+    if (!before) throw new AppError("Product not found", 404);
+
+    if (before.iconPngUrl) {
+      deleteProductImageByUrl(before.iconPngUrl);
+    }
+
+    const updated = await productsRepository.update(id, { iconPngUrl: "" });
+
+    await writeAuditLog({
+      userId: actor?.userId,
+      entityType: "product",
+      entityId: updated.id,
+      action: "delete_icon_png",
+      before,
+      after: updated,
       ip: actor?.ip,
       userAgent: actor?.userAgent,
     });

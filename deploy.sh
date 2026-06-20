@@ -3,6 +3,16 @@ set -euo pipefail
 # Continue deployment even if the SSH session drops.
 trap '' HUP
 
+# Run from a temporary copy so `git reset --hard origin/main` cannot replace
+# this script while bash is still reading it.
+if [ "${GPTISHKA_DEPLOY_WRAPPED:-0}" != "1" ]; then
+  DEPLOY_TMP="/tmp/gptishka-deploy-$$.sh"
+  cp "$0" "$DEPLOY_TMP"
+  chmod +x "$DEPLOY_TMP"
+  export GPTISHKA_DEPLOY_WRAPPED=1
+  exec bash "$DEPLOY_TMP" "$@"
+fi
+
 APP_DIR="/var/www/gptishka-new"
 ADMIN_ENV_FILE="$APP_DIR/apps/admin-backend/.env"
 RUNTIME_DIR="/var/lib/gptishka-runtime"
@@ -14,8 +24,36 @@ git reset --hard origin/main
 git clean -fd -- apps/admin-backend/src apps/admin-backend/prisma
 npm install --include=dev
 
-# Always publish latest admin UI first, even if backend deploy is skipped/fails.
 npm run build:admin:ui
+
+# Safety gate: do not overwrite the working production admin with an old bundle.
+# The product constructor depends on service-pages/showcase backend routes and
+# activation variant fields in the admin UI. If a stale branch reaches deploy,
+# stop before rsync deletes the current /admin assets.
+if ! grep -R -q "activationSiteUrl" apps/admin-ui/dist/assets; then
+  echo "ERROR: admin UI bundle does not contain activationSiteUrl. Refusing to deploy stale admin."
+  exit 1
+fi
+if ! grep -R -q "heroVideoUrl" apps/admin-ui/dist/assets; then
+  echo "ERROR: admin UI bundle does not contain service page constructor fields. Refusing to deploy stale admin."
+  exit 1
+fi
+if [ ! -d apps/admin-backend/src/modules/service-pages ] || ! grep -q "service-pages" apps/admin-backend/src/app.ts; then
+  echo "ERROR: admin backend source does not contain service-pages routes. Refusing to deploy stale admin."
+  exit 1
+fi
+if [ ! -d apps/admin-backend/src/modules/showcase ] || ! grep -q "showcase" apps/admin-backend/src/app.ts; then
+  echo "ERROR: admin backend source does not contain showcase routes. Refusing to deploy stale admin."
+  exit 1
+fi
+
+BACKUP_DIR="/var/backups/gptishka/deploy-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$BACKUP_DIR"
+cp -a admin "$BACKUP_DIR/admin" 2>/dev/null || true
+mkdir -p "$BACKUP_DIR/apps/admin-backend"
+cp -a apps/admin-backend/dist "$BACKUP_DIR/apps/admin-backend/dist" 2>/dev/null || true
+
+# Publish latest admin UI only after the stale-admin safety gate passes.
 rsync -a --delete apps/admin-ui/dist/ admin/
 
 SKIP_BACKEND_DEPLOY=0

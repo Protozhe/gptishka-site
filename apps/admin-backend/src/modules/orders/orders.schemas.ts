@@ -6,6 +6,8 @@ export const ordersQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   q: z.string().optional(),
   status: z.nativeEnum(OrderStatus).optional(),
+  source: z.enum(["site", "telegram"]).optional(),
+  botType: z.enum(["claude", "chatgpt", "grok"]).optional(),
   paymentMethod: z.string().optional(),
   sortBy: z.enum(["createdAt", "updatedAt", "totalAmount"]).default("createdAt"),
   sortDir: z.enum(["asc", "desc"]).default("desc"),
@@ -20,6 +22,15 @@ export const manualConfirmSchema = z.object({
   paymentMethod: z.string().min(2),
 });
 
+function normalizePublicPaymentMethod(value: unknown) {
+  const raw = String(value || "")
+    .trim()
+    .toLowerCase();
+  if (!raw) return "enot";
+  if (raw === "gateway" || raw === "enot.io") return "enot";
+  return raw;
+}
+
 export const createOrderSchema = z.object({
   email: z.string().email(),
   productId: z.string().min(10),
@@ -27,6 +38,17 @@ export const createOrderSchema = z.object({
   paymentMethod: z.string().min(2).optional(),
   country: z.string().max(2).optional(),
   promoCode: z.string().min(2).max(40).optional(),
+  orderDetails: z.unknown().optional(),
+});
+
+export const createPublicOrderSchema = z.object({
+  email: z.string().email(),
+  productId: z.string().min(10),
+  quantity: z.coerce.number().int().min(1).max(100).default(1),
+  paymentMethod: z.preprocess(normalizePublicPaymentMethod, z.enum(["enot", "lava"]).default("enot")),
+  country: z.string().max(2).optional(),
+  promoCode: z.string().min(2).max(40).optional(),
+  orderDetails: z.unknown().optional(),
 });
 
 export const storefrontTickerSettingsSchema = z

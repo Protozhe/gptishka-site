@@ -10,6 +10,11 @@ import { writeAuditLog } from "../audit/audit.service";
 import { AppError } from "../../common/errors/app-error";
 import { WELCOME_PROMO_CODE } from "../promocodes/welcome-promo.service";
 import crypto from "crypto";
+import { resolveProductDeliveryType } from "../../common/utils/product-delivery";
+import { resolveActivationVariant } from "../../common/utils/product-activation-variants";
+
+const ORDER_SOURCE_SITE = "site";
+const ORDER_SOURCE_TELEGRAM = "telegram";
 
 function sha256Hex(value: string) {
   return crypto.createHash("sha256").update(String(value || "")).digest("hex");
@@ -18,6 +23,32 @@ function sha256Hex(value: string) {
 function generateRedeemToken() {
   // Short, URL-safe, unguessable.
   return crypto.randomBytes(24).toString("hex");
+}
+
+function normalizeOrderSource(value: unknown) {
+  const source = String(value || "").trim().toLowerCase();
+  if (source === ORDER_SOURCE_TELEGRAM) return ORDER_SOURCE_TELEGRAM;
+  return ORDER_SOURCE_SITE;
+}
+
+function normalizeTelegramBotType(value: unknown) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "claude" || normalized === "chatgpt" || normalized === "grok") return normalized;
+  return null;
+}
+
+function normalizeTelegramIdentifier(value: unknown) {
+  const normalized = String(value || "")
+    .trim()
+    .replace(/[^\d-]/g, "");
+  return normalized ? normalized : null;
+}
+
+function normalizeTelegramUsername(value: unknown) {
+  const normalized = String(value || "")
+    .trim()
+    .replace(/^@+/, "");
+  return normalized ? normalized : null;
 }
 
 export const paymentsService = {
@@ -44,7 +75,13 @@ export const paymentsService = {
     return { discountAmount: discount, finalPrice };
   },
 
-  async validatePromoCode(input: { code: string; productId: string; quantity?: number }) {
+  async validatePromoCode(input: {
+    code: string;
+    productId: string;
+    quantity?: number;
+    activationVariant?: string;
+    deliveryMethod?: string;
+  }) {
     const code = String(input.code || "").trim().toUpperCase();
     if (!code) throw new AppError("Promo code is required", 400);
     const qty = Math.max(1, Number(input.quantity || 1));
@@ -53,7 +90,16 @@ export const paymentsService = {
     if (!product || !product.isActive || product.isArchived) {
       throw new AppError("Product not available", 400);
     }
-    const basePrice = Number((Number(product.price) * qty).toFixed(2));
+    const selectedVariant = resolveActivationVariant(
+      product.activationVariants,
+      {
+        price: Number(product.price),
+        deliveryType: resolveProductDeliveryType(product.tags),
+      },
+      input.activationVariant,
+      input.deliveryMethod
+    );
+    const basePrice = Number((selectedVariant.price * qty).toFixed(2));
 
     const promo = await prisma.promoCode.findUnique({
       where: { code },
@@ -121,13 +167,48 @@ export const paymentsService = {
     country?: string;
     paymentMethod?: string;
     promoCode?: string;
+    source?: string;
+    botType?: string;
+    telegramUserId?: string;
+    telegramUsername?: string | null;
+    telegramChatId?: string | null;
+    issueRedeemToken?: boolean;
+    orderDetails?: Prisma.InputJsonValue | null;
   }) {
     const product = await prisma.product.findUnique({ where: { id: input.productId } });
     if (!product || !product.isActive || product.isArchived) {
       throw new AppError("Product not available", 400);
     }
 
-    const subtotal = Number(product.price) * Math.max(1, input.quantity);
+    const rawOrderDetails =
+      input.orderDetails && typeof input.orderDetails === "object" && !Array.isArray(input.orderDetails)
+        ? (input.orderDetails as Record<string, any>)
+        : null;
+    const requestedDeliveryMethod = rawOrderDetails?.selection?.deliveryMethod;
+    const selectedVariant = resolveActivationVariant(
+      product.activationVariants,
+      {
+        price: Number(product.price),
+        deliveryType: resolveProductDeliveryType(product.tags),
+      },
+      rawOrderDetails?.selection?.activationVariant,
+      requestedDeliveryMethod
+    );
+    if (!selectedVariant.enabled) {
+      throw new AppError("Selected activation option is not available", 400);
+    }
+    const effectiveOrderDetails = {
+      ...(rawOrderDetails || {}),
+      selection: {
+        ...(rawOrderDetails?.selection && typeof rawOrderDetails.selection === "object" ? rawOrderDetails.selection : {}),
+        activationVariant: selectedVariant.key,
+        serverDeliveryType: selectedVariant.deliveryType,
+        serverUnitPrice: selectedVariant.price,
+        serverActivationSiteUrl: selectedVariant.activationSiteUrl || "",
+      },
+    } as Prisma.InputJsonValue;
+
+    const subtotal = selectedVariant.price * Math.max(1, input.quantity);
     let discountAmount = 0;
     let promo: {
       id: string;
@@ -186,8 +267,14 @@ export const paymentsService = {
       throw new AppError("Order total is below minimal payable amount", 400);
     }
 
-    const redeemToken = generateRedeemToken();
-    const redeemTokenHash = sha256Hex(redeemToken);
+    const source = normalizeOrderSource(input.source);
+    const botType = source === ORDER_SOURCE_TELEGRAM ? normalizeTelegramBotType(input.botType) : null;
+    const telegramUserId = source === ORDER_SOURCE_TELEGRAM ? normalizeTelegramIdentifier(input.telegramUserId) : null;
+    const telegramChatId = source === ORDER_SOURCE_TELEGRAM ? normalizeTelegramIdentifier(input.telegramChatId) : null;
+    const telegramUsername = source === ORDER_SOURCE_TELEGRAM ? normalizeTelegramUsername(input.telegramUsername) : null;
+    const issueRedeemToken = input.issueRedeemToken !== false;
+    const redeemToken = issueRedeemToken ? generateRedeemToken() : "";
+    const redeemTokenHash = issueRedeemToken ? sha256Hex(redeemToken) : null;
 
     const selectedProviderCode = resolveProviderCodeByPaymentMethod(input.paymentMethod);
     const selectedPaymentMethod = normalizePaymentMethodCode(input.paymentMethod, selectedProviderCode);
@@ -198,12 +285,19 @@ export const paymentsService = {
           email: input.email,
           status: OrderStatus.PENDING,
           redeemTokenHash,
+          source,
+          botType,
+          telegramUserId,
+          telegramUsername,
+          telegramChatId,
+          telegramLastError: null,
           subtotalAmount: subtotal,
           discountAmount,
           totalAmount: total,
           currency: product.currency,
           ip: input.ip,
           country: input.country,
+          orderDetails: effectiveOrderDetails || Prisma.JsonNull,
           paymentMethod: selectedPaymentMethod,
           promoCodeId: promo?.id || null,
           promoCodeSnapshot: promo?.code || null,
@@ -212,7 +306,7 @@ export const paymentsService = {
             create: {
               productId: product.id,
               productRaw: product.title,
-              price: product.price,
+              price: selectedVariant.price,
               quantity: Math.max(1, input.quantity),
             },
           },
@@ -223,8 +317,7 @@ export const paymentsService = {
       return created;
     });
 
-    const provider = input.paymentMethod ? getProviderByCode(selectedProviderCode) : getPaymentProvider();
-    const paymentResponse = await provider.createPayment({
+    const paymentInput = {
       orderId: order.id,
       amount: total,
       currency: order.currency,
@@ -234,15 +327,37 @@ export const paymentsService = {
         planId: product.id,
         quantity: input.quantity,
         email: input.email,
-        redeemToken,
+        redeemToken: issueRedeemToken ? redeemToken : null,
         promoCode: promo?.code || null,
         promo: promo?.code || null,
         partnerId: promo?.partnerId || null,
         subtotalAmount: subtotal,
         discountAmount,
         finalAmount: total,
+        source,
+        botType,
       },
-    });
+    } as const;
+
+    let provider = input.paymentMethod ? getProviderByCode(selectedProviderCode) : getPaymentProvider();
+    let paymentResponse;
+    try {
+      paymentResponse = await provider.createPayment(paymentInput);
+    } catch (error) {
+      const canFallbackToEnot = selectedProviderCode === "lava";
+      if (!canFallbackToEnot) throw error;
+
+      const fallbackProvider = getProviderByCode("gateway");
+      paymentResponse = await fallbackProvider.createPayment(paymentInput);
+      provider = fallbackProvider;
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { paymentMethod: "enot" },
+      });
+      console.warn(
+        `[payments] provider fallback applied order=${order.id} from=${selectedProviderCode} to=enot reason=${error instanceof Error ? error.message : "unknown"}`
+      );
+    }
 
     const payment = await prisma.payment.create({
       data: {
@@ -251,6 +366,15 @@ export const paymentsService = {
         providerRef: paymentResponse.paymentId,
         amount: total,
         currency: order.currency,
+        payload: {
+          checkoutUrl: paymentResponse.checkoutUrl,
+          source,
+          botType,
+          telegramUserId,
+          telegramUsername,
+          telegramChatId,
+          orderDetails: effectiveOrderDetails || null,
+        } as Prisma.InputJsonValue,
         status:
           paymentResponse.status === "success"
             ? PaymentStatus.SUCCESS
@@ -310,7 +434,7 @@ export const paymentsService = {
 
     return {
       orderId: order.id,
-      redeemToken,
+      redeemToken: issueRedeemToken ? redeemToken : null,
       paymentId: payment.id,
       basePrice: subtotal,
       discountAmount,
@@ -318,6 +442,7 @@ export const paymentsService = {
       promoCode: promo?.code || null,
       partnerId: promo?.partnerId || null,
       paymentProvider: payment.provider,
+      deliveryType: selectedVariant.deliveryType,
       checkoutUrl: paymentResponse.checkoutUrl,
       status: nextStatus,
     };

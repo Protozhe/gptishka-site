@@ -9,6 +9,8 @@ const validatePromoSchema = z.object({
   code: z.string().min(2).max(40),
   productId: z.string().min(10),
   quantity: z.coerce.number().int().min(1).max(100).optional(),
+  activationVariant: z.enum(["withLogin", "withoutLogin"]).optional(),
+  deliveryMethod: z.string().max(40).optional(),
 });
 
 export const publicPromoCodesRouter = Router();
@@ -23,6 +25,8 @@ publicPromoCodesRouter.post(
       code: body.code,
       productId: body.productId,
       quantity: body.quantity ?? 1,
+      activationVariant: body.activationVariant,
+      deliveryMethod: body.deliveryMethod,
     });
     res.json({
       valid: result.valid,

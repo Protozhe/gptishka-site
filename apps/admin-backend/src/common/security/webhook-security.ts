@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { Request, Response, NextFunction } from "express";
 import { env } from "../../config/env";
 import { AppError } from "../errors/app-error";
+import { getLavaWebhookSecrets } from "../../modules/payments/lava.credentials";
 
 function getClientIp(req: Request) {
   const xff = String(req.headers["x-forwarded-for"] || "")
@@ -82,8 +83,8 @@ export function verifyWebhookSignature(req: Request, _res: Response, next: NextF
 }
 
 export function verifyLavaWebhookSignature(req: Request, _res: Response, next: NextFunction) {
-  const webhookSecret = String(env.LAVA_WEBHOOK_SECRET || env.LAVA_ADDITIONAL_SECRET || "").trim();
-  if (!webhookSecret) {
+  const webhookSecrets = getLavaWebhookSecrets();
+  if (!webhookSecrets.length) {
     return next(new AppError("Lava webhook secret is not configured", 500));
   }
 
@@ -108,12 +109,12 @@ export function verifyLavaWebhookSignature(req: Request, _res: Response, next: N
   }
 
   const sortedBody = stableStringifySorted(bodyObject);
-  const expected = [
+  const expected = webhookSecrets.flatMap((webhookSecret) => [
     crypto.createHmac("sha256", webhookSecret).update(sortedBody, "utf8").digest("hex").toLowerCase(),
     crypto.createHmac("sha256", webhookSecret).update(bodyUtf8, "utf8").digest("hex").toLowerCase(),
     crypto.createHash("sha256").update(sortedBody + webhookSecret, "utf8").digest("hex").toLowerCase(),
     crypto.createHash("sha256").update(bodyUtf8 + webhookSecret, "utf8").digest("hex").toLowerCase(),
-  ];
+  ]);
 
   if (!expected.some((candidate) => safeEqualHex(incoming, candidate))) {
     return next(new AppError("Invalid webhook signature", 401));

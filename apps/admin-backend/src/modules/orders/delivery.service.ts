@@ -1,5 +1,6 @@
 ﻿import { Order } from "@prisma/client";
-import { resolveProductDeliveryType } from "../../common/utils/product-delivery";
+import { resolveOrderDeliveryType, resolveProductDeliveryType } from "../../common/utils/product-delivery";
+import { readActivationSiteUrlFromOrderDetails } from "../../common/utils/activation-site";
 import { canonicalProductKey } from "../../common/utils/product-key";
 import { prisma } from "../../config/prisma";
 import { resolveVpnProvisionPayload, vpnService } from "../../services/vpn.service";
@@ -20,7 +21,7 @@ export async function deliverProduct(order: Order) {
 
   const firstItem = fullOrder.items[0];
   const product = firstItem?.product || null;
-  const deliveryType = resolveProductDeliveryType(product?.tags || []);
+  const deliveryType = resolveOrderDeliveryType(fullOrder.orderDetails, product?.tags || []);
   const vpnProvision = resolveVpnProvisionPayload(product);
 
   async function ensureBundleVpnAccess() {
@@ -68,6 +69,12 @@ export async function deliverProduct(order: Order) {
     return;
   }
 
+  if (deliveryType === "manual_login") {
+    console.info(`[delivery] manual login order selected for order=${order.id}`);
+    await ensureBundleVpnAccess();
+    return;
+  }
+
   const isSupportTokenActivation = deliveryType === "support" || deliveryType === "support_claude";
   if (isSupportTokenActivation) {
     console.info(`[delivery] support-token activation selected for order=${order.id}`);
@@ -108,21 +115,23 @@ export async function deliverProduct(order: Order) {
     .toLowerCase();
   const productId = String(product?.id || "").trim().toLowerCase();
   const baseProductKey = canonicalProductKey(productSlug || productId);
-  const productKey = resolveActivationKeyPoolProductKey(baseProductKey, deliveryType);
+  const productKey = resolveActivationKeyPoolProductKey(baseProductKey, deliveryType, order.email);
+  const activationSiteUrl = readActivationSiteUrlFromOrderDetails(fullOrder.orderDetails);
 
   if (!productKey) {
     console.warn(`[delivery] product key not resolved for order=${order.id}`);
     return;
   }
 
-  const cdk = await activationStore.reserveCdkForOrder({
+  const reserved = await activationStore.reserveCdkRecordForOrder({
     productKey,
+    activationSiteUrl,
     orderId: order.id,
     email: order.email,
   });
 
-  if (!cdk) {
-    console.warn(`[delivery] no CDK available for product=${productKey} order=${order.id}`);
+  if (!reserved) {
+    console.warn(`[delivery] no CDK available for product=${productKey} site=${activationSiteUrl || "-"} order=${order.id}`);
     return;
   }
 
@@ -131,7 +140,8 @@ export async function deliverProduct(order: Order) {
     orderId: order.id,
     email: order.email,
     productKey,
-    cdk,
+    cdk: reserved.code,
+    activationSiteUrl: reserved.activationSiteUrl || activationSiteUrl || "",
     status: "issued",
     taskId: null,
     attempts: 0,
@@ -143,20 +153,35 @@ export async function deliverProduct(order: Order) {
     updatedAt: nowIso,
   });
 
-  console.info(`[delivery] issued CDK for order ${order.id} (${order.email}) product=${productKey}`);
+  console.info(`[delivery] issued CDK for order ${order.id} (${order.email}) product=${productKey} site=${reserved.activationSiteUrl || activationSiteUrl || "-"}`);
   await ensureBundleVpnAccess();
 }
 
-function resolveActivationKeyPoolProductKey(baseProductKey: string, deliveryType: ReturnType<typeof resolveProductDeliveryType>) {
+function isTelegramOrderEmail(email: string | null | undefined) {
+  const normalized = String(email || "").trim().toLowerCase();
+  return normalized.endsWith("@telegram.local");
+}
+
+function resolveActivationKeyPoolProductKey(
+  baseProductKey: string,
+  deliveryType: ReturnType<typeof resolveProductDeliveryType>,
+  orderEmail?: string | null
+) {
   const normalizedBase = String(baseProductKey || "").trim();
   if (!normalizedBase) return "";
+  const telegramPrefix = isTelegramOrderEmail(orderEmail) ? "tgbot-" : "";
   // Method 5 (Claude token flow) uses a separate SDK pool.
   if (deliveryType === "support_claude") {
-    return canonicalProductKey(`${normalizedBase}-sdk5`);
+    return canonicalProductKey(`${telegramPrefix}${normalizedBase}-sdk5`);
   }
   // Method 4 (support token flow) uses an isolated SDK pool.
   if (deliveryType === "support") {
-    return canonicalProductKey(`${normalizedBase}-sdk4`);
+    return canonicalProductKey(`${telegramPrefix}${normalizedBase}-sdk4`);
+  }
+  // Method 1 in Telegram bots (e.g. ChatGPT Plus) must use isolated telegram SDK pools.
+  // Site orders keep using the default base pool.
+  if (telegramPrefix && deliveryType === "activation") {
+    return canonicalProductKey(`${telegramPrefix}${normalizedBase}-sdk4`);
   }
   return normalizedBase;
 }

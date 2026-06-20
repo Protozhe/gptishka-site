@@ -7,6 +7,7 @@ export type ActivationRecord = {
   email: string;
   productKey: string;
   cdk: string;
+  activationSiteUrl?: string | null;
   // Safe debug info (never store raw tokens).
   tokenMeta?: {
     kind: "raw" | "json_accessToken" | "json_sessionToken" | "json_token" | "json_unknown";
@@ -156,13 +157,24 @@ export const activationStore = {
     return result;
   },
 
-  async reserveCdkForOrder(input: { productKey: string; orderId: string; email: string; excludeCdk?: string }) {
+  async reserveCdkRecordForOrder(input: { productKey: string; activationSiteUrl?: string; orderId: string; email: string; excludeCdk?: string }) {
     const reserved = await cdkKeysStore.assignNextUnused({
       productKey: input.productKey,
+      activationSiteUrl: input.activationSiteUrl,
       orderId: input.orderId,
       email: input.email,
       excludeCode: input.excludeCdk,
     });
+    return reserved
+      ? {
+          code: reserved.code,
+          activationSiteUrl: reserved.activationSiteUrl || "",
+        }
+      : null;
+  },
+
+  async reserveCdkForOrder(input: { productKey: string; activationSiteUrl?: string; orderId: string; email: string; excludeCdk?: string }) {
+    const reserved = await this.reserveCdkRecordForOrder(input);
     return reserved?.code || null;
   },
 };

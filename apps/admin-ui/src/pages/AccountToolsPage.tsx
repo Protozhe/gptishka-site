@@ -52,10 +52,30 @@ type LookupResponse = {
     orderStatus: string | null;
     plan: string;
     source: string;
+    isActive: boolean;
     status: string;
     daysLeft: number | null;
     expiresAt: string;
+    createdAt: string;
+    updatedAt: string;
   }>;
+};
+
+type VpnAccessAdminPayload = {
+  id: string;
+  uuid: string;
+  plan: string;
+  expiresAt: string;
+  isActive: boolean;
+  accessLink: string;
+  deeplinkUrl?: string;
+  serverId?: string;
+  server?: {
+    slug?: string;
+    name?: string;
+    hostname?: string;
+    port?: number;
+  };
 };
 
 function extractApiError(error: unknown, fallback: string) {
@@ -65,6 +85,12 @@ function extractApiError(error: unknown, fallback: string) {
     (error as any)?.message ||
     fallback;
   return String(message || fallback);
+}
+
+function formatDate(value: string | null | undefined) {
+  const date = new Date(String(value || ""));
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleString("ru-RU");
 }
 
 export default function AccountToolsPage() {
@@ -82,8 +108,11 @@ export default function AccountToolsPage() {
   const [linkVpnSyncOrder, setLinkVpnSyncOrder] = useState(false);
   const [telegramTestEmail, setTelegramTestEmail] = useState("");
   const [telegramTestMessage, setTelegramTestMessage] = useState("Тест Telegram-уведомления от GPTishka.");
+  const [vpnActionDays, setVpnActionDays] = useState("30");
+  const [vpnDisableReason, setVpnDisableReason] = useState("manual_admin");
   const [statusMessage, setStatusMessage] = useState("");
   const [lookupResult, setLookupResult] = useState<LookupResponse | null>(null);
+  const [vpnDetailsById, setVpnDetailsById] = useState<Record<string, VpnAccessAdminPayload>>({});
 
   const lookupMutation = useMutation({
     mutationFn: async () => {
@@ -128,11 +157,7 @@ export default function AccountToolsPage() {
         })
       ).data,
     onSuccess: (data) => {
-      setStatusMessage(
-        data?.sent
-          ? `Ссылка отправлена: ${data.email}`
-          : `SMTP не отправил письмо для ${data?.email || magicEmail}`
-      );
+      setStatusMessage(data?.sent ? `Ссылка отправлена: ${data.email}` : `SMTP не отправил письмо для ${data?.email || magicEmail}`);
     },
     onError: (error) => {
       setStatusMessage(extractApiError(error, "Не удалось отправить magic-link"));
@@ -150,9 +175,7 @@ export default function AccountToolsPage() {
         })
       ).data,
     onSuccess: (data) => {
-      setStatusMessage(
-        `Привязка заказа ${data.orderId} выполнена. Обновлено VPN доступов: ${data.updatedVpnAccessCount}`
-      );
+      setStatusMessage(`Привязка заказа ${data.orderId} выполнена. Обновлено VPN доступов: ${data.updatedVpnAccessCount}`);
     },
     onError: (error) => {
       setStatusMessage(extractApiError(error, "Не удалось привязать заказ"));
@@ -176,9 +199,51 @@ export default function AccountToolsPage() {
     },
   });
 
+  const revealVpnMutation = useMutation({
+    mutationFn: async (id: string) => (await api.get(`/vpn/${encodeURIComponent(id)}`)).data as VpnAccessAdminPayload,
+    onSuccess: (data) => {
+      setVpnDetailsById((prev) => ({ ...prev, [data.id]: data }));
+      setStatusMessage(`VPN ключ загружен: ${data.id}`);
+    },
+    onError: (error) => {
+      setStatusMessage(extractApiError(error, "Не удалось загрузить VPN ключ"));
+    },
+  });
+
+  const extendVpnMutation = useMutation({
+    mutationFn: async ({ id, durationDays }: { id: string; durationDays: number }) =>
+      (await api.post(`/vpn/${encodeURIComponent(id)}/extend`, { durationDays })).data as { message?: string; access?: VpnAccessAdminPayload },
+    onSuccess: async (data, variables) => {
+      setStatusMessage(String(data?.message || `VPN доступ продлен: ${variables.id}`));
+      await lookupMutation.mutateAsync();
+      if (data?.access?.id) {
+        setVpnDetailsById((prev) => ({ ...prev, [data.access!.id]: data.access! }));
+      }
+    },
+    onError: (error) => {
+      setStatusMessage(extractApiError(error, "Не удалось продлить VPN доступ"));
+    },
+  });
+
+  const disableVpnMutation = useMutation({
+    mutationFn: async ({ id, reason }: { id: string; reason: string }) =>
+      (await api.post(`/vpn/${encodeURIComponent(id)}/disable`, { reason })).data as { message?: string; access?: VpnAccessAdminPayload },
+    onSuccess: async (data, variables) => {
+      setStatusMessage(String(data?.message || `VPN доступ отключен: ${variables.id}`));
+      await lookupMutation.mutateAsync();
+      if (data?.access?.id) {
+        setVpnDetailsById((prev) => ({ ...prev, [data.access!.id]: data.access! }));
+      }
+    },
+    onError: (error) => {
+      setStatusMessage(extractApiError(error, "Не удалось отключить VPN доступ"));
+    },
+  });
+
   const onLookup = (event: FormEvent) => {
     event.preventDefault();
     setStatusMessage("");
+    setVpnDetailsById({});
     lookupMutation.mutate();
   };
 
@@ -200,36 +265,35 @@ export default function AccountToolsPage() {
     linkVpnMutation.mutate();
   };
 
+  async function onRevealVpn(id: string) {
+    setStatusMessage("");
+    await revealVpnMutation.mutateAsync(id);
+  }
+
+  async function onExtendVpn(id: string) {
+    setStatusMessage("");
+    const durationDays = Math.max(1, Math.floor(Number(vpnActionDays) || 0));
+    await extendVpnMutation.mutateAsync({ id, durationDays });
+  }
+
+  async function onDisableVpn(id: string) {
+    setStatusMessage("");
+    await disableVpnMutation.mutateAsync({ id, reason: vpnDisableReason.trim() || "manual_admin" });
+  }
+
   return (
     <div className="space-y-4">
       <section className="card p-4">
         <h2 className="text-lg font-bold">Клиентский кабинет: support tools</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Поиск клиента, ручная привязка подписки и повторная отправка ссылки входа.
-        </p>
+        <p className="mt-1 text-sm text-slate-500">Поиск клиента, ручная привязка подписки, повторная отправка входа и ручное управление VPN.</p>
       </section>
 
       <section className="card p-4">
         <h3 className="text-base font-bold">Поиск клиента</h3>
         <form onSubmit={onLookup} className="mt-3 grid gap-3 md:grid-cols-3">
-          <input
-            className="input"
-            placeholder="Email"
-            value={lookupEmail}
-            onChange={(event) => setLookupEmail(event.target.value)}
-          />
-          <input
-            className="input"
-            placeholder="Order ID"
-            value={lookupOrderId}
-            onChange={(event) => setLookupOrderId(event.target.value)}
-          />
-          <input
-            className="input"
-            placeholder="VPN Access ID"
-            value={lookupVpnAccessId}
-            onChange={(event) => setLookupVpnAccessId(event.target.value)}
-          />
+          <input className="input" placeholder="Email" value={lookupEmail} onChange={(event) => setLookupEmail(event.target.value)} />
+          <input className="input" placeholder="Order ID" value={lookupOrderId} onChange={(event) => setLookupOrderId(event.target.value)} />
+          <input className="input" placeholder="VPN Access ID" value={lookupVpnAccessId} onChange={(event) => setLookupVpnAccessId(event.target.value)} />
           <button className="btn-primary md:col-span-3" disabled={lookupMutation.isPending}>
             {lookupMutation.isPending ? "Поиск..." : "Найти"}
           </button>
@@ -258,9 +322,7 @@ export default function AccountToolsPage() {
                   ? `${lookupResult.telegram.isActive ? "Активен" : "Неактивен"} ${lookupResult.telegram.telegramUsername || lookupResult.telegram.telegramId || lookupResult.telegram.telegramIdMasked}`
                   : "Не привязан"}
               </div>
-              {lookupResult.telegram?.lastError ? (
-                <div className="mt-1 text-xs text-red-600">Ошибка: {lookupResult.telegram.lastError}</div>
-              ) : null}
+              {lookupResult.telegram?.lastError ? <div className="mt-1 text-xs text-red-600">Ошибка: {lookupResult.telegram.lastError}</div> : null}
             </div>
           </div>
 
@@ -281,13 +343,55 @@ export default function AccountToolsPage() {
 
           <div>
             <div className="text-sm font-semibold">VPN доступы</div>
+            <div className="mt-2 grid gap-3 md:grid-cols-[180px_minmax(0,1fr)]">
+              <input
+                className="input"
+                type="number"
+                min={1}
+                step={1}
+                value={vpnActionDays}
+                onChange={(event) => setVpnActionDays(event.target.value)}
+                placeholder="Дней продления"
+              />
+              <input
+                className="input"
+                value={vpnDisableReason}
+                onChange={(event) => setVpnDisableReason(event.target.value)}
+                placeholder="Причина отключения"
+              />
+            </div>
             <div className="mt-2 space-y-2 text-sm">
               {lookupResult.vpnAccesses.length === 0 ? (
                 <div className="rounded-xl bg-slate-100 p-3 text-slate-500 dark:bg-slate-800">Доступы не найдены</div>
               ) : (
                 lookupResult.vpnAccesses.map((item) => (
                   <div key={item.id} className="rounded-xl bg-slate-100 p-3 dark:bg-slate-800">
-                    {item.id} - {item.plan} - {item.status} - email: {item.email || "null"} - order: {item.orderId || "null"}
+                    <div className="font-semibold">{item.id}</div>
+                    <div className="mt-1">
+                      {item.plan} - {item.status} - email: {item.email || "null"} - order: {item.orderId || "null"}
+                    </div>
+                    <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+                      Истекает: {formatDate(item.expiresAt)} · Осталось: {item.daysLeft == null ? "—" : `${item.daysLeft} дн.`}
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <button type="button" className="btn-secondary" onClick={() => void onRevealVpn(item.id)} disabled={revealVpnMutation.isPending}>
+                        Показать ключ
+                      </button>
+                      <button type="button" className="btn-secondary" onClick={() => void onExtendVpn(item.id)} disabled={extendVpnMutation.isPending}>
+                        Продлить
+                      </button>
+                      <button type="button" className="btn-secondary" onClick={() => void onDisableVpn(item.id)} disabled={disableVpnMutation.isPending}>
+                        Отключить
+                      </button>
+                    </div>
+                    {vpnDetailsById[item.id] ? (
+                      <div className="mt-3 rounded-xl bg-white p-3 text-xs text-slate-700 dark:bg-slate-950 dark:text-slate-200">
+                        <div>UUID: {vpnDetailsById[item.id].uuid}</div>
+                        <div>Сервер: {vpnDetailsById[item.id].server?.name || vpnDetailsById[item.id].serverId || "—"}</div>
+                        <div className="mt-2 break-all">Deep link: {vpnDetailsById[item.id].deeplinkUrl || "—"}</div>
+                        <div className="mt-2 break-all">Fallback VLESS: {vpnDetailsById[item.id].accessLink || "—"}</div>
+                      </div>
+                    ) : null}
                   </div>
                 ))
               )}
@@ -315,20 +419,8 @@ export default function AccountToolsPage() {
       <section className="card p-4">
         <h3 className="text-base font-bold">Повторная отправка magic-link</h3>
         <form onSubmit={onResendMagic} className="mt-3 grid gap-3 md:grid-cols-2">
-          <input
-            className="input"
-            type="email"
-            placeholder="Email"
-            value={magicEmail}
-            onChange={(event) => setMagicEmail(event.target.value)}
-            required
-          />
-          <input
-            className="input"
-            placeholder="Next path"
-            value={magicNext}
-            onChange={(event) => setMagicNext(event.target.value)}
-          />
+          <input className="input" type="email" placeholder="Email" value={magicEmail} onChange={(event) => setMagicEmail(event.target.value)} required />
+          <input className="input" placeholder="Next path" value={magicNext} onChange={(event) => setMagicNext(event.target.value)} />
           <button className="btn-primary md:col-span-2" disabled={resendMagicMutation.isPending}>
             {resendMagicMutation.isPending ? "Отправка..." : "Отправить ссылку входа"}
           </button>
@@ -353,12 +445,7 @@ export default function AccountToolsPage() {
             onChange={(event) => setTelegramTestEmail(event.target.value)}
             required
           />
-          <input
-            className="input"
-            placeholder="Текст теста"
-            value={telegramTestMessage}
-            onChange={(event) => setTelegramTestMessage(event.target.value)}
-          />
+          <input className="input" placeholder="Текст теста" value={telegramTestMessage} onChange={(event) => setTelegramTestMessage(event.target.value)} />
           <button className="btn-primary md:col-span-2" disabled={telegramTestMutation.isPending}>
             {telegramTestMutation.isPending ? "Отправка..." : "Отправить тест Telegram"}
           </button>
@@ -368,21 +455,8 @@ export default function AccountToolsPage() {
       <section className="card p-4">
         <h3 className="text-base font-bold">Привязка заказа к email</h3>
         <form onSubmit={onLinkOrder} className="mt-3 grid gap-3 md:grid-cols-2">
-          <input
-            className="input"
-            placeholder="Order ID"
-            value={linkOrderId}
-            onChange={(event) => setLinkOrderId(event.target.value)}
-            required
-          />
-          <input
-            className="input"
-            type="email"
-            placeholder="Email"
-            value={linkOrderEmail}
-            onChange={(event) => setLinkOrderEmail(event.target.value)}
-            required
-          />
+          <input className="input" placeholder="Order ID" value={linkOrderId} onChange={(event) => setLinkOrderId(event.target.value)} required />
+          <input className="input" type="email" placeholder="Email" value={linkOrderEmail} onChange={(event) => setLinkOrderEmail(event.target.value)} required />
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={linkOrderSyncOrder} onChange={(e) => setLinkOrderSyncOrder(e.target.checked)} />
             Обновить email в самом заказе
@@ -400,21 +474,8 @@ export default function AccountToolsPage() {
       <section className="card p-4">
         <h3 className="text-base font-bold">Привязка VPN доступа к email</h3>
         <form onSubmit={onLinkVpn} className="mt-3 grid gap-3 md:grid-cols-2">
-          <input
-            className="input"
-            placeholder="VPN Access ID"
-            value={linkVpnId}
-            onChange={(event) => setLinkVpnId(event.target.value)}
-            required
-          />
-          <input
-            className="input"
-            type="email"
-            placeholder="Email"
-            value={linkVpnEmail}
-            onChange={(event) => setLinkVpnEmail(event.target.value)}
-            required
-          />
+          <input className="input" placeholder="VPN Access ID" value={linkVpnId} onChange={(event) => setLinkVpnId(event.target.value)} required />
+          <input className="input" type="email" placeholder="Email" value={linkVpnEmail} onChange={(event) => setLinkVpnEmail(event.target.value)} required />
           <label className="flex items-center gap-2 text-sm md:col-span-2">
             <input type="checkbox" checked={linkVpnSyncOrder} onChange={(e) => setLinkVpnSyncOrder(e.target.checked)} />
             Если есть paid order, синхронизировать email в заказе
@@ -434,4 +495,3 @@ export default function AccountToolsPage() {
     </div>
   );
 }
-

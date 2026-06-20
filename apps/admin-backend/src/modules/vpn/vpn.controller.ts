@@ -194,7 +194,7 @@ export const getVpnMe = asyncHandler(async (req: Request, res: Response) => {
 
   if (orderId) {
     const access = await resolveVpnAccessByOrder(orderId, orderToken);
-    return res.json(toVpnMePayload(access));
+    return res.json(await toVpnMePayload(access));
   }
 
   if (telegramId) {
@@ -204,10 +204,14 @@ export const getVpnMe = asyncHandler(async (req: Request, res: Response) => {
       throw new AppError("Unauthorized", 401);
     }
     const access = await vpnService.getByTelegramId(telegramId);
-    return res.json(toVpnMePayload(access));
+    return res.json(await toVpnMePayload(access));
   }
 
   throw new AppError("Either order_id (with token) or telegramId is required", 400);
+});
+
+export const listVpnServers = asyncHandler(async (_req: Request, res: Response) => {
+  res.json(await vpnService.listPublicServers());
 });
 
 export const listVpnAccessAudit = asyncHandler(async (req: Request, res: Response) => {
@@ -295,4 +299,56 @@ export const exportVpnCsv = asyncHandler(async (req: Request, res: Response) => 
   res.setHeader("Content-Type", "text/csv; charset=utf-8");
   res.setHeader("Content-Disposition", "attachment; filename=vpn-export.csv");
   res.send(csv);
+});
+
+export const getVpnAccessAdmin = asyncHandler(async (req: Request, res: Response) => {
+  const id = String(req.params.id || "").trim();
+  if (!id) throw new AppError("VPN access id is required", 400);
+
+  const access = await prisma.vpnAccess.findUnique({
+    where: { id },
+  });
+  if (!access) throw new AppError("VPN access not found", 404);
+
+  res.json({
+    id: access.id,
+    email: access.email,
+    orderId: access.orderId,
+    source: access.source,
+    createdAt: access.createdAt,
+    updatedAt: access.updatedAt,
+    ...(await toVpnMePayload(access)),
+  });
+});
+
+export const adminExtendVpnAccess = asyncHandler(async (req: Request, res: Response) => {
+  const id = String(req.params.id || "").trim();
+  if (!id) throw new AppError("VPN access id is required", 400);
+
+  const durationDays = Number(req.body?.durationDays);
+  const plan = String(req.body?.plan || "").trim() || undefined;
+  const payload = await vpnService.extendVpnUserById(id, {
+    durationDays,
+    plan,
+  });
+
+  res.json({
+    ok: true,
+    message: `VPN доступ продлен на ${Math.max(1, Math.floor(Number(durationDays) || 0))} дн.`,
+    access: await toVpnMePayload(payload),
+  });
+});
+
+export const adminDisableVpnAccess = asyncHandler(async (req: Request, res: Response) => {
+  const id = String(req.params.id || "").trim();
+  if (!id) throw new AppError("VPN access id is required", 400);
+
+  const reason = String(req.body?.reason || "").trim() || null;
+  const payload = await vpnService.disableVpnUserById(id, reason);
+
+  res.json({
+    ok: true,
+    message: "VPN доступ отключен",
+    access: await toVpnMePayload(payload),
+  });
 });

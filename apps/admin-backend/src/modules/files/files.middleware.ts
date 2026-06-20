@@ -1,14 +1,13 @@
 import multer from "multer";
-import { AppError } from "../../common/errors/app-error";
 
-const ALLOWED_IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-const ALLOWED_IMAGE_EXTENSIONS = /\.(jpe?g|png|webp)$/i;
+const ALLOWED_IMAGE_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/svg+xml",
+]);
 
-export function isAllowedUploadedImage(file: Pick<Express.Multer.File, "mimetype" | "originalname">) {
-  const mime = String(file.mimetype || "").toLowerCase();
-  const originalName = String(file.originalname || "");
-  return ALLOWED_IMAGE_MIME_TYPES.has(mime) && ALLOWED_IMAGE_EXTENSIONS.test(originalName);
-}
+const ALLOWED_IMAGE_EXTENSIONS = /\.(jpe?g|png|webp|svg)$/i;
 
 export const imageUpload = multer({
   storage: multer.memoryStorage(),
@@ -17,10 +16,9 @@ export const imageUpload = multer({
     files: 1,
   },
   fileFilter: (_req, file, callback) => {
-    if (!isAllowedUploadedImage(file)) {
-      callback(new AppError("Unsupported image type", 400));
-      return;
-    }
-    callback(null, true);
+    const mime = String(file.mimetype || "").toLowerCase();
+    const originalName = String(file.originalname || "");
+    const isAllowed = ALLOWED_IMAGE_MIME_TYPES.has(mime) && ALLOWED_IMAGE_EXTENSIONS.test(originalName);
+    callback(null, isAllowed);
   },
 });

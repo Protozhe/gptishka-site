@@ -82,12 +82,6 @@ const envSchema = z.object({
   JWT_ACCESS_TTL: z.string().default("15m"),
   JWT_REFRESH_TTL_DAYS: z.coerce.number().int().min(1).default(30),
   REFRESH_COOKIE_NAME: z.string().default("admin_refresh_token"),
-  ADMIN_BOOTSTRAP_REGISTRATION_ENABLED: z
-    .union([z.boolean(), z.string()])
-    .transform((value) =>
-      typeof value === "boolean" ? value : ["true", "1", "yes"].includes(String(value).trim().toLowerCase())
-    )
-    .default(false),
   BCRYPT_ROUNDS: z.coerce.number().int().min(10).max(15).default(12),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(120),
@@ -112,6 +106,16 @@ const envSchema = z.object({
   ACCOUNT_NOTIFY_SCAN_INTERVAL_MS: z.coerce.number().int().min(60_000).max(60 * 60_000).default(5 * 60_000),
   ACCOUNT_NOTIFY_WINDOW_MINUTES: z.coerce.number().int().min(15).max(24 * 60).default(60),
   ACCOUNT_NOTIFY_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(20).default(5),
+  TELEGRAM_BOTS_ENABLED: z
+    .union([z.boolean(), z.string()])
+    .transform((value) => (typeof value === "boolean" ? value : String(value).toLowerCase() === "true"))
+    .default(false),
+  TELEGRAM_CLAUDE_BOT_TOKEN: z.string().optional().default(""),
+  TELEGRAM_CHATGPT_BOT_TOKEN: z.string().optional().default(""),
+  TELEGRAM_GROK_BOT_TOKEN: z.string().optional().default(""),
+  TELEGRAM_CLAUDE_PRODUCT_ID: z.string().optional().default(""),
+  TELEGRAM_CHATGPT_PRODUCT_ID: z.string().optional().default(""),
+  TELEGRAM_GROK_PRODUCT_ID: z.string().optional().default(""),
   TELEGRAM_BOT_TOKEN: z.string().optional().default(""),
   TELEGRAM_BOT_USERNAME: z.string().optional().default(""),
   TELEGRAM_WEBHOOK_SECRET: z.string().optional().default(""),
@@ -145,6 +149,14 @@ const envSchema = z.object({
   LAVA_WEBHOOK_URL: z.string().url().default("https://gptishka.shop/api/public/webhook/lava"),
   LAVA_WEBHOOK_SIGNATURE_HEADER: z.string().default("authorization"),
   LAVA_WEBHOOK_IP_ALLOWLIST: z.string().default(""),
+  LAVA_GROK_SHOP_ID: z.string().default(""),
+  LAVA_GROK_SECRET_KEY: z.string().default(""),
+  LAVA_GROK_ADDITIONAL_SECRET: z.string().default(""),
+  LAVA_GROK_WEBHOOK_SECRET: z.string().default(""),
+  LAVA_CHATGPT_SHOP_ID: z.string().default(""),
+  LAVA_CHATGPT_SECRET_KEY: z.string().default(""),
+  LAVA_CHATGPT_ADDITIONAL_SECRET: z.string().default(""),
+  LAVA_CHATGPT_WEBHOOK_SECRET: z.string().default(""),
   STORAGE_DRIVER: z.enum(["local"]).default("local"),
   // Some upstream providers bind tasks to a device id. Use a stable value.
   ACTIVATION_DEVICE_ID: z.string().optional().default("web"),
@@ -153,6 +165,8 @@ const envSchema = z.object({
   ACTIVATION_PROVIDER: z.enum(["nitro", "chongzhi"]).default("nitro"),
   ACTIVATION_CHONGZHI_BASE_URL: z.string().url().default("https://chongzhi.pro"),
   ACTIVATION_SUPPORT_BASE_URL: z.string().url().default("https://quickplus.vip/public/grok"),
+  ACTIVATION_CLAUDE_MAX20X_BASE_URL: z.string().url().default("https://quickplus.vip/public/max20x"),
+  ACTIVATION_GROK_1M_BASE_URL: z.string().url().default("https://vip.sxzfd.com/grok"),
   ACTIVATION_TOKEN_ENCRYPTION_KEY: z.string().optional().default(""),
   ACTIVATION_STORED_TOKEN_TTL_HOURS: z.coerce.number().int().min(1).max(24 * 30).default(24 * 7),
   VPN_SERVER_ID: z.string().min(2).default("eu-1"),

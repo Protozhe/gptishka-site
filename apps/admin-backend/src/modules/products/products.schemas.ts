@@ -1,6 +1,14 @@
 import { Currency } from "@prisma/client";
 import { z } from "zod";
 
+const PNG_URL_RE = /\.png(?:\?.*)?(?:#.*)?$/i;
+
+const iconPngUrlSchema = z
+  .string()
+  .max(2048)
+  .transform((value) => String(value || "").trim())
+  .refine((value) => !value || PNG_URL_RE.test(value), "iconPngUrl must reference a .png image");
+
 const pagination = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
@@ -21,21 +29,36 @@ export const productQuerySchema = pagination.extend({
   sortDir: z.enum(["asc", "desc"]).default("desc"),
 });
 
+const activationVariantSchema = z.object({
+  enabled: z.boolean().default(true),
+  price: z.coerce.number().positive(),
+  deliveryType: z.enum(["activation", "credentials", "manual_login", "vpn", "support", "support_claude"]),
+  activationSiteUrl: z.string().max(2048).optional(),
+});
+
 const productBody = z.object({
   title: z.string().min(3).max(150),
   titleEn: z.string().min(3).max(150),
+  iconPngUrl: iconPngUrlSchema.optional(),
   description: z.string().min(10).max(5000),
   descriptionEn: z.string().min(10).max(5000),
   modalDescription: z.string().max(5000).optional(),
   modalDescriptionEn: z.string().max(5000).optional(),
   price: z.coerce.number().positive(),
   oldPrice: z.coerce.number().positive().nullable().optional(),
+  activationVariants: z
+    .object({
+      withLogin: activationVariantSchema,
+      withoutLogin: activationVariantSchema,
+    })
+    .nullable()
+    .optional(),
   currency: z.nativeEnum(Currency),
   category: z.string().min(2).max(100),
   tags: z.array(z.string().min(1).max(40)).max(20).default([]),
   stock: z.coerce.number().int().min(0).nullable().optional(),
   isActive: z.boolean().default(true),
-  deliveryType: z.enum(["activation", "credentials", "vpn", "support", "support_claude"]).default("activation"),
+  deliveryType: z.enum(["activation", "credentials", "manual_login", "vpn", "support", "support_claude"]).default("activation"),
   deliveryMethod: z
     .union([
       z.literal(1),

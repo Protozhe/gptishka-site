@@ -1,10 +1,12 @@
 ﻿import { Router } from "express";
 import { validateBody, validateQuery } from "../../common/middleware/validation";
 import { allowRoles, requireAuth } from "../auth/auth.middleware";
+import { imageUpload } from "../files/files.middleware";
 import {
   bulkPriceUpdate,
   createProduct,
   deleteProductCredential,
+  deleteProductIconPng,
   deleteProduct,
   getProduct,
   importProductCredentials,
@@ -13,6 +15,7 @@ import {
   patchProductStatus,
   translateRuToEn,
   updateProduct,
+  uploadProductIconPng,
 } from "./products.controller";
 import {
   bulkPriceSchema,
@@ -34,6 +37,8 @@ productsRouter.post("/translate/ru-en", allowRoles(["OWNER", "ADMIN", "MANAGER"]
 productsRouter.get("/:id", allowRoles(["OWNER", "ADMIN", "MANAGER"]), getProduct);
 productsRouter.post("/", allowRoles(["OWNER", "ADMIN"]), validateBody(createProductSchema), createProduct);
 productsRouter.put("/:id", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateBody(updateProductSchema), updateProduct);
+productsRouter.post("/:id/icon-png", allowRoles(["OWNER", "ADMIN"]), imageUpload.single("image"), uploadProductIconPng);
+productsRouter.delete("/:id/icon-png", allowRoles(["OWNER", "ADMIN"]), deleteProductIconPng);
 productsRouter.patch("/:id/status", allowRoles(["OWNER", "ADMIN"]), validateBody(statusPatchSchema), patchProductStatus);
 productsRouter.patch("/bulk/price", allowRoles(["OWNER", "ADMIN"]), validateBody(bulkPriceSchema), bulkPriceUpdate);
 productsRouter.get("/:id/credentials", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateQuery(productCredentialsQuerySchema), listProductCredentials);

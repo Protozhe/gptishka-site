@@ -1,4 +1,5 @@
 import { LicenseKey } from "@prisma/client";
+import { normalizeActivationSiteUrl } from "../../common/utils/activation-site";
 import { canonicalProductKey } from "../../common/utils/product-key";
 import { licenseService } from "../../services/licenseService";
 
@@ -8,6 +9,7 @@ export type CdkKeyRecord = {
   id: string;
   code: string;
   productKey: string;
+  activationSiteUrl: string;
   status: CdkStatus;
   orderId?: string | null;
   email?: string | null;
@@ -22,6 +24,7 @@ function mapRow(row: LicenseKey): CdkKeyRecord {
     id: row.id,
     code: row.keyValue,
     productKey: row.productKey,
+    activationSiteUrl: row.activationSiteUrl || "",
     status,
     orderId: row.orderId || null,
     email: row.email || null,
@@ -39,8 +42,13 @@ function mapStatus(status?: CdkStatus) {
 }
 
 export const cdkKeysStore = {
-  async importCodes(input: { productKey?: string; codes: string[] }, actor?: { userId?: string }) {
-    return licenseService.importKeys(String(input.productKey || "chatgpt"), input.codes || [], actor);
+  async importCodes(input: { productKey?: string; activationSiteUrl?: string; codes: string[] }, actor?: { userId?: string }) {
+    return licenseService.importKeys(
+      String(input.productKey || "chatgpt"),
+      input.codes || [],
+      actor,
+      { activationSiteUrl: normalizeActivationSiteUrl(input.activationSiteUrl) }
+    );
   },
 
   async list(params: { status?: CdkStatus; productKey?: string; q?: string; page?: number; limit?: number }) {
@@ -75,13 +83,13 @@ export const cdkKeysStore = {
     };
   },
 
-  async assignNextUnused(input: { productKey?: string; orderId: string; email: string; excludeCode?: string }) {
+  async assignNextUnused(input: { productKey?: string; activationSiteUrl?: string; orderId: string; email: string; excludeCode?: string }) {
     const productKey = String(input.productKey || "chatgpt");
     const reserved = await licenseService.reserveKey(
       productKey,
       { orderId: input.orderId, email: input.email },
       undefined,
-      { excludeKeyValue: input.excludeCode }
+      { excludeKeyValue: input.excludeCode, activationSiteUrl: normalizeActivationSiteUrl(input.activationSiteUrl) }
     );
     return reserved ? mapRow(reserved) : null;
   },
@@ -107,5 +115,14 @@ export const cdkKeysStore = {
       return { ok: false as const, reason: "not_found" as const };
     }
     return { ok: true as const, item: mapRow(result.row) };
+  },
+
+  async removeArchived(id: string, actor?: { userId?: string }) {
+    const result = await licenseService.deleteArchived(id, actor);
+    if (!result.ok) {
+      if (result.reason === "not_archived") return { ok: false as const, reason: "not_archived" as const };
+      return { ok: false as const, reason: "not_found" as const };
+    }
+    return { ok: true as const };
   },
 };

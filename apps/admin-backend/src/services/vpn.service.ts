@@ -1,4 +1,4 @@
-import { Prisma, Product, VpnAccess } from "@prisma/client";
+import { Prisma, Product, VpnAccess, VpnServer } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { AppError } from "../common/errors/app-error";
 import { resolveProductDeliveryType } from "../common/utils/product-delivery";
@@ -32,7 +32,7 @@ const DIRECT_VPN_PLANS: Record<string, number> = {
 };
 
 const DEFAULT_VPN_DURATION_DAYS = 30;
-const DEFAULT_VPN_LIMIT_IP = 1;
+const DEFAULT_VPN_LIMIT_IP = 7;
 const XUI_COOKIE_TTL_MS = 10 * 60 * 1000;
 
 const VPN_CATALOG_DEFAULTS = [
@@ -45,7 +45,7 @@ const VPN_CATALOG_DEFAULTS = [
     modalDescription: "VLESS Reality. Подключение за 1 минуту.",
     modalDescriptionEn: "VLESS Reality. Connection in 1 minute.",
     price: 199,
-    tags: ["vpn", "delivery:vpn", "vpn:days:30", "badge:new"],
+    tags: ["vpn", "delivery:vpn", "vpn:plan:days_30", "vpn:days:30", "vpn:users:7", "badge:new"],
   },
   {
     slug: "vpn_halfyear",
@@ -56,7 +56,7 @@ const VPN_CATALOG_DEFAULTS = [
     modalDescription: "VLESS Reality. Подключение за 1 минуту.",
     modalDescriptionEn: "VLESS Reality. Connection in 1 minute.",
     price: 999,
-    tags: ["vpn", "delivery:vpn", "vpn:days:180", "badge:popular"],
+    tags: ["vpn", "delivery:vpn", "vpn:plan:days_180", "vpn:days:180", "vpn:users:7", "badge:popular"],
   },
   {
     slug: "vpn_year",
@@ -67,7 +67,7 @@ const VPN_CATALOG_DEFAULTS = [
     modalDescription: "VLESS Reality. Подключение за 1 минуту.",
     modalDescriptionEn: "VLESS Reality. Connection in 1 minute.",
     price: 1699,
-    tags: ["vpn", "delivery:vpn", "vpn:days:365", "badge:best"],
+    tags: ["vpn", "delivery:vpn", "vpn:plan:days_365", "vpn:days:365", "vpn:users:7", "badge:best"],
   },
 ] as const;
 
@@ -334,27 +334,136 @@ async function update3xUiClient(client: Record<string, unknown>) {
 
 const DEFAULT_VLESS_REALITY_NAME = "GPTishka-vpn";
 
-function resolveVlessRealityConfig() {
+type ResolvedVpnServerConfig = {
+  id: string;
+  slug: string;
+  name: string;
+  countryCode: string | null;
+  city: string | null;
+  host: string;
+  port: number;
+  sni: string;
+  fp: string;
+  sid: string;
+  pbk: string;
+  path: string;
+  accessType: string;
+  isActive: boolean;
+  isDefault: boolean;
+  sortOrder: number;
+};
+
+type GeneratedServerAccess = {
+  id: string;
+  slug: string;
+  name: string;
+  countryCode: string | null;
+  city: string | null;
+  protocol: "vless";
+  host: string;
+  port: number;
+  uuid: string;
+  security: "reality";
+  sni: string;
+  publicKey: string;
+  shortId: string;
+  fingerprint: string;
+  path: string;
+  accessType: string;
+  accessLink: string;
+};
+
+type GeneratedSubscriptionConfig = {
+  version: 1;
+  subscription: {
+    id: string;
+    name: string;
+    plan: string;
+    expiresAt: string;
+    deviceLimit: number;
+    uuid: string;
+  };
+  servers: GeneratedServerAccess[];
+};
+
+function resolveEnvFallbackServerConfig(): ResolvedVpnServerConfig {
+  const slug = normalizeServerId(env.VPN_SERVER_ID || "eu-1");
   const host = String(env.VPN_VLESS_HOST || "").trim() || "89.208.96.217";
   const port = Number(env.VPN_VLESS_PORT || 443) || 443;
   const sni = String(env.VPN_VLESS_SNI || "").trim() || "www.microsoft.com";
   const fp = String(env.VPN_VLESS_FP || "").trim() || "chrome";
   const sid = String(env.VPN_VLESS_SID || "").trim() || "7a";
   const pbk = String(env.VPN_VLESS_PBK || "").trim();
+  const path = String(env.VPN_VLESS_PATH || "").trim() || "/";
   return {
+    id: `env:${slug}`,
+    slug,
+    name: DEFAULT_VLESS_REALITY_NAME,
+    countryCode: null,
+    city: null,
     host,
     port,
     sni,
     fp,
     sid,
     pbk,
-    name: DEFAULT_VLESS_REALITY_NAME,
+    path,
+    accessType: "vless_reality",
+    isActive: true,
+    isDefault: true,
+    sortOrder: 0,
   };
 }
 
-function buildVlessRealityLink(uuid: string) {
+function mapServerRecordToConfig(server: VpnServer): ResolvedVpnServerConfig {
+  return {
+    id: server.id,
+    slug: server.slug,
+    name: server.name,
+    countryCode: server.countryCode || null,
+    city: server.city || null,
+    host: String(server.hostname || "").trim(),
+    port: Number(server.port || 443) || 443,
+    sni: String(server.sni || "").trim() || "www.microsoft.com",
+    fp: String(server.fp || "").trim() || "chrome",
+    sid: String(server.sid || "").trim() || "7a",
+    pbk: String(server.pbk || "").trim(),
+    path: String(server.path || "").trim() || "/",
+    accessType: String(server.accessType || "").trim() || "vless_reality",
+    isActive: Boolean(server.isActive),
+    isDefault: Boolean(server.isDefault),
+    sortOrder: Number(server.sortOrder || 0),
+  };
+}
+
+async function resolveVpnServerConfig(serverId?: string | null): Promise<ResolvedVpnServerConfig> {
+  const slug = normalizeServerId(serverId);
+
+  const bySlug = await prisma.vpnServer.findUnique({
+    where: { slug },
+  });
+  if (bySlug) return mapServerRecordToConfig(bySlug);
+
+  const fallbackServer = await prisma.vpnServer.findFirst({
+    where: { isActive: true },
+    orderBy: [{ isDefault: "desc" }, { sortOrder: "asc" }, { createdAt: "asc" }],
+  });
+  if (fallbackServer) return mapServerRecordToConfig(fallbackServer);
+
+  return resolveEnvFallbackServerConfig();
+}
+
+async function listActiveVpnServerConfigs(): Promise<ResolvedVpnServerConfig[]> {
+  const rows = await prisma.vpnServer.findMany({
+    where: { isActive: true },
+    orderBy: [{ isDefault: "desc" }, { sortOrder: "asc" }, { createdAt: "asc" }],
+  });
+  if (!rows.length) return [resolveEnvFallbackServerConfig()];
+  return rows.map(mapServerRecordToConfig);
+}
+
+function buildVlessRealityLink(uuid: string, cfg: ResolvedVpnServerConfig) {
   const safeUuid = String(uuid || "").trim();
-  const cfg = resolveVlessRealityConfig();
   if (!cfg.host || !cfg.sni || !cfg.pbk || !cfg.sid) {
     throw new AppError("VPN VLESS configuration is incomplete", 500);
   }
@@ -366,7 +475,7 @@ function buildVlessRealityLink(uuid: string) {
   query.set("fp", cfg.fp);
   query.set("pbk", cfg.pbk);
   query.set("sid", cfg.sid);
-  query.set("spx", String(env.VPN_VLESS_PATH || "").trim() || "/");
+  query.set("spx", cfg.path || "/");
   return `vless://${safeUuid}@${cfg.host}:${cfg.port}?${query.toString()}#${cfg.name}`;
 }
 
@@ -385,7 +494,7 @@ function normalizeVlessAccessLink(rawLink: string) {
   const raw = String(rawLink || "").trim();
   if (!raw || !/^vless:\/\//i.test(raw)) return raw;
 
-  const cfg = resolveVlessRealityConfig();
+  const cfg = resolveEnvFallbackServerConfig();
   const hashIndex = raw.indexOf("#");
   const beforeHash = hashIndex >= 0 ? raw.slice(0, hashIndex) : raw;
   const fragment = hashIndex >= 0 ? raw.slice(hashIndex) : "";
@@ -403,21 +512,21 @@ function normalizeVlessAccessLink(rawLink: string) {
     if (!query.get("fp") && cfg.fp) query.set("fp", cfg.fp);
     if (!query.get("pbk") && cfg.pbk) query.set("pbk", cfg.pbk);
     if (!query.get("sid") && cfg.sid) query.set("sid", cfg.sid);
-    if (!query.get("spx")) query.set("spx", String(env.VPN_VLESS_PATH || "").trim() || "/");
+    if (!query.get("spx")) query.set("spx", cfg.path || "/");
   }
 
   return `${prefix}?${query.toString()}${fragment}`;
 }
 
-function buildAccessLink(input: { uuid: string; plan: string; serverId: string; email: string | null }) {
+async function buildAccessLink(input: { uuid: string; plan: string; serverId: string; email: string | null }) {
   const template = String(env.VPN_ACCESS_LINK_TEMPLATE || "").trim();
+  const cfg = await resolveVpnServerConfig(input.serverId);
   if (template) {
-    const cfg = resolveVlessRealityConfig();
     const values: Record<string, string> = {
       uuid: String(input.uuid || "").trim(),
       email: String(input.email || "").trim(),
       plan: String(input.plan || "").trim(),
-      serverId: String(input.serverId || "").trim(),
+      serverId: String(cfg.slug || input.serverId || "").trim(),
       host: cfg.host,
       port: String(cfg.port),
       sni: cfg.sni,
@@ -425,6 +534,9 @@ function buildAccessLink(input: { uuid: string; plan: string; serverId: string; 
       pbk: cfg.pbk,
       sid: cfg.sid,
       name: cfg.name,
+      path: cfg.path,
+      countryCode: String(cfg.countryCode || ""),
+      city: String(cfg.city || ""),
     };
     const valuesByKey = Object.entries(values).reduce<Record<string, string>>((acc, [key, value]) => {
       acc[normalizeAccessTemplateKey(key)] = String(value || "");
@@ -444,10 +556,10 @@ function buildAccessLink(input: { uuid: string; plan: string; serverId: string; 
       return normalizeVlessAccessLink(rendered);
     }
   }
-  return normalizeVlessAccessLink(buildVlessRealityLink(input.uuid));
+  return normalizeVlessAccessLink(buildVlessRealityLink(input.uuid, cfg));
 }
 
-function resolveAccessLinkForOutput(access: VpnAccess) {
+async function resolveAccessLinkForOutput(access: VpnAccess) {
   const stored = String(access.accessLink || "").trim();
   if (stored && !hasUnresolvedUuidPlaceholder(stored)) {
     return normalizeVlessAccessLink(stored);
@@ -458,6 +570,62 @@ function resolveAccessLinkForOutput(access: VpnAccess) {
     serverId: access.serverId,
     email: access.email || null,
   });
+}
+
+function buildVpnSubscriptionName(plan: string) {
+  const normalized = String(plan || "").trim();
+  return normalized ? `GPTishka VPN (${normalized})` : "GPTishka VPN";
+}
+
+function encodeVpnConfigDeepLink(config: GeneratedSubscriptionConfig) {
+  const encoded = Buffer.from(JSON.stringify(config), "utf-8").toString("base64url");
+  return `vpn:///${encoded}`;
+}
+
+async function buildVpnSubscriptionConfig(access: VpnAccess): Promise<{
+  config: GeneratedSubscriptionConfig;
+  deepLinkUrl: string;
+}> {
+  const servers = await listActiveVpnServerConfigs();
+  const generatedServers = servers
+    .filter((server) => server.host && server.pbk && server.sid && server.sni)
+    .map<GeneratedServerAccess>((server) => ({
+      id: server.id,
+      slug: server.slug,
+      name: server.name,
+      countryCode: server.countryCode,
+      city: server.city,
+      protocol: "vless",
+      host: server.host,
+      port: server.port,
+      uuid: access.uuid,
+      security: "reality",
+      sni: server.sni,
+      publicKey: server.pbk,
+      shortId: server.sid,
+      fingerprint: server.fp || "chrome",
+      path: server.path || "/",
+      accessType: server.accessType,
+      accessLink: normalizeVlessAccessLink(buildVlessRealityLink(access.uuid, server)),
+    }));
+
+  const config: GeneratedSubscriptionConfig = {
+    version: 1,
+    subscription: {
+      id: access.id,
+      name: buildVpnSubscriptionName(access.plan),
+      plan: access.plan,
+      expiresAt: access.expiresAt.toISOString(),
+      deviceLimit: DEFAULT_VPN_LIMIT_IP,
+      uuid: access.uuid,
+    },
+    servers: generatedServers,
+  };
+
+  return {
+    config,
+    deepLinkUrl: encodeVpnConfigDeepLink(config),
+  };
 }
 
 function isAccessActiveNow(access: Pick<VpnAccess, "isActive" | "expiresAt">) {
@@ -490,12 +658,30 @@ async function writeVpnEvent(params: {
   }
 }
 
-export function toVpnMePayload(access: VpnAccess) {
+export async function toVpnMePayload(access: VpnAccess) {
+  const accessLink = await resolveAccessLinkForOutput(access);
+  const server = await resolveVpnServerConfig(access.serverId);
+  const subscription = await buildVpnSubscriptionConfig(access);
   return {
     uuid: access.uuid,
-    accessLink: resolveAccessLinkForOutput(access),
+    accessLink,
+    deeplinkUrl: subscription.deepLinkUrl,
+    subscriptionConfig: subscription.config,
+    servers: subscription.config.servers,
     expiresAt: access.expiresAt,
     plan: access.plan,
+    serverId: access.serverId,
+    server: {
+      id: server.id,
+      slug: server.slug,
+      name: server.name,
+      countryCode: server.countryCode,
+      city: server.city,
+      hostname: server.host,
+      port: server.port,
+      accessType: server.accessType,
+      isDefault: server.isDefault,
+    },
     trafficUsedBytes: trafficToNumber(access.trafficUsedBytes),
     isActive: isAccessActiveNow(access),
   };
@@ -513,7 +699,10 @@ export function resolveVpnProvisionPayload(product: Pick<Product, "slug" | "tags
   const plan = normalizePlan(taggedPlan || (isPrimaryVpnDelivery ? slug : "vpn_month") || "vpn_month") || "vpn_month";
   const directDays = slug ? DIRECT_VPN_PLANS[slug] : 0;
   const durationDays = toPositiveDays(parseDaysTag(tags) || DIRECT_VPN_PLANS[plan] || directDays, DEFAULT_VPN_DURATION_DAYS);
-  const limitIp = toLimitIp(parseLimitIpTag(tags), DEFAULT_VPN_LIMIT_IP);
+  const parsedLimitIp = parseLimitIpTag(tags);
+  const normalizedLimitIp = toLimitIp(parsedLimitIp, DEFAULT_VPN_LIMIT_IP);
+  // Enforce product baseline: at least 7 devices by default (0 stays unlimited).
+  const limitIp = normalizedLimitIp === 0 ? 0 : Math.max(DEFAULT_VPN_LIMIT_IP, normalizedLimitIp);
   const source: VpnSource = isPrimaryVpnDelivery ? "vpn" : "bundle";
 
   return {
@@ -586,6 +775,63 @@ export const vpnService = {
     }
   },
 
+  async ensureVpnServerCatalog() {
+    const fallback = resolveEnvFallbackServerConfig();
+    await prisma.vpnServer.upsert({
+      where: { slug: fallback.slug },
+      create: {
+        slug: fallback.slug,
+        name: fallback.name,
+        countryCode: fallback.countryCode,
+        city: fallback.city,
+        hostname: fallback.host,
+        port: fallback.port,
+        sni: fallback.sni,
+        fp: fallback.fp,
+        pbk: fallback.pbk,
+        sid: fallback.sid,
+        path: fallback.path,
+        accessType: fallback.accessType,
+        isActive: true,
+        isDefault: true,
+        sortOrder: 0,
+      },
+      update: {
+        hostname: fallback.host,
+        port: fallback.port,
+        sni: fallback.sni,
+        fp: fallback.fp,
+        pbk: fallback.pbk,
+        sid: fallback.sid,
+        path: fallback.path,
+        accessType: fallback.accessType,
+        isActive: true,
+      },
+    });
+  },
+
+  async listPublicServers() {
+    const rows = await prisma.vpnServer.findMany({
+      where: { isActive: true },
+      orderBy: [{ isDefault: "desc" }, { sortOrder: "asc" }, { name: "asc" }],
+    });
+
+    const source = rows.length ? rows.map(mapServerRecordToConfig) : [resolveEnvFallbackServerConfig()];
+    return {
+      items: source.map((server) => ({
+        id: server.id,
+        slug: server.slug,
+        name: server.name,
+        countryCode: server.countryCode,
+        city: server.city,
+        hostname: server.host,
+        port: server.port,
+        accessType: server.accessType,
+        isDefault: server.isDefault,
+      })),
+    };
+  },
+
   async createVpnUser(input: CreateVpnUserInput) {
     const orderId = String(input.orderId || "").trim() || null;
     const email = normalizeEmail(input.email);
@@ -626,7 +872,7 @@ export const vpnService = {
           orderId: orderId || existing.orderId || null,
           email: email || existing.email || null,
           telegramId: telegramId || existing.telegramId || null,
-          accessLink: buildAccessLink({
+          accessLink: await buildAccessLink({
             uuid: existing.uuid,
             plan,
             serverId,
@@ -661,7 +907,7 @@ export const vpnService = {
     const uuid = randomUUID();
     const expiresAt = addDays(new Date(), durationDays);
     const clientEmail = deriveClientEmail(email, telegramId, plan, uuid);
-    const accessLink = buildAccessLink({ uuid, plan, serverId, email });
+    const accessLink = await buildAccessLink({ uuid, plan, serverId, email });
     const client = build3xUiClientPayload({
       uuid,
       clientEmail,
@@ -746,6 +992,119 @@ export const vpnService = {
       vpnAccessId: updated.id,
       telegramId: updated.telegramId,
       meta: { reason: String(input.reason || "").trim() || null },
+    });
+
+    return updated;
+  },
+
+  async disableVpnUserById(id: string, reason?: string | null) {
+    const vpnAccessId = String(id || "").trim();
+    if (!vpnAccessId) {
+      throw new AppError("VPN access id is required", 400);
+    }
+
+    const row = await prisma.vpnAccess.findUnique({
+      where: { id: vpnAccessId },
+    });
+    if (!row) {
+      throw new AppError("VPN access not found", 404);
+    }
+
+    const clientEmail = deriveClientEmail(row.email, row.telegramId, row.plan, row.uuid);
+    const client = build3xUiClientPayload({
+      uuid: row.uuid,
+      clientEmail,
+      telegramId: row.telegramId,
+      expiresAt: row.expiresAt,
+      enabled: false,
+      limitIp: DEFAULT_VPN_LIMIT_IP,
+    });
+    await update3xUiClient(client);
+
+    const updated = await prisma.vpnAccess.update({
+      where: { id: row.id },
+      data: {
+        isActive: false,
+        disabledAt: new Date(),
+      },
+    });
+
+    await writeVpnEvent({
+      eventType: "disable",
+      vpnAccessId: updated.id,
+      telegramId: updated.telegramId,
+      meta: { reason: String(reason || "").trim() || null, mode: "admin_by_id" },
+    });
+
+    return updated;
+  },
+
+  async extendVpnUserById(
+    id: string,
+    options?: { durationDays?: number; plan?: string; source?: VpnSource; serverId?: string; limitIp?: number }
+  ) {
+    const vpnAccessId = String(id || "").trim();
+    if (!vpnAccessId) {
+      throw new AppError("VPN access id is required", 400);
+    }
+
+    const existing = await prisma.vpnAccess.findUnique({
+      where: { id: vpnAccessId },
+    });
+    if (!existing) {
+      throw new AppError("VPN access not found", 404);
+    }
+
+    const durationDays = toPositiveDays(options?.durationDays, DEFAULT_VPN_DURATION_DAYS);
+    const plan = normalizePlan(options?.plan) || existing.plan;
+    const source = options?.source || (existing.source === "bundle" ? "bundle" : "vpn");
+    const serverId = options?.serverId || existing.serverId;
+    const limitIp = toLimitIp(options?.limitIp, DEFAULT_VPN_LIMIT_IP);
+
+    const base = existing.expiresAt.getTime() > Date.now() ? existing.expiresAt : new Date();
+    const expiresAt = addDays(base, durationDays);
+    const clientEmail = deriveClientEmail(existing.email, existing.telegramId, plan, existing.uuid);
+    const client = build3xUiClientPayload({
+      uuid: existing.uuid,
+      clientEmail,
+      telegramId: existing.telegramId,
+      expiresAt,
+      enabled: true,
+      limitIp,
+    });
+
+    await update3xUiClient(client);
+
+    const updated = await prisma.vpnAccess.update({
+      where: { id: existing.id },
+      data: {
+        accessLink: await buildAccessLink({
+          uuid: existing.uuid,
+          plan,
+          serverId,
+          email: existing.email || null,
+        }),
+        plan,
+        source,
+        serverId,
+        expiresAt,
+        isActive: true,
+        disabledAt: null,
+      },
+    });
+
+    await writeVpnEvent({
+      eventType: "extend",
+      vpnAccessId: updated.id,
+      telegramId: updated.telegramId,
+      meta: {
+        durationDays,
+        plan,
+        source,
+        serverId,
+        limitIp,
+        mode: "admin_by_id",
+      },
     });
 
     return updated;

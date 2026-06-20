@@ -2,6 +2,8 @@ import crypto from "crypto";
 import { env } from "../../../config/env";
 import { AppError } from "../../../common/errors/app-error";
 import { PaymentProvider, PaymentCreateInput } from "../payment-provider";
+import { resolveLavaCredentials } from "../lava.credentials";
+import { buildPaymentReturnUrls } from "../payment-return-url";
 
 type LavaCreateResponse = {
   status_check?: boolean;
@@ -38,24 +40,15 @@ export class LavaProvider implements PaymentProvider {
   }
 
   async createPayment(input: PaymentCreateInput) {
-    const secretKey = String(env.LAVA_SECRET_KEY || "").trim();
-    const shopId = String(env.LAVA_SHOP_ID || "").trim();
-    if (!secretKey || !shopId) {
+    const credentials = resolveLavaCredentials({ botType: input.metadata?.botType });
+    if (!credentials) {
       throw new AppError("Lava payment gateway is not configured", 500);
     }
 
-    const successUrl = new URL(env.PAYMENT_SUCCESS_URL);
-    successUrl.searchParams.set("order_id", input.orderId);
-    const failUrl = new URL(env.PAYMENT_FAIL_URL);
-    failUrl.searchParams.set("order_id", input.orderId);
-    const redeemToken = typeof input.metadata?.redeemToken === "string" ? input.metadata.redeemToken.trim() : "";
-    if (redeemToken) {
-      successUrl.searchParams.set("t", redeemToken);
-      failUrl.searchParams.set("t", redeemToken);
-    }
+    const { successUrl, failUrl } = buildPaymentReturnUrls(input);
 
     const payload = {
-      shopId,
+      shopId: credentials.shopId,
       sum: Number(input.amount.toFixed(2)),
       orderId: String(input.orderId),
       hookUrl: env.LAVA_WEBHOOK_URL,
@@ -64,7 +57,7 @@ export class LavaProvider implements PaymentProvider {
       expire: 60 * 30,
       comment: String(input.description || "").trim().slice(0, 240) || undefined,
     };
-    const signature = signLavaPayload(payload, secretKey);
+    const signature = signLavaPayload(payload, credentials.secretKey);
 
     const response = await fetch(this.buildUrl(env.LAVA_CREATE_PATH), {
       method: "POST",

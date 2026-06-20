@@ -5,20 +5,24 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminLayout } from "./layout/AdminLayout";
-import LoginPage from "./pages/LoginPage";
-import DashboardPage from "./pages/DashboardPage";
-import ProductsPage from "./pages/ProductsPage";
-import OrdersPage from "./pages/OrdersPage";
-import AuditPage from "./pages/AuditPage";
-import PromoCodesPage from "./pages/PromoCodesPage";
-import UsersPage from "./pages/UsersPage";
-import PartnersPage from "./pages/PartnersPage";
-import PartnerEarningsPage from "./pages/PartnerEarningsPage";
-import CdkKeysPage from "./pages/CdkKeysPage";
-import StorefrontTickerPage from "./pages/StorefrontTickerPage";
-import NotificationsPage from "./pages/NotificationsPage";
-import AccountToolsPage from "./pages/AccountToolsPage";
 import "./styles/index.css";
+
+const LoginPage = React.lazy(() => import("./pages/LoginPage"));
+const DashboardPage = React.lazy(() => import("./pages/DashboardPage"));
+const ProductsPage = React.lazy(() => import("./pages/ProductsPage"));
+const ShowcasePage = React.lazy(() => import("./pages/ShowcasePage"));
+const OrdersPage = React.lazy(() => import("./pages/OrdersPage"));
+const AuditPage = React.lazy(() => import("./pages/AuditPage"));
+const PromoCodesPage = React.lazy(() => import("./pages/PromoCodesPage"));
+const UsersPage = React.lazy(() => import("./pages/UsersPage"));
+const PartnersPage = React.lazy(() => import("./pages/PartnersPage"));
+const PartnerEarningsPage = React.lazy(() => import("./pages/PartnerEarningsPage"));
+const CdkKeysPage = React.lazy(() => import("./pages/CdkKeysPage"));
+const StorefrontTickerPage = React.lazy(() => import("./pages/StorefrontTickerPage"));
+const NotificationsPage = React.lazy(() => import("./pages/NotificationsPage"));
+const AccountToolsPage = React.lazy(() => import("./pages/AccountToolsPage"));
+const TelegramBotsPage = React.lazy(() => import("./pages/TelegramBotsPage"));
+const TelegramCdkPage = React.lazy(() => import("./pages/TelegramCdkPage"));
 
 const queryClient = new QueryClient();
 const routerBaseEnv = import.meta.env.VITE_ADMIN_BASE_PATH as string | undefined;
@@ -61,26 +65,31 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <BrowserRouter basename={routerBase}>
-            <Routes>
-              <Route path="login" element={<LoginPage />} />
-              <Route element={<ProtectedRoute />}>
-                <Route element={<AdminLayout />}>
-                  <Route index element={<DashboardPage />} />
-                  <Route path="products" element={<ProductsPage />} />
-                  <Route path="orders" element={<OrdersPage />} />
-                  <Route path="storefront" element={<StorefrontTickerPage />} />
-                  <Route path="audit" element={<AuditPage />} />
-                  <Route path="promocodes" element={<PromoCodesPage />} />
-                  <Route path="partners" element={<PartnersPage />} />
-                  <Route path="partner-earnings" element={<PartnerEarningsPage />} />
-                  <Route path="users" element={<UsersPage />} />
-                  <Route path="cdks" element={<CdkKeysPage />} />
-                  <Route path="notifications" element={<NotificationsPage />} />
-                  <Route path="account-tools" element={<AccountToolsPage />} />
+            <React.Suspense fallback={<div style={{ padding: 24, fontFamily: "system-ui, sans-serif" }}>Loading...</div>}>
+              <Routes>
+                <Route path="login" element={<LoginPage />} />
+                <Route element={<ProtectedRoute />}>
+                  <Route element={<AdminLayout />}>
+                    <Route index element={<DashboardPage />} />
+                    <Route path="products" element={<ProductsPage />} />
+                    <Route path="showcase" element={<ShowcasePage />} />
+                    <Route path="orders" element={<OrdersPage />} />
+                    <Route path="storefront" element={<StorefrontTickerPage />} />
+                    <Route path="audit" element={<AuditPage />} />
+                    <Route path="promocodes" element={<PromoCodesPage />} />
+                    <Route path="partners" element={<PartnersPage />} />
+                    <Route path="partner-earnings" element={<PartnerEarningsPage />} />
+                    <Route path="users" element={<UsersPage />} />
+                    <Route path="cdks" element={<CdkKeysPage />} />
+                    <Route path="notifications" element={<NotificationsPage />} />
+                    <Route path="account-tools" element={<AccountToolsPage />} />
+                    <Route path="telegram-bots" element={<TelegramBotsPage />} />
+                    <Route path="telegram-cdks" element={<TelegramCdkPage />} />
+                  </Route>
                 </Route>
-              </Route>
-              <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
+                <Route path="*" element={<Navigate to="/login" replace />} />
+              </Routes>
+            </React.Suspense>
           </BrowserRouter>
         </AuthProvider>
       </QueryClientProvider>

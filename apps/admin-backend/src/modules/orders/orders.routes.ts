@@ -9,6 +9,7 @@ import {
   getOrderActivationToken,
   getOrder,
   listOrders,
+  manuallyCompleteOrderActivation,
   manualConfirmOrder,
   refundOrder,
   updateStorefrontTickerSettings,
@@ -39,6 +40,7 @@ ordersRouter.patch(
 );
 ordersRouter.get("/:id/activation-proof", allowRoles(["OWNER", "ADMIN", "MANAGER", "SUPPORT"]), getOrderActivationProof);
 ordersRouter.get("/:id/activation-token", allowRoles(["OWNER", "ADMIN", "SUPPORT"]), getOrderActivationToken);
+ordersRouter.post("/:id/activation/manual-complete", allowRoles(["OWNER", "ADMIN", "SUPPORT"]), manuallyCompleteOrderActivation);
 ordersRouter.get("/:id", allowRoles(["OWNER", "ADMIN", "MANAGER"]), getOrder);
 ordersRouter.patch("/:id/status", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateBody(updateOrderStatusSchema), updateOrderStatus);
 ordersRouter.post("/:id/manual-confirm", allowRoles(["OWNER", "ADMIN"]), validateBody(manualConfirmSchema), manualConfirmOrder);

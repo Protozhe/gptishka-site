@@ -16,6 +16,7 @@ const listSchema = z.object({
 
 const importSchema = z.object({
   productKey: z.string().default("chatgpt"),
+  activationSiteUrl: z.string().max(2048).optional(),
   codes: z.array(z.string()).optional(),
   text: z.string().optional(),
 });
@@ -59,6 +60,7 @@ cdkKeysRouter.post(
     const result = await cdkKeysStore.importCodes(
       {
         productKey: body.productKey,
+        activationSiteUrl: body.activationSiteUrl,
         codes: parseCodes(body),
       },
       { userId: req.auth?.userId }
@@ -102,6 +104,21 @@ cdkKeysRouter.delete(
     if (!result.ok) {
       if (result.reason === "not_unused") {
         return res.status(409).json({ message: "Only unused CDK keys can be archived" });
+      }
+      return res.status(404).json({ message: "CDK key not found" });
+    }
+    res.status(204).send();
+  })
+);
+
+cdkKeysRouter.delete(
+  "/:id/permanent",
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.id || "");
+    const result = await cdkKeysStore.removeArchived(id, { userId: req.auth?.userId });
+    if (!result.ok) {
+      if (result.reason === "not_archived") {
+        return res.status(409).json({ message: "Only archived CDK keys can be permanently deleted" });
       }
       return res.status(404).json({ message: "CDK key not found" });
     }

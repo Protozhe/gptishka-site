@@ -1,6 +1,7 @@
 import { env } from "../../../config/env";
 import { AppError } from "../../../common/errors/app-error";
 import { PaymentProvider, PaymentCreateInput } from "../payment-provider";
+import { buildPaymentReturnUrls } from "../payment-return-url";
 
 type GatewayCreateResponse = {
   status_check?: boolean;
@@ -38,15 +39,7 @@ export class GatewayProvider implements PaymentProvider {
       throw new AppError("Payment gateway is not configured", 500);
     }
 
-    const successUrl = new URL(env.PAYMENT_SUCCESS_URL);
-    successUrl.searchParams.set("order_id", input.orderId);
-    const failUrl = new URL(env.PAYMENT_FAIL_URL);
-    failUrl.searchParams.set("order_id", input.orderId);
-    const redeemToken = typeof input.metadata?.redeemToken === "string" ? input.metadata.redeemToken.trim() : "";
-    if (redeemToken) {
-      successUrl.searchParams.set("t", redeemToken);
-      failUrl.searchParams.set("t", redeemToken);
-    }
+    const { successUrl, failUrl } = buildPaymentReturnUrls(input);
 
     const customFields = { ...(input.metadata || {}) } as any;
     // Do not store link secrets in payment provider metadata.
