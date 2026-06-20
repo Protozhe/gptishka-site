@@ -830,7 +830,7 @@ function initActivationResumeShortcut() {
       displayName: "GPTishka VPN",
       fallbackTitle: "GPTishka VPN",
       fallbackPlan: "1m",
-      logo: "/assets/img/services/vpn-card.png?v=20260619-vpn-service1",
+      logo: "/assets/img/services/vpn-card.png?v=20260620-vpn-card1",
     },
   };
   let cards = [];
@@ -2943,8 +2943,8 @@ function initActivationResumeShortcut() {
       '<div class="ai-directory-grid ai-directory-grid--vpn">' +
         '<article class="ai-directory-card ai-directory-card--vpn">' +
           '<a class="ai-directory-card__media has-hover" href="/store/vpn" aria-label="' + escapeHtml(title) + '">' +
-            '<img class="ai-directory-card__image ai-directory-card__image--primary" src="/assets/img/services/vpn-card.png" alt="' + escapeHtml(title) + '" loading="lazy" decoding="async">' +
-            '<img class="ai-directory-card__image ai-directory-card__image--hover" src="/assets/img/services/vpn-card-hover.png" alt="' + escapeHtml(title) + '" loading="lazy" decoding="async">' +
+            '<img class="ai-directory-card__image ai-directory-card__image--primary" src="/assets/img/services/vpn-card.png?v=20260620-vpn-card1" alt="' + escapeHtml(title) + '" loading="lazy" decoding="async">' +
+            '<img class="ai-directory-card__image ai-directory-card__image--hover" src="/assets/img/services/vpn-card-hover.png?v=20260620-vpn-card1" alt="' + escapeHtml(title) + '" loading="lazy" decoding="async">' +
           "</a>" +
           '<div class="ai-directory-card__body">' +
             '<div class="ai-directory-card__top">' +

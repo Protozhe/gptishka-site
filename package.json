@@ -20,7 +20,7 @@
     "deploy:admin:init": "npm run prisma:deploy --workspace @gptishka/admin-backend && npm run seed --workspace @gptishka/admin-backend",
     "bootstrap:admin:user": "npm run bootstrap:user --workspace @gptishka/admin-backend",
     "test:admin:api": "npm run test --workspace @gptishka/admin-backend",
-    "test:security": "node --test server/security-headers.test.js server/ticker.test.js server/service-routes.test.js && npm run test:security --workspace @gptishka/admin-backend && npm run security:scan",
+    "test:security": "node --test server/security-headers.test.js server/ticker.test.js server/service-routes.test.js server/static-assets.test.js && npm run test:security --workspace @gptishka/admin-backend && npm run security:scan",
     "security:scan": "node scripts/security-scan.mjs"
   },
   "dependencies": {
