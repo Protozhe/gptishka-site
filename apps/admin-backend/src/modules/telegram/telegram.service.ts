@@ -23,6 +23,7 @@ function extractTextMessage(update: any) {
   const from = message.from || {};
   return {
     chatId: String(message.chat?.id || "").trim(),
+    chatType: String(message.chat?.type || "").trim(),
     text,
     telegramId: String(from.id || "").trim(),
     telegramUsername: String(from.username || "").trim() || null,
@@ -44,6 +45,18 @@ function isStartCommand(text: string) {
 
 function isCommand(text: string, command: string) {
   return new RegExp(`^/${command}(?:@\\w+)?(?:\\s|$)`, "i").test(String(text || "").trim());
+}
+
+function isPrivateChat(message: ReturnType<typeof extractTextMessage>) {
+  return String(message?.chatType || "").trim().toLowerCase() === "private";
+}
+
+async function sendPrivateChatRequired(message: NonNullable<ReturnType<typeof extractTextMessage>>) {
+  await telegramSender.sendTextMessage({
+    telegramId: getSendTelegramId(message),
+    text: "Для безопасности откройте бота в личном чате и повторите команду.",
+  });
+  return { handled: true, action: "telegram_private_chat_required" };
 }
 
 function parseCheckCommand(text: string) {
@@ -150,6 +163,7 @@ export const telegramService = {
     if (!message) return { handled: false, reason: "no_text_message" };
 
     if (isCommand(message.text, "orders")) {
+      if (!isPrivateChat(message)) return sendPrivateChatRequired(message);
       const ctx = buildOrderContext(message);
       const orders = await telegramOrdersService.listOrders(ctx);
       await telegramSender.sendLongTextMessage({
@@ -160,6 +174,7 @@ export const telegramService = {
     }
 
     if (isCommand(message.text, "check")) {
+      if (!isPrivateChat(message)) return sendPrivateChatRequired(message);
       const orderId = parseCheckCommand(message.text);
       if (!orderId) {
         await telegramSender.sendTextMessage({
@@ -185,6 +200,7 @@ export const telegramService = {
     }
 
     if (isCommand(message.text, "token")) {
+      if (!isPrivateChat(message)) return sendPrivateChatRequired(message);
       const parsed = parseTokenCommand(message.text);
       if (!parsed) {
         await telegramSender.sendTextMessage({
@@ -253,7 +269,7 @@ export const telegramService = {
         if (error instanceof AppError && error.statusCode >= 400 && error.statusCode < 500) {
           return { handled: true, action: "telegram_order_token_failed", reason: error.message };
         }
-        throw error;
+        return { handled: true, action: "telegram_order_token_failed", reason: "activation_failed" };
       }
     }
 
@@ -317,6 +333,7 @@ export const telegramService = {
 
     const parsedSiteOrderPayload = parseSiteOrderStartPayload(startPayload);
     if (parsedSiteOrderPayload) {
+      if (!isPrivateChat(message)) return sendPrivateChatRequired(message);
       const ctx = buildOrderContext(message);
       try {
         const linked = await telegramOrdersService.linkSiteOrderToTelegram({
