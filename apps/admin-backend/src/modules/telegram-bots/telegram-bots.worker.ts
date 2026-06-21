@@ -463,6 +463,7 @@ async function sendRefundPolicy(client: TelegramApiClient, ctx: OrderUserContext
   return sendLongMessage(client, ctx.chatId, readLegalDocument(claudeRefundPath, "РџРѕР»РёС‚РёРєР° РІРѕР·РІСЂР°С‚Р° РІСЂРµРјРµРЅРЅРѕ РЅРµРґРѕСЃС‚СѓРїРЅР°. РћР±СЂР°С‚РёС‚РµСЃСЊ РІ РїРѕРґРґРµСЂР¶РєСѓ."), keyboardDocs());
 }
 async function sendPrePaymentAgreement(client: TelegramApiClient, ctx: OrderUserContext) {
+  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
   await logEvent("prepayment_agreement", ctx);
   updateUserSession(ctx, { pendingPromoInput: false });
   const session = getUserSession(ctx);
@@ -490,6 +491,7 @@ async function sendPrePaymentAgreement(client: TelegramApiClient, ctx: OrderUser
   );
 }
 async function sendPromoPrompt(client: TelegramApiClient, ctx: OrderUserContext) {
+  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
   updateUserSession(ctx, { pendingPromoInput: true });
   await logEvent("promo_prompt", ctx);
   return client.sendMessage(
@@ -499,6 +501,7 @@ async function sendPromoPrompt(client: TelegramApiClient, ctx: OrderUserContext)
   );
 }
 async function handlePromoInput(client: TelegramApiClient, ctx: OrderUserContext, rawCode: string) {
+  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
   const promoCode = normalizePromoCodeInput(rawCode);
   if (!promoCode || promoCode.length < 2) {
     await logEvent("promo_rejected", { ...ctx, meta: { reason: "empty_or_short" } });
@@ -704,6 +707,7 @@ async function handleToken(client: TelegramApiClient, ctx: OrderUserContext, tex
   }
 }
 async function handleBuy(client: TelegramApiClient, config: BotConfig, ctx: OrderUserContext) {
+  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
   const session = getUserSession(ctx);
   const promoCode = normalizePromoCodeInput(session.promoCode || "") || undefined;
   updateUserSession(ctx, { pendingPromoInput: false });
@@ -757,7 +761,7 @@ async function processUpdate(client: TelegramApiClient, config: BotConfig, updat
     if (/^\/start/i.test(text)) {
       const parsed = parseStartPayload(text);
       const isSiteOrderStart = Boolean(parseSiteOrderStartPayload(parsed.payload));
-      if (isSiteOrderStart && !isPrivateOrderChat(ctx)) return handleSiteOrderStartPayload(client, ctx, parsed.payload);
+      if (isSiteOrderStart) return handleSiteOrderStartPayload(client, ctx, parsed.payload);
       updateUserSession(ctx, { pendingPromoInput: false });
       await logEvent("lead_captured", {
         ...ctx,
@@ -820,9 +824,12 @@ async function processUpdate(client: TelegramApiClient, config: BotConfig, updat
       else if (action === "agree_buy") await handleBuy(client, config, ctx);
       else if (action === "promo_prompt") await sendPromoPrompt(client, ctx);
       else if (action === "promo_clear") {
-        updateUserSession(ctx, { pendingPromoInput: false, promoCode: null });
-        await logEvent("promo_cleared", ctx);
-        await sendPrePaymentAgreement(client, ctx);
+        if (!isPrivateOrderChat(ctx)) await sendPrivateChatRequired(client, ctx);
+        else {
+          updateUserSession(ctx, { pendingPromoInput: false, promoCode: null });
+          await logEvent("promo_cleared", ctx);
+          await sendPrePaymentAgreement(client, ctx);
+        }
       }
       else if (action === "my_orders") await sendOrders(client, ctx);
       else if (action === "reviews") await sendReviews(client, ctx);
