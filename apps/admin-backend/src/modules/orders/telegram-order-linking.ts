@@ -7,10 +7,17 @@ const PROOF_RE = /^[A-Za-z0-9_-]{32}$/;
 const LEGACY_TOKEN_RE = /^[A-Za-z0-9_-]{16,32}$/;
 const SHA256_HEX_RE = /^[a-fA-F0-9]{64}$/;
 
-export type SiteOrderStartPayload = {
-  orderId: string;
-  orderToken: string;
-};
+export type SiteOrderStartPayload =
+  | {
+      kind: "compact-proof";
+      orderId: string;
+      proof: string;
+    }
+  | {
+      kind: "legacy-token";
+      orderId: string;
+      orderToken: string;
+    };
 
 export function normalizeTelegramIdForOrder(value: unknown) {
   const normalized = String(value || "")
@@ -67,15 +74,17 @@ export function verifyTelegramOrderLinkProof(input: {
   redeemTokenHash?: string | null;
   providedProof?: string | null;
 }) {
+  const orderId = String(input.orderId || "").trim();
   const redeemTokenHash = String(input.redeemTokenHash || "").trim();
   const providedProof = String(input.providedProof || "").trim();
   if (!redeemTokenHash || !SHA256_HEX_RE.test(redeemTokenHash)) {
     throw new AppError("Order does not support Telegram linking", 409);
   }
   if (!providedProof) throw new AppError("Order link token is required", 401);
+  if (!ORDER_ID_RE.test(orderId)) throw new AppError("Invalid order link token", 403);
 
   const expectedProof = buildTelegramOrderLinkProof({
-    orderId: String(input.orderId || "").trim(),
+    orderId,
     redeemTokenHash,
   });
   if (providedProof.length !== expectedProof.length || !PROOF_RE.test(providedProof)) {
@@ -93,17 +102,31 @@ export function parseSiteOrderStartPayload(payload: unknown): SiteOrderStartPayl
   const compactMatch = raw.match(/^o_([a-zA-Z0-9]{8,32})_([a-zA-Z0-9_-]{32})$/);
   if (compactMatch) {
     return {
+      kind: "compact-proof",
       orderId: String(compactMatch[1] || "").trim(),
-      orderToken: String(compactMatch[2] || "").trim(),
+      proof: String(compactMatch[2] || "").trim(),
     };
   }
 
   const match = raw.match(/^order_([a-zA-Z0-9]{8,32})_([a-zA-Z0-9_-]{16,32})$/);
   if (!match || !LEGACY_TOKEN_RE.test(String(match[2] || ""))) return null;
   return {
+    kind: "legacy-token",
     orderId: String(match[1] || "").trim(),
     orderToken: String(match[2] || "").trim(),
   };
+}
+
+export function isCompactTelegramOrderPayload(
+  payload: SiteOrderStartPayload | null
+): payload is Extract<SiteOrderStartPayload, { kind: "compact-proof" }> {
+  return payload?.kind === "compact-proof";
+}
+
+export function isLegacyTelegramOrderPayload(
+  payload: SiteOrderStartPayload | null
+): payload is Extract<SiteOrderStartPayload, { kind: "legacy-token" }> {
+  return payload?.kind === "legacy-token";
 }
 
 export function buildSiteOrderTelegramDeepLink(input: {

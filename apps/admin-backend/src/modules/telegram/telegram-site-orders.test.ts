@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import {
   buildTelegramOrderLinkProof,
   buildSiteOrderTelegramDeepLink,
+  isCompactTelegramOrderPayload,
+  isLegacyTelegramOrderPayload,
   normalizeTelegramIdForOrder,
   parseSiteOrderStartPayload,
   sha256Hex,
@@ -12,14 +14,23 @@ import {
 const orderId = "cmqjs5sbe000x9nw4696b343m";
 
 function testParseOrderStartPayload() {
-  assert.deepEqual(parseSiteOrderStartPayload("order_cmqjs5sbe000x9nw4696b343m_abcDEF_1234567890"), {
+  const legacyPayload = parseSiteOrderStartPayload("order_cmqjs5sbe000x9nw4696b343m_abcDEF_1234567890");
+  const compactPayload = parseSiteOrderStartPayload(`o_${orderId}_${"a".repeat(32)}`);
+
+  assert.deepEqual(legacyPayload, {
+    kind: "legacy-token",
     orderId,
     orderToken: "abcDEF_1234567890",
   });
-  assert.deepEqual(parseSiteOrderStartPayload(`o_${orderId}_${"a".repeat(32)}`), {
+  assert.deepEqual(compactPayload, {
+    kind: "compact-proof",
     orderId,
-    orderToken: "a".repeat(32),
+    proof: "a".repeat(32),
   });
+  assert.equal(isLegacyTelegramOrderPayload(legacyPayload), true);
+  assert.equal(isCompactTelegramOrderPayload(legacyPayload), false);
+  assert.equal(isCompactTelegramOrderPayload(compactPayload), true);
+  assert.equal(isLegacyTelegramOrderPayload(compactPayload), false);
   assert.equal(parseSiteOrderStartPayload("login_abc"), null);
   assert.equal(parseSiteOrderStartPayload("order_only"), null);
   assert.equal(parseSiteOrderStartPayload(`o_${orderId}_${"a".repeat(33)}`), null);
@@ -46,8 +57,9 @@ function testDeepLinkBuilder() {
   assert.ok(startPayload.length <= 64);
   assert.match(startPayload, /^[A-Za-z0-9_-]+$/);
   assert.deepEqual(parseSiteOrderStartPayload(startPayload), {
+    kind: "compact-proof",
     orderId,
-    orderToken: expectedProof,
+    proof: expectedProof,
   });
   assert.equal(
     buildSiteOrderTelegramDeepLink({
@@ -88,10 +100,24 @@ function testRedeemTokenHashVerification() {
 function testTelegramOrderLinkProofVerification() {
   const redeemTokenHash = sha256Hex("safe_order_token");
   const proof = buildTelegramOrderLinkProof({ orderId, redeemTokenHash });
+  const wrongOrderId = "cmqjs5sbe000x9nw4696b343n";
+  const wrongRedeemTokenHash = sha256Hex("other_order_token");
 
   assert.equal(proof.length, 32);
   assert.match(proof, /^[A-Za-z0-9_-]{32}$/);
   assert.doesNotThrow(() => verifyTelegramOrderLinkProof({ orderId, redeemTokenHash, providedProof: proof }));
+  assert.throws(
+    () => verifyTelegramOrderLinkProof({ orderId: "", redeemTokenHash, providedProof: proof }),
+    /Invalid order link token/
+  );
+  assert.throws(
+    () => verifyTelegramOrderLinkProof({ orderId: wrongOrderId, redeemTokenHash, providedProof: proof }),
+    /Invalid order link token/
+  );
+  assert.throws(
+    () => verifyTelegramOrderLinkProof({ orderId, redeemTokenHash: wrongRedeemTokenHash, providedProof: proof }),
+    /Invalid order link token/
+  );
   assert.throws(
     () => verifyTelegramOrderLinkProof({ orderId, redeemTokenHash, providedProof: "b".repeat(32) }),
     /Invalid order link token/
