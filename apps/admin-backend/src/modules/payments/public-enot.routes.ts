@@ -5,6 +5,8 @@ import { asyncHandler } from "../../common/http/async-handler";
 import { AppError } from "../../common/errors/app-error";
 import { paymentsService } from "./payments.service";
 import { checkoutCreateRateLimit } from "../../common/security/rate-limit";
+import { env } from "../../config/env";
+import { buildSiteOrderTelegramDeepLink } from "../orders/telegram-order-linking";
 
 const createEnotPaymentSchema = z.object({
   email: z.string().email(),
@@ -55,11 +57,17 @@ publicEnotRouter.post(
     if (created.redeemToken) {
       activationUrl.searchParams.set("t", created.redeemToken);
     }
+    const telegramUrl = buildSiteOrderTelegramDeepLink({
+      botUsername: env.TELEGRAM_BOT_USERNAME || "GPTishka_myBot",
+      orderId: created.orderId,
+      orderToken: created.redeemToken,
+    });
 
     return res.status(201).json({
       order_id: created.orderId,
       pay_url: created.checkoutUrl,
       activation_url: activationUrl.toString(),
+      telegram_url: telegramUrl || null,
       activation_token: created.redeemToken,
       amount: created.finalPrice,
       base_amount: created.basePrice,
