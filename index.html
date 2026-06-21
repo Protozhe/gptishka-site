@@ -83,7 +83,7 @@
 <noscript><link rel="stylesheet" href="/assets/css/support-widget.css?v=20260315b" /></noscript>
 <link rel="stylesheet" href="/assets/css/home-cro.css?v=20260324-cro12" />
 <link rel="stylesheet" href="/assets/css/home-stability-hotfix.css?v=20260616-go-order18" />
-<link rel="stylesheet" href="/assets/css/home-wide-marketplace.css?v=20260621-wide1" />
+<link rel="stylesheet" href="/assets/css/home-wide-marketplace.css?v=20260621-wide2" />
 </head>
 <body class="home-wide-body">
 <script>
@@ -191,7 +191,7 @@
             <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo.png?v=20260531lcp1" alt="GPTишка" class="logo-img">
           </a>
       
-                            <nav>
+                            <nav id="homeHeaderNav">
         <a href="/" class="active">Главная</a>
         <a href="/#pricing">Тарифы</a>
         <a href="/#how">Как это работает</a>
@@ -218,10 +218,15 @@
                 </div>
                 <div class="lang-item" data-lang="en">
                   <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
-                  <span>English</span>
+                <span>English</span>
                 </div>
               </div>
             </div>
+            <button class="home-mobile-menu-toggle" type="button" aria-controls="homeHeaderNav" aria-expanded="false" aria-label="Открыть меню" data-home-menu-toggle>
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
           </div>
           
         </div>
@@ -234,15 +239,15 @@
       <div
         data-hero-react-root
         data-lang="ru"
-        data-hero-top="Подписки на"
-        data-hero-words="ChatGPT Plus|Claude PRO|SuperGrok|GPTishka VPN"
-        data-hero-description="Оформляйте подписки на AI-сервисы и VPN в России: выбирайте тариф, оплачивайте удобным способом, а GPTishka помогает довести подключение до результата."
+        data-hero-top="ChatGPT Plus, Claude PRO и Grok"
+        data-hero-words="в России за 2–5 минут"
+        data-hero-description="Оформляйте подписки на AI-сервисы и VPN: выбирайте тариф, оплачивайте удобным способом, а GPTishka помогает довести подключение до результата."
         data-hero-cta="Выбрать тариф"
         data-cta-href="/#pricing"
         data-hero-interval="3400"
       >
-        <h1>Подписки на ChatGPT, Claude, SuperGrok и VPN в России</h1>
-        <p>Выберите тариф, оплатите картой, СБП или криптовалютой, а GPTishka поможет с подключением и поддержкой на весь срок подписки.</p>
+        <h1>ChatGPT Plus, Claude PRO и Grok в России за 2–5 минут</h1>
+        <p>Оформляйте подписки на AI-сервисы и VPN: выбирайте тариф, оплачивайте удобным способом, а GPTishka помогает довести подключение до результата.</p>
         <a href="/#pricing" class="btn">Выбрать тариф</a>
       </div>
       <div class="home-hero-wide__actions" aria-label="Основные действия">
@@ -259,7 +264,7 @@
 
     <aside class="home-hero-wide__panel" aria-label="Популярные сервисы GPTishka">
       <div class="home-hero-panel__header">
-        <span>GPTishka marketplace</span>
+        <span>Каталог GPTishka</span>
         <strong>AI и VPN в одном месте</strong>
       </div>
       <div class="home-hero-panel__grid">
@@ -553,6 +558,111 @@
 </footer>
 <script src="/assets/js/hero-lite.js?v=20260516-fix4" defer></script>
   <script src="/assets/js/app.min.js?v=20260621-telegram-orders1" defer></script>
+<script id="home-wide-hash-sync">
+  (function () {
+    var knownHashes = {
+      "#pricing": true,
+      "#how": true,
+      "#activationVideo": true,
+      "#faq": true
+    };
+
+    function currentHash() {
+      return String(window.location.hash || "").trim();
+    }
+
+    function initMobileMenu() {
+      var button = document.querySelector("[data-home-menu-toggle]");
+      var nav = document.getElementById("homeHeaderNav");
+      var body = document.body;
+      if (!button || !nav || !body || button.dataset.homeMenuReady === "1") return;
+      button.dataset.homeMenuReady = "1";
+
+      function setOpen(open) {
+        body.classList.toggle("home-nav-open", Boolean(open));
+        button.setAttribute("aria-expanded", open ? "true" : "false");
+        button.setAttribute("aria-label", open ? "Закрыть меню" : "Открыть меню");
+      }
+
+      button.addEventListener("click", function () {
+        setOpen(!body.classList.contains("home-nav-open"));
+      });
+
+      nav.addEventListener("click", function (event) {
+        if (event.target && event.target.closest && event.target.closest("a[href]")) {
+          setOpen(false);
+        }
+      });
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") setOpen(false);
+      });
+
+      window.addEventListener("resize", function () {
+        if (window.innerWidth > 760) setOpen(false);
+      }, { passive: true });
+    }
+
+    function syncActiveNav() {
+      var hash = currentHash();
+      var links = document.querySelectorAll("header nav a[href]");
+      links.forEach(function (link) {
+        var href = String(link.getAttribute("href") || "");
+        var isHome = href === "/";
+        var isHashLink = hash && href === "/" + hash;
+        var active = hash ? Boolean(isHashLink) : Boolean(isHome);
+        link.classList.toggle("active", active);
+        if (active) {
+          link.setAttribute("aria-current", "page");
+        } else {
+          link.removeAttribute("aria-current");
+        }
+      });
+    }
+
+    function scrollToCurrentHash(behavior) {
+      var hash = currentHash();
+      if (!knownHashes[hash]) return;
+      var target = document.querySelector(hash);
+      if (!target) return;
+      target.scrollIntoView({
+        block: "start",
+        inline: "nearest",
+        behavior: behavior || "auto"
+      });
+    }
+
+    function applyHashState(behavior) {
+      syncActiveNav();
+      window.setTimeout(function () {
+        scrollToCurrentHash(behavior);
+      }, 90);
+    }
+
+    function applyHashStateWithRetries(behavior) {
+      var delays = [0, 120, 320, 700, 1200, 2000];
+      delays.forEach(function (delay) {
+        window.setTimeout(function () {
+          applyHashState(behavior);
+        }, delay);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      initMobileMenu();
+      applyHashStateWithRetries("auto");
+    });
+    window.addEventListener("load", function () {
+      initMobileMenu();
+      applyHashStateWithRetries("auto");
+    }, { once: true });
+    window.addEventListener("hashchange", function () {
+      applyHashStateWithRetries("smooth");
+    });
+    initMobileMenu();
+    applyHashStateWithRetries("auto");
+  })();
+</script>
 <script>
   (function () {
     function escapeHtml(value) {
