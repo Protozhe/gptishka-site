@@ -195,10 +195,10 @@ export const telegramService = {
       }
 
       const ctx = buildOrderContext(message);
-      let orderIdForError = parsed.orderId;
+      let verifiedOrderId: string | null = null;
       try {
         const order = await telegramOrdersService.getOrderStatus({ ...ctx, orderId: parsed.orderId });
-        orderIdForError = order.id;
+        verifiedOrderId = order.id;
         if (!isPaidOrderStatus(order.status)) {
           await telegramSender.sendTextMessage({
             telegramId: getSendTelegramId(message),
@@ -243,7 +243,9 @@ export const telegramService = {
           error instanceof AppError && error.statusCode >= 400 && error.statusCode < 500
             ? "Не удалось принять токен: " + toRussianActivationReason(error.message)
             : "Не удалось запустить активацию. Попробуйте позже или напишите в поддержку.";
-        await telegramOrdersService.setOrderError({ orderId: orderIdForError, error: publicMessage });
+        if (verifiedOrderId) {
+          await telegramOrdersService.setOrderError({ orderId: verifiedOrderId, error: publicMessage });
+        }
         await telegramSender.sendTextMessage({
           telegramId: getSendTelegramId(message),
           text: publicMessage,
