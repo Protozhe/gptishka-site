@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
 import {
+  buildTelegramLinkedOrderText,
+  buildTelegramOrderDetailsText,
+  buildTelegramOrdersText,
+} from "./telegram-order-messages";
+import {
   buildTelegramOrderLinkProof,
   buildSiteOrderTelegramDeepLink,
   isCompactTelegramOrderPayload,
@@ -138,10 +143,83 @@ function testTelegramIdNormalization() {
   assert.throws(() => normalizeTelegramIdForOrder(""), /Telegram user id is required/);
 }
 
+function testTelegramOrdersText() {
+  const text = buildTelegramOrdersText([
+    {
+      id: orderId,
+      status: "paid",
+      productTitle: "ChatGPT Plus",
+      amount: 1990,
+      currency: "RUB",
+      paidAt: "2026-06-21T10:30:00.000Z",
+    },
+  ]);
+
+  assert.match(text, /Мои покупки GPTishka/);
+  assert.match(text, new RegExp(`/check ${orderId}`));
+}
+
+function testTelegramLinkedOrderText() {
+  const text = buildTelegramLinkedOrderText({
+    id: orderId,
+    status: "paid",
+    productTitle: "ChatGPT Plus",
+  });
+
+  assert.match(text, /Заказ привязан/);
+}
+
+function testTelegramVpnOrderDetailsText() {
+  const text = buildTelegramOrderDetailsText({
+    order: {
+      id: orderId,
+      status: "paid",
+      productTitle: "VPN",
+    },
+    activation: {
+      deliveryMode: "vpn",
+      plan: "30 дней",
+      accessLink: "vless://example",
+      expiresAt: "2026-07-21T10:30:00.000Z",
+    },
+  });
+
+  assert.match(text, /vless:\/\/example/);
+}
+
+function testTelegramEmptyOrdersText() {
+  const text = buildTelegramOrdersText([]);
+
+  assert.match(text, /покупок пока нет/i);
+}
+
+function testTelegramActivationOrderDetailsText() {
+  const text = buildTelegramOrderDetailsText({
+    order: {
+      id: orderId,
+      status: "paid",
+      productTitle: "ChatGPT Plus",
+    },
+    activation: {
+      activationFlow: "token",
+      status: "waiting_for_token",
+      verificationState: "pending",
+      lastProviderMessage: "Нужен токен входа",
+    },
+  });
+
+  assert.match(text, new RegExp(`/token ${orderId} <токен>`));
+}
+
 testParseOrderStartPayload();
 testDeepLinkBuilder();
 testRedeemTokenHashVerification();
 testTelegramOrderLinkProofVerification();
 testTelegramIdNormalization();
+testTelegramOrdersText();
+testTelegramLinkedOrderText();
+testTelegramVpnOrderDetailsText();
+testTelegramEmptyOrdersText();
+testTelegramActivationOrderDetailsText();
 
 console.log("telegram-site-orders tests passed");
