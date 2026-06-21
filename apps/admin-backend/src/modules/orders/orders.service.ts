@@ -1402,6 +1402,7 @@ async function assertOrderAccess(orderId: string, access?: string | OrderAccessC
     if (!provided) throw new AppError("Activation link token is required", 401);
     const providedHash = crypto.createHash("sha256").update(provided).digest("hex");
     if (providedHash !== expected) throw new AppError("Invalid activation link token", 403);
+    return order;
   }
 
   if (String(order.source || "").trim().toLowerCase() === "telegram") {
