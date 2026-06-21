@@ -3,9 +3,11 @@ import path from "path";
 import { env } from "../../config/env";
 import { AppError } from "../../common/errors/app-error";
 import { ordersService } from "../orders/orders.service";
+import { parseSiteOrderStartPayload } from "../orders/telegram-order-linking";
 import { TelegramBotType, telegramOrdersService } from "../orders/telegram-orders.service";
 import { telegramBotEventsService } from "./telegram-bot-events.service";
 import { sendTelegramNotification } from "../notifications/notifications.service";
+import { buildTelegramLinkedOrderText, buildTelegramOrderDetailsText } from "../telegram/telegram-order-messages";
 
 type TelegramUpdate = { update_id: number; message?: any; callback_query?: any };
 type BotConfig = { botType: TelegramBotType; serviceName: string; token: string };
@@ -384,6 +386,27 @@ async function sendOrders(client: TelegramApiClient, ctx: OrderUserContext) {
 
   return client.sendMessage(ctx.chatId, text, keyboardPurchases());
 }
+async function handleSiteOrderStartPayload(client: TelegramApiClient, ctx: OrderUserContext, payload: string) {
+  const parsed = parseSiteOrderStartPayload(payload);
+  if (!parsed) return false;
+  const linked = await telegramOrdersService.linkSiteOrderToTelegram({
+    botType: ctx.botType,
+    telegramUserId: ctx.telegramUserId,
+    telegramChatId: ctx.chatId,
+    telegramUsername: ctx.telegramUsername,
+    startPayload: parsed,
+  });
+  await client.sendMessage(ctx.chatId, buildTelegramLinkedOrderText(linked));
+  if (String(linked.status || "").toUpperCase() === "PAID") {
+    const activation = await ordersService.getActivationForTelegram(linked.id, ctx.telegramUserId).catch((error) => ({
+      deliveryMode: linked.deliveryType,
+      status: "pending",
+      message: error instanceof Error ? error.message : "Данные заказа пока готовятся.",
+    }));
+    await sendLongMessage(client, ctx.chatId, buildTelegramOrderDetailsText({ order: linked, activation }), keyboardActivation(linked.id));
+  }
+  return true;
+}
 async function sendSupport(client: TelegramApiClient, ctx: OrderUserContext) {
   await logEvent("support", ctx);
   return client.sendMessage(ctx.chatId, `РџРѕРґРґРµСЂР¶РєР° GPTishka:\n1) https://gptishka.shop/contact.html\n2) ${SUPPORT_LINK}`, keyboardMain());
@@ -587,6 +610,11 @@ async function sendActivationState(client: TelegramApiClient, ctx: OrderUserCont
   await logEvent("check_activation", { ...ctx, orderId });
   const status = await telegramOrdersService.getOrderStatus({ botType: ctx.botType, telegramUserId: ctx.telegramUserId, telegramChatId: ctx.chatId, telegramUsername: ctx.telegramUsername, orderId });
   if (status.status !== "PAID") return client.sendMessage(ctx.chatId, "Р—Р°РєР°Р· РµС‰С‘ РЅРµ РѕРїР»Р°С‡РµРЅ. РЎРЅР°С‡Р°Р»Р° РїРѕРґС‚РІРµСЂРґРёС‚Рµ РѕРїР»Р°С‚Сѓ.", keyboardMain());
+  const activationInfo = await ordersService.getActivationForTelegram(status.id, ctx.telegramUserId).catch(() => null);
+  if (activationInfo && String(activationInfo.deliveryMode || "").toLowerCase() === "vpn") {
+    await sendLongMessage(client, ctx.chatId, buildTelegramOrderDetailsText({ order: status, activation: activationInfo }), keyboardActivation(status.id));
+    return;
+  }
   const proof = (await ordersService.getActivationProof(status.id, { forceCheck: true })) as any;
   const activationStatus = String(proof?.activation?.status || "");
   const providerMessage = String(proof?.activation?.lastProviderMessage || "").trim();
@@ -628,14 +656,14 @@ async function handleToken(client: TelegramApiClient, ctx: OrderUserContext, tex
     const order = await telegramOrdersService.getOrderStatus({ botType: ctx.botType, telegramUserId: ctx.telegramUserId, telegramChatId: ctx.chatId, telegramUsername: ctx.telegramUsername, orderId: parsed.orderId });
     orderIdForError = order.id;
     if (order.status !== "PAID") return client.sendMessage(ctx.chatId, "Р—Р°РєР°Р· РµС‰С‘ РЅРµ РѕРїР»Р°С‡РµРЅ. РЎРЅР°С‡Р°Р»Р° РЅР°Р¶РјРёС‚Рµ В«РџСЂРѕРІРµСЂРёС‚СЊ РѕРїР»Р°С‚СѓВ».");
-    const validation = await ordersService.validateActivationToken(order.id, parsed.token);
+    const validation = await ordersService.validateActivationTokenForTelegram(order.id, parsed.token, ctx.telegramUserId);
     if (!validation.ok) {
       const reason = (validation.reasons || []).join("; ") || "РўРѕРєРµРЅ РЅРµ РїСЂРѕС€С‘Р» РїСЂРѕРІРµСЂРєСѓ";
       await telegramOrdersService.setOrderError({ orderId: order.id, error: reason });
       await logEvent("token_rejected", { ...ctx, orderId: order.id, meta: { reason } });
       return client.sendMessage(ctx.chatId, `РўРѕРєРµРЅ РЅРµ РїСЂРёРЅСЏС‚: ${reason}`);
     }
-    const result = await ordersService.startActivation(order.id, parsed.token);
+    const result = await ordersService.startActivationForTelegram(order.id, parsed.token, ctx.telegramUserId);
     await telegramOrdersService.clearOrderError(order.id);
     await logEvent("activation_started", { ...ctx, orderId: order.id, meta: { taskId: result?.taskId || null } });
     return client.sendMessage(ctx.chatId, ["РўРѕРєРµРЅ РїСЂРёРЅСЏС‚.", "РђРєС‚РёРІР°С†РёСЏ Р·Р°РїСѓС‰РµРЅР°.", result?.taskId ? `Task ID: ${String(result.taskId)}` : ""].filter(Boolean).join("\n"), keyboardActivation(order.id));
@@ -718,6 +746,7 @@ async function processUpdate(client: TelegramApiClient, config: BotConfig, updat
         parsed.attribution?.utm_campaign ? `РљР°РјРїР°РЅРёСЏ: ${parsed.attribution.utm_campaign}` : "",
         parsed.attribution?.src ? `SRC: ${parsed.attribution.src}` : "",
       ]);
+      if (await handleSiteOrderStartPayload(client, ctx, parsed.payload)) return;
       return sendStart(client, config, ctx);
     }
     if (/^\/buy/i.test(text)) return sendPrePaymentAgreement(client, ctx);
