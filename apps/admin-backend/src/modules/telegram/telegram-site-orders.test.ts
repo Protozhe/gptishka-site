@@ -333,6 +333,54 @@ function testTelegramSupportOrderDetailsText() {
   assert.match(text, /обратитесь в поддержку/);
 }
 
+function testTelegramUppercaseOrderStatusesUseOrderLabels() {
+  const text = buildTelegramOrdersText([
+    {
+      id: "pending-order",
+      status: "PENDING",
+      productTitle: "Pending Order",
+    },
+    {
+      id: "paid-order",
+      status: "PAID",
+      productTitle: "Paid Order",
+    },
+    {
+      id: "failed-order",
+      status: "FAILED",
+      productTitle: "Failed Order",
+    },
+    {
+      id: "refunded-order",
+      status: "REFUNDED",
+      productTitle: "Refunded Order",
+    },
+  ]);
+
+  assert.match(text, /Pending Order\nЗаказ: pending-order\nСтатус: ожидает оплаты/);
+  assert.match(text, /Paid Order\nЗаказ: paid-order\nСтатус: оплачен/);
+  assert.match(text, /Failed Order\nЗаказ: failed-order\nСтатус: ошибка оплаты/);
+  assert.match(text, /Refunded Order\nЗаказ: refunded-order\nСтатус: возвращён/);
+}
+
+function testTelegramUnknownVerificationStateUsesReadableLabel() {
+  const text = buildTelegramOrderDetailsText({
+    order: {
+      id: orderId,
+      status: "PAID",
+      productTitle: "ChatGPT Plus",
+    },
+    activation: {
+      activationFlow: "token",
+      status: "waiting_for_token",
+      verificationState: "unknown",
+    },
+  });
+
+  assert.match(text, /Проверка: статус проверки неизвестен/);
+  assert.doesNotMatch(text, /Проверка: unknown/);
+}
+
 function testTelegramKnownLabelsDoNotExposeInternalValues() {
   const text = buildTelegramOrdersText([
     {
@@ -426,6 +474,8 @@ testTelegramCredentialsOrderDetailsText();
 testTelegramManualLoginOrderDetailsText();
 testTelegramActivationOrderDetailsText();
 testTelegramSupportOrderDetailsText();
+testTelegramUppercaseOrderStatusesUseOrderLabels();
+testTelegramUnknownVerificationStateUsesReadableLabel();
 testTelegramKnownLabelsDoNotExposeInternalValues();
 
 console.log("telegram-site-orders tests passed");

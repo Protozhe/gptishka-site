@@ -32,24 +32,35 @@ const MOSCOW_TIME_ZONE = "Europe/Moscow";
 
 const PAID_STATUSES = new Set(["paid", "completed", "activated", "fulfilled", "delivered"]);
 
-const STATUS_LABELS: Record<string, string> = {
+const ORDER_STATUS_LABELS: Record<string, string> = {
   new: "новый",
-  pending: "ожидает обработки",
+  pending: "ожидает оплаты",
   waiting_payment: "ожидает оплаты",
   awaiting_payment: "ожидает оплаты",
   unpaid: "не оплачен",
   paid: "оплачен",
-  running: "выполняется",
-  processing: "в обработке",
+  running: "обрабатывается",
+  processing: "обрабатывается",
   completed: "выполнен",
   activated: "активирован",
   fulfilled: "выполнен",
   delivered: "доставлен",
   cancelled: "отменён",
   canceled: "отменён",
+  failed: "ошибка оплаты",
+  error: "ошибка оплаты",
+  refunded: "возвращён",
+};
+
+const ACTIVATION_STATUS_LABELS: Record<string, string> = {
+  pending: "ожидает обработки",
+  running: "выполняется",
+  processing: "в обработке",
+  completed: "выполнен",
   failed: "ошибка",
   error: "ошибка",
-  refunded: "возврат",
+  paid: "оплачен",
+  unpaid: "не оплачен",
   waiting_for_token: "ожидает токен входа",
   credentials_ready: "данные для входа готовы",
   pending_manual: "ожидает ручной обработки",
@@ -66,6 +77,7 @@ const VERIFICATION_LABELS: Record<string, string> = {
   success: "проверка пройдена",
   failed: "проверка не прошла",
   error: "ошибка проверки",
+  unknown: "статус проверки неизвестен",
 };
 
 const DELIVERY_LABELS: Record<string, string> = {
@@ -92,28 +104,33 @@ function isPaidOrder(order: TelegramOrderSummary): boolean {
   return PAID_STATUSES.has(normalize(order.status));
 }
 
-function humanizeFallback(value: string | null | undefined): string {
+function humanizeFallback(value: string | null | undefined, emptyLabel = "неизвестен"): string {
   const text = clean(value);
   if (!text) {
-    return "неизвестен";
+    return emptyLabel;
   }
 
   return text.replace(/[_-]+/g, " ");
 }
 
-function labelStatus(status: string | null | undefined): string {
+function labelOrderStatus(status: string | null | undefined): string {
   const normalized = normalize(status);
-  return STATUS_LABELS[normalized] ?? humanizeFallback(status);
+  return ORDER_STATUS_LABELS[normalized] ?? humanizeFallback(status);
+}
+
+function labelActivationStatus(status: string | null | undefined): string {
+  const normalized = normalize(status);
+  return ACTIVATION_STATUS_LABELS[normalized] ?? humanizeFallback(status, "");
 }
 
 function labelVerification(status: string | null | undefined): string {
   const normalized = normalize(status);
-  return VERIFICATION_LABELS[normalized] ?? labelStatus(status);
+  return VERIFICATION_LABELS[normalized] ?? labelActivationStatus(status);
 }
 
 function labelDelivery(type: string | null | undefined): string {
   const normalized = normalize(type);
-  return DELIVERY_LABELS[normalized] ?? humanizeFallback(type);
+  return DELIVERY_LABELS[normalized] ?? humanizeFallback(type, "");
 }
 
 function formatDate(value: Date | string | null | undefined): string {
@@ -202,11 +219,11 @@ export function buildTelegramOrdersText(orders: TelegramOrderSummary[]): string 
 
     lines.push(`${index + 1}. ${formatProductTitle(order)}`);
     lines.push(`Заказ: ${order.id}`);
-    lines.push(`Статус: ${labelStatus(order.status)}`);
+    lines.push(`Статус: ${labelOrderStatus(order.status)}`);
     pushIfPresent(lines, "Сумма", amount);
     pushIfPresent(lines, "Промокод", order.promoCode);
     pushIfPresent(lines, "Доставка", labelDelivery(order.deliveryType));
-    pushIfPresent(lines, "Активация", labelStatus(order.activationStatus));
+    pushIfPresent(lines, "Активация", labelActivationStatus(order.activationStatus));
     pushIfPresent(lines, dateTitle, dateLabel);
 
     if (isPaidOrder(order)) {
@@ -226,7 +243,7 @@ export function buildTelegramLinkedOrderText(order: TelegramOrderSummary): strin
     "Заказ привязан к вашему Telegram-кабинету.",
     `Покупка: ${formatProductTitle(order)}`,
     `Заказ: ${order.id}`,
-    `Статус: ${labelStatus(order.status)}`,
+    `Статус: ${labelOrderStatus(order.status)}`,
   ];
 
   if (isPaidOrder(order)) {
@@ -246,7 +263,7 @@ export function buildTelegramOrderDetailsText(input: {
   const baseLines = [
     `Покупка: ${formatProductTitle(order)}`,
     `Заказ: ${order.id}`,
-    `Статус заказа: ${labelStatus(order.status)}`,
+    `Статус заказа: ${labelOrderStatus(order.status)}`,
   ];
 
   if (!isPaidOrder(order)) {
@@ -271,7 +288,7 @@ export function buildTelegramOrderDetailsText(input: {
       clean(activation?.accessLink) || formatSubscriptionConfig(activation?.subscriptionConfig)
     );
     pushIfPresent(lines, "Deeplink", activation?.deeplinkUrl);
-    pushIfPresent(lines, "Статус активации", labelStatus(activation?.status));
+    pushIfPresent(lines, "Статус активации", labelActivationStatus(activation?.status));
     pushIfPresent(lines, "Сообщение", activation?.message);
     lines.push("");
     lines.push(`Если ссылка потерялась, откройте /orders или используйте /check ${order.id}.`);
@@ -280,7 +297,7 @@ export function buildTelegramOrderDetailsText(input: {
 
   if (deliveryMode === "credentials") {
     const lines = [...baseLines, "", "Данные для входа:"];
-    pushIfPresent(lines, "Статус активации", labelStatus(activation?.status));
+    pushIfPresent(lines, "Статус активации", labelActivationStatus(activation?.status));
     pushIfPresent(lines, "Логин", activation?.credentials?.login);
     pushIfPresent(lines, "Пароль", activation?.credentials?.password);
     pushIfPresent(lines, "Сообщение", activation?.message);
@@ -295,13 +312,13 @@ export function buildTelegramOrderDetailsText(input: {
       "",
       "Заказ оплачен. Менеджер обработает доступ вручную и свяжется с вами.",
     ];
-    pushIfPresent(lines, "Статус активации", labelStatus(activation?.status));
+    pushIfPresent(lines, "Статус активации", labelActivationStatus(activation?.status));
     pushIfPresent(lines, "Сообщение", activation?.message);
     return lines.join("\n");
   }
 
   const lines = [...baseLines, "", "Для завершения активации может понадобиться токен входа."];
-  pushIfPresent(lines, "Статус активации", labelStatus(activation?.status));
+  pushIfPresent(lines, "Статус активации", labelActivationStatus(activation?.status));
   pushIfPresent(lines, "Проверка", labelVerification(activation?.verificationState));
   pushIfPresent(lines, "Сообщение провайдера", activation?.lastProviderMessage);
   pushIfPresent(lines, "Сообщение", activation?.message);
