@@ -685,8 +685,14 @@ const ACTIVATION_LAST_ORDER_ID_KEY = "gptishka_activation_order_id";
 const ACTIVATION_ORDER_TOKEN_PREFIX = "gptishka_activation_order_token:";
 const ACTIVATION_RESUME_URL_KEY = "gptishka_activation_resume_url";
 const ACTIVATION_TELEGRAM_URL_KEY = "gptishka_activation_telegram_url";
+const ACTIVATION_TELEGRAM_URL_PREFIX = `${ACTIVATION_TELEGRAM_URL_KEY}:`;
 const ACTIVATION_RESUME_SAVED_AT_KEY = "gptishka_activation_saved_at";
 const ACTIVATION_RESUME_TTL_MS = 365 * 24 * 60 * 60 * 1000;
+
+function getActivationTelegramUrlKey(orderId) {
+  const safeOrderId = String(orderId || "").trim();
+  return safeOrderId ? `${ACTIVATION_TELEGRAM_URL_PREFIX}${safeOrderId}` : "";
+}
 
 function clearStoredActivationResumeContext(orderId) {
   const safeOrderId = String(orderId || "").trim();
@@ -694,6 +700,7 @@ function clearStoredActivationResumeContext(orderId) {
     const lastOrderId = safeOrderId || String(localStorage.getItem(ACTIVATION_LAST_ORDER_ID_KEY) || "").trim();
     if (lastOrderId) {
       localStorage.removeItem(`${ACTIVATION_ORDER_TOKEN_PREFIX}${lastOrderId}`);
+      localStorage.removeItem(getActivationTelegramUrlKey(lastOrderId));
     }
     localStorage.removeItem(ACTIVATION_LAST_ORDER_ID_KEY);
     localStorage.removeItem(ACTIVATION_RESUME_URL_KEY);
@@ -716,7 +723,10 @@ function readStoredActivationResumeContext() {
     const token = orderId
       ? String(localStorage.getItem(`${ACTIVATION_ORDER_TOKEN_PREFIX}${orderId}`) || "").trim()
       : "";
-    const telegramUrl = normalizeTelegramOrderUrl(localStorage.getItem(ACTIVATION_TELEGRAM_URL_KEY) || "");
+    const telegramUrl = orderId
+      ? normalizeTelegramOrderUrl(localStorage.getItem(getActivationTelegramUrlKey(orderId)) || "", orderId)
+        || normalizeTelegramOrderUrl(localStorage.getItem(ACTIVATION_TELEGRAM_URL_KEY) || "", orderId)
+      : "";
     if (!orderId || !token) {
       clearStoredActivationResumeContext(orderId);
       return { orderId: "", token: "", telegramUrl: "" };
@@ -728,7 +738,27 @@ function readStoredActivationResumeContext() {
   }
 }
 
-function normalizeTelegramOrderUrl(value) {
+function isTelegramStartPayloadForOrder(payload, orderId) {
+  const safePayload = String(payload || "").trim();
+  const safeOrderId = String(orderId || "").trim();
+  if (!safePayload || !safeOrderId) return false;
+
+  const compactPrefix = `o_${safeOrderId}_`;
+  if (safePayload.startsWith(compactPrefix)) {
+    const proof = safePayload.slice(compactPrefix.length);
+    return /^[A-Za-z0-9_-]{32}$/.test(proof);
+  }
+
+  const legacyPrefix = `order_${safeOrderId}_`;
+  if (safePayload.startsWith(legacyPrefix)) {
+    const token = safePayload.slice(legacyPrefix.length);
+    return /^[A-Za-z0-9_-]+$/.test(token);
+  }
+
+  return false;
+}
+
+function normalizeTelegramOrderUrl(value, expectedOrderId) {
   const raw = String(value || "").trim();
   if (!raw) return "";
   try {
@@ -737,6 +767,8 @@ function normalizeTelegramOrderUrl(value) {
     const hostname = parsed.hostname.toLowerCase();
     if (protocol !== "https:") return "";
     if (hostname !== "t.me" && hostname !== "telegram.me") return "";
+    const safeOrderId = String(expectedOrderId || "").trim();
+    if (safeOrderId && !isTelegramStartPayloadForOrder(parsed.searchParams.get("start") || "", safeOrderId)) return "";
     return parsed.toString();
   } catch (_) {
     return "";
@@ -747,7 +779,7 @@ function persistActivationResumeContext(orderId, token, activationUrl, telegramU
   const safeOrderId = String(orderId || "").trim();
   let safeToken = String(token || "").trim();
   const safeActivationUrl = String(activationUrl || "").trim();
-  const safeTelegramUrl = normalizeTelegramOrderUrl(telegramUrl);
+  const safeTelegramUrl = normalizeTelegramOrderUrl(telegramUrl, safeOrderId);
   if (!safeOrderId) return;
 
   if (!safeToken && safeActivationUrl) {
@@ -770,8 +802,10 @@ function persistActivationResumeContext(orderId, token, activationUrl, telegramU
     );
     if (safeTelegramUrl) {
       localStorage.setItem(ACTIVATION_TELEGRAM_URL_KEY, safeTelegramUrl);
+      localStorage.setItem(getActivationTelegramUrlKey(safeOrderId), safeTelegramUrl);
     } else {
       localStorage.removeItem(ACTIVATION_TELEGRAM_URL_KEY);
+      localStorage.removeItem(getActivationTelegramUrlKey(safeOrderId));
     }
   } catch (_) {
     // Ignore storage write errors.

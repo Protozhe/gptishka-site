@@ -1026,6 +1026,7 @@
       const ACTIVATION_RESUME_URL_KEY = "gptishka_activation_resume_url";
       const TELEGRAM_BOT_USERNAME = "GPTishka_myBot";
       const TELEGRAM_URL_STORAGE_KEY = "gptishka_activation_telegram_url";
+      const TELEGRAM_URL_STORAGE_PREFIX = `${TELEGRAM_URL_STORAGE_KEY}:`;
       const ACTIVATION_RESUME_SAVED_AT_KEY = "gptishka_activation_saved_at";
 
       function resolveLangTargetPath(targetLang) {
@@ -1134,12 +1135,18 @@
         return url.toString();
       }
 
+      function getOrderTelegramUrlStorageKey(orderId) {
+        const safeOrderId = String(orderId || "").trim();
+        return safeOrderId ? `${TELEGRAM_URL_STORAGE_PREFIX}${safeOrderId}` : "";
+      }
+
       function clearActivationResumeContext(orderId) {
         const safeOrderId = String(orderId || "").trim();
         try {
           const lastOrderId = safeOrderId || String(localStorage.getItem(ACTIVATION_LAST_ORDER_ID_KEY) || "").trim();
           if (lastOrderId) {
             localStorage.removeItem(`${ACTIVATION_ORDER_TOKEN_PREFIX}${lastOrderId}`);
+            localStorage.removeItem(getOrderTelegramUrlStorageKey(lastOrderId));
           }
           localStorage.removeItem(ACTIVATION_LAST_ORDER_ID_KEY);
           localStorage.removeItem(ACTIVATION_RESUME_URL_KEY);
@@ -1167,7 +1174,27 @@
         return activationUrl;
       }
 
-      function normalizeTelegramOrderUrl(value) {
+      function isTelegramStartPayloadForOrder(payload, orderId) {
+        const safePayload = String(payload || "").trim();
+        const safeOrderId = String(orderId || "").trim();
+        if (!safePayload || !safeOrderId) return false;
+
+        const compactPrefix = `o_${safeOrderId}_`;
+        if (safePayload.startsWith(compactPrefix)) {
+          const proof = safePayload.slice(compactPrefix.length);
+          return /^[A-Za-z0-9_-]{32}$/.test(proof);
+        }
+
+        const legacyPrefix = `order_${safeOrderId}_`;
+        if (safePayload.startsWith(legacyPrefix)) {
+          const token = safePayload.slice(legacyPrefix.length);
+          return /^[A-Za-z0-9_-]+$/.test(token);
+        }
+
+        return false;
+      }
+
+      function normalizeTelegramOrderUrl(value, expectedOrderId) {
         const raw = String(value || "").trim();
         if (!raw) return "";
         try {
@@ -1176,6 +1203,8 @@
           const hostname = parsed.hostname.toLowerCase();
           if (protocol !== "https:") return "";
           if (hostname !== "t.me" && hostname !== "telegram.me") return "";
+          const safeOrderId = String(expectedOrderId || "").trim();
+          if (safeOrderId && !isTelegramStartPayloadForOrder(parsed.searchParams.get("start") || "", safeOrderId)) return "";
           return parsed.toString();
         } catch (_) {
           return "";
@@ -1223,9 +1252,9 @@
         }
       }
 
-      function setTelegramOrderButton(url) {
+      function setTelegramOrderButton(url, orderId) {
         if (!telegramBtn) return;
-        const safeUrl = normalizeTelegramOrderUrl(url);
+        const safeUrl = normalizeTelegramOrderUrl(url, orderId);
         if (!safeUrl) {
           telegramBtn.hidden = true;
           telegramBtn.setAttribute("href", "#");
@@ -1239,7 +1268,8 @@
         const safeContext = context || readOrderContext();
         let telegramUrl = "";
         try {
-          telegramUrl = normalizeTelegramOrderUrl(localStorage.getItem(TELEGRAM_URL_STORAGE_KEY) || "");
+          telegramUrl = normalizeTelegramOrderUrl(localStorage.getItem(getOrderTelegramUrlStorageKey(safeContext.orderId)) || "", safeContext.orderId)
+            || normalizeTelegramOrderUrl(localStorage.getItem(TELEGRAM_URL_STORAGE_KEY) || "", safeContext.orderId);
         } catch (_) {
           telegramUrl = "";
         }
@@ -1248,7 +1278,7 @@
           telegramUrl = await buildTelegramOrderFallbackUrl(safeContext.orderId, safeContext.token);
         }
 
-        setTelegramOrderButton(telegramUrl);
+        setTelegramOrderButton(telegramUrl, safeContext.orderId);
       }
 
       function setActivationEntryLink(url) {

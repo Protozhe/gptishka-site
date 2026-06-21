@@ -46,6 +46,7 @@
     const linkToken = String(params.get("t") || "").trim();
     const TELEGRAM_BOT_USERNAME = "GPTishka_myBot";
     const TELEGRAM_URL_STORAGE_KEY = "gptishka_activation_telegram_url";
+    const TELEGRAM_URL_STORAGE_PREFIX = `${TELEGRAM_URL_STORAGE_KEY}:`;
     const LAST_PAID_ORDER_KEY = "gptishka_last_paid_order_id";
     const CART_STORAGE_KEYS = [
       "gptishka_cart_v1",
@@ -93,7 +94,32 @@
       pollOrderStatus(orderId);
     }
 
-    function normalizeTelegramOrderUrl(value) {
+    function getOrderTelegramUrlStorageKey(id) {
+      const safeOrderId = String(id || "").trim();
+      return safeOrderId ? `${TELEGRAM_URL_STORAGE_PREFIX}${safeOrderId}` : "";
+    }
+
+    function isTelegramStartPayloadForOrder(payload, id) {
+      const safePayload = String(payload || "").trim();
+      const safeOrderId = String(id || "").trim();
+      if (!safePayload || !safeOrderId) return false;
+
+      const compactPrefix = `o_${safeOrderId}_`;
+      if (safePayload.startsWith(compactPrefix)) {
+        const proof = safePayload.slice(compactPrefix.length);
+        return /^[A-Za-z0-9_-]{32}$/.test(proof);
+      }
+
+      const legacyPrefix = `order_${safeOrderId}_`;
+      if (safePayload.startsWith(legacyPrefix)) {
+        const token = safePayload.slice(legacyPrefix.length);
+        return /^[A-Za-z0-9_-]+$/.test(token);
+      }
+
+      return false;
+    }
+
+    function normalizeTelegramOrderUrl(value, expectedOrderId) {
       const raw = String(value || "").trim();
       if (!raw) return "";
       try {
@@ -102,6 +128,8 @@
         const hostname = parsed.hostname.toLowerCase();
         if (protocol !== "https:") return "";
         if (hostname !== "t.me" && hostname !== "telegram.me") return "";
+        const safeOrderId = String(expectedOrderId || "").trim();
+        if (safeOrderId && !isTelegramStartPayloadForOrder(parsed.searchParams.get("start") || "", safeOrderId)) return "";
         return parsed.toString();
       } catch (_) {
         return "";
@@ -153,7 +181,8 @@
       if (!telegramOrderLinkEl) return;
       let telegramUrl = "";
       try {
-        telegramUrl = normalizeTelegramOrderUrl(localStorage.getItem(TELEGRAM_URL_STORAGE_KEY) || "");
+        telegramUrl = normalizeTelegramOrderUrl(localStorage.getItem(getOrderTelegramUrlStorageKey(id)) || "", id)
+          || normalizeTelegramOrderUrl(localStorage.getItem(TELEGRAM_URL_STORAGE_KEY) || "", id);
       } catch (_) {
         telegramUrl = "";
       }
