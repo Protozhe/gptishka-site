@@ -419,9 +419,10 @@ export const telegramOrdersService = {
       throw new AppError("Order is already linked to another Telegram account", 409);
     }
 
-    const linked = await prisma.order.update({
+    const linkedUpdate = await prisma.order.updateMany({
       where: {
         id: existing.id,
+        OR: [{ telegramUserId: null }, { telegramUserId }],
       },
       data: {
         telegramUserId,
@@ -429,8 +430,19 @@ export const telegramOrdersService = {
         telegramUsername,
         telegramLastError: null,
       },
+    });
+
+    if (linkedUpdate.count !== 1) {
+      throw new AppError("Order is already linked to another Telegram account", 409);
+    }
+
+    const linked = await prisma.order.findFirst({
+      where: {
+        id: existing.id,
+      },
       include: telegramOrderRowInclude,
     });
+    if (!linked) throw new AppError("Order not found", 404);
 
     return mapTelegramOrderRow(linked);
   },
