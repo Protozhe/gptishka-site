@@ -11,7 +11,7 @@ import { buildTelegramLinkedOrderText, buildTelegramOrderDetailsText } from "../
 
 type TelegramUpdate = { update_id: number; message?: any; callback_query?: any };
 type BotConfig = { botType: TelegramBotType; serviceName: string; token: string };
-type OrderUserContext = { botType: TelegramBotType; chatId: string; telegramUserId: string; telegramUsername?: string | null };
+type OrderUserContext = { botType: TelegramBotType; chatId: string; telegramUserId: string; telegramUsername?: string | null; chatType?: string | null };
 type TelegramUserSession = { pendingPromoInput?: boolean; promoCode?: string | null; updatedAt?: string };
 
 const BOT_POLL_TIMEOUT_SECONDS = 25;
@@ -109,6 +109,15 @@ function normalizeTelegramId(value: unknown) {
 }
 function normalizeTelegramUsername(value: unknown) {
   return String(value || "").trim().replace(/^@+/, "") || null;
+}
+function normalizeTelegramChatType(value: unknown) {
+  return String(value || "").trim().toLowerCase() || null;
+}
+function isPrivateOrderChat(ctx: OrderUserContext) {
+  return ctx.chatType === "private";
+}
+function sendPrivateChatRequired(client: TelegramApiClient, ctx: OrderUserContext) {
+  return client.sendMessage(ctx.chatId, "Для безопасности откройте бота в личном чате и повторите команду.");
 }
 function parseStartPayload(text: string) {
   const raw = String(text || "").trim();
@@ -337,6 +346,7 @@ async function sendStart(client: TelegramApiClient, config: BotConfig, ctx: Orde
   await client.sendMessage(ctx.chatId, [`РџСЂРёРІРµС‚! Р­С‚Рѕ Р±РѕС‚ В«${config.serviceName}В».`, `РЎРµСЂРІРёСЃ: ${offer.title}`, `Р¦РµРЅР°: ${formatMoney(offer.price, offer.currency)}`, "", "Р’С‹Р±РµСЂРёС‚Рµ РґРµР№СЃС‚РІРёРµ:"].join("\n"), keyboardMain());
 }
 async function sendOrders(client: TelegramApiClient, ctx: OrderUserContext) {
+  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
   await logEvent("my_orders", ctx);
   const rows = await telegramOrdersService.listOrders({ botType: ctx.botType, telegramUserId: ctx.telegramUserId, telegramChatId: ctx.chatId, telegramUsername: ctx.telegramUsername }, 8);
   const pending = rows.filter((row) => String(row.status || "").toUpperCase() === "PENDING");
@@ -389,6 +399,10 @@ async function sendOrders(client: TelegramApiClient, ctx: OrderUserContext) {
 async function handleSiteOrderStartPayload(client: TelegramApiClient, ctx: OrderUserContext, payload: string) {
   const parsed = parseSiteOrderStartPayload(payload);
   if (!parsed) return false;
+  if (!isPrivateOrderChat(ctx)) {
+    await sendPrivateChatRequired(client, ctx);
+    return true;
+  }
   const linked = await telegramOrdersService.linkSiteOrderToTelegram({
     botType: ctx.botType,
     telegramUserId: ctx.telegramUserId,
@@ -551,6 +565,10 @@ function parseCheckCommand(text: string) {
 }
 function maskSensitiveMessage(text: string) {
   const value = String(text || "");
+  if (/^\/start(?:@\w+)?(?:\s|$)/i.test(value)) {
+    const parsed = parseStartPayload(value);
+    if (parseSiteOrderStartPayload(parsed.payload)) return "/start <site_order_link>";
+  }
   if (!/^\/token(?:@|\s|$)/i.test(value)) return value;
   const parsed = parseTokenCommand(value);
   if (!parsed) return "/token <order_id> <masked>";
@@ -583,6 +601,7 @@ async function sendClaudeIdInstructions(client: TelegramApiClient, ctx: OrderUse
   );
 }
 async function sendPaymentState(client: TelegramApiClient, ctx: OrderUserContext, orderId: string) {
+  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
   await logEvent("check_payment", { ...ctx, orderId });
   const status = await telegramOrdersService.getOrderStatus({ botType: ctx.botType, telegramUserId: ctx.telegramUserId, telegramChatId: ctx.chatId, telegramUsername: ctx.telegramUsername, orderId });
   if (status.status !== "PAID") {
@@ -607,6 +626,7 @@ async function sendPaymentState(client: TelegramApiClient, ctx: OrderUserContext
   return client.sendMessage(ctx.chatId, "Payment received.\nActivation started.\nUsually takes a few minutes.", keyboardActivation(status.id));
 }
 async function sendActivationState(client: TelegramApiClient, ctx: OrderUserContext, orderId: string) {
+  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
   await logEvent("check_activation", { ...ctx, orderId });
   const status = await telegramOrdersService.getOrderStatus({ botType: ctx.botType, telegramUserId: ctx.telegramUserId, telegramChatId: ctx.chatId, telegramUsername: ctx.telegramUsername, orderId });
   if (status.status !== "PAID") return client.sendMessage(ctx.chatId, "Р—Р°РєР°Р· РµС‰С‘ РЅРµ РѕРїР»Р°С‡РµРЅ. РЎРЅР°С‡Р°Р»Р° РїРѕРґС‚РІРµСЂРґРёС‚Рµ РѕРїР»Р°С‚Сѓ.", keyboardMain());
@@ -650,11 +670,12 @@ async function sendActivationState(client: TelegramApiClient, ctx: OrderUserCont
 async function handleToken(client: TelegramApiClient, ctx: OrderUserContext, text: string) {
   const parsed = parseTokenCommand(text);
   if (!parsed) return client.sendMessage(ctx.chatId, "Р¤РѕСЂРјР°С‚ РєРѕРјР°РЅРґС‹: /token <order_id> <С‚РѕРєРµРЅ_РёР»Рё_id>");
-  let orderIdForError = parsed.orderId;
+  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
+  let verifiedOrderId: string | null = null;
   await logEvent("token_submitted", { ...ctx, orderId: parsed.orderId });
   try {
     const order = await telegramOrdersService.getOrderStatus({ botType: ctx.botType, telegramUserId: ctx.telegramUserId, telegramChatId: ctx.chatId, telegramUsername: ctx.telegramUsername, orderId: parsed.orderId });
-    orderIdForError = order.id;
+    verifiedOrderId = order.id;
     if (order.status !== "PAID") return client.sendMessage(ctx.chatId, "Р—Р°РєР°Р· РµС‰С‘ РЅРµ РѕРїР»Р°С‡РµРЅ. РЎРЅР°С‡Р°Р»Р° РЅР°Р¶РјРёС‚Рµ В«РџСЂРѕРІРµСЂРёС‚СЊ РѕРїР»Р°С‚СѓВ».");
     const validation = await ordersService.validateActivationTokenForTelegram(order.id, parsed.token, ctx.telegramUserId);
     if (!validation.ok) {
@@ -669,13 +690,16 @@ async function handleToken(client: TelegramApiClient, ctx: OrderUserContext, tex
     return client.sendMessage(ctx.chatId, ["РўРѕРєРµРЅ РїСЂРёРЅСЏС‚.", "РђРєС‚РёРІР°С†РёСЏ Р·Р°РїСѓС‰РµРЅР°.", result?.taskId ? `Task ID: ${String(result.taskId)}` : ""].filter(Boolean).join("\n"), keyboardActivation(order.id));
   } catch (error) {
     const publicMessage = error instanceof AppError && error.statusCode >= 400 && error.statusCode < 500 ? error.message : "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РїСѓСЃС‚РёС‚СЊ Р°РєС‚РёРІР°С†РёСЋ. РџРѕРїСЂРѕР±СѓР№С‚Рµ СЃРЅРѕРІР° РёР»Рё РѕР±СЂР°С‚РёС‚РµСЃСЊ РІ РїРѕРґРґРµСЂР¶РєСѓ.";
-    await telegramOrdersService.setOrderError({ orderId: orderIdForError, error: publicMessage });
-    await logEvent("activation_start_failed", { ...ctx, orderId: orderIdForError, meta: { error: publicMessage } });    await notifyAdmin("⚠️ Ошибка запуска активации", [
-      `Бот: ${ctx.botType}`,
-      `Order: ${orderIdForError}`,
-      `Пользователь: ${ctx.telegramUsername ? `@${ctx.telegramUsername}` : ctx.telegramUserId}`,
-      `Ошибка: ${publicMessage}`,
-    ]);
+    if (verifiedOrderId) {
+      await telegramOrdersService.setOrderError({ orderId: verifiedOrderId, error: publicMessage });
+      await logEvent("activation_start_failed", { ...ctx, orderId: verifiedOrderId, meta: { error: publicMessage } });
+      await notifyAdmin("⚠️ Ошибка запуска активации", [
+        `Бот: ${ctx.botType}`,
+        `Order: ${verifiedOrderId}`,
+        `Пользователь: ${ctx.telegramUsername ? `@${ctx.telegramUsername}` : ctx.telegramUserId}`,
+        `Ошибка: ${publicMessage}`,
+      ]);
+    }
     return client.sendMessage(ctx.chatId, publicMessage);
   }
 }
@@ -711,8 +735,9 @@ async function handleBuy(client: TelegramApiClient, config: BotConfig, ctx: Orde
 function userCtx(config: BotConfig, messageOrQuery: any, chatOverride?: unknown): OrderUserContext | null {
   const chatId = normalizeTelegramId(chatOverride ?? messageOrQuery?.chat?.id ?? messageOrQuery?.message?.chat?.id ?? messageOrQuery?.from?.id);
   const telegramUserId = normalizeTelegramId(messageOrQuery?.from?.id);
+  const chatType = normalizeTelegramChatType(messageOrQuery?.chat?.type ?? messageOrQuery?.message?.chat?.type);
   if (!chatId || !telegramUserId) return null;
-  return { botType: config.botType, chatId, telegramUserId, telegramUsername: normalizeTelegramUsername(messageOrQuery?.from?.username) };
+  return { botType: config.botType, chatId, telegramUserId, telegramUsername: normalizeTelegramUsername(messageOrQuery?.from?.username), chatType };
 }
 
 async function processUpdate(client: TelegramApiClient, config: BotConfig, update: TelegramUpdate) {
@@ -721,21 +746,24 @@ async function processUpdate(client: TelegramApiClient, config: BotConfig, updat
     if (!text) return;
     const ctx = userCtx(config, update.message);
     if (!ctx) return;
-    await logEvent("message", { ...ctx, messageText: maskSensitiveMessage(text) });
+    const maskedMessageText = maskSensitiveMessage(text);
+    await logEvent("message", { ...ctx, messageText: maskedMessageText });
     await notifyAdmin("👆 Действие в боте", [
       `Бот: ${config.botType}`,
       `Пользователь: ${ctx.telegramUsername ? `@${ctx.telegramUsername}` : ctx.telegramUserId}`,
       `Событие: ${detectMessageAction(text)}`,
-      `Текст: ${maskSensitiveMessage(text).slice(0, 160)}`,
+      `Текст: ${maskedMessageText.slice(0, 160)}`,
     ]);
     if (/^\/start/i.test(text)) {
       const parsed = parseStartPayload(text);
+      const isSiteOrderStart = Boolean(parseSiteOrderStartPayload(parsed.payload));
+      if (isSiteOrderStart && !isPrivateOrderChat(ctx)) return handleSiteOrderStartPayload(client, ctx, parsed.payload);
       updateUserSession(ctx, { pendingPromoInput: false });
       await logEvent("lead_captured", {
         ...ctx,
-        messageText: text,
+        messageText: maskedMessageText,
         meta: {
-          startPayload: parsed.payload || null,
+          startPayload: isSiteOrderStart ? "<site_order_link>" : parsed.payload || null,
           attribution: parsed.attribution || null,
         },
       });
