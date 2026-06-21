@@ -15,7 +15,9 @@
     "prisma:deploy": "prisma migrate deploy",
     "seed": "tsx prisma/seed.ts",
     "bootstrap:user": "tsx scripts/upsert-admin-user.ts",
-    "backfill:service-pages": "tsx scripts/backfill-service-pages.ts"
+    "backfill:service-pages": "tsx scripts/backfill-service-pages.ts",
+    "test:telegram-site-orders": "tsx src/modules/telegram/telegram-site-orders.test.ts",
+    "test": "npm run test:telegram-site-orders"
   },
   "dependencies": {
     "@prisma/client": "^6.3.1",
