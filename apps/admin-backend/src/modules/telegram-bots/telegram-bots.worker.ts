@@ -572,10 +572,15 @@ function maskSensitiveMessage(text: string) {
     const parsed = parseStartPayload(value);
     if (parseSiteOrderStartPayload(parsed.payload)) return "/start <site_order_link>";
   }
-  if (!/^\/token(?:@|\s|$)/i.test(value)) return value;
-  const parsed = parseTokenCommand(value);
-  if (!parsed) return "/token <order_id> <masked>";
-  return "/token " + parsed.orderId + " <masked>";
+  if (/^\/check(?:@|\s|$)/i.test(value)) return "/check <order_id>";
+  if (/^\/token(?:@|\s|$)/i.test(value)) return "/token <order_id> <masked>";
+  return value;
+}
+function maskCallbackData(data: string) {
+  const value = String(data || "").trim();
+  if (/^check_payment:[^:]+$/i.test(value)) return "check_payment:<order_id>";
+  if (/^check_activation:[^:]+$/i.test(value)) return "check_activation:<order_id>";
+  return value;
 }
 function keyboardActivationSuccess() {
   return {
@@ -634,7 +639,9 @@ async function sendActivationState(client: TelegramApiClient, ctx: OrderUserCont
   const status = await telegramOrdersService.getOrderStatus({ botType: ctx.botType, telegramUserId: ctx.telegramUserId, telegramChatId: ctx.chatId, telegramUsername: ctx.telegramUsername, orderId });
   if (status.status !== "PAID") return client.sendMessage(ctx.chatId, "Р—Р°РєР°Р· РµС‰С‘ РЅРµ РѕРїР»Р°С‡РµРЅ. РЎРЅР°С‡Р°Р»Р° РїРѕРґС‚РІРµСЂРґРёС‚Рµ РѕРїР»Р°С‚Сѓ.", keyboardMain());
   const activationInfo = await ordersService.getActivationForTelegram(status.id, ctx.telegramUserId).catch(() => null);
-  if (activationInfo && String(activationInfo.deliveryMode || "").toLowerCase() === "vpn") {
+  const deliveryMode = String(activationInfo?.deliveryMode || "").toLowerCase();
+  const isSiteOrder = String((status as any).source || "").toLowerCase() === "site";
+  if (activationInfo && (isSiteOrder || ["vpn", "credentials", "manual_login"].includes(deliveryMode))) {
     await sendLongMessage(client, ctx.chatId, buildTelegramOrderDetailsText({ order: status, activation: activationInfo }), keyboardActivation(status.id));
     return;
   }
@@ -671,9 +678,9 @@ async function sendActivationState(client: TelegramApiClient, ctx: OrderUserCont
   return client.sendMessage(ctx.chatId, `РђРєС‚РёРІР°С†РёСЏ РµС‰С‘ РЅРµ Р·Р°РїСѓС‰РµРЅР°.\n/token ${status.id} <РІР°С€_С‚РѕРєРµРЅ_РёР»Рё_id>`, keyboardActivation(status.id));
 }
 async function handleToken(client: TelegramApiClient, ctx: OrderUserContext, text: string) {
+  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
   const parsed = parseTokenCommand(text);
   if (!parsed) return client.sendMessage(ctx.chatId, "Р¤РѕСЂРјР°С‚ РєРѕРјР°РЅРґС‹: /token <order_id> <С‚РѕРєРµРЅ_РёР»Рё_id>");
-  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
   let verifiedOrderId: string | null = null;
   await logEvent("token_submitted", { ...ctx, orderId: parsed.orderId });
   try {
@@ -795,6 +802,7 @@ async function processUpdate(client: TelegramApiClient, config: BotConfig, updat
     }
     if (/^\/token(?:@|\s|$)/i.test(text)) return handleToken(client, ctx, text);
     if (/^\/check(?:@|\s|$)/i.test(text)) {
+      if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
       const orderId = parseCheckCommand(text);
       if (!orderId) return client.sendMessage(ctx.chatId, "Р¤РѕСЂРјР°С‚ РєРѕРјР°РЅРґС‹: /check <order_id>");
       return sendActivationState(client, ctx, orderId);
@@ -812,11 +820,12 @@ async function processUpdate(client: TelegramApiClient, config: BotConfig, updat
     const data = String(query.data || "").trim();
     const ctx = userCtx(config, query, query?.message?.chat?.id);
     if (!ctx) return;
-    await logEvent("callback", { ...ctx, callbackData: data });
+    const maskedCallback = maskCallbackData(data);
+    await logEvent("callback", { ...ctx, callbackData: maskedCallback });
     await notifyAdmin("🖱 Клик по кнопке", [
       `Бот: ${config.botType}`,
       `Пользователь: ${ctx.telegramUsername ? `@${ctx.telegramUsername}` : ctx.telegramUserId}`,
-      `Callback: ${data || "-"}`,
+      `Callback: ${maskedCallback || "-"}`,
     ]);
     try {
       const [action, payload = ""] = data.split(":", 2);
