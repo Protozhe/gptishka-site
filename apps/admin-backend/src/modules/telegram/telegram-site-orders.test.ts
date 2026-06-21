@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {
   buildTelegramLinkedOrderText,
+  buildTelegramOrderLinkFailedText,
   buildTelegramOrderDetailsText,
   buildTelegramOrdersText,
 } from "./telegram-order-messages";
@@ -459,6 +460,14 @@ function testTelegramKnownLabelsDoNotExposeInternalValues() {
   );
 }
 
+function testTelegramOrderLinkFailureTextIsSafe() {
+  const text = buildTelegramOrderLinkFailedText(new Error("Invalid order link token: SECRET_TOKEN Prisma stack"));
+
+  assert.match(text, /Не удалось привязать заказ к Telegram/);
+  assert.match(text, /ссылка устарела|уже привязан/i);
+  assert.doesNotMatch(text, /SECRET_TOKEN|Invalid order link token|Prisma/i);
+}
+
 testParseOrderStartPayload();
 testDeepLinkBuilder();
 testRedeemTokenHashVerification();
@@ -477,5 +486,6 @@ testTelegramSupportOrderDetailsText();
 testTelegramUppercaseOrderStatusesUseOrderLabels();
 testTelegramUnknownVerificationStateUsesReadableLabel();
 testTelegramKnownLabelsDoNotExposeInternalValues();
+testTelegramOrderLinkFailureTextIsSafe();
 
 console.log("telegram-site-orders tests passed");

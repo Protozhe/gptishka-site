@@ -7,7 +7,11 @@ import { parseSiteOrderStartPayload } from "../orders/telegram-order-linking";
 import { TelegramBotType, telegramOrdersService } from "../orders/telegram-orders.service";
 import { telegramBotEventsService } from "./telegram-bot-events.service";
 import { sendTelegramNotification } from "../notifications/notifications.service";
-import { buildTelegramLinkedOrderText, buildTelegramOrderDetailsText } from "../telegram/telegram-order-messages";
+import {
+  buildTelegramLinkedOrderText,
+  buildTelegramOrderDetailsText,
+  buildTelegramOrderLinkFailedText,
+} from "../telegram/telegram-order-messages";
 
 type TelegramUpdate = { update_id: number; message?: any; callback_query?: any };
 type BotConfig = { botType: TelegramBotType; serviceName: string; token: string };
@@ -403,13 +407,19 @@ async function handleSiteOrderStartPayload(client: TelegramApiClient, ctx: Order
     await sendPrivateChatRequired(client, ctx);
     return true;
   }
-  const linked = await telegramOrdersService.linkSiteOrderToTelegram({
-    botType: ctx.botType,
-    telegramUserId: ctx.telegramUserId,
-    telegramChatId: ctx.chatId,
-    telegramUsername: ctx.telegramUsername,
-    startPayload: parsed,
-  });
+  const linked = await telegramOrdersService
+    .linkSiteOrderToTelegram({
+      botType: ctx.botType,
+      telegramUserId: ctx.telegramUserId,
+      telegramChatId: ctx.chatId,
+      telegramUsername: ctx.telegramUsername,
+      startPayload: parsed,
+    })
+    .catch(async () => {
+      await client.sendMessage(ctx.chatId, buildTelegramOrderLinkFailedText());
+      return null;
+    });
+  if (!linked) return true;
   await client.sendMessage(ctx.chatId, buildTelegramLinkedOrderText(linked));
   if (String(linked.status || "").toUpperCase() === "PAID") {
     const activation = await ordersService.getActivationForTelegram(linked.id, ctx.telegramUserId).catch((error) => ({

@@ -255,6 +255,14 @@ export function buildTelegramLinkedOrderText(order: TelegramOrderSummary): strin
   return lines.join("\n");
 }
 
+export function buildTelegramOrderLinkFailedText(_error?: unknown): string {
+  return [
+    "Не удалось привязать заказ к Telegram.",
+    "Возможно, ссылка устарела или заказ уже привязан к другому Telegram-аккаунту.",
+    "Откройте свежую ссылку со страницы успешной оплаты или напишите в поддержку GPTishka.",
+  ].join("\n");
+}
+
 export function buildTelegramOrderDetailsText(input: {
   order: TelegramOrderSummary;
   activation?: TelegramActivationPayload | null;
