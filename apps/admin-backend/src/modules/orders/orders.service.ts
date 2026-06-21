@@ -1360,7 +1360,8 @@ function normalizeOrderAccess(access?: string | OrderAccessContext): OrderAccess
 }
 
 function normalizeTelegramOrderOwner(value: unknown) {
-  return String(value || "").trim().replace(/[^\d-]/g, "");
+  const raw = String(value || "").trim();
+  return /^-?\d+$/.test(raw) ? raw : "";
 }
 
 async function assertPaidOrderAccess(orderId: string, access?: string | OrderAccessContext) {
@@ -1391,7 +1392,7 @@ async function assertOrderAccess(orderId: string, access?: string | OrderAccessC
 
   const normalizedAccess = normalizeOrderAccess(access);
   const telegramUserId = normalizeTelegramOrderOwner(normalizedAccess.telegramUserId);
-  if (telegramUserId && String(order.telegramUserId || "") === telegramUserId) {
+  if (telegramUserId && normalizeTelegramOrderOwner(order.telegramUserId) === telegramUserId) {
     return order;
   }
 
@@ -1401,6 +1402,10 @@ async function assertOrderAccess(orderId: string, access?: string | OrderAccessC
     if (!provided) throw new AppError("Activation link token is required", 401);
     const providedHash = crypto.createHash("sha256").update(provided).digest("hex");
     if (providedHash !== expected) throw new AppError("Invalid activation link token", 403);
+  }
+
+  if (String(order.source || "").trim().toLowerCase() === "telegram") {
+    throw new AppError("Activation link token is required", 401);
   }
 
   return order;
