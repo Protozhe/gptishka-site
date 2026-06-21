@@ -382,7 +382,15 @@ export const ordersService = {
   },
 
   async getActivation(orderId: string, orderToken?: string) {
-    const order = await assertPaidOrderAccess(orderId, orderToken);
+    return this.getActivationWithAccess(orderId, { orderToken });
+  },
+
+  async getActivationForTelegram(orderId: string, telegramUserId: string) {
+    return this.getActivationWithAccess(orderId, { telegramUserId });
+  },
+
+  async getActivationWithAccess(orderId: string, access?: string | OrderAccessContext) {
+    const order = await assertPaidOrderAccess(orderId, access);
     const fullOrder = await getOrderWithFirstItem(order.id);
     const firstItem = fullOrder?.items?.[0];
     const deliveryType = resolveOrderDeliveryType(fullOrder?.orderDetails, firstItem?.product?.tags || []);
@@ -482,9 +490,17 @@ export const ordersService = {
   },
 
   async startActivation(orderId: string, token: string, orderToken?: string) {
-    const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
+    return this.startActivationWithAccess(orderId, token, { orderToken });
+  },
+
+  async startActivationForTelegram(orderId: string, token: string, telegramUserId: string) {
+    return this.startActivationWithAccess(orderId, token, { telegramUserId });
+  },
+
+  async startActivationWithAccess(orderId: string, token: string, access?: string | OrderAccessContext) {
+    const activationInfo = (await this.getActivationWithAccess(orderId, access)) as any;
     assertTokenActivationDeliveryMode(activationInfo);
-    return withActivationOrderLock(orderId, async () => startActivationUnsafe(orderId, token, orderToken));
+    return withActivationOrderLock(orderId, async () => startActivationUnsafe(orderId, token, access));
   },
 
   async storeActivationClientToken(orderId: string, token: string, orderToken?: string) {
@@ -570,10 +586,18 @@ export const ordersService = {
   },
 
   async validateActivationToken(orderId: string, token: string, orderToken?: string) {
-    const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
+    return this.validateActivationTokenWithAccess(orderId, token, { orderToken });
+  },
+
+  async validateActivationTokenForTelegram(orderId: string, token: string, telegramUserId: string) {
+    return this.validateActivationTokenWithAccess(orderId, token, { telegramUserId });
+  },
+
+  async validateActivationTokenWithAccess(orderId: string, token: string, access?: string | OrderAccessContext) {
+    const activationInfo = (await this.getActivationWithAccess(orderId, access)) as any;
     assertTokenActivationDeliveryMode(activationInfo);
 
-    const stored = await ensureActivationRecordForTokenFlow(orderId, orderToken, activationInfo);
+    const stored = await ensureActivationRecordForTokenFlow(orderId, access, activationInfo);
 
     const tokenInfo = parseClientTokenInput(token);
     const tokenMeta = buildTokenMeta(tokenInfo);
@@ -1325,8 +1349,22 @@ export const ordersService = {
   },
 };
 
-async function assertPaidOrderAccess(orderId: string, orderToken?: string) {
-  const order = await assertOrderTokenAccess(orderId, orderToken);
+type OrderAccessContext = {
+  orderToken?: string;
+  telegramUserId?: string;
+};
+
+function normalizeOrderAccess(access?: string | OrderAccessContext): OrderAccessContext {
+  if (typeof access === "string") return { orderToken: access };
+  return access || {};
+}
+
+function normalizeTelegramOrderOwner(value: unknown) {
+  return String(value || "").trim().replace(/[^\d-]/g, "");
+}
+
+async function assertPaidOrderAccess(orderId: string, access?: string | OrderAccessContext) {
+  const order = await assertOrderAccess(orderId, access);
 
   if (order.status !== OrderStatus.PAID) {
     if (order.status === OrderStatus.PENDING) {
@@ -1343,13 +1381,23 @@ async function assertPaidOrderAccess(orderId: string, orderToken?: string) {
 }
 
 async function assertOrderTokenAccess(orderId: string, orderToken?: string) {
+  return assertOrderAccess(orderId, { orderToken });
+}
+
+async function assertOrderAccess(orderId: string, access?: string | OrderAccessContext) {
   assertOrderId(orderId);
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) throw new AppError("Order not found", 404);
 
+  const normalizedAccess = normalizeOrderAccess(access);
+  const telegramUserId = normalizeTelegramOrderOwner(normalizedAccess.telegramUserId);
+  if (telegramUserId && String(order.telegramUserId || "") === telegramUserId) {
+    return order;
+  }
+
   const expected = String(order.redeemTokenHash || "").trim();
   if (expected) {
-    const provided = String(orderToken || "").trim();
+    const provided = String(normalizedAccess.orderToken || "").trim();
     if (!provided) throw new AppError("Activation link token is required", 401);
     const providedHash = crypto.createHash("sha256").update(provided).digest("hex");
     if (providedHash !== expected) throw new AppError("Invalid activation link token", 403);
@@ -1563,9 +1611,13 @@ function resolveActivationPoolProductKeyForOrder(orderWithItem: Awaited<ReturnTy
   return baseProductKey;
 }
 
-async function ensureActivationRecordForTokenFlow(orderId: string, orderToken?: string, activationInfo?: any) {
+async function ensureActivationRecordForTokenFlow(
+  orderId: string,
+  access?: string | OrderAccessContext,
+  activationInfo?: any
+) {
   const existing = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
-  const order = await assertPaidOrderAccess(orderId, orderToken);
+  const order = await assertPaidOrderAccess(orderId, access);
   const orderWithItem = await getOrderWithFirstItem(order.id);
   const productKey = resolveActivationPoolProductKeyForOrder(orderWithItem);
   const activationSiteUrl = readActivationSiteUrlFromOrderDetails(orderWithItem?.orderDetails);
@@ -1624,10 +1676,10 @@ async function ensureActivationRecordForTokenFlow(orderId: string, orderToken?: 
   return normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || skeleton;
 }
 
-async function startActivationUnsafe(orderId: string, token: string, orderToken?: string) {
-  const activationInfo = await ordersService.getActivation(orderId, orderToken);
+async function startActivationUnsafe(orderId: string, token: string, access?: string | OrderAccessContext) {
+  const activationInfo = await ordersService.getActivationWithAccess(orderId, access);
   assertTokenActivationDeliveryMode(activationInfo);
-  let stored = await ensureActivationRecordForTokenFlow(orderId, orderToken, activationInfo);
+  let stored = await ensureActivationRecordForTokenFlow(orderId, access, activationInfo);
   const tokenInfo = parseClientTokenInput(token);
   if (!tokenInfo.raw) throw new AppError("Token is required", 400);
   if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
@@ -1658,7 +1710,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || latestBeforeStart;
 
   if (!String(stored.cdk || "").trim()) {
-    const paidOrder = await assertPaidOrderAccess(orderId, orderToken);
+    const paidOrder = await assertPaidOrderAccess(orderId, access);
     const reserved = await activationStore.reserveCdkRecordForOrder({
       productKey: String(stored.productKey || "chatgpt"),
       activationSiteUrl: stored.activationSiteUrl || "",
@@ -1718,7 +1770,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   // For support-flow providers (SuperGrok/Claude), automatically rotate CDK once
   // when upstream reports "key already used"/validation-type errors.
   if (!createResult.ok && isSupportFlow && shouldRotateCdkAfterStartFailure(createResult)) {
-    const paidOrder = await assertPaidOrderAccess(orderId, orderToken);
+    const paidOrder = await assertPaidOrderAccess(orderId, access);
     const nextCdk = await activationStore.reserveCdkForOrder({
       productKey: String(stored.productKey || "chatgpt"),
       orderId: paidOrder.id,
