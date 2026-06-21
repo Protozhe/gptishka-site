@@ -83,6 +83,7 @@
 <noscript><link rel="stylesheet" href="/assets/css/support-widget.css?v=20260315b" /></noscript>
 <link rel="stylesheet" href="/assets/css/home-cro.css?v=20260324-cro12" />
 <link rel="stylesheet" href="/assets/css/home-stability-hotfix.css?v=20260616-go-order18" />
+<link rel="stylesheet" href="/assets/css/home-wide-marketplace.css?v=20260621-wide1" />
 </head>
 <body>
 <script>
@@ -226,19 +227,64 @@
         </div>
 </header>
       
-      <main class="page">
-<div class="hero">
-  <div data-hero-react-root data-lang="ru" data-hero-top="Купить подписку" data-hero-words="ChatGPT Plus|SuperGrok|Claude PRO" data-hero-description="За ~2,5 года работы успешно подключили более 5000+ подписок." data-hero-cta="Выбрать тариф" data-cta-href="/#pricing" data-hero-interval="3400">
-    <h1>Купить подписку ChatGPT Plus, SuperGrok или Claude PRO</h1>
-    <p>За ~2,5 года работы успешно подключили более 5000+ подписок.</p>
-    <a href="/#pricing" class="btn">Выбрать тариф</a>
+      <main class="page home-wide-page">
+<div class="hero home-hero-wide">
+  <div class="home-hero-wide__content">
+    <div class="home-hero-wide__copy">
+      <div
+        data-hero-react-root
+        data-lang="ru"
+        data-hero-top="Подписки на"
+        data-hero-words="ChatGPT Plus|Claude PRO|SuperGrok|GPTishka VPN"
+        data-hero-description="Оформляйте подписки на AI-сервисы и VPN в России: выбирайте тариф, оплачивайте удобным способом, а GPTishka помогает довести подключение до результата."
+        data-hero-cta="Выбрать тариф"
+        data-cta-href="/#pricing"
+        data-hero-interval="3400"
+      >
+        <h1>Подписки на ChatGPT, Claude, SuperGrok и VPN в России</h1>
+        <p>Выберите тариф, оплатите картой, СБП или криптовалютой, а GPTishka поможет с подключением и поддержкой на весь срок подписки.</p>
+        <a href="/#pricing" class="btn">Выбрать тариф</a>
+      </div>
+      <div class="home-hero-wide__actions" aria-label="Основные действия">
+        <a href="/#pricing" class="btn home-hero-wide__primary">Выбрать тариф</a>
+        <a href="/#how" class="btn secondary home-hero-wide__secondary">Как это работает</a>
+      </div>
+      <ul class="hero-trust-pills" aria-label="Ключевые преимущества">
+        <li>Варианты с входом и без входа</li>
+        <li>Оплата картой, СБП и криптовалютой</li>
+        <li>Автоматическая активация там, где доступна</li>
+        <li>Поддержка до результата</li>
+      </ul>
+    </div>
+
+    <aside class="home-hero-wide__panel" aria-label="Популярные сервисы GPTishka">
+      <div class="home-hero-panel__header">
+        <span>GPTishka marketplace</span>
+        <strong>AI и VPN в одном месте</strong>
+      </div>
+      <div class="home-hero-panel__grid">
+        <a href="/chatgpt" class="home-hero-service home-hero-service--chatgpt">
+          <span>ChatGPT</span>
+          <strong>Go / Plus / Pro</strong>
+        </a>
+        <a href="/claude" class="home-hero-service home-hero-service--claude">
+          <span>Claude</span>
+          <strong>PRO</strong>
+        </a>
+        <a href="/supergrok" class="home-hero-service home-hero-service--grok">
+          <span>SuperGrok</span>
+          <strong>1–2 месяца</strong>
+        </a>
+        <a href="/store/vpn/" class="home-hero-service home-hero-service--vpn">
+          <span>GPTishka VPN</span>
+          <strong>VLESS-ключ</strong>
+        </a>
+      </div>
+      <div class="home-hero-panel__note">
+        После оплаты откроется нужный сценарий: автоматическая активация, выдача VPN-ключа или помощь менеджера.
+      </div>
+    </aside>
   </div>
-  <ul class="hero-trust-pills" aria-label="Ключевые преимущества">
-    <li>Без логина и пароля</li>
-    <li>Оплата СБП и картой</li>
-    <li>Подключение за несколько минут</li>
-    <li>Поддержка и гарантия</li>
-  </ul>
 </div>
 
 <section class="trust-bar" aria-label="Гарантии и доверие">
@@ -248,8 +294,8 @@
       <p>Подключение выполняется по токену без передачи данных входа.</p>
     </article>
     <article class="trust-bar__item">
-      <h3>Логин и пароль не нужны</h3>
-      <p>Ваш аккаунт остается под вашим контролем на всех этапах.</p>
+      <h3>Доступны варианты без входа</h3>
+      <p>Для части тарифов клиент активирует доступ самостоятельно, без передачи логина и пароля.</p>
     </article>
     <article class="trust-bar__item">
       <h3>Удобная оплата</h3>
@@ -257,7 +303,7 @@
     </article>
     <article class="trust-bar__item">
       <h3>Поддержка и гарантия</h3>
-      <p>Ваши средства замораживаются на весь период подписки.</p>
+      <p>Если возникнет проблема, поддержка поможет восстановить доступ или предложит решение по условиям гарантии.</p>
     </article>
   </div>
 </section>
@@ -322,8 +368,14 @@
 
     <div class="how-card">
       <div class="how-number">3</div>
-      <h3>Получите доступ и активацию</h3>
-      <p>Сразу после оплаты открывается активация по токену. Если автоактивация не сработает, подключим вручную.</p>
+      <h3>Получите инструкцию или ключ</h3>
+      <p>После оплаты откроется сценарий для выбранного товара: активация по токену, выдача VPN-ключа или инструкция по дальнейшим действиям.</p>
+    </div>
+
+    <div class="how-card">
+      <div class="how-number">4</div>
+      <h3>Поддержка поможет завершить</h3>
+      <p>Если автоматическая активация недоступна или что-то пошло не так, менеджер видит заказ и помогает довести услугу до результата.</p>
     </div>
   </div>
 </section>
@@ -443,6 +495,18 @@
       <source src="/assets/video/hero-activation.mp4" type="video/mp4">
       Ваш браузер не поддерживает встроенное видео.
     </video>
+  </div>
+</section>
+
+<section class="home-final-cta" aria-labelledby="homeFinalCtaTitle">
+  <div class="home-final-cta__content">
+    <p class="home-final-cta__eyebrow">GPTishka</p>
+    <h2 id="homeFinalCtaTitle">Готовы подключить подписку?</h2>
+    <p>Выберите ChatGPT, Claude, SuperGrok или GPTishka VPN. После оплаты сайт откроет нужный сценарий подключения, а поддержка поможет, если потребуется ручная обработка.</p>
+    <div class="home-final-cta__actions">
+      <a href="/#pricing" class="btn">Выбрать тариф</a>
+      <a href="https://t.me/aimarket_gpt" class="btn secondary" target="_blank" rel="noopener noreferrer">Написать в поддержку</a>
+    </div>
   </div>
 </section>
 </main>
