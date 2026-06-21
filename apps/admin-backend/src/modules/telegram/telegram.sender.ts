@@ -25,6 +25,14 @@ export type TelegramSendFailure = {
 
 export type TelegramSendResult = TelegramSendSuccess | TelegramSendFailure;
 
+export type TelegramSendTextInput = {
+  telegramId: string;
+  text: string;
+  replyMarkup?: unknown;
+};
+
+const TELEGRAM_SAFE_TEXT_LIMIT = 3900;
+
 function parseTelegramDescription(description: string): Omit<TelegramSendFailure, "ok" | "description"> {
   const text = String(description || "").toLowerCase();
 
@@ -53,7 +61,7 @@ function toTelegramApiUrl(method: string) {
 }
 
 export const telegramSender = {
-  async sendTextMessage(input: { telegramId: string; text: string }): Promise<TelegramSendResult> {
+  async sendTextMessage(input: TelegramSendTextInput): Promise<TelegramSendResult> {
     const telegramId = String(input.telegramId || "").trim();
     const text = String(input.text || "").trim();
     if (!telegramId || !text) {
@@ -88,6 +96,7 @@ export const telegramSender = {
           chat_id: telegramId,
           text,
           disable_web_page_preview: true,
+          ...(input.replyMarkup ? { reply_markup: input.replyMarkup } : {}),
         }),
         signal: controller.signal,
       });
@@ -138,5 +147,44 @@ export const telegramSender = {
       clearTimeout(timeout);
     }
   },
-};
 
+  async sendLongTextMessage(input: TelegramSendTextInput): Promise<TelegramSendResult> {
+    const telegramId = String(input.telegramId || "").trim();
+    const text = String(input.text || "").trim();
+    if (!telegramId || !text) {
+      return this.sendTextMessage(input);
+    }
+
+    const chunks: string[] = [];
+    let rest = text;
+    while (rest.length > TELEGRAM_SAFE_TEXT_LIMIT) {
+      const slice = rest.slice(0, TELEGRAM_SAFE_TEXT_LIMIT);
+      const cut = Math.max(slice.lastIndexOf("\n"), slice.lastIndexOf(" "));
+      const index = cut > 1000 ? cut : TELEGRAM_SAFE_TEXT_LIMIT;
+      chunks.push(rest.slice(0, index).trim());
+      rest = rest.slice(index).trimStart();
+    }
+    if (rest) chunks.push(rest);
+
+    let lastSuccess: TelegramSendResult | null = null;
+    for (let index = 0; index < chunks.length; index += 1) {
+      const result = await this.sendTextMessage({
+        telegramId,
+        text: chunks[index],
+        replyMarkup: index === chunks.length - 1 ? input.replyMarkup : undefined,
+      });
+      if (!result.ok) return result;
+      lastSuccess = result;
+    }
+
+    return (
+      lastSuccess || {
+        ok: false,
+        retryable: false,
+        deactivateLink: false,
+        code: "bad_request",
+        description: "telegramId and text are required",
+      }
+    );
+  },
+};
