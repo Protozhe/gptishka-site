@@ -28,14 +28,19 @@ export type TelegramActivationPayload = {
   lastProviderMessage?: string | null;
 };
 
+const MOSCOW_TIME_ZONE = "Europe/Moscow";
+
 const PAID_STATUSES = new Set(["paid", "completed", "activated", "fulfilled", "delivered"]);
 
 const STATUS_LABELS: Record<string, string> = {
   new: "новый",
-  pending: "ожидает оплаты",
+  pending: "ожидает обработки",
   waiting_payment: "ожидает оплаты",
   awaiting_payment: "ожидает оплаты",
+  unpaid: "не оплачен",
   paid: "оплачен",
+  running: "выполняется",
+  processing: "в обработке",
   completed: "выполнен",
   activated: "активирован",
   fulfilled: "выполнен",
@@ -43,33 +48,72 @@ const STATUS_LABELS: Record<string, string> = {
   cancelled: "отменён",
   canceled: "отменён",
   failed: "ошибка",
+  error: "ошибка",
   refunded: "возврат",
+  waiting_for_token: "ожидает токен входа",
+  credentials_ready: "данные для входа готовы",
+  pending_manual: "ожидает ручной обработки",
+  vpn_ready: "VPN готов",
+  issued: "выдан",
+  success: "успешно",
+};
+
+const VERIFICATION_LABELS: Record<string, string> = {
+  pending: "ожидает проверки",
+  running: "проверяется",
+  processing: "проверяется",
+  completed: "проверка завершена",
+  success: "проверка пройдена",
+  failed: "проверка не прошла",
+  error: "ошибка проверки",
 };
 
 const DELIVERY_LABELS: Record<string, string> = {
-  vpn: "VPN",
+  activation: "автоматическая активация",
+  support: "через поддержку",
+  support_claude: "активация Claude через поддержку",
+  vpn: "VPN-доступ",
   credentials: "логин и пароль",
   manual_login: "ручная обработка менеджером",
+  no_login: "без передачи логина",
+  with_login: "с логином пользователя",
   token: "активация по токену",
-  support: "через поддержку",
 };
 
 function clean(value: string | null | undefined): string {
   return String(value ?? "").trim();
 }
 
+function normalize(value: string | null | undefined): string {
+  return clean(value).toLowerCase();
+}
+
 function isPaidOrder(order: TelegramOrderSummary): boolean {
-  return PAID_STATUSES.has(clean(order.status).toLowerCase());
+  return PAID_STATUSES.has(normalize(order.status));
+}
+
+function humanizeFallback(value: string | null | undefined): string {
+  const text = clean(value);
+  if (!text) {
+    return "неизвестен";
+  }
+
+  return text.replace(/[_-]+/g, " ");
 }
 
 function labelStatus(status: string | null | undefined): string {
-  const normalized = clean(status).toLowerCase();
-  return (STATUS_LABELS[normalized] ?? clean(status)) || "неизвестен";
+  const normalized = normalize(status);
+  return STATUS_LABELS[normalized] ?? humanizeFallback(status);
+}
+
+function labelVerification(status: string | null | undefined): string {
+  const normalized = normalize(status);
+  return VERIFICATION_LABELS[normalized] ?? labelStatus(status);
 }
 
 function labelDelivery(type: string | null | undefined): string {
-  const normalized = clean(type).toLowerCase();
-  return DELIVERY_LABELS[normalized] ?? clean(type);
+  const normalized = normalize(type);
+  return DELIVERY_LABELS[normalized] ?? humanizeFallback(type);
 }
 
 function formatDate(value: Date | string | null | undefined): string {
@@ -83,6 +127,7 @@ function formatDate(value: Date | string | null | undefined): string {
   }
 
   return date.toLocaleString("ru-RU", {
+    timeZone: MOSCOW_TIME_ZONE,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -213,8 +258,8 @@ export function buildTelegramOrderDetailsText(input: {
     ].join("\n");
   }
 
-  const deliveryMode = clean(activation?.deliveryMode).toLowerCase();
-  const activationFlow = clean(activation?.activationFlow).toLowerCase();
+  const deliveryMode = normalize(activation?.deliveryMode);
+  const activationFlow = normalize(activation?.activationFlow);
 
   if (deliveryMode === "vpn") {
     const lines = [...baseLines, "", "Данные VPN-доступа:"];
@@ -226,6 +271,7 @@ export function buildTelegramOrderDetailsText(input: {
       clean(activation?.accessLink) || formatSubscriptionConfig(activation?.subscriptionConfig)
     );
     pushIfPresent(lines, "Deeplink", activation?.deeplinkUrl);
+    pushIfPresent(lines, "Статус активации", labelStatus(activation?.status));
     pushIfPresent(lines, "Сообщение", activation?.message);
     lines.push("");
     lines.push(`Если ссылка потерялась, откройте /orders или используйте /check ${order.id}.`);
@@ -234,6 +280,7 @@ export function buildTelegramOrderDetailsText(input: {
 
   if (deliveryMode === "credentials") {
     const lines = [...baseLines, "", "Данные для входа:"];
+    pushIfPresent(lines, "Статус активации", labelStatus(activation?.status));
     pushIfPresent(lines, "Логин", activation?.credentials?.login);
     pushIfPresent(lines, "Пароль", activation?.credentials?.password);
     pushIfPresent(lines, "Сообщение", activation?.message);
@@ -255,13 +302,13 @@ export function buildTelegramOrderDetailsText(input: {
 
   const lines = [...baseLines, "", "Для завершения активации может понадобиться токен входа."];
   pushIfPresent(lines, "Статус активации", labelStatus(activation?.status));
-  pushIfPresent(lines, "Проверка", activation?.verificationState);
+  pushIfPresent(lines, "Проверка", labelVerification(activation?.verificationState));
   pushIfPresent(lines, "Сообщение провайдера", activation?.lastProviderMessage);
   pushIfPresent(lines, "Сообщение", activation?.message);
   pushIfPresent(lines, "Поддержка", activation?.supportUrl);
   pushIfPresent(lines, "Email поддержки", activation?.supportEmail);
 
-  if (activationFlow === "support") {
+  if (activationFlow === "support" || deliveryMode === "support" || deliveryMode === "support_claude") {
     lines.push("Если токен не появится, обратитесь в поддержку и укажите номер заказа.");
   }
 
