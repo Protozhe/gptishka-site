@@ -684,6 +684,7 @@ function initLanguageSwitch() {
 const ACTIVATION_LAST_ORDER_ID_KEY = "gptishka_activation_order_id";
 const ACTIVATION_ORDER_TOKEN_PREFIX = "gptishka_activation_order_token:";
 const ACTIVATION_RESUME_URL_KEY = "gptishka_activation_resume_url";
+const ACTIVATION_TELEGRAM_URL_KEY = "gptishka_activation_telegram_url";
 const ACTIVATION_RESUME_SAVED_AT_KEY = "gptishka_activation_saved_at";
 const ACTIVATION_RESUME_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 
@@ -696,6 +697,7 @@ function clearStoredActivationResumeContext(orderId) {
     }
     localStorage.removeItem(ACTIVATION_LAST_ORDER_ID_KEY);
     localStorage.removeItem(ACTIVATION_RESUME_URL_KEY);
+    localStorage.removeItem(ACTIVATION_TELEGRAM_URL_KEY);
     localStorage.removeItem(ACTIVATION_RESUME_SAVED_AT_KEY);
   } catch (_) {
     // Ignore storage cleanup errors.
@@ -707,28 +709,45 @@ function readStoredActivationResumeContext() {
     const savedAt = Number(localStorage.getItem(ACTIVATION_RESUME_SAVED_AT_KEY) || "0");
     if (!Number.isFinite(savedAt) || savedAt <= 0 || Date.now() - savedAt > ACTIVATION_RESUME_TTL_MS) {
       clearStoredActivationResumeContext();
-      return { orderId: "", token: "" };
+      return { orderId: "", token: "", telegramUrl: "" };
     }
 
     const orderId = String(localStorage.getItem(ACTIVATION_LAST_ORDER_ID_KEY) || "").trim();
     const token = orderId
       ? String(localStorage.getItem(`${ACTIVATION_ORDER_TOKEN_PREFIX}${orderId}`) || "").trim()
       : "";
+    const telegramUrl = normalizeTelegramOrderUrl(localStorage.getItem(ACTIVATION_TELEGRAM_URL_KEY) || "");
     if (!orderId || !token) {
       clearStoredActivationResumeContext(orderId);
-      return { orderId: "", token: "" };
+      return { orderId: "", token: "", telegramUrl: "" };
     }
 
-    return { orderId, token };
+    return { orderId, token, telegramUrl };
   } catch (_) {
-    return { orderId: "", token: "" };
+    return { orderId: "", token: "", telegramUrl: "" };
   }
 }
 
-function persistActivationResumeContext(orderId, token, activationUrl) {
+function normalizeTelegramOrderUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    const parsed = new URL(raw);
+    const protocol = parsed.protocol.toLowerCase();
+    const hostname = parsed.hostname.toLowerCase();
+    if (protocol !== "https:") return "";
+    if (hostname !== "t.me" && hostname !== "telegram.me") return "";
+    return parsed.toString();
+  } catch (_) {
+    return "";
+  }
+}
+
+function persistActivationResumeContext(orderId, token, activationUrl, telegramUrl) {
   const safeOrderId = String(orderId || "").trim();
   let safeToken = String(token || "").trim();
   const safeActivationUrl = String(activationUrl || "").trim();
+  const safeTelegramUrl = normalizeTelegramOrderUrl(telegramUrl);
   if (!safeOrderId) return;
 
   if (!safeToken && safeActivationUrl) {
@@ -749,6 +768,11 @@ function persistActivationResumeContext(orderId, token, activationUrl) {
       ACTIVATION_RESUME_URL_KEY,
       buildActivationResumeUrl(safeOrderId, safeToken)
     );
+    if (safeTelegramUrl) {
+      localStorage.setItem(ACTIVATION_TELEGRAM_URL_KEY, safeTelegramUrl);
+    } else {
+      localStorage.removeItem(ACTIVATION_TELEGRAM_URL_KEY);
+    }
   } catch (_) {
     // Ignore storage write errors.
   }
@@ -768,7 +792,7 @@ function initActivationResumeShortcut() {
   if (path.includes("redeem-start.html") || path.includes("success.html")) return;
   const isEnPage = path.startsWith("/en/");
 
-  const { orderId, token: orderToken } = readStoredActivationResumeContext();
+  const { orderId, token: orderToken, telegramUrl } = readStoredActivationResumeContext();
   if (!orderId || !orderToken) return;
 
   const anchor = document.createElement("a");
@@ -780,6 +804,18 @@ function initActivationResumeShortcut() {
     trackAnalyticsEvent("resume_activation_click");
   });
   document.body.appendChild(anchor);
+
+  if (telegramUrl) {
+    const telegramAnchor = document.createElement("a");
+    telegramAnchor.href = telegramUrl;
+    telegramAnchor.className = "gptishka-resume-activation gptishka-resume-activation--telegram";
+    telegramAnchor.textContent = isEnPage ? "My purchases in Telegram" : "Мои покупки в Telegram";
+    telegramAnchor.setAttribute("aria-label", isEnPage ? "Open purchases in Telegram" : "Открыть покупки в Telegram");
+    telegramAnchor.addEventListener("click", () => {
+      trackAnalyticsEvent("telegram_order_link_click");
+    });
+    document.body.appendChild(telegramAnchor);
+  }
 }
   
 (() => {
@@ -4899,7 +4935,8 @@ function initActivationResumeShortcut() {
     persistActivationResumeContext(
       String(data.order_id || ""),
       String(data.activation_token || ""),
-      String(data.activation_url || "")
+      String(data.activation_url || ""),
+      String(data.telegram_url || "")
     );
 
     const checkoutUrl = String(data.pay_url);

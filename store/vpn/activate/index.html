@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/css/logo.min.css" />
   <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260312fix2" />
-  <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260312fix2" />
+  <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260621-telegram-orders1" />
   <link rel="stylesheet" href="/assets/css/support-widget.css?v=20260315b" />
   <style>
     :root {
@@ -921,6 +921,7 @@
             <div class="key-actions">
               <button id="vpnCopyKeyBtn" type="button" class="btn" disabled>Скопировать ключ</button>
               <button id="vpnDownloadConfigBtn" type="button" class="btn secondary key-soft-btn" disabled>Скачать конфигурацию</button>
+              <a class="btn secondary key-soft-btn" id="vpnTelegramBtn" href="#" target="_blank" rel="noopener" hidden>Сохранить в Telegram</a>
               <button id="vpnReloadBtn" type="button" class="btn secondary key-soft-btn">Обновить</button>
             </div>
 
@@ -1023,6 +1024,8 @@
       const ACTIVATION_LAST_ORDER_ID_KEY = "gptishka_activation_order_id";
       const ACTIVATION_ORDER_TOKEN_PREFIX = "gptishka_activation_order_token:";
       const ACTIVATION_RESUME_URL_KEY = "gptishka_activation_resume_url";
+      const TELEGRAM_BOT_USERNAME = "GPTishka_myBot";
+      const TELEGRAM_URL_STORAGE_KEY = "gptishka_activation_telegram_url";
       const ACTIVATION_RESUME_SAVED_AT_KEY = "gptishka_activation_saved_at";
 
       function resolveLangTargetPath(targetLang) {
@@ -1086,6 +1089,7 @@
       const keyEl = document.getElementById("vpnAccessKey");
       const copyBtn = document.getElementById("vpnCopyKeyBtn");
       const downloadBtn = document.getElementById("vpnDownloadConfigBtn");
+      const telegramBtn = document.getElementById("vpnTelegramBtn");
       const reloadBtn = document.getElementById("vpnReloadBtn");
       const goActivationBtn = document.getElementById("vpnGoActivationBtn");
       const activationBottomCta = document.querySelector(".activation-bottom-cta");
@@ -1139,6 +1143,7 @@
           }
           localStorage.removeItem(ACTIVATION_LAST_ORDER_ID_KEY);
           localStorage.removeItem(ACTIVATION_RESUME_URL_KEY);
+          localStorage.removeItem(TELEGRAM_URL_STORAGE_KEY);
           localStorage.removeItem(ACTIVATION_RESUME_SAVED_AT_KEY);
         } catch (_) {
           // Ignore storage cleanup errors.
@@ -1160,6 +1165,90 @@
           // Ignore storage write errors.
         }
         return activationUrl;
+      }
+
+      function normalizeTelegramOrderUrl(value) {
+        const raw = String(value || "").trim();
+        if (!raw) return "";
+        try {
+          const parsed = new URL(raw);
+          const protocol = parsed.protocol.toLowerCase();
+          const hostname = parsed.hostname.toLowerCase();
+          if (protocol !== "https:") return "";
+          if (hostname !== "t.me" && hostname !== "telegram.me") return "";
+          return parsed.toString();
+        } catch (_) {
+          return "";
+        }
+      }
+
+      async function sha256Bytes(value) {
+        if (!window.crypto || !window.crypto.subtle || typeof TextEncoder === "undefined") return null;
+        const encoded = new TextEncoder().encode(String(value || ""));
+        return new Uint8Array(await window.crypto.subtle.digest("SHA-256", encoded));
+      }
+
+      function bytesToHex(bytes) {
+        return Array.from(bytes || [])
+          .map((byte) => byte.toString(16).padStart(2, "0"))
+          .join("");
+      }
+
+      function bytesToBase64Url(bytes) {
+        let binary = "";
+        Array.from(bytes || []).forEach((byte) => {
+          binary += String.fromCharCode(byte);
+        });
+        return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+      }
+
+      async function buildTelegramOrderFallbackUrl(orderId, token) {
+        const safeOrderId = String(orderId || "").trim();
+        const safeToken = String(token || "").trim();
+        if (!safeOrderId || !safeToken || !window.crypto || !window.crypto.subtle) return "";
+
+        try {
+          const tokenHashBytes = await sha256Bytes(safeToken);
+          if (!tokenHashBytes) return "";
+          const redeemTokenHash = bytesToHex(tokenHashBytes);
+          const proofBytes = await sha256Bytes(`tg-order-link:${safeOrderId}:${redeemTokenHash}`);
+          if (!proofBytes) return "";
+          const proof = bytesToBase64Url(proofBytes).slice(0, 32);
+          if (!proof) return "";
+          const url = new URL(`https://t.me/${TELEGRAM_BOT_USERNAME}`);
+          url.searchParams.set("start", `o_${safeOrderId}_${proof}`);
+          return url.toString();
+        } catch (_) {
+          return "";
+        }
+      }
+
+      function setTelegramOrderButton(url) {
+        if (!telegramBtn) return;
+        const safeUrl = normalizeTelegramOrderUrl(url);
+        if (!safeUrl) {
+          telegramBtn.hidden = true;
+          telegramBtn.setAttribute("href", "#");
+          return;
+        }
+        telegramBtn.setAttribute("href", safeUrl);
+        telegramBtn.hidden = false;
+      }
+
+      async function refreshTelegramOrderButton(context) {
+        const safeContext = context || readOrderContext();
+        let telegramUrl = "";
+        try {
+          telegramUrl = normalizeTelegramOrderUrl(localStorage.getItem(TELEGRAM_URL_STORAGE_KEY) || "");
+        } catch (_) {
+          telegramUrl = "";
+        }
+
+        if (!telegramUrl) {
+          telegramUrl = await buildTelegramOrderFallbackUrl(safeContext.orderId, safeContext.token);
+        }
+
+        setTelegramOrderButton(telegramUrl);
       }
 
       function setActivationEntryLink(url) {
@@ -1300,6 +1389,7 @@
       async function refreshActivationReminder() {
         const context = readOrderContext();
         setActivationEntryLink("");
+        void refreshTelegramOrderButton(context);
         if (!context.orderId || !context.token) return;
 
         try {
@@ -1310,6 +1400,7 @@
             if (response.status === 409) {
               clearActivationResumeContext(context.orderId);
               setActivationEntryLink("");
+              void refreshTelegramOrderButton(context);
               return;
             }
             return;
@@ -1322,11 +1413,13 @@
           if (!requiresActivation) {
             clearActivationResumeContext(context.orderId);
             setActivationEntryLink("");
+            void refreshTelegramOrderButton(context);
             return;
           }
 
           const activationUrl = persistActivationResumeContext(context.orderId, context.token);
           setActivationEntryLink(activationUrl);
+          void refreshTelegramOrderButton(context);
         } catch (_) {}
       }
 
@@ -1384,6 +1477,7 @@
 
       initLanguageSwitch();
       applyDeviceSelection("");
+      void refreshTelegramOrderButton();
       void refreshActivationReminder();
       startActivationReminderPolling();
       loadVpnAccess();

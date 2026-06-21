@@ -36,6 +36,7 @@
     <div class="actions">
       <a class="btn primary" href="/">На главную</a>
       <a class="btn" href="/index.html#pricing">К тарифам</a>
+      <a class="btn" id="telegramOrderLink" href="#" target="_blank" rel="noopener" hidden>Открыть покупки в Telegram</a>
     </div>
   </section>
 
@@ -43,6 +44,8 @@
     const params = new URLSearchParams(window.location.search);
     const orderId = String(params.get("order_id") || params.get("orderId") || "").trim();
     const linkToken = String(params.get("t") || "").trim();
+    const TELEGRAM_BOT_USERNAME = "GPTishka_myBot";
+    const TELEGRAM_URL_STORAGE_KEY = "gptishka_activation_telegram_url";
     const LAST_PAID_ORDER_KEY = "gptishka_last_paid_order_id";
     const CART_STORAGE_KEYS = [
       "gptishka_cart_v1",
@@ -56,6 +59,7 @@
     const emailMaskedEl = document.getElementById("emailMasked");
     const amountEl = document.getElementById("amount");
     const statusEl = document.getElementById("statusText");
+    const telegramOrderLinkEl = document.getElementById("telegramOrderLink");
     const SUPPORT_WIDGET_SELECTORS = [
       "#gptishka-support-widget",
       ".support-widget",
@@ -85,7 +89,86 @@
       } catch (_) {
         // Ignore storage write errors.
       }
+      void exposeTelegramOrderLink(orderId, linkToken);
       pollOrderStatus(orderId);
+    }
+
+    function normalizeTelegramOrderUrl(value) {
+      const raw = String(value || "").trim();
+      if (!raw) return "";
+      try {
+        const parsed = new URL(raw);
+        const protocol = parsed.protocol.toLowerCase();
+        const hostname = parsed.hostname.toLowerCase();
+        if (protocol !== "https:") return "";
+        if (hostname !== "t.me" && hostname !== "telegram.me") return "";
+        return parsed.toString();
+      } catch (_) {
+        return "";
+      }
+    }
+
+    async function sha256Bytes(value) {
+      if (!window.crypto || !window.crypto.subtle || typeof TextEncoder === "undefined") return null;
+      const encoded = new TextEncoder().encode(String(value || ""));
+      return new Uint8Array(await window.crypto.subtle.digest("SHA-256", encoded));
+    }
+
+    function bytesToHex(bytes) {
+      return Array.from(bytes || [])
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    function bytesToBase64Url(bytes) {
+      let binary = "";
+      Array.from(bytes || []).forEach((byte) => {
+        binary += String.fromCharCode(byte);
+      });
+      return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+    }
+
+    async function buildTelegramOrderFallbackUrl(id, token) {
+      const safeOrderId = String(id || "").trim();
+      const safeToken = String(token || "").trim();
+      if (!safeOrderId || !safeToken || !window.crypto || !window.crypto.subtle) return "";
+
+      try {
+        const tokenHashBytes = await sha256Bytes(safeToken);
+        if (!tokenHashBytes) return "";
+        const redeemTokenHash = bytesToHex(tokenHashBytes);
+        const proofBytes = await sha256Bytes(`tg-order-link:${safeOrderId}:${redeemTokenHash}`);
+        if (!proofBytes) return "";
+        const proof = bytesToBase64Url(proofBytes).slice(0, 32);
+        if (!proof) return "";
+        const url = new URL(`https://t.me/${TELEGRAM_BOT_USERNAME}`);
+        url.searchParams.set("start", `o_${safeOrderId}_${proof}`);
+        return url.toString();
+      } catch (_) {
+        return "";
+      }
+    }
+
+    async function exposeTelegramOrderLink(id, token) {
+      if (!telegramOrderLinkEl) return;
+      let telegramUrl = "";
+      try {
+        telegramUrl = normalizeTelegramOrderUrl(localStorage.getItem(TELEGRAM_URL_STORAGE_KEY) || "");
+      } catch (_) {
+        telegramUrl = "";
+      }
+      if (!telegramUrl) {
+        telegramUrl = await buildTelegramOrderFallbackUrl(id, token);
+      }
+
+      if (!telegramUrl) {
+        telegramOrderLinkEl.hidden = true;
+        telegramOrderLinkEl.setAttribute("href", "#");
+        return;
+      }
+
+      telegramOrderLinkEl.setAttribute("href", telegramUrl);
+      telegramOrderLinkEl.hidden = false;
     }
 
     async function pollOrderStatus(id) {
