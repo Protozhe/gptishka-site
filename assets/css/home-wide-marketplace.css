@@ -284,6 +284,78 @@
   gap: 10px;
 }
 
+.home-hero-process {
+  counter-reset: hero-process;
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-hero-process li {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 12px;
+  align-items: start;
+  min-width: 0;
+  padding: 14px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  background: rgba(255, 255, 255, 0.54);
+  box-shadow: 0 14px 30px rgba(34, 61, 124, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.home-hero-process li::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(42, 91, 255, 0.1), transparent 48%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 58%);
+}
+
+.home-hero-process span {
+  position: relative;
+  z-index: 1;
+  grid-row: 1 / span 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #2a5bff, #138a78);
+  box-shadow: 0 10px 20px rgba(42, 91, 255, 0.18);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.home-hero-process strong,
+.home-hero-process p {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.home-hero-process strong {
+  color: #142036;
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.home-hero-process p {
+  margin: 0;
+  color: rgba(24, 34, 54, 0.68);
+  font-size: 13px;
+  line-height: 1.42;
+}
+
 .home-hero-service {
   display: grid;
   gap: 8px;
@@ -582,6 +654,31 @@
 
   .home-wide-page .home-hero-wide__panel {
     max-width: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .home-hero-process {
+    gap: 8px;
+  }
+
+  .home-hero-process li {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    padding: 11px 12px;
+    border-radius: 18px;
+  }
+
+  .home-hero-process span {
+    grid-row: auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    font-size: 11px;
+  }
+
+  .home-hero-process p {
+    display: none;
   }
 }
 
