@@ -170,6 +170,37 @@ function withLegacyModalFallback(payload) {
   };
 }
 
+function containsPublicVpnMarker(value) {
+  return /\b(vpn|vless|xray|reality)\b|v\*n|gptishka[-_\s]*vpn|\/catalog\/vpn|\/store\/vpn/i.test(String(value || ""));
+}
+
+function isHiddenPublicVpnProduct(item) {
+  const tags = Array.isArray(item?.tags) ? item.tags : [];
+  const deliveryType = String(item?.deliveryType || "").trim().toLowerCase();
+  const deliveryMethod = String(item?.deliveryMethod || "").trim();
+  if (deliveryType === "vpn" || deliveryMethod === "3") return true;
+
+  return [item?.slug, item?.baseSlug, item?.product, item?.title, item?.titleEn, item?.category]
+    .filter(Boolean)
+    .some(containsPublicVpnMarker);
+}
+
+function stripPublicVpnTags(item) {
+  if (!item || typeof item !== "object" || !Array.isArray(item.tags)) return item;
+  return {
+    ...item,
+    tags: item.tags.filter((tag) => !containsPublicVpnMarker(tag)),
+  };
+}
+
+function sanitizePublicProductsPayload(payload) {
+  if (!payload || typeof payload !== "object") return payload;
+  const items = Array.isArray(payload.items)
+    ? payload.items.filter((item) => !isHiddenPublicVpnProduct(item)).map(stripPublicVpnTags)
+    : payload.items;
+  return { ...payload, items };
+}
+
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
@@ -761,6 +792,24 @@ function createApp() {
     return next();
   });
 
+  app.use((req, res, next) => {
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      return next();
+    }
+
+    const staticPath = String(req.path || "").toLowerCase();
+    if (
+      staticPath === "/store/vpn/index.html" ||
+      staticPath === "/vpn/index.html" ||
+      staticPath === "/catalog/vpn/index.html" ||
+      staticPath === "/en/catalog/vpn/index.html"
+    ) {
+      return res.status(404).send("Not found");
+    }
+
+    return next();
+  });
+
   app.use(
     express.static(__dirname, {
       dotfiles: "ignore",
@@ -1038,7 +1087,7 @@ function createApp() {
       }
 
       const payload = await response.json();
-      return res.json(withLegacyModalFallback(payload));
+      return res.json(sanitizePublicProductsPayload(withLegacyModalFallback(payload)));
     } catch (_) {
       return res.status(502).json({ error: "Products API unavailable" });
     }
@@ -1677,7 +1726,7 @@ function createApp() {
   });
 
   app.get(["/store/vpn", "/store/vpn/"], (_req, res) => {
-    sendFreshHtml(res, path.join(__dirname, "store", "vpn", "index.html"));
+    res.status(404).send("Not found");
   });
 
   const sendVpnActivationPage = (_req, res) => {
@@ -1692,12 +1741,8 @@ function createApp() {
 
   app.get("/store/vpn/activate/", sendVpnActivationPage);
 
-  app.get("/vpn", (_req, res) => {
-    res.sendFile(path.join(__dirname, "vpn", "index.html"));
-  });
-
-  app.get("/vpn/", (_req, res) => {
-    res.sendFile(path.join(__dirname, "vpn", "index.html"));
+  app.get(["/vpn", "/vpn/"], (_req, res) => {
+    res.status(404).send("Not found");
   });
 
   // Backward-compatible asset aliases used by older cached pages.

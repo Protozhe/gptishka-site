@@ -47,6 +47,25 @@ function localizedModalDescription(
     : item.modalDescription || item.description;
 }
 
+function containsHiddenVpnMarker(value: unknown) {
+  return /\b(vpn|vless|xray|reality)\b|v\*n|gptishka[-_\s]*vpn/i.test(String(value || ""));
+}
+
+export function isHiddenPublicVpnProduct(item: any) {
+  const tags = Array.isArray(item?.tags) ? item.tags : [];
+  const deliveryType = resolveProductDeliveryType(tags);
+  if (deliveryType === "vpn") return true;
+
+  const productKeys = [item?.slug, item?.title, item?.titleEn, item?.category]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
+  return productKeys.some(containsHiddenVpnMarker);
+}
+
+function publicTags(tags: unknown) {
+  return (Array.isArray(tags) ? tags : []).filter((tag) => !containsHiddenVpnMarker(tag));
+}
+
 function buildVisualPayload(item: any, lang: PublicProductLang) {
   const visual = item.visualConfig || null;
   const title = localizedTitle(item, lang);
@@ -107,7 +126,7 @@ export function buildPublicProduct(
     currency: Currency.RUB,
     category: localizedCategory(item.category, lang),
     stock: item.stock ?? null,
-    tags: item.tags,
+    tags: publicTags(item.tags),
     badge: resolveBadge(item.tags || []),
     deliveryType,
     deliveryMethod: deliveryTypeToMethod(deliveryType),

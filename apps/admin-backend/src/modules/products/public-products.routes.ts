@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { asyncHandler } from "../../common/http/async-handler";
 import { prisma } from "../../config/prisma";
-import { buildPublicProducts, fallbackSectionsFromProducts } from "./public-product-presenter";
+import { buildPublicProducts, fallbackSectionsFromProducts, isHiddenPublicVpnProduct } from "./public-product-presenter";
 
 export const publicProductsRouter = Router();
 
@@ -56,7 +56,7 @@ publicProductsRouter.get(
     });
 
     res.json({
-      items: items.flatMap((item) => buildPublicProducts(item, lang)),
+      items: items.filter((item) => !isHiddenPublicVpnProduct(item)).flatMap((item) => buildPublicProducts(item, lang)),
     });
   })
 );
@@ -111,6 +111,7 @@ publicProductsRouter.get(
         description: section.description,
         sortOrder: section.sortOrder,
         products: section.placements
+          .filter((placement) => !isHiddenPublicVpnProduct(placement.product))
           .flatMap((placement) => buildPublicProducts(placement.product, lang))
           .filter((product) => product.visual.isVisible),
       }))
@@ -140,9 +141,10 @@ publicProductsRouter.get(
     });
 
     res.json({
-      sections: fallbackSectionsFromProducts(products, lang).filter((section) =>
-        section.products.some((product) => product.visual.isVisible)
-      ),
+      sections: fallbackSectionsFromProducts(
+        products.filter((item) => !isHiddenPublicVpnProduct(item)),
+        lang
+      ).filter((section) => section.products.some((product) => product.visual.isVisible)),
     });
   })
 );
