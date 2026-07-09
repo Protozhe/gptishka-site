@@ -1,5 +1,5 @@
 import { Currency } from "@prisma/client";
-import { deliveryTypeToMethod, resolveProductDeliveryType } from "../../common/utils/product-delivery";
+import { deliveryTypeToMethod, resolveProductDeliveryType, type ProductDeliveryType } from "../../common/utils/product-delivery";
 import { toRub } from "../../common/utils/fx";
 import { normalizeProductActivationVariants } from "../../common/utils/product-activation-variants";
 
@@ -63,7 +63,25 @@ export function isHiddenPublicVpnProduct(item: any) {
 }
 
 function publicTags(tags: unknown) {
-  return (Array.isArray(tags) ? tags : []).filter((tag) => !containsHiddenVpnMarker(tag));
+  return (Array.isArray(tags) ? tags : []).filter((tag) => {
+    if (containsHiddenVpnMarker(tag)) return false;
+    const normalized = String(tag || "").trim().toLowerCase();
+    return ![
+      "delivery:manual_login",
+      "delivery:manual-login",
+      "delivery:credentials",
+      "activation:with_login",
+      "activation:with-login",
+    ].includes(normalized);
+  });
+}
+
+function publicDeliveryType(deliveryType: ProductDeliveryType): ProductDeliveryType {
+  const normalized = String(deliveryType || "").trim().toLowerCase();
+  if (normalized === "manual_login" || normalized === "manual-login" || normalized === "credentials") {
+    return "support";
+  }
+  return deliveryType;
 }
 
 function buildVisualPayload(item: any, lang: PublicProductLang) {
@@ -109,7 +127,7 @@ export function buildPublicProduct(
   lang: PublicProductLang,
   variant?: { key: "withLogin" | "withoutLogin"; price: number; deliveryType: any }
 ) {
-  const deliveryType = variant?.deliveryType || resolveProductDeliveryType(item.tags || []);
+  const deliveryType = publicDeliveryType(variant?.deliveryType || resolveProductDeliveryType(item.tags || []));
   const slugSuffix = variant?.key === "withLogin" ? "login" : variant?.key === "withoutLogin" ? "link" : "";
   const publicSlug = slugSuffix ? `${item.slug}-${slugSuffix}` : item.slug;
   return {

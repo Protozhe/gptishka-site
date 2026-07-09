@@ -90,8 +90,8 @@ type CredentialListResponse = {
 const TEXT = {
   title: "CDK / SDK ключи по товарам",
   subtitle:
-    "Метод 1: CDK-ключи. Метод 2: пары логин/пароль. Метод 3 (VPN): ключи не нужны. Метод 4: отдельный SDK-пул для Grok. Метод 5: отдельный SDK-пул для Claude.",
-  searchPlaceholder: "Поиск по коду / логину / email / orderId",
+    "Метод 1: CDK-ключи. Метод 2: готовые цифровые доступы. Метод 3 (VPN): ключи не нужны. Метод 4: отдельный SDK-пул для Grok. Метод 5: отдельный SDK-пул для Claude.",
+  searchPlaceholder: "Поиск по коду / идентификатору / email / orderId",
   loading: "Загружаем...",
   empty: "Записей пока нет",
   fillKeys: "Введите хотя бы один CDK ключ",
@@ -131,10 +131,10 @@ const TEXT = {
   usedCredentials: "Выданные",
   availableItem: "Свободен",
   assignedItem: "Выдан",
-  login: "Логин",
-  password: "Пароль",
+  login: "Идентификатор",
+  password: "Секрет",
   modeActivation: "Метод 1: CDK-активация",
-  modeCredentials: "Метод 2: Логин/пароль",
+  modeCredentials: "Метод 2: готовый цифровой доступ",
   modeVpn: "Метод 3: Выдача VPN",
   modeSupport: "Метод 4: SDK-ключи для Grok токена",
   modeSupportClaude: "Метод 5: SDK-ключи для Claude токена",
@@ -146,7 +146,7 @@ const TEXT = {
   activationSitePlaceholder: "https://vip.sxzfd.com/",
   sdkTextareaPlaceholder:
     "Вставьте SDK ключи для метода 4/5 (по одному в строке)\nПример: 69742FA2-47A4-48C5-A7CC-71F334688FE7",
-  credentialsPlaceholder: "Вставьте пары login:password (по одной в строке)\nПример: user@mail.ru:Pass123",
+  credentialsPlaceholder: "Вставьте пары identifier:secret (по одной в строке)\nПример: access-id:access-secret",
   noProducts: "Товары не найдены. Сначала создайте товары в разделе «Товары».",
 };
 

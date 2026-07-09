@@ -638,7 +638,7 @@ async function sendPaymentState(client: TelegramApiClient, ctx: OrderUserContext
     return sendClaudeIdInstructions(client, ctx, status.id);
   }
   if (ctx.botType === "chatgpt") {
-    await client.sendMessage(ctx.chatId, "Payment received.\nSend account token to start ChatGPT Plus activation.");
+    await client.sendMessage(ctx.chatId, "Payment received.\nSend the required account token to continue activation.");
     return sendChatgptTokenInstructions(client, ctx, status.id);
   }
   return client.sendMessage(ctx.chatId, "Payment received.\nActivation started.\nUsually takes a few minutes.", keyboardActivation(status.id));

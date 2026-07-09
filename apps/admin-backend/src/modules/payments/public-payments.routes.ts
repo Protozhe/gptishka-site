@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { validateBody } from "../../common/middleware/validation";
 import { asyncHandler } from "../../common/http/async-handler";
 import { AppError } from "../../common/errors/app-error";
@@ -44,10 +45,32 @@ function sanitizePublicOrderDetails(value: unknown) {
   try {
     const json = JSON.stringify(value);
     if (!json || json.length > 12000) return undefined;
-    return JSON.parse(json);
+    return scrubPublicOrderDetails(JSON.parse(json));
   } catch {
     return undefined;
   }
+}
+
+function scrubPublicOrderDetails(value: unknown): Prisma.InputJsonValue {
+  if (Array.isArray(value)) return value.map((item) => scrubPublicOrderDetails(item));
+  if (!value || typeof value !== "object") return value as Prisma.InputJsonValue;
+
+  const result: Record<string, Prisma.InputJsonValue> = {};
+  for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+    const normalizedKey = key.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (
+      normalizedKey === "servicelogin" ||
+      normalizedKey === "servicepassword" ||
+      normalizedKey === "accountlogin" ||
+      normalizedKey === "accountpassword" ||
+      normalizedKey === "login" ||
+      normalizedKey === "password"
+    ) {
+      continue;
+    }
+    result[key] = scrubPublicOrderDetails(raw);
+  }
+  return result;
 }
 
 function stringField(body: Record<string, unknown>, key: string) {
@@ -68,8 +91,6 @@ function buildOrderDetailsFromFlatBody(body: Record<string, unknown>, productId:
     "deliveryMethod",
     "duration",
     "accountStatus",
-    "serviceLogin",
-    "servicePassword",
     "isGift",
     "giftSender",
     "giftRecipient",
@@ -122,8 +143,7 @@ function buildOrderDetailsFromFlatBody(body: Record<string, unknown>, productId:
       : { isGift: false },
     account: {
       status: stringField(body, "accountStatus"),
-      login: stringField(body, "serviceLogin"),
-      password: stringField(body, "servicePassword"),
+      note: "Customer account login/password are not accepted through public checkout.",
     },
     recommendation: {
       cameByRecommendation: boolField(body, "cameByRecommendation"),

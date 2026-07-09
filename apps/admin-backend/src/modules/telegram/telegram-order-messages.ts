@@ -85,10 +85,10 @@ const DELIVERY_LABELS: Record<string, string> = {
   support: "через поддержку",
   support_claude: "активация Claude через поддержку",
   vpn: "VPN-доступ",
-  credentials: "логин и пароль",
+  credentials: "готовый цифровой доступ",
   manual_login: "ручная обработка менеджером",
-  no_login: "без передачи логина",
-  with_login: "с логином пользователя",
+  no_login: "самостоятельная активация",
+  with_login: "через поддержку",
   token: "активация по токену",
 };
 

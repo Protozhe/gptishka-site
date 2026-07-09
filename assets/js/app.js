@@ -2813,8 +2813,7 @@ function initActivationResumeShortcut() {
     const deliveryType = resolveDeliveryType(item?.deliveryType, item?.deliveryMethod, tags);
     const text = getProductSearchText(item);
     if (isStandaloneVpnProduct(item)) return "vpn";
-    if (deliveryType === "manual_login") return "login";
-    if (deliveryType === "credentials" || text.includes("credentials") || text.includes("со входом") || text.includes("логин")) return "login";
+    if (deliveryType === "manual_login" || deliveryType === "credentials") return "support";
     if (deliveryType === "support" || text.includes("по id") || text.includes("account id")) return "id";
     if (text.includes("по ссылке") || text.includes("link")) return "link";
     return "link";
@@ -2857,8 +2856,8 @@ function initActivationResumeShortcut() {
 
   function getServiceDeliveryLabel(deliveryKey) {
     const labels = isEnPage
-      ? { all: "All methods", login: "With login", link: "By link", id: "By ID", vpn: "VLESS" }
-      : { all: "Все способы", login: "Со входом", link: "Без входа", id: "По ID" };
+      ? { all: "All methods", login: "With login", link: "By link", id: "By ID", vpn: "VLESS", support: "Support" }
+      : { all: "Все способы", login: "Со входом", link: "Без входа", id: "По ID", support: "Через поддержку" };
     return labels[deliveryKey] || deliveryKey;
   }
 
@@ -4025,7 +4024,7 @@ function initActivationResumeShortcut() {
       plan: getServicePlanLabel(serviceKey, planKey),
       serviceKey,
       planKey,
-      deliveryMethod: deliveryKey === "login" ? "login" : deliveryKey === "id" ? "id" : deliveryKey === "vpn" ? "vpn" : "link",
+      deliveryMethod: deliveryKey === "id" ? "id" : deliveryKey === "vpn" ? "vpn" : deliveryKey === "support" ? "support" : "link",
       duration: getServiceDurationLabel(durationKey),
       quantity: 1,
       basePrice,
@@ -4041,9 +4040,9 @@ function initActivationResumeShortcut() {
       giftSendDate: String(getChatGptGoOrderField(form, "giftSendDate")?.value || "").trim(),
       giftSendTime: String(getChatGptGoOrderField(form, "giftSendTime")?.value || "").trim(),
       giftMessage: String(getChatGptGoOrderField(form, "giftMessage")?.value || "").trim(),
-      accountStatus: getChatGptGoCheckedValue(form, "accountStatus") || "has_account",
-      serviceLogin: String(getChatGptGoOrderField(form, "serviceLogin")?.value || "").trim(),
-      servicePassword: String(getChatGptGoOrderField(form, "servicePassword")?.value || "").trim(),
+      accountStatus: "",
+      serviceLogin: "",
+      servicePassword: "",
       cameByRecommendation: Boolean(getChatGptGoOrderField(form, "cameByRecommendation")?.checked),
       referrerContact: String(getChatGptGoOrderField(form, "referrerContact")?.value || "").trim(),
       orderComment: String(getChatGptGoOrderField(form, "orderComment")?.value || "").trim(),
@@ -4936,9 +4935,9 @@ function initActivationResumeShortcut() {
       payload.giftSendTime = String(gift.sendTime || "").trim();
       payload.giftMessage = String(gift.message || "").trim();
       payload.giftCertificateDesign = String(gift.certificateDesign || "").trim();
-      payload.accountStatus = String(account.status || "").trim();
-      payload.serviceLogin = String(account.login || "").trim();
-      payload.servicePassword = String(account.password || "").trim();
+      payload.accountStatus = "";
+      payload.serviceLogin = "";
+      payload.servicePassword = "";
       payload.cameByRecommendation = Boolean(recommendation.cameByRecommendation);
       payload.referrerContact = String(recommendation.referrerContact || "").trim();
       payload.orderComment = String(orderDetails.comment || "").trim();

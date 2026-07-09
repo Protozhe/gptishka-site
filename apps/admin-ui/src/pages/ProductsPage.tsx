@@ -304,8 +304,8 @@ function deliveryMethodNumber(deliveryType: ProductDeliveryType): 1 | 2 | 3 | 4 
 function deliveryMethodLabel(deliveryType: ProductDeliveryType): string {
   if (deliveryType === "support_claude") return "Метод 5: Claude Pro активация по токену";
   if (deliveryType === "support") return "Метод 4: Grok-активация по JWT-токену";
-  if (deliveryType === "manual_login") return "Метод 2A: Ручная заявка со входом";
-  if (deliveryType === "credentials") return "Метод 2: Логин и пароль";
+  if (deliveryType === "manual_login") return "Метод 2A: Ручная заявка через поддержку";
+  if (deliveryType === "credentials") return "Метод 2: Готовый цифровой доступ";
   if (deliveryType === "vpn") return "Метод 3: VPN (VLESS)";
   return "Метод 1: Активация по ключу";
 }
@@ -1686,7 +1686,7 @@ export default function ProductsPage() {
       return;
     }
     if (!withLoginEnabled || withLoginDeliveryType !== "credentials") {
-      setCredentialsMessage("Импорт доступен только для типа «Логин/пароль».");
+      setCredentialsMessage("Импорт доступен только для типа «Готовый цифровой доступ».");
       return;
     }
     const text = String(credentialsImportText || "").trim();
@@ -1700,7 +1700,7 @@ export default function ProductsPage() {
       setCredentialsImportText("");
       setCredentialsMessage(`Импорт завершен: добавлено ${result.inserted}, пропущено ${result.skipped}.`);
     } catch (error) {
-      setCredentialsMessage(getRequestErrorMessage(error, "Не удалось импортировать логины и пароли."));
+      setCredentialsMessage(getRequestErrorMessage(error, "Не удалось импортировать готовые цифровые доступы."));
     }
   }
 
@@ -2171,7 +2171,7 @@ export default function ProductsPage() {
                 }`}
                 onClick={() => setActivationVariantTab("withLogin")}
               >
-                Со входом
+                Через поддержку
               </button>
               <button
                 type="button"
@@ -2188,7 +2188,7 @@ export default function ProductsPage() {
               <div className="grid gap-3 md:grid-cols-2">
                 <label className="flex items-center gap-2 md:col-span-2">
                   <input type="checkbox" checked={withLoginEnabled} onChange={(e) => setWithLoginEnabled(e.target.checked)} />
-                  <span className="font-semibold">Вариант «Со входом» доступен клиентам</span>
+                  <span className="font-semibold">Вариант «Через поддержку» доступен клиентам</span>
                 </label>
                 <label className="grid gap-1">
                   <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Цена, RUB</span>
@@ -2209,8 +2209,8 @@ export default function ProductsPage() {
                     onChange={(e) => setWithLoginDeliveryType(e.target.value as ProductDeliveryType)}
                     disabled={!withLoginEnabled}
                   >
-                    <option value="manual_login">Ручная активация по данным клиента</option>
-                    <option value="credentials">Автоматическая выдача готового логина и пароля</option>
+                    <option value="manual_login">Ручная заявка через поддержку</option>
+                    <option value="credentials">Автоматическая выдача готового цифрового доступа</option>
                   </select>
                 </label>
                 <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600 md:col-span-2 dark:bg-slate-950 dark:text-slate-300">
@@ -2324,7 +2324,7 @@ export default function ProductsPage() {
 
           {editingId && withLoginEnabled && withLoginDeliveryType === "credentials" && (
             <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
-              <div className="mb-2 text-sm font-semibold">Логин/пароль для автоматической выдачи</div>
+              <div className="mb-2 text-sm font-semibold">Готовые цифровые доступы для автоматической выдачи</div>
               <textarea
                 className="input min-h-24 w-full font-mono text-xs"
                 placeholder={"Формат: login:password\\nПо одной паре в строке"}
@@ -2351,8 +2351,8 @@ export default function ProductsPage() {
                 <table className="min-w-full text-xs">
                   <thead className="bg-slate-100 text-left dark:bg-slate-800">
                     <tr>
-                      <th className="px-2 py-2">Логин</th>
-                      <th className="px-2 py-2">Пароль</th>
+                      <th className="px-2 py-2">Идентификатор</th>
+                      <th className="px-2 py-2">Секрет</th>
                       <th className="px-2 py-2">Статус</th>
                       <th className="px-2 py-2">Заказ</th>
                       <th className="px-2 py-2">Действие</th>

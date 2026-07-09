@@ -1019,7 +1019,7 @@ export const ordersService = {
           : hasCredentials
           ? {
               code: "CREDENTIALS_READY",
-              label: "Логин и пароль выданы",
+              label: "Цифровой доступ подготовлен",
             }
           : {
               code: "CREDENTIALS_PENDING",
