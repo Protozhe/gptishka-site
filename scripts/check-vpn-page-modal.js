@@ -22,7 +22,7 @@ expect("VPN page has dark-blue video hero", vpnHtml.includes("service-hero--vpn"
 expect("VPN page uses shared constructor blocks", vpnHtml.includes("service-constructor-shell") && vpnHtml.includes("service-product-gallery") && vpnHtml.includes("service-selected-plan"));
 expect("VPN page uses VPN service image", vpnHtml.includes("/assets/img/services/vpn-card.png?v=20260620-vpn-page2"));
 expect("VPN page keeps FAQ block", vpnHtml.includes("service-faq-section") && vpnHtml.includes("service-faq-list"));
-expect("VPN page loads cache-busted shared CSS/JS", vpnHtml.includes("/assets/css/home-stability-hotfix.css?v=20260619-vpn-service1") && vpnHtml.includes("/assets/js/app.min.js?v=20260721-webp1"));
+expect("VPN page loads cache-busted shared CSS/JS", vpnHtml.includes("/assets/css/home-stability-hotfix.css?v=20260619-vpn-service1") && vpnHtml.includes("/assets/js/app.min.js?v=20260721-webp2"));
 expect("Old VPN inline checkout controls are removed from index", !vpnHtml.includes("vpnEmailInput") && !vpnHtml.includes("vpnPlansGrid") && !vpnHtml.includes("data-vpn-buy"));
 
 expect("app.js registers VPN service modal", appJs.includes('new Set(["chatgpt", "claude", "grok", "vpn"])') && appJs.includes('displayName: "GPTishka VPN"'));
