@@ -17,8 +17,11 @@ export const productVisualConfigSchema = z.object({
   backgroundType: z.nativeEnum(ProductVisualBackgroundType).default(ProductVisualBackgroundType.solid),
   backgroundColor: nullableText(80),
   backgroundGradient: nullableText(500),
+  textColor: nullableText(80),
   buttonText: nullableText(80),
   buttonStyle: nullableText(80),
+  buttonBackground: nullableText(500),
+  buttonTextColor: nullableText(80),
   isVisible: z.boolean().default(true),
 });
 
@@ -30,9 +33,35 @@ export const showcaseSectionSchema = z.object({
   isActive: z.boolean().default(true),
   showOnHomepage: z.boolean().default(true),
   showInCatalog: z.boolean().default(true),
+  renderMode: z.enum(["auto", "cards"]).default("auto"),
 });
 
 export const showcaseSectionUpdateSchema = showcaseSectionSchema.partial();
+
+export const showcaseServiceCardSchema = z.object({
+  title: nullableText(150),
+  description: nullableText(500),
+  planSummary: nullableText(240),
+  priceText: nullableText(120),
+  buttonText: nullableText(80),
+  href: nullableText(2048),
+  iconText: nullableText(32),
+  theme: nullableText(40),
+  imageUrl: nullableText(2048),
+  imageAlt: nullableText(180),
+  hoverImageUrl: nullableText(2048),
+  hoverImageAlt: nullableText(180),
+  backgroundType: z.nativeEnum(ProductVisualBackgroundType).default(ProductVisualBackgroundType.solid),
+  backgroundColor: nullableText(80),
+  backgroundGradient: nullableText(500),
+  textColor: nullableText(80),
+  buttonBackground: nullableText(500),
+  buttonTextColor: nullableText(80),
+  isActive: z.boolean().default(true),
+  sortOrder: z.coerce.number().int().min(0).max(100000).default(100),
+});
+
+export const showcaseServiceCardUpdateSchema = showcaseServiceCardSchema.partial();
 
 export const showcasePlacementSchema = z.object({
   productId: z.string().min(10),

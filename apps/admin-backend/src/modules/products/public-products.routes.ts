@@ -2,8 +2,36 @@ import { Router } from "express";
 import { asyncHandler } from "../../common/http/async-handler";
 import { prisma } from "../../config/prisma";
 import { buildPublicProducts, fallbackSectionsFromProducts, isHiddenPublicVpnProduct } from "./public-product-presenter";
+import { showcaseService } from "../showcase/showcase.service";
 
 export const publicProductsRouter = Router();
+
+function buildPublicServiceCardsPayload(serviceCards: any[]) {
+  return (Array.isArray(serviceCards) ? serviceCards : [])
+    .filter((card) => String(card?.serviceKey || "").toLowerCase() !== "vpn")
+    .map((card) => ({
+    serviceKey: card.serviceKey,
+    title: card.title,
+    description: card.description,
+    planSummary: card.planSummary,
+    priceText: card.priceText,
+    buttonText: card.buttonText,
+    href: card.href,
+    iconText: card.iconText,
+    theme: card.theme,
+    imageUrl: card.imageUrl,
+    imageAlt: card.imageAlt,
+    hoverImageUrl: card.hoverImageUrl,
+    hoverImageAlt: card.hoverImageAlt,
+    backgroundType: card.backgroundType,
+    backgroundColor: card.backgroundColor,
+    backgroundGradient: card.backgroundGradient,
+    textColor: card.textColor,
+    buttonBackground: card.buttonBackground,
+    buttonTextColor: card.buttonTextColor,
+    sortOrder: card.sortOrder,
+    }));
+}
 
 publicProductsRouter.get(
   "/products",
@@ -71,37 +99,41 @@ publicProductsRouter.get(
         ? { isActive: true, showInCatalog: true }
         : { isActive: true, showOnHomepage: true };
 
-    const sections = await prisma.productShowcaseSection.findMany({
-      where: sectionWhere,
-      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-      include: {
-        placements: {
-          where: {
-            isActive: true,
-            product: {
+    const [sections, serviceCards] = await Promise.all([
+      prisma.productShowcaseSection.findMany({
+        where: sectionWhere,
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+        include: {
+          placements: {
+            where: {
               isActive: true,
-              isArchived: false,
+              product: {
+                isActive: true,
+                isArchived: false,
+              },
             },
-          },
-          orderBy: [{ isPinned: "desc" }, { sortOrder: "asc" }, { createdAt: "asc" }],
-          include: {
-            product: {
-              include: {
-                visualConfig: true,
-                showcasePlacements: {
-                  where: {
-                    isActive: true,
-                  },
-                  include: {
-                    section: true,
+            orderBy: [{ isPinned: "desc" }, { sortOrder: "asc" }, { createdAt: "asc" }],
+            include: {
+              product: {
+                include: {
+                  visualConfig: true,
+                  showcasePlacements: {
+                    where: {
+                      isActive: true,
+                    },
+                    include: {
+                      section: true,
+                    },
                   },
                 },
               },
             },
           },
         },
-      },
-    });
+      }),
+      showcaseService.listServiceCards(),
+    ]);
+    const serviceCardPayload = buildPublicServiceCardsPayload(serviceCards);
 
     const grouped = sections
       .map((section) => ({
@@ -110,6 +142,8 @@ publicProductsRouter.get(
         title: section.title,
         description: section.description,
         sortOrder: section.sortOrder,
+        renderMode: section.renderMode || "auto",
+        serviceCards: serviceCardPayload,
         products: section.placements
           .filter((placement) => !isHiddenPublicVpnProduct(placement.product))
           .flatMap((placement) => buildPublicProducts(placement.product, lang))
@@ -118,7 +152,7 @@ publicProductsRouter.get(
       .filter((section) => section.products.length > 0);
 
     if (grouped.length) {
-      return res.json({ sections: grouped });
+      return res.json({ sections: grouped, serviceCards: serviceCardPayload });
     }
 
     const products = await prisma.product.findMany({
@@ -145,6 +179,7 @@ publicProductsRouter.get(
         products.filter((item) => !isHiddenPublicVpnProduct(item)),
         lang
       ).filter((section) => section.products.some((product) => product.visual.isVisible)),
+      serviceCards: serviceCardPayload,
     });
   })
 );

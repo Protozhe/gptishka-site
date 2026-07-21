@@ -1,0 +1,591 @@
+[data-service-page="steam"] {
+  --steam-bg: #edf3ff;
+  --steam-text: #101725;
+  --steam-muted: rgba(16, 23, 37, 0.68);
+  --steam-border: rgba(255, 255, 255, 0.7);
+  --steam-gold: #f7b84b;
+  --steam-blue: #2c7dff;
+  --steam-dark: #070b12;
+  width: min(1240px, calc(100vw - 40px));
+  margin: clamp(28px, 5vw, 70px) auto 80px;
+  color: var(--steam-text);
+  font-family: "Manrope", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.steam-topup-body {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(131, 160, 255, 0.26), transparent 32%),
+    radial-gradient(circle at 84% 16%, rgba(83, 186, 255, 0.2), transparent 30%),
+    linear-gradient(135deg, #cdd9ff 0%, #eef7ff 48%, #d8ecff 100%);
+}
+
+.steam-topup-hero {
+  position: relative;
+  width: 100%;
+  min-height: clamp(240px, 24vw, 330px);
+  overflow: hidden;
+  border-radius: 28px;
+  background: #070b12;
+  box-shadow: 0 20px 46px rgba(45, 64, 120, 0.18);
+  isolation: isolate;
+}
+
+.steam-topup-hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.56) 42%, rgba(0, 0, 0, 0.08) 78%),
+    url("/assets/img/home/topups-promo-bg.png?v=20260701-steam-hero-restore1") center / cover no-repeat;
+}
+
+.steam-topup-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 72% 48%, rgba(247, 184, 75, 0.2), transparent 28%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.32));
+}
+
+.steam-topup-back {
+  position: relative;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  margin: clamp(18px, 2.3vw, 24px) 0 0 clamp(18px, 3vw, 34px);
+  padding: 0 15px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.steam-topup-back:hover,
+.steam-topup-back:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.36);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.steam-topup-back:active {
+  transform: translateY(0);
+}
+
+.steam-topup-hero__content {
+  position: relative;
+  z-index: 2;
+  width: min(520px, 88%);
+  padding: clamp(16px, 2vw, 22px) clamp(18px, 3vw, 34px) clamp(24px, 3.4vw, 40px);
+  color: #fff;
+}
+
+.steam-topup-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  margin-bottom: 12px;
+  padding: 0 11px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.steam-topup-hero h1 {
+  margin: 0;
+  max-width: 520px;
+  font-family: "Space Grotesk", "Manrope", sans-serif;
+  font-size: clamp(30px, 4vw, 54px);
+  line-height: 0.98;
+  font-weight: 800;
+  letter-spacing: -0.055em;
+}
+
+.steam-topup-hero p {
+  margin: 16px 0 0;
+  max-width: 500px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: clamp(14px, 1.2vw, 17px);
+  line-height: 1.45;
+}
+
+.steam-topup-hero__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.steam-topup-hero__facts span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 31px;
+  padding: 0 11px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.steam-topup-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(360px, 1fr);
+  gap: 22px;
+  align-items: start;
+  margin-top: 28px;
+}
+
+.steam-topup-card {
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 30px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(232, 240, 255, 0.56)),
+    rgba(255, 255, 255, 0.52);
+  box-shadow: 0 18px 42px rgba(52, 73, 120, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(18px) saturate(138%);
+  -webkit-backdrop-filter: blur(18px) saturate(138%);
+}
+
+.steam-topup-card--visual {
+  position: sticky;
+  top: 116px;
+  overflow: hidden;
+  min-height: 560px;
+}
+
+.steam-topup-card--visual img {
+  display: block;
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  background: #05070d;
+}
+
+.steam-topup-card--visual div {
+  padding: 26px;
+}
+
+.steam-topup-card--visual span,
+.steam-topup-form__head span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--steam-blue);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.steam-topup-card--visual h2,
+.steam-topup-form__head h2 {
+  margin: 0;
+  font-family: "Space Grotesk", "Manrope", sans-serif;
+  font-size: clamp(28px, 3vw, 42px);
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+.steam-topup-card--visual p {
+  margin: 16px 0 0;
+  color: var(--steam-muted);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.steam-topup-form {
+  display: grid;
+  gap: 18px;
+  padding: clamp(20px, 3vw, 34px);
+}
+
+.steam-topup-form__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 4px;
+}
+
+.steam-topup-form__head strong {
+  flex: 0 0 auto;
+  padding: 12px 15px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(247, 184, 75, 0.22), rgba(44, 125, 255, 0.1));
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.steam-topup-field {
+  display: grid;
+  gap: 7px;
+}
+
+.steam-topup-field span {
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.steam-topup-field small {
+  color: var(--steam-muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.steam-topup-field input,
+.steam-topup-field textarea,
+.steam-topup-quantity input {
+  width: 100%;
+  border: 1px solid rgba(100, 116, 139, 0.22);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--steam-text);
+  font: inherit;
+  font-weight: 700;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.steam-topup-field input,
+.steam-topup-quantity input {
+  min-height: 52px;
+  padding: 0 16px;
+}
+
+.steam-topup-field textarea {
+  min-height: 92px;
+  padding: 14px 16px;
+  resize: vertical;
+}
+
+.steam-topup-field input:focus,
+.steam-topup-field textarea:focus,
+.steam-topup-quantity input:focus {
+  border-color: rgba(44, 125, 255, 0.72);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(44, 125, 255, 0.12);
+}
+
+.steam-topup-field.is-invalid input,
+.steam-topup-field.is-invalid textarea {
+  border-color: rgba(239, 68, 68, 0.82);
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+.steam-topup-quantity {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) 54px;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.steam-topup-quantity button {
+  min-height: 64px;
+  border: 0;
+  border-radius: 18px;
+  background: #0f172a;
+  color: #fff;
+  font-size: 28px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.steam-topup-quantity button:hover {
+  transform: translateY(-1px);
+  background: #111c33;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.2);
+}
+
+.steam-topup-quantity label {
+  display: grid;
+  gap: 7px;
+}
+
+.steam-topup-quantity label span {
+  font-weight: 900;
+}
+
+.steam-topup-quantity input {
+  text-align: center;
+  font-size: 20px;
+}
+
+.steam-topup-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.steam-topup-summary div {
+  min-height: 82px;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.steam-topup-summary span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--steam-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.steam-topup-summary strong {
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.steam-topup-payment {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.steam-topup-payment legend {
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
+  font-weight: 900;
+}
+
+.steam-topup-payment label {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 74px;
+  padding: 14px;
+  border: 1px solid rgba(100, 116, 139, 0.22);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.62);
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.steam-topup-payment label:has(input:checked) {
+  border-color: rgba(44, 125, 255, 0.76);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 4px rgba(44, 125, 255, 0.1);
+}
+
+.steam-topup-payment input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--steam-blue);
+}
+
+.steam-topup-payment strong,
+.steam-topup-payment small {
+  display: block;
+}
+
+.steam-topup-payment strong {
+  font-weight: 900;
+}
+
+.steam-topup-payment small {
+  margin-top: 3px;
+  color: var(--steam-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.steam-topup-note {
+  margin: 0;
+  color: var(--steam-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.steam-topup-note a {
+  color: #1d4ed8;
+  font-weight: 900;
+}
+
+.steam-topup-status {
+  min-height: 22px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.steam-topup-status.is-error {
+  color: #dc2626;
+}
+
+.steam-topup-status.is-loading {
+  color: #1d4ed8;
+}
+
+.steam-topup-submit {
+  min-height: 58px;
+  border: 0;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #ffe39c, #f7b84b 46%, #df7a21);
+  color: #1b1304;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 16px 34px rgba(217, 119, 6, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.steam-topup-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 42px rgba(217, 119, 6, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+.steam-topup-submit:active {
+  transform: translateY(0);
+}
+
+.steam-topup-submit:disabled {
+  cursor: wait;
+  opacity: 0.68;
+  transform: none;
+  filter: grayscale(0.15);
+}
+
+[data-service-page="steam"] button:focus-visible,
+[data-service-page="steam"] a:focus-visible,
+[data-service-page="steam"] input:focus-visible,
+[data-service-page="steam"] textarea:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.94),
+    0 0 0 6px rgba(44, 125, 255, 0.62);
+}
+
+@media (max-width: 980px) {
+  [data-service-page="steam"] {
+    width: min(calc(100vw - 20px), 100%);
+    margin-top: 18px;
+  }
+
+  .steam-topup-hero {
+    width: 100%;
+    min-height: clamp(238px, 38vw, 320px);
+  }
+
+  .steam-topup-hero__content {
+    width: min(560px, 92%);
+    padding: 16px 22px 34px;
+  }
+
+  .steam-topup-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .steam-topup-card--visual {
+    position: relative;
+    top: auto;
+    min-height: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .steam-topup-hero,
+  .steam-topup-card {
+    border-radius: 24px;
+  }
+
+  .steam-topup-hero__bg {
+    background:
+      linear-gradient(90deg, rgba(0, 0, 0, 0.84), rgba(0, 0, 0, 0.42)),
+      url("/assets/img/home/topups-promo-bg.png?v=20260701-steam-hero-restore1") 58% center / cover no-repeat;
+  }
+
+  .steam-topup-back {
+    top: auto;
+    left: auto;
+    margin: 16px 0 0 16px;
+  }
+
+  .steam-topup-hero h1 {
+    font-size: clamp(30px, 10vw, 44px);
+    line-height: 1;
+  }
+
+  .steam-topup-hero p {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .steam-topup-hero__facts,
+  .steam-topup-form__head,
+  .steam-topup-summary,
+  .steam-topup-payment {
+    grid-template-columns: 1fr;
+  }
+
+  .steam-topup-hero__facts {
+    display: grid;
+  }
+
+  .steam-topup-form__head {
+    display: grid;
+  }
+
+  .steam-topup-form__head strong {
+    justify-self: start;
+  }
+
+  .steam-topup-card--visual img {
+    height: 220px;
+  }
+
+  .steam-topup-form {
+    padding: 18px;
+  }
+
+  .steam-topup-submit,
+  .steam-topup-quantity button,
+  .steam-topup-field input,
+  .steam-topup-quantity input {
+    min-height: 52px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .steam-topup-submit,
+  .steam-topup-quantity button,
+  .steam-topup-payment label,
+  .steam-topup-field input,
+  .steam-topup-field textarea {
+    transition: none;
+  }
+
+  .steam-topup-submit:hover,
+  .steam-topup-quantity button:hover {
+    transform: none;
+  }
+}

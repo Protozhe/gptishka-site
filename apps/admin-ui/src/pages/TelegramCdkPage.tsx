@@ -54,6 +54,17 @@ type CdkImportResult = {
   }>;
 };
 
+type PoolMoveResult = {
+  moved: number;
+  fromProductKey: string;
+  toProductKey: string;
+};
+
+type PoolMoveTarget = {
+  label: string;
+  productKey: string;
+};
+
 function normalizeKey(value: string) {
   return String(value || "").trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-");
 }
@@ -468,6 +479,76 @@ function ProductKeysCard({ product, poolKeyOverride }: { product: ProductItem; p
   );
 }
 
+function LegacyPoolMovePanel({
+  fromProductKey,
+  targets,
+  onMoved,
+}: {
+  fromProductKey: string;
+  targets: PoolMoveTarget[];
+  onMoved?: () => void;
+}) {
+  const qc = useQueryClient();
+  const [targetKey, setTargetKey] = useState("");
+  const [error, setError] = useState("");
+
+  const movePool = useMutation({
+    mutationFn: async () =>
+      (
+        await api.post("/cdks/pools/move", {
+          fromProductKey,
+          toProductKey: targetKey,
+        })
+      ).data as PoolMoveResult,
+    onSuccess: () => {
+      setError("");
+      setTargetKey("");
+      qc.invalidateQueries({ queryKey: ["tg-cdks"] });
+      onMoved?.();
+    },
+    onError: (err: any) => setError(err?.response?.data?.message || "Не удалось перенести пул"),
+  });
+
+  const filteredTargets = targets.filter((target) => target.productKey !== fromProductKey);
+
+  return (
+    <section className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/20">
+      <div className="text-sm font-semibold text-amber-950 dark:text-amber-100">Вернуть пул в активный Telegram CDK</div>
+      <p className="mt-1 text-xs text-amber-800 dark:text-amber-200">
+        Переносит все ключи этого пула в выбранный товар. Статусы сохраняются: свободные, выданные и архивные не смешиваются.
+      </p>
+      <div className="mt-3 grid gap-2 md:grid-cols-[1fr_auto]">
+        <select className="input" value={targetKey} onChange={(event) => setTargetKey(event.target.value)}>
+          <option value="">Выберите товар / Telegram pool</option>
+          {filteredTargets.map((target) => (
+            <option value={target.productKey} key={target.productKey}>
+              {target.label} → {target.productKey}
+            </option>
+          ))}
+        </select>
+        <button
+          className="btn-primary"
+          type="button"
+          disabled={!targetKey || movePool.isPending}
+          onClick={() => {
+            if (!targetKey) return;
+            if (!window.confirm(`Перенести все ключи из ${fromProductKey} в ${targetKey}?`)) return;
+            movePool.mutate();
+          }}
+        >
+          {movePool.isPending ? "Переносим..." : "Перенести пул"}
+        </button>
+      </div>
+      {movePool.data ? (
+        <div className="mt-2 text-xs text-emerald-700 dark:text-emerald-300">
+          Перенесено ключей: {movePool.data.moved}. Пул: {movePool.data.fromProductKey} → {movePool.data.toProductKey}
+        </div>
+      ) : null}
+      {error ? <div className="mt-2 text-xs text-rose-600">{error}</div> : null}
+    </section>
+  );
+}
+
 export default function TelegramCdkPage() {
   const [selectedProductId, setSelectedProductId] = useState("");
   const [selectedLegacyPoolId, setSelectedLegacyPoolId] = useState("");
@@ -510,6 +591,45 @@ export default function TelegramCdkPage() {
   const visibleTelegramPoolKeys = useMemo(() => {
     return new Set(botProducts.map((product) => poolKey(product.slug, resolveDeliveryType(product))));
   }, [botProducts]);
+
+  const telegramMoveTargets = useMemo<PoolMoveTarget[]>(() => {
+    const siteProducts = products.data?.items || [];
+    const siteTargets = siteProducts
+      .map((product) => {
+        const type = resolveDeliveryType(product);
+        const base = normalizeKey(product.slug);
+        if (!base || type === "credentials" || type === "manual_login") return null;
+        if (type === "support_claude") {
+          return {
+            label: `CDK / SDK: ${cleanProductTitle(product.title) || product.title}`,
+            productKey: normalizeKey(`${base}-sdk5`),
+          };
+        }
+        if (type === "support") {
+          return {
+            label: `CDK / SDK: ${cleanProductTitle(product.title) || product.title}`,
+            productKey: normalizeKey(`${base}-sdk4`),
+          };
+        }
+        return {
+          label: `CDK: ${cleanProductTitle(product.title) || product.title}`,
+          productKey: base,
+        };
+      })
+      .filter((target): target is PoolMoveTarget => Boolean(target));
+
+    const telegramTargets = botProducts.map((product) => ({
+      label: `Telegram: ${cleanProductTitle(product.title) || product.title}`,
+      productKey: poolKey(product.slug, resolveDeliveryType(product)),
+    }));
+
+    const seen = new Set<string>();
+    return [...telegramTargets, ...siteTargets].filter((target) => {
+      if (seen.has(target.productKey)) return false;
+      seen.add(target.productKey);
+      return true;
+    });
+  }, [botProducts, products.data?.items]);
 
   const legacyPools = useMemo(() => {
     const byProduct = poolStats.data?.stats?.byProduct || {};
@@ -569,7 +689,16 @@ export default function TelegramCdkPage() {
           products={legacyPools}
           activeProductId={activeLegacyPool?.id}
           onSelect={toggleSelectedLegacyPool}
-          renderDetails={(pool) => <ProductKeysCard key={pool.id} product={pool} poolKeyOverride={pool.slug} />}
+          renderDetails={(pool) => (
+            <>
+              <LegacyPoolMovePanel
+                fromProductKey={pool.slug}
+                targets={telegramMoveTargets}
+                onMoved={() => setSelectedLegacyPoolId("")}
+              />
+              <ProductKeysCard key={pool.id} product={pool} poolKeyOverride={pool.slug} />
+            </>
+          )}
         />
       ) : null}
     </div>

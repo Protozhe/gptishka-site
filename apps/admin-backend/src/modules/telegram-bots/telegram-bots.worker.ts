@@ -3,19 +3,13 @@ import path from "path";
 import { env } from "../../config/env";
 import { AppError } from "../../common/errors/app-error";
 import { ordersService } from "../orders/orders.service";
-import { parseSiteOrderStartPayload } from "../orders/telegram-order-linking";
 import { TelegramBotType, telegramOrdersService } from "../orders/telegram-orders.service";
 import { telegramBotEventsService } from "./telegram-bot-events.service";
 import { sendTelegramNotification } from "../notifications/notifications.service";
-import {
-  buildTelegramLinkedOrderText,
-  buildTelegramOrderDetailsText,
-  buildTelegramOrderLinkFailedText,
-} from "../telegram/telegram-order-messages";
 
 type TelegramUpdate = { update_id: number; message?: any; callback_query?: any };
 type BotConfig = { botType: TelegramBotType; serviceName: string; token: string };
-type OrderUserContext = { botType: TelegramBotType; chatId: string; telegramUserId: string; telegramUsername?: string | null; chatType?: string | null };
+type OrderUserContext = { botType: TelegramBotType; chatId: string; telegramUserId: string; telegramUsername?: string | null };
 type TelegramUserSession = { pendingPromoInput?: boolean; promoCode?: string | null; updatedAt?: string };
 
 const BOT_POLL_TIMEOUT_SECONDS = 25;
@@ -114,15 +108,6 @@ function normalizeTelegramId(value: unknown) {
 function normalizeTelegramUsername(value: unknown) {
   return String(value || "").trim().replace(/^@+/, "") || null;
 }
-function normalizeTelegramChatType(value: unknown) {
-  return String(value || "").trim().toLowerCase() || null;
-}
-function isPrivateOrderChat(ctx: OrderUserContext) {
-  return ctx.chatType === "private";
-}
-function sendPrivateChatRequired(client: TelegramApiClient, ctx: OrderUserContext) {
-  return client.sendMessage(ctx.chatId, "Для безопасности откройте бота в личном чате и повторите команду.");
-}
 function parseStartPayload(text: string) {
   const raw = String(text || "").trim();
   const payload = raw.replace(/^\/start(?:@\w+)?\s*/i, "").trim();
@@ -130,7 +115,7 @@ function parseStartPayload(text: string) {
 
   const result: Record<string, string> = {};
   if (payload.includes("=") || payload.includes("&")) {
-    const qs = payload.startsWith("?") ? payload.slice(1) : payload;
+    const qs = payload.startsWith("\uFFFD") ? payload.slice(1) : payload;
     const sp = new URLSearchParams(qs);
     for (const [k, v] of sp.entries()) {
       const key = String(k || "").trim().toLowerCase();
@@ -178,39 +163,39 @@ function formatMoney(amount: number, currency: string) {
   }
 }
 function mapOrderStatus(status: string) {
-  if (status === "PAID") return "РћРїР»Р°С‡РµРЅ";
-  if (status === "FAILED") return "РћС€РёР±РєР° РѕРїР»Р°С‚С‹";
-  if (status === "REFUNDED") return "Р’РѕР·РІСЂР°С‚";
-  return "РћР¶РёРґР°РµС‚ РѕРїР»Р°С‚Сѓ";
+  if (status === "PAID") return "Оплачен";
+  if (status === "FAILED") return "Ошибка оплаты";
+  if (status === "REFUNDED") return "Возврат";
+  return "Ожидает оплату";
 }
 function mapActivationStatus(status: string | null | undefined) {
   const s = String(status || "").toLowerCase();
-  if (s === "success") return "СѓСЃРїРµС€РЅРѕ";
-  if (s === "processing") return "РІ РїСЂРѕС†РµСЃСЃРµ";
-  if (s === "failed") return "РѕС€РёР±РєР°";
-  if (s === "issued") return "РєР»СЋС‡ РІС‹РґР°РЅ";
-  return "РЅРµ Р·Р°РїСѓС‰РµРЅР°";
+  if (s === "success") return "успешно";
+  if (s === "processing") return "в процессе";
+  if (s === "failed") return "ошибка";
+  if (s === "issued") return "ключ выдан";
+  return "не запущена";
 }
 function keyboardMain() {
   return {
     inline_keyboard: [
-      [{ text: "РљСѓРїРёС‚СЊ", callback_data: "buy" }],
+      [{ text: "Купить", callback_data: "buy" }],
       [{ text: "РњРѕРё РїРѕРєСѓРїРєРё", callback_data: "my_orders" }],
-      [{ text: "РћС‚Р·С‹РІС‹", callback_data: "reviews" }],
+      [{ text: "Отзывы", callback_data: "reviews" }],
       [{ text: "FAQ", callback_data: "faq" }],
-      [{ text: "РџРѕРґРґРµСЂР¶РєР°", callback_data: "support" }],
-      [{ text: "Р”РѕРєСѓРјРµРЅС‚Р°С†РёСЏ", callback_data: "docs" }],
-      [{ text: "РЇР·С‹Рє", callback_data: "language" }],
+      [{ text: "Поддержка", callback_data: "support" }],
+      [{ text: "Документация", callback_data: "docs" }],
+      [{ text: "Язык", callback_data: "language" }],
     ],
   };
 }
 function keyboardDocs() {
   return {
     inline_keyboard: [
-      [{ text: "рџ“„ РџСѓР±Р»РёС‡РЅР°СЏ РѕС„РµСЂС‚Р°", callback_data: "offer" }],
-      [{ text: "рџ”ђ РџРѕР»РёС‚РёРєР° РєРѕРЅС„РёРґРµРЅС†РёР°Р»СЊРЅРѕСЃС‚Рё", callback_data: "privacy" }],
-      [{ text: "в†©пёЏ РџРѕР»РёС‚РёРєР° РІРѕР·РІСЂР°С‚Р° СЃСЂРµРґСЃС‚РІ", callback_data: "refund_policy" }],
-      [{ text: "РќР°Р·Р°Рґ", callback_data: "back_main" }],
+      [{ text: "📄 Публичная оферта", callback_data: "offer" }],
+      [{ text: "🔐 Политика конфиденциальности", callback_data: "privacy" }],
+      [{ text: "↩️ Политика возврата средств", callback_data: "refund_policy" }],
+      [{ text: "Назад", callback_data: "back_main" }],
     ],
   };
 }
@@ -218,11 +203,11 @@ function keyboardBuyAgreement(promoCode?: string | null) {
   const promo = String(promoCode || "").trim();
   return {
     inline_keyboard: [
-      [{ text: "вњ… РЎРѕРіР»Р°СЃРµРЅ Рё РїРµСЂРµС…РѕР¶Сѓ Рє РѕРїР»Р°С‚Рµ", callback_data: "agree_buy" }],
+      [{ text: "✅ Согласен и перехожу к оплате", callback_data: "agree_buy" }],
       [{ text: promo ? `Промокод: ${promo}` : "Ввести промокод", callback_data: "promo_prompt" }],
       ...(promo ? [[{ text: "Убрать промокод", callback_data: "promo_clear" }]] : []),
-      [{ text: "рџ“„ РџСѓР±Р»РёС‡РЅР°СЏ РѕС„РµСЂС‚Р°", callback_data: "offer" }],
-      [{ text: "РќР°Р·Р°Рґ", callback_data: "back_main" }],
+      [{ text: "📄 Публичная оферта", callback_data: "offer" }],
+      [{ text: "Назад", callback_data: "back_main" }],
     ],
   };
 }
@@ -235,10 +220,10 @@ function keyboardPromoInput() {
   };
 }
 function keyboardPay(orderId: string, checkoutUrl: string) {
-  return { inline_keyboard: [[{ text: "РћРїР»Р°С‚РёС‚СЊ", url: checkoutUrl }], [{ text: "РџСЂРѕРІРµСЂРёС‚СЊ РѕРїР»Р°С‚Сѓ", callback_data: `check_payment:${orderId}` }], [{ text: "РњРѕРё Р·Р°РєР°Р·С‹", callback_data: "my_orders" }]] };
+  return { inline_keyboard: [[{ text: "Оплатить", url: checkoutUrl }], [{ text: "Проверить оплату", callback_data: `check_payment:${orderId}` }], [{ text: "Мои заказы", callback_data: "my_orders" }]] };
 }
 function keyboardActivation(orderId: string) {
-  return { inline_keyboard: [[{ text: "РџСЂРѕРІРµСЂРёС‚СЊ Р°РєС‚РёРІР°С†РёСЋ", callback_data: `check_activation:${orderId}` }], [{ text: "РџРѕРґРґРµСЂР¶РєР°", callback_data: "support" }]] };
+  return { inline_keyboard: [[{ text: "Проверить активацию", callback_data: `check_activation:${orderId}` }], [{ text: "Поддержка", callback_data: "support" }]] };
 }
 function keyboardPurchases() {
   return {
@@ -347,10 +332,9 @@ async function sendLongMessage(client: TelegramApiClient, chatId: string, text: 
 async function sendStart(client: TelegramApiClient, config: BotConfig, ctx: OrderUserContext) {
   const offer = await telegramOrdersService.getBotOffer(config.botType);
   await logEvent("start", ctx);
-  await client.sendMessage(ctx.chatId, [`РџСЂРёРІРµС‚! Р­С‚Рѕ Р±РѕС‚ В«${config.serviceName}В».`, `РЎРµСЂРІРёСЃ: ${offer.title}`, `Р¦РµРЅР°: ${formatMoney(offer.price, offer.currency)}`, "", "Р’С‹Р±РµСЂРёС‚Рµ РґРµР№СЃС‚РІРёРµ:"].join("\n"), keyboardMain());
+  await client.sendMessage(ctx.chatId, [`Привет! Это бот «${config.serviceName}».`, `Сервис: ${offer.title}`, `Цена: ${formatMoney(offer.price, offer.currency)}`, "", "Выберите действие:"].join("\n"), keyboardMain());
 }
 async function sendOrders(client: TelegramApiClient, ctx: OrderUserContext) {
-  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
   await logEvent("my_orders", ctx);
   const rows = await telegramOrdersService.listOrders({ botType: ctx.botType, telegramUserId: ctx.telegramUserId, telegramChatId: ctx.chatId, telegramUsername: ctx.telegramUsername }, 8);
   const pending = rows.filter((row) => String(row.status || "").toUpperCase() === "PENDING");
@@ -400,44 +384,13 @@ async function sendOrders(client: TelegramApiClient, ctx: OrderUserContext) {
 
   return client.sendMessage(ctx.chatId, text, keyboardPurchases());
 }
-async function handleSiteOrderStartPayload(client: TelegramApiClient, ctx: OrderUserContext, payload: string) {
-  const parsed = parseSiteOrderStartPayload(payload);
-  if (!parsed) return false;
-  if (!isPrivateOrderChat(ctx)) {
-    await sendPrivateChatRequired(client, ctx);
-    return true;
-  }
-  const linked = await telegramOrdersService
-    .linkSiteOrderToTelegram({
-      botType: ctx.botType,
-      telegramUserId: ctx.telegramUserId,
-      telegramChatId: ctx.chatId,
-      telegramUsername: ctx.telegramUsername,
-      startPayload: parsed,
-    })
-    .catch(async () => {
-      await client.sendMessage(ctx.chatId, buildTelegramOrderLinkFailedText());
-      return null;
-    });
-  if (!linked) return true;
-  await client.sendMessage(ctx.chatId, buildTelegramLinkedOrderText(linked));
-  if (String(linked.status || "").toUpperCase() === "PAID") {
-    const activation = await ordersService.getActivationForTelegram(linked.id, ctx.telegramUserId).catch((error) => ({
-      deliveryMode: linked.deliveryType,
-      status: "pending",
-      message: error instanceof Error ? error.message : "Данные заказа пока готовятся.",
-    }));
-    await sendLongMessage(client, ctx.chatId, buildTelegramOrderDetailsText({ order: linked, activation }), keyboardActivation(linked.id));
-  }
-  return true;
-}
 async function sendSupport(client: TelegramApiClient, ctx: OrderUserContext) {
   await logEvent("support", ctx);
-  return client.sendMessage(ctx.chatId, `РџРѕРґРґРµСЂР¶РєР° GPTishka:\n1) https://gptishka.shop/contact.html\n2) ${SUPPORT_LINK}`, keyboardMain());
+  return client.sendMessage(ctx.chatId, `Поддержка GPTishka:\n1) https://gptishka.shop/contact.html\n2) ${SUPPORT_LINK}`, keyboardMain());
 }
 async function sendReviews(client: TelegramApiClient, ctx: OrderUserContext) {
   await logEvent("reviews", ctx);
-  return client.sendMessage(ctx.chatId, "РћС‚Р·С‹РІС‹ РєР»РёРµРЅС‚РѕРІ: https://gptishka.shop/reviews.html", keyboardMain());
+  return client.sendMessage(ctx.chatId, "Отзывы клиентов: https://gptishka.shop/reviews.html", keyboardMain());
 }
 async function sendFaq(client: TelegramApiClient, ctx: OrderUserContext) {
   await logEvent("faq", ctx);
@@ -445,35 +398,34 @@ async function sendFaq(client: TelegramApiClient, ctx: OrderUserContext) {
     ctx.chatId,
     [
       "FAQ:",
-      "1) РџРѕСЃР»Рµ РѕРїР»Р°С‚С‹ РЅР°Р¶РјРёС‚Рµ В«РџСЂРѕРІРµСЂРёС‚СЊ РѕРїР»Р°С‚СѓВ».",
-      "2) Р•СЃР»Рё С‚СЂРµР±СѓРµС‚СЃСЏ С‚РѕРєРµРЅ, Р±РѕС‚ РїРѕРґСЃРєР°Р¶РµС‚ РєРѕРјР°РЅРґСѓ /token.",
-      "3) РЎС‚Р°С‚СѓСЃ Р°РєС‚РёРІР°С†РёРё: РєРЅРѕРїРєР° В«РџСЂРѕРІРµСЂРёС‚СЊ Р°РєС‚РёРІР°С†РёСЋВ».",
+      "1) После оплаты нажмите «Проверить оплату».",
+      "2) Если требуется токен, бот подскажет команду /token.",
+      "3) Статус активации: кнопка «Проверить активацию».",
     ].join("\n"),
     keyboardMain()
   );
 }
 async function sendTerms(client: TelegramApiClient, ctx: OrderUserContext) {
   await logEvent("terms", ctx);
-  return client.sendMessage(ctx.chatId, "РЈСЃР»РѕРІРёСЏ РїРѕРєСѓРїРєРё: https://gptishka.shop/oferta.html", keyboardMain());
+  return client.sendMessage(ctx.chatId, "Условия покупки: https://gptishka.shop/oferta.html", keyboardMain());
 }
 async function sendDocs(client: TelegramApiClient, ctx: OrderUserContext) {
   await logEvent("docs", ctx);
-  return client.sendMessage(ctx.chatId, "Р”РѕРєСѓРјРµРЅС‚Р°С†РёСЏ:", keyboardDocs());
+  return client.sendMessage(ctx.chatId, "Документация:", keyboardDocs());
 }
 async function sendOffer(client: TelegramApiClient, ctx: OrderUserContext) {
   await logEvent("offer", ctx);
-  return sendLongMessage(client, ctx.chatId, readLegalDocument(claudeOfferPath, "РџСѓР±Р»РёС‡РЅР°СЏ РѕС„РµСЂС‚Р° РІСЂРµРјРµРЅРЅРѕ РЅРµРґРѕСЃС‚СѓРїРЅР°. РћР±СЂР°С‚РёС‚РµСЃСЊ РІ РїРѕРґРґРµСЂР¶РєСѓ."), keyboardDocs());
+  return sendLongMessage(client, ctx.chatId, readLegalDocument(claudeOfferPath, "Публичная оферта временно недоступна. Обратитесь в поддержку."), keyboardDocs());
 }
 async function sendPrivacyPolicy(client: TelegramApiClient, ctx: OrderUserContext) {
   await logEvent("privacy", ctx);
-  return sendLongMessage(client, ctx.chatId, readLegalDocument(claudePrivacyPath, "РџРѕР»РёС‚РёРєР° РєРѕРЅС„РёРґРµРЅС†РёР°Р»СЊРЅРѕСЃС‚Рё РІСЂРµРјРµРЅРЅРѕ РЅРµРґРѕСЃС‚СѓРїРЅР°. РћР±СЂР°С‚РёС‚РµСЃСЊ РІ РїРѕРґРґРµСЂР¶РєСѓ."), keyboardDocs());
+  return sendLongMessage(client, ctx.chatId, readLegalDocument(claudePrivacyPath, "Политика конфиденциальности временно недоступна. Обратитесь в поддержку."), keyboardDocs());
 }
 async function sendRefundPolicy(client: TelegramApiClient, ctx: OrderUserContext) {
   await logEvent("refund_policy", ctx);
-  return sendLongMessage(client, ctx.chatId, readLegalDocument(claudeRefundPath, "РџРѕР»РёС‚РёРєР° РІРѕР·РІСЂР°С‚Р° РІСЂРµРјРµРЅРЅРѕ РЅРµРґРѕСЃС‚СѓРїРЅР°. РћР±СЂР°С‚РёС‚РµСЃСЊ РІ РїРѕРґРґРµСЂР¶РєСѓ."), keyboardDocs());
+  return sendLongMessage(client, ctx.chatId, readLegalDocument(claudeRefundPath, "Политика возврата временно недоступна. Обратитесь в поддержку."), keyboardDocs());
 }
 async function sendPrePaymentAgreement(client: TelegramApiClient, ctx: OrderUserContext) {
-  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
   await logEvent("prepayment_agreement", ctx);
   updateUserSession(ctx, { pendingPromoInput: false });
   const session = getUserSession(ctx);
@@ -496,12 +448,11 @@ async function sendPrePaymentAgreement(client: TelegramApiClient, ctx: OrderUser
   }
   return client.sendMessage(
     ctx.chatId,
-    "РџРµСЂРµРґ РѕРїР»Р°С‚РѕР№ РІС‹ РїРѕРґС‚РІРµСЂР¶РґР°РµС‚Рµ, С‡С‚Рѕ РѕР·РЅР°РєРѕРјРёР»РёСЃСЊ СЃ СѓСЃР»РѕРІРёСЏРјРё РїРѕРєСѓРїРєРё, РїСѓР±Р»РёС‡РЅРѕР№ РѕС„РµСЂС‚РѕР№ СЃРµСЂРІРёСЃР° В«Claude РѕС„РёС†РёР°Р»СЊРЅР°СЏ РїРѕРґРїРёСЃРєР°В» Рё РїРѕРЅРёРјР°РµС‚Рµ, С‡С‚Рѕ С‚РѕРІР°СЂ СЏРІР»СЏРµС‚СЃСЏ С†РёС„СЂРѕРІС‹Рј." + promoLine,
+    "Перед оплатой вы подтверждаете, что ознакомились с условиями покупки, публичной офертой сервиса «Claude официальная подписка» и понимаете, что товар является цифровым." + promoLine,
     keyboardBuyAgreement(promoCode)
   );
 }
 async function sendPromoPrompt(client: TelegramApiClient, ctx: OrderUserContext) {
-  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
   updateUserSession(ctx, { pendingPromoInput: true });
   await logEvent("promo_prompt", ctx);
   return client.sendMessage(
@@ -511,7 +462,6 @@ async function sendPromoPrompt(client: TelegramApiClient, ctx: OrderUserContext)
   );
 }
 async function handlePromoInput(client: TelegramApiClient, ctx: OrderUserContext, rawCode: string) {
-  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
   const promoCode = normalizePromoCodeInput(rawCode);
   if (!promoCode || promoCode.length < 2) {
     await logEvent("promo_rejected", { ...ctx, meta: { reason: "empty_or_short" } });
@@ -559,7 +509,7 @@ async function handlePromoInput(client: TelegramApiClient, ctx: OrderUserContext
 }
 async function sendLanguage(client: TelegramApiClient, ctx: OrderUserContext) {
   await logEvent("language", ctx);
-  return client.sendMessage(ctx.chatId, "РЇР·С‹Рє РёРЅС‚РµСЂС„РµР№СЃР°: Р СѓСЃСЃРєРёР№ (EN СЃРєРѕСЂРѕ Р±СѓРґРµС‚ РґРѕСЃС‚СѓРїРµРЅ).", keyboardMain());
+  return client.sendMessage(ctx.chatId, "Язык интерфейса: Русский (EN скоро будет доступен).", keyboardMain());
 }
 function parseTokenCommand(text: string) {
   const m = String(text || "").match(/^\/token(?:@\w+)?\s+([a-zA-Z0-9]+)\s+([\s\S]+)$/i);
@@ -578,19 +528,10 @@ function parseCheckCommand(text: string) {
 }
 function maskSensitiveMessage(text: string) {
   const value = String(text || "");
-  if (/^\/start(?:@\w+)?(?:\s|$)/i.test(value)) {
-    const parsed = parseStartPayload(value);
-    if (parseSiteOrderStartPayload(parsed.payload)) return "/start <site_order_link>";
-  }
-  if (/^\/check(?:@|\s|$)/i.test(value)) return "/check <order_id>";
-  if (/^\/token(?:@|\s|$)/i.test(value)) return "/token <order_id> <masked>";
-  return value;
-}
-function maskCallbackData(data: string) {
-  const value = String(data || "").trim();
-  if (/^check_payment:[^:]+$/i.test(value)) return "check_payment:<order_id>";
-  if (/^check_activation:[^:]+$/i.test(value)) return "check_activation:<order_id>";
-  return value;
+  if (!/^\/token(?:@|\s|$)/i.test(value)) return value;
+  const parsed = parseTokenCommand(value);
+  if (!parsed) return "/token <order_id> <masked>";
+  return "/token " + parsed.orderId + " <masked>";
 }
 function keyboardActivationSuccess() {
   return {
@@ -619,7 +560,6 @@ async function sendClaudeIdInstructions(client: TelegramApiClient, ctx: OrderUse
   );
 }
 async function sendPaymentState(client: TelegramApiClient, ctx: OrderUserContext, orderId: string) {
-  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
   await logEvent("check_payment", { ...ctx, orderId });
   const status = await telegramOrdersService.getOrderStatus({ botType: ctx.botType, telegramUserId: ctx.telegramUserId, telegramChatId: ctx.chatId, telegramUsername: ctx.telegramUsername, orderId });
   if (status.status !== "PAID") {
@@ -628,10 +568,10 @@ async function sendPaymentState(client: TelegramApiClient, ctx: OrderUserContext
   }
   await telegramOrdersService.clearOrderError(status.id);
   await logEvent("payment_confirmed", { ...ctx, orderId: status.id });
-  await notifyAdmin("рџ’і РћРїР»Р°С‚Р° РїРѕРґС‚РІРµСЂР¶РґРµРЅР°", [
-    `Р‘РѕС‚: ${ctx.botType}`,
+  await notifyAdmin("💳 Оплата подтверждена", [
+    `Бот: ${ctx.botType}`,
     `Order: ${status.id}`,
-    `РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ: ${ctx.telegramUsername ? `@${ctx.telegramUsername}` : ctx.telegramUserId}`,
+    `Пользователь: ${ctx.telegramUsername ? `@${ctx.telegramUsername}` : ctx.telegramUserId}`,
   ]);
   if (ctx.botType === "claude") {
     await client.sendMessage(ctx.chatId, "Payment received.\nPrepare your Organization ID to start Claude Pro activation.");
@@ -644,28 +584,20 @@ async function sendPaymentState(client: TelegramApiClient, ctx: OrderUserContext
   return client.sendMessage(ctx.chatId, "Payment received.\nActivation started.\nUsually takes a few minutes.", keyboardActivation(status.id));
 }
 async function sendActivationState(client: TelegramApiClient, ctx: OrderUserContext, orderId: string) {
-  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
   await logEvent("check_activation", { ...ctx, orderId });
   const status = await telegramOrdersService.getOrderStatus({ botType: ctx.botType, telegramUserId: ctx.telegramUserId, telegramChatId: ctx.chatId, telegramUsername: ctx.telegramUsername, orderId });
-  if (status.status !== "PAID") return client.sendMessage(ctx.chatId, "Р—Р°РєР°Р· РµС‰С‘ РЅРµ РѕРїР»Р°С‡РµРЅ. РЎРЅР°С‡Р°Р»Р° РїРѕРґС‚РІРµСЂРґРёС‚Рµ РѕРїР»Р°С‚Сѓ.", keyboardMain());
-  const activationInfo = await ordersService.getActivationForTelegram(status.id, ctx.telegramUserId).catch(() => null);
-  const deliveryMode = String(activationInfo?.deliveryMode || "").toLowerCase();
-  const isSiteOrder = String((status as any).source || "").toLowerCase() === "site";
-  if (activationInfo && (isSiteOrder || ["vpn", "credentials", "manual_login"].includes(deliveryMode))) {
-    await sendLongMessage(client, ctx.chatId, buildTelegramOrderDetailsText({ order: status, activation: activationInfo }), keyboardActivation(status.id));
-    return;
-  }
+  if (status.status !== "PAID") return client.sendMessage(ctx.chatId, "Заказ ещё не оплачен. Сначала подтвердите оплату.", keyboardMain());
   const proof = (await ordersService.getActivationProof(status.id, { forceCheck: true })) as any;
   const activationStatus = String(proof?.activation?.status || "");
   const providerMessage = String(proof?.activation?.lastProviderMessage || "").trim();
   if (activationStatus === "success") {
     await telegramOrdersService.clearOrderError(status.id);
     await logEvent("activation_success", { ...ctx, orderId: status.id, meta: { providerMessage } });
-    await notifyAdmin("вњ… РђРєС‚РёРІР°С†РёСЏ СѓСЃРїРµС€РЅР°", [
-      `Р‘РѕС‚: ${ctx.botType}`,
+    await notifyAdmin("✅ Активация успешна", [
+      `Бот: ${ctx.botType}`,
       `Order: ${status.id}`,
-      `РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ: ${ctx.telegramUsername ? `@${ctx.telegramUsername}` : ctx.telegramUserId}`,
-      providerMessage ? `Р РµР·СѓР»СЊС‚Р°С‚: ${providerMessage}` : "",
+      `Пользователь: ${ctx.telegramUsername ? `@${ctx.telegramUsername}` : ctx.telegramUserId}`,
+      providerMessage ? `Результат: ${providerMessage}` : "",
     ]);
     return client.sendMessage(
       ctx.chatId,
@@ -674,7 +606,7 @@ async function sendActivationState(client: TelegramApiClient, ctx: OrderUserCont
     );
   }
   if (activationStatus === "failed") {
-    const errorText = providerMessage || "РџСЂРѕРІР°Р№РґРµСЂ РІРµСЂРЅСѓР» РѕС€РёР±РєСѓ Р°РєС‚РёРІР°С†РёРё.";
+    const errorText = providerMessage || "Провайдер вернул ошибку активации.";
     await telegramOrdersService.setOrderError({ orderId: status.id, error: errorText });
     await logEvent("activation_failed", { ...ctx, orderId: status.id, meta: { error: errorText } });    await notifyAdmin("❌ Ошибка активации", [
       `Бот: ${ctx.botType}`,
@@ -682,72 +614,67 @@ async function sendActivationState(client: TelegramApiClient, ctx: OrderUserCont
       `Пользователь: ${ctx.telegramUsername ? `@${ctx.telegramUsername}` : ctx.telegramUserId}`,
       `Ошибка: ${errorText}`,
     ]);
-    return client.sendMessage(ctx.chatId, [`РђРєС‚РёРІР°С†РёСЏ Р·Р°РІРµСЂС€РёР»Р°СЃСЊ РѕС€РёР±РєРѕР№.`, `РџСЂРёС‡РёРЅР°: ${errorText}`, `/token ${status.id} <РІР°С€_С‚РѕРєРµРЅ_РёР»Рё_id>`].join("\n"), keyboardActivation(status.id));
+    return client.sendMessage(ctx.chatId, [`Активация завершилась ошибкой.`, `Причина: ${errorText}`, `/token ${status.id} <ваш_токен_или_id>`].join("\n"), keyboardActivation(status.id));
   }
-  if (activationStatus === "processing") return client.sendMessage(ctx.chatId, "РђРєС‚РёРІР°С†РёСЏ РІ РїСЂРѕС†РµСЃСЃРµ. РџСЂРѕРІРµСЂСЊС‚Рµ РїРѕР·Р¶Рµ.", keyboardActivation(status.id));
-  return client.sendMessage(ctx.chatId, `РђРєС‚РёРІР°С†РёСЏ РµС‰С‘ РЅРµ Р·Р°РїСѓС‰РµРЅР°.\n/token ${status.id} <РІР°С€_С‚РѕРєРµРЅ_РёР»Рё_id>`, keyboardActivation(status.id));
+  if (activationStatus === "processing") return client.sendMessage(ctx.chatId, "Активация в процессе. Проверьте позже.", keyboardActivation(status.id));
+  return client.sendMessage(ctx.chatId, `Активация ещё не запущена.\n/token ${status.id} <ваш_токен_или_id>`, keyboardActivation(status.id));
 }
 async function handleToken(client: TelegramApiClient, ctx: OrderUserContext, text: string) {
-  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
   const parsed = parseTokenCommand(text);
-  if (!parsed) return client.sendMessage(ctx.chatId, "Р¤РѕСЂРјР°С‚ РєРѕРјР°РЅРґС‹: /token <order_id> <С‚РѕРєРµРЅ_РёР»Рё_id>");
-  let verifiedOrderId: string | null = null;
+  if (!parsed) return client.sendMessage(ctx.chatId, "Формат команды: /token <order_id> <токен_или_id>");
+  let orderIdForError = parsed.orderId;
   await logEvent("token_submitted", { ...ctx, orderId: parsed.orderId });
   try {
     const order = await telegramOrdersService.getOrderStatus({ botType: ctx.botType, telegramUserId: ctx.telegramUserId, telegramChatId: ctx.chatId, telegramUsername: ctx.telegramUsername, orderId: parsed.orderId });
-    verifiedOrderId = order.id;
-    if (order.status !== "PAID") return client.sendMessage(ctx.chatId, "Р—Р°РєР°Р· РµС‰С‘ РЅРµ РѕРїР»Р°С‡РµРЅ. РЎРЅР°С‡Р°Р»Р° РЅР°Р¶РјРёС‚Рµ В«РџСЂРѕРІРµСЂРёС‚СЊ РѕРїР»Р°С‚СѓВ».");
-    const validation = await ordersService.validateActivationTokenForTelegram(order.id, parsed.token, ctx.telegramUserId);
+    orderIdForError = order.id;
+    if (order.status !== "PAID") return client.sendMessage(ctx.chatId, "Заказ ещё не оплачен. Сначала нажмите «Проверить оплату».");
+    const validation = await ordersService.validateActivationToken(order.id, parsed.token);
     if (!validation.ok) {
-      const reason = (validation.reasons || []).join("; ") || "РўРѕРєРµРЅ РЅРµ РїСЂРѕС€С‘Р» РїСЂРѕРІРµСЂРєСѓ";
+      const reason = (validation.reasons || []).join("; ") || "Токен не прошёл проверку";
       await telegramOrdersService.setOrderError({ orderId: order.id, error: reason });
       await logEvent("token_rejected", { ...ctx, orderId: order.id, meta: { reason } });
-      return client.sendMessage(ctx.chatId, `РўРѕРєРµРЅ РЅРµ РїСЂРёРЅСЏС‚: ${reason}`);
+      return client.sendMessage(ctx.chatId, `Токен не принят: ${reason}`);
     }
-    const result = await ordersService.startActivationForTelegram(order.id, parsed.token, ctx.telegramUserId);
+    const result = await ordersService.startActivation(order.id, parsed.token);
     await telegramOrdersService.clearOrderError(order.id);
     await logEvent("activation_started", { ...ctx, orderId: order.id, meta: { taskId: result?.taskId || null } });
-    return client.sendMessage(ctx.chatId, ["РўРѕРєРµРЅ РїСЂРёРЅСЏС‚.", "РђРєС‚РёРІР°С†РёСЏ Р·Р°РїСѓС‰РµРЅР°.", result?.taskId ? `Task ID: ${String(result.taskId)}` : ""].filter(Boolean).join("\n"), keyboardActivation(order.id));
+    return client.sendMessage(ctx.chatId, ["Токен принят.", "Активация запущена.", result?.taskId ? `Task ID: ${String(result.taskId)}` : ""].filter(Boolean).join("\n"), keyboardActivation(order.id));
   } catch (error) {
-    const publicMessage = error instanceof AppError && error.statusCode >= 400 && error.statusCode < 500 ? error.message : "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РїСѓСЃС‚РёС‚СЊ Р°РєС‚РёРІР°С†РёСЋ. РџРѕРїСЂРѕР±СѓР№С‚Рµ СЃРЅРѕРІР° РёР»Рё РѕР±СЂР°С‚РёС‚РµСЃСЊ РІ РїРѕРґРґРµСЂР¶РєСѓ.";
-    if (verifiedOrderId) {
-      await telegramOrdersService.setOrderError({ orderId: verifiedOrderId, error: publicMessage });
-      await logEvent("activation_start_failed", { ...ctx, orderId: verifiedOrderId, meta: { error: publicMessage } });
-      await notifyAdmin("⚠️ Ошибка запуска активации", [
-        `Бот: ${ctx.botType}`,
-        `Order: ${verifiedOrderId}`,
-        `Пользователь: ${ctx.telegramUsername ? `@${ctx.telegramUsername}` : ctx.telegramUserId}`,
-        `Ошибка: ${publicMessage}`,
-      ]);
-    }
+    const publicMessage = error instanceof AppError && error.statusCode >= 400 && error.statusCode < 500 ? error.message : "Не удалось запустить активацию. Попробуйте снова или обратитесь в поддержку.";
+    await telegramOrdersService.setOrderError({ orderId: orderIdForError, error: publicMessage });
+    await logEvent("activation_start_failed", { ...ctx, orderId: orderIdForError, meta: { error: publicMessage } });    await notifyAdmin("⚠️ Ошибка запуска активации", [
+      `Бот: ${ctx.botType}`,
+      `Order: ${orderIdForError}`,
+      `Пользователь: ${ctx.telegramUsername ? `@${ctx.telegramUsername}` : ctx.telegramUserId}`,
+      `Ошибка: ${publicMessage}`,
+    ]);
     return client.sendMessage(ctx.chatId, publicMessage);
   }
 }
 async function handleBuy(client: TelegramApiClient, config: BotConfig, ctx: OrderUserContext) {
-  if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
   const session = getUserSession(ctx);
   const promoCode = normalizePromoCodeInput(session.promoCode || "") || undefined;
   updateUserSession(ctx, { pendingPromoInput: false });
   const created = await telegramOrdersService.createOrderFromTelegram({ botType: config.botType, telegramUserId: ctx.telegramUserId, telegramChatId: ctx.chatId, telegramUsername: ctx.telegramUsername, promoCode });
   await logEvent("order_created", { ...ctx, orderId: created.orderId, meta: { reused: created.reused, amount: Number(created.amount || 0), currency: created.currency, promoCode: created.promoCode || null, discountAmount: Number(created.discountAmount || 0) } });
-  await notifyAdmin("рџ§ѕ РќРѕРІС‹Р№ Р·Р°РєР°Р· РёР· Telegram", [
-    `Р‘РѕС‚: ${config.botType}`,
+  await notifyAdmin("🧾 Новый заказ из Telegram", [
+    `Бот: ${config.botType}`,
     `Order: ${created.orderId}`,
-    `РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ: ${ctx.telegramUsername ? `@${ctx.telegramUsername}` : ctx.telegramUserId}`,
-    `РЎСѓРјРјР°: ${formatMoney(Number(created.amount || 0), String(created.currency || "RUB"))}`,
+    `Пользователь: ${ctx.telegramUsername ? `@${ctx.telegramUsername}` : ctx.telegramUserId}`,
+    `Сумма: ${formatMoney(Number(created.amount || 0), String(created.currency || "RUB"))}`,
     created.promoCode ? `Промокод: ${created.promoCode}` : "",
     Number(created.discountAmount || 0) > 0 ? `Скидка: ${formatMoney(Number(created.discountAmount || 0), String(created.currency || "RUB"))}` : "",
   ]);
   return client.sendMessage(
     ctx.chatId,
     [
-      "Р—Р°РєР°Р· СЃРѕР·РґР°РЅ.",
-      "РћРїР»Р°С‚РёС‚Рµ РїРѕ РєРЅРѕРїРєРµ РЅРёР¶Рµ.",
+      "Заказ создан.",
+      "Оплатите по кнопке ниже.",
       "",
       `Order ID: ${created.orderId}`,
       created.promoCode ? `Промокод: ${created.promoCode}` : "",
       Number(created.discountAmount || 0) > 0 ? `Скидка: ${formatMoney(Number(created.discountAmount || 0), String(created.currency || "RUB"))}` : "",
-      `РЎСѓРјРјР°: ${formatMoney(Number(created.amount || 0), String(created.currency || "RUB"))}`,
+      `Сумма: ${formatMoney(Number(created.amount || 0), String(created.currency || "RUB"))}`,
     ].filter(Boolean).join("\n"),
     keyboardPay(created.orderId, created.checkoutUrl)
   );
@@ -756,9 +683,8 @@ async function handleBuy(client: TelegramApiClient, config: BotConfig, ctx: Orde
 function userCtx(config: BotConfig, messageOrQuery: any, chatOverride?: unknown): OrderUserContext | null {
   const chatId = normalizeTelegramId(chatOverride ?? messageOrQuery?.chat?.id ?? messageOrQuery?.message?.chat?.id ?? messageOrQuery?.from?.id);
   const telegramUserId = normalizeTelegramId(messageOrQuery?.from?.id);
-  const chatType = normalizeTelegramChatType(messageOrQuery?.chat?.type ?? messageOrQuery?.message?.chat?.type);
   if (!chatId || !telegramUserId) return null;
-  return { botType: config.botType, chatId, telegramUserId, telegramUsername: normalizeTelegramUsername(messageOrQuery?.from?.username), chatType };
+  return { botType: config.botType, chatId, telegramUserId, telegramUsername: normalizeTelegramUsername(messageOrQuery?.from?.username) };
 }
 
 async function processUpdate(client: TelegramApiClient, config: BotConfig, update: TelegramUpdate) {
@@ -767,35 +693,31 @@ async function processUpdate(client: TelegramApiClient, config: BotConfig, updat
     if (!text) return;
     const ctx = userCtx(config, update.message);
     if (!ctx) return;
-    const maskedMessageText = maskSensitiveMessage(text);
-    await logEvent("message", { ...ctx, messageText: maskedMessageText });
+    await logEvent("message", { ...ctx, messageText: maskSensitiveMessage(text) });
     await notifyAdmin("👆 Действие в боте", [
       `Бот: ${config.botType}`,
       `Пользователь: ${ctx.telegramUsername ? `@${ctx.telegramUsername}` : ctx.telegramUserId}`,
       `Событие: ${detectMessageAction(text)}`,
-      `Текст: ${maskedMessageText.slice(0, 160)}`,
+      `Текст: ${maskSensitiveMessage(text).slice(0, 160)}`,
     ]);
     if (/^\/start/i.test(text)) {
       const parsed = parseStartPayload(text);
-      const isSiteOrderStart = Boolean(parseSiteOrderStartPayload(parsed.payload));
-      if (isSiteOrderStart) return handleSiteOrderStartPayload(client, ctx, parsed.payload);
       updateUserSession(ctx, { pendingPromoInput: false });
       await logEvent("lead_captured", {
         ...ctx,
-        messageText: maskedMessageText,
+        messageText: text,
         meta: {
-          startPayload: isSiteOrderStart ? "<site_order_link>" : parsed.payload || null,
+          startPayload: parsed.payload || null,
           attribution: parsed.attribution || null,
         },
       });
-      await notifyAdmin("рџ‘¤ РќРѕРІС‹Р№ Р»РёРґ РІ Telegram Р±РѕС‚Рµ", [
-        `Р‘РѕС‚: ${config.botType}`,
-        `РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ: ${ctx.telegramUsername ? `@${ctx.telegramUsername}` : ctx.telegramUserId}`,
-        parsed.attribution?.utm_source ? `РСЃС‚РѕС‡РЅРёРє: ${parsed.attribution.utm_source}` : "",
-        parsed.attribution?.utm_campaign ? `РљР°РјРїР°РЅРёСЏ: ${parsed.attribution.utm_campaign}` : "",
+      await notifyAdmin("👤 Новый лид в Telegram боте", [
+        `Бот: ${config.botType}`,
+        `Пользователь: ${ctx.telegramUsername ? `@${ctx.telegramUsername}` : ctx.telegramUserId}`,
+        parsed.attribution?.utm_source ? `Источник: ${parsed.attribution.utm_source}` : "",
+        parsed.attribution?.utm_campaign ? `Кампания: ${parsed.attribution.utm_campaign}` : "",
         parsed.attribution?.src ? `SRC: ${parsed.attribution.src}` : "",
-      ]);
-      if (await handleSiteOrderStartPayload(client, ctx, parsed.payload)) return;
+    ]);
       return sendStart(client, config, ctx);
     }
     if (/^\/buy/i.test(text)) return sendPrePaymentAgreement(client, ctx);
@@ -812,9 +734,8 @@ async function processUpdate(client: TelegramApiClient, config: BotConfig, updat
     }
     if (/^\/token(?:@|\s|$)/i.test(text)) return handleToken(client, ctx, text);
     if (/^\/check(?:@|\s|$)/i.test(text)) {
-      if (!isPrivateOrderChat(ctx)) return sendPrivateChatRequired(client, ctx);
       const orderId = parseCheckCommand(text);
-      if (!orderId) return client.sendMessage(ctx.chatId, "Р¤РѕСЂРјР°С‚ РєРѕРјР°РЅРґС‹: /check <order_id>");
+      if (!orderId) return client.sendMessage(ctx.chatId, "Формат команды: /check <order_id>");
       return sendActivationState(client, ctx, orderId);
     }
     if (getUserSession(ctx).pendingPromoInput) return handlePromoInput(client, ctx, text);
@@ -830,12 +751,11 @@ async function processUpdate(client: TelegramApiClient, config: BotConfig, updat
     const data = String(query.data || "").trim();
     const ctx = userCtx(config, query, query?.message?.chat?.id);
     if (!ctx) return;
-    const maskedCallback = maskCallbackData(data);
-    await logEvent("callback", { ...ctx, callbackData: maskedCallback });
+    await logEvent("callback", { ...ctx, callbackData: data });
     await notifyAdmin("🖱 Клик по кнопке", [
       `Бот: ${config.botType}`,
       `Пользователь: ${ctx.telegramUsername ? `@${ctx.telegramUsername}` : ctx.telegramUserId}`,
-      `Callback: ${maskedCallback || "-"}`,
+      `Callback: ${data || "-"}`,
     ]);
     try {
       const [action, payload = ""] = data.split(":", 2);
@@ -843,12 +763,9 @@ async function processUpdate(client: TelegramApiClient, config: BotConfig, updat
       else if (action === "agree_buy") await handleBuy(client, config, ctx);
       else if (action === "promo_prompt") await sendPromoPrompt(client, ctx);
       else if (action === "promo_clear") {
-        if (!isPrivateOrderChat(ctx)) await sendPrivateChatRequired(client, ctx);
-        else {
-          updateUserSession(ctx, { pendingPromoInput: false, promoCode: null });
-          await logEvent("promo_cleared", ctx);
-          await sendPrePaymentAgreement(client, ctx);
-        }
+        updateUserSession(ctx, { pendingPromoInput: false, promoCode: null });
+        await logEvent("promo_cleared", ctx);
+        await sendPrePaymentAgreement(client, ctx);
       }
       else if (action === "my_orders") await sendOrders(client, ctx);
       else if (action === "reviews") await sendReviews(client, ctx);
@@ -863,10 +780,10 @@ async function processUpdate(client: TelegramApiClient, config: BotConfig, updat
       else if (action === "language") await sendLanguage(client, ctx);
       else if (action === "check_payment" && payload) await sendPaymentState(client, ctx, payload);
       else if (action === "check_activation" && payload) await sendActivationState(client, ctx, payload);
-      else await client.sendMessage(ctx.chatId, "РљРѕРјР°РЅРґР° РЅРµ СЂР°СЃРїРѕР·РЅР°РЅР°.", keyboardMain());
+      else await client.sendMessage(ctx.chatId, "Команда не распознана.", keyboardMain());
       if (callbackId) await client.answerCallbackQuery(callbackId).catch(() => undefined);
     } catch {
-      if (callbackId) await client.answerCallbackQuery(callbackId, "РћС€РёР±РєР°").catch(() => undefined);
+      if (callbackId) await client.answerCallbackQuery(callbackId, "Ошибка").catch(() => undefined);
     }
   }
 }
@@ -906,9 +823,9 @@ async function runBotLoop(config: BotConfig) {
 
 function getBotsToRun() {
   const candidates: BotConfig[] = [
-    { botType: "claude", serviceName: "Claude Pro РђРєС‚РёРІР°С†РёСЏ", token: String(env.TELEGRAM_CLAUDE_BOT_TOKEN || "").trim() },
-    { botType: "chatgpt", serviceName: "ChatGPT Plus РђРєС‚РёРІР°С†РёСЏ", token: String(env.TELEGRAM_CHATGPT_BOT_TOKEN || "").trim() },
-    { botType: "grok", serviceName: "SuperGrok РђРєС‚РёРІР°С†РёСЏ", token: String(env.TELEGRAM_GROK_BOT_TOKEN || "").trim() },
+    { botType: "claude", serviceName: "Claude Pro Активация", token: String(env.TELEGRAM_CLAUDE_BOT_TOKEN || "").trim() },
+    { botType: "chatgpt", serviceName: "ChatGPT Plus Активация", token: String(env.TELEGRAM_CHATGPT_BOT_TOKEN || "").trim() },
+    { botType: "grok", serviceName: "SuperGrok Активация", token: String(env.TELEGRAM_GROK_BOT_TOKEN || "").trim() },
   ];
   return candidates.filter((item) => item.token);
 }

@@ -30,5 +30,16 @@ module.exports = {
       autorestart: true,
       watch: false,
     },
+    {
+      name: "gptishka-telegram-bots",
+      script: "./apps/admin-backend/dist/telegram-bots.main.js",
+      cwd: "/var/www/gptishka-new",
+      env: {
+        NODE_ENV: "production",
+      },
+      max_memory_restart: "250M",
+      autorestart: true,
+      watch: false,
+    },
   ],
 };

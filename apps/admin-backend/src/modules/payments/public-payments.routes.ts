@@ -6,8 +6,6 @@ import { asyncHandler } from "../../common/http/async-handler";
 import { AppError } from "../../common/errors/app-error";
 import { paymentsService } from "./payments.service";
 import { checkoutCreateRateLimit } from "../../common/security/rate-limit";
-import { env } from "../../config/env";
-import { buildSiteOrderTelegramDeepLink } from "../orders/telegram-order-linking";
 
 const createPaymentSchema = z.object({
   email: z.preprocess((value) => String(value || "").trim().toLowerCase(), z.string().email()),
@@ -55,8 +53,9 @@ function scrubPublicOrderDetails(value: unknown): Prisma.InputJsonValue {
   if (Array.isArray(value)) return value.map((item) => scrubPublicOrderDetails(item));
   if (!value || typeof value !== "object") return value as Prisma.InputJsonValue;
 
+  const source = value as Record<string, unknown>;
   const result: Record<string, Prisma.InputJsonValue> = {};
-  for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+  for (const [key, raw] of Object.entries(source)) {
     const normalizedKey = key.toLowerCase().replace(/[^a-z0-9]/g, "");
     if (
       normalizedKey === "servicelogin" ||
@@ -191,7 +190,14 @@ publicPaymentsRouter.post(
       });
     }
     const promoCode = String(body.promo_code || body.promoCode || "").trim() || undefined;
-    const paymentMethod = normalizePublicPaymentMethod(String(body.payment_method || body.paymentMethod || provider));
+    const bodyPaymentMethodRaw = String(body.payment_method || body.paymentMethod || "").trim();
+    if (bodyPaymentMethodRaw) {
+      const bodyPaymentMethod = normalizePublicPaymentMethod(bodyPaymentMethodRaw);
+      if (bodyPaymentMethod !== provider) {
+        throw new AppError("Payment method mismatch", 400);
+      }
+    }
+    const paymentMethod = provider;
     const orderDetails =
       sanitizePublicOrderDetails(body.order_details ?? body.orderDetails) ||
       buildOrderDetailsFromFlatBody(body as Record<string, unknown>, productId);
@@ -216,17 +222,11 @@ publicPaymentsRouter.post(
     if (created.redeemToken) {
       activationUrl.searchParams.set("t", created.redeemToken);
     }
-    const telegramUrl = buildSiteOrderTelegramDeepLink({
-      botUsername: env.TELEGRAM_BOT_USERNAME || "GPTishka_myBot",
-      orderId: created.orderId,
-      orderToken: created.redeemToken,
-    });
 
     return res.status(201).json({
       order_id: created.orderId,
       pay_url: created.checkoutUrl,
       activation_url: activationUrl.toString(),
-      telegram_url: telegramUrl || null,
       activation_token: created.redeemToken,
       amount: created.finalPrice,
       base_amount: created.basePrice,

@@ -10,9 +10,13 @@ import {
   deleteShowcasePlacement,
   deleteShowcaseSection,
   getProductVisual,
+  listShowcaseServiceCards,
   listShowcaseSections,
   updateShowcasePlacement,
   updateShowcaseSection,
+  updateShowcaseServiceCard,
+  uploadShowcaseServiceCardHoverImage,
+  uploadShowcaseServiceCardImage,
   uploadProductVisualHoverImage,
   uploadProductVisualImage,
   upsertProductVisual,
@@ -21,6 +25,7 @@ import {
   productVisualConfigSchema,
   showcasePlacementSchema,
   showcasePlacementUpdateSchema,
+  showcaseServiceCardUpdateSchema,
   showcaseSectionSchema,
   showcaseSectionUpdateSchema,
 } from "./showcase.schemas";
@@ -48,6 +53,10 @@ productVisualRouter.delete("/hover-image", allowRoles(["OWNER", "ADMIN", "MANAGE
 export const showcaseAdminRouter = Router();
 
 showcaseAdminRouter.use(requireAuth);
+showcaseAdminRouter.get("/service-cards", allowRoles(["OWNER", "ADMIN", "MANAGER"]), listShowcaseServiceCards);
+showcaseAdminRouter.put("/service-cards/:serviceKey", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateBody(showcaseServiceCardUpdateSchema), updateShowcaseServiceCard);
+showcaseAdminRouter.post("/service-cards/:serviceKey/image", allowRoles(["OWNER", "ADMIN", "MANAGER"]), imageUpload.single("image"), uploadShowcaseServiceCardImage);
+showcaseAdminRouter.post("/service-cards/:serviceKey/hover-image", allowRoles(["OWNER", "ADMIN", "MANAGER"]), imageUpload.single("image"), uploadShowcaseServiceCardHoverImage);
 showcaseAdminRouter.get("/sections", allowRoles(["OWNER", "ADMIN", "MANAGER"]), listShowcaseSections);
 showcaseAdminRouter.post("/sections", allowRoles(["OWNER", "ADMIN"]), validateBody(showcaseSectionSchema), createShowcaseSection);
 showcaseAdminRouter.put("/sections/:id", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateBody(showcaseSectionUpdateSchema), updateShowcaseSection);

@@ -3,6 +3,7 @@ import {
   HandCoins,
   KeyRound,
   LayoutDashboard,
+  Home,
   Megaphone,
   Package,
   PanelsTopLeft,
@@ -22,6 +23,7 @@ const TEXT = {
   dashboard: "\u0414\u0430\u0448\u0431\u043e\u0440\u0434",
   products: "\u0422\u043e\u0432\u0430\u0440\u044b",
   showcase: "\u0412\u0438\u0442\u0440\u0438\u043d\u0430",
+  homepage: "\u0413\u043b\u0430\u0432\u043d\u0430\u044f",
   orders: "\u0417\u0430\u043a\u0430\u0437\u044b",
   storefront: "\u041f\u043b\u0430\u0448\u043a\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u043e\u0432",
   audit: "\u0410\u0443\u0434\u0438\u0442",
@@ -43,6 +45,7 @@ const TEXT = {
 const nav = [
   { to: "/", label: TEXT.dashboard, icon: LayoutDashboard },
   { to: "/products", label: TEXT.products, icon: Package },
+  { to: "/homepage", label: TEXT.homepage, icon: Home },
   { to: "/showcase", label: TEXT.showcase, icon: PanelsTopLeft },
   { to: "/orders", label: TEXT.orders, icon: ShoppingCart },
   { to: "/storefront", label: TEXT.storefront, icon: Megaphone },

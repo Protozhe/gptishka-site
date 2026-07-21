@@ -1,0 +1,176 @@
+{
+  "slides": {
+    "ru": [
+      {
+        "id": "supergrok",
+        "isActive": true,
+        "badge": "SUPERGROK",
+        "titleLines": [
+          "SUPERGROK",
+          "на 1 месяц"
+        ],
+        "description": "Grok от xAI: быстрые ответы, анализ, креативные задачи и генерация изображений в одной подписке на 1 месяц.",
+        "buttonText": "Открыть тарифы",
+        "buttonHref": "/supergrok",
+        "imageUrl": "",
+        "themeClass": "home-promo-slide--supergrok",
+        "sortOrder": 10
+      },
+      {
+        "id": "vpn",
+        "isActive": true,
+        "badge": "V*N",
+        "titleLines": [
+          "Быстрый V*N",
+          "с надёжным VLESS-подключением"
+        ],
+        "description": "Получите VLESS-ключ сразу после оплаты. Подходит для стабильного доступа к сайтам, сервисам и приложениям без сложной настройки.",
+        "buttonText": "Открыть тарифы",
+        "buttonHref": "/store/vpn/",
+        "imageUrl": "",
+        "themeClass": "home-promo-slide--vpn",
+        "sortOrder": 20
+      },
+      {
+        "id": "topups",
+        "isActive": true,
+        "badge": "Пополнения",
+        "titleLines": [
+          "Пополни баланс Steam",
+          "на +10% ключами Манн Ко."
+        ],
+        "description": "Укажите Steam trade-ссылку, выберите количество ключей и оплатите удобным способом. Подходит, если торговая площадка открыта и баланс нужен срочно.",
+        "buttonText": "Пополнить",
+        "buttonHref": "/store/steam/topup/",
+        "imageUrl": "",
+        "themeClass": "home-promo-slide--topups",
+        "sortOrder": 30
+      }
+    ],
+    "en": [
+      {
+        "id": "supergrok",
+        "isActive": true,
+        "badge": "SUPERGROK",
+        "titleLines": [
+          "SUPERGROK",
+          "for 1 month"
+        ],
+        "description": "Grok by xAI: fast answers, analysis, creative tasks, and image generation in one 1-month subscription.",
+        "buttonText": "Open plans",
+        "buttonHref": "/en/supergrok",
+        "imageUrl": "",
+        "themeClass": "home-promo-slide--supergrok",
+        "sortOrder": 10
+      },
+      {
+        "id": "vpn",
+        "isActive": true,
+        "badge": "V*N",
+        "titleLines": [
+          "Fast V*N",
+          "with a reliable VLESS connection"
+        ],
+        "description": "Get a VLESS key right after payment. Suitable for stable access to websites, services, and apps without complicated setup.",
+        "buttonText": "Open plans",
+        "buttonHref": "/en/store/vpn/",
+        "imageUrl": "",
+        "themeClass": "home-promo-slide--vpn",
+        "sortOrder": 20
+      },
+      {
+        "id": "topups",
+        "isActive": true,
+        "badge": "Top-ups",
+        "titleLines": [
+          "Top up your Steam balance",
+          "with +10% using Mann Co. keys"
+        ],
+        "description": "Enter your Steam trade URL, choose the number of keys, and pay with a convenient method. Useful when the market is unlocked and you need balance quickly.",
+        "buttonText": "Top up",
+        "buttonHref": "/en/store/steam/topup/",
+        "imageUrl": "",
+        "themeClass": "home-promo-slide--topups",
+        "sortOrder": 30
+      }
+    ]
+  },
+  "shortcuts": {
+    "ru": [
+      {
+        "id": "topups",
+        "isActive": true,
+        "title": "Пополнения",
+        "href": "/store/steam/",
+        "ariaLabel": "Открыть пополнения Steam",
+        "imageUrl": "/assets/img/home/topups-shortcut.png",
+        "hoverImageUrl": "",
+        "logoUrl": "",
+        "themeClass": "home-service-shortcut--topups",
+        "sortOrder": 10
+      },
+      {
+        "id": "ai",
+        "isActive": true,
+        "title": "Нейросети",
+        "href": "/catalog/ai/",
+        "ariaLabel": "Открыть нейросети",
+        "imageUrl": "/assets/img/home/ai-shortcut.png",
+        "hoverImageUrl": "",
+        "logoUrl": "",
+        "themeClass": "home-service-shortcut--ai",
+        "sortOrder": 20
+      },
+      {
+        "id": "vpn",
+        "isActive": true,
+        "title": "V*N",
+        "href": "/catalog/vpn/",
+        "ariaLabel": "Открыть GPTishka V*N",
+        "imageUrl": "/assets/img/home/vpn-shortcut-bg.png",
+        "hoverImageUrl": "",
+        "logoUrl": "/assets/img/services/vstar-card.png?v=20260622-vstar1",
+        "themeClass": "home-service-shortcut--vpn",
+        "sortOrder": 30
+      }
+    ],
+    "en": [
+      {
+        "id": "topups",
+        "isActive": true,
+        "title": "Top-ups",
+        "href": "/en/store/steam/",
+        "ariaLabel": "Open Steam top-ups",
+        "imageUrl": "/assets/img/home/topups-shortcut.png",
+        "hoverImageUrl": "",
+        "logoUrl": "",
+        "themeClass": "home-service-shortcut--topups",
+        "sortOrder": 10
+      },
+      {
+        "id": "ai",
+        "isActive": true,
+        "title": "AI Services",
+        "href": "/en/catalog/ai/",
+        "ariaLabel": "Open AI services",
+        "imageUrl": "/assets/img/home/ai-shortcut.png",
+        "hoverImageUrl": "",
+        "logoUrl": "",
+        "themeClass": "home-service-shortcut--ai",
+        "sortOrder": 20
+      },
+      {
+        "id": "vpn",
+        "isActive": true,
+        "title": "V*N",
+        "href": "/en/catalog/vpn/",
+        "ariaLabel": "Open GPTishka V*N",
+        "imageUrl": "/assets/img/home/vpn-shortcut-bg.png",
+        "hoverImageUrl": "",
+        "logoUrl": "/assets/img/services/vstar-card.png?v=20260622-vstar1",
+        "themeClass": "home-service-shortcut--vpn",
+        "sortOrder": 30
+      }
+    ]
+  }
+}

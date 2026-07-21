@@ -29,6 +29,7 @@ import { telegramRouter } from "./modules/telegram/telegram.routes";
 import { telegramBotsAdminRouter } from "./modules/telegram-bots/telegram-bots.admin.routes";
 import { productVisualRouter, showcaseAdminRouter } from "./modules/showcase/showcase.routes";
 import { servicePagesAdminRouter, servicePagesPublicRouter } from "./modules/service-pages/service-pages.routes";
+import { homepageContentAdminRouter, homepageContentPublicRouter, homepageLegacyAdminRouter } from "./modules/homepage/homepage-content.routes";
 
 export function createApp() {
   const app = express();
@@ -64,7 +65,10 @@ export function createApp() {
   app.use("/api/admin/products/:id/visual", productVisualRouter);
   app.use("/api/admin/products", productsRouter);
   app.use("/api/admin/showcase", showcaseAdminRouter);
+  app.use("/api/admin/homepage", homepageLegacyAdminRouter);
+  app.use("/api/admin/homepage-content", homepageContentAdminRouter);
   app.use("/api/admin/service-pages", servicePagesAdminRouter);
+  app.use("/api/public", homepageContentPublicRouter);
   app.use("/api/public", servicePagesPublicRouter);
   app.use("/api/public", publicProductsRouter);
   app.use("/api/public", publicOrdersRouter);

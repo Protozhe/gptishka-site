@@ -1,4 +1,5 @@
 ﻿import { Order } from "@prisma/client";
+import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { resolveOrderDeliveryType, resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { readActivationSiteUrlFromOrderDetails } from "../../common/utils/activation-site";
 import { canonicalProductKey } from "../../common/utils/product-key";
@@ -7,10 +8,25 @@ import { resolveVpnProvisionPayload, vpnService } from "../../services/vpn.servi
 import { manualCredentialsStore } from "../products/manual-credentials.store";
 import { activationStore } from "./activation.store";
 
+export function hasTrustedPaidPayment(order: any) {
+  if (!order || order.status !== OrderStatus.PAID) return false;
+
+  const payments = Array.isArray(order.payments) ? order.payments : [];
+  const successPayment = payments.find((payment: any) => String(payment?.status || "") === PaymentStatus.SUCCESS);
+  if (!successPayment) return false;
+
+  const provider = String(successPayment.provider || "").trim().toLowerCase();
+  const orderPaymentMethod = String(order.paymentMethod || "").trim().toLowerCase();
+  return provider !== "stub" && orderPaymentMethod !== "stub";
+}
+
 export async function deliverProduct(order: Order) {
   const fullOrder = await prisma.order.findUnique({
     where: { id: order.id },
     include: {
+      payments: {
+        orderBy: { createdAt: "desc" },
+      },
       items: {
         include: { product: true },
         take: 1,
@@ -18,6 +34,13 @@ export async function deliverProduct(order: Order) {
     },
   });
   if (!fullOrder) return;
+
+  if (!hasTrustedPaidPayment(fullOrder)) {
+    console.warn(
+      `[delivery] blocked delivery for untrusted payment order=${order.id} status=${fullOrder.status} paymentMethod=${fullOrder.paymentMethod || "-"}`
+    );
+    return;
+  }
 
   const firstItem = fullOrder.items[0];
   const product = firstItem?.product || null;

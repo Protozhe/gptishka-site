@@ -58,6 +58,38 @@ function resolveSupportActivationFlowByDeliveryType(value: unknown) {
   return "grok_token";
 }
 
+function resolveTokenActivationFlowForProduct(input: {
+  deliveryType?: unknown;
+  productKey?: unknown;
+  productSlug?: unknown;
+  productTitle?: unknown;
+  activationSiteUrl?: unknown;
+}) {
+  const deliveryType = String(input.deliveryType || "").trim().toLowerCase();
+  if (isSupportLikeDeliveryType(deliveryType)) {
+    return resolveSupportActivationFlowByDeliveryType(deliveryType);
+  }
+
+  const fingerprint = [
+    input.productKey,
+    input.productSlug,
+    input.productTitle,
+    input.activationSiteUrl,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (fingerprint.includes("claude") || fingerprint.includes("sdk5")) return "claude_token";
+  if (fingerprint.includes("grok") || fingerprint.includes("supergrok") || fingerprint.includes("sdk4")) return "grok_token";
+  return "chatgpt_token";
+}
+
+function isSupportActivationFlow(value: unknown) {
+  const normalized = String(value || "").trim().toLowerCase();
+  return normalized === "claude_token" || normalized === "grok_token";
+}
+
 function isSxzfdGrokSupportProduct(productKey?: string | null) {
   const key = String(productKey || "").trim().toLowerCase();
   return (
@@ -328,6 +360,18 @@ export const ordersService = {
     const firstItem = order.items[0];
     const planId = firstItem?.product?.id || firstItem?.productId || null;
     const deliveryMode = resolveOrderDeliveryType(order.orderDetails, firstItem?.product?.tags || []);
+    const activationSiteUrl = readActivationSiteUrlFromOrderDetails(order.orderDetails);
+    const productSlug = String(firstItem?.product?.slug || "").trim().toLowerCase();
+    const productTitle = String(firstItem?.product?.title || (firstItem?.product as any)?.name || "").trim();
+    const activationProductKey =
+      canonicalProductKey(productSlug || String(firstItem?.productId || "chatgpt")) || productSlug || "chatgpt";
+    const activationFlow = resolveTokenActivationFlowForProduct({
+      deliveryType: deliveryMode,
+      productKey: activationProductKey,
+      productSlug,
+      productTitle,
+      activationSiteUrl,
+    });
     const activation = normalizeActivationRecordForRead(activationStore.findByOrderId(id));
     const payments = await prisma.payment.findMany({
       where: { orderId: id },
@@ -349,6 +393,12 @@ export const ordersService = {
       paidAt: paidPayment ? paidPayment.processedAt || paidPayment.createdAt || null : null,
       planId,
       deliveryMode,
+      activationFlow,
+      product: {
+        id: planId,
+        slug: productSlug || null,
+        title: productTitle || null,
+      },
       emailMasked: maskEmail(order.email),
       finalAmount: Number(order.totalAmount),
       currency: order.currency,
@@ -382,20 +432,22 @@ export const ordersService = {
   },
 
   async getActivation(orderId: string, orderToken?: string) {
-    return this.getActivationWithAccess(orderId, { orderToken });
-  },
-
-  async getActivationForTelegram(orderId: string, telegramUserId: string) {
-    return this.getActivationWithAccess(orderId, { telegramUserId });
-  },
-
-  async getActivationWithAccess(orderId: string, access?: string | OrderAccessContext) {
-    const order = await assertPaidOrderAccess(orderId, access);
+    const order = await assertPaidOrderAccess(orderId, orderToken);
     const fullOrder = await getOrderWithFirstItem(order.id);
     const firstItem = fullOrder?.items?.[0];
     const deliveryType = resolveOrderDeliveryType(fullOrder?.orderDetails, firstItem?.product?.tags || []);
-    const isSupportTokenFlow = isSupportLikeDeliveryType(deliveryType);
-    const supportActivationFlow = resolveSupportActivationFlowByDeliveryType(deliveryType);
+    const activationSiteUrl = readActivationSiteUrlFromOrderDetails(fullOrder?.orderDetails);
+    const productSlug = String(firstItem?.product?.slug || "").trim().toLowerCase();
+    const productTitle = String(firstItem?.product?.title || (firstItem?.product as any)?.name || "").trim();
+    const activationProductKey = canonicalProductKey(productSlug || String(firstItem?.productId || "chatgpt")) || productSlug || "chatgpt";
+    const tokenActivationFlow = resolveTokenActivationFlowForProduct({
+      deliveryType,
+      productKey: activationProductKey,
+      productSlug,
+      productTitle,
+      activationSiteUrl,
+    });
+    const isSupportTokenFlow = isSupportLikeDeliveryType(deliveryType) || isSupportActivationFlow(tokenActivationFlow);
 
     if (deliveryType === "credentials") {
       await deliverProduct(order);
@@ -476,7 +528,7 @@ export const ordersService = {
     return {
       orderId: current.orderId,
       deliveryMode: isSupportTokenFlow ? "support" : "activation",
-      activationFlow: isSupportTokenFlow ? supportActivationFlow : "chatgpt_token",
+      activationFlow: tokenActivationFlow,
       product: current.productKey,
       status: current.status,
       taskId: current.taskId || null,
@@ -490,17 +542,9 @@ export const ordersService = {
   },
 
   async startActivation(orderId: string, token: string, orderToken?: string) {
-    return this.startActivationWithAccess(orderId, token, { orderToken });
-  },
-
-  async startActivationForTelegram(orderId: string, token: string, telegramUserId: string) {
-    return this.startActivationWithAccess(orderId, token, { telegramUserId });
-  },
-
-  async startActivationWithAccess(orderId: string, token: string, access?: string | OrderAccessContext) {
-    const activationInfo = (await this.getActivationWithAccess(orderId, access)) as any;
+    const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
     assertTokenActivationDeliveryMode(activationInfo);
-    return withActivationOrderLock(orderId, async () => startActivationUnsafe(orderId, token, access));
+    return withActivationOrderLock(orderId, async () => startActivationUnsafe(orderId, token, orderToken));
   },
 
   async storeActivationClientToken(orderId: string, token: string, orderToken?: string) {
@@ -508,7 +552,18 @@ export const ordersService = {
     const orderWithItem = await getOrderWithFirstItem(order.id);
     const firstItem = orderWithItem?.items?.[0];
     const deliveryType = resolveOrderDeliveryType(orderWithItem?.orderDetails, firstItem?.product?.tags || []);
-    const isSupportFlow = isSupportLikeDeliveryType(deliveryType);
+    const activationSiteUrl = readActivationSiteUrlFromOrderDetails(orderWithItem?.orderDetails);
+    const productSlug = String(firstItem?.product?.slug || "").trim().toLowerCase();
+    const productTitle = String(firstItem?.product?.title || (firstItem?.product as any)?.name || "").trim();
+    const productKeyForFlow = canonicalProductKey(productSlug || String(firstItem?.productId || "chatgpt")) || productSlug || "chatgpt";
+    const tokenActivationFlow = resolveTokenActivationFlowForProduct({
+      deliveryType,
+      productKey: productKeyForFlow,
+      productSlug,
+      productTitle,
+      activationSiteUrl,
+    });
+    const isSupportFlow = isSupportLikeDeliveryType(deliveryType) || isSupportActivationFlow(tokenActivationFlow);
     const tokenInfo = parseClientTokenInput(token);
     const tokenMeta = buildTokenMeta(tokenInfo);
     const reasons: string[] = [];
@@ -543,7 +598,6 @@ export const ordersService = {
     }
 
     const productKey = resolveActivationPoolProductKeyForOrder(orderWithItem);
-    const activationSiteUrl = readActivationSiteUrlFromOrderDetails(orderWithItem?.orderDetails);
     const nowIso = new Date().toISOString();
     const storagePatch = buildStoredClientTokenPatch(tokenInfo.raw);
     const next: ActivationRecord = {
@@ -586,18 +640,10 @@ export const ordersService = {
   },
 
   async validateActivationToken(orderId: string, token: string, orderToken?: string) {
-    return this.validateActivationTokenWithAccess(orderId, token, { orderToken });
-  },
-
-  async validateActivationTokenForTelegram(orderId: string, token: string, telegramUserId: string) {
-    return this.validateActivationTokenWithAccess(orderId, token, { telegramUserId });
-  },
-
-  async validateActivationTokenWithAccess(orderId: string, token: string, access?: string | OrderAccessContext) {
-    const activationInfo = (await this.getActivationWithAccess(orderId, access)) as any;
+    const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
     assertTokenActivationDeliveryMode(activationInfo);
 
-    const stored = await ensureActivationRecordForTokenFlow(orderId, access, activationInfo);
+    const stored = await ensureActivationRecordForTokenFlow(orderId, orderToken, activationInfo);
 
     const tokenInfo = parseClientTokenInput(token);
     const tokenMeta = buildTokenMeta(tokenInfo);
@@ -1349,23 +1395,8 @@ export const ordersService = {
   },
 };
 
-type OrderAccessContext = {
-  orderToken?: string;
-  telegramUserId?: string;
-};
-
-function normalizeOrderAccess(access?: string | OrderAccessContext): OrderAccessContext {
-  if (typeof access === "string") return { orderToken: access };
-  return access || {};
-}
-
-function normalizeTelegramOrderOwner(value: unknown) {
-  const raw = String(value || "").trim();
-  return /^-?\d+$/.test(raw) ? raw : "";
-}
-
-async function assertPaidOrderAccess(orderId: string, access?: string | OrderAccessContext) {
-  const order = await assertOrderAccess(orderId, access);
+async function assertPaidOrderAccess(orderId: string, orderToken?: string) {
+  const order = await assertOrderTokenAccess(orderId, orderToken);
 
   if (order.status !== OrderStatus.PAID) {
     if (order.status === OrderStatus.PENDING) {
@@ -1382,31 +1413,16 @@ async function assertPaidOrderAccess(orderId: string, access?: string | OrderAcc
 }
 
 async function assertOrderTokenAccess(orderId: string, orderToken?: string) {
-  return assertOrderAccess(orderId, { orderToken });
-}
-
-async function assertOrderAccess(orderId: string, access?: string | OrderAccessContext) {
   assertOrderId(orderId);
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) throw new AppError("Order not found", 404);
 
-  const normalizedAccess = normalizeOrderAccess(access);
-  const telegramUserId = normalizeTelegramOrderOwner(normalizedAccess.telegramUserId);
-  if (telegramUserId && normalizeTelegramOrderOwner(order.telegramUserId) === telegramUserId) {
-    return order;
-  }
-
   const expected = String(order.redeemTokenHash || "").trim();
   if (expected) {
-    const provided = String(normalizedAccess.orderToken || "").trim();
+    const provided = String(orderToken || "").trim();
     if (!provided) throw new AppError("Activation link token is required", 401);
     const providedHash = crypto.createHash("sha256").update(provided).digest("hex");
     if (providedHash !== expected) throw new AppError("Invalid activation link token", 403);
-    return order;
-  }
-
-  if (String(order.source || "").trim().toLowerCase() === "telegram") {
-    throw new AppError("Activation link token is required", 401);
   }
 
   return order;
@@ -1617,13 +1633,9 @@ function resolveActivationPoolProductKeyForOrder(orderWithItem: Awaited<ReturnTy
   return baseProductKey;
 }
 
-async function ensureActivationRecordForTokenFlow(
-  orderId: string,
-  access?: string | OrderAccessContext,
-  activationInfo?: any
-) {
+async function ensureActivationRecordForTokenFlow(orderId: string, orderToken?: string, activationInfo?: any) {
   const existing = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
-  const order = await assertPaidOrderAccess(orderId, access);
+  const order = await assertPaidOrderAccess(orderId, orderToken);
   const orderWithItem = await getOrderWithFirstItem(order.id);
   const productKey = resolveActivationPoolProductKeyForOrder(orderWithItem);
   const activationSiteUrl = readActivationSiteUrlFromOrderDetails(orderWithItem?.orderDetails);
@@ -1682,10 +1694,10 @@ async function ensureActivationRecordForTokenFlow(
   return normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || skeleton;
 }
 
-async function startActivationUnsafe(orderId: string, token: string, access?: string | OrderAccessContext) {
-  const activationInfo = await ordersService.getActivationWithAccess(orderId, access);
+async function startActivationUnsafe(orderId: string, token: string, orderToken?: string) {
+  const activationInfo = await ordersService.getActivation(orderId, orderToken);
   assertTokenActivationDeliveryMode(activationInfo);
-  let stored = await ensureActivationRecordForTokenFlow(orderId, access, activationInfo);
+  let stored = await ensureActivationRecordForTokenFlow(orderId, orderToken, activationInfo);
   const tokenInfo = parseClientTokenInput(token);
   if (!tokenInfo.raw) throw new AppError("Token is required", 400);
   if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
@@ -1716,7 +1728,7 @@ async function startActivationUnsafe(orderId: string, token: string, access?: st
   stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || latestBeforeStart;
 
   if (!String(stored.cdk || "").trim()) {
-    const paidOrder = await assertPaidOrderAccess(orderId, access);
+    const paidOrder = await assertPaidOrderAccess(orderId, orderToken);
     const reserved = await activationStore.reserveCdkRecordForOrder({
       productKey: String(stored.productKey || "chatgpt"),
       activationSiteUrl: stored.activationSiteUrl || "",
@@ -1776,7 +1788,7 @@ async function startActivationUnsafe(orderId: string, token: string, access?: st
   // For support-flow providers (SuperGrok/Claude), automatically rotate CDK once
   // when upstream reports "key already used"/validation-type errors.
   if (!createResult.ok && isSupportFlow && shouldRotateCdkAfterStartFailure(createResult)) {
-    const paidOrder = await assertPaidOrderAccess(orderId, access);
+    const paidOrder = await assertPaidOrderAccess(orderId, orderToken);
     const nextCdk = await activationStore.reserveCdkForOrder({
       productKey: String(stored.productKey || "chatgpt"),
       orderId: paidOrder.id,
@@ -3231,7 +3243,7 @@ function deriveActivationCertainty(
   if (orderStatus !== OrderStatus.PAID) {
     return {
       code: "ORDER_NOT_PAID",
-      label: "Р—Р°РєР°Р· РЅРµ РѕРїР»Р°С‡РµРЅ",
+      label: "Заказ не оплачен",
     };
   }
   if (!activationStatus) {

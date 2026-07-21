@@ -94,6 +94,10 @@ export const cdkKeysStore = {
     return reserved ? mapRow(reserved) : null;
   },
 
+  async movePool(input: { fromProductKey?: string; toProductKey?: string }, actor?: { userId?: string }) {
+    return licenseService.moveProductPool(String(input.fromProductKey || ""), String(input.toProductKey || ""), actor);
+  },
+
   async returnToUnused(id: string, actor?: { userId?: string }) {
     const row = await licenseService.returnToAvailable(id, actor);
     return mapRow(row);

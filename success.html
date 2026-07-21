@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ru">
 <head>
   <script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
@@ -20,6 +20,7 @@
       display: none !important;
     }
   </style>
+<link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260707-header-unify9" />
 </head>
 <body class="status-page status-page--center">
   <noscript>
@@ -35,8 +36,7 @@
     <div class="status pending" id="statusText">Ожидаем подтверждение платежа...</div>
     <div class="actions">
       <a class="btn primary" href="/">На главную</a>
-      <a class="btn" href="/index.html#pricing">К тарифам</a>
-      <a class="btn" id="telegramOrderLink" href="#" target="_blank" rel="noopener" hidden>Открыть покупки в Telegram</a>
+      <a class="btn" href="/#pricing">К тарифам</a>
     </div>
   </section>
 
@@ -44,9 +44,6 @@
     const params = new URLSearchParams(window.location.search);
     const orderId = String(params.get("order_id") || params.get("orderId") || "").trim();
     const linkToken = String(params.get("t") || "").trim();
-    const TELEGRAM_BOT_USERNAME = "GPTishka_myBot";
-    const TELEGRAM_URL_STORAGE_KEY = "gptishka_activation_telegram_url";
-    const TELEGRAM_URL_STORAGE_PREFIX = `${TELEGRAM_URL_STORAGE_KEY}:`;
     const LAST_PAID_ORDER_KEY = "gptishka_last_paid_order_id";
     const CART_STORAGE_KEYS = [
       "gptishka_cart_v1",
@@ -60,7 +57,6 @@
     const emailMaskedEl = document.getElementById("emailMasked");
     const amountEl = document.getElementById("amount");
     const statusEl = document.getElementById("statusText");
-    const telegramOrderLinkEl = document.getElementById("telegramOrderLink");
     const SUPPORT_WIDGET_SELECTORS = [
       "#gptishka-support-widget",
       ".support-widget",
@@ -90,114 +86,7 @@
       } catch (_) {
         // Ignore storage write errors.
       }
-      void exposeTelegramOrderLink(orderId, linkToken);
       pollOrderStatus(orderId);
-    }
-
-    function getOrderTelegramUrlStorageKey(id) {
-      const safeOrderId = String(id || "").trim();
-      return safeOrderId ? `${TELEGRAM_URL_STORAGE_PREFIX}${safeOrderId}` : "";
-    }
-
-    function isTelegramStartPayloadForOrder(payload, id) {
-      const safePayload = String(payload || "").trim();
-      const safeOrderId = String(id || "").trim();
-      if (!safePayload || !safeOrderId) return false;
-
-      const compactPrefix = `o_${safeOrderId}_`;
-      if (safePayload.startsWith(compactPrefix)) {
-        const proof = safePayload.slice(compactPrefix.length);
-        return /^[A-Za-z0-9_-]{32}$/.test(proof);
-      }
-
-      const legacyPrefix = `order_${safeOrderId}_`;
-      if (safePayload.startsWith(legacyPrefix)) {
-        const token = safePayload.slice(legacyPrefix.length);
-        return /^[A-Za-z0-9_-]+$/.test(token);
-      }
-
-      return false;
-    }
-
-    function normalizeTelegramOrderUrl(value, expectedOrderId) {
-      const raw = String(value || "").trim();
-      if (!raw) return "";
-      try {
-        const parsed = new URL(raw);
-        const protocol = parsed.protocol.toLowerCase();
-        const hostname = parsed.hostname.toLowerCase();
-        if (protocol !== "https:") return "";
-        if (hostname !== "t.me" && hostname !== "telegram.me") return "";
-        const safeOrderId = String(expectedOrderId || "").trim();
-        if (safeOrderId && !isTelegramStartPayloadForOrder(parsed.searchParams.get("start") || "", safeOrderId)) return "";
-        return parsed.toString();
-      } catch (_) {
-        return "";
-      }
-    }
-
-    async function sha256Bytes(value) {
-      if (!window.crypto || !window.crypto.subtle || typeof TextEncoder === "undefined") return null;
-      const encoded = new TextEncoder().encode(String(value || ""));
-      return new Uint8Array(await window.crypto.subtle.digest("SHA-256", encoded));
-    }
-
-    function bytesToHex(bytes) {
-      return Array.from(bytes || [])
-        .map((byte) => byte.toString(16).padStart(2, "0"))
-        .join("");
-    }
-
-    function bytesToBase64Url(bytes) {
-      let binary = "";
-      Array.from(bytes || []).forEach((byte) => {
-        binary += String.fromCharCode(byte);
-      });
-      return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-    }
-
-    async function buildTelegramOrderFallbackUrl(id, token) {
-      const safeOrderId = String(id || "").trim();
-      const safeToken = String(token || "").trim();
-      if (!safeOrderId || !safeToken || !window.crypto || !window.crypto.subtle) return "";
-
-      try {
-        const tokenHashBytes = await sha256Bytes(safeToken);
-        if (!tokenHashBytes) return "";
-        const redeemTokenHash = bytesToHex(tokenHashBytes);
-        const proofBytes = await sha256Bytes(`tg-order-link:${safeOrderId}:${redeemTokenHash}`);
-        if (!proofBytes) return "";
-        const proof = bytesToBase64Url(proofBytes).slice(0, 32);
-        if (!proof) return "";
-        const url = new URL(`https://t.me/${TELEGRAM_BOT_USERNAME}`);
-        url.searchParams.set("start", `o_${safeOrderId}_${proof}`);
-        return url.toString();
-      } catch (_) {
-        return "";
-      }
-    }
-
-    async function exposeTelegramOrderLink(id, token) {
-      if (!telegramOrderLinkEl) return;
-      let telegramUrl = "";
-      try {
-        telegramUrl = normalizeTelegramOrderUrl(localStorage.getItem(getOrderTelegramUrlStorageKey(id)) || "", id)
-          || normalizeTelegramOrderUrl(localStorage.getItem(TELEGRAM_URL_STORAGE_KEY) || "", id);
-      } catch (_) {
-        telegramUrl = "";
-      }
-      if (!telegramUrl) {
-        telegramUrl = await buildTelegramOrderFallbackUrl(id, token);
-      }
-
-      if (!telegramUrl) {
-        telegramOrderLinkEl.hidden = true;
-        telegramOrderLinkEl.setAttribute("href", "#");
-        return;
-      }
-
-      telegramOrderLinkEl.setAttribute("href", telegramUrl);
-      telegramOrderLinkEl.hidden = false;
     }
 
     async function pollOrderStatus(id) {
@@ -225,6 +114,7 @@
         const amount = Number(payload?.finalAmount || 0);
         const currency = String(payload?.currency || "RUB");
         const deliveryMode = String(payload?.deliveryMode || "activation").trim().toLowerCase();
+        const aiServiceOrder = isAiServiceOrder(payload);
 
         if (payload?.emailMasked) emailMaskedEl.textContent = payload.emailMasked;
         amountEl.textContent = `${formatAmount(amount)} ${currency}`;
@@ -247,6 +137,12 @@
               if (linkToken) url.searchParams.set("t", linkToken);
               window.location.href = url.toString();
             }, 1200);
+            return true;
+          }
+
+          if (aiServiceOrder && deliveryMode === "manual_login") {
+            statusEl.className = "status paid";
+            statusEl.textContent = "Оплачено. Заявка передана менеджеру — мы свяжемся с вами по указанным контактам.";
             return true;
           }
 
@@ -285,6 +181,33 @@
         statusEl.className = "status pending";
         statusEl.textContent = "Ожидаем подтверждение платежа...";
         return false;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function isAiServiceOrder(payload) {
+      const planId = String(payload?.planId || payload?.productId || "").trim();
+      const directSignals = [
+        payload?.product,
+        payload?.productSlug,
+        payload?.productTitle,
+        payload?.serviceKey,
+      ]
+        .map((value) => String(value || "").toLowerCase())
+        .join(" ");
+      if (/chatgpt|chat gpt|claude|grok|supergrok/.test(directSignals)) return true;
+
+      try {
+        const raw = String(localStorage.getItem("gptishka_site_checkout_context") || "");
+        if (!raw) return false;
+        const context = JSON.parse(raw);
+        const serviceKey = String(context?.serviceKey || "").toLowerCase();
+        const productId = String(context?.productId || "").trim();
+        const createdAt = Number(context?.createdAt || 0);
+        const isFresh = createdAt > 0 && Date.now() - createdAt < 24 * 60 * 60 * 1000;
+        const isSameProduct = !planId || !productId || planId === productId;
+        return isFresh && isSameProduct && ["chatgpt", "claude", "grok", "supergrok"].includes(serviceKey);
       } catch (_) {
         return false;
       }
@@ -379,7 +302,7 @@
         img.remove();
       });
 
-      document.querySelectorAll('a[href*="t.me/gptishkasupp"]').forEach((link) => {
+      document.querySelectorAll('a[href*="t.me/aiiisupport"]').forEach((link) => {
         const host = link.closest("aside, section, article, div");
         if (!host || host.classList.contains("status-card")) return;
         host.remove();
@@ -401,3 +324,4 @@
   </script>
 </body>
 </html>
+

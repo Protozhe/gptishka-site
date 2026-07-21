@@ -1,66 +1,35 @@
-import { Prisma } from "@prisma/client";
 import { AppError } from "../../common/errors/app-error";
 import { resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { env } from "../../config/env";
 import { prisma } from "../../config/prisma";
 import { paymentsService } from "../payments/payments.service";
 import { activationStore } from "./activation.store";
-import {
-  normalizeTelegramIdForOrder,
-  normalizeTelegramUsernameForOrder,
-  SiteOrderStartPayload,
-  verifyRedeemTokenHash,
-  verifyTelegramOrderLinkProof,
-} from "./telegram-order-linking";
 
 export type TelegramBotType = "claude" | "chatgpt" | "grok";
 
-export type TelegramOrderContext = {
+type TelegramOrderContext = {
   botType: TelegramBotType;
   telegramUserId: string;
   telegramChatId: string;
   telegramUsername?: string | null;
 };
 
-type LinkSiteOrderInput = TelegramOrderContext &
-  (
-    | { startPayload: SiteOrderStartPayload }
-    | { orderId: string; orderToken: string }
-  );
-
 const REUSE_PENDING_ORDER_WINDOW_MINUTES = 30;
 
 function normalizeTelegramId(value: unknown) {
-  return normalizeTelegramIdForOrder(value);
+  const normalized = String(value || "")
+    .trim()
+    .replace(/[^\d-]/g, "");
+  if (!normalized) throw new AppError("Telegram user id is required", 400);
+  return normalized;
 }
 
 function normalizeTelegramUsername(value: unknown) {
-  return normalizeTelegramUsernameForOrder(value);
+  const normalized = String(value || "")
+    .trim()
+    .replace(/^@+/, "");
+  return normalized || null;
 }
-
-const telegramOrderRowInclude = {
-  items: {
-    include: {
-      product: true,
-    },
-    orderBy: { id: "asc" },
-    take: 1,
-  },
-  payments: {
-    select: {
-      status: true,
-      provider: true,
-      providerRef: true,
-      payload: true,
-      processedAt: true,
-      createdAt: true,
-    },
-    orderBy: { createdAt: "desc" },
-    take: 1,
-  },
-} as const satisfies Prisma.OrderInclude;
-
-type TelegramOrderRow = Prisma.OrderGetPayload<{ include: typeof telegramOrderRowInclude }>;
 
 function buildTelegramSyntheticEmail(input: { telegramUserId: string; botType: TelegramBotType }) {
   return `tg_${input.botType}_${input.telegramUserId}@telegram.local`;
@@ -77,42 +46,6 @@ function resolveConfiguredProductId(botType: TelegramBotType) {
   if (botType === "claude") return String(env.TELEGRAM_CLAUDE_PRODUCT_ID || "").trim();
   if (botType === "chatgpt") return String(env.TELEGRAM_CHATGPT_PRODUCT_ID || "").trim();
   return String(env.TELEGRAM_GROK_PRODUCT_ID || "").trim();
-}
-
-function mapTelegramOrderRow(row: TelegramOrderRow) {
-  const activation = activationStore.findByOrderId(row.id);
-  const item = row.items[0] || null;
-  const product = item?.product || null;
-  const latestPayment = row.payments[0] || null;
-  const paymentProcessedAt = latestPayment?.processedAt || null;
-
-  return {
-    id: row.id,
-    status: row.status,
-    source: row.source,
-    botType: row.botType,
-    telegramUserId: row.telegramUserId,
-    telegramUsername: row.telegramUsername,
-    telegramChatId: row.telegramChatId,
-    amount: Number(row.totalAmount),
-    discountAmount: Number(row.discountAmount),
-    promoCode: row.promoCodeSnapshot || null,
-    currency: row.currency,
-    productTitle: String(product?.title || item?.productRaw || ""),
-    deliveryType: resolveProductDeliveryType(product?.tags || []),
-    paymentStatus: latestPayment?.status || null,
-    paymentProvider: latestPayment?.provider || null,
-    paymentRef: latestPayment?.providerRef || null,
-    paidAt: paymentProcessedAt,
-    paymentProcessedAt,
-    checkoutUrl: extractCheckoutUrlFromPayload(latestPayment?.payload),
-    activationStatus: activation?.status || null,
-    activationVerificationState: activation?.verificationState || null,
-    activationTaskId: activation?.taskId || null,
-    activationMessage: activation?.lastProviderMessage || null,
-    activationUpdatedAt: activation?.updatedAt || null,
-    createdAt: row.createdAt,
-  };
 }
 
 function scoreProductForBot(input: {
@@ -351,16 +284,57 @@ export const telegramOrdersService = {
 
     const rows = await prisma.order.findMany({
       where: {
+        source: "telegram",
+        botType: input.botType,
         telegramUserId,
       },
       orderBy: {
         createdAt: "desc",
       },
       take: safeLimit,
-      include: telegramOrderRowInclude,
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+          orderBy: { id: "asc" },
+          take: 1,
+        },
+        payments: {
+          select: {
+            status: true,
+            provider: true,
+            providerRef: true,
+            processedAt: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
+      },
     });
 
-    return rows.map(mapTelegramOrderRow);
+    return rows.map((row) => {
+      const activation = activationStore.findByOrderId(row.id);
+      const lastPayment = row.payments[0] || null;
+      return {
+        id: row.id,
+        status: row.status,
+        amount: Number(row.totalAmount),
+        discountAmount: Number(row.discountAmount),
+        promoCode: row.promoCodeSnapshot || null,
+        currency: row.currency,
+        productTitle: String(row.items[0]?.product?.title || row.items[0]?.productRaw || ""),
+        paymentStatus: lastPayment?.status || null,
+        paymentProvider: lastPayment?.provider || null,
+        paymentRef: lastPayment?.providerRef || null,
+        paidAt: lastPayment?.processedAt || null,
+        activationStatus: activation?.status || null,
+        activationVerificationState: activation?.verificationState || null,
+        activationMessage: activation?.lastProviderMessage || null,
+        createdAt: row.createdAt,
+      };
+    });
   },
 
   async getOrderStatus(input: TelegramOrderContext & { orderId: string }) {
@@ -371,80 +345,62 @@ export const telegramOrdersService = {
     const row = await prisma.order.findFirst({
       where: {
         id: orderId,
+        source: "telegram",
+        botType: input.botType,
         telegramUserId,
       },
-      include: telegramOrderRowInclude,
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+          orderBy: { id: "asc" },
+          take: 1,
+        },
+        payments: {
+          select: {
+            status: true,
+            provider: true,
+            providerRef: true,
+            payload: true,
+            processedAt: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
+      },
     });
     if (!row) throw new AppError("Order not found", 404);
 
-    return mapTelegramOrderRow(row);
-  },
-
-  async linkSiteOrderToTelegram(input: LinkSiteOrderInput) {
-    const telegramUserId = normalizeTelegramId(input.telegramUserId);
-    const telegramChatId = normalizeTelegramId(input.telegramChatId);
-    const telegramUsername = normalizeTelegramUsername(input.telegramUsername);
-    const payload =
-      "startPayload" in input
-        ? input.startPayload
-        : ({
-            kind: "legacy-token",
-            orderId: input.orderId,
-            orderToken: input.orderToken,
-          } satisfies SiteOrderStartPayload);
-    const orderId = String(payload.orderId || "").trim();
-
-    const existing = await prisma.order.findFirst({
-      where: {
-        id: orderId,
-      },
-      include: telegramOrderRowInclude,
-    });
-    if (!existing) throw new AppError("Order not found", 404);
-
-    if (payload.kind === "compact-proof") {
-      verifyTelegramOrderLinkProof({
-        orderId: payload.orderId,
-        redeemTokenHash: existing.redeemTokenHash,
-        providedProof: payload.proof,
-      });
-    } else {
-      verifyRedeemTokenHash({
-        expectedHash: existing.redeemTokenHash,
-        providedToken: payload.orderToken,
-      });
-    }
-
-    if (existing.telegramUserId && existing.telegramUserId !== telegramUserId) {
-      throw new AppError("Order is already linked to another Telegram account", 409);
-    }
-
-    const linkedUpdate = await prisma.order.updateMany({
-      where: {
-        id: existing.id,
-        OR: [{ telegramUserId: null }, { telegramUserId }],
-      },
-      data: {
-        telegramUserId,
-        telegramChatId,
-        telegramUsername,
-        telegramLastError: null,
-      },
-    });
-
-    if (linkedUpdate.count !== 1) {
-      throw new AppError("Order is already linked to another Telegram account", 409);
-    }
-
-    const linked = await prisma.order.findFirst({
-      where: {
-        id: existing.id,
-      },
-      include: telegramOrderRowInclude,
-    });
-    if (!linked) throw new AppError("Order not found", 404);
-
-    return mapTelegramOrderRow(linked);
+    const latestPayment = row.payments[0] || null;
+    const activation = activationStore.findByOrderId(row.id);
+    return {
+      id: row.id,
+      status: row.status,
+      source: row.source,
+      botType: row.botType,
+      telegramUserId: row.telegramUserId,
+      telegramUsername: row.telegramUsername,
+      telegramChatId: row.telegramChatId,
+      amount: Number(row.totalAmount),
+      discountAmount: Number(row.discountAmount),
+      promoCode: row.promoCodeSnapshot || null,
+      currency: row.currency,
+      productTitle: String(row.items[0]?.product?.title || row.items[0]?.productRaw || ""),
+      deliveryType: resolveProductDeliveryType(row.items[0]?.product?.tags || []),
+      paymentStatus: latestPayment?.status || null,
+      paymentProvider: latestPayment?.provider || null,
+      paymentRef: latestPayment?.providerRef || null,
+      paymentProcessedAt: latestPayment?.processedAt || null,
+      checkoutUrl: extractCheckoutUrlFromPayload(latestPayment?.payload),
+      activationStatus: activation?.status || null,
+      activationVerificationState: activation?.verificationState || null,
+      activationTaskId: activation?.taskId || null,
+      activationMessage: activation?.lastProviderMessage || null,
+      activationUpdatedAt: activation?.updatedAt || null,
+      createdAt: row.createdAt,
+    };
   },
 
   async setOrderError(input: { orderId: string; error: string }) {

@@ -155,8 +155,11 @@ model ProductVisualConfig {
   backgroundType     ProductVisualBackgroundType @default(solid)
   backgroundColor    String                      @default("")
   backgroundGradient String                      @default("")
+  textColor          String                      @default("")
   buttonText         String                      @default("")
   buttonStyle        String                      @default("")
+  buttonBackground   String                      @default("")
+  buttonTextColor    String                      @default("")
   isVisible          Boolean                     @default(true)
   createdAt          DateTime                    @default(now())
   updatedAt          DateTime                    @updatedAt
@@ -174,6 +177,7 @@ model ProductShowcaseSection {
   isActive       Boolean                    @default(true)
   showOnHomepage Boolean                    @default(true)
   showInCatalog  Boolean                    @default(true)
+  renderMode     String                     @default("auto") @map("render_mode")
   placements     ProductShowcasePlacement[]
   createdAt      DateTime                   @default(now())
   updatedAt      DateTime                   @updatedAt
@@ -199,6 +203,36 @@ model ProductShowcasePlacement {
   @@index([productId])
   @@index([sectionId, isActive, sortOrder])
   @@index([isPinned])
+}
+
+model ProductShowcaseServiceCard {
+  id                 String                      @id @default(cuid())
+  serviceKey         String                      @unique @map("service_key")
+  title              String                      @default("")
+  description        String                      @default("")
+  planSummary        String                      @default("") @map("plan_summary")
+  priceText          String                      @default("") @map("price_text")
+  buttonText         String                      @default("") @map("button_text")
+  href               String                      @default("")
+  iconText           String                      @default("") @map("icon_text")
+  theme              String                      @default("")
+  imageUrl           String                      @default("") @map("image_url")
+  imageAlt           String                      @default("") @map("image_alt")
+  hoverImageUrl      String                      @default("") @map("hover_image_url")
+  hoverImageAlt      String                      @default("") @map("hover_image_alt")
+  backgroundType     ProductVisualBackgroundType @default(solid) @map("background_type")
+  backgroundColor    String                      @default("") @map("background_color")
+  backgroundGradient String                      @default("") @map("background_gradient")
+  textColor          String                      @default("") @map("text_color")
+  buttonBackground   String                      @default("") @map("button_background")
+  buttonTextColor    String                      @default("") @map("button_text_color")
+  isActive           Boolean                     @default(true) @map("is_active")
+  sortOrder          Int                         @default(100) @map("sort_order")
+  createdAt          DateTime                    @default(now()) @map("created_at")
+  updatedAt          DateTime                    @updatedAt @map("updated_at")
+
+  @@index([isActive, sortOrder])
+  @@map("product_showcase_service_cards")
 }
 
 model ServicePage {

@@ -24,6 +24,13 @@ ServerSignature Off
   RewriteCond %{HTTP_HOST} !^127\.0\.0\.1$ [NC]
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+  # Canonical home URLs: hide explicit index files.
+  RewriteCond %{THE_REQUEST} \s/+index\.html(?:[?\s]|$) [NC]
+  RewriteRule ^index\.html$ / [L,R=301]
+
+  RewriteCond %{THE_REQUEST} \s/+en/index\.html(?:[?\s]|$) [NC]
+  RewriteRule ^en/index\.html$ /en/ [L,R=301]
+
   # Block direct access to hidden and sensitive paths.
   RewriteRule (^|/)\.(?!well-known) - [F,L,NC]
   RewriteRule ^(apps|includes|backups|data|config)(/|$) - [F,L,NC]

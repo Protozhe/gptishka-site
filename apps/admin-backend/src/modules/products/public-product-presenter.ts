@@ -56,6 +56,12 @@ export function isHiddenPublicVpnProduct(item: any) {
   const deliveryType = resolveProductDeliveryType(tags);
   if (deliveryType === "vpn") return true;
 
+  const normalizedTags = tags.map((tag: unknown) => String(tag || "").trim().toLowerCase());
+  const isAiSubscription = normalizedTags.some((tag: string) =>
+    ["chatgpt", "claude", "supergrok", "grok"].includes(tag)
+  );
+  if (isAiSubscription) return false;
+
   const productKeys = [item?.slug, item?.title, item?.titleEn, item?.category]
     .map((value) => String(value || "").trim())
     .filter(Boolean);
@@ -100,8 +106,11 @@ function buildVisualPayload(item: any, lang: PublicProductLang) {
     backgroundType: visual?.backgroundType || "solid",
     backgroundColor: visual?.backgroundColor || "#111111",
     backgroundGradient: visual?.backgroundGradient || "",
+    textColor: visual?.textColor || "",
     buttonText: visual?.buttonText || buttonText,
     buttonStyle: visual?.buttonStyle || "primary",
+    buttonBackground: visual?.buttonBackground || "",
+    buttonTextColor: visual?.buttonTextColor || "",
     isVisible: visual?.isVisible !== false,
   };
 }

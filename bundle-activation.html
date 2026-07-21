@@ -1,17 +1,17 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ru">
 <head>
   <script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Шаги выдачи заказа: сначала настройка VPN, затем активация ChatGPT." />
+  <meta name="description" content="Шаги выдачи заказа: сначала настройка V*N, затем активация выбранной подписки." />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="GPTishka" />
-  <meta property="og:title" content="VPN + Активация заказа - GPTишка" />
-  <meta property="og:description" content="Два раздела: настройте VPN и завершите активацию ChatGPT." />
+  <meta property="og:title" content="V*N + Активация заказа - GPTишка" />
+  <meta property="og:description" content="Два раздела: настройте V*N и завершите активацию выбранной подписки." />
   <meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
   <meta property="og:url" content="https://gptishka.shop/bundle-activation.html" />
-  <title>VPN + Активация заказа - GPTишка</title>
+  <title>V*N + Активация заказа - GPTишка</title>
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="shortcut icon" href="/favicon.ico" />
   <link rel="apple-touch-icon" href="/assets/img/logo.png" />
@@ -182,18 +182,19 @@
       }
     }
   </style>
+<link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260707-header-unify9" />
 </head>
 <body>
   <div class="page-overlay"></div>
   <header>
     <div class="nav">
-      <a href="/index.html" class="logo-link" aria-label="GPTишка">
+      <a href="/" class="logo-link" aria-label="GPTишка">
         <img loading="eager" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTишка" class="logo-img" onerror="this.onerror=null;this.src='/favicon.png';">
       </a>
       <nav>
-        <a href="/index.html">Главная</a>
-        <a href="/index.html#pricing">Тарифы</a>
-        <a href="/store/vpn/">VPN</a>
+        <a href="/">Главная</a>
+        <a href="/#pricing">Тарифы</a>
+        <a href="/store/vpn/">V*N</a>
         <a href="/contact.html">Контакты</a>
       </nav>
     </div>
@@ -201,8 +202,8 @@
 
   <main class="page bundle-page">
     <section class="bundle-card">
-      <h1 class="bundle-title">Заказ с VPN в пакете</h1>
-      <p class="bundle-subtitle">Для этого товара выдача состоит из двух разделов: сначала настройка VPN, затем активация ChatGPT по токену.</p>
+      <h1 id="bundleTitle" class="bundle-title">Заказ с V*N в пакете</h1>
+      <p id="bundleSubtitle" class="bundle-subtitle">Для этого товара выдача состоит из двух разделов: сначала настройка V*N, затем активация выбранной подписки.</p>
 
       <div class="bundle-order">
         <div>Order ID: <strong id="orderId" class="bundle-order-id">-</strong></div>
@@ -212,26 +213,26 @@
       <div class="bundle-grid">
         <section class="bundle-section">
           <p class="bundle-step">Раздел 1</p>
-          <h2>Настроить VPN</h2>
-          <p>Получите ключ VPN и подключите устройство.</p>
+          <h2>Настроить V*N</h2>
+          <p>Получите ключ V*N и подключите устройство.</p>
           <ol>
-            <li>Откройте страницу активации VPN.</li>
+            <li>Откройте страницу активации V*N.</li>
             <li>Скопируйте VLESS-ссылку.</li>
             <li>Выберите инструкцию для вашей ОС.</li>
           </ol>
-          <div id="vpnStatus" class="bundle-status">Проверяем статус VPN-доступа...</div>
+          <div id="vpnStatus" class="bundle-status">Проверяем статус V*N-доступа...</div>
           <div class="bundle-actions">
-            <a id="openVpnBtn" class="btn primary" href="/store/vpn/activate">Открыть VPN</a>
+            <a id="openVpnBtn" class="btn primary" href="/store/vpn/activate">Открыть V*N</a>
           </div>
         </section>
 
         <section class="bundle-section">
           <p class="bundle-step">Раздел 2</p>
-          <h2>Продлить / Активировать</h2>
-          <p>Завершите активацию подписки ChatGPT по токену аккаунта.</p>
-          <ol>
-            <li>Откройте страницу токен-активации.</li>
-            <li>Вставьте токен из `chatgpt.com/api/auth/session`.</li>
+          <h2 id="activationTitle">Продлить / Активировать</h2>
+          <p id="activationLead">Завершите активацию подписки.</p>
+          <ol id="activationSteps">
+            <li>Откройте страницу активации.</li>
+            <li>Укажите данные, которые нужны для выбранного сервиса.</li>
             <li>Нажмите «Активировать» и дождитесь статуса.</li>
           </ol>
           <div id="activationStatus" class="bundle-status">Проверяем статус активации...</div>
@@ -254,6 +255,93 @@
     const openActivationBtn = document.getElementById("openActivationBtn");
     const vpnStatusEl = document.getElementById("vpnStatus");
     const activationStatusEl = document.getElementById("activationStatus");
+    const bundleSubtitleEl = document.getElementById("bundleSubtitle");
+    const activationTitleEl = document.getElementById("activationTitle");
+    const activationLeadEl = document.getElementById("activationLead");
+    const activationStepsEl = document.getElementById("activationSteps");
+
+    const SERVICE_COPY = {
+      chatgpt: {
+        name: "ChatGPT",
+        title: "Активация ChatGPT",
+        lead: "Завершите активацию ChatGPT по токену аккаунта.",
+        steps: [
+          "Откройте страницу токен-активации.",
+          "Вставьте токен из chatgpt.com/api/auth/session.",
+          "Нажмите «Активировать». После запуска ожидайте 5–10 минут, в редких случаях до 12 часов.",
+        ],
+        button: "Открыть активацию ChatGPT",
+      },
+      claude: {
+        name: "Claude",
+        title: "Активация Claude Pro",
+        lead: "Завершите активацию Claude Pro по ID аккаунта Claude.",
+        steps: [
+          "Войдите в Claude и откройте настройки аккаунта.",
+          "Скопируйте ID аккаунта Claude из раздела Account.",
+          "Вставьте ID на странице активации и нажмите «Активировать». После запуска ожидайте 5–10 минут, в редких случаях до 12 часов.",
+        ],
+        button: "Открыть активацию Claude",
+      },
+      grok: {
+        name: "SuperGrok",
+        title: "Активация SuperGrok",
+        lead: "Завершите активацию SuperGrok по ID аккаунта Grok.",
+        steps: [
+          "Перейдите на сайт grok.com и войдите в свой аккаунт.",
+          "Откройте ссылку https://grok.com/api/auth/session и найдите строку ID.",
+          "На странице активации будет подробная инструкция с фото. Вставьте ID и нажмите «Активировать». После запуска ожидайте 5–10 минут, в редких случаях до 12 часов.",
+        ],
+        button: "Открыть активацию SuperGrok",
+      },
+      generic: {
+        name: "подписки",
+        title: "Продлить / Активировать",
+        lead: "Завершите активацию выбранной подписки.",
+        steps: [
+          "Откройте страницу активации.",
+          "Укажите данные, которые нужны для выбранного сервиса.",
+          "Нажмите «Активировать» и дождитесь статуса.",
+        ],
+        button: "Открыть активацию",
+      },
+    };
+
+    function getPayloadFingerprint(payload) {
+      return [
+        payload?.activationFlow,
+        payload?.deliveryMode,
+        payload?.productKey,
+        payload?.product,
+        payload?.product?.slug,
+        payload?.product?.key,
+        payload?.product?.title,
+        payload?.product?.name,
+        payload?.title,
+        payload?.name,
+      ].filter(Boolean).join(" ").toLowerCase();
+    }
+
+    function resolveServiceCopy(payload) {
+      const text = getPayloadFingerprint(payload);
+      if (text.includes("claude") || text.includes("sdk5")) return SERVICE_COPY.claude;
+      if (text.includes("grok") || text.includes("supergrok") || text.includes("sdk4")) return SERVICE_COPY.grok;
+      if (text.includes("chatgpt") || text.includes("gpt") || text.includes("plus") || text.includes("go")) return SERVICE_COPY.chatgpt;
+      return SERVICE_COPY.generic;
+    }
+
+    function applyServiceCopy(copy) {
+      const serviceName = copy?.name || SERVICE_COPY.generic.name;
+      if (bundleSubtitleEl) {
+        bundleSubtitleEl.textContent = `Для этого товара выдача состоит из двух разделов: сначала настройка V*N, затем активация ${serviceName}.`;
+      }
+      if (activationTitleEl) activationTitleEl.textContent = copy.title;
+      if (activationLeadEl) activationLeadEl.textContent = copy.lead;
+      if (activationStepsEl) {
+        activationStepsEl.innerHTML = copy.steps.map((step) => `<li>${step}</li>`).join("");
+      }
+      if (openActivationBtn) openActivationBtn.textContent = copy.button;
+    }
 
     function buildVpnUrl() {
       const url = new URL("/store/vpn/activate", window.location.origin);
@@ -287,13 +375,13 @@
         const response = await fetch(url.toString(), { cache: "no-store" });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-          setStatus(vpnStatusEl, "warn", String(payload?.message || "VPN-доступ еще не готов."));
+          setStatus(vpnStatusEl, "warn", String(payload?.message || "V*N-доступ еще не готов."));
           return;
         }
         const expires = payload?.expiresAt ? new Date(payload.expiresAt).toLocaleString("ru-RU") : "";
-        setStatus(vpnStatusEl, "ok", `VPN-доступ готов${expires ? `. Действует до: ${expires}` : "."}`);
+        setStatus(vpnStatusEl, "ok", `V*N-доступ готов${expires ? `. Действует до: ${expires}` : "."}`);
       } catch (_) {
-        setStatus(vpnStatusEl, "error", "Ошибка сети при проверке VPN.");
+        setStatus(vpnStatusEl, "error", "Ошибка сети при проверке V*N.");
       }
     }
 
@@ -310,8 +398,10 @@
           setStatus(activationStatusEl, "warn", String(payload?.message || "Активация пока не готова."));
           return;
         }
+        const serviceCopy = resolveServiceCopy(payload);
+        applyServiceCopy(serviceCopy);
         const mode = String(payload?.deliveryMode || "").toLowerCase();
-        if (mode !== "activation") {
+        if (mode !== "activation" && mode !== "support") {
           setStatus(activationStatusEl, "warn", "Для этого заказа токен-активация не требуется.");
           return;
         }
@@ -324,7 +414,7 @@
           setStatus(activationStatusEl, "warn", "Активация в обработке. Можно проверить статус на странице активации.");
           return;
         }
-        setStatus(activationStatusEl, "", "Ожидается запуск активации по токену.");
+        setStatus(activationStatusEl, "", "Ожидается запуск активации.");
       } catch (_) {
         setStatus(activationStatusEl, "error", "Ошибка сети при проверке активации.");
       }
@@ -349,6 +439,8 @@
     loadVpnStatus();
     loadActivationStatus();
   </script>
-  <script src="/assets/js/support-widget.js?v=20260314a" defer></script>
+  <script src="/assets/js/support-widget.js?v=20260707-support-unify2" defer></script>
 </body>
 </html>
+
+

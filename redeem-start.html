@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
 <script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
@@ -122,14 +122,16 @@
 
     .redeem-title {
       margin: 0;
-      max-width: 16ch;
+      max-width: 100%;
       font-family: "Space Grotesk", "Manrope", sans-serif;
       font-size: clamp(34px, 5vw, 50px);
-      line-height: 1.02;
-      letter-spacing: -0.03em;
+      line-height: 1.12;
+      letter-spacing: 0;
       font-weight: 700;
       color: var(--redeem-ink);
       text-wrap: balance;
+      overflow-wrap: normal;
+      word-break: normal;
     }
 
     .redeem-subtitle {
@@ -290,14 +292,15 @@
 
     .redeem-guide summary::after {
       content: "+";
-      width: 20px;
-      height: 20px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       border: 1px solid var(--redeem-line-soft);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 15px;
+      font-size: 30px;
+      line-height: 1;
       color: #335066;
       flex-shrink: 0;
       transition: transform 0.2s ease;
@@ -308,8 +311,9 @@
     }
 
     .redeem-guide ol {
-      margin: 10px 0 0 18px;
+      margin: 10px 0 0;
       padding: 0;
+      list-style: none;
     }
 
     .redeem-guide li + li {
@@ -321,6 +325,101 @@
       font-weight: 700;
       text-decoration-thickness: 1px;
       text-underline-offset: 2px;
+    }
+
+    .redeem-guide-shot {
+      margin-top: 8px;
+    }
+
+    .redeem-guide-shot img {
+      display: block;
+      width: min(100%, 760px);
+      height: auto;
+      border-radius: 10px;
+      border: 1px solid rgba(17, 34, 53, 0.18);
+      box-shadow: 0 8px 20px rgba(9, 21, 33, 0.14);
+      background: #0b1118;
+      cursor: zoom-in;
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .redeem-guide-shot img:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 26px rgba(9, 21, 33, 0.2);
+    }
+
+    html.redeem-image-zoom-open,
+    html.redeem-image-zoom-open body {
+      overflow: hidden;
+    }
+
+    .redeem-image-zoom {
+      position: fixed;
+      inset: 0;
+      z-index: 10050;
+      display: grid;
+      place-items: center;
+      padding: clamp(14px, 3vw, 36px);
+      background: rgba(6, 12, 20, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .redeem-image-zoom[hidden] {
+      display: none;
+    }
+
+    .redeem-image-zoom__backdrop {
+      position: absolute;
+      inset: 0;
+      cursor: zoom-out;
+    }
+
+    .redeem-image-zoom__dialog {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 10px;
+      max-width: min(96vw, 1280px);
+      max-height: 92vh;
+    }
+
+    .redeem-image-zoom__img {
+      display: block;
+      max-width: 100%;
+      max-height: 84vh;
+      width: auto;
+      height: auto;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: #ffffff;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+      cursor: zoom-out;
+    }
+
+    .redeem-image-zoom__close {
+      position: absolute;
+      top: -14px;
+      right: -14px;
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.94);
+      color: #102236;
+      font-size: 24px;
+      line-height: 1;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+    }
+
+    .redeem-image-zoom__caption {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 13px;
+      line-height: 1.4;
+      text-align: center;
     }
 
     .redeem-input {
@@ -543,6 +642,10 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 8px;
+    }
+
+    .redeem-status[hidden] {
+      display: none !important;
     }
 
     .redeem-status.pending {
@@ -944,7 +1047,8 @@
       }
 
       .redeem-title {
-        font-size: clamp(28px, 10vw, 38px);
+        font-size: 30px;
+        line-height: 1.16;
       }
 
       .redeem-review-card {
@@ -1034,6 +1138,11 @@
 
     body.redeem-flow .redeem-title {
       color: var(--lp-text, #161f2f) !important;
+      max-width: 100% !important;
+      line-height: 1.12 !important;
+      letter-spacing: 0 !important;
+      overflow-wrap: normal !important;
+      word-break: normal !important;
     }
 
     body.redeem-flow .redeem-subtitle,
@@ -1161,7 +1270,8 @@
     }
 
   </style>
-<link rel="stylesheet" href="/assets/css/support-widget.css?v=20260310l" />
+<link rel="stylesheet" href="/assets/css/support-widget.css?v=20260707-support-unify3" />
+<link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260707-header-unify9" />
 </head>
 <body class="redeem-flow">
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
@@ -1169,16 +1279,16 @@
 
   <header>
 <div class="nav">
-      <a href="/index.html" class="logo-link">
+      <a href="/" class="logo-link">
         <img loading="eager" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTишка" class="logo-img" onerror="this.onerror=null;this.src='/favicon.png';">
       </a>
 
             <nav>
-        <a href="/index.html">Главная</a>
-        <a href="/index.html#pricing">Тарифы</a>
-        <a href="/index.html#how">Как это работает</a>
-        <a href="/index.html#payment">Оплата</a>
-        <a href="/index.html#faq">Вопросы и ответы</a>
+        <a href="/">Главная</a>
+        <a href="/#pricing">Тарифы</a>
+        <a href="/#how">Как это работает</a>
+        <a href="/#payment">Оплата</a>
+        <a href="/#faq">Вопросы и ответы</a>
       </nav>
 
           <div class="header-tools">
@@ -1186,7 +1296,7 @@
         <div class="lang-current" id="langCurrent">
           <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
           <span>Русский</span>
-          <span class="arrow">▾</span>
+          <span class="arrow">в–ѕ</span>
         </div>
 
         <div class="lang-dropdown">
@@ -1207,14 +1317,14 @@
   <main class="page redeem-page">
     <section class="redeem-card">
       <h1 class="redeem-title">Продлить / Активировать</h1>
-      <p class="redeem-subtitle">После оплаты завершите выдачу заказа по инструкции ниже.</p>
+      <p class="redeem-subtitle">Заказ принят в работу, мы с вами свяжемся, если возникнут вопросы</p>
 
       <section id="vpnOfferBlock" class="redeem-vpn-offer" hidden>
         <div class="redeem-vpn-offer-head">
           <p class="redeem-label" style="margin-bottom:0;">VPN в этом заказе</p>
           <span class="redeem-vpn-pill">Рекомендуем</span>
         </div>
-        <p class="redeem-vpn-offer-text">Сначала настройте VPN-доступ, затем вернитесь к активации ChatGPT по токену.</p>
+        <p class="redeem-vpn-offer-text">Сначала настройте VPN-доступ, затем вернитесь к активации.</p>
         <div class="redeem-vpn-offer-actions">
           <a id="vpnOfferSetupBtn" class="redeem-btn redeem-btn-primary" href="/store/vpn/activate" data-redeem-leave-bypass>Настроить VPN</a>
           <button id="vpnOfferSkipBtn" type="button" class="redeem-btn">Продолжить активацию</button>
@@ -1232,7 +1342,7 @@
 
         <section class="redeem-block" id="tokenBlock">
           <p class="redeem-label" id="tokenLabel">Токен аккаунта</p>
-          <details class="redeem-guide" open>
+          <details class="redeem-guide">
             <summary id="tokenGuideSummary">Где взять токен аккаунта</summary>
             <ol id="tokenGuideList">
               <li>Войдите через браузер в аккаунт ChatGPT (если ещё не вошли — просто авторизуйтесь).</li>
@@ -1266,19 +1376,11 @@
             <span id="manualPasswordValue" class="redeem-order-id">-</span>
             <button id="copyPasswordBtn" type="button" class="redeem-btn">Скопировать пароль</button>
           </div>
-          <div id="manualCodeLinkRow" class="redeem-order-row redeem-manual-code-row" style="display:none">
-            <span class="redeem-manual-code-label">Ссылка для получения кода:</span>
-            <a id="manualCodeLink" class="redeem-btn redeem-manual-link-btn" href="https://quickplus.vip/public/grok/" target="_blank" rel="noopener noreferrer">получить код</a>
-          </div>
           <p id="manualCredentialsHint" class="redeem-manual-hint"></p>
-          <p id="manualEmailLinkRow" class="redeem-manual-code-row" style="display:none">
-            Если удобнее, получите код по почте:
-            <a id="manualEmailLink" href="mailto:support@gptishka.shop">support@gptishka.shop</a>
-          </p>
           <a
             id="manualSupportBtn"
             class="redeem-btn redeem-btn-primary"
-            href="https://quickplus.vip/public/grok/"
+            href="https://t.me/aiiisupport"
             target="_blank"
             rel="noopener noreferrer"
             style="display:none; margin-top:8px;"
@@ -1293,7 +1395,7 @@
         <button id="stopPollingBtn" type="button" class="redeem-btn full" style="display:none">Остановить проверку</button>
       </section>
 
-      <section id="statusBox" class="redeem-status">
+      <section id="statusBox" class="redeem-status" hidden>
         <span id="statusText">Ожидаю действия.</span>
         <span id="statusSpinner" class="redeem-spinner" aria-hidden="true"></span>
         <span id="taskWrap" style="display:none">Task: <strong id="taskIdValue"></strong></span>
@@ -1303,25 +1405,24 @@
       <section id="reviewRewardBox" class="redeem-review-reward" hidden aria-modal="true" role="dialog" aria-live="polite" aria-labelledby="reviewRewardTitle">
         <div class="redeem-review-card">
           <div class="redeem-review-top">
-            <span class="redeem-review-badge">Бонус 10% на следующий заказ</span>
+            <span class="redeem-review-badge">Бонус 5% на следующий заказ</span>
             <button id="reviewRewardCloseBtn" type="button" class="redeem-review-close" aria-label="Закрыть сообщение" title="Закрыть">&times;</button>
           </div>
           <div class="redeem-review-body">
             <div class="redeem-review-head">
               <span class="redeem-review-mark-wrap" aria-hidden="true">
-                <span class="redeem-review-mark">✓</span>
+                <span class="redeem-review-mark">вњ“</span>
               </span>
               <div class="redeem-review-copy">
                 <h3 id="reviewRewardTitle">Ваш тариф успешно активирован</h3>
-                <p class="redeem-review-lead">Спасибо за покупку. Оставьте короткий отзыв в Telegram и получите персональный промокод 10%.</p>
+                <p class="redeem-review-lead">Спасибо за покупку. Оставьте короткий отзыв в Telegram и получите персональный промокод 5%.</p>
               </div>
             </div>
             <ul class="redeem-review-points">
-              <li>Промокод действует на следующий заказ и суммируется с текущими акциями.</li>
-              <li>Проверим отзыв и отправим ваш персональный код в поддержку без задержек.</li>
+              <li>Проверим отзыв и отправим вам персональный промокод.</li>
             </ul>
             <div class="redeem-review-links">
-              <a class="redeem-btn redeem-btn-primary" href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">Оставить отзыв</a>
+              <a class="redeem-btn redeem-btn-primary" href="https://t.me/aiiisupport" target="_blank" rel="noopener noreferrer">Оставить отзыв</a>
               <button id="reviewRewardDismissBtn" type="button" class="redeem-btn redeem-btn-soft">Позже</button>
             </div>
             <p class="redeem-review-note">Если окно мешает, нажмите «Позже» или клавишу Esc. Бонус останется доступен.</p>
@@ -1339,8 +1440,9 @@
     <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
   </footer>
 
-  <script src="/assets/js/app.min.js?v=20260620-vpn-card1" defer></script>
+  <script src="/assets/js/app.min.js?v=20260708-compliance1" defer></script>
   <script>
+    (() => {
     const params = new URLSearchParams(window.location.search);
     const orderId = String(params.get('order_id') || params.get('orderId') || '').trim();
     let orderLinkToken = String(params.get('t') || '').trim();
@@ -1366,10 +1468,6 @@
     const manualLoginRow = manualLoginValue ? manualLoginValue.closest('.redeem-order-row') : null;
     const manualPasswordRow = manualPasswordValue ? manualPasswordValue.closest('.redeem-order-row') : null;
     const manualCredentialsHint = document.getElementById('manualCredentialsHint');
-    const manualCodeLinkRow = document.getElementById('manualCodeLinkRow');
-    const manualCodeLink = document.getElementById('manualCodeLink');
-    const manualEmailLinkRow = document.getElementById('manualEmailLinkRow');
-    const manualEmailLink = document.getElementById('manualEmailLink');
     const manualSupportBtn = document.getElementById('manualSupportBtn');
     const copyLoginBtn = document.getElementById('copyLoginBtn');
     const copyPasswordBtn = document.getElementById('copyPasswordBtn');
@@ -1398,7 +1496,7 @@
     const RETRY_COOLDOWN_MS = 20000;
     const TOKEN_VALIDATE_DEBOUNCE_MS = 600;
     const LAST_PAID_ORDER_KEY = 'gptishka_last_paid_order_id';
-    const ACTIVATION_RESUME_SAVED_AT_KEY = 'gptishka_activation_saved_at';
+    const REDEEM_ACTIVATION_SAVED_AT_KEY = 'gptishka_activation_saved_at';
     const ACTIVATION_RESUME_TTL_MS = 365 * 24 * 60 * 60 * 1000;
     const CART_STORAGE_KEYS = [
       'gptishka_cart_v1',
@@ -1419,8 +1517,13 @@
     let validateTimer = null;
     let tokenValidatedOk = false;
     let lastValidateReason = '';
+    const SUPPORT_ACTIVATION_FLOW_GROK = 'grok_token';
+    const SUPPORT_ACTIVATION_FLOW_CLAUDE = 'claude_token';
+    const SUPPORT_TELEGRAM_URL = 'https://t.me/aiiisupport';
+    const MANUAL_SUPPORT_MESSAGE = 'Мы обрабатываем заказы ежедневно с 10:00 до 20:00 по МСК. Среднее время ожидания — от 5 минут до 2 часов после оплаты. Если заказ оформлен ночью — подключим с утра. Максимальное время выполнения — 2 рабочих дня.';
     let isCredentialsDelivery = false;
     let isSupportTokenDelivery = false;
+    let supportActivationFlow = SUPPORT_ACTIVATION_FLOW_GROK;
     let vpnOfferDismissed = false;
     let activationCompleted = false;
     let leaveGuardBypass = false;
@@ -1428,6 +1531,10 @@
     let leaveConfirmProceedBtn = null;
     let leaveConfirmCancelBtn = null;
     let pendingLeaveHref = '';
+    let imageZoomModalEl = null;
+    let imageZoomImageEl = null;
+    let imageZoomCaptionEl = null;
+    let imageZoomCloseBtn = null;
 
     // By default, allow retry only after explicit failure or pending timeout.
     retryNewKeyBtn.disabled = true;
@@ -1441,6 +1548,10 @@
       subtitle: '\u0415\u0441\u043b\u0438 \u0432\u044b\u0439\u0442\u0438 \u0441\u0435\u0439\u0447\u0430\u0441, \u043f\u0440\u043e\u0446\u0435\u0441\u0441 \u0430\u043a\u0442\u0438\u0432\u0430\u0446\u0438\u0438 \u043c\u043e\u0436\u0435\u0442 \u043f\u0440\u0435\u0440\u0432\u0430\u0442\u044c\u0441\u044f. \u0420\u0435\u043a\u043e\u043c\u0435\u043d\u0434\u0443\u0435\u043c \u043e\u0441\u0442\u0430\u0442\u044c\u0441\u044f \u0434\u043e \u0441\u0442\u0430\u0442\u0443\u0441\u0430 \u00ab\u0423\u0441\u043f\u0435\u0448\u043d\u043e\u00bb.',
       proceed: '\u0414\u0430, \u043f\u043e\u043a\u0438\u043d\u0443\u0442\u044c',
       stay: '\u041d\u0435\u0442, \u043e\u0441\u0442\u0430\u0442\u044c\u0441\u044f',
+    };
+
+    const IMAGE_ZOOM_TEXT = {
+      close: '\u0417\u0430\u043a\u0440\u044b\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435',
     };
 
     function markActivationCompleted() {
@@ -1500,6 +1611,67 @@
       if (!nextHref) return;
       leaveGuardBypass = true;
       window.location.href = nextHref;
+    }
+
+    function ensureGuideImageZoomModal() {
+      if (imageZoomModalEl) return;
+      const modal = document.createElement('div');
+      modal.className = 'redeem-image-zoom';
+      modal.hidden = true;
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
+      modal.innerHTML = [
+        '<div class="redeem-image-zoom__backdrop" data-image-zoom-close></div>',
+        '<div class="redeem-image-zoom__dialog">',
+        `  <button type="button" class="redeem-image-zoom__close" aria-label="${IMAGE_ZOOM_TEXT.close}" title="${IMAGE_ZOOM_TEXT.close}" data-image-zoom-close>&times;</button>`,
+        '  <img class="redeem-image-zoom__img" alt="">',
+        '  <p class="redeem-image-zoom__caption"></p>',
+        '</div>',
+      ].join('');
+      document.body.appendChild(modal);
+      imageZoomModalEl = modal;
+      imageZoomImageEl = modal.querySelector('.redeem-image-zoom__img');
+      imageZoomCaptionEl = modal.querySelector('.redeem-image-zoom__caption');
+      imageZoomCloseBtn = modal.querySelector('.redeem-image-zoom__close');
+      modal.querySelectorAll('[data-image-zoom-close]').forEach((item) => {
+        item.addEventListener('click', closeGuideImageZoom);
+      });
+      if (imageZoomImageEl) imageZoomImageEl.addEventListener('click', closeGuideImageZoom);
+    }
+
+    function openGuideImageZoom(image) {
+      if (!image) return;
+      ensureGuideImageZoomModal();
+      const src = String(image.currentSrc || image.src || '').trim();
+      if (!src || !imageZoomModalEl || !imageZoomImageEl) return;
+      const alt = String(image.getAttribute('alt') || '').trim();
+      imageZoomImageEl.src = src;
+      imageZoomImageEl.alt = alt;
+      if (imageZoomCaptionEl) imageZoomCaptionEl.textContent = alt;
+      imageZoomModalEl.hidden = false;
+      document.documentElement.classList.add('redeem-image-zoom-open');
+      if (imageZoomCloseBtn) imageZoomCloseBtn.focus();
+    }
+
+    function closeGuideImageZoom() {
+      if (!imageZoomModalEl) return;
+      imageZoomModalEl.hidden = true;
+      document.documentElement.classList.remove('redeem-image-zoom-open');
+      if (imageZoomImageEl) {
+        imageZoomImageEl.removeAttribute('src');
+        imageZoomImageEl.alt = '';
+      }
+      if (imageZoomCaptionEl) imageZoomCaptionEl.textContent = '';
+    }
+
+    function setupGuideImageZoom() {
+      document.addEventListener('click', (event) => {
+        const target = event.target;
+        const image = target && target.closest ? target.closest('.redeem-guide-shot img') : null;
+        if (!image) return;
+        event.preventDefault();
+        openGuideImageZoom(image);
+      });
     }
 
     function setupLeaveGuard() {
@@ -1608,18 +1780,15 @@
       if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'block';
 
       const deliveryMode = String(payload?.deliveryMode || '').trim().toLowerCase();
-      const isSupportDelivery = deliveryMode === 'support';
+      const isSupportDelivery = deliveryMode === 'support' || deliveryMode === 'manual_login';
       const status = String(payload?.status || '').trim().toLowerCase();
       const credentials = payload?.credentials && typeof payload.credentials === 'object' ? payload.credentials : null;
       const login = String(credentials?.login || '').trim();
       const password = String(credentials?.password || '').trim();
-      const supportUrl = String(payload?.supportUrl || 'https://quickplus.vip/public/grok/').trim();
-      const supportEmailRaw = String(payload?.supportEmail || payload?.support_email || payload?.emailSupport || '').trim();
-      const supportEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supportEmailRaw) ? supportEmailRaw.toLowerCase() : '';
       const defaultMessage = isSupportDelivery
-        ? 'After payment, activation is completed manually by support. Open the support chat and share your order id.'
+        ? MANUAL_SUPPORT_MESSAGE
         : 'Login and password are not assigned yet. Please contact support or wait for manual assignment.';
-      const message = String(payload?.message || '').trim() || defaultMessage;
+      const message = isSupportDelivery ? MANUAL_SUPPORT_MESSAGE : (String(payload?.message || '').trim() || defaultMessage);
 
       if (manualBlockLabel) {
         manualBlockLabel.textContent = isSupportDelivery ? 'Ручная активация через поддержку' : 'Данные для входа';
@@ -1641,24 +1810,8 @@
         manualCredentialsHint.classList.toggle('is-alert', !hasCredentials);
         manualCredentialsHint.classList.toggle('is-ok', Boolean(hasCredentials));
       }
-      if (manualCodeLink) {
-        manualCodeLink.href = supportUrl || 'https://quickplus.vip/public/grok/';
-        manualCodeLink.textContent = isSupportDelivery ? 'написать в поддержку' : 'получить код';
-      }
-      if (manualCodeLinkRow) {
-        manualCodeLinkRow.style.display = hasCredentials ? 'none' : 'flex';
-      }
-      if (manualEmailLink) {
-        manualEmailLink.textContent = supportEmail || 'support@gptishka.shop';
-        manualEmailLink.href = supportEmail
-          ? `mailto:${supportEmail}?subject=${encodeURIComponent(`Ручная активация по заказу ${orderId}`)}`
-          : 'mailto:support@gptishka.shop';
-      }
-      if (manualEmailLinkRow) {
-        manualEmailLinkRow.style.display = !hasCredentials && supportEmail ? 'block' : 'none';
-      }
       if (manualSupportBtn) {
-        manualSupportBtn.href = supportUrl || 'https://quickplus.vip/public/grok/';
+        manualSupportBtn.href = SUPPORT_TELEGRAM_URL;
         manualSupportBtn.style.display = hasCredentials ? 'none' : 'inline-flex';
       }
       if (copyLoginBtn) copyLoginBtn.style.display = isSupportDelivery ? 'none' : '';
@@ -1666,34 +1819,117 @@
 
       if (hasCredentials) {
         setStatus('success', 'Данные для входа готовы. Скопируйте логин и пароль ниже.', false);
+      } else if (isSupportDelivery) {
+        hideStatus();
       } else {
-        setStatus('pending', isSupportDelivery ? 'Manual activation: contact support to receive access.' : 'Ожидаем выдачу данных для входа.', false);
+        setStatus('pending', 'Ожидаем выдачу данных для входа.', false);
       }
     }
 
-    function applyTokenFlowMode(isSupportMode) {
+    function normalizeSupportActivationFlow(value) {
+      return String(value || '').trim().toLowerCase() === SUPPORT_ACTIVATION_FLOW_CLAUDE
+        ? SUPPORT_ACTIVATION_FLOW_CLAUDE
+        : SUPPORT_ACTIVATION_FLOW_GROK;
+    }
+
+    function resolveSupportActivationFlow(payload) {
+      const directFlow = String(payload?.activationFlow || '').trim().toLowerCase();
+      if (directFlow === SUPPORT_ACTIVATION_FLOW_CLAUDE || directFlow === SUPPORT_ACTIVATION_FLOW_GROK) {
+        return directFlow;
+      }
+
+      const productKey = getActivationProductFingerprint(payload);
+      if (productKey.includes('claude') || productKey.endsWith('-sdk5') || productKey.includes('sdk5')) {
+        return SUPPORT_ACTIVATION_FLOW_CLAUDE;
+      }
+      if (productKey.includes('grok') || productKey.includes('supergrok') || productKey.endsWith('-sdk4') || productKey.includes('sdk4')) {
+        return SUPPORT_ACTIVATION_FLOW_GROK;
+      }
+      return '';
+    }
+
+    function getActivationProductFingerprint(payload) {
+      return String([
+        payload?.product?.slug ||
+        payload?.product?.key ||
+        payload?.productKey ||
+        payload?.product,
+        payload?.product?.title,
+        payload?.product?.name,
+        payload?.title,
+        payload?.name,
+        payload?.activationFlow,
+      ].filter(Boolean).join(' ')).trim().toLowerCase();
+    }
+
+    function resolveForcedSupportActivationFlow(payload) {
+      const productKey = getActivationProductFingerprint(payload);
+      if (productKey.includes('claude') || productKey.endsWith('-sdk5') || productKey.includes('sdk5')) {
+        return SUPPORT_ACTIVATION_FLOW_CLAUDE;
+      }
+      if (productKey.includes('grok') || productKey.includes('supergrok') || productKey.endsWith('-sdk4') || productKey.includes('sdk4')) {
+        return SUPPORT_ACTIVATION_FLOW_GROK;
+      }
+      return '';
+    }
+
+    function applyActivationPayloadMode(payload, deliveryMode) {
+      const activationFlow = resolveSupportActivationFlow(payload);
+      const forcedSupportFlow = resolveForcedSupportActivationFlow(payload);
+      applyTokenFlowMode(
+        deliveryMode === 'support' || Boolean(forcedSupportFlow),
+        forcedSupportFlow || activationFlow
+      );
+    }
+
+    function isClaudeSupportFlow() {
+      return isSupportTokenDelivery && supportActivationFlow === SUPPORT_ACTIVATION_FLOW_CLAUDE;
+    }
+
+    function applyTokenFlowMode(isSupportMode, flow) {
       isSupportTokenDelivery = Boolean(isSupportMode);
+      supportActivationFlow = isSupportTokenDelivery
+        ? normalizeSupportActivationFlow(flow || supportActivationFlow)
+        : SUPPORT_ACTIVATION_FLOW_GROK;
       isCredentialsDelivery = false;
+      const claudeSupportFlow = isClaudeSupportFlow();
 
       if (tokenBlock) tokenBlock.style.display = 'block';
       if (actionsRow) actionsRow.style.display = '';
       if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'none';
 
       if (tokenLabelEl) {
-        tokenLabelEl.textContent = isSupportTokenDelivery ? 'ID аккаунта для активации SuperGrok' : 'Токен аккаунта';
+        tokenLabelEl.textContent = claudeSupportFlow
+          ? 'Активация аккаунта для активации Claude Pro'
+          : (isSupportTokenDelivery ? 'ID аккаунта Grok для активации SUPERGROK' : 'Токен аккаунта');
       }
       if (tokenGuideSummaryEl) {
-        tokenGuideSummaryEl.textContent = isSupportTokenDelivery ? 'Где взять ID аккаунта Grok' : 'Где взять токен аккаунта';
+        tokenGuideSummaryEl.textContent = claudeSupportFlow
+          ? 'Инструкция'
+          : (isSupportTokenDelivery ? 'Инструкция' : 'Где взять токен аккаунта');
       }
       if (tokenGuideListEl) {
         if (isSupportTokenDelivery) {
-          tokenGuideListEl.innerHTML = [
-            '<li>Перейдите на сайт Grok и войдите в свой аккаунт.</li>',
-            '<li>Откройте настройки аккаунта.</li>',
-            '<li>В настройках найдите ваш ID аккаунта.</li>',
-            '<li>ID отображается мелким серым текстом. Скопируйте его полностью, например: <code>a7d2c1f4-5b8e-4a91-9d3f-1c2e7b6a9f40</code>.</li>',
-            '<li>Вставьте ID в поле ниже и нажмите «Активировать».</li>',
-          ].join('');
+          tokenGuideListEl.innerHTML = claudeSupportFlow
+            ? [
+                '<li>Перейдите на сайт <a href="https://claude.ai/settings/account" target="_blank" rel="noreferrer noopener">claude.ai</a> и войдите в свой аккаунт.</li>',
+                '<li>Откройте настройки аккаунта.</li>',
+                '<li>В настройках найдите ваш ID аккаунта (на скриншоте указана область).</li>',
+                '<li class="redeem-guide-shot"><img src="/assets/img/claude-account-id-settings.png" alt="Где найти ID аккаунта Claude" loading="lazy" decoding="async"></li>',
+                '<li>Скопируйте его полностью, например: <code>e191659c-0258-4be3-951a-e1cbffa3322f</code>.</li>',
+                '<li>Вставьте ID в поле ниже и нажмите «Активировать».</li>',
+              ].join('')
+            : [
+                '<li><strong>🚀 Для активации SUPERGROK отправьте ваш ID аккаунта Grok.</strong></li>',
+                '<li><strong>Как найти ID:</strong></li>',
+                '<li>1️⃣ Перейдите на сайт <a href="https://grok.com" target="_blank" rel="noreferrer noopener">grok.com</a> и войдите в свой аккаунт.</li>',
+                '<li>2️⃣ Скопируйте и откройте в браузере ссылку <a href="https://grok.com/api/auth/session" target="_blank" rel="noreferrer noopener">https://grok.com/api/auth/session</a>.</li>',
+                '<li>3️⃣ Найдите строку <strong>ID</strong> (на 2 скриншотах нужная область выделена).</li>',
+                '<li class="redeem-guide-shot"><img src="/assets/img/supergrok-activation-1.png" alt="Где найти ID аккаунта Grok — пример 1" loading="lazy" decoding="async"></li>',
+                '<li class="redeem-guide-shot"><img src="/assets/img/supergrok-activation-2.png" alt="Где найти ID аккаунта Grok — пример 2" loading="lazy" decoding="async"></li>',
+                '<li>4️⃣ Скопируйте ID и отправьте его <strong>одним сообщением в это поле</strong>.</li>',
+                '<li>💡 <strong>Важно:</strong> отправляйте только ID без дополнительных комментариев и символов.</li>',
+              ].join('');
         } else {
           tokenGuideListEl.innerHTML = [
             '<li>Войдите через браузер в аккаунт ChatGPT (если ещё не вошли — просто авторизуйтесь).</li>',
@@ -1705,7 +1941,9 @@
       }
 
       if (tokenInput) {
-        tokenInput.placeholder = isSupportTokenDelivery ? 'ID аккаунта Grok (UUID)' : 'Токен аккаунта';
+        tokenInput.placeholder = claudeSupportFlow
+          ? 'ID аккаунта Claude (UUID)'
+          : (isSupportTokenDelivery ? 'ID аккаунта Grok (UUID)' : 'Токен аккаунта');
       }
       if (toggleMaskBtn) {
         toggleMaskBtn.style.display = isSupportTokenDelivery ? 'none' : '';
@@ -1760,7 +1998,7 @@
 
     function readStoredActivationResumeContext() {
       try {
-        const savedAt = Number(localStorage.getItem(ACTIVATION_RESUME_SAVED_AT_KEY) || '0');
+        const savedAt = Number(localStorage.getItem(REDEEM_ACTIVATION_SAVED_AT_KEY) || '0');
         if (!Number.isFinite(savedAt) || savedAt <= 0 || Date.now() - savedAt > ACTIVATION_RESUME_TTL_MS) {
           clearActivationResumeStorage();
           return { orderId: '', token: '' };
@@ -1798,6 +2036,10 @@
     }
 
     document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && imageZoomModalEl && !imageZoomModalEl.hidden) {
+        closeGuideImageZoom();
+        return;
+      }
       if (event.key === 'Escape' && leaveConfirmModalEl && !leaveConfirmModalEl.hidden) {
         closeLeaveConfirm();
         return;
@@ -1828,7 +2070,7 @@
       orderIdEl.textContent = orderId;
       try {
         localStorage.setItem('gptishka_activation_order_id', orderId);
-        localStorage.setItem(ACTIVATION_RESUME_SAVED_AT_KEY, String(Date.now()));
+        localStorage.setItem(REDEEM_ACTIVATION_SAVED_AT_KEY, String(Date.now()));
         if (!orderLinkToken) {
           const stored = readStoredActivationResumeContext();
           orderLinkToken = stored.orderId === orderId ? stored.token : '';
@@ -1923,6 +2165,8 @@
         });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
+          const resolved = await resolveActivationSuccessFallback();
+          if (resolved) return;
           let details = '';
           if (payload?.details) {
             try {
@@ -2019,12 +2263,16 @@
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation${suffix}`);
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
+          const fallbackContext = await resolveOrderDeliveryContext();
+          if (fallbackContext.deliveryMode) {
+            applyActivationPayloadMode(fallbackContext, fallbackContext.deliveryMode);
+          }
           setStatus('error', payload?.message || 'Не удалось загрузить статус активации', false);
           return;
         }
         const deliveryMode = String(payload?.deliveryMode || '').toLowerCase();
-        applyTokenFlowMode(deliveryMode === 'support');
-        if (deliveryMode === 'credentials') {
+        applyActivationPayloadMode(payload, deliveryMode);
+        if (deliveryMode === 'credentials' || deliveryMode === 'manual_login') {
           handlePaidOrder(orderId);
           setCredentialsDeliveryMode(payload);
           return;
@@ -2072,6 +2320,10 @@
         }
         setStatus('pending', 'Ожидаю действия.', false);
       } catch {
+        const fallbackContext = await resolveOrderDeliveryContext();
+        if (fallbackContext.deliveryMode) {
+          applyActivationPayloadMode(fallbackContext, fallbackContext.deliveryMode);
+        }
         setStatus('error', 'Ошибка сети при загрузке активации', false);
       }
     }
@@ -2101,6 +2353,58 @@
       }
     }
 
+    async function resolveOrderDeliveryContext() {
+      if (!orderId) return { deliveryMode: '', activationFlow: '' };
+      try {
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}`);
+        if (!response.ok) return { deliveryMode: '', activationFlow: '' };
+        const payload = await response.json().catch(() => ({}));
+        return {
+          ...payload,
+          deliveryMode: String(payload?.deliveryMode || '').trim().toLowerCase(),
+          activationFlow: resolveSupportActivationFlow(payload),
+        };
+      } catch {
+        return { deliveryMode: '', activationFlow: '' };
+      }
+    }
+
+    async function resolveActivationSuccessFallback() {
+      if (!orderId) return false;
+      try {
+        const suffix = orderLinkToken ? `?t=${encodeURIComponent(orderLinkToken)}` : '';
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation${suffix}`);
+        if (!response.ok) return false;
+        const payload = await response.json().catch(() => ({}));
+
+        const deliveryMode = String(payload?.deliveryMode || '').trim().toLowerCase();
+        applyActivationPayloadMode(payload, deliveryMode);
+        if (deliveryMode === 'credentials' || deliveryMode === 'manual_login') {
+          setCredentialsDeliveryMode(payload);
+          return true;
+        }
+
+        const activationStatus = String(payload?.activation?.status || payload?.status || '').trim().toLowerCase();
+        if (activationStatus !== 'success') return false;
+
+        const finalizedTaskId = String(payload?.activation?.taskId || payload?.taskId || currentTaskId || '').trim();
+        currentTaskId = finalizedTaskId;
+        renderTask(currentTaskId);
+        markActivationCompleted();
+        setStatus(
+          'success',
+          currentTaskId ? `Успешно. Task: ${currentTaskId}` : 'Подписка успешно активирована.',
+          false
+        );
+        clearActivationResumeStorage();
+        hideActionButtons();
+        showReviewReward();
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
     function startPolling() {
       stopPolling();
       setPollPaused(false);
@@ -2112,6 +2416,8 @@
         if (done || timeout) {
           stopPolling();
           if (!done && timeout) {
+            const resolved = await resolveActivationSuccessFallback();
+            if (resolved) return;
             setStatus('pending', `Все еще в обработке. Task: ${currentTaskId}. Нажмите «Проверить статус» позже или «Сменить ключ и повторить».`, false);
             retryNewKeyBtn.disabled = false;
           }
@@ -2133,11 +2439,17 @@
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/task/${encodeURIComponent(currentTaskId)}${suffix}`);
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
+          const resolved = await resolveActivationSuccessFallback();
+          if (resolved) return true;
           setStatus('error', payload?.message || 'Не удалось получить статус', false);
           return true;
         }
 
         if (payload.pending) {
+          if (isSupportTokenDelivery) {
+            const resolved = await resolveActivationSuccessFallback();
+            if (resolved) return true;
+          }
           const msg = String(payload?.message || '').trim();
           setStatus('pending', `В обработке. Task: ${currentTaskId}${msg ? `. ${msg}` : ''}`, true);
           retryNewKeyBtn.disabled = true;
@@ -2153,10 +2465,14 @@
           return true;
         }
 
+        const resolved = await resolveActivationSuccessFallback();
+        if (resolved) return true;
         setStatus('error', payload?.message || 'Запрос не может обработаться', false);
         retryNewKeyBtn.disabled = false;
         return true;
       } catch {
+        const resolved = await resolveActivationSuccessFallback();
+        if (resolved) return true;
         setStatus('error', 'Ошибка сети при проверке статуса', false);
         return false;
       }
@@ -2209,7 +2525,7 @@
         }
         localStorage.removeItem('gptishka_activation_order_id');
         localStorage.removeItem('gptishka_activation_resume_url');
-        localStorage.removeItem(ACTIVATION_RESUME_SAVED_AT_KEY);
+        localStorage.removeItem(REDEEM_ACTIVATION_SAVED_AT_KEY);
       } catch (_) {
         // Ignore storage cleanup errors.
       }
@@ -2223,7 +2539,9 @@
       if (!isSupportTokenDelivery && raw.startsWith('{') && token && token !== raw) {
         tokenWarn.textContent = 'Обнаружен JSON: будет использован извлеченный токен.';
       } else if (isSupportTokenDelivery) {
-        tokenWarn.textContent = 'Для метода SuperGrok используется только ID аккаунта в формате UUID.';
+        tokenWarn.textContent = isClaudeSupportFlow()
+          ? 'Для метода 5 используется только ID аккаунта Claude в формате UUID.'
+          : 'Для метода 4 используется только ID аккаунта Grok в формате UUID.';
       } else {
         tokenWarn.textContent = 'Мы не сохраняем токен и используем его только для активации.';
       }
@@ -2343,9 +2661,18 @@
     }
 
     function setStatus(tone, text, loading) {
+      statusBox.hidden = false;
       statusBox.className = `redeem-status ${tone}`;
       statusText.textContent = text;
       statusSpinner.style.display = loading ? 'inline-block' : 'none';
+    }
+
+    function hideStatus() {
+      statusBox.hidden = true;
+      statusText.textContent = '';
+      statusSpinner.style.display = 'none';
+      if (taskWrap) taskWrap.style.display = 'none';
+      if (copyTaskBtn) copyTaskBtn.style.display = 'none';
     }
 
     function setButtonLoading(btn, loading) {
@@ -2368,27 +2695,12 @@
     }
 
     setupLeaveGuard();
+    setupGuideImageZoom();
+    })();
   </script>
-<script src="/assets/js/support-widget.js?v=20260314a" defer></script>
+<script src="/assets/js/support-widget.js?v=20260707-support-unify2" defer></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

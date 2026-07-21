@@ -5,7 +5,7 @@ import { AppError } from "../../common/errors/app-error";
 import { asyncHandler } from "../../common/http/async-handler";
 import { prisma } from "../../config/prisma";
 import { env } from "../../config/env";
-import { deliverProduct } from "../orders/delivery.service";
+import { deliverProduct, hasTrustedPaidPayment } from "../orders/delivery.service";
 import { ordersService } from "../orders/orders.service";
 import { resolveVpnProvisionPayload, toVpnMePayload, vpnService } from "../../services/vpn.service";
 
@@ -22,6 +22,9 @@ async function resolveVpnAccessByOrder(orderId: string, orderToken?: string) {
     prisma.order.findUnique({
       where: { id: orderId },
       include: {
+        payments: {
+          orderBy: { createdAt: "desc" },
+        },
         items: {
           include: { product: true },
           orderBy: { id: "asc" },
@@ -55,6 +58,9 @@ async function resolveVpnAccessByOrder(orderId: string, orderToken?: string) {
   const vpnProvision = resolveVpnProvisionPayload(firstItem?.product || null);
   if (!vpnProvision) {
     throw new AppError("This order does not contain VPN delivery", 409);
+  }
+  if (!hasTrustedPaidPayment(order)) {
+    throw new AppError("Payment is not confirmed by a trusted provider", 409);
   }
 
   let access = await vpnService.getLatestByOrderOrIdentity({

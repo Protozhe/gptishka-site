@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -11,9 +11,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/css/logo.min.css" />
+  <link rel="stylesheet" href="/assets/css/gptishka-header-refresh.css?v=20260707-header-unify9" />
   <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260312fix2" />
   <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260312fix2" />
-  <link rel="stylesheet" href="/assets/css/support-widget.css?v=20260315b" />
+  <link rel="stylesheet" href="/assets/css/support-widget.css?v=20260707-support-unify3" />
   <style>
     :root {
       --redeem-surface: #f8fafc;
@@ -36,8 +37,8 @@
     }
 
     main.page.vpn-activation-wrap {
-      width: min(1240px, calc(100vw - 24px)) !important;
-      max-width: min(1240px, calc(100vw - 24px)) !important;
+      width: min(1380px, calc(100vw - 24px)) !important;
+      max-width: min(1380px, calc(100vw - 24px)) !important;
       padding-left: 0 !important;
       padding-right: 0 !important;
     }
@@ -187,6 +188,23 @@
       box-shadow: 0 6px 14px rgba(74, 111, 255, 0.2) !important;
     }
 
+    .activation-inline-cta {
+      min-height: 44px !important;
+      padding: 11px 18px !important;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .activation-inline-cta.is-hidden {
+      display: none !important;
+    }
+
+    .activation-inline-cta.is-disabled,
+    .activation-inline-cta[aria-disabled="true"] {
+      opacity: 0.68;
+      pointer-events: none;
+    }
+
     .info-box,
     .hero-warning {
       margin-top: 8px;
@@ -201,8 +219,8 @@
 
     .vpn-main-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.9fr) minmax(360px, 520px);
-      gap: 20px;
+      grid-template-columns: minmax(0, 2.25fr) minmax(340px, 460px);
+      gap: 26px;
       align-items: start;
     }
 
@@ -293,10 +311,15 @@
 
     .guide-card {
       display: grid;
-      gap: 12px;
-      border-radius: 16px;
-      padding: 16px;
-      background: rgba(255, 255, 255, 0.78);
+      gap: 18px;
+      border-radius: 24px;
+      padding: clamp(20px, 3vw, 30px);
+      background:
+        radial-gradient(circle at 8% 0%, rgba(99, 102, 241, 0.1), transparent 32%),
+        radial-gradient(circle at 100% 4%, rgba(16, 185, 129, 0.1), transparent 30%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.94));
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      box-shadow: 0 28px 80px rgba(15, 23, 42, 0.1), 0 1px 0 rgba(255, 255, 255, 0.92) inset;
       max-height: 420px;
       overflow: auto;
       opacity: 0;
@@ -310,28 +333,55 @@
       pointer-events: auto;
     }
 
+    .guide-card.is-karing-card,
+    .guide-card.is-karing-card * {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+
+    .guide-stage.has-selection {
+      min-height: 0;
+    }
+
+    .guide-stage.has-selection .guide-card {
+      position: relative;
+      inset: auto;
+      width: min(100%, 980px);
+      margin: 0 auto;
+      max-height: none;
+      overflow: visible;
+    }
+
     .guide-top {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
-      gap: 8px;
+      gap: 18px;
       flex-wrap: wrap;
     }
 
     .guide-top h3 {
       margin: 0;
-      font-size: 18px;
-      line-height: 1.2;
+      max-width: 560px;
+      font-size: clamp(23px, 2.4vw, 30px);
+      line-height: 1.04;
+      letter-spacing: -0.032em;
+      color: #0f172a;
     }
 
     .device-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       font-size: 12px;
       font-weight: 700;
-      color: #155a52;
-      border: 1px solid rgba(19, 138, 120, 0.24);
+      color: #111827;
+      border: 1px solid rgba(15, 23, 42, 0.08);
       border-radius: 999px;
-      background: rgba(238, 252, 249, 0.8);
-      padding: 4px 10px;
+      background: rgba(255, 255, 255, 0.84);
+      padding: 7px 11px;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
     }
 
     .guide-actions {
@@ -341,18 +391,20 @@
     }
 
     .button-primary {
-      background: linear-gradient(135deg, #6a8cff, #4a6fff) !important;
-      border-radius: 12px !important;
-      padding: 12px 18px !important;
-      font-weight: 500 !important;
+      background: linear-gradient(135deg, #111827 0%, #334155 52%, #6366f1 100%) !important;
+      border-radius: 999px !important;
+      padding: 11px 16px !important;
+      font-weight: 800 !important;
       color: #ffffff !important;
       border: 0 !important;
-      box-shadow: 0 6px 16px rgba(80, 120, 255, 0.25) !important;
+      box-shadow: 0 16px 34px rgba(79, 70, 229, 0.24), 0 1px 0 rgba(255, 255, 255, 0.16) inset !important;
+      transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
     }
 
     .button-primary:hover {
-      filter: brightness(1.03);
-      transform: translateY(-1px);
+      filter: brightness(1.04);
+      transform: translateY(-2px);
+      box-shadow: 0 20px 42px rgba(79, 70, 229, 0.32), 0 1px 0 rgba(255, 255, 255, 0.18) inset !important;
     }
 
     .guide-steps {
@@ -366,6 +418,367 @@
       font-size: 14px;
       line-height: 1.4;
       color: var(--text);
+    }
+
+    .guide-steps.is-karing {
+      list-style: none;
+      padding-left: 0;
+      gap: 0;
+      position: relative;
+    }
+
+    .guide-steps.is-karing li {
+      font-size: 15px;
+      line-height: 1.5;
+      color: #475569;
+    }
+
+    .karing-step {
+      position: relative;
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 14px;
+      padding: 0 0 24px;
+    }
+
+    .karing-step:not(:last-child)::before {
+      content: "";
+      position: absolute;
+      left: 21px;
+      top: 50px;
+      bottom: 6px;
+      width: 1px;
+      background: linear-gradient(180deg, rgba(99, 102, 241, 0.24), rgba(148, 163, 184, 0.08));
+    }
+
+    .karing-step__index {
+      position: relative;
+      z-index: 1;
+      width: 44px;
+      height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: linear-gradient(145deg, #ffffff, #eef2ff);
+      color: #4338ca;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 14px 28px rgba(79, 70, 229, 0.12), 0 0 0 1px rgba(99, 102, 241, 0.12) inset;
+    }
+
+    .karing-step__content {
+      min-width: 0;
+      padding: 1px 0 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+      column-gap: 18px;
+    }
+
+    .karing-step__copy {
+      min-width: 0;
+    }
+
+    .karing-step__title {
+      margin: 0;
+      color: #0f172a;
+      font-size: 16px;
+      font-weight: 650;
+      line-height: 1.25;
+      letter-spacing: -0.018em;
+    }
+
+    .karing-step__description {
+      margin: 5px 0 0;
+      color: #667085;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .karing-step__photo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: max-content;
+      margin-top: 2px;
+      padding: 7px 10px;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(99, 102, 241, 0.08);
+      color: #4f46e5;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .16s ease, background .16s ease, color .16s ease;
+    }
+
+    .karing-step__photo:hover {
+      transform: translateY(-1px);
+      background: rgba(79, 70, 229, 0.13);
+      color: #3730a3;
+    }
+
+    .guide-steps strong {
+      color: #102236;
+      font-weight: 700;
+    }
+
+    .guide-steps em {
+      color: #2563eb;
+      font-style: normal;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .karing-gallery-wrap {
+      display: none;
+      margin-top: -2px;
+    }
+
+    .karing-gallery-wrap.is-visible {
+      display: block;
+    }
+
+    .karing-gallery-title {
+      margin: 0 0 12px;
+      color: #0f172a;
+      font-size: 17px;
+      line-height: 1.25;
+      font-weight: 650;
+      letter-spacing: -0.018em;
+    }
+
+    .karing-gallery {
+      display: none;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 12px;
+      margin: 6px 0 16px;
+    }
+
+    .karing-gallery.is-visible {
+      display: grid;
+    }
+
+    .karing-thumb {
+      position: relative;
+      display: grid;
+      gap: 10px;
+      width: 100%;
+      padding: 8px;
+      border: 0;
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.86);
+      cursor: zoom-in;
+      text-align: left;
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.09), 0 0 0 1px rgba(148, 163, 184, 0.12) inset;
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+
+    .karing-thumb:hover {
+      transform: translateY(-2px);
+      background: #ffffff;
+      box-shadow: 0 22px 46px rgba(15, 23, 42, 0.13), 0 0 0 1px rgba(99, 102, 241, 0.2) inset;
+    }
+
+    .karing-thumb__frame {
+      position: relative;
+      width: 100%;
+      height: clamp(190px, 17vw, 250px);
+      overflow: hidden;
+      border-radius: 14px;
+      background: #f8fafc;
+      box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.06) inset;
+    }
+
+    .karing-thumb__frame img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+      object-position: top center;
+    }
+
+    .karing-thumb__badge {
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      z-index: 2;
+      width: fit-content;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.88);
+      color: #4f46e5;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .karing-success-card {
+      display: none;
+      align-items: flex-start;
+      gap: 13px;
+      margin-top: -4px;
+      padding: 16px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(236, 253, 245, 0.92), rgba(240, 253, 250, 0.74));
+      box-shadow: 0 18px 44px rgba(16, 185, 129, 0.1), 0 0 0 1px rgba(16, 185, 129, 0.12) inset;
+    }
+
+    .karing-success-card.is-visible {
+      display: flex;
+    }
+
+    .karing-success-card__icon {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      font-weight: 600;
+      box-shadow: 0 14px 30px rgba(5, 150, 105, 0.22);
+    }
+
+    .karing-success-card__title {
+      margin: 0;
+      color: #064e3b;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.012em;
+    }
+
+    .karing-success-card__description {
+      margin: 4px 0 0;
+      color: #047857;
+      font-size: 13px;
+      line-height: 1.5;
+      font-weight: 600;
+    }
+
+    .karing-lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(2, 6, 23, 0.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity .2s ease, visibility .2s ease;
+    }
+
+    .karing-lightbox.is-open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .karing-lightbox__dialog {
+      position: relative;
+      width: min(92vw, 760px);
+      height: min(90vh, 920px);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 12px;
+      transform: translateY(12px) scale(0.985);
+      transition: transform .22s ease;
+    }
+
+    .karing-lightbox.is-open .karing-lightbox__dialog {
+      transform: translateY(0) scale(1);
+    }
+
+    .karing-lightbox__top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .karing-lightbox__counter {
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16) inset;
+    }
+
+    .karing-lightbox__close,
+    .karing-lightbox__nav {
+      border: 0;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.94);
+      color: #111827;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+      transition: transform .16s ease, background .16s ease;
+    }
+
+    .karing-lightbox__close:hover,
+    .karing-lightbox__nav:hover {
+      transform: translateY(-1px);
+      background: #ffffff;
+    }
+
+    .karing-lightbox__close {
+      width: 38px;
+      height: 38px;
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .karing-lightbox__nav {
+      position: absolute;
+      top: 50%;
+      width: 46px;
+      height: 46px;
+      transform: translateY(-50%);
+      font-size: 34px;
+      line-height: 1;
+    }
+
+    .karing-lightbox__nav--prev {
+      left: -58px;
+    }
+
+    .karing-lightbox__nav--next {
+      right: -58px;
+    }
+
+    .karing-lightbox__image-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      border-radius: 24px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.12) inset;
+    }
+
+    .karing-lightbox__image {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
     }
 
     .key-shell {
@@ -513,8 +926,8 @@
     body.vpn-activation-flow main.page.vpn-activation-wrap {
       position: relative;
       z-index: 1;
-      width: min(1120px, calc(100vw - 28px)) !important;
-      max-width: min(1120px, calc(100vw - 28px)) !important;
+      width: min(1380px, calc(100vw - 28px)) !important;
+      max-width: min(1380px, calc(100vw - 28px)) !important;
       margin: 0 auto !important;
       padding: 28px 14px 0 !important;
     }
@@ -826,6 +1239,73 @@
         width: 100%;
       }
 
+      .karing-gallery {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        overflow-x: visible;
+        padding-bottom: 4px;
+      }
+
+      .karing-thumb__frame {
+        height: clamp(170px, 48vw, 230px);
+      }
+
+      .guide-stage.has-selection .guide-card {
+        width: 100%;
+        padding: 18px;
+        border-radius: 22px;
+      }
+
+      .guide-top h3 {
+        font-size: 25px;
+      }
+
+      .karing-step {
+        grid-template-columns: 38px minmax(0, 1fr);
+        gap: 12px;
+      }
+
+      .karing-step__index {
+        width: 38px;
+        height: 38px;
+      }
+
+      .karing-step__content {
+        grid-template-columns: minmax(0, 1fr);
+        row-gap: 8px;
+      }
+
+      .karing-step__photo {
+        margin-top: 0;
+      }
+
+      .karing-step:not(:last-child)::before {
+        left: 18px;
+        top: 44px;
+      }
+
+      .karing-lightbox {
+        padding: 12px;
+      }
+
+      .karing-lightbox__dialog {
+        width: 100%;
+        height: 92vh;
+      }
+
+      .karing-lightbox__nav {
+        top: auto;
+        bottom: 12px;
+        transform: none;
+      }
+
+      .karing-lightbox__nav--prev {
+        left: 12px;
+      }
+
+      .karing-lightbox__nav--next {
+        right: 12px;
+      }
+
       .activation-bottom-cta__btn {
         width: 100%;
       }
@@ -836,26 +1316,130 @@
       }
     }
   </style>
+<link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260707-header-unify9" />
+<style>
+  /* Final page-local dark pass: keeps activation UI correct even when shared CSS is cached. */
+  body.vpn-activation-flow {
+    color: rgba(244, 248, 255, 0.92) !important;
+    background:
+      radial-gradient(circle at 16% 8%, rgba(52, 242, 151, 0.10), transparent 34%),
+      radial-gradient(circle at 86% 10%, rgba(80, 155, 255, 0.10), transparent 38%),
+      linear-gradient(145deg, #080a0f 0%, #0b0d11 48%, #0d1017 100%) !important;
+  }
+
+  body.vpn-activation-flow header {
+    width: min(1560px, calc(100% - clamp(20px, 6vw, 128px))) !important;
+    margin: 22px auto 18px !important;
+  }
+
+  body.vpn-activation-flow header .nav,
+  body.vpn-activation-flow header .nav-shell {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 76px !important;
+    background: rgba(10, 12, 18, 0.66) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(18px) saturate(130%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(130%) !important;
+  }
+
+  body.vpn-activation-flow header nav a.active {
+    color: rgba(255, 255, 255, 0.94) !important;
+    background: rgba(255, 255, 255, 0.09) !important;
+    border-color: rgba(255, 255, 255, 0.16) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 10px 24px rgba(0, 0, 0, 0.18) !important;
+  }
+
+  body.vpn-activation-flow .vpn-activation-wrap > .pricing.activation-shell,
+  body.vpn-activation-flow main.page.vpn-activation-wrap .card,
+  body.vpn-activation-flow main.page.vpn-activation-wrap .card-soft,
+  body.vpn-activation-flow main.page.vpn-activation-wrap .card-accent {
+    color: rgba(244, 248, 255, 0.92) !important;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035)),
+      rgba(8, 10, 15, 0.68) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+    box-shadow: 0 24px 78px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(18px) saturate(122%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(122%) !important;
+  }
+
+  body.vpn-activation-flow h1,
+  body.vpn-activation-flow h2,
+  body.vpn-activation-flow h3 {
+    color: rgba(255, 255, 255, 0.96) !important;
+  }
+
+  body.vpn-activation-flow p,
+  body.vpn-activation-flow li,
+  body.vpn-activation-flow .copy,
+  body.vpn-activation-flow .muted {
+    color: rgba(226, 235, 255, 0.68) !important;
+  }
+
+  body.vpn-activation-flow .hero-warning,
+  body.vpn-activation-flow .info-box {
+    color: rgba(226, 255, 240, 0.88) !important;
+    background:
+      linear-gradient(135deg, rgba(53, 229, 141, 0.14), rgba(90, 167, 255, 0.075)),
+      rgba(255, 255, 255, 0.045) !important;
+    border: 1px solid rgba(53, 229, 141, 0.22) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 14px 36px rgba(0, 0, 0, 0.18) !important;
+  }
+
+  body.vpn-activation-flow .key-shell,
+  body.vpn-activation-flow .meta-item,
+  body.vpn-activation-flow .guide-intro,
+  body.vpn-activation-flow .guide-card {
+    color: rgba(244, 248, 255, 0.92) !important;
+    background: rgba(255, 255, 255, 0.055) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+  }
+
+  body.vpn-activation-flow .key-value,
+  body.vpn-activation-flow .meta-item strong {
+    color: rgba(255, 255, 255, 0.94) !important;
+  }
+
+  body.vpn-activation-flow .meta-item span {
+    color: rgba(226, 235, 255, 0.54) !important;
+  }
+
+  body.vpn-activation-flow .device-pill,
+  body.vpn-activation-flow [role="tab"] {
+    color: rgba(232, 239, 255, 0.78) !important;
+    background: rgba(255, 255, 255, 0.055) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+  }
+
+  body.vpn-activation-flow .device-pill.is-active,
+  body.vpn-activation-flow [role="tab"][aria-selected="true"] {
+    color: #06110b !important;
+    background: linear-gradient(135deg, #35e58d, #18c878, #0f8f5c) !important;
+    border-color: rgba(53, 229, 141, 0.35) !important;
+  }
+</style>
 </head>
 <body class="vpn-activation-flow">
   <div class="page-overlay"></div>
   <header>
-    <div class="nav">
-      <a href="/en/index.html" class="logo-link">
-        <img src="/assets/img/logo.png" alt="GPTishka" class="logo-img" loading="lazy" decoding="async" />
+    <div class="nav nav-shell">
+      <a href="/en/" class="logo-link">
+        <img src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka" class="logo-img" loading="eager" decoding="async" />
       </a>
       <nav>
-        <a href="/en/index.html">Home</a>
-        <a href="/en/index.html#pricing">Plans</a>
+        <a href="/en/">Home</a>
+        <a href="/en/#pricing">Plans</a>
         <a href="/store/vpn" class="active">VPN</a>
         <a href="/en/contact.html">Contact</a>
       </nav>
-      <div class="header-tools">
+      <div class="header-tools header-actions">
         <div class="lang-switch" id="langSwitch">
           <div class="lang-current" id="langCurrent">
             <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="" />
             <span>English</span>
-            <span class="arrow">▾</span>
+            <span class="arrow">в–ѕ</span>
           </div>
           <div class="lang-dropdown">
             <div class="lang-item" data-lang="ru">
@@ -903,6 +1487,11 @@
                 </div>
 
                 <ol id="guideSteps" class="guide-steps"></ol>
+                <div id="guideGalleryWrap" class="karing-gallery-wrap">
+                  <h4 id="guideGalleryTitle" class="karing-gallery-title">Photo guide</h4>
+                  <div id="guideGallery" class="karing-gallery" aria-label="Karing instruction screenshots"></div>
+                </div>
+                <div id="guideSuccess" class="karing-success-card"></div>
               </div>
             </div>
           </div>
@@ -922,6 +1511,7 @@
               <button id="vpnCopyKeyBtn" type="button" class="btn" disabled>Copy key</button>
               <button id="vpnDownloadConfigBtn" type="button" class="btn secondary key-soft-btn" disabled>Download config</button>
               <button id="vpnReloadBtn" type="button" class="btn secondary key-soft-btn">Refresh</button>
+              <a id="vpnGoActivationInlineBtn" class="btn button-primary activation-inline-cta is-hidden" href="#" aria-disabled="true">Continue activation</a>
             </div>
 
             <div id="vpnCopyFeedback" class="key-feedback"></div>
@@ -955,62 +1545,123 @@
 
   <script>
     (function () {
+      const KARING_DOWNLOAD_URL = "https://apps.apple.com/ru/app/karing/id6472431552";
+      const KARING_ANDROID_DOWNLOAD_URL = "https://github.com/KaringX/karing/releases/download/v1.2.19.2209/karing_1.2.19.2209_android_arm.apk";
+      const KARING_GALLERY = [
+        { src: "/assets/img/karing/karing-vless-1.png", alt: "Karing: Profiles section" },
+        { src: "/assets/img/karing/karing-vless-2.png", alt: "Karing: profiles menu button" },
+        { src: "/assets/img/karing/karing-vless-3.png", alt: "Karing: add profile" },
+        { src: "/assets/img/karing/karing-vless-4.png", alt: "Karing: import from clipboard" },
+        { src: "/assets/img/karing/karing-vless-5.png", alt: "Karing: fill note and save" },
+      ];
+      const KARING_STEPS = [
+        {
+          title: "Open Karing",
+          description: "Go to the Profiles section.",
+          photoIndex: 0,
+        },
+        {
+          title: "Tap the “⋮” button",
+          description: "Open the menu in the top-right corner.",
+          photoIndex: 1,
+        },
+        {
+          title: "Choose “Add profile”",
+          description: "Select the option for creating a new profile.",
+          photoIndex: 2,
+        },
+        {
+          title: "Choose “Import from clipboard”",
+          description: "First copy the VLESS key from the website.",
+          photoIndex: 3,
+        },
+        {
+          title: "Check the import",
+          description: "Make sure the key was added to the app successfully.",
+        },
+        {
+          title: "In the Note field, enter a profile name",
+          description: "For example: gptishka.shop.",
+        },
+        {
+          title: "Save the profile",
+          description: "Tap вњ”пёЏ in the top-right corner to save the settings.",
+          photoIndex: 4,
+        },
+      ];
+      const KARING_SUCCESS = {
+        title: "Done",
+        description: "After saving, the profile appears in the list and is ready to connect.",
+      };
+      const KARING_COPY = {
+        photoPrefix: "Photo",
+        viewPhoto: "View photo",
+        openPhoto: "Open photo",
+        badge: "пЈї iOS",
+        doneIcon: "вњ“",
+      };
+      const KARING_TOP_PHOTO_TITLES = [
+        "Profiles",
+        "Menu",
+        "Add",
+        "Import",
+        "Save",
+      ];
+      const KARING_LIGHTBOX_LABELS = {
+        close: "Close",
+        previous: "Previous photo",
+        next: "Next photo",
+      };
       const DEVICE_CONFIG = {
         windows: {
           title: "Windows",
-          appUrl: "/assets/downloads/gptishka-vpn-win32-x64.rar",
-          downloadName: "GPTishka VPN-win32-x64.rar",
+          appUrl: "/assets/downloads/GPTishkaVPN-Setup-1.0.0-x64.exe?v=20260701",
+          downloadName: "GPTishkaVPN-Setup-1.0.0-x64.exe",
           steps: [
-            "Download the app archive from the GPTishka website.",
-            "Extract the archive. Right-click the file and choose Extract All.",
-            "Launch the app. Open the folder and run GPTishka VPN.exe.",
+            "Download GPTishkaVPN-Setup-1.0.0-x64.exe from the website.",
+            "Run the installer and follow the setup steps.",
+            "Launch GPTishka VPN after installation.",
             "Add an access key. Click the + button in the bottom-right corner.",
             "Paste your VPN key from the website and click Paste.",
             "Connect to VPN. Tap the home icon and then Connect.",
-            "Done. VPN is connected and your traffic is protected.",
+            "Done. VPN is connected and your traffic is protected."
           ],
         },
         android: {
           title: "Android",
-          appUrl: "https://play.google.com/store/apps/details?id=dev.hexasoftware.v2box&hl=en",
-          steps: [
-            "Download the app. Install V2BOX from Google Play.",
-            "Open the app. Launch V2BOX and go to Configurations at the bottom.",
-            "Add configuration. Tap + in the top-right corner.",
-            "Import the key. Select Import V2Ray URI from clipboard.",
-            "Configuration will be added automatically. GPTishka-VPN will appear in the list.",
-            "Select the server. Tap GPTishka-VPN.",
-            "Connect. Turn on the Connect toggle.",
-            "Done. VPN is connected and your traffic is protected.",
-          ],
+          appUrl: KARING_ANDROID_DOWNLOAD_URL,
+          guideTitle: "Step 2 — install the app",
+          steps: KARING_STEPS,
+          success: KARING_SUCCESS,
+          copy: KARING_COPY,
+          photoTitles: KARING_TOP_PHOTO_TITLES,
+          gallery: KARING_GALLERY,
+          badge: "Android",
+          isKaring: true,
         },
         ios: {
           title: "iOS",
-          appUrl: "https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690",
-          steps: [
-            "Download the app. Install V2BOX from the App Store.",
-            "Open the app. Launch V2BOX and go to Configurations at the bottom.",
-            "Add configuration. Tap + in the top-right corner.",
-            "Import the key. Select Import V2Ray URI from clipboard.",
-            "Configuration will be added automatically. GPTishka-VPN will appear in the list.",
-            "Select the server. Tap GPTishka-VPN.",
-            "Connect. Turn on the Connect toggle.",
-            "Done. VPN is connected and your traffic is protected.",
-          ],
+          appUrl: KARING_DOWNLOAD_URL,
+          guideTitle: "Step 2 — install the app",
+          steps: KARING_STEPS,
+          success: KARING_SUCCESS,
+          copy: KARING_COPY,
+          photoTitles: KARING_TOP_PHOTO_TITLES,
+          gallery: KARING_GALLERY,
+          badge: "пЈї iOS",
+          isKaring: true,
         },
         mac: {
           title: "Mac",
-          appUrl: "https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690",
-          steps: [
-            "Download the app. Install V2BOX from the App Store.",
-            "Open the app. Launch V2BOX and go to Configurations at the bottom.",
-            "Add configuration. Tap + in the top-right corner.",
-            "Import the key. Select Import V2Ray URI from clipboard.",
-            "Configuration will be added automatically. GPTishka-VPN will appear in the list.",
-            "Select the server. Tap GPTishka-VPN.",
-            "Connect. Turn on the Connect toggle.",
-            "Done. VPN is connected and your traffic is protected.",
-          ],
+          appUrl: KARING_DOWNLOAD_URL,
+          guideTitle: "Step 2 — install the app",
+          steps: KARING_STEPS,
+          success: KARING_SUCCESS,
+          copy: KARING_COPY,
+          photoTitles: KARING_TOP_PHOTO_TITLES,
+          gallery: KARING_GALLERY,
+          badge: "macOS",
+          isKaring: true,
         },
       };
 
@@ -1026,29 +1677,31 @@
       const ACTIVATION_RESUME_SAVED_AT_KEY = "gptishka_activation_saved_at";
 
       function resolveLangTargetPath(targetLang) {
-        const path = String(window.location.pathname || "/en/store/vpn/activate/index.html").trim();
-        const cleanPath = path === "/" ? "/index.html" : path;
+        const path = String(window.location.pathname || "/en/store/vpn/activate/").trim();
+        const cleanPath = path === "/" ? "/" : path;
         const isEnPath = cleanPath.startsWith("/en/");
         const isVpnActivationPage = /^(\/en)?\/store\/vpn\/activate(?:\/index\.html|\/)?$/i.test(cleanPath);
 
         if (isVpnActivationPage) {
           return targetLang === "en"
-            ? "/en/store/vpn/activate/index.html"
-            : "/store/vpn/activate/index.html";
+            ? "/en/store/vpn/activate/"
+            : "/store/vpn/activate/";
         }
 
         if (targetLang === "en") {
-          if (isEnPath) return cleanPath;
+          if (isEnPath) return cleanPath === "/en/index.html" ? "/en/" : cleanPath;
+          if (cleanPath === "/" || cleanPath === "/index.html") return "/en/";
           return `/en${cleanPath}`;
         }
 
         if (targetLang === "ru") {
-          if (!isEnPath) return cleanPath;
+          if (!isEnPath) return cleanPath === "/index.html" ? "/" : cleanPath;
           const ruPath = cleanPath.replace(/^\/en/, "");
-          return ruPath || "/index.html";
+          if (!ruPath || ruPath === "/index.html") return "/";
+          return ruPath;
         }
 
-        return cleanPath;
+        return cleanPath === "/index.html" ? "/" : cleanPath;
       }
 
       function initLanguageSwitch() {
@@ -1088,6 +1741,7 @@
       const downloadBtn = document.getElementById("vpnDownloadConfigBtn");
       const reloadBtn = document.getElementById("vpnReloadBtn");
       const goActivationBtn = document.getElementById("vpnGoActivationBtn");
+      const goActivationInlineBtn = document.getElementById("vpnGoActivationInlineBtn");
       const activationBottomCta = document.querySelector(".activation-bottom-cta");
       const feedbackEl = document.getElementById("vpnCopyFeedback");
 
@@ -1102,11 +1756,16 @@
       const guideTag = document.getElementById("guideTag");
       const appDownloadBtn = document.getElementById("appDownloadBtn");
       const guideSteps = document.getElementById("guideSteps");
+      const guideGallery = document.getElementById("guideGallery");
+      const guideGalleryWrap = document.getElementById("guideGalleryWrap");
+      const guideGalleryTitle = document.getElementById("guideGalleryTitle");
+      const guideSuccess = document.getElementById("guideSuccess");
 
       const deviceButtons = Array.from(document.querySelectorAll("[data-device]"));
 
       let currentAccessKey = "";
       let currentPlan = "";
+      let currentDeviceKey = "";
       let activationReminderTimer = null;
 
       function readStoredActivationToken(orderId) {
@@ -1168,17 +1827,19 @@
         if (activationBottomCta) {
           activationBottomCta.classList.toggle("is-hidden", !hasUrl);
         }
-        if (goActivationBtn) {
-          goActivationBtn.classList.toggle("is-disabled", !hasUrl);
-          goActivationBtn.setAttribute("aria-disabled", hasUrl ? "false" : "true");
+        [goActivationBtn, goActivationInlineBtn].forEach((button) => {
+          if (!button) return;
+          button.classList.toggle("is-disabled", !hasUrl);
+          button.classList.toggle("is-hidden", !hasUrl && button === goActivationInlineBtn);
+          button.setAttribute("aria-disabled", hasUrl ? "false" : "true");
           if (hasUrl) {
-            goActivationBtn.setAttribute("href", safeUrl);
-            goActivationBtn.removeAttribute("tabindex");
+            button.setAttribute("href", safeUrl);
+            button.removeAttribute("tabindex");
           } else {
-            goActivationBtn.setAttribute("href", "#");
-            goActivationBtn.setAttribute("tabindex", "-1");
+            button.setAttribute("href", "#");
+            button.setAttribute("tabindex", "-1");
           }
-        }
+        });
       }
 
       function setFeedback(message, kind) {
@@ -1207,9 +1868,257 @@
         return { orderId, token };
       }
 
+      let karingLightboxEl = null;
+      let karingLightboxImages = [];
+      let karingLightboxIndex = 0;
+
+      function renderGuideSteps(config) {
+        guideSteps.innerHTML = "";
+        guideSteps.classList.toggle("is-karing", Boolean(config && config.isKaring));
+
+        if (config && config.isKaring) {
+          const steps = Array.isArray(config.steps) ? config.steps : [];
+          const copy = config.copy || {};
+
+          steps.forEach((step, index) => {
+            const li = document.createElement("li");
+            li.className = "karing-step";
+
+            const marker = document.createElement("span");
+            marker.className = "karing-step__index";
+            marker.textContent = String(index + 1).padStart(2, "0");
+
+            const content = document.createElement("div");
+            content.className = "karing-step__content";
+
+            const copyWrap = document.createElement("div");
+            copyWrap.className = "karing-step__copy";
+
+            const title = document.createElement("h4");
+            title.className = "karing-step__title";
+            title.textContent = step.title || "";
+
+            const description = document.createElement("p");
+            description.className = "karing-step__description";
+            description.textContent = step.description || "";
+
+            copyWrap.appendChild(title);
+            copyWrap.appendChild(description);
+            content.appendChild(copyWrap);
+
+            if (Number.isInteger(step.photoIndex)) {
+              const photoButton = document.createElement("button");
+              photoButton.type = "button";
+              photoButton.className = "karing-step__photo";
+              photoButton.setAttribute("data-karing-index", String(step.photoIndex));
+              photoButton.textContent = `${copy.photoPrefix || "Photo"} ${step.photoIndex + 1} →`;
+              content.appendChild(photoButton);
+            }
+
+            li.appendChild(marker);
+            li.appendChild(content);
+            guideSteps.appendChild(li);
+          });
+          return;
+        }
+
+        const steps = Array.isArray(config && config.steps) ? config.steps : [];
+        steps.forEach((stepText) => {
+          const li = document.createElement("li");
+          li.textContent = stepText;
+          guideSteps.appendChild(li);
+        });
+      }
+
+      function renderGuideSuccess(config) {
+        if (!guideSuccess) return;
+        guideSuccess.innerHTML = "";
+        guideSuccess.classList.toggle("is-visible", Boolean(config && config.isKaring && config.success));
+        if (!config || !config.isKaring || !config.success) return;
+
+        const icon = document.createElement("span");
+        icon.className = "karing-success-card__icon";
+        icon.textContent = (config.copy && config.copy.doneIcon) || "вњ“";
+
+        const content = document.createElement("div");
+        const title = document.createElement("p");
+        title.className = "karing-success-card__title";
+        title.textContent = config.success.title || "";
+
+        const description = document.createElement("p");
+        description.className = "karing-success-card__description";
+        description.textContent = config.success.description || "";
+
+        content.appendChild(title);
+        content.appendChild(description);
+        guideSuccess.appendChild(icon);
+        guideSuccess.appendChild(content);
+      }
+
+      function renderGuideGallery(config) {
+        if (!guideGallery) return;
+        guideGallery.innerHTML = "";
+
+        const gallery = Array.isArray(config && config.gallery) ? config.gallery : [];
+        guideGallery.classList.toggle("is-visible", gallery.length > 0);
+        if (guideGalleryWrap) guideGalleryWrap.classList.toggle("is-visible", gallery.length > 0);
+        if (guideGalleryTitle && config && config.copy && config.copy.galleryTitle) {
+          guideGalleryTitle.textContent = config.copy.galleryTitle;
+        }
+        if (!gallery.length) return;
+
+        gallery.forEach((image, index) => {
+          const copy = (config && config.copy) || {};
+          const photoTitles = Array.isArray(config && config.photoTitles) ? config.photoTitles : [];
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "karing-thumb";
+          button.setAttribute("data-karing-index", String(index));
+          button.setAttribute("aria-label", `${copy.openPhoto || "Open photo"} ${index + 1}`);
+
+          const frame = document.createElement("span");
+          frame.className = "karing-thumb__frame";
+
+          const img = document.createElement("img");
+          img.src = image.src;
+          img.alt = image.alt || `${copy.photoPrefix || "Photo"} ${index + 1}`;
+          img.loading = "lazy";
+          img.decoding = "async";
+          frame.appendChild(img);
+
+          const badge = document.createElement("span");
+          badge.className = "karing-thumb__badge";
+          badge.textContent = `${copy.photoPrefix || "Photo"} ${index + 1}`;
+
+          button.appendChild(frame);
+          button.appendChild(badge);
+          guideGallery.appendChild(button);
+        });
+      }
+
+      function ensureKaringLightbox() {
+        if (karingLightboxEl) return karingLightboxEl;
+
+        const lightbox = document.createElement("div");
+        lightbox.className = "karing-lightbox";
+        lightbox.setAttribute("role", "dialog");
+        lightbox.setAttribute("aria-modal", "true");
+        lightbox.innerHTML = `
+          <div class="karing-lightbox__dialog">
+            <div class="karing-lightbox__top">
+              <span class="karing-lightbox__counter" data-karing-counter>1/1</span>
+              <button type="button" class="karing-lightbox__close" data-karing-close aria-label="${KARING_LIGHTBOX_LABELS.close}">Г—</button>
+            </div>
+            <button type="button" class="karing-lightbox__nav karing-lightbox__nav--prev" data-karing-prev aria-label="${KARING_LIGHTBOX_LABELS.previous}">‹</button>
+            <div class="karing-lightbox__image-wrap">
+              <img class="karing-lightbox__image" data-karing-image alt="" />
+            </div>
+            <button type="button" class="karing-lightbox__nav karing-lightbox__nav--next" data-karing-next aria-label="${KARING_LIGHTBOX_LABELS.next}">›</button>
+          </div>
+        `;
+
+        lightbox.addEventListener("click", (event) => {
+          const target = event.target instanceof Element ? event.target : null;
+          if (!target || target === lightbox || target.closest("[data-karing-close]")) {
+            closeKaringLightbox();
+          } else if (target.closest("[data-karing-prev]")) {
+            showKaringLightboxImage(karingLightboxIndex - 1);
+          } else if (target.closest("[data-karing-next]")) {
+            showKaringLightboxImage(karingLightboxIndex + 1);
+          }
+        });
+
+        document.addEventListener("keydown", (event) => {
+          if (!karingLightboxEl || !karingLightboxEl.classList.contains("is-open")) return;
+          if (event.key === "Escape") closeKaringLightbox();
+          if (event.key === "ArrowLeft") showKaringLightboxImage(karingLightboxIndex - 1);
+          if (event.key === "ArrowRight") showKaringLightboxImage(karingLightboxIndex + 1);
+        });
+
+        document.body.appendChild(lightbox);
+        karingLightboxEl = lightbox;
+        return karingLightboxEl;
+      }
+
+      function showKaringLightboxImage(index) {
+        if (!karingLightboxImages.length) return;
+
+        const total = karingLightboxImages.length;
+        karingLightboxIndex = ((index % total) + total) % total;
+        const image = karingLightboxImages[karingLightboxIndex];
+        const lightbox = ensureKaringLightbox();
+        const img = lightbox.querySelector("[data-karing-image]");
+        const counter = lightbox.querySelector("[data-karing-counter]");
+
+        img.src = image.src;
+        img.alt = image.alt || `Photo ${karingLightboxIndex + 1}`;
+        counter.textContent = `${karingLightboxIndex + 1}/${total}`;
+      }
+
+      function openKaringLightbox(images, index) {
+        karingLightboxImages = Array.isArray(images) ? images : [];
+        if (!karingLightboxImages.length) return;
+
+        const lightbox = ensureKaringLightbox();
+        showKaringLightboxImage(index);
+        lightbox.classList.add("is-open");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeKaringLightbox() {
+        if (!karingLightboxEl) return;
+        karingLightboxEl.classList.remove("is-open");
+        document.body.style.overflow = "";
+      }
+
+      function handleKaringPhotoClick(event) {
+        const target = event.target instanceof Element ? event.target : null;
+        const button = target ? target.closest("[data-karing-index]") : null;
+        if (!button) return;
+
+        const config = DEVICE_CONFIG[currentDeviceKey];
+        const gallery = Array.isArray(config && config.gallery) ? config.gallery : [];
+        openKaringLightbox(gallery, Number(button.getAttribute("data-karing-index") || 0));
+      }
+
+      if (guideGallery) guideGallery.addEventListener("click", handleKaringPhotoClick);
+      if (guideSteps) guideSteps.addEventListener("click", handleKaringPhotoClick);
+
+      function scrollSelectedGuideIntoView(device) {
+        const key = String(device || "").trim().toLowerCase();
+        if (!["android", "ios", "mac"].includes(key)) return;
+
+        window.requestAnimationFrame(() => {
+          const topElement = appDownloadBtn || guideCard;
+          const bottomElement = guideSteps
+            ? guideSteps.querySelector('[data-karing-index="4"]')
+            : null;
+          if (!topElement || !guideCard) return;
+
+          const header = document.querySelector("header");
+          const headerRect = header ? header.getBoundingClientRect() : null;
+          const headerOffset = headerRect ? Math.min(Math.max(headerRect.height, 0), 112) : 0;
+          const safeGap = 18;
+          const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 800;
+          const topY = topElement.getBoundingClientRect().top + window.scrollY;
+          const bottomY = (bottomElement || guideCard).getBoundingClientRect().bottom + window.scrollY;
+          const visibleHeight = Math.max(bottomY - topY, 0);
+          const availableHeight = Math.max(viewportHeight - headerOffset - safeGap * 2, 240);
+          const topPadding = visibleHeight <= availableHeight
+            ? Math.max(headerOffset + safeGap, Math.floor((viewportHeight - visibleHeight) * 0.22))
+            : headerOffset + safeGap;
+
+          window.scrollTo({
+            top: Math.max(0, topY - topPadding),
+            behavior: "smooth",
+          });
+        });
+      }
+
       function applyDeviceSelection(device) {
         const key = String(device || "").trim().toLowerCase();
         const config = DEVICE_CONFIG[key];
+        currentDeviceKey = config ? key : "";
 
         deviceButtons.forEach((button) => {
           const isActive = String(button.getAttribute("data-device") || "") === key;
@@ -1224,15 +2133,18 @@
           guideTag.textContent = "No device selected";
           appDownloadBtn.removeAttribute("href");
           appDownloadBtn.removeAttribute("download");
-          guideSteps.innerHTML = "";
+          renderGuideSteps(null);
+          renderGuideGallery(null);
+          renderGuideSuccess(null);
           return;
         }
 
         guideStage.classList.add("has-selection");
         guideIntro.classList.add("is-hidden");
         guideCard.classList.add("is-visible");
-        guideTitle.textContent = "Step 2 - install the app";
-        guideTag.textContent = config.title;
+        guideCard.classList.toggle("is-karing-card", Boolean(config.isKaring));
+        guideTitle.textContent = config.guideTitle || "Step 2 — install the app";
+        guideTag.textContent = config.badge || config.title;
         appDownloadBtn.href = config.appUrl;
         if (config.downloadName) {
           appDownloadBtn.setAttribute("download", config.downloadName);
@@ -1242,12 +2154,9 @@
           appDownloadBtn.setAttribute("target", "_blank");
         }
 
-        guideSteps.innerHTML = "";
-        config.steps.forEach((stepText) => {
-          const li = document.createElement("li");
-          li.textContent = stepText;
-          guideSteps.appendChild(li);
-        });
+        renderGuideSteps(config);
+        renderGuideGallery(config);
+        renderGuideSuccess(config);
       }
 
       function renderAccess(payload) {
@@ -1318,7 +2227,7 @@
           const payload = await response.json().catch(() => ({}));
           const deliveryMode = String(payload && payload.deliveryMode || "").trim().toLowerCase();
           const status = String(payload && payload.status || "").trim().toLowerCase();
-          const requiresActivation = deliveryMode === "activation" && status !== "success";
+          const requiresActivation = (deliveryMode === "activation" || deliveryMode === "support") && status !== "success";
           if (!requiresActivation) {
             clearActivationResumeContext(context.orderId);
             setActivationEntryLink("");
@@ -1369,7 +2278,9 @@
 
       deviceButtons.forEach((button) => {
         button.addEventListener("click", () => {
-          applyDeviceSelection(button.getAttribute("data-device") || "");
+          const selectedDevice = button.getAttribute("data-device") || "";
+          applyDeviceSelection(selectedDevice);
+          scrollSelectedGuideIntoView(selectedDevice);
         });
       });
 
@@ -1389,6 +2300,7 @@
       loadVpnAccess();
     })();
   </script>
-  <script src="/assets/js/support-widget.js?v=20260315b" defer></script>
+  <script src="/assets/js/support-widget.js?v=20260707-support-unify2" defer></script>
 </body>
 </html>
+

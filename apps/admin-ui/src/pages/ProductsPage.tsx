@@ -25,8 +25,11 @@ type ProductVisualConfig = {
   backgroundType?: ProductVisualBackgroundType;
   backgroundColor?: string;
   backgroundGradient?: string;
+  textColor?: string;
   buttonText?: string;
   buttonStyle?: string;
+  buttonBackground?: string;
+  buttonTextColor?: string;
   isVisible?: boolean;
 };
 
@@ -304,8 +307,8 @@ function deliveryMethodNumber(deliveryType: ProductDeliveryType): 1 | 2 | 3 | 4 
 function deliveryMethodLabel(deliveryType: ProductDeliveryType): string {
   if (deliveryType === "support_claude") return "Метод 5: Claude Pro активация по токену";
   if (deliveryType === "support") return "Метод 4: Grok-активация по JWT-токену";
-  if (deliveryType === "manual_login") return "Метод 2A: Ручная заявка через поддержку";
-  if (deliveryType === "credentials") return "Метод 2: Готовый цифровой доступ";
+  if (deliveryType === "manual_login") return "Метод 2A: Ручная заявка со входом";
+  if (deliveryType === "credentials") return "Метод 2: готовый цифровой доступ";
   if (deliveryType === "vpn") return "Метод 3: VPN (VLESS)";
   return "Метод 1: Активация по ключу";
 }
@@ -461,8 +464,11 @@ function buildDefaultVisualConfig(productTitle = "", productDescription = ""): P
     backgroundType: "solid",
     backgroundColor: "#111111",
     backgroundGradient: "",
+    textColor: "",
     buttonText: "Выбрать тариф",
     buttonStyle: "primary",
+    buttonBackground: "",
+    buttonTextColor: "",
     isVisible: true,
   };
 }
@@ -497,9 +503,12 @@ function ProductVisualPreview({
     visual.backgroundType === "image" && visual.imageUrl
       ? `linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.54)), url(${visual.imageUrl}) center/cover`
       : background;
+  const textColor = visual.textColor || "#ffffff";
+  const buttonBackground = visual.buttonBackground || (visual.buttonStyle === "secondary" ? "rgba(255,255,255,.14)" : "#16a34a");
+  const buttonTextColor = visual.buttonTextColor || "#ffffff";
 
   return (
-    <article className="overflow-hidden rounded-[28px] bg-[#111] p-3 text-white shadow-xl">
+    <article className="overflow-hidden rounded-[28px] p-3 shadow-xl" style={{ background, color: textColor }}>
       <div className="group relative aspect-square overflow-hidden rounded-[24px]" style={{ background: imageBackground }}>
         {visual.imageUrl && (
           <img
@@ -520,9 +529,9 @@ function ProductVisualPreview({
       </div>
       <div className="grid gap-2 p-2">
         <h3 className="text-lg font-extrabold leading-tight">{title}</h3>
-        <p className="line-clamp-2 text-sm text-slate-300">{description}</p>
+        <p className="line-clamp-2 text-sm opacity-80">{description}</p>
         <div className="text-base font-bold">{Number(price) > 0 ? `от ${money(Number(price), currency)}` : "цена на витрине"}</div>
-        <button type="button" className="h-12 rounded-xl bg-emerald-600 text-sm font-bold text-white">
+        <button type="button" className="h-12 rounded-xl text-sm font-bold" style={{ background: buttonBackground, color: buttonTextColor }}>
           {visual.buttonText || "Выбрать тариф"}
         </button>
       </div>
@@ -1040,6 +1049,42 @@ export default function ProductsPage() {
     }));
   }
 
+  function prepareVisualPayload(): ProductVisualConfig {
+    return {
+      cardTitle: String(visualConfig.cardTitle || "").trim(),
+      cardDescription: String(visualConfig.cardDescription || "").trim(),
+      imageUrl: String(visualConfig.imageUrl || "").trim(),
+      imageAlt: String(visualConfig.imageAlt || "").trim(),
+      hoverImageUrl: String(visualConfig.hoverImageUrl || "").trim(),
+      hoverImageAlt: String(visualConfig.hoverImageAlt || "").trim(),
+      backgroundType: visualConfig.backgroundType || "solid",
+      backgroundColor: String(visualConfig.backgroundColor || "").trim(),
+      backgroundGradient: String(visualConfig.backgroundGradient || "").trim(),
+      textColor: String(visualConfig.textColor || "").trim(),
+      buttonText: String(visualConfig.buttonText || "").trim(),
+      buttonStyle: String(visualConfig.buttonStyle || "").trim(),
+      buttonBackground: String(visualConfig.buttonBackground || "").trim(),
+      buttonTextColor: String(visualConfig.buttonTextColor || "").trim(),
+      isVisible: visualConfig.isVisible !== false,
+    };
+  }
+
+  async function onSaveVisualOnly() {
+    setVisualMessage(null);
+    if (!editingId) {
+      setVisualMessage("Сначала сохраните товар, затем отдельно сохраните визуал карточки.");
+      return;
+    }
+    try {
+      const response = await saveProductVisual.mutateAsync({ id: editingId, payload: prepareVisualPayload() });
+      const nextVisual = response.data?.visual as ProductVisualConfig | undefined;
+      if (nextVisual) setVisualConfig((prev) => ({ ...prev, ...nextVisual }));
+      setVisualMessage("Визуал карточки сохранён.");
+    } catch (error) {
+      setVisualMessage(getRequestErrorMessage(error, "Не удалось сохранить визуал карточки."));
+    }
+  }
+
   function updateServicePageDraft(patch: Partial<ServicePage>) {
     setServicePageDraft((prev) => ({
       ...prev,
@@ -1317,8 +1362,11 @@ export default function ProductsPage() {
       backgroundType: visualConfig.backgroundType || "solid",
       backgroundColor: String(visualConfig.backgroundColor || "").trim(),
       backgroundGradient: String(visualConfig.backgroundGradient || "").trim(),
+      textColor: String(visualConfig.textColor || "").trim(),
       buttonText: String(visualConfig.buttonText || "").trim(),
       buttonStyle: String(visualConfig.buttonStyle || "").trim(),
+      buttonBackground: String(visualConfig.buttonBackground || "").trim(),
+      buttonTextColor: String(visualConfig.buttonTextColor || "").trim(),
       isVisible: visualConfig.isVisible !== false,
     };
     const activationVariants = {
@@ -1686,7 +1734,7 @@ export default function ProductsPage() {
       return;
     }
     if (!withLoginEnabled || withLoginDeliveryType !== "credentials") {
-      setCredentialsMessage("Импорт доступен только для типа «Готовый цифровой доступ».");
+      setCredentialsMessage("Импорт доступен только для типа «готовый цифровой доступ».");
       return;
     }
     const text = String(credentialsImportText || "").trim();
@@ -2021,140 +2069,6 @@ export default function ProductsPage() {
             </div>
           </div>
 
-          <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <div className="text-sm font-semibold">Визуал карточки на витрине</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">
-                  Только внешний вид. Product.id, цена, tags и выдача сохраняются отдельно.
-                </div>
-              </div>
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={visualConfig.isVisible !== false}
-                  onChange={(e) => updateVisualConfig({ isVisible: e.target.checked })}
-                />
-                Показывать карточку
-              </label>
-            </div>
-
-            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_280px]">
-              <div className="grid gap-2 md:grid-cols-2">
-                <input
-                  className="input"
-                  placeholder="Заголовок карточки"
-                  value={visualConfig.cardTitle || ""}
-                  onChange={(e) => updateVisualConfig({ cardTitle: e.target.value })}
-                />
-                <input
-                  className="input"
-                  placeholder="Текст кнопки"
-                  value={visualConfig.buttonText || ""}
-                  onChange={(e) => updateVisualConfig({ buttonText: e.target.value })}
-                />
-                <textarea
-                  className="input min-h-20 md:col-span-2"
-                  placeholder="Короткое описание карточки"
-                  value={visualConfig.cardDescription || ""}
-                  onChange={(e) => updateVisualConfig({ cardDescription: e.target.value })}
-                />
-                <input
-                  className="input"
-                  placeholder="Alt обычного изображения"
-                  value={visualConfig.imageAlt || ""}
-                  onChange={(e) => updateVisualConfig({ imageAlt: e.target.value })}
-                />
-                <input
-                  className="input"
-                  placeholder="URL обычного изображения (без курсора)"
-                  value={visualConfig.imageUrl || ""}
-                  onChange={(e) => updateVisualConfig({ imageUrl: e.target.value })}
-                />
-                <input
-                  className="input"
-                  placeholder="Alt hover-изображения"
-                  value={visualConfig.hoverImageAlt || ""}
-                  onChange={(e) => updateVisualConfig({ hoverImageAlt: e.target.value })}
-                />
-                <input
-                  className="input"
-                  placeholder="URL hover-изображения (при наведении)"
-                  value={visualConfig.hoverImageUrl || ""}
-                  onChange={(e) => updateVisualConfig({ hoverImageUrl: e.target.value })}
-                />
-                <select
-                  className="input"
-                  value={visualConfig.backgroundType || "solid"}
-                  onChange={(e) => updateVisualConfig({ backgroundType: e.target.value as ProductVisualBackgroundType })}
-                >
-                  <option value="solid">Фон: цвет</option>
-                  <option value="gradient">Фон: градиент</option>
-                  <option value="image">Фон: изображение</option>
-                </select>
-                <input
-                  className="input"
-                  placeholder="Цвет фона, например #111111"
-                  value={visualConfig.backgroundColor || ""}
-                  onChange={(e) => updateVisualConfig({ backgroundColor: e.target.value })}
-                />
-                <input
-                  className="input md:col-span-2"
-                  placeholder="CSS градиент, например linear-gradient(135deg,#111,#243)"
-                  value={visualConfig.backgroundGradient || ""}
-                  onChange={(e) => updateVisualConfig({ backgroundGradient: e.target.value })}
-                />
-                <div className="flex flex-wrap items-center gap-2">
-                  <label className="btn-secondary cursor-pointer">
-                    Загрузить 1 картинку
-                    <input
-                      type="file"
-                      accept=".jpg,.jpeg,.png,.webp,.svg,image/jpeg,image/png,image/webp,image/svg+xml"
-                      className="hidden"
-                      onChange={(e) => {
-                        void onUploadVisualImage(e.target.files?.[0] || null);
-                        e.currentTarget.value = "";
-                      }}
-                    />
-                  </label>
-                  <button type="button" className="btn-secondary" onClick={onDeleteVisualImage}>
-                    Удалить 1 картинку
-                  </button>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <label className="btn-secondary cursor-pointer">
-                    Загрузить 2 картинку hover
-                    <input
-                      type="file"
-                      accept=".jpg,.jpeg,.png,.webp,.svg,image/jpeg,image/png,image/webp,image/svg+xml"
-                      className="hidden"
-                      onChange={(e) => {
-                        void onUploadVisualHoverImage(e.target.files?.[0] || null);
-                        e.currentTarget.value = "";
-                      }}
-                    />
-                  </label>
-                  <button type="button" className="btn-secondary" onClick={onDeleteVisualHoverImage}>
-                    Удалить hover
-                  </button>
-                </div>
-                {visualMessage && <div className="text-xs text-slate-600 dark:text-slate-300 md:col-span-2">{visualMessage}</div>}
-              </div>
-
-              <ProductVisualPreview
-                visual={visualConfig}
-                fallbackTitle={title}
-                fallbackDescription={description}
-                price={
-                  activationVariantTab === "withLogin"
-                    ? withLoginPrice
-                    : withoutLoginPrice
-                }
-                currency="RUB"
-              />
-            </div>
-          </div>
-
           <div className="md:col-span-4 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900">
             <div className="mb-3">
               <div className="text-sm font-semibold">Варианты покупки и активации</div>
@@ -2171,7 +2085,7 @@ export default function ProductsPage() {
                 }`}
                 onClick={() => setActivationVariantTab("withLogin")}
               >
-                Через поддержку
+                Со входом
               </button>
               <button
                 type="button"
@@ -2188,7 +2102,7 @@ export default function ProductsPage() {
               <div className="grid gap-3 md:grid-cols-2">
                 <label className="flex items-center gap-2 md:col-span-2">
                   <input type="checkbox" checked={withLoginEnabled} onChange={(e) => setWithLoginEnabled(e.target.checked)} />
-                  <span className="font-semibold">Вариант «Через поддержку» доступен клиентам</span>
+                  <span className="font-semibold">Вариант «Со входом» доступен клиентам</span>
                 </label>
                 <label className="grid gap-1">
                   <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Цена, RUB</span>
@@ -2209,12 +2123,11 @@ export default function ProductsPage() {
                     onChange={(e) => setWithLoginDeliveryType(e.target.value as ProductDeliveryType)}
                     disabled={!withLoginEnabled}
                   >
-                    <option value="manual_login">Ручная заявка через поддержку</option>
-                    <option value="credentials">Автоматическая выдача готового цифрового доступа</option>
+                    <option value="credentials">Автоматическая выдача заранее подготовленного цифрового доступа</option>
                   </select>
                 </label>
                 <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600 md:col-span-2 dark:bg-slate-950 dark:text-slate-300">
-                  Клиент заполняет контактные данные и данные своего аккаунта. При ручном методе заказ обрабатывается менеджером.
+                  Compliance-режим: публичная форма не принимает логин и пароль аккаунта клиента. Если нужен сценарий «со входом», оформляйте его только как ручную заявку через поддержку без сохранения пароля на сайте.
                 </div>
               </div>
             ) : (
@@ -2324,10 +2237,10 @@ export default function ProductsPage() {
 
           {editingId && withLoginEnabled && withLoginDeliveryType === "credentials" && (
             <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
-              <div className="mb-2 text-sm font-semibold">Готовые цифровые доступы для автоматической выдачи</div>
+              <div className="mb-2 text-sm font-semibold">Готовые цифровые доступы для выдачи</div>
               <textarea
                 className="input min-h-24 w-full font-mono text-xs"
-                placeholder={"Формат: login:password\\nПо одной паре в строке"}
+                placeholder={"Формат: login:password\\nПо одной паре в строке\\nТолько заранее подготовленные доступы, не данные клиента."}
                 value={credentialsImportText}
                 onChange={(e) => setCredentialsImportText(e.target.value)}
               />
@@ -2351,8 +2264,8 @@ export default function ProductsPage() {
                 <table className="min-w-full text-xs">
                   <thead className="bg-slate-100 text-left dark:bg-slate-800">
                     <tr>
-                      <th className="px-2 py-2">Идентификатор</th>
-                      <th className="px-2 py-2">Секрет</th>
+                      <th className="px-2 py-2">Логин</th>
+                      <th className="px-2 py-2">Пароль</th>
                       <th className="px-2 py-2">Статус</th>
                       <th className="px-2 py-2">Заказ</th>
                       <th className="px-2 py-2">Действие</th>

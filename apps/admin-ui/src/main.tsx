@@ -11,6 +11,7 @@ const LoginPage = React.lazy(() => import("./pages/LoginPage"));
 const DashboardPage = React.lazy(() => import("./pages/DashboardPage"));
 const ProductsPage = React.lazy(() => import("./pages/ProductsPage"));
 const ShowcasePage = React.lazy(() => import("./pages/ShowcasePage"));
+const HomepageContentPage = React.lazy(() => import("./pages/HomepageContentPage"));
 const OrdersPage = React.lazy(() => import("./pages/OrdersPage"));
 const AuditPage = React.lazy(() => import("./pages/AuditPage"));
 const PromoCodesPage = React.lazy(() => import("./pages/PromoCodesPage"));
@@ -73,6 +74,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                     <Route index element={<DashboardPage />} />
                     <Route path="products" element={<ProductsPage />} />
                     <Route path="showcase" element={<ShowcasePage />} />
+                    <Route path="homepage" element={<HomepageContentPage />} />
+                    <Route path="homepage-banners" element={<Navigate to="/homepage" replace />} />
                     <Route path="orders" element={<OrdersPage />} />
                     <Route path="storefront" element={<StorefrontTickerPage />} />
                     <Route path="audit" element={<AuditPage />} />

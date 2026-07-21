@@ -66,6 +66,17 @@ type CdkImportResult = {
   }>;
 };
 
+type PoolMoveResult = {
+  moved: number;
+  fromProductKey: string;
+  toProductKey: string;
+};
+
+type PoolMoveTarget = {
+  label: string;
+  productKey: string;
+};
+
 type CredentialRow = {
   id: string;
   login: string;
@@ -90,8 +101,8 @@ type CredentialListResponse = {
 const TEXT = {
   title: "CDK / SDK ключи по товарам",
   subtitle:
-    "Метод 1: CDK-ключи. Метод 2: готовые цифровые доступы. Метод 3 (VPN): ключи не нужны. Метод 4: отдельный SDK-пул для Grok. Метод 5: отдельный SDK-пул для Claude.",
-  searchPlaceholder: "Поиск по коду / идентификатору / email / orderId",
+    "Метод 1: CDK-ключи. Метод 2: заранее подготовленные цифровые доступы. Метод 3 (VPN): ключи не нужны. Метод 4: отдельный SDK-пул для Grok. Метод 5: отдельный SDK-пул для Claude.",
+  searchPlaceholder: "Поиск по коду / логину / email / orderId",
   loading: "Загружаем...",
   empty: "Записей пока нет",
   fillKeys: "Введите хотя бы один CDK ключ",
@@ -131,8 +142,8 @@ const TEXT = {
   usedCredentials: "Выданные",
   availableItem: "Свободен",
   assignedItem: "Выдан",
-  login: "Идентификатор",
-  password: "Секрет",
+  login: "Логин",
+  password: "Пароль",
   modeActivation: "Метод 1: CDK-активация",
   modeCredentials: "Метод 2: готовый цифровой доступ",
   modeVpn: "Метод 3: Выдача VPN",
@@ -146,7 +157,7 @@ const TEXT = {
   activationSitePlaceholder: "https://vip.sxzfd.com/",
   sdkTextareaPlaceholder:
     "Вставьте SDK ключи для метода 4/5 (по одному в строке)\nПример: 69742FA2-47A4-48C5-A7CC-71F334688FE7",
-  credentialsPlaceholder: "Вставьте пары identifier:secret (по одной в строке)\nПример: access-id:access-secret",
+  credentialsPlaceholder: "Вставьте пары login:password (по одной в строке)\nПример: user@mail.ru:Pass123",
   noProducts: "Товары не найдены. Сначала создайте товары в разделе «Товары».",
 };
 
@@ -1003,6 +1014,76 @@ function ProductsTable({
   );
 }
 
+function LegacyPoolMovePanel({
+  fromProductKey,
+  targets,
+  onMoved,
+}: {
+  fromProductKey: string;
+  targets: PoolMoveTarget[];
+  onMoved?: () => void;
+}) {
+  const qc = useQueryClient();
+  const [targetKey, setTargetKey] = useState("");
+  const [error, setError] = useState("");
+
+  const movePool = useMutation({
+    mutationFn: async () =>
+      (
+        await api.post("/cdks/pools/move", {
+          fromProductKey,
+          toProductKey: targetKey,
+        })
+      ).data as PoolMoveResult,
+    onSuccess: () => {
+      setError("");
+      setTargetKey("");
+      qc.invalidateQueries({ queryKey: ["cdks"] });
+      onMoved?.();
+    },
+    onError: (err: any) => setError(err?.response?.data?.message || "Не удалось перенести пул"),
+  });
+
+  const filteredTargets = targets.filter((target) => target.productKey !== fromProductKey);
+
+  return (
+    <section className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/20">
+      <div className="text-sm font-semibold text-amber-950 dark:text-amber-100">Вернуть пул в активный CDK / SDK</div>
+      <p className="mt-1 text-xs text-amber-800 dark:text-amber-200">
+        Переносит все ключи этого пула в выбранный товар. Статусы сохраняются: неиспользованные, использованные и архивные не смешиваются.
+      </p>
+      <div className="mt-3 grid gap-2 md:grid-cols-[1fr_auto]">
+        <select className="input" value={targetKey} onChange={(event) => setTargetKey(event.target.value)}>
+          <option value="">Выберите товар / poolKey</option>
+          {filteredTargets.map((target) => (
+            <option value={target.productKey} key={target.productKey}>
+              {target.label} → {target.productKey}
+            </option>
+          ))}
+        </select>
+        <button
+          className="btn-primary"
+          type="button"
+          disabled={!targetKey || movePool.isPending}
+          onClick={() => {
+            if (!targetKey) return;
+            if (!window.confirm(`Перенести все ключи из ${fromProductKey} в ${targetKey}?`)) return;
+            movePool.mutate();
+          }}
+        >
+          {movePool.isPending ? "Переносим..." : "Перенести пул"}
+        </button>
+      </div>
+      {movePool.data ? (
+        <div className="mt-2 text-xs text-emerald-700 dark:text-emerald-300">
+          Перенесено ключей: {movePool.data.moved}. Пул: {movePool.data.fromProductKey} → {movePool.data.toProductKey}
+        </div>
+      ) : null}
+      {error ? <div className="mt-2 text-xs text-rose-600">{error}</div> : null}
+    </section>
+  );
+}
+
 export default function CdkKeysPage() {
   const [q, setQ] = useState("");
   const [selectedProductId, setSelectedProductId] = useState("");
@@ -1080,6 +1161,26 @@ export default function CdkKeysPage() {
     return keys;
   }, [products]);
 
+  const cdkMoveTargets = useMemo<PoolMoveTarget[]>(() => {
+    return products
+      .map((product) => {
+        const deliveryType = resolveDeliveryType(product);
+        const base = normalizeProductKey(product.slug);
+        if (deliveryType === "credentials") return null;
+        if (deliveryType === "vpn") {
+          return { label: cleanProductTitle(product.title) || product.title, productKey: base };
+        }
+        if (deliveryType === "support") {
+          return { label: cleanProductTitle(product.title) || product.title, productKey: resolveKeyPoolProductKey(base, "support") };
+        }
+        if (deliveryType === "support_claude") {
+          return { label: cleanProductTitle(product.title) || product.title, productKey: resolveKeyPoolProductKey(base, "support_claude") };
+        }
+        return { label: cleanProductTitle(product.title) || product.title, productKey: base };
+      })
+      .filter((target): target is PoolMoveTarget => Boolean(target));
+  }, [products]);
+
   const legacyPools = useMemo(() => {
     const byProduct = poolStatsQuery.data?.stats?.byProduct || {};
     return Object.entries(byProduct)
@@ -1138,13 +1239,20 @@ export default function CdkKeysPage() {
           activeProductId={activeLegacyPool?.id}
           onSelect={toggleSelectedLegacyPool}
           renderDetails={(pool) => (
-            <KeyProductColumn
-              key={pool.id}
-              product={pool}
-              search={q}
-              mode="support"
-              productKeyOverride={pool.slug}
-            />
+            <>
+              <LegacyPoolMovePanel
+                fromProductKey={pool.slug}
+                targets={cdkMoveTargets}
+                onMoved={() => setSelectedLegacyPoolId("")}
+              />
+              <KeyProductColumn
+                key={pool.id}
+                product={pool}
+                search={q}
+                mode="support"
+                productKeyOverride={pool.slug}
+              />
+            </>
           )}
         />
       ) : null}

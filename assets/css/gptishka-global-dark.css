@@ -1,0 +1,1886 @@
+﻿/* gptishka-global-dark-20260706
+   Shared dark visual shell for public non-home pages.
+   Scope: only pages that explicitly load this file. No business logic changes. */
+
+:root {
+  --gptd-bg-0: #06080c;
+  --gptd-bg-1: #090b10;
+  --gptd-bg-2: #071015;
+  --gptd-text: rgba(255, 255, 255, 0.92);
+  --gptd-muted: rgba(218, 228, 246, 0.64);
+  --gptd-faint: rgba(218, 228, 246, 0.46);
+  --gptd-line: rgba(255, 255, 255, 0.085);
+  --gptd-card: rgba(255, 255, 255, 0.055);
+  --gptd-card-strong: rgba(255, 255, 255, 0.075);
+  --gptd-green: #19c87c;
+  --gptd-green-2: #0d945b;
+  --gptd-blue: #5aa7ff;
+  --gptd-violet: #9b7cff;
+  --gptd-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+}
+
+html {
+  background: var(--gptd-bg-0) !important;
+}
+
+body {
+  color: var(--gptd-text) !important;
+  background:
+    radial-gradient(ellipse at 20% 12%, rgba(28, 220, 210, 0.10), transparent 0 28%),
+    radial-gradient(ellipse at 46% 10%, rgba(255, 55, 150, 0.08), transparent 0 26%),
+    radial-gradient(ellipse at 86% 18%, rgba(60, 145, 255, 0.10), transparent 0 34%),
+    linear-gradient(135deg, var(--gptd-bg-0) 0%, var(--gptd-bg-1) 52%, var(--gptd-bg-2) 100%) !important;
+  background-attachment: fixed !important;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -14% -10%;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse at 14% 24%, rgba(21, 220, 212, 0.10), transparent 0 32%),
+    radial-gradient(ellipse at 36% 16%, rgba(255, 45, 150, 0.08), transparent 0 30%),
+    radial-gradient(ellipse at 84% 28%, rgba(61, 137, 255, 0.10), transparent 0 38%);
+  filter: blur(170px) saturate(112%);
+  opacity: 0.9;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.038;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+.page-overlay {
+  opacity: 0 !important;
+  background: transparent !important;
+  pointer-events: none !important;
+}
+
+header {
+  width: min(calc(100% - clamp(28px, 7vw, 136px)), 1780px) !important;
+  max-width: 1780px !important;
+  margin: 8px auto 22px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+header .site-ticker {
+  width: 100% !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  margin: 0 auto 10px !important;
+  padding: 0 10px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015)) !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+header .site-ticker__track {
+  color: rgba(220, 230, 246, 0.46) !important;
+}
+
+header .site-ticker__item {
+  min-height: 22px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 999px !important;
+  color: rgba(220, 230, 246, 0.46) !important;
+  background: rgba(255, 255, 255, 0.105) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 8px 22px rgba(0, 0, 0, 0.20) !important;
+}
+
+header .site-ticker__sep {
+  color: rgba(255, 255, 255, 0.30) !important;
+}
+
+header .site-ticker__stats {
+  min-height: 22px !important;
+  padding: 0 14px !important;
+  border: 1px solid rgba(105, 255, 184, 0.15) !important;
+  border-radius: 999px !important;
+  color: rgba(147, 255, 202, 0.88) !important;
+  background: rgba(20, 116, 76, 0.28) !important;
+  box-shadow: 0 0 22px rgba(24, 185, 120, 0.10) !important;
+}
+
+header .site-ticker__stat,
+header .site-ticker__stat-label,
+header .site-ticker__stat strong {
+  color: rgba(147, 255, 202, 0.88) !important;
+}
+
+header .nav,
+header .nav-shell {
+  display: flex !important;
+  align-items: center !important;
+  gap: clamp(12px, 1.5vw, 24px) !important;
+  width: 100% !important;
+  min-height: 54px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+header .logo-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex: 0 0 auto !important;
+}
+
+header .logo-img {
+  width: auto !important;
+  height: clamp(30px, 2.5vw, 42px) !important;
+  object-fit: contain !important;
+  filter: brightness(0) invert(1) drop-shadow(0 12px 24px rgba(0, 0, 0, 0.32)) !important;
+}
+
+header nav {
+  margin-left: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  border: 0 !important;
+}
+
+header nav a,
+header .header-quick-link {
+  min-height: 34px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 8px 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  border-radius: 999px !important;
+  color: rgba(255, 255, 255, 0.68) !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 8px 18px rgba(0, 0, 0, 0.12) !important;
+  text-decoration: none !important;
+}
+
+header nav a:hover,
+header nav a:focus-visible,
+header nav a.active,
+header .header-quick-link:hover,
+header .header-quick-link:focus-visible {
+  color: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  background: rgba(255, 255, 255, 0.09) !important;
+}
+
+header .header-tools,
+header .header-actions {
+  margin-left: 0 !important;
+  flex: 0 0 auto !important;
+}
+
+.lang-current {
+  min-height: 42px !important;
+  padding: 8px 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 999px !important;
+  color: rgba(255, 255, 255, 0.82) !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 12px 30px rgba(0, 0, 0, 0.18) !important;
+}
+
+.lang-dropdown {
+  color: rgba(255, 255, 255, 0.88) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  background: rgba(10, 13, 20, 0.94) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.38) !important;
+}
+
+.lang-item:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+main.page,
+.page,
+.container,
+.policy-content,
+.about,
+.contact,
+.reviews,
+.faq,
+.pricing,
+.activation-video,
+.cart-box,
+.status-page {
+  color: var(--gptd-text) !important;
+  background: transparent !important;
+}
+
+.hero,
+.container,
+.policy-content,
+.block,
+.card,
+.contact-card,
+.review,
+.faq-item,
+.faq-sticky,
+.cart-box,
+.cart-item,
+.status-card,
+.redeem-card,
+.redeem-block,
+.redeem-order-row,
+.redeem-guide,
+.vpn-activation-flow .vpn-card,
+.vpn-activation-flow .vpn-key-card,
+.vpn-activation-flow .vpn-instruction-card,
+.account-flow .account-card {
+  border: 1px solid var(--gptd-line) !important;
+  background: linear-gradient(180deg, var(--gptd-card-strong), rgba(255, 255, 255, 0.035)) !important;
+  box-shadow: var(--gptd-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(18px) saturate(116%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(116%) !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+.status-title,
+.price,
+.block h2,
+.card h2,
+.policy-content h1,
+.policy-content h2,
+.redeem-title,
+.vpn-activation-flow h1,
+.vpn-activation-flow h2 {
+  color: rgba(255, 255, 255, 0.94) !important;
+}
+
+p,
+li,
+.sub,
+.intro,
+.status-text,
+.meta,
+.policy-content p,
+.policy-content li,
+.block p,
+.card p,
+.review-text,
+.redeem-muted,
+.redeem-guide,
+.vpn-activation-flow p {
+  color: var(--gptd-muted) !important;
+}
+
+input,
+textarea,
+select,
+.redeem-token-input,
+.steam-topup-field input,
+.steam-topup-field textarea {
+  color: rgba(255, 255, 255, 0.90) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.065) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.42) !important;
+}
+
+.btn,
+button.btn,
+.primary,
+.faq-chat-btn,
+.redeem-button,
+.steam-topup-submit {
+  border: 0 !important;
+  color: #06110b !important;
+  background: linear-gradient(135deg, #2bdc86, #16b876, #0e8a58) !important;
+  box-shadow: 0 14px 30px rgba(24, 185, 120, 0.18) !important;
+}
+
+.btn.secondary,
+.secondary,
+.redeem-secondary,
+.steam-topup-payment label {
+  color: rgba(255, 255, 255, 0.82) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 12px 30px rgba(0, 0, 0, 0.18) !important;
+}
+
+footer {
+  color: rgba(255, 255, 255, 0.58) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  background: transparent !important;
+}
+
+footer a,
+.footer-link,
+.policy-content a,
+.contact a,
+.redeem-guide a {
+  color: #8bbcff !important;
+}
+
+#gptishka-support-widget .support-widget__mascot::after {
+  content: "\041F\043E\0434\0434\0435\0440\0436\043A\0430" !important;
+}
+
+@media (max-width: 980px) {
+  header {
+    width: calc(100% - 28px) !important;
+  }
+
+  header .nav,
+  header .nav-shell {
+    gap: 10px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  header nav {
+    display: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  body::before {
+    opacity: 0.56;
+    filter: blur(96px) saturate(108%);
+  }
+
+  header .logo-img {
+    height: 32px !important;
+    max-width: 148px !important;
+  }
+
+  .lang-current {
+    min-height: 38px !important;
+    padding: 7px 11px !important;
+  }
+
+  main.page,
+  .page {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+}
+
+/* 20260707: global shell hardening */
+body header .site-ticker,
+body header .site-ticker * {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+body header #siteTicker.site-ticker,
+body.home-wide-body header #siteTicker.site-ticker,
+body.home-catalog-body header #siteTicker.site-ticker,
+body:has(main.service-page) header #siteTicker.site-ticker {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Keep checkout/modals owned by service-specific CSS. */
+.chatgpt-go-order-modal,
+.payment-method-modal,
+.product-preview-modal,
+.chatgpt-order-card,
+.service-checkout-card,
+.service-checkout-card * {
+  backdrop-filter: revert-layer;
+  -webkit-backdrop-filter: revert-layer;
+}
+
+/* Dark shell sets body children to relative; keep checkout modals as viewport overlays. */
+html body > .chatgpt-go-order-modal,
+html body > .payment-method-modal,
+html body > .product-preview-modal {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 12000 !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+html body > .chatgpt-go-order-modal[hidden],
+html body > .payment-method-modal[hidden],
+html body > .product-preview-modal[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  body::before {
+    opacity: 0.52 !important;
+    filter: blur(150px) saturate(104%) !important;
+  }
+}
+
+/* 20260707: make every public page share the same dark shell as the homepage.
+   This intentionally beats older page-level radial backgrounds. */
+html body,
+html body.home-gradient-page,
+html body.home-gradient-page.home-catalog-body,
+html body.home-catalog-body,
+html body:has(main.service-page),
+html body:has(main.steam-topup-page),
+html body:has(main.bundle-activation-page),
+html body:has(main.redeem-page),
+html body:has(main.vpn-activation-page) {
+  color: var(--gptd-text) !important;
+  background:
+    linear-gradient(180deg, rgba(6, 8, 12, 0.96) 0%, rgba(9, 11, 16, 0.98) 46%, rgba(11, 13, 18, 1) 100%),
+    radial-gradient(ellipse at 18% 18%, rgba(22, 220, 205, 0.08), transparent 0 28%),
+    radial-gradient(ellipse at 42% 12%, rgba(255, 55, 150, 0.065), transparent 0 25%),
+    radial-gradient(ellipse at 88% 22%, rgba(68, 145, 255, 0.085), transparent 0 34%),
+    #080a0f !important;
+  background-attachment: fixed !important;
+}
+
+html body.home-gradient-page::before,
+html body.home-gradient-page.home-catalog-body::before,
+html body.home-catalog-body::before,
+html body:has(main.service-page)::before,
+html body:has(main.steam-topup-page)::before,
+html body:has(main.bundle-activation-page)::before,
+html body:has(main.redeem-page)::before,
+html body:has(main.vpn-activation-page)::before {
+  background:
+    radial-gradient(ellipse at 16% 25%, rgba(23, 220, 205, 0.08), transparent 0 30%),
+    radial-gradient(ellipse at 38% 16%, rgba(255, 50, 150, 0.06), transparent 0 28%),
+    radial-gradient(ellipse at 84% 27%, rgba(65, 140, 255, 0.08), transparent 0 36%) !important;
+  filter: blur(190px) saturate(108%) !important;
+  opacity: 0.72 !important;
+}
+
+html body.home-gradient-page header,
+html body.home-gradient-page.home-catalog-body header,
+html body.home-catalog-body header,
+html body:has(main.service-page) header,
+html body:has(main.steam-topup-page) header,
+html body:has(main.bundle-activation-page) header,
+html body:has(main.redeem-page) header,
+html body:has(main.vpn-activation-page) header {
+  background: transparent !important;
+}
+
+html body.home-gradient-page header .nav-shell,
+html body.home-gradient-page header .nav,
+html body.home-gradient-page.home-catalog-body header .nav-shell,
+html body.home-gradient-page.home-catalog-body header .nav,
+html body.home-catalog-body header .nav-shell,
+html body.home-catalog-body header .nav,
+html body:has(main.service-page) header .nav-shell,
+html body:has(main.service-page) header .nav,
+html body:has(main.steam-topup-page) header .nav-shell,
+html body:has(main.steam-topup-page) header .nav,
+html body:has(main.bundle-activation-page) header .nav-shell,
+html body:has(main.bundle-activation-page) header .nav,
+html body:has(main.redeem-page) header .nav-shell,
+html body:has(main.redeem-page) header .nav,
+html body:has(main.vpn-activation-page) header .nav-shell,
+html body:has(main.vpn-activation-page) header .nav {
+  background: rgba(10, 12, 18, 0.62) !important;
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28) !important;
+  backdrop-filter: blur(18px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(130%) !important;
+}
+
+/* 20260707: premium catalog layout/cards */
+html body.home-catalog-body .catalog-page {
+  width: min(1240px, calc(100% - 36px)) !important;
+  margin: 0 auto !important;
+  padding: clamp(34px, 5vw, 76px) 0 clamp(70px, 8vw, 120px) !important;
+  color: var(--gptd-text) !important;
+}
+
+html body.home-catalog-body .catalog-top {
+  margin: 0 0 clamp(22px, 3vw, 34px) !important;
+  padding: clamp(18px, 2.6vw, 28px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  border-radius: 30px !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.026)) !important;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28) !important;
+  backdrop-filter: blur(18px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(130%) !important;
+}
+
+html body.home-catalog-body .catalog-breadcrumbs {
+  color: rgba(235, 242, 255, 0.46) !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+}
+
+html body.home-catalog-body .catalog-breadcrumbs a {
+  color: rgba(245, 248, 255, 0.72) !important;
+  text-decoration: none !important;
+}
+
+html body.home-catalog-body .catalog-title {
+  margin: 12px 0 18px !important;
+  color: rgba(255, 255, 255, 0.96) !important;
+  font-family: "Manrope", "Inter", system-ui, sans-serif !important;
+  font-size: clamp(44px, 6vw, 82px) !important;
+  line-height: 0.95 !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.065em !important;
+}
+
+html body.home-catalog-body .catalog-top p {
+  max-width: 760px !important;
+  color: rgba(225, 235, 255, 0.64) !important;
+  font-size: clamp(16px, 1.4vw, 20px) !important;
+  line-height: 1.5 !important;
+}
+
+html body.home-catalog-body .catalog-tabs {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin-top: 22px !important;
+}
+
+html body.home-catalog-body .catalog-tab {
+  min-height: 44px !important;
+  padding: 12px 18px !important;
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  border-radius: 999px !important;
+  color: rgba(245, 248, 255, 0.72) !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 12px 34px rgba(0, 0, 0, 0.16) !important;
+  backdrop-filter: blur(16px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(130%) !important;
+}
+
+html body.home-catalog-body .catalog-tab:hover,
+html body.home-catalog-body .catalog-tab--active {
+  color: #06110b !important;
+  border-color: rgba(53, 242, 143, 0.34) !important;
+  background: linear-gradient(135deg, #35e58d, #16bd78, #0f8f5c) !important;
+}
+
+html body.home-catalog-body .catalog-grid,
+html body.home-catalog-body .catalog-grid--directory,
+html body.home-catalog-body .ai-directory-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 292px), 1fr)) !important;
+  gap: clamp(18px, 2vw, 26px) !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+html body.home-catalog-body .ai-directory-card {
+  min-height: 100% !important;
+  padding: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 30px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035)),
+    rgba(10, 12, 18, 0.58) !important;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+  backdrop-filter: blur(18px) saturate(128%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(128%) !important;
+  overflow: hidden !important;
+  transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease !important;
+}
+
+html body.home-catalog-body .ai-directory-card:hover {
+  transform: translateY(-5px) !important;
+  border-color: rgba(135, 190, 255, 0.24) !important;
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.38), 0 0 0 1px rgba(255, 255, 255, 0.035) inset !important;
+}
+
+html body.home-catalog-body .ai-directory-card__media {
+  aspect-ratio: 1 / 1 !important;
+  width: 100% !important;
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  border-radius: 24px !important;
+  background: rgba(0, 0, 0, 0.32) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+  overflow: hidden !important;
+}
+
+html body.home-catalog-body .ai-directory-card__image {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
+html body.home-catalog-body .ai-directory-card__body {
+  min-height: 250px !important;
+  padding: 18px 4px 4px !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+html body.home-catalog-body .ai-directory-card__top,
+html body.home-catalog-body .ai-directory-card__bottom {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+html body.home-catalog-body .ai-directory-card__name,
+html body.home-catalog-body .ai-directory-card__title {
+  color: rgba(255, 255, 255, 0.96) !important;
+  font-family: "Manrope", "Inter", system-ui, sans-serif !important;
+  font-size: clamp(23px, 2vw, 31px) !important;
+  line-height: 1.04 !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.045em !important;
+}
+
+html body.home-catalog-body .ai-directory-card__desc,
+html body.home-catalog-body .ai-directory-card__plans {
+  color: rgba(225, 235, 255, 0.66) !important;
+  font-size: 15px !important;
+  line-height: 1.42 !important;
+}
+
+html body.home-catalog-body .ai-directory-card__plans {
+  color: rgba(238, 245, 255, 0.78) !important;
+  font-weight: 800 !important;
+}
+
+html body.home-catalog-body .ai-directory-card__price {
+  color: rgba(255, 255, 255, 0.96) !important;
+  font-size: 22px !important;
+  line-height: 1.1 !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.035em !important;
+}
+
+html body.home-catalog-body .ai-directory-card__button {
+  min-height: 50px !important;
+  border: 1px solid rgba(53, 242, 143, 0.25) !important;
+  border-radius: 18px !important;
+  color: #06110b !important;
+  background: linear-gradient(135deg, #35e58d, #18c878, #0f8f5c) !important;
+  box-shadow: 0 16px 42px rgba(24, 200, 120, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.34) !important;
+}
+
+html body.home-catalog-body .ai-directory-card__button:hover {
+  filter: brightness(1.04) saturate(1.05) !important;
+  transform: translateY(-1px) !important;
+}
+
+@media (min-width: 1280px) {
+  html body.home-catalog-body .catalog-grid,
+  html body.home-catalog-body .catalog-grid--directory,
+  html body.home-catalog-body .ai-directory-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  html body.home-catalog-body .catalog-page {
+    width: min(100% - 24px, 560px) !important;
+    padding-top: 24px !important;
+  }
+
+  html body.home-catalog-body .catalog-top {
+    padding: 18px !important;
+    border-radius: 24px !important;
+  }
+
+  html body.home-catalog-body .catalog-title {
+    font-size: clamp(38px, 12vw, 54px) !important;
+  }
+
+  html body.home-catalog-body .catalog-grid,
+  html body.home-catalog-body .catalog-grid--directory,
+  html body.home-catalog-body .ai-directory-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* 20260707: unify public service, activation, FAQ and footer surfaces with the dark homepage. */
+html body,
+html body:has(main.service-page),
+html body:has(main.redeem-page),
+html body:has(main.bundle-activation-page),
+html body:has(main.vpn-activation-page),
+html body:has(main.steam-topup-page) {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+html body:has(main.service-page) .service-page,
+html body:has(main.service-page) .service-page *,
+html body:has(main.redeem-page) .redeem-page,
+html body:has(main.redeem-page) .redeem-page *,
+html body:has(main.bundle-activation-page) .bundle-activation-page,
+html body:has(main.bundle-activation-page) .bundle-activation-page *,
+html body:has(main.vpn-activation-page) .vpn-activation-wrap,
+html body:has(main.vpn-activation-page) .vpn-activation-wrap *,
+html body:has(main.steam-topup-page) .steam-topup-page,
+html body:has(main.steam-topup-page) .steam-topup-page * {
+  color-scheme: dark !important;
+}
+
+html body:has(main.service-page) .service-hero,
+html body:has(main.service-page) .plans-section,
+html body:has(main.service-page) .service-info-section,
+html body:has(main.service-page) .service-faq-section,
+html body:has(main.redeem-page) .redeem-card,
+html body:has(main.bundle-activation-page) .bundle-card,
+html body:has(main.bundle-activation-page) .bundle-activation-card,
+html body:has(main.vpn-activation-page) .pricing.activation-shell,
+html body:has(main.vpn-activation-page) main.page.vpn-activation-wrap .card,
+html body:has(main.vpn-activation-page) main.page.vpn-activation-wrap .card-soft,
+html body:has(main.steam-topup-page) .steam-topup-card,
+html body:has(main.steam-topup-page) .steam-topup-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035)),
+    rgba(8, 10, 15, 0.66) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(18px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(120%) !important;
+}
+
+html body:has(main.service-page) .service-hero__title,
+html body:has(main.service-page) .service-section-title,
+html body:has(main.service-page) .service-faq-section h2,
+html body:has(main.service-page) .service-faq-question,
+html body:has(main.service-page) .plan-card__title,
+html body:has(main.service-page) .plan-card__price,
+html body:has(main.redeem-page) .redeem-title,
+html body:has(main.redeem-page) .redeem-block h2,
+html body:has(main.redeem-page) .redeem-label,
+html body:has(main.bundle-activation-page) h1,
+html body:has(main.bundle-activation-page) h2,
+html body:has(main.bundle-activation-page) h3,
+html body:has(main.vpn-activation-page) h1,
+html body:has(main.vpn-activation-page) h2,
+html body:has(main.vpn-activation-page) h3,
+html body:has(main.steam-topup-page) h1,
+html body:has(main.steam-topup-page) h2,
+html body:has(main.steam-topup-page) h3 {
+  color: rgba(255, 255, 255, 0.96) !important;
+  text-shadow: 0 14px 34px rgba(0, 0, 0, 0.34);
+}
+
+html body:has(main.service-page) .service-hero__eyebrow,
+html body:has(main.service-page) .service-eyebrow,
+html body:has(main.redeem-page) .redeem-label,
+html body:has(main.bundle-activation-page) .bundle-label,
+html body:has(main.vpn-activation-page) .badge,
+html body:has(main.vpn-activation-page) .tab {
+  color: rgba(53, 229, 141, 0.86) !important;
+}
+
+html body:has(main.service-page) .service-hero__description,
+html body:has(main.service-page) .service-section-lead,
+html body:has(main.service-page) .service-faq-answer,
+html body:has(main.service-page) .plan-card__desc,
+html body:has(main.service-page) .plan-card__meta,
+html body:has(main.redeem-page) .redeem-subtitle,
+html body:has(main.redeem-page) .redeem-guide,
+html body:has(main.redeem-page) .redeem-meta,
+html body:has(main.redeem-page) .redeem-manual-hint,
+html body:has(main.bundle-activation-page) p,
+html body:has(main.vpn-activation-page) p,
+html body:has(main.vpn-activation-page) li,
+html body:has(main.vpn-activation-page) .muted,
+html body:has(main.steam-topup-page) p,
+html body:has(main.steam-topup-page) .muted {
+  color: rgba(226, 235, 255, 0.68) !important;
+}
+
+html body:has(main.service-page) .plan-card,
+html body:has(main.service-page) .service-faq-item,
+html body:has(main.redeem-page) .redeem-block,
+html body:has(main.redeem-page) .redeem-order-row,
+html body:has(main.redeem-page) .redeem-guide,
+html body:has(main.redeem-page) .redeem-vpn-offer,
+html body:has(main.bundle-activation-page) .bundle-section,
+html body:has(main.bundle-activation-page) .bundle-panel,
+html body:has(main.vpn-activation-page) .vpn-key-card,
+html body:has(main.vpn-activation-page) .instruction-card,
+html body:has(main.vpn-activation-page) .device-card,
+html body:has(main.vpn-activation-page) .card,
+html body:has(main.steam-topup-page) .form-card,
+html body:has(main.steam-topup-page) .summary-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.032)),
+    rgba(8, 10, 15, 0.58) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 18px 58px rgba(0, 0, 0, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+}
+
+html body:has(main.redeem-page) .redeem-input,
+html body:has(main.redeem-page) textarea,
+html body:has(main.redeem-page) input,
+html body:has(main.vpn-activation-page) textarea,
+html body:has(main.vpn-activation-page) input,
+html body:has(main.steam-topup-page) textarea,
+html body:has(main.steam-topup-page) input,
+html body:has(main.steam-topup-page) select {
+  color: rgba(255, 255, 255, 0.92) !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+  border: 1px solid rgba(255, 255, 255, 0.13) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+}
+
+html body:has(main.redeem-page) .redeem-input::placeholder,
+html body:has(main.vpn-activation-page) input::placeholder,
+html body:has(main.steam-topup-page) input::placeholder,
+html body:has(main.steam-topup-page) textarea::placeholder {
+  color: rgba(226, 235, 255, 0.42) !important;
+}
+
+html body:has(main.service-page) .buy-btn,
+html body:has(main.service-page) .pay-now-btn,
+html body:has(main.redeem-page) .redeem-btn-primary,
+html body:has(main.bundle-activation-page) .redeem-btn-primary,
+html body:has(main.vpn-activation-page) .btn-primary,
+html body:has(main.vpn-activation-page) .button-primary,
+html body:has(main.steam-topup-page) .btn-primary,
+html body:has(main.steam-topup-page) button[type="submit"] {
+  color: #06110b !important;
+  background: linear-gradient(135deg, #35e58d, #18c878, #0f8f5c) !important;
+  border-color: rgba(53, 229, 141, 0.35) !important;
+  box-shadow: 0 16px 42px rgba(24, 200, 120, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+}
+
+html body:has(main.redeem-page) .redeem-btn,
+html body:has(main.bundle-activation-page) .redeem-btn,
+html body:has(main.vpn-activation-page) .btn,
+html body:has(main.vpn-activation-page) button,
+html body:has(main.steam-topup-page) .btn,
+html body:has(main.steam-topup-page) button {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html body footer {
+  width: min(1520px, calc(100% - clamp(24px, 7vw, 136px))) !important;
+  margin: clamp(42px, 6vw, 86px) auto 24px !important;
+  padding: 22px 24px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 28px !important;
+  color: rgba(226, 235, 255, 0.58) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025)),
+    rgba(8, 10, 15, 0.58) !important;
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+  backdrop-filter: blur(18px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(120%) !important;
+}
+
+html body footer,
+html body footer .footer-copy {
+  color: rgba(226, 235, 255, 0.58) !important;
+}
+
+html body footer a,
+html body footer .footer-link {
+  color: rgba(255, 255, 255, 0.78) !important;
+  text-decoration: none !important;
+}
+
+html body footer a:hover,
+html body footer .footer-link:hover {
+  color: rgba(53, 229, 141, 0.94) !important;
+}
+
+html body #gptishka-support-widget .support-widget__panel {
+  color: rgba(255, 255, 255, 0.90) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035)),
+    rgba(8, 10, 15, 0.86) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.38) !important;
+}
+
+html body #gptishka-support-widget .support-widget__title {
+  color: rgba(255, 255, 255, 0.96) !important;
+}
+
+html body #gptishka-support-widget .support-widget__text,
+html body #gptishka-support-widget .support-widget__meta {
+  color: rgba(226, 235, 255, 0.68) !important;
+}
+
+html body #gptishka-support-widget .support-widget__meta,
+html body #gptishka-support-widget .support-widget__resume-bubble {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+@media (max-width: 720px) {
+  html body footer {
+    width: min(100% - 24px, 560px) !important;
+    padding: 18px !important;
+    border-radius: 22px !important;
+  }
+}
+
+/* 20260707: remaining dark redesign details for service constructors and activation pages. */
+html body:has(main.service-page) .service-plans-section,
+html body:has(main.service-page) .service-constructor-shell,
+html body:has(main.service-page) .service-constructor-card,
+html body:has(main.service-page) .service-constructor-description {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.032)),
+    rgba(8, 10, 15, 0.58) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+html body:has(main.service-page) .service-constructor-shell {
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  border-radius: 34px !important;
+  overflow: hidden !important;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.075) !important;
+  backdrop-filter: blur(18px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(120%) !important;
+}
+
+html body:has(main.service-page) .service-constructor-brand span,
+html body:has(main.service-page) .service-checkout-card__label,
+html body:has(main.service-page) .service-filter-group__label {
+  color: rgba(226, 235, 255, 0.66) !important;
+}
+
+html body:has(main.service-page) .service-constructor-brand h2,
+html body:has(main.service-page) .service-constructor-price strong,
+html body:has(main.service-page) .service-checkout-card__summary strong,
+html body:has(main.service-page) .service-filter-stack--constructor .service-filter-group__label {
+  color: rgba(255, 255, 255, 0.96) !important;
+}
+
+html body:has(main.service-page) .service-filter-chip,
+html body:has(main.service-page) .service-filter-stack--constructor .service-filter-chip {
+  color: rgba(255, 255, 255, 0.88) !important;
+  background: rgba(255, 255, 255, 0.065) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+}
+
+html body:has(main.service-page) .service-filter-chip:hover,
+html body:has(main.service-page) .service-filter-chip.is-active,
+html body:has(main.service-page) .service-filter-stack--constructor .service-filter-chip:hover,
+html body:has(main.service-page) .service-filter-stack--constructor .service-filter-chip.is-active {
+  color: #06110b !important;
+  background: linear-gradient(135deg, #35e58d, #18c878, #0f8f5c) !important;
+  border-color: rgba(53, 229, 141, 0.38) !important;
+  box-shadow: 0 14px 34px rgba(24, 200, 120, 0.18) !important;
+}
+
+html body:has(main.service-page) .service-filter-chip.is-disabled,
+html body:has(main.service-page) .service-filter-stack--constructor .service-filter-chip.is-disabled {
+  color: rgba(226, 235, 255, 0.34) !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+html body:has(main.service-page) .service-checkout-card__summary > div,
+html body:has(main.service-page) .service-selected-plan,
+html body:has(main.service-page) .service-delivery-help {
+  background: rgba(255, 255, 255, 0.055) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  color: rgba(226, 235, 255, 0.70) !important;
+}
+
+html body:has(main.service-page) .service-checkout-card .buy-btn,
+html body:has(main.service-page) .service-checkout-card .buy-btn:hover {
+  color: #06110b !important;
+  background: linear-gradient(135deg, #35e58d, #18c878, #0f8f5c) !important;
+  box-shadow: 0 16px 42px rgba(24, 200, 120, 0.22) !important;
+}
+
+html body:has(main.service-page) .service-constructor-description h3,
+html body:has(main.service-page) .service-constructor-description h4,
+html body:has(main.service-page) .service-info-card h3,
+html body:has(main.service-page) .service-faq-section h2 {
+  color: rgba(255, 255, 255, 0.96) !important;
+}
+
+html body:has(main.service-page) .service-constructor-description p,
+html body:has(main.service-page) .service-info-card p,
+html body:has(main.service-page) .service-info-card li,
+html body:has(main.service-page) .service-faq-answer p {
+  color: rgba(226, 235, 255, 0.68) !important;
+}
+
+html body:has(main.service-page) .service-info-card,
+html body:has(main.service-page) .service-faq-item,
+html body:has(main.service-page) .service-empty-state {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.03)),
+    rgba(8, 10, 15, 0.58) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 18px 58px rgba(0, 0, 0, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+}
+
+html body:has(main.service-page) .service-faq-question {
+  color: rgba(255, 255, 255, 0.94) !important;
+}
+
+html body:has(main.service-page) .service-faq-question span {
+  border-color: rgba(53, 229, 141, 0.86) !important;
+}
+
+html body:has(main.service-page) .service-product-gallery img {
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.34) !important;
+}
+
+html body:has(main.redeem-page) header,
+html body:has(main.bundle-activation-page) header,
+html body:has(main.vpn-activation-page) header {
+  width: min(calc(100% - clamp(28px, 7vw, 136px)), 1780px) !important;
+  max-width: 1780px !important;
+  margin: 8px auto 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html body:has(main.redeem-page) header .nav,
+html body:has(main.redeem-page) header .nav-shell,
+html body:has(main.bundle-activation-page) header .nav,
+html body:has(main.bundle-activation-page) header .nav-shell,
+html body:has(main.vpn-activation-page) header .nav,
+html body:has(main.vpn-activation-page) header .nav-shell {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 18px !important;
+  min-height: 70px !important;
+  padding: 10px 20px !important;
+  border-radius: 28px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.03)),
+    rgba(8, 10, 15, 0.66) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.075) !important;
+  backdrop-filter: blur(18px) saturate(125%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(125%) !important;
+}
+
+html body:has(main.redeem-page) header nav,
+html body:has(main.bundle-activation-page) header nav,
+html body:has(main.vpn-activation-page) header nav {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  margin: 0 !important;
+}
+
+html body:has(main.redeem-page) header nav a,
+html body:has(main.bundle-activation-page) header nav a,
+html body:has(main.vpn-activation-page) header nav a {
+  min-height: 34px !important;
+  padding: 8px 14px !important;
+  border-radius: 999px !important;
+  color: rgba(255, 255, 255, 0.72) !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  text-decoration: none !important;
+}
+
+html body:has(main.redeem-page) header nav a:hover,
+html body:has(main.bundle-activation-page) header nav a:hover,
+html body:has(main.vpn-activation-page) header nav a:hover {
+  color: rgba(255, 255, 255, 0.96) !important;
+  border-color: rgba(53, 229, 141, 0.22) !important;
+  background: rgba(53, 229, 141, 0.10) !important;
+}
+
+html body:has(main.redeem-page) header .logo-img,
+html body:has(main.bundle-activation-page) header .logo-img,
+html body:has(main.vpn-activation-page) header .logo-img {
+  height: clamp(30px, 2.5vw, 42px) !important;
+  width: auto !important;
+  object-fit: contain !important;
+}
+
+html body:has(main.redeem-page) .redeem-card,
+html body:has(main.bundle-activation-page) .bundle-card,
+html body:has(main.vpn-activation-page) .pricing.activation-shell {
+  border-radius: 34px !important;
+}
+
+html body:has(main.vpn-activation-page) .tab,
+html body:has(main.vpn-activation-page) .device-tab,
+html body:has(main.vpn-activation-page) [role="tab"] {
+  color: rgba(255, 255, 255, 0.82) !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+html body:has(main.vpn-activation-page) .tab.active,
+html body:has(main.vpn-activation-page) .device-tab.active,
+html body:has(main.vpn-activation-page) [role="tab"][aria-selected="true"] {
+  color: #06110b !important;
+  background: linear-gradient(135deg, #35e58d, #18c878, #0f8f5c) !important;
+}
+
+html body #gptishka-support-widget .support-widget__meta {
+  color: #06110b !important;
+  background: linear-gradient(135deg, rgba(235, 255, 245, 0.94), rgba(192, 255, 220, 0.86)) !important;
+  border-color: rgba(53, 229, 141, 0.28) !important;
+}
+
+@media (max-width: 760px) {
+  html body:has(main.service-page) .service-constructor-shell {
+    border-radius: 26px !important;
+  }
+
+  html body:has(main.redeem-page) header,
+  html body:has(main.bundle-activation-page) header,
+  html body:has(main.vpn-activation-page) header {
+    width: calc(100% - 24px) !important;
+  }
+
+  html body:has(main.redeem-page) header nav,
+  html body:has(main.bundle-activation-page) header nav,
+  html body:has(main.vpn-activation-page) header nav {
+    display: none !important;
+  }
+}
+
+/* 20260707: actual V*N activation page class + final dark pass */
+html body.vpn-activation-flow,
+html body:has(main.vpn-activation-wrap) {
+  color: rgba(244, 248, 255, 0.92) !important;
+  background:
+    radial-gradient(circle at 16% 8%, rgba(52, 242, 151, 0.10), transparent 34%),
+    radial-gradient(circle at 86% 10%, rgba(80, 155, 255, 0.10), transparent 38%),
+    linear-gradient(145deg, #080a0f 0%, #0b0d11 48%, #0d1017 100%) !important;
+}
+
+html body.vpn-activation-flow::before,
+html body:has(main.vpn-activation-wrap)::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 22% 22%, rgba(49, 230, 160, 0.10), transparent 32%),
+    radial-gradient(circle at 78% 18%, rgba(88, 145, 255, 0.10), transparent 36%),
+    radial-gradient(circle at 52% 86%, rgba(185, 78, 255, 0.07), transparent 42%);
+  filter: blur(18px);
+}
+
+html body.vpn-activation-flow header,
+html body:has(main.vpn-activation-wrap) header {
+  position: relative !important;
+  z-index: 10 !important;
+  width: min(1560px, calc(100% - clamp(20px, 6vw, 128px))) !important;
+  margin: 22px auto 18px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html body.vpn-activation-flow header .nav,
+html body.vpn-activation-flow header .nav-shell,
+html body:has(main.vpn-activation-wrap) header .nav,
+html body:has(main.vpn-activation-wrap) header .nav-shell {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 76px !important;
+  padding: 14px clamp(16px, 2vw, 24px) !important;
+  border-radius: 28px !important;
+  background: rgba(10, 12, 18, 0.66) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(18px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(130%) !important;
+}
+
+html body.vpn-activation-flow header nav a,
+html body:has(main.vpn-activation-wrap) header nav a {
+  color: rgba(232, 239, 255, 0.78) !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 999px !important;
+}
+
+html body.vpn-activation-flow main.page.vpn-activation-wrap,
+html body:has(main.vpn-activation-wrap) main.page.vpn-activation-wrap {
+  color: rgba(244, 248, 255, 0.92) !important;
+  background: transparent !important;
+}
+
+html body.vpn-activation-flow .vpn-activation-wrap > .pricing.activation-shell,
+html body:has(main.vpn-activation-wrap) .vpn-activation-wrap > .pricing.activation-shell,
+html body.vpn-activation-flow main.page.vpn-activation-wrap .card,
+html body.vpn-activation-flow main.page.vpn-activation-wrap .card-soft,
+html body.vpn-activation-flow main.page.vpn-activation-wrap .card-accent,
+html body:has(main.vpn-activation-wrap) main.page.vpn-activation-wrap .card,
+html body:has(main.vpn-activation-wrap) main.page.vpn-activation-wrap .card-soft,
+html body:has(main.vpn-activation-wrap) main.page.vpn-activation-wrap .card-accent {
+  color: rgba(244, 248, 255, 0.92) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035)),
+    rgba(8, 10, 15, 0.68) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 24px 78px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(18px) saturate(122%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(122%) !important;
+}
+
+html body.vpn-activation-flow h1,
+html body.vpn-activation-flow h2,
+html body.vpn-activation-flow h3,
+html body:has(main.vpn-activation-wrap) h1,
+html body:has(main.vpn-activation-wrap) h2,
+html body:has(main.vpn-activation-wrap) h3 {
+  color: rgba(255, 255, 255, 0.96) !important;
+}
+
+html body.vpn-activation-flow p,
+html body.vpn-activation-flow li,
+html body.vpn-activation-flow .muted,
+html body.vpn-activation-flow .copy,
+html body:has(main.vpn-activation-wrap) p,
+html body:has(main.vpn-activation-wrap) li,
+html body:has(main.vpn-activation-wrap) .muted,
+html body:has(main.vpn-activation-wrap) .copy {
+  color: rgba(226, 235, 255, 0.68) !important;
+}
+
+html body.vpn-activation-flow input,
+html body.vpn-activation-flow textarea,
+html body:has(main.vpn-activation-wrap) input,
+html body:has(main.vpn-activation-wrap) textarea {
+  color: rgba(244, 248, 255, 0.92) !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html body.vpn-activation-flow .tab,
+html body.vpn-activation-flow .device-pill,
+html body.vpn-activation-flow [role="tab"],
+html body:has(main.vpn-activation-wrap) .tab,
+html body:has(main.vpn-activation-wrap) .device-pill,
+html body:has(main.vpn-activation-wrap) [role="tab"] {
+  color: rgba(232, 239, 255, 0.78) !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+html body.vpn-activation-flow .tab.active,
+html body.vpn-activation-flow .device-pill.is-active,
+html body.vpn-activation-flow [role="tab"][aria-selected="true"],
+html body:has(main.vpn-activation-wrap) .tab.active,
+html body:has(main.vpn-activation-wrap) .device-pill.is-active,
+html body:has(main.vpn-activation-wrap) [role="tab"][aria-selected="true"] {
+  color: #06110b !important;
+  background: linear-gradient(135deg, #35e58d, #18c878, #0f8f5c) !important;
+  border-color: rgba(53, 229, 141, 0.35) !important;
+}
+
+html body.vpn-activation-flow header nav a.active,
+html body:has(main.vpn-activation-wrap) header nav a.active {
+  color: rgba(255, 255, 255, 0.94) !important;
+  background: rgba(255, 255, 255, 0.09) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 10px 24px rgba(0, 0, 0, 0.18) !important;
+}
+
+html body.vpn-activation-flow .hero-warning,
+html body:has(main.vpn-activation-wrap) .hero-warning,
+html body.vpn-activation-flow .info-box,
+html body:has(main.vpn-activation-wrap) .info-box {
+  color: rgba(226, 255, 240, 0.88) !important;
+  background:
+    linear-gradient(135deg, rgba(53, 229, 141, 0.14), rgba(90, 167, 255, 0.075)),
+    rgba(255, 255, 255, 0.045) !important;
+  border: 1px solid rgba(53, 229, 141, 0.22) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 14px 36px rgba(0, 0, 0, 0.18) !important;
+}
+
+html body.vpn-activation-flow .key-shell,
+html body:has(main.vpn-activation-wrap) .key-shell,
+html body.vpn-activation-flow .meta-item,
+html body:has(main.vpn-activation-wrap) .meta-item,
+html body.vpn-activation-flow .guide-intro,
+html body:has(main.vpn-activation-wrap) .guide-intro,
+html body.vpn-activation-flow .guide-card,
+html body:has(main.vpn-activation-wrap) .guide-card {
+  color: rgba(244, 248, 255, 0.92) !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+html body.vpn-activation-flow .key-value,
+html body:has(main.vpn-activation-wrap) .key-value {
+  color: rgba(244, 248, 255, 0.92) !important;
+}
+
+html body.vpn-activation-flow .meta-item span,
+html body:has(main.vpn-activation-wrap) .meta-item span {
+  color: rgba(226, 235, 255, 0.54) !important;
+}
+
+html body.vpn-activation-flow .meta-item strong,
+html body:has(main.vpn-activation-wrap) .meta-item strong {
+  color: rgba(255, 255, 255, 0.94) !important;
+}
+
+@media (max-width: 760px) {
+  html body.vpn-activation-flow header,
+  html body:has(main.vpn-activation-wrap) header {
+    width: calc(100% - 24px) !important;
+    margin-top: 12px !important;
+  }
+
+  html body.vpn-activation-flow header nav,
+  html body:has(main.vpn-activation-wrap) header nav {
+    display: none !important;
+  }
+}
+
+/* 20260707: final guard so activation/legal pages cannot redraw the unified header shell. */
+html body header.gptishka-unified-header {
+  width: min(1680px, calc(100% - clamp(28px, 7vw, 144px))) !important;
+  max-width: none !important;
+  margin: clamp(20px, 3.2vw, 42px) auto clamp(22px, 3vw, 52px) !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body header.gptishka-unified-header .nav,
+html body header.gptishka-unified-header .nav-shell {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 58px !important;
+  display: grid !important;
+  grid-template-columns: auto auto minmax(220px, 1fr) auto !important;
+  align-items: center !important;
+  column-gap: clamp(14px, 2vw, 28px) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body header.gptishka-unified-header .logo-link {
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+html body header.gptishka-unified-header .logo-img {
+  width: clamp(172px, 13vw, 236px) !important;
+  height: auto !important;
+  max-height: 58px !important;
+  opacity: 1 !important;
+  filter: brightness(0) invert(1) drop-shadow(0 16px 34px rgba(0, 0, 0, 0.42)) !important;
+}
+
+html body header.gptishka-unified-header .lang-current {
+  color: rgba(255, 255, 255, 0.92) !important;
+  background: rgba(10, 12, 18, 0.62) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+}
+
+html body header.gptishka-unified-header .lang-options {
+  display: none !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  background: rgba(6, 8, 13, 0.94) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 22px 58px rgba(0, 0, 0, 0.42) !important;
+}
+
+html body header.gptishka-unified-header .lang-switcher.open .lang-options {
+  display: flex !important;
+}
+
+html body header.gptishka-unified-header .lang-item {
+  color: rgba(236, 243, 255, 0.84) !important;
+  background: transparent !important;
+}
+
+html body header.gptishka-unified-header .lang-item:hover,
+html body header.gptishka-unified-header .lang-item:focus-visible {
+  color: rgba(255, 255, 255, 0.96) !important;
+  background: rgba(53, 242, 143, 0.12) !important;
+}
+
+@media (max-width: 1120px) {
+  html body header.gptishka-unified-header .nav,
+  html body header.gptishka-unified-header .nav-shell {
+    grid-template-columns: auto auto 1fr !important;
+  }
+
+  html body header.gptishka-unified-header .header-quick-links {
+    display: none !important;
+  }
+}
+
+@media (max-width: 680px) {
+  html body header.gptishka-unified-header {
+    width: calc(100% - 24px) !important;
+  }
+
+  html body header.gptishka-unified-header .nav,
+  html body header.gptishka-unified-header .nav-shell {
+    grid-template-columns: 1fr auto !important;
+    row-gap: 12px !important;
+  }
+}
+
+/* 20260707: absolute final header guard.
+   Keep the same home-page header on activation, VPN, legal and service pages.
+   This block must stay at the end of the file because older page-specific rules
+   redefine generic header/nav styles later in the cascade. */
+html body header.gptishka-unified-header,
+html body.vpn-activation-flow header.gptishka-unified-header,
+html body:has(main.vpn-activation-wrap) header.gptishka-unified-header,
+html body:has(main.redeem-page) header.gptishka-unified-header,
+html body:has(main.bundle-page) header.gptishka-unified-header,
+html body:has(main.bundle-activation-page) header.gptishka-unified-header,
+html body:has(.legal-page) header.gptishka-unified-header,
+html body:has(.service-page) header.gptishka-unified-header {
+  position: relative !important;
+  z-index: 50 !important;
+  width: min(1680px, calc(100% - clamp(28px, 7vw, 144px))) !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  margin: clamp(20px, 3.2vw, 42px) auto clamp(22px, 3vw, 52px) !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none !important;
+}
+
+html body header.gptishka-unified-header .nav,
+html body header.gptishka-unified-header .nav-shell,
+html body.vpn-activation-flow header.gptishka-unified-header .nav,
+html body.vpn-activation-flow header.gptishka-unified-header .nav-shell,
+html body:has(main.vpn-activation-wrap) header.gptishka-unified-header .nav,
+html body:has(main.vpn-activation-wrap) header.gptishka-unified-header .nav-shell,
+html body:has(main.redeem-page) header.gptishka-unified-header .nav,
+html body:has(main.redeem-page) header.gptishka-unified-header .nav-shell,
+html body:has(main.bundle-page) header.gptishka-unified-header .nav,
+html body:has(main.bundle-page) header.gptishka-unified-header .nav-shell,
+html body:has(main.bundle-activation-page) header.gptishka-unified-header .nav,
+html body:has(main.bundle-activation-page) header.gptishka-unified-header .nav-shell,
+html body:has(.legal-page) header.gptishka-unified-header .nav,
+html body:has(.legal-page) header.gptishka-unified-header .nav-shell,
+html body:has(.service-page) header.gptishka-unified-header .nav,
+html body:has(.service-page) header.gptishka-unified-header .nav-shell {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 58px !important;
+  display: grid !important;
+  grid-template-columns: auto auto minmax(220px, 1fr) auto !important;
+  align-items: center !important;
+  column-gap: clamp(14px, 2vw, 28px) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body header.gptishka-unified-header .logo-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+html body header.gptishka-unified-header .logo-img {
+  width: clamp(172px, 13vw, 236px) !important;
+  height: auto !important;
+  max-height: 58px !important;
+  display: block !important;
+  opacity: 1 !important;
+  filter: brightness(0) invert(1) drop-shadow(0 16px 34px rgba(0, 0, 0, 0.42)) !important;
+}
+
+html body header.gptishka-unified-header .header-product-pill {
+  justify-self: start !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  min-height: 48px !important;
+  padding: 9px 22px 9px 10px !important;
+  border-radius: 999px !important;
+  color: #06110b !important;
+  font-weight: 900 !important;
+  text-decoration: none !important;
+  background: linear-gradient(135deg, #45eca0, #16bd76 58%, #0e9a5d) !important;
+  border: 1px solid rgba(99, 255, 179, 0.32) !important;
+  box-shadow: 0 20px 54px rgba(22, 202, 121, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+}
+
+html body header.gptishka-unified-header .header-product-pill__logo {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 10px !important;
+  object-fit: cover !important;
+}
+
+html body header.gptishka-unified-header .header-quick-links {
+  justify-self: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html body header.gptishka-unified-header .header-quick-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 40px !important;
+  padding: 10px 18px !important;
+  border-radius: 999px !important;
+  color: rgba(236, 243, 255, 0.80) !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  text-decoration: none !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+  border: 1px solid rgba(255, 255, 255, 0.11) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+  backdrop-filter: blur(12px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(120%) !important;
+}
+
+html body header.gptishka-unified-header .header-quick-link:hover,
+html body header.gptishka-unified-header .header-quick-link:focus-visible {
+  color: rgba(255, 255, 255, 0.96) !important;
+  border-color: rgba(83, 235, 158, 0.34) !important;
+  background: rgba(53, 242, 143, 0.12) !important;
+}
+
+html body header.gptishka-unified-header .header-quick-link--telegram {
+  color: #06110b !important;
+  background: linear-gradient(135deg, #45eca0, #16bd76) !important;
+  border-color: rgba(99, 255, 179, 0.30) !important;
+  box-shadow: 0 18px 42px rgba(22, 202, 121, 0.18) !important;
+}
+
+html body header.gptishka-unified-header .header-tools,
+html body header.gptishka-unified-header .header-actions {
+  justify-self: end !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html body header.gptishka-unified-header .lang-switcher {
+  position: relative !important;
+}
+
+html body header.gptishka-unified-header .lang-current {
+  min-height: 46px !important;
+  padding: 9px 16px !important;
+  border-radius: 999px !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  font-weight: 850 !important;
+  background: rgba(10, 12, 18, 0.62) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+  backdrop-filter: blur(14px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(120%) !important;
+}
+
+html body header.gptishka-unified-header .lang-options {
+  position: absolute !important;
+  top: calc(100% + 8px) !important;
+  right: 0 !important;
+  min-width: 156px !important;
+  display: none !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  padding: 8px !important;
+  border-radius: 18px !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  background: rgba(6, 8, 13, 0.94) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 22px 58px rgba(0, 0, 0, 0.42) !important;
+  backdrop-filter: blur(16px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+}
+
+html body header.gptishka-unified-header .lang-switcher.open .lang-options {
+  display: flex !important;
+}
+
+html body header.gptishka-unified-header .lang-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 9px 10px !important;
+  border-radius: 12px !important;
+  color: rgba(236, 243, 255, 0.84) !important;
+  background: transparent !important;
+  border: 0 !important;
+  text-decoration: none !important;
+}
+
+html body header.gptishka-unified-header .lang-item:hover,
+html body header.gptishka-unified-header .lang-item:focus-visible {
+  color: rgba(255, 255, 255, 0.96) !important;
+  background: rgba(53, 242, 143, 0.12) !important;
+}
+
+@media (max-width: 1120px) {
+  html body header.gptishka-unified-header .nav,
+  html body header.gptishka-unified-header .nav-shell {
+    grid-template-columns: auto auto 1fr !important;
+  }
+
+  html body header.gptishka-unified-header .header-quick-links {
+    display: none !important;
+  }
+}
+
+@media (max-width: 680px) {
+  html body header.gptishka-unified-header {
+    width: calc(100% - 24px) !important;
+    margin-top: 14px !important;
+    margin-bottom: 22px !important;
+  }
+
+  html body header.gptishka-unified-header .nav,
+  html body header.gptishka-unified-header .nav-shell {
+    grid-template-columns: 1fr auto !important;
+    row-gap: 12px !important;
+  }
+
+  html body header.gptishka-unified-header .logo-img {
+    width: 156px !important;
+  }
+
+  html body header.gptishka-unified-header .header-product-pill {
+    grid-column: 1 / -1 !important;
+    justify-self: start !important;
+    max-width: 100% !important;
+  }
+
+  html body header.gptishka-unified-header .header-tools {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+  }
+}
+
+/* 20260707: restore flag-based language control after dark page overrides. */
+html body header.gptishka-unified-header .lang-current {
+  min-height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px 14px !important;
+  border-radius: 16px !important;
+  color: rgba(245, 248, 255, 0.92) !important;
+  font-size: 14px !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  background: rgba(12, 15, 22, 0.68) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(14px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(130%) !important;
+}
+
+html body header.gptishka-unified-header .lang-flag-img {
+  width: 22px !important;
+  height: 22px !important;
+  flex: 0 0 22px !important;
+  display: block !important;
+  object-fit: cover !important;
+  border-radius: 50% !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18) !important;
+}
+
+html body header.gptishka-unified-header .lang-arrow {
+  margin-left: 2px !important;
+  color: rgba(214, 224, 244, 0.66) !important;
+  font-size: 11px !important;
+  line-height: 1 !important;
+  transition: transform 180ms ease !important;
+}
+
+html body header.gptishka-unified-header .lang-switcher.open .lang-arrow {
+  transform: rotate(180deg) !important;
+}
+
+html body header.gptishka-unified-header .lang-options {
+  min-width: 174px !important;
+  padding: 7px !important;
+  border-radius: 16px !important;
+  background: rgba(8, 10, 15, 0.94) !important;
+  border: 1px solid rgba(255, 255, 255, 0.13) !important;
+}
+
+html body header.gptishka-unified-header .lang-item {
+  min-height: 38px !important;
+  gap: 9px !important;
+  padding: 8px 10px !important;
+  border-radius: 11px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+}
+
+/* 20260707: final support-widget guard for dark pages. */
+html body #gptishka-support-widget.support-widget {
+  right: 18px !important;
+  bottom: 18px !important;
+  width: 104px !important;
+  height: 150px !important;
+  filter: saturate(96%) !important;
+}
+
+html body #gptishka-support-widget .support-widget__mascot {
+  width: 96px !important;
+  height: 142px !important;
+  right: 0 !important;
+  bottom: 0 !important;
+}
+
+html body #gptishka-support-widget .support-widget__mascot::after {
+  content: "\041F\043E\0434\0434\0435\0440\0436\043A\0430" !important;
+  position: absolute !important;
+  left: 50% !important;
+  bottom: 10px !important;
+  transform: translateX(-50%) !important;
+  min-height: 26px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  color: #142036 !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.01em !important;
+  white-space: nowrap !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  border: 1px solid rgba(255, 255, 255, 0.74) !important;
+  box-shadow: 0 10px 22px rgba(34, 61, 124, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(10px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(130%) !important;
+}
+
+html body #gptishka-support-widget .support-widget__mascot-image {
+  opacity: 0.92 !important;
+  filter: drop-shadow(0 10px 22px rgba(34, 61, 124, 0.18)) !important;
+}
+
+html body #gptishka-support-widget .support-widget__panel {
+  right: 82px !important;
+  bottom: 18px !important;
+  width: min(320px, calc(100vw - 136px)) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035)),
+    rgba(8, 10, 15, 0.72) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+html body #gptishka-support-widget .support-widget__title,
+html body #gptishka-support-widget .support-widget__text,
+html body #gptishka-support-widget .support-widget__meta {
+  opacity: 1 !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+html body #gptishka-support-widget .support-widget__text {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+html body #gptishka-support-widget .support-widget__meta {
+  color: rgba(226, 237, 255, 0.78) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.11) !important;
+}
+
+html body #gptishka-support-widget .support-widget__cta {
+  opacity: 1 !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #6c84ff, #65c9ff) !important;
+  box-shadow: 0 10px 22px rgba(80, 135, 255, 0.24) !important;
+}
+

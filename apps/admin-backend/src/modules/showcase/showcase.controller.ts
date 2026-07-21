@@ -40,6 +40,26 @@ export const deleteProductVisualHoverImage = asyncHandler(async (req: Request, r
   res.json(data);
 });
 
+export const listShowcaseServiceCards = asyncHandler(async (_req: Request, res: Response) => {
+  const items = await showcaseService.listServiceCards();
+  res.json({ items });
+});
+
+export const updateShowcaseServiceCard = asyncHandler(async (req: Request, res: Response) => {
+  const item = await showcaseService.upsertServiceCard(String(req.params.serviceKey || ""), req.body, actor(req));
+  res.json(item);
+});
+
+export const uploadShowcaseServiceCardImage = asyncHandler(async (req: Request, res: Response) => {
+  const data = await showcaseService.uploadServiceCardImage(String(req.params.serviceKey || ""), req.file as Express.Multer.File, "image", actor(req));
+  res.status(201).json(data);
+});
+
+export const uploadShowcaseServiceCardHoverImage = asyncHandler(async (req: Request, res: Response) => {
+  const data = await showcaseService.uploadServiceCardImage(String(req.params.serviceKey || ""), req.file as Express.Multer.File, "hover", actor(req));
+  res.status(201).json(data);
+});
+
 export const listShowcaseSections = asyncHandler(async (_req: Request, res: Response) => {
   const items = await showcaseService.listSections();
   res.json({ items });

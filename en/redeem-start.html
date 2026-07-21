@@ -1,14 +1,14 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
 <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="GPTishka: extend and activate ChatGPT Plus." />
+  <meta name="description" content="GPTishka activation page for independent digital service orders." />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="GPTishka" />
   <meta property="og:title" content="Extend / Activate - GPTishka" />
-  <meta property="og:description" content="GPTishka: extend and activate ChatGPT Plus." />
+  <meta property="og:description" content="GPTishka activation page for independent digital service orders." />
   <meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
   <meta property="og:url" content="https://gptishka.shop/en/redeem-start.html" />
   <link rel="icon" href="/favicon.ico" sizes="any">
@@ -58,9 +58,12 @@
     .redeem-title {
       margin: 0;
       font-size: clamp(30px, 4vw, 44px);
-      line-height: 1.08;
+      line-height: 1.14;
       font-weight: 800;
       color: #1f2937;
+      letter-spacing: 0;
+      overflow-wrap: normal;
+      word-break: normal;
     }
 
     .redeem-subtitle {
@@ -194,6 +197,101 @@
       color: #2a5bff;
       text-decoration: underline;
       text-underline-offset: 2px;
+    }
+
+    .redeem-guide-shot {
+      margin-top: 8px;
+    }
+
+    .redeem-guide-shot img {
+      display: block;
+      width: min(100%, 760px);
+      height: auto;
+      border-radius: 10px;
+      border: 1px solid rgba(17, 34, 53, 0.18);
+      box-shadow: 0 8px 20px rgba(9, 21, 33, 0.14);
+      background: #0b1118;
+      cursor: zoom-in;
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .redeem-guide-shot img:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 26px rgba(9, 21, 33, 0.2);
+    }
+
+    html.redeem-image-zoom-open,
+    html.redeem-image-zoom-open body {
+      overflow: hidden;
+    }
+
+    .redeem-image-zoom {
+      position: fixed;
+      inset: 0;
+      z-index: 10050;
+      display: grid;
+      place-items: center;
+      padding: clamp(14px, 3vw, 36px);
+      background: rgba(6, 12, 20, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .redeem-image-zoom[hidden] {
+      display: none;
+    }
+
+    .redeem-image-zoom__backdrop {
+      position: absolute;
+      inset: 0;
+      cursor: zoom-out;
+    }
+
+    .redeem-image-zoom__dialog {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 10px;
+      max-width: min(96vw, 1280px);
+      max-height: 92vh;
+    }
+
+    .redeem-image-zoom__img {
+      display: block;
+      max-width: 100%;
+      max-height: 84vh;
+      width: auto;
+      height: auto;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: #ffffff;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+      cursor: zoom-out;
+    }
+
+    .redeem-image-zoom__close {
+      position: absolute;
+      top: -14px;
+      right: -14px;
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.94);
+      color: #102236;
+      font-size: 24px;
+      line-height: 1;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+    }
+
+    .redeem-image-zoom__caption {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 13px;
+      line-height: 1.4;
+      text-align: center;
     }
 
     .redeem-input {
@@ -368,6 +466,10 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 8px;
+    }
+
+    .redeem-status[hidden] {
+      display: none !important;
     }
 
     .redeem-status.pending { border-color: rgba(186, 131, 25, 0.35); background: #fff8e9; color: #9a6700; }
@@ -624,6 +726,11 @@
         border-radius: 18px;
       }
 
+      .redeem-title {
+        font-size: 30px;
+        line-height: 1.16;
+      }
+
       .redeem-guide,
       .redeem-block {
         border-radius: 12px;
@@ -694,6 +801,10 @@
 
     body.redeem-flow .redeem-title {
       color: var(--lp-text, #161f2f) !important;
+      line-height: 1.14 !important;
+      letter-spacing: 0 !important;
+      overflow-wrap: normal !important;
+      word-break: normal !important;
     }
 
     body.redeem-flow .redeem-subtitle,
@@ -882,7 +993,8 @@
     }
 
   </style>
-<link rel="stylesheet" href="/assets/css/support-widget.css?v=20260401-sw2" />
+<link rel="stylesheet" href="/assets/css/support-widget.css?v=20260707-support-unify3" />
+<link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260707-header-unify9" />
 </head>
 <body class="redeem-flow">
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
@@ -890,16 +1002,16 @@
 
   <header>
 <div class="nav">
-      <a href="/en/index.html" class="logo-link">
+      <a href="/en/" class="logo-link">
         <img loading="eager" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTishka" class="logo-img" onerror="this.onerror=null;this.src='/favicon.png';">
       </a>
 
             <nav>
-        <a href="/en/index.html">Home</a>
-        <a href="/en/index.html#pricing">Plans</a>
-        <a href="/en/index.html#how">How it works</a>
-        <a href="/en/index.html#payment">Payment</a>
-        <a href="/en/index.html#faq">FAQ</a>
+        <a href="/en/">Home</a>
+        <a href="/en/#pricing">Plans</a>
+        <a href="/en/#how">How it works</a>
+        <a href="/en/#payment">Payment</a>
+        <a href="/en/#faq">FAQ</a>
       </nav>
 
           <div class="header-tools">
@@ -935,7 +1047,7 @@
           <p class="redeem-label" style="margin-bottom:0;">VPN in this order</p>
           <span class="redeem-vpn-pill">Recommended</span>
         </div>
-        <p class="redeem-vpn-offer-text">Set up VPN access first, then return here to finish ChatGPT token activation.</p>
+        <p class="redeem-vpn-offer-text">Set up VPN access first, then return here to finish activation.</p>
         <div class="redeem-vpn-offer-actions">
           <a id="vpnOfferSetupBtn" class="redeem-btn redeem-btn-primary" href="/store/vpn/activate" data-redeem-leave-bypass>Set up VPN</a>
           <button id="vpnOfferSkipBtn" type="button" class="redeem-btn">Continue activation</button>
@@ -992,7 +1104,7 @@
           <a
             id="manualSupportBtn"
             class="redeem-btn redeem-btn-primary"
-            href="https://quickplus.vip/public/grok/"
+            href="https://t.me/aiiisupport"
             target="_blank"
             rel="noopener noreferrer"
             style="display:none; margin-top:8px;"
@@ -1006,7 +1118,7 @@
         <button id="stopPollingBtn" type="button" class="redeem-btn full" style="display:none">Stop checking</button>
       </section>
 
-      <section id="statusBox" class="redeem-status">
+      <section id="statusBox" class="redeem-status" hidden>
         <span id="statusText">Waiting for action.</span>
         <span id="statusSpinner" class="redeem-spinner" aria-hidden="true"></span>
         <span id="taskWrap" style="display:none">Task: <strong id="taskIdValue"></strong></span>
@@ -1016,16 +1128,19 @@
       <section id="reviewRewardBox" class="redeem-review-reward" hidden aria-modal="true" role="dialog" aria-live="polite">
         <div class="redeem-review-card">
           <div class="redeem-review-top">
-            <span class="redeem-review-badge">10% bonus for your next order</span>
+            <span class="redeem-review-badge">5% bonus for your next order</span>
             <button id="reviewRewardCloseBtn" type="button" class="redeem-review-close" aria-label="Close message" title="Close">&times;</button>
           </div>
           <div class="redeem-review-head">
             <span class="redeem-review-mark" aria-hidden="true">&#10003;</span>
             <h3>Your plan has been successfully activated</h3>
           </div>
-          <p class="redeem-review-lead">Thanks for your purchase. Leave a short Telegram review and receive a personal 10% promo code.</p>
+          <p class="redeem-review-lead">Thanks for your purchase. Leave a short Telegram review and receive a personal 5% promo code.</p>
+          <ul class="redeem-review-points">
+            <li>We will review your feedback and send you a personal promo code.</li>
+          </ul>
           <div class="redeem-review-links">
-            <a class="redeem-btn redeem-btn-primary" href="https://t.me/otzivigptishkashop" target="_blank" rel="noopener noreferrer">Leave a review</a>
+            <a class="redeem-btn redeem-btn-primary" href="https://t.me/aiiisupport" target="_blank" rel="noopener noreferrer">Leave a review</a>
           </div>
         </div>
       </section>
@@ -1039,8 +1154,9 @@
     <span class="footer-copy">© 2026 GPTishka. All rights reserved.</span>
   </footer>
 
-  <script src="/assets/js/app.min.js?v=20260620-vpn-card1" defer></script>
+  <script src="/assets/js/app.min.js?v=20260708-compliance1" defer></script>
   <script>
+    (() => {
     const params = new URLSearchParams(window.location.search);
     const orderId = String(params.get('order_id') || params.get('orderId') || '').trim();
     let orderLinkToken = String(params.get('t') || '').trim();
@@ -1097,7 +1213,7 @@
     const POST_TIMEOUT_RECHECK_MS = 12000;
     const RETRY_COOLDOWN_MS = 20000;
     const TOKEN_VALIDATE_DEBOUNCE_MS = 600;
-    const ACTIVATION_RESUME_SAVED_AT_KEY = 'gptishka_activation_saved_at';
+    const REDEEM_ACTIVATION_SAVED_AT_KEY = 'gptishka_activation_saved_at';
     const ACTIVATION_RESUME_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 
     let currentTaskId = '';
@@ -1112,8 +1228,13 @@
     let validateTimer = null;
     let tokenValidatedOk = false;
     let lastValidateReason = '';
+    const SUPPORT_ACTIVATION_FLOW_GROK = 'grok_token';
+    const SUPPORT_ACTIVATION_FLOW_CLAUDE = 'claude_token';
+    const SUPPORT_TELEGRAM_URL = 'https://t.me/aiiisupport';
+    const MANUAL_SUPPORT_MESSAGE = 'We process orders every day from 10:00 to 20:00 Moscow time. Average waiting time is 5 minutes to 2 hours after payment. If the order is placed at night, we will connect it in the morning. Maximum completion time is 2 business days.';
     let isCredentialsDelivery = false;
     let isSupportTokenDelivery = false;
+    let supportActivationFlow = SUPPORT_ACTIVATION_FLOW_GROK;
     let supportProgressStartedAt = 0;
     let vpnOfferDismissed = false;
     let activationCompleted = false;
@@ -1123,6 +1244,10 @@
     let leaveConfirmProceedBtn = null;
     let leaveConfirmCancelBtn = null;
     let pendingLeaveHref = '';
+    let imageZoomModalEl = null;
+    let imageZoomImageEl = null;
+    let imageZoomCaptionEl = null;
+    let imageZoomCloseBtn = null;
 
     // By default, allow retry only after explicit failure or pending timeout.
     if (retryNewKeyBtn) retryNewKeyBtn.disabled = true;
@@ -1137,6 +1262,10 @@
       subtitle: 'If you leave now, the activation flow may be interrupted. We recommend staying until the status is "Success".',
       proceed: 'Yes, leave',
       stay: 'No, stay',
+    };
+
+    const IMAGE_ZOOM_TEXT = {
+      close: 'Close image',
     };
 
     function markActivationCompleted() {
@@ -1196,6 +1325,67 @@
       if (!nextHref) return;
       leaveGuardBypass = true;
       window.location.href = nextHref;
+    }
+
+    function ensureGuideImageZoomModal() {
+      if (imageZoomModalEl) return;
+      const modal = document.createElement('div');
+      modal.className = 'redeem-image-zoom';
+      modal.hidden = true;
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
+      modal.innerHTML = [
+        '<div class="redeem-image-zoom__backdrop" data-image-zoom-close></div>',
+        '<div class="redeem-image-zoom__dialog">',
+        `  <button type="button" class="redeem-image-zoom__close" aria-label="${IMAGE_ZOOM_TEXT.close}" title="${IMAGE_ZOOM_TEXT.close}" data-image-zoom-close>&times;</button>`,
+        '  <img class="redeem-image-zoom__img" alt="">',
+        '  <p class="redeem-image-zoom__caption"></p>',
+        '</div>',
+      ].join('');
+      document.body.appendChild(modal);
+      imageZoomModalEl = modal;
+      imageZoomImageEl = modal.querySelector('.redeem-image-zoom__img');
+      imageZoomCaptionEl = modal.querySelector('.redeem-image-zoom__caption');
+      imageZoomCloseBtn = modal.querySelector('.redeem-image-zoom__close');
+      modal.querySelectorAll('[data-image-zoom-close]').forEach((item) => {
+        item.addEventListener('click', closeGuideImageZoom);
+      });
+      if (imageZoomImageEl) imageZoomImageEl.addEventListener('click', closeGuideImageZoom);
+    }
+
+    function openGuideImageZoom(image) {
+      if (!image) return;
+      ensureGuideImageZoomModal();
+      const src = String(image.currentSrc || image.src || '').trim();
+      if (!src || !imageZoomModalEl || !imageZoomImageEl) return;
+      const alt = String(image.getAttribute('alt') || '').trim();
+      imageZoomImageEl.src = src;
+      imageZoomImageEl.alt = alt;
+      if (imageZoomCaptionEl) imageZoomCaptionEl.textContent = alt;
+      imageZoomModalEl.hidden = false;
+      document.documentElement.classList.add('redeem-image-zoom-open');
+      if (imageZoomCloseBtn) imageZoomCloseBtn.focus();
+    }
+
+    function closeGuideImageZoom() {
+      if (!imageZoomModalEl) return;
+      imageZoomModalEl.hidden = true;
+      document.documentElement.classList.remove('redeem-image-zoom-open');
+      if (imageZoomImageEl) {
+        imageZoomImageEl.removeAttribute('src');
+        imageZoomImageEl.alt = '';
+      }
+      if (imageZoomCaptionEl) imageZoomCaptionEl.textContent = '';
+    }
+
+    function setupGuideImageZoom() {
+      document.addEventListener('click', (event) => {
+        const target = event.target;
+        const image = target && target.closest ? target.closest('.redeem-guide-shot img') : null;
+        if (!image) return;
+        event.preventDefault();
+        openGuideImageZoom(image);
+      });
     }
 
     function setupLeaveGuard() {
@@ -1317,8 +1507,72 @@
 
     restoreReviewReward();
 
-    function applyTokenFlowMode(isSupportMode) {
+    function normalizeSupportActivationFlow(value) {
+      return String(value || '').trim().toLowerCase() === SUPPORT_ACTIVATION_FLOW_CLAUDE
+        ? SUPPORT_ACTIVATION_FLOW_CLAUDE
+        : SUPPORT_ACTIVATION_FLOW_GROK;
+    }
+
+    function resolveSupportActivationFlow(payload) {
+      const directFlow = String(payload?.activationFlow || '').trim().toLowerCase();
+      if (directFlow === SUPPORT_ACTIVATION_FLOW_CLAUDE || directFlow === SUPPORT_ACTIVATION_FLOW_GROK) {
+        return directFlow;
+      }
+
+      const productKey = getActivationProductFingerprint(payload);
+      if (productKey.includes('claude') || productKey.endsWith('-sdk5') || productKey.includes('sdk5')) {
+        return SUPPORT_ACTIVATION_FLOW_CLAUDE;
+      }
+      if (productKey.includes('grok') || productKey.includes('supergrok') || productKey.endsWith('-sdk4') || productKey.includes('sdk4')) {
+        return SUPPORT_ACTIVATION_FLOW_GROK;
+      }
+      return '';
+    }
+
+    function getActivationProductFingerprint(payload) {
+      return String([
+        payload?.product?.slug ||
+        payload?.product?.key ||
+        payload?.productKey ||
+        payload?.product,
+        payload?.product?.title,
+        payload?.product?.name,
+        payload?.title,
+        payload?.name,
+        payload?.activationFlow,
+      ].filter(Boolean).join(' ')).trim().toLowerCase();
+    }
+
+    function resolveForcedSupportActivationFlow(payload) {
+      const productKey = getActivationProductFingerprint(payload);
+      if (productKey.includes('claude') || productKey.endsWith('-sdk5') || productKey.includes('sdk5')) {
+        return SUPPORT_ACTIVATION_FLOW_CLAUDE;
+      }
+      if (productKey.includes('grok') || productKey.includes('supergrok') || productKey.endsWith('-sdk4') || productKey.includes('sdk4')) {
+        return SUPPORT_ACTIVATION_FLOW_GROK;
+      }
+      return '';
+    }
+
+    function applyActivationPayloadMode(payload, deliveryMode) {
+      const activationFlow = resolveSupportActivationFlow(payload);
+      const forcedSupportFlow = resolveForcedSupportActivationFlow(payload);
+      applyTokenFlowMode(
+        deliveryMode === 'support' || Boolean(forcedSupportFlow),
+        forcedSupportFlow || activationFlow
+      );
+    }
+
+    function isClaudeSupportFlow() {
+      return isSupportTokenDelivery && supportActivationFlow === SUPPORT_ACTIVATION_FLOW_CLAUDE;
+    }
+
+    function applyTokenFlowMode(isSupportMode, flow) {
       isSupportTokenDelivery = Boolean(isSupportMode);
+      supportActivationFlow = isSupportTokenDelivery
+        ? normalizeSupportActivationFlow(flow || supportActivationFlow)
+        : SUPPORT_ACTIVATION_FLOW_GROK;
+      const claudeSupportFlow = isClaudeSupportFlow();
       if (isSupportTokenDelivery) {
         supportProgressStartedAt = readSupportProgressStartedAt();
       } else {
@@ -1331,20 +1585,37 @@
       syncRetryActionVisibility();
 
       if (tokenLabelEl) {
-        tokenLabelEl.textContent = isSupportTokenDelivery ? 'SuperGrok account ID' : 'Account token';
+        tokenLabelEl.textContent = claudeSupportFlow
+          ? 'Account ID for Claude Pro activation'
+          : (isSupportTokenDelivery ? 'SuperGrok account ID' : 'Account token');
       }
       if (tokenGuideSummaryEl) {
-        tokenGuideSummaryEl.textContent = isSupportTokenDelivery ? 'Where to get your Grok account ID' : 'Where to get the account token';
+        tokenGuideSummaryEl.textContent = claudeSupportFlow
+          ? 'Where to find your Claude account ID'
+          : (isSupportTokenDelivery ? 'Where to get your Grok account ID' : 'Where to get the account token');
       }
       if (tokenGuideListEl) {
         if (isSupportTokenDelivery) {
-          tokenGuideListEl.innerHTML = [
-            '<li>Open Grok and sign in to your account.</li>',
-            '<li>Go to account settings.</li>',
-            '<li>Find your account ID (small gray text) and copy it in full.</li>',
-            '<li>Example format: <code>a7d2c1f4-5b8e-4a91-9d3f-1c2e7b6a9f40</code>.</li>',
-            '<li>Paste it below and click "Activate".</li>',
-          ].join('');
+          tokenGuideListEl.innerHTML = claudeSupportFlow
+            ? [
+                '<li>Go to <a href="https://claude.ai/settings/account" target="_blank" rel="noreferrer noopener">claude.ai</a> and sign in to your account.</li>',
+                '<li>Go to account settings.</li>',
+                '<li>In settings, find your account ID (highlighted area on the screenshot).</li>',
+                '<li class="redeem-guide-shot"><img src="/assets/img/claude-account-id-settings.png" alt="Where to find Claude account ID" loading="lazy" decoding="async"></li>',
+                '<li>Copy it in full, for example: <code>e191659c-0258-4be3-951a-e1cbffa3322f</code>.</li>',
+                '<li>Paste it below and click "Activate".</li>',
+              ].join('')
+            : [
+                '<li><strong>рџљЂ To activate SUPERGROK, send your Grok account ID.</strong></li>',
+                '<li><strong>How to find the ID:</strong></li>',
+                '<li>1пёЏвѓЈ Go to <a href="https://grok.com" target="_blank" rel="noreferrer noopener">grok.com</a> and sign in to your account.</li>',
+                '<li>2пёЏвѓЈ Copy and open this link in your browser: <a href="https://grok.com/api/auth/session" target="_blank" rel="noreferrer noopener">https://grok.com/api/auth/session</a>.</li>',
+                '<li>3пёЏвѓЈ Find the <strong>ID</strong> line (the needed area is highlighted on the 2 screenshots).</li>',
+                '<li class="redeem-guide-shot"><img src="/assets/img/supergrok-activation-1.png" alt="Where to find Grok account ID — example 1" loading="lazy" decoding="async"></li>',
+                '<li class="redeem-guide-shot"><img src="/assets/img/supergrok-activation-2.png" alt="Where to find Grok account ID — example 2" loading="lazy" decoding="async"></li>',
+                '<li>4пёЏвѓЈ Copy the ID and send it <strong>as one message in this chat</strong>.</li>',
+                '<li>рџ’Ў <strong>Important:</strong> send only the ID, without extra comments or symbols.</li>',
+              ].join('');
         } else {
           tokenGuideListEl.innerHTML = [
             '<li>Sign in to ChatGPT in your browser.</li>',
@@ -1355,12 +1626,16 @@
         }
       }
       if (tokenInput) {
-        tokenInput.placeholder = isSupportTokenDelivery ? 'Grok account ID (UUID)' : 'Account token';
+        tokenInput.placeholder = claudeSupportFlow
+          ? 'Claude account ID (UUID)'
+          : (isSupportTokenDelivery ? 'Grok account ID (UUID)' : 'Account token');
       }
       if (tokenFlowHint) {
         tokenFlowHint.hidden = !isSupportTokenDelivery;
         tokenFlowHint.textContent = isSupportTokenDelivery
-          ? 'Method 4 requires your Grok account ID. After submission, processing usually takes 5-15 minutes.'
+          ? (claudeSupportFlow
+            ? 'Method 5 requires your Claude account ID. After submission, processing usually takes 5-15 minutes.'
+            : 'Method 4 requires your Grok account ID. After submission, processing usually takes 5-15 minutes.')
           : '';
       }
     }
@@ -1378,7 +1653,7 @@
 
     function getTokenSafeWarnText() {
       return isSupportTokenDelivery
-        ? 'Account ID is used only for activation.'
+        ? (isClaudeSupportFlow() ? 'Claude account ID is used only for activation.' : 'Grok account ID is used only for activation.')
         : 'We do not store the token. It is used only for activation.';
     }
 
@@ -1392,7 +1667,9 @@
 
     function getStartPendingStatusText() {
       return isSupportTokenDelivery
-        ? 'Request sent. Method 4 processing usually takes 5-15 minutes.'
+        ? (isClaudeSupportFlow()
+          ? 'Request sent. Method 5 processing usually takes 5-15 minutes.'
+          : 'Request sent. Method 4 processing usually takes 5-15 minutes.')
         : 'Request sent...';
     }
 
@@ -1459,16 +1736,15 @@
       if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'block';
 
       const deliveryMode = String(payload?.deliveryMode || '').trim().toLowerCase();
-      const isSupportDelivery = deliveryMode === 'support';
+      const isSupportDelivery = deliveryMode === 'support' || deliveryMode === 'manual_login';
       const status = String(payload?.status || '').trim().toLowerCase();
       const credentials = payload?.credentials && typeof payload.credentials === 'object' ? payload.credentials : null;
       const login = String(credentials?.login || '').trim();
       const password = String(credentials?.password || '').trim();
-      const supportUrl = String(payload?.supportUrl || 'https://quickplus.vip/public/grok/').trim();
       const defaultMessage = isSupportDelivery
-        ? 'After payment, activation is completed manually by support. Open support chat and share your order id.'
+        ? MANUAL_SUPPORT_MESSAGE
         : 'No free login details are available right now. Contact support or wait for an email with your data.';
-      const message = String(payload?.message || '').trim() || defaultMessage;
+      const message = isSupportDelivery ? MANUAL_SUPPORT_MESSAGE : (String(payload?.message || '').trim() || defaultMessage);
 
       if (manualBlockLabel) {
         manualBlockLabel.textContent = isSupportDelivery ? 'Manual activation via support' : 'Login details';
@@ -1486,7 +1762,7 @@
       const hasCredentials = !isSupportDelivery && status === 'credentials_ready' && login && password;
       if (hasCredentials) markActivationCompleted();
       if (manualSupportBtn) {
-        manualSupportBtn.href = supportUrl || 'https://quickplus.vip/public/grok/';
+        manualSupportBtn.href = SUPPORT_TELEGRAM_URL;
         manualSupportBtn.style.display = hasCredentials ? 'none' : 'inline-flex';
       }
       if (copyLoginBtn) copyLoginBtn.style.display = isSupportDelivery ? 'none' : '';
@@ -1494,8 +1770,10 @@
 
       if (hasCredentials) {
         setStatus('success', 'Login details are ready. Copy login and password below.', false);
+      } else if (isSupportDelivery) {
+        hideStatus();
       } else {
-        setStatus('pending', isSupportDelivery ? 'Manual activation: contact support to receive access.' : message, false);
+        setStatus('pending', message, false);
       }
     }
 
@@ -1544,7 +1822,7 @@
 
     function readStoredActivationResumeContext() {
       try {
-        const savedAt = Number(localStorage.getItem(ACTIVATION_RESUME_SAVED_AT_KEY) || '0');
+        const savedAt = Number(localStorage.getItem(REDEEM_ACTIVATION_SAVED_AT_KEY) || '0');
         if (!Number.isFinite(savedAt) || savedAt <= 0 || Date.now() - savedAt > ACTIVATION_RESUME_TTL_MS) {
           clearActivationResumeStorage();
           return { orderId: '', token: '' };
@@ -1576,6 +1854,10 @@
     }
 
     document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && imageZoomModalEl && !imageZoomModalEl.hidden) {
+        closeGuideImageZoom();
+        return;
+      }
       if (event.key === 'Escape' && leaveConfirmModalEl && !leaveConfirmModalEl.hidden) {
         closeLeaveConfirm();
         return;
@@ -1606,7 +1888,7 @@
       orderIdEl.textContent = orderId;
       try {
         localStorage.setItem('gptishka_activation_order_id', orderId);
-        localStorage.setItem(ACTIVATION_RESUME_SAVED_AT_KEY, String(Date.now()));
+        localStorage.setItem(REDEEM_ACTIVATION_SAVED_AT_KEY, String(Date.now()));
         if (!orderLinkToken) {
           const stored = readStoredActivationResumeContext();
           orderLinkToken = stored.orderId === orderId ? stored.token : '';
@@ -1701,6 +1983,8 @@
         });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
+          const resolved = await resolveActivationSuccessFallback();
+          if (resolved) return;
           let details = '';
           if (payload?.details) {
             try {
@@ -1804,13 +2088,15 @@
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation${suffix}`);
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-          const fallbackMode = await resolveOrderDeliveryMode();
-          if (fallbackMode) applyTokenFlowMode(fallbackMode === 'support');
+          const fallbackContext = await resolveOrderDeliveryContext();
+          if (fallbackContext.deliveryMode) {
+            applyActivationPayloadMode(fallbackContext, fallbackContext.deliveryMode);
+          }
           setStatus('error', payload?.message || 'Failed to load activation status', false);
           return;
         }
         const deliveryMode = String(payload?.deliveryMode || '').toLowerCase();
-        applyTokenFlowMode(deliveryMode === 'support');
+        applyActivationPayloadMode(payload, deliveryMode);
         if (deliveryMode === 'credentials') {
           setCredentialsDeliveryMode(payload);
           return;
@@ -1858,21 +2144,27 @@
         }
         setStatus('pending', 'Waiting for action.', false);
       } catch {
-        const fallbackMode = await resolveOrderDeliveryMode();
-        if (fallbackMode) applyTokenFlowMode(fallbackMode === 'support');
+        const fallbackContext = await resolveOrderDeliveryContext();
+        if (fallbackContext.deliveryMode) {
+          applyActivationPayloadMode(fallbackContext, fallbackContext.deliveryMode);
+        }
         setStatus('error', 'Network error while loading activation', false);
       }
     }
 
-    async function resolveOrderDeliveryMode() {
-      if (!orderId) return '';
+    async function resolveOrderDeliveryContext() {
+      if (!orderId) return { deliveryMode: '', activationFlow: '' };
       try {
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}`);
-        if (!response.ok) return '';
+        if (!response.ok) return { deliveryMode: '', activationFlow: '' };
         const payload = await response.json().catch(() => ({}));
-        return String(payload?.deliveryMode || '').trim().toLowerCase();
+        return {
+          ...payload,
+          deliveryMode: String(payload?.deliveryMode || '').trim().toLowerCase(),
+          activationFlow: resolveSupportActivationFlow(payload),
+        };
       } catch {
-        return '';
+        return { deliveryMode: '', activationFlow: '' };
       }
     }
 
@@ -1885,15 +2177,16 @@
         const payload = await response.json().catch(() => ({}));
 
         const deliveryMode = String(payload?.deliveryMode || '').trim().toLowerCase();
+        applyActivationPayloadMode(payload, deliveryMode);
         if (deliveryMode === 'credentials') {
           setCredentialsDeliveryMode(payload);
           return true;
         }
 
-        const activationStatus = String(payload?.status || '').trim().toLowerCase();
+        const activationStatus = String(payload?.activation?.status || payload?.status || '').trim().toLowerCase();
         if (activationStatus !== 'success') return false;
 
-        const finalizedTaskId = String(payload?.taskId || currentTaskId || '').trim();
+        const finalizedTaskId = String(payload?.activation?.taskId || payload?.taskId || currentTaskId || '').trim();
         currentTaskId = finalizedTaskId;
         renderTask(currentTaskId);
         markActivationCompleted();
@@ -2070,7 +2363,7 @@
         }
         localStorage.removeItem('gptishka_activation_order_id');
         localStorage.removeItem('gptishka_activation_resume_url');
-        localStorage.removeItem(ACTIVATION_RESUME_SAVED_AT_KEY);
+        localStorage.removeItem(REDEEM_ACTIVATION_SAVED_AT_KEY);
       } catch (_) {
         // Ignore storage cleanup errors.
       }
@@ -2084,7 +2377,9 @@
       if (!isSupportTokenDelivery && raw.startsWith('{') && token && token !== raw) {
         tokenWarn.textContent = 'JSON detected: extracted token will be used.';
       } else if (isSupportTokenDelivery) {
-        tokenWarn.textContent = 'For method 4, paste your Grok account ID in UUID format.';
+        tokenWarn.textContent = isClaudeSupportFlow()
+          ? 'For method 5, paste your Claude account ID in UUID format.'
+          : 'For method 4, paste your Grok account ID in UUID format.';
       } else {
         tokenWarn.textContent = getTokenSafeWarnText();
       }
@@ -2204,9 +2499,18 @@
     }
 
     function setStatus(tone, text, loading) {
+      statusBox.hidden = false;
       statusBox.className = `redeem-status ${tone}`;
       statusText.textContent = text;
       statusSpinner.style.display = loading ? 'inline-block' : 'none';
+    }
+
+    function hideStatus() {
+      statusBox.hidden = true;
+      statusText.textContent = '';
+      statusSpinner.style.display = 'none';
+      if (taskWrap) taskWrap.style.display = 'none';
+      if (copyTaskBtn) copyTaskBtn.style.display = 'none';
     }
 
     function setButtonLoading(btn, loading) {
@@ -2229,29 +2533,13 @@
     }
 
     setupLeaveGuard();
+    setupGuideImageZoom();
     setupLanguageSwitch();
+    })();
   </script>
-<script src="/assets/js/support-widget.js?v=20260408-swfix1" defer></script>
+<script src="/assets/js/support-widget.js?v=20260707-support-unify2" defer></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

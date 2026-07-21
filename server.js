@@ -5,7 +5,6 @@ const sqlite3 = require("sqlite3").verbose();
 const helmet = require("helmet");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
-const { applyContentSecurityPolicy } = require("./server/security-headers");
 require("dotenv").config();
 
 const PORT = Number(process.env.PORT || 4000);
@@ -31,7 +30,6 @@ const INCLUDE_LEGACY_PURCHASES =
 const ALLOW_LEGACY_PURCHASE_EVENTS =
   String(process.env.ALLOW_LEGACY_PURCHASE_EVENTS || "false").toLowerCase() === "true";
 const TICKER_EVENT_LIMIT = 12;
-const TICKER_EVENT_LOOKBACK_LIMIT = TICKER_EVENT_LIMIT * 8;
 const SEED_DEMO_STATS = String(
   process.env.SEED_DEMO_STATS || "false"
 ).toLowerCase() === "true";
@@ -76,6 +74,11 @@ const NOINDEX_PUBLIC_PATHS = new Set([
 const dataDir = path.join(__dirname, "data");
 const dbPath = path.join(dataDir, "stats.sqlite");
 const LEGACY_PRODUCT_MODAL_BACKUP_PATH = path.join(__dirname, "_tmp_products_ru.json");
+const STOREFRONT_PRODUCTS_FALLBACK_PATH = path.join(__dirname, "_tmp_products_ru.json");
+const STOREFRONT_PRODUCTS_FALLBACK_CACHE_TTL_MS = Math.max(
+  60 * 1000,
+  Number(process.env.STOREFRONT_PRODUCTS_FALLBACK_CACHE_TTL_MS || 5 * 60 * 1000)
+);
 
 let telegramReviewsCache = {
   channel: TELEGRAM_REVIEWS_CHANNEL,
@@ -85,6 +88,8 @@ let telegramReviewsCache = {
 };
 let telegramReviewsRefreshPromise = null;
 let legacyProductModalBackupMap = new Map();
+let storefrontProductsFallbackBase = null;
+let storefrontProductsFallbackBaseLoadedAt = 0;
 
 function normalizeLegacyLookupKey(value) {
   return String(value || "")
@@ -170,6 +175,94 @@ function withLegacyModalFallback(payload) {
   };
 }
 
+function normalizeStorefrontProductItem(item) {
+  const safeItem = item && typeof item === "object" ? item : {};
+  const safeId = String(safeItem.id || safeItem.product || "").trim();
+  if (!safeId) return null;
+
+  const safeProduct = String(safeItem.product || safeId).trim();
+  const safePrice = Number(safeItem.price);
+  const safeOldPrice = Number(safeItem.oldPrice);
+  const safeCurrency = String(safeItem.currency || "RUB").trim().toUpperCase() || "RUB";
+  const safeCategory = String(safeItem.category || "").trim();
+  const safeTitle = String(safeItem.title || safeProduct || safeId).trim();
+
+  return {
+    ...safeItem,
+    id: safeId,
+    product: safeProduct || safeId,
+    title: safeTitle,
+    description: String(safeItem.description || "").trim(),
+    modalDescription: String(safeItem.modalDescription || "").trim(),
+    category: safeCategory,
+    price: Number.isFinite(safePrice) ? Math.max(0, safePrice) : 0,
+    oldPrice: Number.isFinite(safeOldPrice) ? Math.max(0, safeOldPrice) : null,
+    currency: safeCurrency,
+    tags: Array.isArray(safeItem.tags)
+      ? safeItem.tags.map(tag => String(tag || "").trim()).filter(Boolean)
+      : [],
+    badge: String(safeItem.badge || "").trim(),
+    deliveryType: String(safeItem.deliveryType || "").trim(),
+    deliveryMethod: Number.isFinite(Number(safeItem.deliveryMethod))
+      ? Number(safeItem.deliveryMethod)
+      : undefined,
+  };
+}
+
+function readStorefrontProductsFallbackBase() {
+  const now = Date.now();
+  if (
+    storefrontProductsFallbackBase &&
+    now - storefrontProductsFallbackBaseLoadedAt < STOREFRONT_PRODUCTS_FALLBACK_CACHE_TTL_MS
+  ) {
+    return storefrontProductsFallbackBase;
+  }
+
+  if (!fs.existsSync(STOREFRONT_PRODUCTS_FALLBACK_PATH)) {
+    storefrontProductsFallbackBase = null;
+    storefrontProductsFallbackBaseLoadedAt = now;
+    return null;
+  }
+
+  try {
+    const raw = fs.readFileSync(STOREFRONT_PRODUCTS_FALLBACK_PATH, "utf-8");
+    const parsed = JSON.parse(String(raw || "").replace(/^\uFEFF/, ""));
+    const normalizedItems = Array.isArray(parsed?.items)
+      ? parsed.items
+          .map(normalizeStorefrontProductItem)
+          .filter(Boolean)
+      : [];
+
+    if (!normalizedItems.length) {
+      storefrontProductsFallbackBase = null;
+      storefrontProductsFallbackBaseLoadedAt = now;
+      return null;
+    }
+
+    storefrontProductsFallbackBase = {
+      items: normalizedItems,
+      loadedAt: new Date().toISOString(),
+    };
+    storefrontProductsFallbackBaseLoadedAt = now;
+    return storefrontProductsFallbackBase;
+  } catch (error) {
+    storefrontProductsFallbackBase = null;
+    storefrontProductsFallbackBaseLoadedAt = now;
+    logError("Failed to load storefront products fallback", error);
+    return null;
+  }
+}
+
+function localizeFallbackCategory(category, lang) {
+  const raw = String(category || "").trim();
+  if (lang !== "en") return raw;
+  const normalized = raw.toLowerCase();
+  if (!normalized) return "ChatGPT Subscriptions";
+  if (normalized.includes("vpn")) return "VPN";
+  if (normalized.includes("подпис")) return "ChatGPT Subscriptions";
+  return raw;
+}
+
 function containsPublicVpnMarker(value) {
   return /\b(vpn|vless|xray|reality)\b|v\*n|gptishka[-_\s]*vpn|\/catalog\/vpn|\/store\/vpn/i.test(String(value || ""));
 }
@@ -179,6 +272,12 @@ function isHiddenPublicVpnProduct(item) {
   const deliveryType = String(item?.deliveryType || "").trim().toLowerCase();
   const deliveryMethod = String(item?.deliveryMethod || "").trim();
   if (deliveryType === "vpn" || deliveryMethod === "3") return true;
+
+  const normalizedTags = tags.map((tag) => String(tag || "").trim().toLowerCase());
+  const isAiSubscription = normalizedTags.some((tag) =>
+    ["chatgpt", "claude", "supergrok", "grok"].includes(tag)
+  );
+  if (isAiSubscription) return false;
 
   return [item?.slug, item?.baseSlug, item?.product, item?.title, item?.titleEn, item?.category]
     .filter(Boolean)
@@ -193,12 +292,107 @@ function stripPublicVpnTags(item) {
   };
 }
 
+function isHiddenPublicVpnServiceCard(card) {
+  return [card?.serviceKey, card?.href, card?.title, card?.description, card?.theme, card?.iconText]
+    .filter(Boolean)
+    .some(containsPublicVpnMarker);
+}
+
 function sanitizePublicProductsPayload(payload) {
   if (!payload || typeof payload !== "object") return payload;
   const items = Array.isArray(payload.items)
     ? payload.items.filter((item) => !isHiddenPublicVpnProduct(item)).map(stripPublicVpnTags)
     : payload.items;
   return { ...payload, items };
+}
+
+function sanitizePublicShowcasePayload(payload) {
+  if (!payload || typeof payload !== "object") return payload;
+  const serviceCards = Array.isArray(payload.serviceCards)
+    ? payload.serviceCards.filter((card) => !isHiddenPublicVpnServiceCard(card))
+    : payload.serviceCards;
+  const sections = Array.isArray(payload.sections)
+    ? payload.sections
+        .map((section) => {
+          const products = Array.isArray(section?.products)
+            ? section.products.filter((item) => !isHiddenPublicVpnProduct(item)).map(stripPublicVpnTags)
+            : section?.products;
+          const sectionCards = Array.isArray(section?.serviceCards)
+            ? section.serviceCards.filter((card) => !isHiddenPublicVpnServiceCard(card))
+            : section?.serviceCards;
+          return { ...section, products, serviceCards: sectionCards };
+        })
+        .filter((section) => !containsPublicVpnMarker(section?.slug) && Array.isArray(section.products) && section.products.length > 0)
+    : payload.sections;
+  return { ...payload, sections, serviceCards };
+}
+
+function sanitizePublicHomepageContentPayload(payload) {
+  if (!payload || typeof payload !== "object") return payload;
+  const keep = (item) =>
+    ![item?.id, item?.themeClass, item?.href, item?.buttonHref, item?.title, item?.badge]
+      .filter(Boolean)
+      .some(containsPublicVpnMarker);
+  return {
+    ...payload,
+    slides: Array.isArray(payload.slides) ? payload.slides.filter(keep) : payload.slides,
+    shortcuts: Array.isArray(payload.shortcuts) ? payload.shortcuts.filter(keep) : payload.shortcuts,
+  };
+}
+
+function buildStorefrontProductsFallbackPayload(lang = "ru") {
+  const safeLang = String(lang || "ru").toLowerCase().startsWith("en") ? "en" : "ru";
+  const fallbackBase = readStorefrontProductsFallbackBase();
+  if (!fallbackBase || !Array.isArray(fallbackBase.items) || !fallbackBase.items.length) {
+    return null;
+  }
+
+  const localizedItems = fallbackBase.items
+    .filter((item) => !isHiddenPublicVpnProduct(item))
+    .map((item) => stripPublicVpnTags({
+      ...item,
+      category: localizeFallbackCategory(item?.category, safeLang),
+    }));
+
+  return withLegacyModalFallback({
+    source: "local-fallback",
+    degraded: true,
+    lang: safeLang,
+    items: localizedItems,
+  });
+}
+
+function buildStorefrontShowcaseFallbackPayload(lang = "ru") {
+  const productsPayload = buildStorefrontProductsFallbackPayload(lang);
+  const items = Array.isArray(productsPayload?.items) ? productsPayload.items : [];
+  if (!items.length) return null;
+
+  const sectionsMap = new Map();
+  items.forEach((item) => {
+    const title = String(item?.category || "").trim() || (lang === "en" ? "Products" : "Товары");
+    const slug = title
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, "-")
+      .replace(/^-+|-+$/g, "") || "products";
+    if (!sectionsMap.has(slug)) {
+      sectionsMap.set(slug, {
+        id: `fallback:${slug}`,
+        slug,
+        title,
+        description: "",
+        sortOrder: 1000 + sectionsMap.size,
+        products: [],
+      });
+    }
+    sectionsMap.get(slug).products.push(item);
+  });
+
+  return {
+    source: "local-fallback",
+    degraded: true,
+    lang,
+    sections: Array.from(sectionsMap.values()),
+  };
 }
 
 if (!fs.existsSync(dataDir)) {
@@ -314,22 +508,6 @@ function isPublicTickerEmailDisplayable(email) {
   if (safe.endsWith("@telegram.local")) return false;
   if (safe.endsWith(".local")) return false;
   return true;
-}
-
-function normalizePublicTickerEntries(rows, limit = TICKER_EVENT_LIMIT) {
-  const safeLimit = Math.max(0, Number(limit) || 0);
-  if (!safeLimit || !Array.isArray(rows)) return [];
-
-  return rows
-    .filter(row => isPublicTickerEmailDisplayable(String(row?.email || "")))
-    .slice(0, safeLimit)
-    .map(row => {
-      const source = String(row?.source || "real").toLowerCase() === "system" ? "system" : "real";
-      return {
-        source,
-        email: maskEmail(String(row?.email || "")),
-      };
-    });
 }
 
 function isValidEmail(email) {
@@ -714,7 +892,7 @@ async function seedDemoDataIfEmpty() {
   for (let i = 1; i <= missingOnline; i += 1) {
     await run(
       "INSERT OR REPLACE INTO online_sessions (session_id, path, last_seen) VALUES (?, ?, ?)",
-      [`demo-online-${i}`, "/en/index.html", now - i * 3000]
+      [`demo-online-${i}`, "/en/", now - i * 3000]
     );
   }
 }
@@ -751,7 +929,6 @@ function createApp() {
       crossOriginResourcePolicy: { policy: "cross-origin" },
     })
   );
-  app.use(applyContentSecurityPolicy);
   app.use(compression());
   app.use(
     "/api",
@@ -797,12 +974,20 @@ function createApp() {
       return next();
     }
 
+    if (req.path === "/index.html") {
+      const suffix = extractQuerySuffix(req);
+      return res.redirect(301, suffix ? `/${suffix}` : "/");
+    }
+
+    if (req.path === "/en/index.html") {
+      const suffix = extractQuerySuffix(req);
+      return res.redirect(301, suffix ? `/en/${suffix}` : "/en/");
+    }
+
     const staticPath = String(req.path || "").toLowerCase();
     if (
       staticPath === "/store/vpn/index.html" ||
-      staticPath === "/vpn/index.html" ||
-      staticPath === "/catalog/vpn/index.html" ||
-      staticPath === "/en/catalog/vpn/index.html"
+      staticPath === "/en/store/vpn/index.html"
     ) {
       return res.status(404).send("Not found");
     }
@@ -1083,13 +1268,124 @@ function createApp() {
       );
 
       if (!response.ok) {
+        const fallbackPayload = buildStorefrontProductsFallbackPayload(lang);
+        if (fallbackPayload) {
+          return res.json(fallbackPayload);
+        }
         return res.status(502).json({ error: "Failed to load products from admin backend" });
       }
 
       const payload = await response.json();
-      return res.json(sanitizePublicProductsPayload(withLegacyModalFallback(payload)));
+      const normalizedPayload = sanitizePublicProductsPayload(withLegacyModalFallback(payload));
+      const hasItems = Array.isArray(normalizedPayload?.items) && normalizedPayload.items.length > 0;
+      if (!hasItems) {
+        const fallbackPayload = buildStorefrontProductsFallbackPayload(lang);
+        if (fallbackPayload) {
+          return res.json(fallbackPayload);
+        }
+      }
+      return res.json(normalizedPayload);
     } catch (_) {
+      const fallbackPayload = buildStorefrontProductsFallbackPayload(lang);
+      if (fallbackPayload) {
+        return res.json(fallbackPayload);
+      }
       return res.status(502).json({ error: "Products API unavailable" });
+    }
+  });
+
+  app.get("/api/public/showcase", async (req, res) => {
+    const lang = String(req.query?.lang || "ru").toLowerCase().startsWith("en") ? "en" : "ru";
+    const target = String(req.query?.target || "homepage").toLowerCase() === "catalog" ? "catalog" : "homepage";
+
+    try {
+      const { response } = await fetchAdminWithFallback(
+        `/api/public/showcase?lang=${lang}&target=${target}`,
+        {
+          headers: buildAdminProxyHeaders(req, { method: "GET" }),
+        },
+        {
+          timeoutMs: 8000,
+          retryStatuses: [404, 502, 503, 504],
+        }
+      );
+
+      if (!response.ok) {
+        const fallbackPayload = buildStorefrontShowcaseFallbackPayload(lang);
+        if (fallbackPayload) {
+          return res.json(fallbackPayload);
+        }
+        return res.status(502).json({ error: "Failed to load showcase from admin backend" });
+      }
+
+      const payload = sanitizePublicShowcasePayload(await response.json());
+      const hasSections = Array.isArray(payload?.sections) && payload.sections.length > 0;
+      if (!hasSections) {
+        const fallbackPayload = buildStorefrontShowcaseFallbackPayload(lang);
+        if (fallbackPayload) {
+          return res.json(fallbackPayload);
+        }
+      }
+      return res.json(payload);
+    } catch (_) {
+      const fallbackPayload = buildStorefrontShowcaseFallbackPayload(lang);
+      if (fallbackPayload) {
+        return res.json(fallbackPayload);
+      }
+      return res.status(502).json({ error: "Showcase API unavailable" });
+    }
+  });
+
+  app.get("/api/public/homepage-content", async (req, res) => {
+    const lang = String(req.query?.lang || "ru").toLowerCase().startsWith("en") ? "en" : "ru";
+
+    try {
+      const { response } = await fetchAdminWithFallback(
+        `/api/public/homepage-content?lang=${lang}`,
+        {
+          headers: buildAdminProxyHeaders(req, { method: "GET" }),
+        },
+        {
+          timeoutMs: 8000,
+          retryStatuses: [404, 502, 503, 504],
+        }
+      );
+
+      if (!response.ok) {
+        return res.status(502).json({ error: "Failed to load homepage content from admin backend" });
+      }
+
+      return res.json(sanitizePublicHomepageContentPayload(await response.json()));
+    } catch (_) {
+      return res.status(502).json({ error: "Homepage content API unavailable" });
+    }
+  });
+
+  app.get("/api/public/service-pages/:slug", async (req, res) => {
+    const lang = String(req.query?.lang || "ru").toLowerCase().startsWith("en") ? "en" : "ru";
+    const slug = encodeURIComponent(String(req.params.slug || "").trim());
+    if (!slug) return res.status(404).json({ error: "Service page not found" });
+
+    try {
+      const { response } = await fetchAdminWithFallback(
+        `/api/public/service-pages/${slug}?lang=${lang}`,
+        {
+          headers: buildAdminProxyHeaders(req, { method: "GET" }),
+        },
+        {
+          timeoutMs: 8000,
+          retryStatuses: [502, 503, 504],
+        }
+      );
+
+      const body = await response.text();
+      if (!response.ok) {
+        return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "Service page not found" }));
+      }
+
+      return res.status(response.status).type("application/json").send(body);
+    } catch (_) {
+      return res.status(502).json({ error: "Service page API unavailable" });
     }
   });
 
@@ -1239,15 +1535,64 @@ function createApp() {
     );
     const qtyRaw = Number(source.qty ?? source.quantity ?? 1);
     const qty = Number.isFinite(qtyRaw) && qtyRaw > 0 ? Math.floor(qtyRaw) : 1;
+    let orderDetails;
+    const rawOrderDetails = source.order_details ?? source.orderDetails;
+    if (rawOrderDetails && typeof rawOrderDetails === "object" && !Array.isArray(rawOrderDetails)) {
+      try {
+        const serialized = JSON.stringify(rawOrderDetails);
+        if (serialized && serialized.length <= 12000) {
+          orderDetails = JSON.parse(serialized);
+        }
+      } catch (_) {
+        orderDetails = undefined;
+      }
+    }
+
+    const checkoutFieldNames = [
+      "contactEmail",
+      "telegram",
+      "product",
+      "plan",
+      "deliveryMethod",
+      "duration",
+      "isGift",
+      "giftSender",
+      "giftRecipient",
+      "giftDeliveryMethod",
+      "giftRecipientContact",
+      "giftSendDate",
+      "giftSendTime",
+      "giftMessage",
+      "giftCertificateDesign",
+      "accountStatus",
+      "serviceLogin",
+      "servicePassword",
+      "cameByRecommendation",
+      "referrerContact",
+      "orderComment",
+    ];
+    const checkoutFields = {};
+    for (const fieldName of checkoutFieldNames) {
+      if (source[fieldName] !== undefined) {
+        checkoutFields[fieldName] = source[fieldName];
+      }
+    }
 
     return {
       email: pickFirstString([source.email, source.customer_email, source.customerEmail, source.mail], "").toLowerCase(),
       plan_id: planId,
+      planId,
+      product_id: planId,
+      productId: planId,
       qty: Math.max(1, qty),
+      quantity: Math.max(1, qty),
       promo_code: promoCode || undefined,
-      payment_method: normalizePublicPaymentProvider(
-        pickFirstString([source.payment_method, source.paymentMethod, source.method, provider], provider)
-      ),
+      promoCode: promoCode || undefined,
+      payment_method: normalizePublicPaymentProvider(pickFirstString([source.payment_method, source.paymentMethod, source.method, provider], provider)),
+      paymentMethod: normalizePublicPaymentProvider(pickFirstString([source.payment_method, source.paymentMethod, source.method, provider], provider)),
+      order_details: orderDetails,
+      orderDetails,
+      ...checkoutFields,
     };
   }
 
@@ -1367,7 +1712,7 @@ function createApp() {
         {
           method: "POST",
           forceJson: true,
-          timeoutMs: 20000,
+          timeoutMs: 120000,
           retryStatuses: [404, 502, 503, 504],
         }
       );
@@ -1390,7 +1735,7 @@ function createApp() {
         {
           method: "POST",
           forceJson: true,
-          timeoutMs: 20000,
+          timeoutMs: 120000,
           retryStatuses: [404, 502, 503, 504],
         }
       );
@@ -1477,7 +1822,6 @@ function createApp() {
               source: "real",
             }))
             .filter(entry => isPublicTickerEmailDisplayable(entry.email))
-            .slice(0, TICKER_EVENT_LIMIT)
         : [];
       return {
         sales: Number.isFinite(sales) && sales >= 0 ? sales : 0,
@@ -1572,7 +1916,7 @@ function createApp() {
             FROM purchases
           )
           ORDER BY datetime(created_at) DESC
-          LIMIT ${TICKER_EVENT_LOOKBACK_LIMIT}
+          LIMIT ${TICKER_EVENT_LIMIT}
           `
         );
       } else {
@@ -1583,12 +1927,18 @@ function createApp() {
           FROM activation_events
           ${sourceFilter}
           ORDER BY datetime(created_at) DESC
-          LIMIT ${TICKER_EVENT_LOOKBACK_LIMIT}
+          LIMIT ${TICKER_EVENT_LIMIT}
           `
         );
       }
 
-      const tickerEntries = normalizePublicTickerEntries(buyerRows, TICKER_EVENT_LIMIT);
+      const tickerEntries = buyerRows.filter(row => isPublicTickerEmailDisplayable(String(row?.email || ""))).map(row => {
+        const source = String(row?.source || "real").toLowerCase() === "system" ? "system" : "real";
+        return {
+          source,
+          email: maskEmail(String(row?.email || "")),
+        };
+      });
 
       return {
         sales: realSales + systemSales,
@@ -1694,6 +2044,31 @@ function createApp() {
     return res.sendFile(pagePath);
   };
 
+  async function resolveDynamicServicePage(req) {
+    if (path.extname(req.path)) return null;
+    const serviceSlug = String(req.params?.serviceSlug || "").trim();
+    if (!serviceSlug) return null;
+    const normalizedSlug = serviceSlug.toLowerCase();
+    const reserved = new Set(["api", "admin", "assets", "uploads", "data", "en", "store", "payment", "success", "fail", "cart", "redeem-start"]);
+    if (reserved.has(normalizedSlug)) return null;
+
+    try {
+      const { response } = await fetchAdminWithFallback(
+        `/api/public/service-pages/${encodeURIComponent(serviceSlug)}?lang=ru`,
+        {
+          headers: buildAdminProxyHeaders(req, { method: "GET" }),
+        },
+        {
+          timeoutMs: 5000,
+          retryStatuses: [502, 503, 504],
+        }
+      );
+      return response.ok;
+    } catch (_) {
+      return null;
+    }
+  }
+
   app.get("/", (_req, res) => {
     sendFreshHtml(res, path.join(__dirname, "index.html"));
   });
@@ -1725,24 +2100,53 @@ function createApp() {
     return res.sendFile(path.join(__dirname, "admin", "index.html"));
   });
 
-  app.get(["/store/vpn", "/store/vpn/"], (_req, res) => {
+  const sendDirectoryIndex = (relativeDir) => (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, relativeDir, "index.html"));
+  };
+
+  app.get(["/catalog", "/catalog/"], sendDirectoryIndex("catalog"));
+  app.get(["/catalog/ai", "/catalog/ai/"], sendDirectoryIndex(path.join("catalog", "ai")));
+  app.get(["/catalog/vpn", "/catalog/vpn/"], sendDirectoryIndex(path.join("catalog", "vpn")));
+  app.get(["/store/steam", "/store/steam/"], sendDirectoryIndex(path.join("store", "steam")));
+  app.get(["/store/steam/topup", "/store/steam/topup/"], sendDirectoryIndex(path.join("store", "steam", "topup")));
+
+  app.get(["/en/catalog", "/en/catalog/"], sendDirectoryIndex(path.join("en", "catalog")));
+  app.get(["/en/catalog/ai", "/en/catalog/ai/"], sendDirectoryIndex(path.join("en", "catalog", "ai")));
+  app.get(["/en/catalog/vpn", "/en/catalog/vpn/"], sendDirectoryIndex(path.join("en", "catalog", "vpn")));
+  app.get(["/en/store/steam", "/en/store/steam/"], sendDirectoryIndex(path.join("en", "store", "steam")));
+  app.get(["/en/store/steam/topup", "/en/store/steam/topup/"], sendDirectoryIndex(path.join("en", "store", "steam", "topup")));
+
+  app.get(["/store/vpn", "/store/vpn/", "/en/store/vpn", "/en/store/vpn/"], (_req, res) => {
     res.status(404).send("Not found");
   });
 
-  const sendVpnActivationPage = (_req, res) => {
+  const sendVpnActivationPage = (req, res) => {
     res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
     res.set("Pragma", "no-cache");
     res.set("Expires", "0");
     res.set("Surrogate-Control", "no-store");
-    res.sendFile(path.join(__dirname, "store", "vpn", "activate", "index.html"));
+    const pagePath = req.path.startsWith("/en/")
+      ? path.join(__dirname, "en", "store", "vpn", "activate", "index.html")
+      : path.join(__dirname, "store", "vpn", "activate", "index.html");
+    res.sendFile(pagePath);
   };
 
   app.get("/store/vpn/activate", sendVpnActivationPage);
 
   app.get("/store/vpn/activate/", sendVpnActivationPage);
 
+  app.get("/en/store/vpn/activate", sendVpnActivationPage);
+
+  app.get("/en/store/vpn/activate/", sendVpnActivationPage);
+
   app.get(["/vpn", "/vpn/"], (_req, res) => {
     res.status(404).send("Not found");
+  });
+
+  app.get(["/:serviceSlug", "/:serviceSlug/"], async (req, res, next) => {
+    const pageExists = await resolveDynamicServicePage(req);
+    if (!pageExists) return next();
+    return sendFreshHtml(res, path.join(__dirname, "service.html"));
   });
 
   // Backward-compatible asset aliases used by older cached pages.
@@ -1817,7 +2221,7 @@ if (require.main === module) {
     });
 }
 
-module.exports = { normalizePublicTickerEntries, startServer };
+module.exports = { startServer };
 
 
 

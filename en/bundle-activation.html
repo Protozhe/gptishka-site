@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <script src="/assets/js/analytics-init.js?v=20260305a" defer></script>
@@ -8,7 +8,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="GPTishka" />
   <meta property="og:title" content="VPN + Order activation - GPTishka" />
-  <meta property="og:description" content="Two sections: VPN setup and ChatGPT token activation." />
+  <meta property="og:description" content="Two sections: VPN setup and activation." />
   <meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
   <meta property="og:url" content="https://gptishka.shop/en/bundle-activation.html" />
   <title>VPN + Order activation - GPTishka</title>
@@ -182,17 +182,18 @@
       }
     }
   </style>
+<link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260707-header-unify9" />
 </head>
 <body>
   <div class="page-overlay"></div>
   <header>
     <div class="nav">
-      <a href="/en/index.html" class="logo-link" aria-label="GPTishka">
+      <a href="/en/" class="logo-link" aria-label="GPTishka">
         <img loading="eager" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTishka" class="logo-img" onerror="this.onerror=null;this.src='/favicon.png';">
       </a>
       <nav>
-        <a href="/en/index.html">Home</a>
-        <a href="/en/index.html#pricing">Plans</a>
+        <a href="/en/">Home</a>
+        <a href="/en/#pricing">Plans</a>
         <a href="/store/vpn/">VPN</a>
         <a href="/en/contact.html">Contacts</a>
       </nav>
@@ -202,7 +203,7 @@
   <main class="page bundle-page">
     <section class="bundle-card">
       <h1 class="bundle-title">Order with VPN bundle</h1>
-      <p class="bundle-subtitle">This product has two delivery sections: VPN setup first, then ChatGPT token activation.</p>
+      <p class="bundle-subtitle">This product has two delivery sections: VPN setup first, then activation.</p>
 
       <div class="bundle-order">
         <div>Order ID: <strong id="orderId" class="bundle-order-id">-</strong></div>
@@ -228,9 +229,9 @@
         <section class="bundle-section">
           <p class="bundle-step">Section 2</p>
           <h2>Extend / Activate</h2>
-          <p>Finish ChatGPT activation using your account token.</p>
+          <p>Finish subscription activation.</p>
           <ol>
-            <li>Open token activation page.</li>
+            <li>Open the activation page.</li>
             <li>Paste token from `chatgpt.com/api/auth/session`.</li>
             <li>Click "Activate" and wait for success status.</li>
           </ol>
@@ -324,7 +325,7 @@
           setStatus(activationStatusEl, "warn", "Activation is processing. You can check it on activation page.");
           return;
         }
-        setStatus(activationStatusEl, "", "Waiting for token activation start.");
+        setStatus(activationStatusEl, "", "Waiting for activation start.");
       } catch (_) {
         setStatus(activationStatusEl, "error", "Network error while checking activation.");
       }
@@ -349,6 +350,7 @@
     loadVpnStatus();
     loadActivationStatus();
   </script>
-  <script src="/assets/js/support-widget.js?v=20260314a" defer></script>
+  <script src="/assets/js/support-widget.js?v=20260707-support-unify2" defer></script>
 </body>
 </html>
+

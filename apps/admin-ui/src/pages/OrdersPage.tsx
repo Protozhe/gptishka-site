@@ -93,8 +93,8 @@ function buildCheckoutDetailRows(details: any) {
   }
   if (hasAccountDetails) {
     push("Статус аккаунта", account.status);
-    push("Логин", account.login);
-    push("Пароль", account.password);
+    if (account.login) push("Логин клиента", "Не сохраняется в compliance-режиме");
+    if (account.password) push("Пароль клиента", "Не сохраняется в compliance-режиме");
   }
   push("Пришёл по рекомендации", recommendation.cameByRecommendation);
   push("Кто пригласил", recommendation.referrerContact);
@@ -105,8 +105,8 @@ function buildCheckoutDetailRows(details: any) {
 const ACCOUNT_OPTIONS = [
   {
     value: "has_account",
-    title: "Да, у клиента есть почта и пароль от ChatGPT",
-    description: "Клиент обычно входит в ChatGPT через email и пароль.",
+    title: "У клиента есть аккаунт",
+    description: "Пароль клиента не принимается и не сохраняется на сайте.",
   },
   {
     value: "apple_id",
@@ -130,7 +130,6 @@ export default function OrdersPage() {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [checkMessage, setCheckMessage] = useState<string | null>(null);
   const [clientInfoDialog, setClientInfoDialog] = useState<null | { orderId: string; details: any }>(null);
-  const [showClientPassword, setShowClientPassword] = useState(false);
   const [tokenDialog, setTokenDialog] = useState<null | { orderId: string; token: string; storedAt: string | null; expiresAt: string | null }>(
     null
   );
@@ -381,7 +380,6 @@ export default function OrdersPage() {
                         <button
                           className="btn-secondary"
                           onClick={() => {
-                            setShowClientPassword(false);
                             setClientInfoDialog({ orderId: o.id, details: checkoutDetails });
                           }}
                         >
@@ -509,9 +507,11 @@ export default function OrdersPage() {
               </section>
 
               <section className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-                <h3 className="font-semibold">Данные для подключения</h3>
-                <p className="mb-3 text-xs text-slate-500">Заполнены по выбранному клиентом способу</p>
-                <div className="mb-2 font-medium">У клиента уже есть аккаунт ChatGPT?</div>
+                <h3 className="font-semibold">Сценарий подключения</h3>
+                <p className="mb-3 text-xs text-slate-500">
+                  Compliance-режим: логин и пароль аккаунта клиента не принимаются и не отображаются в админке.
+                </p>
+                <div className="mb-2 font-medium">Статус аккаунта</div>
                 <div className="space-y-2">
                   {ACCOUNT_OPTIONS.map((option) => {
                     const selected = String(clientInfoDialog.details?.account?.status || "") === option.value;
@@ -536,33 +536,11 @@ export default function OrdersPage() {
                   })}
                 </div>
 
-                {String(clientInfoDialog.details?.account?.status || "") !== "create_new" ? (
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
-                      <div className="font-medium">Почта или логин ChatGPT</div>
-                      <div className="text-xs text-slate-500">Нужен для подключения</div>
-                      <div className="mt-2 break-words font-semibold">{clientInfoDialog.details?.account?.login || "Не указан"}</div>
-                    </div>
-                    {String(clientInfoDialog.details?.account?.status || "") === "has_account" ? (
-                      <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
-                        <div className="font-medium">Пароль от ChatGPT</div>
-                        <div className="text-xs text-slate-500">Указан клиентом перед оплатой</div>
-                        <div className="mt-2 flex min-w-0 items-center gap-2">
-                          <div className="min-w-0 flex-1 break-all font-semibold">
-                            {showClientPassword ? clientInfoDialog.details?.account?.password || "Не указан" : "••••••••••••"}
-                          </div>
-                          <button className="btn-secondary" onClick={() => setShowClientPassword((current) => !current)}>
-                            {showClientPassword ? "Скрыть" : "Показать"}
-                          </button>
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
-                ) : (
+                {String(clientInfoDialog.details?.account?.status || "") === "create_new" ? (
                   <div className="mt-3 rounded-xl border border-cyan-200 bg-cyan-50 p-3 text-sm text-cyan-900 dark:border-cyan-900 dark:bg-cyan-950/40 dark:text-cyan-100">
                     (!) При создании нового аккаунта будет использоваться указанная выше почта
                   </div>
-                )}
+                ) : null}
               </section>
 
               <section className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
@@ -630,3 +608,4 @@ export default function OrdersPage() {
     </div>
   );
 }
+

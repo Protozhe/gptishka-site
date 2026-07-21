@@ -21,6 +21,11 @@ const importSchema = z.object({
   text: z.string().optional(),
 });
 
+const movePoolSchema = z.object({
+  fromProductKey: z.string().min(1),
+  toProductKey: z.string().min(1),
+});
+
 function parseCodes(input: z.infer<typeof importSchema>) {
   const fromArray = Array.isArray(input.codes) ? input.codes : [];
   const fromText = String(input.text || "")
@@ -66,6 +71,15 @@ cdkKeysRouter.post(
       { userId: req.auth?.userId }
     );
     res.status(201).json(result);
+  })
+);
+
+cdkKeysRouter.post(
+  "/pools/move",
+  validateBody(movePoolSchema),
+  asyncHandler(async (req, res) => {
+    const body = req.body as z.infer<typeof movePoolSchema>;
+    res.json(await cdkKeysStore.movePool(body, { userId: req.auth?.userId }));
   })
 );
 

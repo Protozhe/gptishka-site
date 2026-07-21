@@ -217,6 +217,52 @@ export const licenseService = {
     return { items, total, page, limit, stats: { unused, used, byProduct } };
   },
 
+  async moveProductPool(fromProductKey: string, toProductKey: string, actor?: { userId?: string }) {
+    const from = canonicalProductKey(fromProductKey);
+    const to = canonicalProductKey(toProductKey);
+    if (!from) throw new Error("fromProductKey is required");
+    if (!to) throw new Error("toProductKey is required");
+    if (from === to) return { moved: 0, fromProductKey: from, toProductKey: to };
+
+    const [sourceCount, targetProduct] = await prisma.$transaction([
+      prisma.licenseKey.count({ where: { productKey: from } }),
+      prisma.product.findUnique({ where: { slug: to }, select: { id: true } }),
+    ]);
+
+    if (sourceCount === 0) {
+      return { moved: 0, fromProductKey: from, toProductKey: to };
+    }
+
+    const auditUserId = await resolveAuditUserId(actor?.userId);
+
+    const result = await prisma.$transaction(async (tx) => {
+      const updated = await tx.licenseKey.updateMany({
+        where: { productKey: from },
+        data: {
+          productKey: to,
+          productId: targetProduct?.id || null,
+        },
+      });
+
+      await tx.licenseKeyAuditLog.create({
+        data: {
+          keyId: null,
+          action: "move_product_pool",
+          userId: auditUserId,
+          meta: asJson({
+            fromProductKey: from,
+            toProductKey: to,
+            moved: updated.count,
+          }),
+        },
+      });
+
+      return updated;
+    });
+
+    return { moved: result.count, fromProductKey: from, toProductKey: to };
+  },
+
   async reserveKey(
     productKey: string,
     input: { orderId: string; email?: string },

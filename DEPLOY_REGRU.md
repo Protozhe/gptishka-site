@@ -142,7 +142,7 @@ npm run prisma:deploy --workspace @gptishka/admin-backend
 
 ```bash
 cd /var/www/gptishka-site
-BOOTSTRAP_ADMIN_EMAIL=support@gptishka.shop \
+BOOTSTRAP_ADMIN_EMAIL=admin@gptishka.shop \
 BOOTSTRAP_ADMIN_PASSWORD='SupportPass!123' \
 BOOTSTRAP_ADMIN_ROLE=SUPPORT \
 npm run bootstrap:admin:user
@@ -310,17 +310,3 @@ pm2 save
 ```
 
 После рестарта проверьте health и тестовый заказ.
-
-## Security hardening checklist
-
-Before production reload, review [docs/security/production-hardening.md](docs/security/production-hardening.md).
-
-Minimum release checks:
-
-```bash
-npm run test:security
-npm run build:admin:api
-npm run build:admin:ui
-npm run security:scan
-nginx -t
-```
