@@ -825,7 +825,7 @@ function initActivationResumeShortcut() {
       displayName: "ChatGPT",
       fallbackTitle: "ChatGPT Go",
       fallbackPlan: "go",
-      logo: "/assets/img/services/chatgpt-card.png?v=20260622-header1",
+      logo: "/assets/img/services/chatgpt-card.webp?v=20260721-webp1",
     },
     claude: {
       displayName: "Claude",
@@ -2025,15 +2025,21 @@ function initActivationResumeShortcut() {
     };
   }
 
+  function getOptimizedServiceImageUrl(value) {
+    return String(value || "").trim()
+      .replace(/\/assets\/img\/services\/chatgpt-card-hover\.png(?:\?[^#]*)?/i, "/assets/img/services/chatgpt-card-hover.webp?v=20260721-webp1")
+      .replace(/\/assets\/img\/services\/chatgpt-card\.png(?:\?[^#]*)?/i, "/assets/img/services/chatgpt-card.webp?v=20260721-webp1");
+  }
+
   function getVisualConfig(item) {
     const visual = item && typeof item.visual === "object" ? item.visual : {};
     const fallbackTheme = getFallbackVisualTheme(item);
     return {
       cardTitle: String(visual.cardTitle || item?.title || item?.product || "").trim(),
       cardDescription: String(visual.cardDescription || item?.description || "").trim(),
-      imageUrl: String(visual.imageUrl || "").trim(),
+      imageUrl: getOptimizedServiceImageUrl(visual.imageUrl),
       imageAlt: String(visual.imageAlt || visual.cardTitle || item?.title || "").trim(),
-      hoverImageUrl: String(visual.hoverImageUrl || "").trim(),
+      hoverImageUrl: getOptimizedServiceImageUrl(visual.hoverImageUrl),
       hoverImageAlt: String(visual.hoverImageAlt || visual.cardTitle || item?.title || "").trim(),
       backgroundType: String(visual.backgroundType || fallbackTheme.backgroundType || "solid").trim().toLowerCase(),
       backgroundColor: String(visual.backgroundColor || fallbackTheme.backgroundColor || "#111111").trim(),
@@ -3172,8 +3178,8 @@ function initActivationResumeShortcut() {
     const background = getServiceCardBackground(serviceCard, visual);
     const fallbackImagesByService = {
       chatgpt: {
-        imageUrl: "/assets/img/services/chatgpt-card.png?v=20260622-header1",
-        hoverImageUrl: "/assets/img/services/chatgpt-card-hover.png",
+        imageUrl: "/assets/img/services/chatgpt-card.webp?v=20260721-webp1",
+        hoverImageUrl: "/assets/img/services/chatgpt-card-hover.webp?v=20260721-webp1",
         imageAlt: "ChatGPT",
         hoverImageAlt: "ChatGPT",
       },
@@ -4385,7 +4391,7 @@ function initActivationResumeShortcut() {
     const showAccountFields = savedAccountStatus !== "create_new";
     const showPassword = savedAccountStatus === "has_account";
     const accountServiceName = serviceDisplayName;
-    const serviceLogo = serviceConfig.logo || "/assets/img/services/chatgpt-card.png?v=20260622-header1";
+    const serviceLogo = serviceConfig.logo || "/assets/img/services/chatgpt-card.webp?v=20260721-webp1";
     return (
       '<form class="price-card service-checkout-card chatgpt-order-card" data-chatgpt-go-order' +
       ' data-product="' + escapeHtml(product) + '"' +

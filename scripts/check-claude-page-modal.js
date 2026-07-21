@@ -20,6 +20,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260618-claude-logo2";
+const expectedJsAssetVersion = "20260721-webp1";
 
 [
   ["service-page--constructor", "claude.html: constructor page class"],
@@ -38,7 +39,7 @@ const expectedAssetVersion = "20260618-claude-logo2";
   ['id="serviceDeliveryFilters"', "claude.html: delivery filter container"],
   ['id="serviceDurationFilters"', "claude.html: duration filter container"],
   [`/assets/css/home-stability-hotfix.css?v=${expectedAssetVersion}`, "claude.html: CSS cache-bust"],
-  [`/assets/js/app.min.js?v=${expectedAssetVersion}`, "claude.html: JS cache-bust"],
+  [`/assets/js/app.min.js?v=${expectedJsAssetVersion}`, "claude.html: JS cache-bust"],
 ].forEach(([marker, label]) => requireMarker(page, marker, label));
 
 [

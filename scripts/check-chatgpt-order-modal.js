@@ -8,6 +8,7 @@ const serverSource = fs.readFileSync("server.js", "utf8");
 const successPage = fs.readFileSync("success.html", "utf8");
 
 const expectedAssetVersion = "20260618-chatgpt-static-card2";
+const expectedJsAssetVersion = "20260721-webp1";
 const createNewAccountEmailNote =
   "\u0028!\u0029 \u041f\u0440\u0438 \u0441\u043e\u0437\u0434\u0430\u043d\u0438\u0438 \u043d\u043e\u0432\u043e\u0433\u043e \u0430\u043a\u043a\u0430\u0443\u043d\u0442\u0430 \u0431\u0443\u0434\u0435\u0442 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u044c\u0441\u044f \u0443\u043a\u0430\u0437\u0430\u043d\u043d\u0430\u044f \u0432\u044b\u0448\u0435 \u043f\u043e\u0447\u0442\u0430";
 
@@ -156,7 +157,7 @@ const missing = [
   ...requiredSourceMarkers.filter(marker => !source.includes(marker)).map(marker => `app.js: ${marker}`),
   ...requiredCssMarkers.filter(marker => !css.includes(marker)).map(marker => `css: ${marker}`),
   ...(!chatgptPage.includes(`/assets/css/home-stability-hotfix.css?v=${expectedAssetVersion}`) ? [`chatgpt.html: css ${expectedAssetVersion}`] : []),
-  ...(!chatgptPage.includes(`/assets/js/app.min.js?v=${expectedAssetVersion}`) ? [`chatgpt.html: js ${expectedAssetVersion}`] : []),
+  ...(!chatgptPage.includes(`/assets/js/app.min.js?v=${expectedJsAssetVersion}`) ? [`chatgpt.html: js ${expectedJsAssetVersion}`] : []),
   ...(!serverSource.includes("sendFreshHtml") ? ["server.js: sendFreshHtml"] : []),
   ...(!serverSource.includes("no-store, no-cache, must-revalidate, proxy-revalidate") ? ["server.js: no-cache html headers"] : []),
   ...(!minifiedSource.includes('style.width="100%"') ? ['app.min.js: style.width="100%"'] : []),

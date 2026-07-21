@@ -72,7 +72,7 @@ if (!galleryMatch) {
 
 const gallery = galleryMatch[0];
 
-requireIncludes(gallery, '<img src="/assets/img/services/chatgpt-card.png?v=20260622-header1"', "chatgpt.html gallery");
+requireIncludes(gallery, '<img src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1"', "chatgpt.html gallery");
 
 if (gallery.includes("service-product-gallery__video") || gallery.includes("/assets/video/chatgpt-plans-bg.mp4")) {
   fail("chatgpt.html gallery: video must not be inside the product gallery");
