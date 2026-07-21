@@ -20,7 +20,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260618-grok-logo4";
-const expectedJsAssetVersion = "20260721-cards-webp1";
+const expectedJsAssetVersion = "20260721-heavy-cards-webp1";
 
 [
   ["service-page--constructor", "supergrok.html: constructor page class"],
@@ -31,7 +31,7 @@ const expectedJsAssetVersion = "20260721-cards-webp1";
   ['class="service-hero__dark-overlay"', "supergrok.html: Grok dark overlay"],
   ["service-constructor-shell", "supergrok.html: constructor shell"],
   ["service-product-gallery", "supergrok.html: product gallery"],
-  ["/assets/img/services/grok-card.png?v=20260618-grok-logo4", "supergrok.html: Grok product image cache-bust"],
+  ["/assets/img/services/grok-card.webp?v=20260721-heavy-cards-webp1", "supergrok.html: Grok product image cache-bust"],
   ["service-selected-plan", "supergrok.html: selected plan summary"],
   ['class="service-faq-section" id="faq"', "supergrok.html: FAQ section"],
   ["Часто задаваемые вопросы", "supergrok.html: FAQ title"],
@@ -56,7 +56,7 @@ const expectedJsAssetVersion = "20260721-cards-webp1";
   ['new Set(["chatgpt", "claude", "grok", "vpn"])', "app.js: Grok in modal service allowlist"],
   ["AI_ORDER_MODAL_SERVICE_CONFIG", "app.js: shared AI modal config"],
   ['displayName: "SuperGrok"', "app.js: Grok display name"],
-  ['logo: "/assets/img/services/grok-card.png?v=20260618-grok-logo4"', "app.js: Grok modal logo cache-bust"],
+  ['logo: "/assets/img/services/grok-card.webp?v=20260721-heavy-cards-webp1"', "app.js: Grok modal logo cache-bust"],
   ["const GROK_ORDER_MODAL_PLAN_KEYS", "app.js: Grok modal plan keys"],
   ['if (key === "grok") return isGrokOrderModalPlanKey(planKey);', "app.js: Grok modal plan routing"],
   ['if (key === "grok") return String(item?.title || planLabel || "").trim();', "app.js: Grok selected plan uses product title"],
@@ -64,7 +64,7 @@ const expectedJsAssetVersion = "20260721-cards-webp1";
 
 [
   ['new Set(["chatgpt", "claude", "grok", "vpn"])', "app.min.js: shared AI modal allowlist"],
-  ["grok-card.png?v=20260618-grok-logo4", "app.min.js: Grok modal logo cache-bust"],
+  ["grok-card.webp?v=20260721-heavy-cards-webp1", "app.min.js: Grok modal logo cache-bust"],
 ].forEach(([marker, label]) => requireMarker(minifiedSource, marker, label));
 
 [

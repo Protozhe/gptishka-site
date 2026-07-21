@@ -4,7 +4,8 @@ const path = require("node:path");
 const test = require("node:test");
 
 const ROOT_DIR = path.resolve(__dirname, "..");
-const STOREFRONT_ASSET_VERSION = "20260721-cards-webp1";
+const STOREFRONT_BUNDLE_VERSION = "20260721-heavy-cards-webp1";
+const VPN_CARD_VERSION = "20260721-cards-webp1";
 
 function readProjectFile(relativePath) {
   return fs.readFileSync(path.join(ROOT_DIR, relativePath), "utf8");
@@ -44,8 +45,8 @@ test("html pages load the current storefront app bundle version", () => {
   for (const relativePath of htmlFiles) {
     const html = readProjectFile(relativePath);
     assert.ok(
-      html.includes(`/assets/js/app.min.js?v=${STOREFRONT_ASSET_VERSION}`),
-      `${relativePath} should load app.min.js?v=${STOREFRONT_ASSET_VERSION}`,
+      html.includes(`/assets/js/app.min.js?v=${STOREFRONT_BUNDLE_VERSION}`),
+      `${relativePath} should load app.min.js?v=${STOREFRONT_BUNDLE_VERSION}`,
     );
   }
 });
@@ -54,11 +55,11 @@ test("vpn directory card uses cache-busted image assets", () => {
   for (const relativePath of ["assets/js/app.js", "assets/js/app.min.js"]) {
     const js = readProjectFile(relativePath);
     assert.ok(
-      js.includes(`/assets/img/services/vpn-card.webp?v=${STOREFRONT_ASSET_VERSION}`),
+      js.includes(`/assets/img/services/vpn-card.webp?v=${VPN_CARD_VERSION}`),
       `${relativePath} should reference cache-busted vpn-card.webp`,
     );
     assert.ok(
-      js.includes(`/assets/img/services/vpn-card-hover.webp?v=${STOREFRONT_ASSET_VERSION}`),
+      js.includes(`/assets/img/services/vpn-card-hover.webp?v=${VPN_CARD_VERSION}`),
       `${relativePath} should reference cache-busted vpn-card-hover.webp`,
     );
     assert.doesNotMatch(

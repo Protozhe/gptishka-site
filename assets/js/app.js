@@ -837,7 +837,7 @@ function initActivationResumeShortcut() {
       displayName: "SuperGrok",
       fallbackTitle: "SuperGrok",
       fallbackPlan: "1m",
-      logo: "/assets/img/services/grok-card.png?v=20260618-grok-logo4",
+      logo: "/assets/img/services/grok-card.webp?v=20260721-heavy-cards-webp1",
     },
     vpn: {
       displayName: "GPTishka VPN",
@@ -2032,7 +2032,11 @@ function initActivationResumeShortcut() {
       .replace(/\/assets\/img\/services\/vpn-card-hover\.png(?:\?[^#]*)?/i, "/assets/img/services/vpn-card-hover.webp?v=20260721-cards-webp1")
       .replace(/\/assets\/img\/services\/vpn-card\.png(?:\?[^#]*)?/i, "/assets/img/services/vpn-card.webp?v=20260721-cards-webp1")
       .replace(/\/assets\/img\/services\/vstar-card-hover\.png(?:\?[^#]*)?/i, "/assets/img/services/vstar-card-hover.webp?v=20260721-cards-webp1")
-      .replace(/\/assets\/img\/services\/vstar-card\.png(?:\?[^#]*)?/i, "/assets/img/services/vstar-card.webp?v=20260721-cards-webp1");
+      .replace(/\/assets\/img\/services\/vstar-card\.png(?:\?[^#]*)?/i, "/assets/img/services/vstar-card.webp?v=20260721-cards-webp1")
+      .replace(/\/assets\/img\/services\/grok-card-hover\.png(?:\?[^#]*)?/i, "/assets/img/services/grok-card-hover.webp?v=20260721-heavy-cards-webp1")
+      .replace(/\/assets\/img\/services\/grok-card\.png(?:\?[^#]*)?/i, "/assets/img/services/grok-card.webp?v=20260721-heavy-cards-webp1")
+      .replace(/\/uploads\/products\/49e55246-a678-4f16-8b55-48ffc77a88eb\.png(?:\?[^#]*)?/i, "/assets/img/steam/steam-topup-card.webp?v=20260721-heavy-cards-webp1")
+      .replace(/\/uploads\/products\/655563e1-f4f4-478b-9b33-28374b868709\.png(?:\?[^#]*)?/i, "/assets/img/steam/steam-topup-card-hover.webp?v=20260721-heavy-cards-webp1");
   }
 
   function getVisualConfig(item) {
@@ -3196,8 +3200,8 @@ function initActivationResumeShortcut() {
         hoverImageAlt: "Claude",
       },
       grok: {
-        imageUrl: "/assets/img/services/grok-card.png?v=20260618-grok-logo4",
-        hoverImageUrl: "/assets/img/services/grok-card-hover.png",
+        imageUrl: "/assets/img/services/grok-card.webp?v=20260721-heavy-cards-webp1",
+        hoverImageUrl: "/assets/img/services/grok-card-hover.webp?v=20260721-heavy-cards-webp1",
         imageAlt: "SuperGrok",
         hoverImageAlt: "SuperGrok",
       },
