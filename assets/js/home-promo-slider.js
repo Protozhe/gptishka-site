@@ -151,6 +151,48 @@
     return article;
   }
 
+  function slideElementMatchesData(article, slide) {
+    if (!article || !slide) return false;
+
+    var themeClass = text(slide.themeClass || "");
+    if (themeClass && !themeClass.split(/\s+/).every(function (className) { return article.classList.contains(className); })) {
+      return false;
+    }
+
+    var badge = article.querySelector(".home-promo-slide__badge");
+    if (text(badge && badge.textContent) !== text(slide.badge)) return false;
+
+    var expectedLines = Array.isArray(slide.titleLines) ? slide.titleLines.filter(Boolean).map(text) : [];
+    if (!expectedLines.length && slide.title) expectedLines = [text(slide.title)];
+    if (!expectedLines.length) expectedLines = ["GPTishka"];
+    var currentLines = Array.prototype.slice.call(article.querySelectorAll(".home-promo-slide__title-line")).map(function (line) {
+      return text(line.textContent);
+    });
+    if (currentLines.length !== expectedLines.length || currentLines.some(function (line, index) { return line !== expectedLines[index]; })) {
+      return false;
+    }
+
+    var description = article.querySelector(".home-promo-slide__content > p");
+    if (text(description && description.textContent) !== text(slide.description)) return false;
+
+    var button = article.querySelector(".home-promo-slide__button");
+    var expectedHref = safeUrl(slide.buttonHref || slide.buttonUrl);
+    if (text(button && button.textContent) !== text(slide.buttonText)) return false;
+    if (text(button && button.getAttribute("href")) !== expectedHref) return false;
+
+    var explicitImageUrl = optimizedSlideImageUrl(slide.imageUrl);
+    if (explicitImageUrl && safeUrl(article.getAttribute("data-promo-image-url")) !== explicitImageUrl) return false;
+
+    return true;
+  }
+
+  function slidesMatchPayload(track, payloadSlides) {
+    var currentSlides = Array.prototype.slice.call(track.querySelectorAll("[data-home-promo-slide]"));
+    return currentSlides.length === payloadSlides.length && currentSlides.every(function (article, index) {
+      return slideElementMatchesData(article, payloadSlides[index]);
+    });
+  }
+
   function renderShortcuts(items) {
     if (!Array.isArray(items) || !items.length) return;
     var grid = document.querySelector(".home-service-shortcuts__grid");
@@ -281,7 +323,7 @@
       start();
     }
 
-    if (Array.isArray(payload.slides) && payload.slides.length) {
+    if (Array.isArray(payload.slides) && payload.slides.length && !slidesMatchPayload(track, payload.slides)) {
       track.innerHTML = "";
       payload.slides.forEach(function (slide, index) {
         track.appendChild(createSlideElement(slide, index === 0));
