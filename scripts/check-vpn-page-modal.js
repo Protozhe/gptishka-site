@@ -18,7 +18,7 @@ const successHtml = read("success.html");
 const backfillServicePages = read("apps/admin-backend/scripts/backfill-service-pages.ts");
 
 expect("VPN page uses service constructor scope", vpnHtml.includes('data-service-page="vpn"') && vpnHtml.includes('data-service-layout="constructor"'));
-expect("VPN page has optimized dark-blue video hero", vpnHtml.includes("service-hero--vpn") && vpnHtml.includes("service-hero__blue-overlay") && vpnHtml.includes("/assets/video/chatgpt-plans-bg-optimized.mp4?v=20260721-video1") && vpnHtml.includes('preload="metadata"') && vpnHtml.includes("/assets/img/services/chatgpt-plans-bg-poster.webp?v=20260721-video1"));
+expect("VPN page has static dark-blue hero", vpnHtml.includes("service-hero--vpn") && vpnHtml.includes("service-hero__blue-overlay") && !vpnHtml.includes("chatgpt-plans-bg") && !vpnHtml.includes('<video class="service-hero__video"'));
 expect("VPN page uses shared constructor blocks", vpnHtml.includes("service-constructor-shell") && vpnHtml.includes("service-product-gallery") && vpnHtml.includes("service-selected-plan"));
 expect("VPN page uses VPN service image", vpnHtml.includes("/assets/img/services/vpn-card.png?v=20260620-vpn-page2"));
 expect("VPN page keeps FAQ block", vpnHtml.includes("service-faq-section") && vpnHtml.includes("service-faq-list"));

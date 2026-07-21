@@ -27,10 +27,6 @@ const expectedJsAssetVersion = "20260721-webp2";
   ['data-service-page="grok"', "supergrok.html: Grok service scope"],
   ['data-service-layout="constructor"', "supergrok.html: constructor layout marker"],
   ["service-hero--supergrok", "supergrok.html: Grok hero modifier"],
-  ['<video class="service-hero__video"', "supergrok.html: Grok hero video background"],
-  ['preload="metadata"', "supergrok.html: Grok hero video preload"],
-  ['/assets/img/services/chatgpt-plans-bg-poster.webp?v=20260721-video1', "supergrok.html: Grok hero video poster"],
-  ['src="/assets/video/chatgpt-plans-bg-optimized.mp4?v=20260721-video1"', "supergrok.html: Grok hero video source"],
   ['class="service-hero__black-overlay"', "supergrok.html: Grok black overlay"],
   ['class="service-hero__dark-overlay"', "supergrok.html: Grok dark overlay"],
   ["service-constructor-shell", "supergrok.html: constructor shell"],
@@ -51,6 +47,8 @@ const expectedJsAssetVersion = "20260721-webp2";
   ["20260615-chatgpt-seamless1", "supergrok.html: old ChatGPT cache-bust"],
   ["service-hero__stats", "supergrok.html: old hero stats block"],
   ["payment-method-modal", "supergrok.html: old static payment modal markup"],
+  ["chatgpt-plans-bg", "supergrok.html: removed hero video asset"],
+  ['<video class="service-hero__video"', "supergrok.html: removed hero video element"],
 ].forEach(([marker, label]) => rejectMarker(page, marker, label));
 
 [

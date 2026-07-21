@@ -4,8 +4,6 @@ const path = require("path");
 const root = path.resolve(__dirname, "..");
 const pagePath = path.join(root, "chatgpt.html");
 const cssPath = path.join(root, "assets", "css", "home-stability-hotfix.css");
-const videoPath = path.join(root, "assets", "video", "chatgpt-plans-bg-optimized.mp4");
-const posterPath = path.join(root, "assets", "img", "services", "chatgpt-plans-bg-poster.webp");
 
 const page = fs.readFileSync(pagePath, "utf8");
 const css = fs.readFileSync(cssPath, "utf8");
@@ -42,15 +40,8 @@ const hero = heroMatch[0];
 const expectedHeroDescription =
   "Оформите подписку ChatGPT без лишних сложностей. Выберите тариф, оплатите заказ, а GPTishka возьмёт подключение на себя — с поддержкой и гарантией на весь срок подписки.";
 
-requireIncludes(hero, '<video class="service-hero__video"', "chatgpt.html hero");
-requireIncludes(hero, "autoplay", "chatgpt.html hero video");
-requireIncludes(hero, "muted", "chatgpt.html hero video");
-requireIncludes(hero, "loop", "chatgpt.html hero video");
-requireIncludes(hero, "playsinline", "chatgpt.html hero video");
-requireIncludes(hero, 'preload="metadata"', "chatgpt.html hero video preload");
-requireIncludes(hero, 'poster="/assets/img/services/chatgpt-plans-bg-poster.webp?v=20260721-video1"', "chatgpt.html hero video poster");
-requireIncludes(hero, 'src="/assets/video/chatgpt-plans-bg-optimized.mp4?v=20260721-video1"', "chatgpt.html hero video source");
-requireIncludes(hero, 'type="video/mp4"', "chatgpt.html hero video source");
+requireNotIncludes(hero, '<video class="service-hero__video"', "chatgpt.html hero");
+requireNotIncludes(hero, "chatgpt-plans-bg", "chatgpt.html hero");
 requireIncludes(hero, 'class="service-hero__green-overlay"', "chatgpt.html hero");
 requireIncludes(hero, 'class="service-hero__dark-overlay"', "chatgpt.html hero");
 requireIncludes(hero, '<a class="service-back-link"', "chatgpt.html hero content");
@@ -95,12 +86,4 @@ requireRegex(css, /\.service-hero\.service-hero--chatgpt\s+p\s*\{[^}]*max-width:
 requireRegex(css, /@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*\.service-hero\.service-hero--chatgpt\s+h1\s*\{[^}]*font-size:\s*clamp\(44px,\s*15vw,\s*64px\);[^}]*letter-spacing:\s*-0\.04em;[^}]*\}[\s\S]*\.service-hero\.service-hero--chatgpt\s+p\s*\{[^}]*font-size:\s*16px;[^}]*line-height:\s*1\.5;[^}]*max-width:\s*100%;[^}]*\}[\s\S]*\.service-hero\.service-hero--chatgpt\s+\.service-hero__eyebrow\s*\{[^}]*font-size:\s*12px;[^}]*\}/, "CSS ChatGPT hero mobile typography");
 requireRegex(css, /\.service-product-gallery img\s*\{[\s\S]*width:\s*min\(100%,\s*470px\);[\s\S]*border-radius:\s*34px;[\s\S]*object-fit:\s*cover;/, "CSS restored gallery image");
 
-if (!fs.existsSync(videoPath)) {
-  fail("assets/video/chatgpt-plans-bg-optimized.mp4: video asset is missing");
-}
-
-if (!fs.existsSync(posterPath)) {
-  fail("assets/img/services/chatgpt-plans-bg-poster.webp: poster asset is missing");
-}
-
-console.log("ChatGPT video background structure is valid.");
+console.log("ChatGPT static hero structure is valid.");
