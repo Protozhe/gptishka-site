@@ -20,7 +20,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260618-claude-logo2";
-const expectedJsAssetVersion = "20260721-webp1";
+const expectedJsAssetVersion = "20260721-webp2";
 
 [
   ["service-page--constructor", "claude.html: constructor page class"],
@@ -28,7 +28,9 @@ const expectedJsAssetVersion = "20260721-webp1";
   ['data-service-layout="constructor"', "claude.html: constructor layout marker"],
   ["service-hero--claude", "claude.html: Claude hero modifier"],
   ['<video class="service-hero__video"', "claude.html: Claude hero video background"],
-  ['src="/assets/video/chatgpt-plans-bg.mp4?v=20260618-0618"', "claude.html: Claude hero video source"],
+  ['preload="metadata"', "claude.html: Claude hero video preload"],
+  ['/assets/img/services/chatgpt-plans-bg-poster.webp?v=20260721-video1', "claude.html: Claude hero video poster"],
+  ['src="/assets/video/chatgpt-plans-bg-optimized.mp4?v=20260721-video1"', "claude.html: Claude hero video source"],
   ['class="service-hero__orange-overlay"', "claude.html: Claude hero orange overlay"],
   ['class="service-hero__dark-overlay"', "claude.html: Claude hero dark overlay"],
   ["service-constructor-shell", "claude.html: constructor shell"],
@@ -51,7 +53,7 @@ const expectedJsAssetVersion = "20260721-webp1";
 [
   ["AI_ORDER_MODAL_SERVICE_KEYS", "app.js: shared AI modal service allowlist"],
   ["AI_ORDER_MODAL_SERVICE_CONFIG", "app.js: shared AI modal config"],
-  ['new Set(["chatgpt", "claude", "grok"])', "app.js: Claude in modal service allowlist"],
+  ['new Set(["chatgpt", "claude", "grok", "vpn"])', "app.js: Claude in modal service allowlist"],
   ["isAiOrderModalServiceKey", "app.js: generic service check"],
   ["getAiOrderModalServiceConfig", "app.js: service-specific modal config lookup"],
   ["renderChatGptGoOrderCard(item, serviceKey)", "app.js: render receives service key"],
@@ -69,7 +71,7 @@ const expectedJsAssetVersion = "20260721-webp1";
 ].forEach(([marker, label]) => requireMarker(source, marker, label));
 
 [
-  ['new Set(["chatgpt","claude","grok"])', "app.min.js: shared AI modal allowlist"],
+  ['new Set(["chatgpt", "claude", "grok", "vpn"])', "app.min.js: shared AI modal allowlist"],
   ["claude-card.png?v=20260618-claude-logo2", "app.min.js: Claude modal logo cache-bust"],
   ["claude-card-hover.png?v=20260618-claude-logo2", "app.min.js: Claude hover logo cache-bust"],
 ].forEach(([marker, label]) => requireMarker(minifiedSource, marker, label));

@@ -4,7 +4,8 @@ const path = require("path");
 const root = path.resolve(__dirname, "..");
 const pagePath = path.join(root, "chatgpt.html");
 const cssPath = path.join(root, "assets", "css", "home-stability-hotfix.css");
-const videoPath = path.join(root, "assets", "video", "chatgpt-plans-bg.mp4");
+const videoPath = path.join(root, "assets", "video", "chatgpt-plans-bg-optimized.mp4");
+const posterPath = path.join(root, "assets", "img", "services", "chatgpt-plans-bg-poster.webp");
 
 const page = fs.readFileSync(pagePath, "utf8");
 const css = fs.readFileSync(cssPath, "utf8");
@@ -46,7 +47,9 @@ requireIncludes(hero, "autoplay", "chatgpt.html hero video");
 requireIncludes(hero, "muted", "chatgpt.html hero video");
 requireIncludes(hero, "loop", "chatgpt.html hero video");
 requireIncludes(hero, "playsinline", "chatgpt.html hero video");
-requireIncludes(hero, 'src="/assets/video/chatgpt-plans-bg.mp4?v=20260618-0618"', "chatgpt.html hero video source");
+requireIncludes(hero, 'preload="metadata"', "chatgpt.html hero video preload");
+requireIncludes(hero, 'poster="/assets/img/services/chatgpt-plans-bg-poster.webp?v=20260721-video1"', "chatgpt.html hero video poster");
+requireIncludes(hero, 'src="/assets/video/chatgpt-plans-bg-optimized.mp4?v=20260721-video1"', "chatgpt.html hero video source");
 requireIncludes(hero, 'type="video/mp4"', "chatgpt.html hero video source");
 requireIncludes(hero, 'class="service-hero__green-overlay"', "chatgpt.html hero");
 requireIncludes(hero, 'class="service-hero__dark-overlay"', "chatgpt.html hero");
@@ -74,11 +77,11 @@ const gallery = galleryMatch[0];
 
 requireIncludes(gallery, '<img src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1"', "chatgpt.html gallery");
 
-if (gallery.includes("service-product-gallery__video") || gallery.includes("/assets/video/chatgpt-plans-bg.mp4")) {
+if (gallery.includes("service-product-gallery__video") || gallery.includes("/assets/video/chatgpt-plans-bg")) {
   fail("chatgpt.html gallery: video must not be inside the product gallery");
 }
 
-requireRegex(css, /\.service-hero\s*>\s*\*:not\(\.service-hero__video\):not\(\.service-hero__green-overlay\):not\(\.service-hero__orange-overlay\):not\(\.service-hero__black-overlay\):not\(\.service-hero__dark-overlay\)\s*\{[\s\S]*z-index:\s*3;/, "CSS hero foreground stacking");
+requireRegex(css, /\.service-hero\s*>\s*\*:not\(\.service-hero__video\):not\(\.service-hero__green-overlay\):not\(\.service-hero__orange-overlay\):not\(\.service-hero__black-overlay\):not\(\.service-hero__blue-overlay\):not\(\.service-hero__dark-overlay\)\s*\{[\s\S]*z-index:\s*3;/, "CSS hero foreground stacking");
 requireRegex(css, /\.service-hero\.service-hero--chatgpt\s*\{[^}]*border-radius:\s*34px;[^}]*\}/, "CSS ChatGPT hero rounded corners");
 requireRegex(css, /@media\s*\(max-width:\s*760px\)\s*\{[\s\S]*\.service-hero\.service-hero--chatgpt\s*\{[^}]*border-radius:\s*26px;[^}]*\}/, "CSS ChatGPT hero mobile rounded corners");
 requireRegex(css, /\.service-hero__video\s*\{[^}]*position:\s*absolute;[^}]*inset:\s*0;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*cover;[^}]*border-radius:\s*inherit;[^}]*\}/, "CSS service-hero__video");
@@ -93,7 +96,11 @@ requireRegex(css, /@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*\.service-hero\.se
 requireRegex(css, /\.service-product-gallery img\s*\{[\s\S]*width:\s*min\(100%,\s*470px\);[\s\S]*border-radius:\s*34px;[\s\S]*object-fit:\s*cover;/, "CSS restored gallery image");
 
 if (!fs.existsSync(videoPath)) {
-  fail("assets/video/chatgpt-plans-bg.mp4: video asset is missing");
+  fail("assets/video/chatgpt-plans-bg-optimized.mp4: video asset is missing");
+}
+
+if (!fs.existsSync(posterPath)) {
+  fail("assets/img/services/chatgpt-plans-bg-poster.webp: poster asset is missing");
 }
 
 console.log("ChatGPT video background structure is valid.");

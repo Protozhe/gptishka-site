@@ -20,7 +20,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260618-grok-logo4";
-const expectedJsAssetVersion = "20260721-webp1";
+const expectedJsAssetVersion = "20260721-webp2";
 
 [
   ["service-page--constructor", "supergrok.html: constructor page class"],
@@ -28,7 +28,9 @@ const expectedJsAssetVersion = "20260721-webp1";
   ['data-service-layout="constructor"', "supergrok.html: constructor layout marker"],
   ["service-hero--supergrok", "supergrok.html: Grok hero modifier"],
   ['<video class="service-hero__video"', "supergrok.html: Grok hero video background"],
-  ['src="/assets/video/chatgpt-plans-bg.mp4?v=20260618-0618"', "supergrok.html: Grok hero video source"],
+  ['preload="metadata"', "supergrok.html: Grok hero video preload"],
+  ['/assets/img/services/chatgpt-plans-bg-poster.webp?v=20260721-video1', "supergrok.html: Grok hero video poster"],
+  ['src="/assets/video/chatgpt-plans-bg-optimized.mp4?v=20260721-video1"', "supergrok.html: Grok hero video source"],
   ['class="service-hero__black-overlay"', "supergrok.html: Grok black overlay"],
   ['class="service-hero__dark-overlay"', "supergrok.html: Grok dark overlay"],
   ["service-constructor-shell", "supergrok.html: constructor shell"],
@@ -53,7 +55,7 @@ const expectedJsAssetVersion = "20260721-webp1";
 
 [
   ["AI_ORDER_MODAL_SERVICE_KEYS", "app.js: shared AI modal service allowlist"],
-  ['new Set(["chatgpt", "claude", "grok"])', "app.js: Grok in modal service allowlist"],
+  ['new Set(["chatgpt", "claude", "grok", "vpn"])', "app.js: Grok in modal service allowlist"],
   ["AI_ORDER_MODAL_SERVICE_CONFIG", "app.js: shared AI modal config"],
   ['displayName: "SuperGrok"', "app.js: Grok display name"],
   ['logo: "/assets/img/services/grok-card.png?v=20260618-grok-logo4"', "app.js: Grok modal logo cache-bust"],
@@ -63,7 +65,7 @@ const expectedJsAssetVersion = "20260721-webp1";
 ].forEach(([marker, label]) => requireMarker(source, marker, label));
 
 [
-  ['new Set(["chatgpt","claude","grok"])', "app.min.js: shared AI modal allowlist"],
+  ['new Set(["chatgpt", "claude", "grok", "vpn"])', "app.min.js: shared AI modal allowlist"],
   ["grok-card.png?v=20260618-grok-logo4", "app.min.js: Grok modal logo cache-bust"],
 ].forEach(([marker, label]) => requireMarker(minifiedSource, marker, label));
 
