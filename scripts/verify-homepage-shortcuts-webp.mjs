@@ -42,7 +42,7 @@ assert(
   "Static AI shortcut must use the responsive WebP set.",
 );
 assert(
-  index.includes("/assets/js/home-promo-slider.js?v=20260722-responsive-hero3"),
+  index.includes("/assets/js/home-promo-slider.js?v=20260722-opening-frame2"),
   "Homepage must load the cache-busted shortcut normalizer.",
 );
 assert(

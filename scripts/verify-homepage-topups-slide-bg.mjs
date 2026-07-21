@@ -33,11 +33,11 @@ assert(
   "Active SuperGrok slide must use the cache-busted WebP background.",
 );
 assert(
-  index.includes("/assets/css/home-critical-bundle.min.css?v=20260722-responsive-hero3"),
+  index.includes("/assets/css/home-critical-bundle.min.css?v=20260722-opening-frame2"),
   "index.html must load the cache-busted homepage CSS bundle.",
 );
 assert(
-  index.includes("/assets/js/home-promo-slider.js?v=20260722-responsive-hero3"),
+  index.includes("/assets/js/home-promo-slider.js?v=20260722-opening-frame2"),
   "index.html must cache-bust home-promo-slider.js for lazy promo backgrounds.",
 );
 assert(

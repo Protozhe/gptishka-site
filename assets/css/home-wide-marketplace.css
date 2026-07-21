@@ -2475,12 +2475,12 @@ body.home-wide-body .home-wide-page > .faq .faq-chat-btn {
   }
 }
 
-/* 20260722: responsive promo artboard.
-   Keep every banner edge-to-edge and scale the frame proportionally per layout,
-   similar to a Zero Block artboard, while the background artwork remains cover. */
+/* 20260722: stable opening viewport.
+   Hero and shortcuts share a height budget so the same content remains visible
+   on desktop and laptop screens. Artwork crops; typography does not scale. */
 .home-wide-page {
-  --home-promo-shell: 100%;
-  --home-promo-aspect: 1200 / 431;
+  --home-promo-shell: min(calc(100vw - (var(--home-wide-gutter) * 2)), 1320px);
+  --home-pricing-reveal-offset: clamp(14px, 2svh, 22px);
 }
 
 .home-wide-body main.page.home-wide-page {
@@ -2488,59 +2488,78 @@ body.home-wide-body .home-wide-page > .faq .faq-chat-btn {
   padding-right: 0 !important;
 }
 
-.home-wide-page .home-hero-wide {
-  width: 100% !important;
-  max-width: none !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
+.home-opening-frame {
+  display: grid;
+  grid-template-rows: minmax(340px, 1fr) auto;
+  gap: clamp(16px, 2.2svh, 24px);
+  width: 100%;
+  min-height: 620px;
+  min-height: calc(100svh - 170px);
+  padding-top: clamp(18px, 2.8svh, 30px);
 }
 
-.home-wide-page .home-hero-wide__panel[data-home-promo-slider],
-.home-wide-page .home-promo-slider {
-  width: 100% !important;
-  min-height: 0 !important;
-  max-width: none !important;
-  aspect-ratio: var(--home-promo-aspect);
-}
-
-.home-wide-page .home-hero-wide__panel[data-home-promo-slider] {
-  inset: auto !important;
-}
-
-.home-wide-page .home-promo-slider {
-  overflow: hidden;
-  border-left: 0;
-  border-right: 0;
-  border-radius: 0;
-}
-
-.home-wide-page .home-promo-slide {
+.home-opening-frame > .home-hero-wide {
+  align-self: stretch;
+  width: var(--home-promo-shell) !important;
+  max-width: var(--home-promo-shell) !important;
+  height: 100%;
   min-height: 0;
+  margin: 0 auto !important;
+}
+
+.home-opening-frame .home-hero-wide__content,
+.home-opening-frame .home-hero-wide__panel[data-home-promo-slider],
+.home-opening-frame .home-promo-slider {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  aspect-ratio: auto !important;
+}
+
+.home-opening-frame .home-hero-wide__panel[data-home-promo-slider] {
+  inset: auto !important;
+  overflow: visible;
+}
+
+.home-opening-frame .home-promo-slider,
+.home-opening-frame .home-promo-slide {
   overflow: hidden;
-  border-radius: 0;
+  border-radius: clamp(24px, 2.6vw, 38px);
+}
+
+.home-opening-frame .home-promo-slide {
+  min-height: 0;
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
 }
 
-.home-wide-page .home-promo-slider__arrow:first-child,
-.home-wide-page .home-promo-slider__arrow:last-child {
+.home-opening-frame > .home-service-shortcuts {
+  width: var(--home-promo-shell) !important;
+  max-width: var(--home-promo-shell) !important;
+  margin: 0 auto !important;
+}
+
+.home-opening-frame .home-promo-slider__arrow:first-child,
+.home-opening-frame .home-promo-slider__arrow:last-child {
   --promo-arrow-x: 0;
 }
 
-.home-wide-page .home-promo-slider__controls {
+.home-opening-frame .home-promo-slider__controls {
   inset: 0 clamp(10px, 2vw, 28px);
 }
 
-@media (min-width: 640px) and (max-width: 1180px) {
-  .home-wide-page {
-    --home-promo-aspect: 640 / 430;
-  }
-}
-
 @media (max-width: 639px) {
-  .home-wide-page {
-    --home-promo-aspect: 320 / 450;
+  .home-opening-frame {
+    grid-template-rows: minmax(400px, 1fr) auto;
+    gap: 14px;
+    min-height: calc(100svh - 135px);
+    padding-top: 14px;
   }
 
+  .home-opening-frame .home-promo-slider,
+  .home-opening-frame .home-promo-slide {
+    border-radius: 24px;
+  }
 }
