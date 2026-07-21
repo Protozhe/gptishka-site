@@ -236,7 +236,7 @@
 
     root.innerHTML =
       '<div class="support-widget__mascot" aria-hidden="true">' +
-        '<img class="support-widget__mascot-image" src="/assets/img/assistant-cat-left.png?v=20260531lcp1" data-gif-src="/assets/img/assistant-cat-left.gif" alt="" width="112" height="168" loading="lazy" decoding="async" fetchpriority="low" />' +
+        '<img class="support-widget__mascot-image" src="/assets/img/assistant-cat-left.png?v=20260531lcp1" data-animation-src="/assets/img/assistant-cat-left.webp?v=20260721-mascot-webp1" alt="" width="112" height="168" loading="lazy" decoding="async" fetchpriority="low" />' +
       '</div>' +
       '<div class="support-widget__resume-bubble" data-resume-bubble hidden>' +
         '<span class="support-widget__resume-text" data-resume-text></span>' +
@@ -260,9 +260,9 @@
     var resumeContinue = root.querySelector("[data-resume-continue]");
     var resumeCancel = root.querySelector("[data-resume-cancel]");
     var mascotImage = root.querySelector(".support-widget__mascot-image");
-    var gifSrc = mascotImage ? String(mascotImage.getAttribute("data-gif-src") || "").trim() : "";
-    var gifRequested = false;
-    var gifLoaded = false;
+    var animationSrc = mascotImage ? String(mascotImage.getAttribute("data-animation-src") || "").trim() : "";
+    var animationRequested = false;
+    var animationLoaded = false;
     var bubbleClosedBottom = "188px";
     var bubbleOpenBottom = "280px";
 
@@ -314,24 +314,24 @@
     };
 
     var loadAnimatedMascot = function () {
-      if (!mascotImage || !gifSrc || gifLoaded) return;
-      gifLoaded = true;
-      mascotImage.src = gifSrc;
-      mascotImage.removeAttribute("data-gif-src");
+      if (!mascotImage || !animationSrc || animationLoaded) return;
+      animationLoaded = true;
+      mascotImage.src = animationSrc;
+      mascotImage.removeAttribute("data-animation-src");
     };
 
-    if (mascotImage && gifSrc) {
+    if (mascotImage && animationSrc) {
       mascotImage.addEventListener("error", function () {
-        // If PNG placeholder is missing, immediately fallback to GIF.
-        if (String(mascotImage.src || "").indexOf("assistant-cat-left.gif") === -1) {
+        // If the PNG placeholder is missing, immediately load the animation.
+        if (String(mascotImage.src || "").indexOf("assistant-cat-left.webp") === -1) {
           loadAnimatedMascot();
         }
       });
     }
 
     var requestAnimatedMascot = function (delay) {
-      if (gifRequested || !shouldAnimateMascot()) return;
-      gifRequested = true;
+      if (animationRequested || !shouldAnimateMascot()) return;
+      animationRequested = true;
       var doLoad = function () {
         loadAnimatedMascot();
       };
@@ -461,7 +461,7 @@
     }
 
     // Performance guard:
-    // do not auto-load heavy GIF on page load; load only on explicit user interaction.
+    // Do not auto-load the animated WebP; load it only on explicit user interaction.
 
     function applyFallbackLayout() {
       var isMobile = typeof window.matchMedia === "function"
