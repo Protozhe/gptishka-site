@@ -50,10 +50,28 @@ Topups; поверх обоих изображений дополнительн�
 - `node --check`, профильная проверка slider wiring и TypeScript build admin
   backend — успешно.
 
-### Ограничение
+### Production-деплой
 
-Пакет пока не развёрнут на production. Видео и изображения shortcut-карточек
-в этот коммит не входят.
+Storefront-коммит `f4d9f38` развёрнут в `/var/www/gptishka-new`. Изменены
+только `index.html`, CSS и JS слайдера; добавлены два WebP. Admin API, база,
+Nginx config и исходные PNG не менялись.
+
+Резервная копия трёх заменённых файлов:
+
+`/var/backups/gptishka/promo-webp-20260721T143022Z`
+
+Live-проверка mobile и desktop:
+
+- главная, CSS, JS и оба WebP — HTTP 200;
+- initial resource list содержит только SuperGrok WebP, 131 940 байт,
+  initiator `link`;
+- после Next добавляется только Topups WebP, 159 084 байта, без PNG;
+- активный Topups получает `data-promo-image-loaded="true"`;
+- ошибок страницы нет, Nginx `active`, временных deploy-файлов нет.
+
+### Оставшийся объём
+
+Видео и изображения shortcut-карточек в этот пакет не входят.
 
 ## 2026-07-21 — Пакет 3: WebP для карточки ChatGPT
 
