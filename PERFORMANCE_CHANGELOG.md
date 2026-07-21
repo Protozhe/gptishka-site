@@ -1,5 +1,54 @@
 # PERFORMANCE_CHANGELOG
 
+## 2026-07-21 — Production-деплой пакета 1
+
+Пакет устранения двойной загрузки `chatgpt-card.png` развёрнут в
+`/var/www/gptishka-new`. Точечно обновлены восемь физических файлов:
+
+- `assets/js/app.js` и `assets/js/app.min.js`;
+- страницы каталога RU/EN;
+- страницы ChatGPT RU/EN.
+
+Корневой `main.js` не заменялся: это символическая ссылка на
+`assets/js/app.min.js`. Всего обновлено 12 активных ссылок. Содержимое PNG,
+CSS, серверный код, API и база данных не менялись.
+
+### Резервная копия и откат
+
+Перед записью создана копия всех восьми файлов:
+
+`/var/backups/gptishka/dedupe-chatgpt-card-20260721T132431Z`
+
+Откат:
+
+```bash
+backup=/var/backups/gptishka/dedupe-chatgpt-card-20260721T132431Z
+root=/var/www/gptishka-new
+cd "$backup"
+for file in \
+  assets/js/app.js assets/js/app.min.js \
+  catalog/index.html catalog/ai/index.html \
+  en/catalog/index.html en/catalog/ai/index.html \
+  chatgpt.html en/chatgpt.html
+do
+  cp -a "$backup/$file" "$root/$file"
+done
+```
+
+Перезапуск приложения для отката не требуется: файлы обслуживаются как
+статика.
+
+### Проверка после деплоя
+
+- Старых активных ссылок `chatgpt-card.png` без версии не осталось.
+- `assets/js/app.js`, `assets/js/app.min.js` и `main.js` отдают одинаковое
+  содержимое; символическая ссылка `main.js` сохранена.
+- `node --check` для двух физических JS-файлов — успешно.
+- `/`, `/catalog/`, `/catalog/ai/`, `/chatgpt` и `/en/chatgpt` — HTTP 200.
+- Публичный `app.min.js` содержит три версионированные ссылки и ни одной
+  старой; ответ по-прежнему передаётся с gzip.
+- Nginx после изменения остаётся в состоянии `active`.
+
 ## 2026-07-21 — Пакет 2: gzip для production-статики Nginx
 
 ### Найденная проблема
