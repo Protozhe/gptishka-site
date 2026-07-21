@@ -90,6 +90,18 @@
     slide.setAttribute("data-promo-image-loaded", "true");
   }
 
+  function preloadFollowingSlide(list, activeIndex) {
+    if (!list || list.length < 2) return;
+    var preload = function () {
+      ensureSlideBackground(list[(activeIndex + 1) % list.length]);
+    };
+    if (typeof window.requestIdleCallback === "function") {
+      window.requestIdleCallback(preload, { timeout: 1400 });
+    } else {
+      window.setTimeout(preload, 700);
+    }
+  }
+
   function getLang() {
     return String(document.documentElement.lang || "").toLowerCase().startsWith("en") ||
       String(window.location.pathname || "").toLowerCase().startsWith("/en/")
@@ -260,6 +272,7 @@
         dot.classList.toggle("is-active", idx === activeIndex);
         dot.setAttribute("aria-current", idx === activeIndex ? "true" : "false");
       });
+      preloadFollowingSlide(list, activeIndex);
       if (manual) restart();
     }
 

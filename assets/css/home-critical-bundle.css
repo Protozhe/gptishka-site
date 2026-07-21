@@ -17217,3 +17217,73 @@ body.home-wide-body .home-wide-page > .faq .faq-chat-btn {
     border-radius: 28px !important;
   }
 }
+
+/* 20260722: responsive promo artboard.
+   Keep every banner edge-to-edge and scale the frame proportionally per layout,
+   similar to a Zero Block artboard, while the background artwork remains cover. */
+.home-wide-page {
+  --home-promo-shell: 100%;
+  --home-promo-aspect: 1200 / 431;
+}
+
+.home-wide-body main.page.home-wide-page {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.home-wide-page .home-hero-wide {
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.home-wide-page .home-hero-wide__panel[data-home-promo-slider],
+.home-wide-page .home-promo-slider {
+  width: 100% !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  aspect-ratio: var(--home-promo-aspect);
+}
+
+.home-wide-page .home-hero-wide__panel[data-home-promo-slider] {
+  inset: auto !important;
+}
+
+.home-wide-page .home-promo-slider {
+  overflow: hidden;
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
+}
+
+.home-wide-page .home-promo-slide {
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.home-wide-page .home-promo-slider__arrow:first-child,
+.home-wide-page .home-promo-slider__arrow:last-child {
+  --promo-arrow-x: 0;
+}
+
+.home-wide-page .home-promo-slider__controls {
+  inset: 0 clamp(10px, 2vw, 28px);
+}
+
+@media (min-width: 640px) and (max-width: 1180px) {
+  .home-wide-page {
+    --home-promo-aspect: 640 / 430;
+  }
+}
+
+@media (max-width: 639px) {
+  .home-wide-page {
+    --home-promo-aspect: 320 / 450;
+  }
+
+}
