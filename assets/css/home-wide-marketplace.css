@@ -520,7 +520,7 @@
 .home-promo-slide--vpn {
   --promo-bg:
     linear-gradient(90deg, rgba(0, 0, 0, 0.74) 0%, rgba(0, 0, 0, 0.44) 36%, rgba(0, 0, 0, 0) 72%),
-    url("/assets/img/home/vpn-promo-bg.png?v=20260622") center / cover no-repeat;
+    linear-gradient(105deg, #020916 0%, #061a3d 54%, #02050c 100%);
   --promo-art: none;
 }
 
@@ -827,7 +827,6 @@
 .home-service-shortcut--vpn .home-service-shortcut__art {
   background:
     linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.28)),
-    url("/assets/img/home/vpn-shortcut-bg.png?v=20260622") center / cover no-repeat,
     radial-gradient(circle at 50% 8%, rgba(72, 126, 255, 0.26), transparent 36%),
     linear-gradient(145deg, rgba(6, 12, 26, 0.98), rgba(10, 31, 76, 0.92));
 }

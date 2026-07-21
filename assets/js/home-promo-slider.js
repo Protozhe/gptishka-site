@@ -24,6 +24,9 @@
     if (pathname === "/assets/img/home/ai-shortcut.png") {
       return "/assets/img/home/ai-shortcut.webp?v=20260721-shortcuts-webp1";
     }
+    if (pathname === "/assets/img/home/vpn-shortcut-bg.png") {
+      return "/assets/img/home/vpn-shortcut-bg.webp?v=20260721-vpn-bg-webp1";
+    }
     if (pathname === "/assets/img/services/vpn-card.png") {
       return "/assets/img/services/vpn-card.webp?v=20260721-cards-webp1";
     }
@@ -39,11 +42,23 @@
     return url;
   }
 
+  function optimizedSlideImageUrl(value) {
+    var url = safeUrl(value);
+    var pathname = url.split(/[?#]/, 1)[0].toLowerCase();
+    if (pathname === "/assets/img/home/vpn-promo-bg.png") {
+      return "/assets/img/home/vpn-promo-bg.webp?v=20260721-vpn-bg-webp1";
+    }
+    return url;
+  }
+
   function fallbackSlideImageUrl(slide) {
     var id = text(slide && slide.id).toLowerCase();
     var themeClass = text(slide && (slide.themeClass || slide.className)).toLowerCase();
     if (id === "topups" || themeClass.indexOf("home-promo-slide--topups") !== -1) {
       return "/assets/img/home/topups-promo-bg.webp?v=20260721-promo-webp1";
+    }
+    if (id === "vpn" || themeClass.indexOf("home-promo-slide--vpn") !== -1) {
+      return "/assets/img/home/vpn-promo-bg.webp?v=20260721-vpn-bg-webp1";
     }
     return "";
   }
@@ -68,7 +83,7 @@
     article.className = "home-promo-slide " + text(slide.themeClass || "") + (active ? " is-active" : "");
     article.setAttribute("data-home-promo-slide", "");
 
-    var imageUrl = safeUrl(slide.imageUrl) || fallbackSlideImageUrl(slide);
+    var imageUrl = optimizedSlideImageUrl(slide.imageUrl) || fallbackSlideImageUrl(slide);
     if (imageUrl) {
       article.setAttribute("data-promo-image-url", imageUrl);
     }

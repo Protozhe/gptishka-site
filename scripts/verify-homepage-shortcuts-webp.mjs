@@ -23,7 +23,7 @@ assert(
   "Static AI shortcut must use the cache-busted WebP.",
 );
 assert(
-  index.includes("/assets/js/home-promo-slider.js?v=20260721-shortcuts-webp1"),
+  index.includes("/assets/js/home-promo-slider.js?v=20260721-vpn-bg-webp1"),
   "Homepage must load the cache-busted shortcut normalizer.",
 );
 assert(
