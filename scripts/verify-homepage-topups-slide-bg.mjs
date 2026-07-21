@@ -37,7 +37,7 @@ assert(
   "index.html must cache-bust home-wide-marketplace.css for promo WebP.",
 );
 assert(
-  index.includes("/assets/js/home-promo-slider.js?v=20260721-promo-webp1"),
+  index.includes("/assets/js/home-promo-slider.js?v=20260721-shortcuts-webp1"),
   "index.html must cache-bust home-promo-slider.js for lazy promo backgrounds.",
 );
 assert(

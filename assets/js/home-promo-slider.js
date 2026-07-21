@@ -15,6 +15,18 @@
     return url;
   }
 
+  function optimizedShortcutImageUrl(value) {
+    var url = safeUrl(value);
+    var pathname = url.split(/[?#]/, 1)[0].toLowerCase();
+    if (pathname === "/assets/img/home/topups-shortcut.png") {
+      return "/assets/img/home/topups-shortcut.webp?v=20260721-shortcuts-webp1";
+    }
+    if (pathname === "/assets/img/home/ai-shortcut.png") {
+      return "/assets/img/home/ai-shortcut.webp?v=20260721-shortcuts-webp1";
+    }
+    return url;
+  }
+
   function fallbackSlideImageUrl(slide) {
     var id = text(slide && slide.id).toLowerCase();
     var themeClass = text(slide && (slide.themeClass || slide.className)).toLowerCase();
@@ -106,7 +118,7 @@
       link.href = href;
       link.setAttribute("aria-label", text(item.ariaLabel) || text(item.title) || "Open section");
 
-      var imageUrl = safeUrl(item.imageUrl);
+      var imageUrl = optimizedShortcutImageUrl(item.imageUrl);
       var hoverImageUrl = safeUrl(item.hoverImageUrl);
       var logoUrl = safeUrl(item.logoUrl);
 
