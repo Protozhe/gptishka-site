@@ -27,6 +27,10 @@
 - `verify-steam-vpn-card-webp.mjs` проверяет RIFF/WebP-сигнатуры, точные размеры, активные ссылки и
   идентичность трёх копий storefront-бандла.
 - `check-vpn-page-modal.js` проверяет новые VPN WebP-фолбэки.
+- Production отдаёт проверенные карточки с HTTP 200, `Content-Type: image/webp` и ожидаемыми
+  `Content-Length`; браузер подтвердил загрузку в исходном разрешении 1254×1254.
+- Storefront-коммит: `b5314fd`. Резервная копия заменённых production-файлов:
+  `/var/backups/gptishka/cards-webp-20260721T163004Z`.
 
 ## 2026-07-21 — Пакет 7: анимированный WebP персонажа поддержки
 
