@@ -17241,7 +17241,7 @@ body.home-wide-body .home-wide-page > .faq .faq-chat-btn {
   padding-top: clamp(18px, 2.8svh, 30px);
 }
 
-.home-opening-frame > .home-hero-wide {
+.home-wide-body .home-opening-frame > .home-hero-wide {
   align-self: stretch;
   width: var(--home-promo-shell) !important;
   max-width: var(--home-promo-shell) !important;

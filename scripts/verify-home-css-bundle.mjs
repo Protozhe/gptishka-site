@@ -36,7 +36,7 @@ assert.equal(
   "Minified homepage CSS bundle is stale; run scripts/build-home-css-bundle.mjs.",
 );
 assert.ok(
-  index.includes('/assets/css/home-critical-bundle.min.css?v=20260722-opening-frame2'),
+  index.includes('/assets/css/home-critical-bundle.min.css?v=20260722-opening-frame3'),
   "Homepage must load the cache-busted CSS bundle.",
 );
 for (const source of sources) {
