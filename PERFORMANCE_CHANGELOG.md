@@ -50,13 +50,40 @@ PNG-пути из сохранённых данных.
 - TypeScript production-build admin backend — успешно.
 - Созданы контрольные снимки в `visual-baseline/after/chatgpt-webp/`.
 
+### Production-деплой
+
+Финальная версия storefront `5a3c57f` развёрнута в
+`/var/www/gptishka-new`. База данных, API-процесс, исходные PNG и Nginx config
+не изменялись. `main.js` остался символической ссылкой на
+`assets/js/app.min.js`.
+
+Резервные копии:
+
+- основной пакет: `/var/backups/gptishka/chatgpt-webp-20260721T134821Z`;
+- финальная нормализация и cache-bust:
+  `/var/backups/gptishka/chatgpt-webp-hotfix-20260721T135522Z`.
+
+Live-проверка после финального деплоя:
+
+- `/`, `/en/`, `/catalog/`, `/catalog/ai/`, `/chatgpt`, `/en/chatgpt` и оба
+  WebP — HTTP 200;
+- после прокрутки ленивых карточек главная запрашивает только основной и hover
+  WebP; PNG-запросов нет;
+- browser transfer двух WebP — 57 014 + 42 294 = 99 308 байт с учётом
+  сетевого overhead, body — 98 708 байт;
+- hover каталога: primary opacity 0, hover opacity 1;
+- публичный HTML использует `app.min.js?v=20260721-webp2`, а JS содержит
+  финальную нормализацию `imageUrl` и `hoverImageUrl`.
+
+Для полного отката нужно восстановить файлы из основного backup и удалить
+только два добавленных WebP. Hotfix-backup позволяет отдельно вернуться к
+первой развёрнутой версии пакета.
+
 ### Известные ограничения
 
 - Несколько старых marker-тестов order modal, Claude и SuperGrok проверяют уже
   отсутствующие в production-снимке строки. Их падения не связаны с WebP;
   работающие ChatGPT visual/UX-проверки перечислены выше.
-- Пакет пока не развёрнут на production. До деплоя live-сайт продолжает
-  использовать PNG.
 
 ## 2026-07-21 — Production-деплой пакета 1
 
