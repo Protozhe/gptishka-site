@@ -17,11 +17,19 @@
 
   function fallbackSlideImageUrl(slide) {
     var id = text(slide && slide.id).toLowerCase();
-    var themeClass = text(slide && slide.themeClass).toLowerCase();
+    var themeClass = text(slide && (slide.themeClass || slide.className)).toLowerCase();
     if (id === "topups" || themeClass.indexOf("home-promo-slide--topups") !== -1) {
-      return "/assets/img/home/topups-promo-bg.png?v=20260703-steam-promo-restore1";
+      return "/assets/img/home/topups-promo-bg.webp?v=20260721-promo-webp1";
     }
     return "";
+  }
+
+  function ensureSlideBackground(slide) {
+    if (!slide || slide.getAttribute("data-promo-image-loaded") === "true") return;
+    var imageUrl = safeUrl(slide.getAttribute("data-promo-image-url")) || fallbackSlideImageUrl(slide);
+    if (!imageUrl) return;
+    slide.style.setProperty("--promo-bg", 'linear-gradient(90deg, rgba(0,0,0,.82), rgba(0,0,0,.28)), url("' + imageUrl.replace(/"/g, "%22") + '") center / cover no-repeat');
+    slide.setAttribute("data-promo-image-loaded", "true");
   }
 
   function getLang() {
@@ -38,7 +46,7 @@
 
     var imageUrl = safeUrl(slide.imageUrl) || fallbackSlideImageUrl(slide);
     if (imageUrl) {
-      article.style.setProperty("--promo-bg", 'linear-gradient(90deg, rgba(0,0,0,.82), rgba(0,0,0,.28)), url("' + imageUrl.replace(/"/g, "%22") + '") center / cover no-repeat');
+      article.setAttribute("data-promo-image-url", imageUrl);
     }
 
     var content = document.createElement("div");
@@ -181,6 +189,7 @@
       var list = slides();
       if (!list.length) return;
       activeIndex = ((index % list.length) + list.length) % list.length;
+      ensureSlideBackground(list[activeIndex]);
       list.forEach(function (slide, idx) {
         slide.classList.toggle("is-active", idx === activeIndex);
       });

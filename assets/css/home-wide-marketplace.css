@@ -550,7 +550,6 @@
 .home-promo-slide--topups {
   --promo-bg:
     linear-gradient(90deg, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.5) 40%, rgba(0, 0, 0, 0.02) 76%),
-    url("/assets/img/home/topups-promo-bg.png?v=20260703-steam-promo-restore1") center / cover no-repeat,
     linear-gradient(105deg, #0b101c 0%, #111827 54%, #05070d 100%);
   --promo-art: none;
 }
@@ -588,7 +587,7 @@
 .home-promo-slide--supergrok {
   --promo-bg:
     linear-gradient(90deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.56) 39%, rgba(0, 0, 0, 0.08) 72%),
-    url("/assets/img/home/supergrok-promo-bg.png?v=20260622") center / cover no-repeat;
+    url("/assets/img/home/supergrok-promo-bg.webp?v=20260721-promo-webp1") center / cover no-repeat;
   --promo-art: none;
 }
 
