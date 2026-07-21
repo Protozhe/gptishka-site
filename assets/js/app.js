@@ -2950,7 +2950,9 @@ function initActivationResumeShortcut() {
   function getServiceCardValue(serviceCard, field, fallback) {
     const value = serviceCard && Object.prototype.hasOwnProperty.call(serviceCard, field) ? serviceCard[field] : "";
     const text = String(value || "").trim();
-    return text || fallback;
+    const resolved = text || fallback;
+    if (field === "imageUrl" || field === "hoverImageUrl") return getOptimizedServiceImageUrl(resolved);
+    return resolved;
   }
 
   function getServiceCardBackground(serviceCard, fallbackVisual) {
