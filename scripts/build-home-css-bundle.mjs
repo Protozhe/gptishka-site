@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { minifyCss } from "./css-minifier.mjs";
 
 const root = process.cwd();
 const sources = [
@@ -13,6 +14,7 @@ const sources = [
   "assets/css/home-wide-marketplace.css",
 ];
 const target = path.join(root, "assets", "css", "home-critical-bundle.css");
+const minifiedTarget = path.join(root, "assets", "css", "home-critical-bundle.min.css");
 
 const output = sources
   .map(relativePath => {
@@ -22,4 +24,9 @@ const output = sources
   .join("\n");
 
 fs.writeFileSync(target, output, "utf8");
-console.log(`Built ${path.relative(root, target)} from ${sources.length} files (${Buffer.byteLength(output)} bytes).`);
+const minified = minifyCss(output);
+fs.writeFileSync(minifiedTarget, minified, "utf8");
+console.log(
+  `Built ${path.relative(root, target)} and ${path.relative(root, minifiedTarget)} from ${sources.length} files ` +
+  `(${Buffer.byteLength(output)} -> ${Buffer.byteLength(minified)} bytes).`,
+);

@@ -7,7 +7,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = relativePath => fs.readFileSync(path.join(root, relativePath), "utf8");
 const version = "20260721-vpn-bg-webp1";
 const sliderVersion = "20260721-shortcuts-responsive1";
-const cssVersion = "20260721-css-bundle1";
+const cssVersion = "20260721-css-min1";
 const assets = [
   ["assets/img/home/vpn-shortcut-bg.webp", 208744],
   ["assets/img/home/vpn-promo-bg.webp", 162652],
@@ -30,7 +30,7 @@ assert.ok(!css.includes("vpn-shortcut-bg.png"), "CSS must not duplicate the VPN 
 assert.ok(slider.includes(`/assets/img/home/vpn-promo-bg.webp?v=${version}`), "VPN promo WebP fallback missing");
 assert.ok(slider.includes(`/assets/img/home/vpn-shortcut-bg.webp?v=${version}`), "VPN shortcut PNG normalization missing");
 assert.ok(slider.includes("ensureSlideBackground(list[activeIndex])"), "active-slide lazy loading missing");
-assert.ok(index.includes(`/assets/css/home-critical-bundle.css?v=${cssVersion}`), "homepage CSS cache-bust missing");
+assert.ok(index.includes(`/assets/css/home-critical-bundle.min.css?v=${cssVersion}`), "homepage CSS cache-bust missing");
 assert.ok(index.includes(`/assets/js/home-promo-slider.js?v=${sliderVersion}`), "homepage slider cache-bust missing");
 assert.equal((homepageData.match(new RegExp(`vpn-shortcut-bg\\.webp\\?v=${version}`, "g")) || []).length, 2);
 assert.equal((homepageData.match(new RegExp(`vpn-promo-bg\\.webp\\?v=${version}`, "g")) || []).length, 2);

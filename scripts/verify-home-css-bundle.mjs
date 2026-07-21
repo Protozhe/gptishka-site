@@ -2,10 +2,12 @@ import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { minifyCss } from "./css-minifier.mjs";
 
 const root = process.cwd();
 const index = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const bundle = fs.readFileSync(path.join(root, "assets", "css", "home-critical-bundle.css"), "utf8");
+const minifiedBundle = fs.readFileSync(path.join(root, "assets", "css", "home-critical-bundle.min.css"), "utf8");
 const sources = [
   "assets/css/logo.min.css",
   "assets/css/gptishka-header-refresh.css",
@@ -28,8 +30,13 @@ assert.equal(
   crypto.createHash("sha256").update(expected).digest("hex"),
   "Homepage CSS bundle is stale; run scripts/build-home-css-bundle.mjs.",
 );
+assert.equal(
+  crypto.createHash("sha256").update(minifiedBundle).digest("hex"),
+  crypto.createHash("sha256").update(minifyCss(expected)).digest("hex"),
+  "Minified homepage CSS bundle is stale; run scripts/build-home-css-bundle.mjs.",
+);
 assert.ok(
-  index.includes('/assets/css/home-critical-bundle.css?v=20260721-css-bundle1'),
+  index.includes('/assets/css/home-critical-bundle.min.css?v=20260721-css-min1'),
   "Homepage must load the cache-busted CSS bundle.",
 );
 for (const source of sources) {
@@ -44,4 +51,7 @@ assert.ok(
   "Google Fonts needs a no-JavaScript fallback.",
 );
 
-console.log(`Homepage CSS bundle verified (${sources.length} sources, ${Buffer.byteLength(bundle)} bytes).`);
+console.log(
+  `Homepage CSS bundle verified (${sources.length} sources, ${Buffer.byteLength(bundle)} -> ` +
+  `${Buffer.byteLength(minifiedBundle)} bytes).`,
+);
