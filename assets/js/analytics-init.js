@@ -23,36 +23,10 @@
     start: Date.now()
   });
 
-  if (!document.getElementById(TMR_SCRIPT_ID)) {
-    var tmrScript = document.createElement("script");
-    tmrScript.type = "text/javascript";
-    tmrScript.async = true;
-    tmrScript.id = TMR_SCRIPT_ID;
-    tmrScript.src = TMR_SCRIPT_SRC;
-    var firstScript = document.getElementsByTagName("script")[0];
-    if (firstScript && firstScript.parentNode) {
-      firstScript.parentNode.insertBefore(tmrScript, firstScript);
-    } else {
-      document.head.appendChild(tmrScript);
-    }
-  }
-
   window.ym = window.ym || function () {
     (window.ym.a = window.ym.a || []).push(arguments);
   };
   window.ym.l = window.ym.l || Date.now();
-
-  if (!hasScript(YM_SCRIPT_SRC)) {
-    var ymScript = document.createElement("script");
-    ymScript.async = true;
-    ymScript.src = YM_SCRIPT_SRC + "?id=" + YM_ID;
-    var anchor = document.getElementsByTagName("script")[0];
-    if (anchor && anchor.parentNode) {
-      anchor.parentNode.insertBefore(ymScript, anchor);
-    } else {
-      document.head.appendChild(ymScript);
-    }
-  }
 
   window.ym(YM_ID, "init", {
     ssr: true,
@@ -64,4 +38,63 @@
     accurateTrackBounce: true,
     trackLinks: true
   });
+
+  var analyticsStarted = false;
+  var analyticsTimer = 0;
+  var interactionEvents = ["pointerdown", "touchstart", "keydown", "scroll"];
+
+  function removeInteractionListeners() {
+    for (var i = 0; i < interactionEvents.length; i += 1) {
+      window.removeEventListener(interactionEvents[i], startExternalAnalytics);
+    }
+  }
+
+  function insertAsyncScript(script) {
+    var anchor = document.getElementsByTagName("script")[0];
+    if (anchor && anchor.parentNode) {
+      anchor.parentNode.insertBefore(script, anchor);
+    } else {
+      document.head.appendChild(script);
+    }
+  }
+
+  function startExternalAnalytics() {
+    if (analyticsStarted) return;
+    analyticsStarted = true;
+    if (analyticsTimer) window.clearTimeout(analyticsTimer);
+    removeInteractionListeners();
+
+    if (!document.getElementById(TMR_SCRIPT_ID)) {
+      var tmrScript = document.createElement("script");
+      tmrScript.type = "text/javascript";
+      tmrScript.async = true;
+      tmrScript.id = TMR_SCRIPT_ID;
+      tmrScript.src = TMR_SCRIPT_SRC;
+      insertAsyncScript(tmrScript);
+    }
+
+    if (!hasScript(YM_SCRIPT_SRC)) {
+      var ymScript = document.createElement("script");
+      ymScript.async = true;
+      ymScript.src = YM_SCRIPT_SRC + "?id=" + YM_ID;
+      insertAsyncScript(ymScript);
+    }
+  }
+
+  function scheduleAfterLoad() {
+    analyticsTimer = window.setTimeout(startExternalAnalytics, 4000);
+  }
+
+  for (var i = 0; i < interactionEvents.length; i += 1) {
+    window.addEventListener(interactionEvents[i], startExternalAnalytics, {
+      once: true,
+      passive: true
+    });
+  }
+
+  if (document.readyState === "complete") {
+    scheduleAfterLoad();
+  } else {
+    window.addEventListener("load", scheduleAfterLoad, { once: true });
+  }
 })();
