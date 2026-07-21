@@ -20,7 +20,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260618-claude-logo2";
-const expectedJsAssetVersion = "20260721-webp2";
+const expectedJsAssetVersion = "20260721-cards-webp1";
 
 [
   ["service-page--constructor", "claude.html: constructor page class"],

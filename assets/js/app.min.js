@@ -843,7 +843,7 @@ function initActivationResumeShortcut() {
       displayName: "GPTishka VPN",
       fallbackTitle: "GPTishka VPN",
       fallbackPlan: "1m",
-      logo: "/assets/img/services/vpn-card.png?v=20260619-vpn-service1",
+      logo: "/assets/img/services/vpn-card.webp?v=20260721-cards-webp1",
     },
   };
   let cards = [];
@@ -2028,7 +2028,11 @@ function initActivationResumeShortcut() {
   function getOptimizedServiceImageUrl(value) {
     return String(value || "").trim()
       .replace(/\/assets\/img\/services\/chatgpt-card-hover\.png(?:\?[^#]*)?/i, "/assets/img/services/chatgpt-card-hover.webp?v=20260721-webp1")
-      .replace(/\/assets\/img\/services\/chatgpt-card\.png(?:\?[^#]*)?/i, "/assets/img/services/chatgpt-card.webp?v=20260721-webp1");
+      .replace(/\/assets\/img\/services\/chatgpt-card\.png(?:\?[^#]*)?/i, "/assets/img/services/chatgpt-card.webp?v=20260721-webp1")
+      .replace(/\/assets\/img\/services\/vpn-card-hover\.png(?:\?[^#]*)?/i, "/assets/img/services/vpn-card-hover.webp?v=20260721-cards-webp1")
+      .replace(/\/assets\/img\/services\/vpn-card\.png(?:\?[^#]*)?/i, "/assets/img/services/vpn-card.webp?v=20260721-cards-webp1")
+      .replace(/\/assets\/img\/services\/vstar-card-hover\.png(?:\?[^#]*)?/i, "/assets/img/services/vstar-card-hover.webp?v=20260721-cards-webp1")
+      .replace(/\/assets\/img\/services\/vstar-card\.png(?:\?[^#]*)?/i, "/assets/img/services/vstar-card.webp?v=20260721-cards-webp1");
   }
 
   function getVisualConfig(item) {
@@ -3121,8 +3125,8 @@ function initActivationResumeShortcut() {
     const displayHref = getServiceCardValue(serviceCard, "href", "/store/vpn");
     const displayIconText = getServiceCardValue(serviceCard, "iconText", "VPN");
     const displayTheme = getServiceCardValue(serviceCard, "theme", "vpn");
-    const displayImageUrl = getServiceCardValue(serviceCard, "imageUrl", "/assets/img/services/vpn-card.png");
-    const displayHoverImageUrl = getServiceCardValue(serviceCard, "hoverImageUrl", "/assets/img/services/vpn-card-hover.png");
+    const displayImageUrl = getServiceCardValue(serviceCard, "imageUrl", "/assets/img/services/vpn-card.webp?v=20260721-cards-webp1");
+    const displayHoverImageUrl = getServiceCardValue(serviceCard, "hoverImageUrl", "/assets/img/services/vpn-card-hover.webp?v=20260721-cards-webp1");
     const displayHasHoverImage = Boolean(displayImageUrl && displayHoverImageUrl && displayImageUrl !== displayHoverImageUrl);
     const displayBackground = getServiceCardBackground(serviceCard, { backgroundColor: "#06142f", backgroundType: "solid" });
     return (
@@ -3198,8 +3202,8 @@ function initActivationResumeShortcut() {
         hoverImageAlt: "SuperGrok",
       },
       vpn: {
-        imageUrl: "/assets/img/services/vpn-card.png?v=20260620-vpn-card2",
-        hoverImageUrl: "/assets/img/services/vpn-card-hover.png?v=20260620-vpn-card2",
+        imageUrl: "/assets/img/services/vpn-card.webp?v=20260721-cards-webp1",
+        hoverImageUrl: "/assets/img/services/vpn-card-hover.webp?v=20260721-cards-webp1",
         imageAlt: "GPTishka VPN",
         hoverImageAlt: "GPTishka VPN",
       },

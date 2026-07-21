@@ -20,7 +20,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260618-grok-logo4";
-const expectedJsAssetVersion = "20260721-webp2";
+const expectedJsAssetVersion = "20260721-cards-webp1";
 
 [
   ["service-page--constructor", "supergrok.html: constructor page class"],

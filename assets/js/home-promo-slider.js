@@ -24,6 +24,18 @@
     if (pathname === "/assets/img/home/ai-shortcut.png") {
       return "/assets/img/home/ai-shortcut.webp?v=20260721-shortcuts-webp1";
     }
+    if (pathname === "/assets/img/services/vpn-card.png") {
+      return "/assets/img/services/vpn-card.webp?v=20260721-cards-webp1";
+    }
+    if (pathname === "/assets/img/services/vpn-card-hover.png") {
+      return "/assets/img/services/vpn-card-hover.webp?v=20260721-cards-webp1";
+    }
+    if (pathname === "/assets/img/services/vstar-card.png") {
+      return "/assets/img/services/vstar-card.webp?v=20260721-cards-webp1";
+    }
+    if (pathname === "/assets/img/services/vstar-card-hover.png") {
+      return "/assets/img/services/vstar-card-hover.webp?v=20260721-cards-webp1";
+    }
     return url;
   }
 
@@ -119,8 +131,8 @@
       link.setAttribute("aria-label", text(item.ariaLabel) || text(item.title) || "Open section");
 
       var imageUrl = optimizedShortcutImageUrl(item.imageUrl);
-      var hoverImageUrl = safeUrl(item.hoverImageUrl);
-      var logoUrl = safeUrl(item.logoUrl);
+      var hoverImageUrl = optimizedShortcutImageUrl(item.hoverImageUrl);
+      var logoUrl = optimizedShortcutImageUrl(item.logoUrl);
 
       var art = document.createElement("span");
       art.className = "home-service-shortcut__art" + (hoverImageUrl ? " has-hover" : "");
