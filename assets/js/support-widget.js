@@ -236,7 +236,7 @@
 
     root.innerHTML =
       '<div class="support-widget__mascot" aria-hidden="true">' +
-        '<img class="support-widget__mascot-image" src="/assets/img/assistant-cat-left.png?v=20260531lcp1" data-animation-src="/assets/img/assistant-cat-left.webp?v=20260721-mascot-webp1" alt="" width="112" height="168" loading="lazy" decoding="async" fetchpriority="low" />' +
+        '<img class="support-widget__mascot-image" src="/assets/img/assistant-cat-left-placeholder.webp?v=20260721-mascot-placeholder-webp1" data-animation-src="/assets/img/assistant-cat-left.webp?v=20260721-mascot-webp1" alt="" width="112" height="168" loading="lazy" decoding="async" fetchpriority="low" />' +
       '</div>' +
       '<div class="support-widget__resume-bubble" data-resume-bubble hidden>' +
         '<span class="support-widget__resume-text" data-resume-text></span>' +

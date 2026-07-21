@@ -4,7 +4,7 @@ import path from "node:path";
 const root = process.cwd();
 const script = fs.readFileSync(path.join(root, "assets", "js", "support-widget.js"), "utf8");
 const animationPath = path.join(root, "assets", "img", "assistant-cat-left.webp");
-const placeholderPath = path.join(root, "assets", "img", "assistant-cat-left.png");
+const placeholderPath = path.join(root, "assets", "img", "assistant-cat-left-placeholder.webp");
 
 function assert(condition, message) {
   if (!condition) {
@@ -15,6 +15,11 @@ function assert(condition, message) {
 
 assert(fs.existsSync(animationPath), "Animated mascot WebP is missing.");
 assert(fs.existsSync(placeholderPath), "Static mascot placeholder is missing.");
+assert(fs.statSync(placeholderPath).size < 20_000, "Static mascot placeholder is unexpectedly large.");
+assert(
+  script.includes('src="/assets/img/assistant-cat-left-placeholder.webp?v=20260721-mascot-placeholder-webp1"'),
+  "Support widget must use the optimized static WebP placeholder.",
+);
 assert(
   script.includes('data-animation-src="/assets/img/assistant-cat-left.webp?v=20260721-mascot-webp1"'),
   "Support widget must point to the cache-busted animated WebP.",
@@ -48,7 +53,7 @@ assert(widgetPages.length > 0, "No HTML pages load the support widget.");
 for (const file of widgetPages) {
   const html = fs.readFileSync(file, "utf8");
   assert(
-    html.includes("/assets/js/support-widget.js?v=20260721-mascot-webp1"),
+    html.includes("/assets/js/support-widget.js?v=20260721-mascot-placeholder-webp1"),
     `${path.relative(root, file)} has a stale support widget cache version.`,
   );
 }

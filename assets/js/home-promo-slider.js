@@ -42,6 +42,25 @@
     return url;
   }
 
+  function shortcutImageVariants(value) {
+    var url = optimizedShortcutImageUrl(value);
+    var pathname = url.split(/[?#]/, 1)[0].toLowerCase();
+    var basename = "";
+    if (pathname === "/assets/img/home/topups-shortcut.webp") {
+      basename = "topups-shortcut";
+    } else if (pathname === "/assets/img/home/ai-shortcut.webp") {
+      basename = "ai-shortcut";
+    }
+    if (!basename) return { src: url, srcset: "" };
+    return {
+      src: "/assets/img/home/" + basename + "-384.webp?v=20260721-shortcuts-responsive1",
+      srcset:
+        "/assets/img/home/" + basename + "-384.webp?v=20260721-shortcuts-responsive1 384w, " +
+        "/assets/img/home/" + basename + "-724.webp?v=20260721-shortcuts-responsive1 724w, " +
+        "/assets/img/home/" + basename + ".webp?v=20260721-shortcuts-responsive1 1448w"
+    };
+  }
+
   function optimizedSlideImageUrl(value) {
     var url = safeUrl(value);
     var pathname = url.split(/[?#]/, 1)[0].toLowerCase();
@@ -145,7 +164,8 @@
       link.href = href;
       link.setAttribute("aria-label", text(item.ariaLabel) || text(item.title) || "Open section");
 
-      var imageUrl = optimizedShortcutImageUrl(item.imageUrl);
+      var image = shortcutImageVariants(item.imageUrl);
+      var imageUrl = image.src;
       var hoverImageUrl = optimizedShortcutImageUrl(item.hoverImageUrl);
       var logoUrl = optimizedShortcutImageUrl(item.logoUrl);
 
@@ -165,6 +185,10 @@
         var img = document.createElement("img");
         img.className = "home-service-shortcut__image" + (hoverImageUrl ? " home-service-shortcut__image--primary" : "");
         img.src = imageUrl;
+        if (image.srcset) {
+          img.srcset = image.srcset;
+          img.sizes = "(max-width: 760px) calc((100vw - 26px) / 2), min(490px, 50vw)";
+        }
         img.alt = "";
         img.loading = "lazy";
         img.decoding = "async";

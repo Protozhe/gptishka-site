@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = relativePath => fs.readFileSync(path.join(root, relativePath), "utf8");
 const version = "20260721-vpn-bg-webp1";
+const sliderVersion = "20260721-shortcuts-responsive1";
 const assets = [
   ["assets/img/home/vpn-shortcut-bg.webp", 208744],
   ["assets/img/home/vpn-promo-bg.webp", 162652],
@@ -29,7 +30,7 @@ assert.ok(slider.includes(`/assets/img/home/vpn-promo-bg.webp?v=${version}`), "V
 assert.ok(slider.includes(`/assets/img/home/vpn-shortcut-bg.webp?v=${version}`), "VPN shortcut PNG normalization missing");
 assert.ok(slider.includes("ensureSlideBackground(list[activeIndex])"), "active-slide lazy loading missing");
 assert.ok(index.includes(`/assets/css/home-wide-marketplace.css?v=${version}`), "homepage CSS cache-bust missing");
-assert.ok(index.includes(`/assets/js/home-promo-slider.js?v=${version}`), "homepage slider cache-bust missing");
+assert.ok(index.includes(`/assets/js/home-promo-slider.js?v=${sliderVersion}`), "homepage slider cache-bust missing");
 assert.equal((homepageData.match(new RegExp(`vpn-shortcut-bg\\.webp\\?v=${version}`, "g")) || []).length, 2);
 assert.equal((homepageData.match(new RegExp(`vpn-promo-bg\\.webp\\?v=${version}`, "g")) || []).length, 2);
 assert.equal((homepageService.match(new RegExp(`vpn-promo-bg\\.webp\\?v=${version}`, "g")) || []).length, 2);
