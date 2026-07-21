@@ -825,7 +825,7 @@ function initActivationResumeShortcut() {
       displayName: "ChatGPT",
       fallbackTitle: "ChatGPT Go",
       fallbackPlan: "go",
-      logo: "/assets/img/services/chatgpt-card.png",
+      logo: "/assets/img/services/chatgpt-card.png?v=20260622-header1",
     },
     claude: {
       displayName: "Claude",
@@ -3172,7 +3172,7 @@ function initActivationResumeShortcut() {
     const background = getServiceCardBackground(serviceCard, visual);
     const fallbackImagesByService = {
       chatgpt: {
-        imageUrl: "/assets/img/services/chatgpt-card.png",
+        imageUrl: "/assets/img/services/chatgpt-card.png?v=20260622-header1",
         hoverImageUrl: "/assets/img/services/chatgpt-card-hover.png",
         imageAlt: "ChatGPT",
         hoverImageAlt: "ChatGPT",
@@ -4385,7 +4385,7 @@ function initActivationResumeShortcut() {
     const showAccountFields = savedAccountStatus !== "create_new";
     const showPassword = savedAccountStatus === "has_account";
     const accountServiceName = serviceDisplayName;
-    const serviceLogo = serviceConfig.logo || "/assets/img/services/chatgpt-card.png";
+    const serviceLogo = serviceConfig.logo || "/assets/img/services/chatgpt-card.png?v=20260622-header1";
     return (
       '<form class="price-card service-checkout-card chatgpt-order-card" data-chatgpt-go-order' +
       ' data-product="' + escapeHtml(product) + '"' +
