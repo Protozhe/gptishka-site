@@ -33,7 +33,8 @@ function walk(directory) {
     if (
       [".git", "node_modules", "visual-baseline"].includes(entry.name) ||
       entry.name.toLowerCase().includes("backup") ||
-      entry.name.startsWith("scratch-")
+      entry.name.startsWith("scratch-") ||
+      entry.name.startsWith("_")
     ) continue;
     const fullPath = path.join(directory, entry.name);
     if (entry.isDirectory()) walk(fullPath);
