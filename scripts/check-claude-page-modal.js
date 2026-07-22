@@ -19,7 +19,7 @@ function requireCssRegex(pattern, label) {
   if (!pattern.test(css)) failures.push(`css: ${label}`);
 }
 
-const expectedAssetVersion = "20260722-dark-checkout2";
+const expectedAssetVersion = "20260722-claude-max20-modal1";
 const expectedJsAssetVersion = "20260722-claude-max-plans1";
 
 [
@@ -89,6 +89,10 @@ const expectedJsAssetVersion = "20260722-claude-max-plans1";
   ["claudeHeroBackgroundShift", "css: Claude visible animated hero background"],
   ['[data-service-page="claude"] .service-checkout-card .buy-btn:hover:not(:disabled)', "css: Claude constructor buy hover override"],
   ["#f68b2f", "css: softer Claude hover orange"],
+  ['.chatgpt-order-card[data-plan-key="max-20x"]', "css: Claude 20x Max modal polish is plan-scoped"],
+  ["--max20-payment-bg-selected", "css: Claude 20x Max dark selected payment surface"],
+  ['label.chatgpt-payment-option[aria-checked="true"]', "css: Claude 20x Max ARIA selected payment state"],
+  ["overflow-wrap: anywhere", "css: Claude 20x Max text overflow protection"],
 ].forEach(([marker, label]) => requireMarker(css, marker, label));
 
 requireCssRegex(
