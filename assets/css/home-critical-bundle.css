@@ -17284,13 +17284,31 @@ body.home-wide-body .home-wide-page > .faq .faq-chat-btn {
   margin: 0 auto !important;
 }
 
-.home-opening-frame .home-promo-slider__arrow:first-child,
-.home-opening-frame .home-promo-slider__arrow:last-child {
-  --promo-arrow-x: 0;
-}
-
 .home-opening-frame .home-promo-slider__controls {
   inset: 0 clamp(10px, 2vw, 28px);
+}
+
+/* Keep desktop controls in the outer slider rail: the viewport alone clips
+   slide artwork, while the arrow buttons straddle its rounded side edges. */
+@media (min-width: 761px) {
+  .home-opening-frame .home-promo-slider__controls {
+    inset-inline: 0;
+  }
+
+  .home-opening-frame .home-promo-slider__arrow:first-child {
+    --promo-arrow-x: -50%;
+  }
+
+  .home-opening-frame .home-promo-slider__arrow:last-child {
+    --promo-arrow-x: 50%;
+  }
+}
+
+@media (max-width: 760px) {
+  .home-opening-frame .home-promo-slider__arrow:first-child,
+  .home-opening-frame .home-promo-slider__arrow:last-child {
+    --promo-arrow-x: 0;
+  }
 }
 
 @media (max-width: 639px) {

@@ -20,10 +20,13 @@ assert.match(css, /\.ai-directory-card--claude\s*\{[^}]*--directory-button-hover
 assert.match(css, /\.ai-directory-card--integrated:focus-within \.ai-directory-card__button\s*\{[^}]*background:\s*var\(--directory-button-hover-bg\) !important;[^}]*border-color:\s*var\(--directory-button-hover-border\) !important;[^}]*box-shadow:\s*var\(--directory-button-hover-shadow\) !important;/s);
 assert.match(css, /\.ai-directory-card--integrated \.ai-directory-card__button:focus-visible\s*\{[^}]*outline-color:\s*var\(--directory-button-focus\) !important;/s);
 assert.match(css, /\.home-opening-frame \.home-promo-slide\s*\{[^}]*background-size:\s*cover/s);
-assert.match(css, /\.home-opening-frame \.home-promo-slider__controls\s*\{[^}]*inset:\s*0\s+clamp\(/s);
+assert.match(css, /@media \(min-width: 761px\)\s*\{[\s\S]*?\.home-opening-frame \.home-promo-slider__controls\s*\{[^}]*inset-inline:\s*0/s);
+assert.match(css, /\.home-opening-frame \.home-promo-slider__arrow:first-child\s*\{[^}]*--promo-arrow-x:\s*-50%/s);
+assert.match(css, /\.home-opening-frame \.home-promo-slider__arrow:last-child\s*\{[^}]*--promo-arrow-x:\s*50%/s);
+assert.match(css, /@media \(max-width: 760px\)\s*\{[\s\S]*?--promo-arrow-x:\s*0/s);
 assert.ok(index.includes('class="home-opening-frame"'));
 assert.match(slider, /function preloadFollowingSlide\(/);
 assert.match(slider, /requestIdleCallback\(preload/);
-assert.ok(index.includes("20260722-directory-card-standard1"));
+assert.ok(index.includes("20260722-slider-arrows1"));
 
 console.log("Responsive homepage hero checks passed.");
