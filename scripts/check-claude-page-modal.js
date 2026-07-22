@@ -20,7 +20,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260618-claude-logo2";
-const expectedJsAssetVersion = "20260722-delivery-id-only2";
+const expectedJsAssetVersion = "20260722-duration-limits1";
 
 [
   ["service-page--constructor", "claude.html: constructor page class"],
@@ -63,7 +63,7 @@ const expectedJsAssetVersion = "20260722-delivery-id-only2";
   ["function getServiceDeliveryDisplayLabel(serviceKey, deliveryKey)", "app.js: service-specific delivery display labels"],
   ['if ((key === "claude" || key === "grok") && value === "id") return isEnPage ? "By ID" : "По ID";', "app.js: Claude/Grok delivery displays as ID"],
   ["function getServiceDeliveryFilterKey(item, serviceKey)", "app.js: service-specific delivery filter key"],
-  ['if (key === "claude" || key === "grok") return deliveryKey === "id";', "app.js: Claude/Grok expose ID products only"],
+  ['if ((key === "claude" || key === "grok") && deliveryKey !== "id") return false;', "app.js: Claude/Grok expose ID products only"],
   ["function getServiceConstructorPlanTitle(item, serviceKey, planLabel)", "app.js: constructor selected plan title helper"],
   ['if (key === "claude") return String(item?.title || planLabel || "").trim();', "app.js: Claude selected plan uses product title"],
 ].forEach(([marker, label]) => requireMarker(source, marker, label));

@@ -19,7 +19,13 @@ const pages = [
 
 assert.equal(app, appMin, "app.js and app.min.js must stay identical");
 assert.match(app, /function getPublicServiceItems\(items, serviceKey\)/);
-assert.match(app, /if \(key === "claude" \|\| key === "grok"\) return deliveryKey === "id";/);
+assert.match(app, /\(key === "claude" \|\| key === "grok"\) && deliveryKey !== "id"/);
+assert.match(app, /chatgpt: new Set\(\["1m"\]\)/);
+assert.match(app, /claude: new Set\(\["1m"\]\)/);
+assert.match(app, /grok: new Set\(\["1m", "2m"\]\)/);
+assert.match(app, /chatgpt:\s*\{[^}]*duration: \["1m"\]/s);
+assert.match(app, /claude:\s*\{[^}]*duration: \["1m"\]/s);
+assert.match(app, /grok:\s*\{[^}]*duration: \["1m", "2m"\]/s);
 assert.match(app, /\["manual_login", "credentials", "support", "support_claude"\]\.includes\(deliveryType\)/);
 assert.equal(
   (app.match(/const allItems = sortServicePageItems\(serviceKey, getPublicServiceItems\(servicePageItems, serviceKey\)\);/g) || []).length,
@@ -47,7 +53,7 @@ for (const forbidden of [
 for (const page of pages) {
   const html = read(page);
   assert.ok(!html.includes('id="serviceDeliveryFilters"'), `${page} still renders delivery filters`);
-  assert.ok(html.includes("/assets/js/app.min.js?v=20260722-delivery-id-only2"), `${page} has stale app.js version`);
+  assert.ok(html.includes("/assets/js/app.min.js?v=20260722-duration-limits1"), `${page} has stale app.js version`);
 }
 
 console.log("Public delivery UI removed; Claude/Grok ID-only flow verified.");

@@ -2809,9 +2809,16 @@ function initActivationResumeShortcut() {
 
   function getPublicServiceItems(items, serviceKey) {
     const key = normalizeAiServiceKey(serviceKey);
+    const allowedDurations = {
+      chatgpt: new Set(["1m"]),
+      claude: new Set(["1m"]),
+      grok: new Set(["1m", "2m"]),
+    };
     return (Array.isArray(items) ? items : []).filter(item => {
       const deliveryKey = getServiceDeliveryKey(item);
-      if (key === "claude" || key === "grok") return deliveryKey === "id";
+      if ((key === "claude" || key === "grok") && deliveryKey !== "id") return false;
+      if (allowedDurations[key] && !allowedDurations[key].has(getServiceDurationKey(item))) return false;
+      if (key === "claude" || key === "grok") return true;
 
       const tags = Array.isArray(item?.tags) ? item.tags : [];
       const deliveryType = resolveDeliveryType(item?.deliveryType, item?.deliveryMethod, tags);
@@ -3502,11 +3509,14 @@ function initActivationResumeShortcut() {
     const fixedByService = {
       chatgpt: {
         plan: ["go", "plus", "pro-5x", "pro-20x"],
-        duration: ["1m", "12m"],
+        duration: ["1m"],
       },
       claude: {
         plan: ["pro", "claude"],
-        duration: ["1m", "12m"],
+        duration: ["1m"],
+      },
+      grok: {
+        duration: ["1m", "2m"],
       },
       vpn: {
         plan: ["1m", "2m", "6m", "12m"],
