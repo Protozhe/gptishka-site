@@ -7067,6 +7067,10 @@ textarea.chatgpt-order-field__control {
   outline-offset: 3px;
 }
 
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-title[tabindex="-1"]:focus {
+  outline: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .service-page[data-service-page] ~ .chatgpt-go-order-modal *,
   .service-page[data-service-page] ~ .chatgpt-go-order-modal *::before,

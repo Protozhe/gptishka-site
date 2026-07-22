@@ -93,9 +93,10 @@ requireCss(".service-page[data-service-page=\"chatgpt\"] ~ .chatgpt-go-order-mod
 requireCss(".service-page[data-service-page=\"claude\"] ~ .chatgpt-go-order-modal", "Claude accent token scope");
 requireCss("--product-accent: #f97316;", "Claude orange modal accent");
 requireCss("background: rgba(13, 19, 28, 0.94) !important;", "dark sticky checkout footer");
+requireCss('.chatgpt-order-title[tabindex="-1"]:focus', "focused modal title has no decorative outline");
 
 requirePage("СБП 0% и карты 3.2%", "static payment modal LAVA caption");
-requirePage("/assets/css/home-stability-hotfix.css?v=20260722-dark-checkout1", "CSS cache-bust");
+requirePage("/assets/css/home-stability-hotfix.css?v=20260722-dark-checkout2", "CSS cache-bust");
 requirePage("/assets/js/app.min.js?v=20260722-claude-max-plans1", "JS cache-bust");
 
 if (failures.length) {

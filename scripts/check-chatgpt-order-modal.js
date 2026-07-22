@@ -7,7 +7,7 @@ const chatgptPage = fs.readFileSync("chatgpt.html", "utf8");
 const serverSource = fs.readFileSync("server.js", "utf8");
 const successPage = fs.readFileSync("success.html", "utf8");
 
-const expectedAssetVersion = "20260722-dark-checkout1";
+const expectedAssetVersion = "20260722-dark-checkout2";
 const expectedJsAssetVersion = "20260722-claude-max-plans1";
 
 const requiredSourceMarkers = [

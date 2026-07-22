@@ -19,7 +19,7 @@ function requireCssRegex(pattern, label) {
   if (!pattern.test(css)) failures.push(`css: ${label}`);
 }
 
-const expectedAssetVersion = "20260722-dark-checkout1";
+const expectedAssetVersion = "20260722-dark-checkout2";
 const expectedJsAssetVersion = "20260722-claude-max-plans1";
 
 [
