@@ -4,6 +4,9 @@ const source = fs.readFileSync("assets/js/app.js", "utf8");
 const minifiedSource = fs.readFileSync("assets/js/app.min.js", "utf8");
 const css = fs.readFileSync("assets/css/home-stability-hotfix.css", "utf8");
 const page = fs.readFileSync("claude.html", "utf8");
+const desktopHeroBytes = fs.statSync("assets/video/claude-hero-bg-lite.mp4").size;
+const mobileHeroBytes = fs.statSync("assets/video/claude-hero-bg-mobile.mp4").size;
+const heroPosterBytes = fs.statSync("assets/img/services/claude-hero-bg-poster.webp").size;
 
 const failures = [];
 
@@ -35,6 +38,10 @@ const expectedJsAssetVersion = "20260722-unified-checkout1";
   ["service-selected-plan", "claude.html: selected plan summary"],
   ['id="servicePlanFilters"', "claude.html: plan filter container"],
   ['id="serviceDurationFilters"', "claude.html: duration filter container"],
+  ['/assets/video/claude-hero-bg-mobile.mp4?v=20260722-claude-hero-lite1', "claude.html: lightweight mobile hero animation"],
+  ['/assets/video/claude-hero-bg-lite.mp4?v=20260722-claude-hero-lite1', "claude.html: lightweight desktop hero animation"],
+  ['/assets/img/services/claude-hero-bg-poster.webp?v=20260722-claude-hero-lite1', "claude.html: static hero fallback"],
+  ['media="(prefers-reduced-motion: no-preference)"', "claude.html: reduced-motion video guard"],
   [`/assets/css/home-stability-hotfix.css?v=${expectedAssetVersion}`, "claude.html: CSS cache-bust"],
   [`/assets/js/app.min.js?v=${expectedJsAssetVersion}`, "claude.html: JS cache-bust"],
 ].forEach(([marker, label]) => requireMarker(page, marker, label));
@@ -43,8 +50,7 @@ const expectedJsAssetVersion = "20260722-unified-checkout1";
   ["20260615-chatgpt-seamless1", "claude.html: old ChatGPT cache-bust"],
   ["service-hero__stats", "claude.html: old hero stats block"],
   ["payment-method-modal", "claude.html: old static payment modal markup"],
-  ["chatgpt-plans-bg", "claude.html: removed hero video asset"],
-  ['<video class="service-hero__video"', "claude.html: removed hero video element"],
+  ["chatgpt-plans-bg", "claude.html: removed obsolete 5 MB hero video asset"],
   ['id="serviceDeliveryFilters"', "claude.html: removed delivery filter container"],
 ].forEach(([marker, label]) => rejectMarker(page, marker, label));
 
@@ -99,6 +105,10 @@ requireCssRegex(
   /\[data-service-page="claude"\][\s\S]*\.payment-method[\s\S]*\.payment-option/,
   "Claude payment options scoped to service page",
 );
+
+if (desktopHeroBytes > 800_000) failures.push(`desktop hero video is too large: ${desktopHeroBytes} bytes`);
+if (mobileHeroBytes > 350_000) failures.push(`mobile hero video is too large: ${mobileHeroBytes} bytes`);
+if (heroPosterBytes > 50_000) failures.push(`hero poster is too large: ${heroPosterBytes} bytes`);
 
 requireCssRegex(
   /\[data-service-page="claude"\]\s+\.service-checkout-card\s+\.buy-btn:hover:not\(:disabled\)[\s\S]*transform:\s*none;/,
