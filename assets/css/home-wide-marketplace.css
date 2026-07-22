@@ -2653,3 +2653,31 @@ body.home-wide-body main.page::after {
 .home-wide-page .ai-directory-card--grok:focus-within .ai-directory-card__button::before {
   opacity: 1;
 }
+
+/* The three AI cards belong directly to the page surface. Keep the artwork,
+   copy and CTA, but remove the shared glass-panel treatment from the wrapper. */
+body.home-wide-body .home-wide-page #pricingGrid .ai-directory-card--chatgpt,
+body.home-wide-body .home-wide-page #pricingGrid .ai-directory-card--claude,
+body.home-wide-body .home-wide-page #pricingGrid .ai-directory-card--grok {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  outline: 0 !important;
+  overflow: visible;
+}
+
+.home-wide-page .ai-directory-card--chatgpt .ai-directory-card__body,
+.home-wide-page .ai-directory-card--claude .ai-directory-card__body,
+.home-wide-page .ai-directory-card--grok .ai-directory-card__body {
+  padding: 16px 0 0;
+}
+
+.home-wide-page .ai-directory-card--chatgpt .ai-directory-card__bottom,
+.home-wide-page .ai-directory-card--claude .ai-directory-card__bottom,
+.home-wide-page .ai-directory-card--grok .ai-directory-card__bottom {
+  gap: 10px;
+  padding: 0;
+}
