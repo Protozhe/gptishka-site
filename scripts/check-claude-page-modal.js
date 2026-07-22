@@ -23,7 +23,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260722-unified-checkout1";
-const expectedJsAssetVersion = "20260722-unified-checkout1";
+const expectedJsAssetVersion = "20260722-claude-hero-lite2";
 
 [
   ["service-page--constructor", "claude.html: constructor page class"],
@@ -38,10 +38,10 @@ const expectedJsAssetVersion = "20260722-unified-checkout1";
   ["service-selected-plan", "claude.html: selected plan summary"],
   ['id="servicePlanFilters"', "claude.html: plan filter container"],
   ['id="serviceDurationFilters"', "claude.html: duration filter container"],
-  ['/assets/video/claude-hero-bg-mobile.mp4?v=20260722-claude-hero-lite1', "claude.html: lightweight mobile hero animation"],
-  ['/assets/video/claude-hero-bg-lite.mp4?v=20260722-claude-hero-lite1', "claude.html: lightweight desktop hero animation"],
-  ['/assets/img/services/claude-hero-bg-poster.webp?v=20260722-claude-hero-lite1', "claude.html: static hero fallback"],
-  ['media="(prefers-reduced-motion: no-preference)"', "claude.html: reduced-motion video guard"],
+  ['data-mobile-src="/assets/video/claude-hero-bg-mobile.mp4?v=20260722-claude-hero-lite2"', "claude.html: lightweight mobile hero animation"],
+  ['data-desktop-src="/assets/video/claude-hero-bg-lite.mp4?v=20260722-claude-hero-lite2"', "claude.html: lightweight desktop hero animation"],
+  ['/assets/img/services/claude-hero-bg-poster.webp?v=20260722-claude-hero-lite2', "claude.html: static hero fallback"],
+  ['preload="none"', "claude.html: deferred video preload"],
   [`/assets/css/home-stability-hotfix.css?v=${expectedAssetVersion}`, "claude.html: CSS cache-bust"],
   [`/assets/js/app.min.js?v=${expectedJsAssetVersion}`, "claude.html: JS cache-bust"],
 ].forEach(([marker, label]) => requireMarker(page, marker, label));
@@ -100,6 +100,14 @@ const expectedJsAssetVersion = "20260722-unified-checkout1";
   ['label.chatgpt-payment-option[aria-checked="true"]', "css: shared ARIA selected payment state"],
   ["overflow-wrap: anywhere", "css: Claude 20x Max text overflow protection"],
 ].forEach(([marker, label]) => requireMarker(css, marker, label));
+
+[
+  ["initLightweightServiceHeroVideo", "app.js: lightweight hero loader"],
+  ["connection.saveData", "app.js: Save-Data guard"],
+  ['matchMedia("(prefers-reduced-motion: reduce)")', "app.js: reduced-motion guard"],
+  ["video.dataset.mobileSrc", "app.js: responsive mobile source"],
+  ["video.dataset.desktopSrc", "app.js: responsive desktop source"],
+].forEach(([marker, label]) => requireMarker(source, marker, label));
 
 requireCssRegex(
   /\[data-service-page="claude"\][\s\S]*\.payment-method[\s\S]*\.payment-option/,

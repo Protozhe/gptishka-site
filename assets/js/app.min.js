@@ -6293,6 +6293,32 @@ function initActivationResumeShortcut() {
   }
 })();
 
+(function initLightweightServiceHeroVideo() {
+  function start() {
+    const video = document.querySelector("[data-service-hero-video]");
+    if (!video) return;
+
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (connection && connection.saveData) return;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const mobile = window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
+    const source = mobile ? video.dataset.mobileSrc : video.dataset.desktopSrc;
+    if (!source) return;
+
+    video.src = source;
+    video.load();
+    const playback = video.play();
+    if (playback && typeof playback.catch === "function") playback.catch(() => {});
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start, { once: true });
+  } else {
+    start();
+  }
+})();
+
 // =========================
 // ABUSE / TRADEMARK COMPLIANCE LAYER
 // =========================
