@@ -2660,9 +2660,10 @@ function initActivationResumeShortcut() {
     const constructorDescriptionText = servicePageRootEl.querySelector(".service-constructor-description p");
     const video = servicePageRootEl.querySelector(".service-hero__video");
 
-    if (eyebrow) eyebrow.textContent = page.heroEyebrow || (isEnPage ? "Plans" : "Тарифные планы");
-    if (title) title.textContent = page.heroTitle || page.title || "GPTishka";
-    if (description) description.textContent = page.heroDescription || "";
+    const preserveEditorialHero = servicePageRootEl.getAttribute("data-service-editorial") === "1";
+    if (!preserveEditorialHero && eyebrow) eyebrow.textContent = page.heroEyebrow || (isEnPage ? "Plans" : "Тарифные планы");
+    if (!preserveEditorialHero && title) title.textContent = page.heroTitle || page.title || "GPTishka";
+    if (!preserveEditorialHero && description) description.textContent = page.heroDescription || "";
     if (constructorBrand) constructorBrand.textContent = page.constructorTitle || page.title || "GPTishka";
     if (constructorBrandLabel) constructorBrandLabel.textContent = page.heroEyebrow || (isEnPage ? "Plans" : "Тарифные планы");
     if (constructorDescriptionTitle) constructorDescriptionTitle.textContent = page.constructorTitle || page.title || "GPTishka";
@@ -3670,6 +3671,62 @@ function initActivationResumeShortcut() {
     const sub = [planLabel, durationLabel].filter(Boolean).join(" • ");
     const term = getAiOrderModalServiceConfig(serviceKey).displayName || getServicePlanLabel(serviceKey, planKey) || "ChatGPT";
 
+    if (normalizeAiServiceKey(serviceKey) === "claude") {
+      const descriptionLines = parseDescriptionModel(description).lines.filter(Boolean);
+      const modalDescription = String(item.modalDescription || "").toLowerCase();
+      const deliveryLabel = String(item.activationVariant || "") === "withoutLogin" || deliveryType === "activation"
+        ? (isEnPage ? "Automatic activation" : "Автоматическое подключение")
+        : (isEnPage ? "Activation with GPTishka support" : "Подключение с поддержкой GPTishka");
+      const featureLabels = Array.from(new Set([
+        isEnPage ? durationLabel : `Срок: ${durationLabel}`,
+        ...descriptionLines.filter(line => !/^(срок|duration)\s*:/i.test(line)),
+        deliveryLabel,
+        ...(modalDescription.includes("впн") || modalDescription.includes("vpn") ? [isEnPage ? "VPN included" : "ВПН в подарок"] : []),
+      ].filter(Boolean))).slice(0, 4);
+      const featuresMarkup = featureLabels.map(label => `<li>${escapeHtml(label)}</li>`).join("");
+
+      return (
+        '<article class="price-card service-checkout-card claude-tariff-card"' +
+        ' data-product="' + escapeHtml(product) + '"' +
+        ' data-product-id="' + escapeHtml(productId) + '"' +
+        ' data-title="' + escapeHtml(title) + '"' +
+        ' data-sub="' + escapeHtml(sub) + '"' +
+        ' data-term="' + escapeHtml(term) + '"' +
+        ' data-description="' + escapeHtml(description) + '"' +
+        ' data-modal-description="' + escapeHtml(encodeURIComponent(modalDescriptionRaw)) + '"' +
+        ' data-price="' + escapeHtml(price) + '"' +
+        ' data-currency="' + escapeHtml(currency) + '"' +
+        ' data-delivery-type="' + escapeHtml(deliveryType) + '"' +
+        ' data-activation-variant="' + escapeHtml(item.activationVariant || "") + '"' +
+        ' data-service-key="claude"' +
+        ' data-plan-key="' + escapeHtml(planKey) + '"' +
+        ' data-delivery-key="' + escapeHtml(deliveryKey) + '"' +
+        ' data-duration-key="' + escapeHtml(durationKey) + '">' +
+          '<div class="claude-tariff-card__top">' +
+            '<span class="claude-tariff-card__brand">Claude</span>' +
+            '<h3>' + escapeHtml(planTitle) + '</h3>' +
+            '<div class="claude-tariff-card__price">' + escapeHtml(formatPriceByCurrency(price, currency)) + ' <small>' + escapeHtml(isEnPage ? "for 1 month" : "за 1 месяц") + '</small></div>' +
+          '</div>' +
+          '<ul class="claude-tariff-card__features">' + featuresMarkup + '</ul>' +
+          '<button type="button" class="buy-btn pay-now-btn"' +
+          ' data-product="' + escapeHtml(product) + '"' +
+          ' data-product-id="' + escapeHtml(productId) + '"' +
+          ' data-sub="' + escapeHtml(sub) + '"' +
+          ' data-title="' + escapeHtml(title) + '"' +
+          ' data-term="' + escapeHtml(term) + '"' +
+          ' data-price="' + escapeHtml(price) + '"' +
+          ' data-currency="' + escapeHtml(currency) + '"' +
+          ' data-delivery-type="' + escapeHtml(deliveryType) + '"' +
+          ' data-activation-variant="' + escapeHtml(item.activationVariant || "") + '"' +
+          ' data-service-key="claude"' +
+          ' data-plan-key="' + escapeHtml(planKey) + '"' +
+          ' data-delivery-key="' + escapeHtml(deliveryKey) + '"' +
+          ' data-duration-key="' + escapeHtml(durationKey) + '">' + escapeHtml(isEnPage ? "Choose plan" : "Выбрать тариф") + '</button>' +
+          '<p class="claude-tariff-card__note">' + escapeHtml(isEnPage ? "The price is fixed before payment" : "Цена фиксируется до перехода к оплате") + '</p>' +
+        '</article>'
+      );
+    }
+
     return (
       '<div class="price-card service-checkout-card"' +
       ' data-product="' + escapeHtml(product) + '"' +
@@ -3783,6 +3840,15 @@ function initActivationResumeShortcut() {
     if (!isServiceConstructorPage() || !isAiOrderModalServiceKey(serviceKey)) return fallback;
 
     const allItems = sortServicePageItems(serviceKey, getPublicServiceItems(servicePageItems, serviceKey));
+    if (serviceKey === "claude" && card.getAttribute("data-plan-key")) {
+      const cardPlanKey = String(card.getAttribute("data-plan-key") || "").trim();
+      const cardVariant = String(card.getAttribute("data-activation-variant") || "").trim();
+      const matchingItem = allItems.find(item => (
+        getServicePlanKey(item, serviceKey) === cardPlanKey &&
+        (!cardVariant || String(item.activationVariant || "").trim() === cardVariant)
+      )) || allItems.find(item => getServicePlanKey(item, serviceKey) === cardPlanKey);
+      if (matchingItem) return { ...matchingItem, promoCode: getCardPromoCode(card) };
+    }
     const selectedItem = filterServicePageItems(allItems, serviceKey)[0];
     if (!selectedItem) return fallback;
 
@@ -4721,6 +4787,27 @@ function initActivationResumeShortcut() {
   }
 
   function renderServiceConstructorPage(allItems, serviceKey) {
+    if (normalizeAiServiceKey(serviceKey) === "claude") {
+      const uniquePlans = new Map();
+      sortServicePageItems(serviceKey, allItems).forEach(item => {
+        const planKey = getServicePlanKey(item, serviceKey);
+        if (!uniquePlans.has(planKey)) uniquePlans.set(planKey, item);
+      });
+      const planItems = Array.from(uniquePlans.values());
+      const prices = planItems.map(item => Math.max(0, toAmount(item.price))).filter(Boolean);
+      const minPrice = prices.length ? Math.min(...prices) : 0;
+      const minPriceItem = planItems.find(item => Math.max(0, toAmount(item.price)) === minPrice);
+      if (serviceConstructorPriceEl) {
+        serviceConstructorPriceEl.textContent = minPriceItem
+          ? formatPriceByCurrency(minPrice, String(minPriceItem.currency || "RUB").toUpperCase())
+          : "—";
+      }
+      servicePlansGridEl.innerHTML = planItems.length
+        ? planItems.map(item => renderServiceConstructorCard(item, serviceKey)).join("")
+        : '<div class="service-empty-state"><h3>' + escapeHtml(isEnPage ? "Plans are temporarily unavailable" : "Тарифы временно недоступны") + "</h3></div>";
+      return;
+    }
+
     const filteredItems = filterServicePageItems(allItems, serviceKey);
     const selectedItem = filteredItems[0] || null;
     const selectedPrice = selectedItem ? Math.max(0, toAmount(selectedItem.price)) : 0;
@@ -4803,7 +4890,10 @@ function initActivationResumeShortcut() {
       if (faqButton) {
         event.preventDefault();
         const item = faqButton.closest(".service-faq-item");
-        if (item) item.classList.toggle("active");
+        if (item) {
+          item.classList.toggle("active");
+          faqButton.setAttribute("aria-expanded", item.classList.contains("active") ? "true" : "false");
+        }
         return;
       }
       const button = target ? target.closest("[data-service-filter-kind][data-service-filter-key]") : null;
@@ -6892,6 +6982,7 @@ document.addEventListener("click", e => {
 
   function initLiveTicker() {
     if (isInitialized) return;
+    if (pathname === "/claude" || pathname === "/claude.html" || pathname === "/en/claude" || pathname === "/en/claude.html") return;
     isInitialized = true;
 
     createTicker();
