@@ -7080,12 +7080,85 @@ textarea.chatgpt-order-field__control {
 }
 
 /* Claude 20x Max checkout polish. Scoped to this plan until the design is approved. */
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal:has(.chatgpt-order-card[data-plan-key="max-20x"]) {
+  --checkout-overlay: rgba(2, 6, 12, 0.68);
+  --checkout-shell: #18212d;
+  --checkout-surface: #202b39;
+  --checkout-surface-raised: #273444;
+  --checkout-control: #121a25;
+  --checkout-border: rgba(255, 255, 255, 0.1);
+  --checkout-border-strong: rgba(255, 255, 255, 0.17);
+  --checkout-text: #f4f7fb;
+  --checkout-text-secondary: #b7c0ce;
+  --checkout-text-muted: #8994a6;
+  --checkout-accent: #ff7a2f;
+  --checkout-accent-soft: rgba(255, 122, 47, 0.12);
+  --modal-bg: var(--checkout-shell);
+  --modal-surface: var(--checkout-surface);
+  --modal-surface-secondary: var(--checkout-surface-raised);
+  --modal-border: var(--checkout-border);
+  --modal-border-strong: var(--checkout-border-strong);
+  --modal-text: var(--checkout-text);
+  --modal-text-secondary: var(--checkout-text-secondary);
+  --modal-text-muted: var(--checkout-text-muted);
+  --modal-input-bg: var(--checkout-control);
+  --modal-overlay: var(--checkout-overlay);
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal:has(.chatgpt-order-card[data-plan-key="max-20x"]) .chatgpt-go-order-modal__dialog {
+  background:
+    radial-gradient(circle at 12% 0%, var(--checkout-accent-soft), transparent 35%),
+    linear-gradient(180deg, #202b39, var(--checkout-shell) 54%, #151e29) !important;
+  box-shadow:
+    0 34px 100px rgba(0, 0, 0, 0.48),
+    0 0 0 1px rgba(255, 255, 255, 0.035),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
 .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] {
-  --max20-payment-bg: rgba(15, 22, 32, 0.9);
-  --max20-payment-bg-hover: rgba(26, 34, 47, 0.96);
-  --max20-payment-bg-selected: linear-gradient(145deg, rgba(249, 115, 22, 0.2), rgba(28, 31, 42, 0.98) 56%, rgba(17, 23, 33, 0.98));
+  --max20-payment-bg: #182330;
+  --max20-payment-bg-hover: #223041;
+  --max20-payment-bg-selected: linear-gradient(145deg, rgba(255, 122, 47, 0.22), #273444 58%, #1b2634);
   --max20-payment-border: rgba(255, 255, 255, 0.11);
   --max20-payment-border-hover: rgba(255, 154, 82, 0.42);
+  background:
+    radial-gradient(circle at 12% 0%, var(--checkout-accent-soft), transparent 34%),
+    linear-gradient(180deg, #1d2836, var(--checkout-shell) 100%) !important;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] :is(
+  .chatgpt-order-section,
+  .chatgpt-order-gift-note,
+  .chatgpt-order-gift-details,
+  .chatgpt-order-gift-extra,
+  .chatgpt-order-referral-extra
+) {
+  background: linear-gradient(145deg, var(--checkout-surface-raised), var(--checkout-surface)) !important;
+  box-shadow:
+    0 18px 40px rgba(3, 8, 15, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.075) !important;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-summary-card {
+  background:
+    radial-gradient(circle at 0 0, var(--checkout-accent-soft), transparent 45%),
+    linear-gradient(145deg, #2a3747, #202b39) !important;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-field__control {
+  background: var(--checkout-control) !important;
+  border-color: var(--checkout-border-strong) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 8px 20px rgba(3, 8, 15, 0.16) !important;
+}
+
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-footer {
+  background: rgba(27, 38, 51, 0.96) !important;
+  border-top-color: var(--checkout-border-strong) !important;
+  box-shadow:
+    0 -16px 38px rgba(3, 8, 15, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
 }
 
 .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] *,
