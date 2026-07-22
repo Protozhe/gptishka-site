@@ -806,6 +806,7 @@ function initActivationResumeShortcut() {
   const serviceDeliveryFiltersEl = document.getElementById("serviceDeliveryFilters");
   const serviceDurationFiltersEl = document.getElementById("serviceDurationFilters");
   const serviceMinPriceEl = document.getElementById("serviceMinPrice");
+  const servicePriceLineEl = serviceMinPriceEl ? serviceMinPriceEl.closest(".claude-hero__price") : null;
   const servicePlansCountEl = document.getElementById("servicePlansCount");
   const serviceConstructorPriceEl = document.getElementById("serviceConstructorPrice");
   let servicePageItems = [];
@@ -3641,7 +3642,17 @@ function initActivationResumeShortcut() {
     const currency = String((Array.isArray(items) ? items : []).find(item => toAmount(item?.price) === minPrice)?.currency || "RUB").toUpperCase();
 
     if (serviceMinPriceEl) {
-      serviceMinPriceEl.textContent = minPrice ? formatPriceByCurrency(minPrice, currency) : "—";
+      serviceMinPriceEl.textContent = minPrice ? formatPriceByCurrency(minPrice, currency) : "";
+      serviceMinPriceEl.setAttribute("aria-hidden", minPrice ? "false" : "true");
+    }
+    if (servicePriceLineEl) {
+      servicePriceLineEl.dataset.priceState = minPrice ? "ready" : "unavailable";
+      servicePriceLineEl.setAttribute(
+        "aria-label",
+        minPrice
+          ? (isEnPage ? `From ${formatPriceByCurrency(minPrice, currency)} for 1 month` : `От ${formatPriceByCurrency(minPrice, currency)} за 1 месяц`)
+          : (isEnPage ? "Price is temporarily unavailable" : "Цена временно недоступна")
+      );
     }
     if (servicePlansCountEl) {
       const count = Array.isArray(items) ? items.length : 0;
@@ -3672,17 +3683,32 @@ function initActivationResumeShortcut() {
     const term = getAiOrderModalServiceConfig(serviceKey).displayName || getServicePlanLabel(serviceKey, planKey) || "ChatGPT";
 
     if (normalizeAiServiceKey(serviceKey) === "claude") {
-      const descriptionLines = parseDescriptionModel(description).lines.filter(Boolean);
       const modalDescription = String(item.modalDescription || "").toLowerCase();
+      const purposeByPlan = isEnPage
+        ? {
+            pro: "The standard paid Claude plan for everyday work.",
+            "max-5x": "For a larger daily workload than Claude Pro.",
+            "max-20x": "For the highest workload available in the catalog.",
+          }
+        : {
+            pro: "Стандартный платный тариф для регулярных задач.",
+            "max-5x": "Для большего ежедневного объёма, чем в Claude Pro.",
+            "max-20x": "Для максимального объёма работы из доступных тарифов.",
+          };
+      const limitByPlan = isEnPage
+        ? { pro: "Standard Claude usage", "max-5x": "5× the Pro usage level", "max-20x": "20× the Pro usage level" }
+        : { pro: "Стандартный объём Claude", "max-5x": "Лимит 5× относительно Pro", "max-20x": "Лимит 20× относительно Pro" };
+      const purposeLabel = purposeByPlan[planKey] || (isEnPage ? "Claude access for 1 month." : "Доступ Claude на один месяц.");
       const deliveryLabel = String(item.activationVariant || "") === "withoutLogin" || deliveryType === "activation"
         ? (isEnPage ? "Automatic activation" : "Автоматическое подключение")
-        : (isEnPage ? "Activation with GPTishka support" : "Подключение с поддержкой GPTishka");
-      const featureLabels = Array.from(new Set([
+        : (isEnPage ? "Connection with GPTishka" : "Подключение с помощью GPTishka");
+      const featureLabels = [
+        limitByPlan[planKey],
         isEnPage ? durationLabel : `Срок: ${durationLabel}`,
-        ...descriptionLines.filter(line => !/^(срок|duration)\s*:/i.test(line)),
         deliveryLabel,
+        isEnPage ? "Warranty for the paid term" : "Гарантия на оплаченный срок",
         ...(modalDescription.includes("впн") || modalDescription.includes("vpn") ? [isEnPage ? "VPN included" : "ВПН в подарок"] : []),
-      ].filter(Boolean))).slice(0, 4);
+      ].filter(Boolean);
       const featuresMarkup = featureLabels.map(label => `<li>${escapeHtml(label)}</li>`).join("");
 
       return (
@@ -3705,6 +3731,7 @@ function initActivationResumeShortcut() {
           '<div class="claude-tariff-card__top">' +
             '<span class="claude-tariff-card__brand">Claude</span>' +
             '<h3>' + escapeHtml(planTitle) + '</h3>' +
+            '<p class="claude-tariff-card__purpose">' + escapeHtml(purposeLabel) + '</p>' +
             '<div class="claude-tariff-card__price">' + escapeHtml(formatPriceByCurrency(price, currency)) + ' <small>' + escapeHtml(isEnPage ? "for 1 month" : "за 1 месяц") + '</small></div>' +
           '</div>' +
           '<ul class="claude-tariff-card__features">' + featuresMarkup + '</ul>' +
@@ -4789,7 +4816,7 @@ function initActivationResumeShortcut() {
   function renderServiceConstructorPage(allItems, serviceKey) {
     if (normalizeAiServiceKey(serviceKey) === "claude") {
       const uniquePlans = new Map();
-      sortServicePageItems(serviceKey, allItems).forEach(item => {
+      sortServicePageItems(serviceKey, allItems).filter(item => Math.max(0, toAmount(item.price)) > 0).forEach(item => {
         const planKey = getServicePlanKey(item, serviceKey);
         if (!uniquePlans.has(planKey)) uniquePlans.set(planKey, item);
       });
@@ -4911,6 +4938,11 @@ function initActivationResumeShortcut() {
     if (!servicePageRootEl || !servicePlansGridEl) return;
     const serviceKey = getServicePageKey();
     if (!serviceKey) return;
+
+    if (servicePriceLineEl) {
+      servicePriceLineEl.dataset.priceState = "loading";
+      servicePriceLineEl.setAttribute("aria-label", isEnPage ? "Minimum price is loading" : "Минимальная цена загружается");
+    }
 
     try {
       dynamicServicePagePayload = await fetchServicePageConfig(serviceKey);
@@ -6645,399 +6677,3 @@ document.addEventListener("click", e => {
     // Non-critical: ignore storage/url parsing failures.
   }
 }, true);
-
-// Live ticker with masked activation events and split counters.
-(() => {
-  const API_STATS_URL = "/api/stats";
-  const API_HEARTBEAT_URL = "/api/heartbeat";
-  const STATS_REFRESH_MS = 15000;
-  const HEARTBEAT_MS = 20000;
-  const SESSION_KEY = "gptishka_session_id";
-  const TICKER_CACHE_KEY = "gptishka_ticker_cache_v2";
-  const TICKER_ANCHOR_KEY = "gptishka_ticker_anchor_v1";
-  const TICKER_CACHE_TTL_MS = 12 * 60 * 1000;
-  const TICKER_MIN_VISUAL_UPDATE_MS = 60000;
-  const TICKER_WARM_FETCH_DELAY_MS = 12000;
-  const DEFAULT_TICKER_CYCLE_MS = 130000;
-
-  const pathname = String(window.location.pathname || "/").toLowerCase();
-  if (pathname.startsWith("/admin")) return;
-  const isEnPage = pathname.startsWith("/en/");
-  const numberLocale = isEnPage ? "en-US" : "ru-RU";
-  const TEXT = isEnPage
-    ? {
-        totalLabel: "total activations",
-        emptyTicker: "Activation feed is updating...",
-      }
-    : {
-        totalLabel: "всего активаций",
-        emptyTicker: "Лента активаций обновляется...",
-      };
-
-  let tickerTrack = null;
-  let totalValueEl = null;
-  let isInitialized = false;
-  let heartbeatTimerId = 0;
-  let statsTimerId = 0;
-  let delayedFetchTimerId = 0;
-  let lastTickerSignature = "";
-  let tickerRenderedAt = 0;
-
-  function ensureSessionId() {
-    try {
-      const existing = localStorage.getItem(SESSION_KEY);
-      if (existing) return existing;
-      const generated =
-        "s_" +
-        Date.now().toString(36) +
-        "_" +
-        Math.random().toString(36).slice(2, 10);
-      localStorage.setItem(SESSION_KEY, generated);
-      return generated;
-    } catch (_) {
-      return "s_" + Date.now().toString(36);
-    }
-  }
-
-  function ensureTickerAnchorMs() {
-    const now = Date.now();
-    try {
-      const raw = Number(localStorage.getItem(TICKER_ANCHOR_KEY) || 0);
-      if (Number.isFinite(raw) && raw > 0) return raw;
-      localStorage.setItem(TICKER_ANCHOR_KEY, String(now));
-      return now;
-    } catch (_) {
-      return now;
-    }
-  }
-
-  function escapeHtml(value) {
-    return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
-  }
-
-  function bindTickerElements(tickerRoot) {
-    if (!tickerRoot) return;
-    tickerTrack = tickerRoot.querySelector("#siteTickerTrack");
-    totalValueEl = tickerRoot.querySelector("#siteTickerSales");
-  }
-
-  function createTicker() {
-    const existingTicker = document.getElementById("siteTicker");
-    if (existingTicker) {
-      bindTickerElements(existingTicker);
-      return;
-    }
-    const header = document.querySelector("header");
-    if (!header) return;
-
-    const ticker = document.createElement("div");
-    ticker.id = "siteTicker";
-    ticker.className = "site-ticker";
-    ticker.setAttribute("role", "status");
-    ticker.setAttribute("aria-live", "polite");
-    ticker.innerHTML = [
-      '<div class="site-ticker__marquee">',
-      '  <div class="site-ticker__track" id="siteTickerTrack"></div>',
-      "</div>",
-      '<div class="site-ticker__stats">',
-      `  <span class="site-ticker__stat"><span class="site-ticker__stat-label">${escapeHtml(TEXT.totalLabel)}:</span> <strong id="siteTickerSales">0</strong></span>`,
-      "</div>",
-    ].join("");
-
-    header.insertBefore(ticker, header.firstChild);
-    ticker.classList.add("is-warmup");
-    window.setTimeout(() => {
-      ticker.classList.remove("is-warmup");
-    }, 900);
-
-    bindTickerElements(ticker);
-  }
-
-  function normalizeTickerEntries(stats) {
-    const isTickerEmailVisible = (email) => {
-      const value = String(email || "").trim().toLowerCase();
-      if (!value) return false;
-      if (value.endsWith("@telegram.local")) return false;
-      if (value.endsWith(".local")) return false;
-      return true;
-    };
-
-    if (Array.isArray(stats?.tickerEntries) && stats.tickerEntries.length) {
-      return stats.tickerEntries
-        .map(entry => {
-          const email = String(entry?.email || "").trim();
-          if (!isTickerEmailVisible(email)) return null;
-          return email;
-        })
-        .filter(Boolean);
-    }
-
-    if (Array.isArray(stats?.lastBuyers) && stats.lastBuyers.length) {
-      return stats.lastBuyers
-        .map(email => String(email || "").trim())
-        .filter(isTickerEmailVisible)
-        .filter(Boolean);
-    }
-
-    return [];
-  }
-
-  function shuffleTickerEntries(entries) {
-    const list = Array.isArray(entries)
-      ? entries
-          .map(value => String(value || "").trim())
-          .filter(Boolean)
-      : [];
-    for (let i = list.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const temp = list[i];
-      list[i] = list[j];
-      list[j] = temp;
-    }
-    return list;
-  }
-
-  function getTickerCycleMs() {
-    if (!tickerTrack) return DEFAULT_TICKER_CYCLE_MS;
-    try {
-      const raw = String(window.getComputedStyle(tickerTrack).animationDuration || "").split(",")[0].trim();
-      if (!raw) return DEFAULT_TICKER_CYCLE_MS;
-      if (raw.endsWith("ms")) {
-        const parsedMs = Number(raw.slice(0, -2));
-        return Number.isFinite(parsedMs) && parsedMs > 0 ? parsedMs : DEFAULT_TICKER_CYCLE_MS;
-      }
-      if (raw.endsWith("s")) {
-        const parsedS = Number(raw.slice(0, -1));
-        return Number.isFinite(parsedS) && parsedS > 0 ? Math.round(parsedS * 1000) : DEFAULT_TICKER_CYCLE_MS;
-      }
-      return DEFAULT_TICKER_CYCLE_MS;
-    } catch (_) {
-      return DEFAULT_TICKER_CYCLE_MS;
-    }
-  }
-
-  function applyTickerAnimationOffset(anchorMs) {
-    if (!tickerTrack) return;
-    const safeAnchorMs = Number(anchorMs || ensureTickerAnchorMs());
-    const elapsed = Math.max(0, Date.now() - safeAnchorMs);
-    const cycleMs = getTickerCycleMs();
-    const offsetSeconds = (elapsed % cycleMs) / 1000;
-    tickerTrack.style.animationDelay = `-${offsetSeconds.toFixed(3)}s`;
-    tickerTrack.style.animationPlayState = "running";
-  }
-
-  function readTickerCache() {
-    try {
-      const raw = localStorage.getItem(TICKER_CACHE_KEY);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== "object") return null;
-      const updatedAt = Number(parsed.updatedAt || 0);
-      if (!updatedAt || Date.now() - updatedAt > TICKER_CACHE_TTL_MS) return null;
-      const entries = Array.isArray(parsed.entries)
-        ? parsed.entries
-            .map(v => String(v || "").trim())
-            .filter(email => {
-              const value = email.toLowerCase();
-              return value && !value.endsWith("@telegram.local") && !value.endsWith(".local");
-            })
-            .filter(Boolean)
-            .slice(0, 28)
-        : [];
-      const total = Number(parsed.total || 0);
-      const renderedAt = Number(parsed.renderedAt || updatedAt || Date.now());
-      return {
-        entries,
-        total: Number.isFinite(total) ? total : 0,
-        renderedAt: Number.isFinite(renderedAt) && renderedAt > 0 ? renderedAt : Date.now(),
-      };
-    } catch (_) {
-      return null;
-    }
-  }
-
-  function writeTickerCache(entries, total, renderedAt) {
-    try {
-      const payload = {
-        entries: Array.isArray(entries)
-          ? entries
-              .map(v => String(v || "").trim())
-              .filter(email => {
-                const value = email.toLowerCase();
-                return value && !value.endsWith("@telegram.local") && !value.endsWith(".local");
-              })
-              .filter(Boolean)
-              .slice(0, 28)
-          : [],
-        total: Number(total || 0),
-        renderedAt: Number(renderedAt || Date.now()),
-        updatedAt: Date.now(),
-      };
-      localStorage.setItem(TICKER_CACHE_KEY, JSON.stringify(payload));
-    } catch (_) {
-      // Ignore storage quota/privacy errors.
-    }
-  }
-
-  function renderTicker(entries, options = {}) {
-    if (!tickerTrack) return;
-    const renderedAt = Date.now();
-    const force = Boolean(options.force);
-
-    const normalizedEntries = Array.isArray(entries)
-      ? entries
-          .map(value => String(value || "").trim())
-          .filter(email => {
-            const value = email.toLowerCase();
-            return value && !value.endsWith("@telegram.local") && !value.endsWith(".local");
-          })
-          .filter(Boolean)
-      : [];
-    const signatureSource = normalizedEntries.length
-      ? normalizedEntries.slice().sort((a, b) => a.localeCompare(b))
-      : [TEXT.emptyTicker];
-    const signature = signatureSource.join("\u241f");
-
-    if (!force && signature === lastTickerSignature) {
-      return;
-    }
-
-    const nextHasRealEntries = normalizedEntries.length > 0;
-    const prevHasRealEntries = Boolean(lastTickerSignature && lastTickerSignature !== TEXT.emptyTicker);
-    if (!force && tickerRenderedAt && Date.now() - tickerRenderedAt < TICKER_MIN_VISUAL_UPDATE_MS) {
-      if (!(nextHasRealEntries && !prevHasRealEntries)) return;
-    }
-
-    const safeEntries = normalizedEntries.length
-      ? shuffleTickerEntries(normalizedEntries)
-      : [TEXT.emptyTicker];
-
-    const baseItems = safeEntries.map(email => (
-      `<span class="site-ticker__item">${escapeHtml(email)}</span>`
-    ));
-
-    const separator = '<span class="site-ticker__sep">•</span>';
-    const joined = baseItems.join(separator);
-    const repeated = new Array(4).fill(joined).join(separator);
-
-    tickerTrack.innerHTML =
-      '<div class="site-ticker__loop">' +
-      repeated +
-      "</div>" +
-      '<div class="site-ticker__loop" aria-hidden="true">' +
-      repeated +
-      "</div>";
-
-    lastTickerSignature = signature;
-    tickerRenderedAt = renderedAt > 0 ? renderedAt : Date.now();
-    applyTickerAnimationOffset();
-  }
-
-  function formatNumber(value) {
-    const num = Number(value || 0);
-    if (!Number.isFinite(num)) return "0";
-    return num.toLocaleString(numberLocale);
-  }
-
-  function renderCounters(stats) {
-    const total = Number(stats?.sales || 0);
-    if (totalValueEl) totalValueEl.textContent = formatNumber(total);
-  }
-
-  async function fetchAndRenderStats() {
-    try {
-      const response = await fetch(API_STATS_URL, { cache: "no-store" });
-      if (!response.ok) return;
-      const stats = await response.json();
-      const entries = normalizeTickerEntries(stats);
-      renderCounters(stats);
-      renderTicker(entries);
-      writeTickerCache(entries, Number(stats?.sales || 0), Date.now());
-    } catch (_) {
-      // Keep last successful values if API is unavailable.
-    }
-  }
-
-  async function sendHeartbeat(sessionId) {
-    try {
-      await fetch(API_HEARTBEAT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId,
-          path: window.location.pathname,
-        }),
-        keepalive: true,
-      });
-    } catch (_) {
-      // Silent fallback when backend is not available.
-    }
-  }
-
-  function stopTickerPolling() {
-    if (heartbeatTimerId) {
-      window.clearInterval(heartbeatTimerId);
-      heartbeatTimerId = 0;
-    }
-    if (statsTimerId) {
-      window.clearInterval(statsTimerId);
-      statsTimerId = 0;
-    }
-    if (delayedFetchTimerId) {
-      window.clearTimeout(delayedFetchTimerId);
-      delayedFetchTimerId = 0;
-    }
-  }
-
-  function startTickerPolling(sessionId) {
-    stopTickerPolling();
-    heartbeatTimerId = window.setInterval(() => {
-      if (document.visibilityState === "hidden") return;
-      sendHeartbeat(sessionId);
-    }, HEARTBEAT_MS);
-    statsTimerId = window.setInterval(() => {
-      if (document.visibilityState === "hidden") return;
-      fetchAndRenderStats();
-    }, STATS_REFRESH_MS);
-  }
-
-  function initLiveTicker() {
-    if (isInitialized) return;
-    if (pathname === "/claude" || pathname === "/claude.html" || pathname === "/en/claude" || pathname === "/en/claude.html") return;
-    isInitialized = true;
-
-    createTicker();
-    const cached = readTickerCache();
-    if (cached) {
-      renderCounters({ sales: cached.total });
-      renderTicker(cached.entries, { force: true });
-      writeTickerCache(cached.entries, cached.total, Date.now());
-    } else {
-      renderTicker([], { force: true });
-    }
-
-    const sessionId = ensureSessionId();
-    sendHeartbeat(sessionId);
-    startTickerPolling(sessionId);
-    fetchAndRenderStats();
-
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState !== "visible") return;
-      sendHeartbeat(sessionId);
-      fetchAndRenderStats();
-      startTickerPolling(sessionId);
-    });
-    window.addEventListener("beforeunload", stopTickerPolling, { once: true });
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initLiveTicker);
-  } else {
-    initLiveTicker();
-  }
-})();
