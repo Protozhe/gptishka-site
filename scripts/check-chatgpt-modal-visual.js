@@ -89,7 +89,7 @@ requireCss(".service-page[data-service-page=\"chatgpt\"] ~ .chatgpt-go-order-mod
 
 requirePage("СБП 0% и карты 3.2%", "static payment modal LAVA caption");
 requirePage("/assets/css/home-stability-hotfix.css?v=20260618-chatgpt-static-card2", "CSS cache-bust");
-requirePage("/assets/js/app.min.js?v=20260721-heavy-cards-webp1", "JS cache-bust");
+requirePage("/assets/js/app.min.js?v=20260722-delivery-id-only1", "JS cache-bust");
 
 if (failures.length) {
   console.error(`ChatGPT modal visual checks failed:\n- ${failures.join("\n- ")}`);

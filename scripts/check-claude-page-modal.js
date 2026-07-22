@@ -20,7 +20,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260618-claude-logo2";
-const expectedJsAssetVersion = "20260721-heavy-cards-webp1";
+const expectedJsAssetVersion = "20260722-delivery-id-only1";
 
 [
   ["service-page--constructor", "claude.html: constructor page class"],
@@ -34,7 +34,6 @@ const expectedJsAssetVersion = "20260721-heavy-cards-webp1";
   ["/assets/img/services/claude-card.png?v=20260618-claude-logo2", "claude.html: Claude product image cache-bust"],
   ["service-selected-plan", "claude.html: selected plan summary"],
   ['id="servicePlanFilters"', "claude.html: plan filter container"],
-  ['id="serviceDeliveryFilters"', "claude.html: delivery filter container"],
   ['id="serviceDurationFilters"', "claude.html: duration filter container"],
   [`/assets/css/home-stability-hotfix.css?v=${expectedAssetVersion}`, "claude.html: CSS cache-bust"],
   [`/assets/js/app.min.js?v=${expectedJsAssetVersion}`, "claude.html: JS cache-bust"],
@@ -46,6 +45,7 @@ const expectedJsAssetVersion = "20260721-heavy-cards-webp1";
   ["payment-method-modal", "claude.html: old static payment modal markup"],
   ["chatgpt-plans-bg", "claude.html: removed hero video asset"],
   ['<video class="service-hero__video"', "claude.html: removed hero video element"],
+  ['id="serviceDeliveryFilters"', "claude.html: removed delivery filter container"],
 ].forEach(([marker, label]) => rejectMarker(page, marker, label));
 
 [
@@ -61,9 +61,9 @@ const expectedJsAssetVersion = "20260721-heavy-cards-webp1";
   ['class="buy-btn pay-now-btn"', "app.js: constructor checkout CTA hook"],
   ["const term = getAiOrderModalServiceConfig(serviceKey).displayName", "app.js: constructor card uses service-specific term"],
   ["function getServiceDeliveryDisplayLabel(serviceKey, deliveryKey)", "app.js: service-specific delivery display labels"],
-  ['if ((key === "claude" || key === "grok") && value === "id") return isEnPage ? "Without login" : "Без входа";', "app.js: Claude/Grok id delivery displays as no-login"],
+  ['if ((key === "claude" || key === "grok") && value === "id") return isEnPage ? "By ID" : "По ID";', "app.js: Claude/Grok delivery displays as ID"],
   ["function getServiceDeliveryFilterKey(item, serviceKey)", "app.js: service-specific delivery filter key"],
-  ['if ((key === "claude" || key === "grok") && deliveryKey === "id") return "link";', "app.js: Claude/Grok id delivery merges into no-login filter"],
+  ['if (key === "claude" || key === "grok") return deliveryKey === "id";', "app.js: Claude/Grok expose ID products only"],
   ["function getServiceConstructorPlanTitle(item, serviceKey, planLabel)", "app.js: constructor selected plan title helper"],
   ['if (key === "claude") return String(item?.title || planLabel || "").trim();', "app.js: Claude selected plan uses product title"],
 ].forEach(([marker, label]) => requireMarker(source, marker, label));

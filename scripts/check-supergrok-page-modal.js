@@ -20,7 +20,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260618-grok-logo4";
-const expectedJsAssetVersion = "20260721-heavy-cards-webp1";
+const expectedJsAssetVersion = "20260722-delivery-id-only1";
 
 [
   ["service-page--constructor", "supergrok.html: constructor page class"],
@@ -37,7 +37,6 @@ const expectedJsAssetVersion = "20260721-heavy-cards-webp1";
   ["Часто задаваемые вопросы", "supergrok.html: FAQ title"],
   ["service-faq-question", "supergrok.html: FAQ questions"],
   ['id="servicePlanFilters"', "supergrok.html: plan filter container"],
-  ['id="serviceDeliveryFilters"', "supergrok.html: delivery filter container"],
   ['id="serviceDurationFilters"', "supergrok.html: duration filter container"],
   [`/assets/css/home-stability-hotfix.css?v=${expectedAssetVersion}`, "supergrok.html: CSS cache-bust"],
   [`/assets/js/app.min.js?v=${expectedJsAssetVersion}`, "supergrok.html: JS cache-bust"],
@@ -49,6 +48,7 @@ const expectedJsAssetVersion = "20260721-heavy-cards-webp1";
   ["payment-method-modal", "supergrok.html: old static payment modal markup"],
   ["chatgpt-plans-bg", "supergrok.html: removed hero video asset"],
   ['<video class="service-hero__video"', "supergrok.html: removed hero video element"],
+  ['id="serviceDeliveryFilters"', "supergrok.html: removed delivery filter container"],
 ].forEach(([marker, label]) => rejectMarker(page, marker, label));
 
 [
