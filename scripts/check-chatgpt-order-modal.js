@@ -33,7 +33,7 @@ const requiredSourceMarkers = [
   "data-chatgpt-go-promo-panel",
   "Сроки выполнения заказа",
   "Нужна для связи по заказу",
-  "Введите id telegram с @",
+  "Сюда придут статус и вся информация по заказу",
   "Continue with Apple",
   "Войти через Apple",
   "Почта или логин ",

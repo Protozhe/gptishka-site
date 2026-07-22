@@ -19,8 +19,8 @@ function requireCssRegex(pattern, label) {
   if (!pattern.test(css)) failures.push(`css: ${label}`);
 }
 
-const expectedAssetVersion = "20260722-claude-max20-modal2";
-const expectedJsAssetVersion = "20260722-claude-max-plans1";
+const expectedAssetVersion = "20260722-claude-max20-modal3";
+const expectedJsAssetVersion = "20260722-claude-max20-copy1";
 
 [
   ["service-page--constructor", "claude.html: constructor page class"],

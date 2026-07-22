@@ -7153,6 +7153,10 @@ textarea.chatgpt-order-field__control {
     0 8px 20px rgba(3, 8, 15, 0.16) !important;
 }
 
+.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-gift-note > strong {
+  color: var(--checkout-text) !important;
+}
+
 .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-footer {
   background: rgba(27, 38, 51, 0.96) !important;
   border-top-color: var(--checkout-border-strong) !important;

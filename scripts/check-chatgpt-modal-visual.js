@@ -33,7 +33,7 @@ requireSource("/assets/img/payment-lava.svg", "LAVA local logo");
 requireSource("/assets/img/payment-enot.svg", "ENOT local logo");
 requireSource("СБП 0% и карты 3.2%", "short LAVA fee caption");
 requireSource("Карты 3.2% и СБП 0%", "ENOT fee caption");
-requireSource("Введите id telegram с @", "Telegram ID helper");
+requireSource("Сюда придут статус и вся информация по заказу", "Telegram order updates helper");
 rejectSource("СБП 0% и банковские карты 3.2%", "old long LAVA caption");
 rejectSource("Введите ник с @", "old Telegram nickname helper");
 rejectSource("Дизайн сертификата", "gift certificate design section");
