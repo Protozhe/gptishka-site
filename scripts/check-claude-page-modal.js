@@ -3,6 +3,7 @@ const fs = require("fs");
 const source = fs.readFileSync("assets/js/app.js", "utf8");
 const minifiedSource = fs.readFileSync("assets/js/app.min.js", "utf8");
 const css = fs.readFileSync("assets/css/home-stability-hotfix.css", "utf8");
+const claudeCss = fs.readFileSync("assets/css/claude-redesign.css", "utf8");
 const page = fs.readFileSync("claude.html", "utf8");
 const desktopHeroBytes = fs.statSync("assets/video/claude-hero-bg-lite.mp4").size;
 const mobileHeroBytes = fs.statSync("assets/video/claude-hero-bg-mobile.mp4").size;
@@ -23,25 +24,26 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260722-unified-checkout1";
-const expectedJsAssetVersion = "20260722-claude-hero-lite2";
+const expectedJsAssetVersion = "20260722-reference1";
 
 [
   ["service-page--constructor", "claude.html: constructor page class"],
   ['data-service-page="claude"', "claude.html: Claude service scope"],
   ['data-service-layout="constructor"', "claude.html: constructor layout marker"],
-  ["service-hero--claude", "claude.html: Claude hero modifier"],
-  ['class="service-hero__orange-overlay"', "claude.html: Claude hero orange overlay"],
-  ['class="service-hero__dark-overlay"', "claude.html: Claude hero dark overlay"],
-  ["service-constructor-shell", "claude.html: constructor shell"],
-  ["service-product-gallery", "claude.html: product gallery"],
-  ["/assets/img/services/claude-card.png?v=20260618-claude-logo2", "claude.html: Claude product image cache-bust"],
+  ["claude-hero__intro", "claude.html: compact hero copy"],
+  ["<h1 id=\"claude-page-title\">Claude AI</h1>", "claude.html: concise product title"],
+  ["claude-hero__purchase", "claude.html: hero purchase area"],
   ["service-selected-plan", "claude.html: selected plan summary"],
-  ['id="servicePlanFilters"', "claude.html: plan filter container"],
-  ['id="serviceDurationFilters"', "claude.html: duration filter container"],
-  ['data-mobile-src="/assets/video/claude-hero-bg-mobile.mp4?v=20260722-claude-hero-lite2"', "claude.html: lightweight mobile hero animation"],
-  ['data-desktop-src="/assets/video/claude-hero-bg-lite.mp4?v=20260722-claude-hero-lite2"', "claude.html: lightweight desktop hero animation"],
-  ['/assets/img/services/claude-hero-bg-poster.webp?v=20260722-claude-hero-lite2', "claude.html: static hero fallback"],
-  ['preload="none"', "claude.html: deferred video preload"],
+  ["claude-about__list", "claude.html: compact product information"],
+  ["claude-steps__list", "claude.html: compact three-step process"],
+  ["claude-faq-requirements", "claude.html: connection requirements FAQ"],
+  ["claude-faq-guarantee", "claude.html: guarantee FAQ"],
+  ["claude-support", "claude.html: compact support area"],
+  ['src="/assets/video/claude-hero-bg-mobile.mp4?v=20260722-reference1"', "claude.html: lightweight mobile hero animation"],
+  ['src="/assets/video/claude-hero-bg-lite.mp4?v=20260722-reference1"', "claude.html: lightweight desktop hero animation"],
+  ['/assets/img/services/claude-hero-bg-poster.webp?v=20260722-reference1', "claude.html: static hero fallback"],
+  ['width="722" height="406"', "claude.html: stable hero media dimensions"],
+  ['preload="metadata"', "claude.html: metadata-only video preload"],
   [`/assets/css/home-stability-hotfix.css?v=${expectedAssetVersion}`, "claude.html: CSS cache-bust"],
   [`/assets/js/app.min.js?v=${expectedJsAssetVersion}`, "claude.html: JS cache-bust"],
 ].forEach(([marker, label]) => requireMarker(page, marker, label));
@@ -49,6 +51,13 @@ const expectedJsAssetVersion = "20260722-claude-hero-lite2";
 [
   ["20260615-chatgpt-seamless1", "claude.html: old ChatGPT cache-bust"],
   ["service-hero__stats", "claude.html: old hero stats block"],
+  ["claude-product-workspace-v2.webp", "claude.html: removed static hero illustration"],
+  ["claude-specs", "claude.html: removed specifications section"],
+  ["claude-capabilities", "claude.html: removed capabilities section"],
+  ["claude-trust", "claude.html: removed trust section"],
+  ["claude-final", "claude.html: removed repeated final CTA"],
+  ["claude-hero__terms", "claude.html: removed hero condition grid"],
+  ["claude-hero__proofs", "claude.html: removed hero proof strip"],
   ["payment-method-modal", "claude.html: old static payment modal markup"],
   ["chatgpt-plans-bg", "claude.html: removed obsolete 5 MB hero video asset"],
   ['id="serviceDeliveryFilters"', "claude.html: removed delivery filter container"],
@@ -71,11 +80,11 @@ const expectedJsAssetVersion = "20260722-claude-hero-lite2";
   ["function getServiceDeliveryFilterKey(item, serviceKey)", "app.js: service-specific delivery filter key"],
   ['if ((key === "claude" || key === "grok") && deliveryKey !== "id") return false;', "app.js: Claude/Grok expose ID products only"],
   ["function getServiceConstructorPlanTitle(item, serviceKey, planLabel)", "app.js: constructor selected plan title helper"],
-  ['if (key === "claude") return String(item?.title || planLabel || "").trim();', "app.js: Claude selected plan uses product title"],
+  ['if (key === "claude") return String(planLabel || item?.title || "").trim();', "app.js: Claude selected plan uses concise plan label"],
   ['const CLAUDE_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max-5x", "max-20x"]);', "app.js: Claude modal supports all three plans"],
   ['plan: ["pro", "max-5x", "max-20x"]', "app.js: Claude constructor exposes Pro, 5x Max and 20x Max"],
-  ['"max-5x": "5x Max"', "app.js: Claude 5x Max label"],
-  ['"max-20x": "20x Max"', "app.js: Claude 20x Max label"],
+  ['"max-5x": "Max 5x"', "app.js: Claude Max 5x label"],
+  ['"max-20x": "Max 20x"', "app.js: Claude Max 20x label"],
 ].forEach(([marker, label]) => requireMarker(source, marker, label));
 
 [
@@ -91,8 +100,6 @@ const expectedJsAssetVersion = "20260722-claude-hero-lite2";
   ["#ffb15a", "css: Claude orange highlight"],
   ["#f97316", "css: Claude orange primary"],
   ["#c2410c", "css: Claude orange deep"],
-  [".service-hero__orange-overlay", "css: Claude orange video overlay"],
-  ["claudeHeroBackgroundShift", "css: Claude visible animated hero background"],
   ['[data-service-page="claude"] .service-checkout-card .buy-btn:hover:not(:disabled)', "css: Claude constructor buy hover override"],
   ["#f68b2f", "css: softer Claude hover orange"],
   ['.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card', "css: checkout polish is shared by all service modals"],
@@ -118,10 +125,15 @@ if (desktopHeroBytes > 800_000) failures.push(`desktop hero video is too large: 
 if (mobileHeroBytes > 350_000) failures.push(`mobile hero video is too large: ${mobileHeroBytes} bytes`);
 if (heroPosterBytes > 50_000) failures.push(`hero poster is too large: ${heroPosterBytes} bytes`);
 
-requireCssRegex(
-  /\[data-service-page="claude"\]\s+\.service-checkout-card\s+\.buy-btn:hover:not\(:disabled\)[\s\S]*transform:\s*none;/,
-  "Claude constructor buy hover does not lift static selected plan",
-);
+[
+  ["--claude-width: 1240px", "shared content-width token"],
+  ["grid-template-areas:", "responsive hero composition"],
+  [".claude-plans__grid", "flat tariff grid"],
+  [".claude-about__list", "compact capability list"],
+  ["@media (prefers-reduced-motion: reduce)", "reduced-motion poster fallback"],
+].forEach(([marker, label]) => {
+  if (!claudeCss.includes(marker)) failures.push(`claude css: ${label}`);
+});
 
 if (failures.length) {
   console.error(`Claude page/modal checks failed:\n- ${failures.join("\n- ")}`);
