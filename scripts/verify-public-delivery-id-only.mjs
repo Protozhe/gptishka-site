@@ -21,7 +21,11 @@ assert.equal(app, appMin, "app.js and app.min.js must stay identical");
 assert.match(app, /function getPublicServiceItems\(items, serviceKey\)/);
 assert.match(app, /if \(key === "claude" \|\| key === "grok"\) return deliveryKey === "id";/);
 assert.match(app, /\["manual_login", "credentials", "support", "support_claude"\]\.includes\(deliveryType\)/);
-assert.match(app, /const allItems = sortServicePageItems\(serviceKey, getPublicServiceItems\(servicePageItems, serviceKey\)\);/);
+assert.equal(
+  (app.match(/const allItems = sortServicePageItems\(serviceKey, getPublicServiceItems\(servicePageItems, serviceKey\)\);/g) || []).length,
+  2,
+  "both card rendering and checkout resolution must use the filtered product list",
+);
 assert.match(app, /if \(serviceDeliveryFiltersEl\) serviceDeliveryFiltersEl\.innerHTML = "";/);
 assert.match(app, /return isEnPage \? "By ID" : "По ID";/);
 

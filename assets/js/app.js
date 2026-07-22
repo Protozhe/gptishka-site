@@ -4729,7 +4729,7 @@ function initActivationResumeShortcut() {
   function renderServicePageFromItems() {
     if (!servicePageRootEl || !servicePlansGridEl) return;
     const serviceKey = getServicePageKey();
-    const allItems = sortServicePageItems(serviceKey, servicePageItems);
+    const allItems = sortServicePageItems(serviceKey, getPublicServiceItems(servicePageItems, serviceKey));
     updateServiceSummary(allItems);
 
     const constructorMode = isServiceConstructorPage() && (isAiOrderModalServiceKey(serviceKey) || Boolean(dynamicServicePagePayload));
