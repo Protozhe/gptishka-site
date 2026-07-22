@@ -20,7 +20,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260618-claude-logo2";
-const expectedJsAssetVersion = "20260722-duration-limits1";
+const expectedJsAssetVersion = "20260722-claude-max-plans1";
 
 [
   ["service-page--constructor", "claude.html: constructor page class"],
@@ -66,6 +66,10 @@ const expectedJsAssetVersion = "20260722-duration-limits1";
   ['if ((key === "claude" || key === "grok") && deliveryKey !== "id") return false;', "app.js: Claude/Grok expose ID products only"],
   ["function getServiceConstructorPlanTitle(item, serviceKey, planLabel)", "app.js: constructor selected plan title helper"],
   ['if (key === "claude") return String(item?.title || planLabel || "").trim();', "app.js: Claude selected plan uses product title"],
+  ['const CLAUDE_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max-5x", "max-20x"]);', "app.js: Claude modal supports all three plans"],
+  ['plan: ["pro", "max-5x", "max-20x"]', "app.js: Claude constructor exposes Pro, 5x Max and 20x Max"],
+  ['"max-5x": "5x Max"', "app.js: Claude 5x Max label"],
+  ['"max-20x": "20x Max"', "app.js: Claude 20x Max label"],
 ].forEach(([marker, label]) => requireMarker(source, marker, label));
 
 [

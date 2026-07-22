@@ -816,7 +816,7 @@ function initActivationResumeShortcut() {
     duration: "all",
   };
   const CHATGPT_ORDER_MODAL_PLAN_KEYS = new Set(["go", "plus", "pro-5x", "pro-20x"]);
-  const CLAUDE_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "claude"]);
+  const CLAUDE_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max-5x", "max-20x"]);
   const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["1m", "2m", "6m", "12m"]);
   const VPN_ORDER_MODAL_PLAN_KEYS = new Set(["1m", "2m", "6m", "12m"]);
   const AI_ORDER_MODAL_SERVICE_KEYS = new Set(["chatgpt", "claude", "grok", "vpn"]);
@@ -2765,6 +2765,8 @@ function initActivationResumeShortcut() {
     }
 
     if (key === "claude") {
+      if (text.includes("max-20x") || text.includes("max 20x") || text.includes("20x max") || text.includes("max20x") || joinedTags.includes("max20x")) return "max-20x";
+      if (text.includes("max-5x") || text.includes("max 5x") || text.includes("5x max") || text.includes("max5x") || joinedTags.includes("max5x")) return "max-5x";
       if (text.includes("pro")) return "pro";
       return "claude";
     }
@@ -2843,7 +2845,8 @@ function initActivationResumeShortcut() {
       claude: {
         all: isEnPage ? "All plans" : "Все тарифы",
         pro: "Pro",
-        claude: "Claude",
+        "max-5x": "5x Max",
+        "max-20x": "20x Max",
       },
       grok: {
         all: isEnPage ? "All plans" : "Все тарифы",
@@ -2916,7 +2919,8 @@ function initActivationResumeShortcut() {
       return months ? months * 10 : 100;
     }
     if (key === "claude") {
-      return planKey === "pro" ? 10 : 50;
+      const order = { pro: 10, "max-5x": 20, "max-20x": 30, claude: 90 };
+      return order[planKey] || 100;
     }
     return 100;
   }
@@ -3512,7 +3516,7 @@ function initActivationResumeShortcut() {
         duration: ["1m"],
       },
       claude: {
-        plan: ["pro", "claude"],
+        plan: ["pro", "max-5x", "max-20x"],
         duration: ["1m"],
       },
       grok: {
