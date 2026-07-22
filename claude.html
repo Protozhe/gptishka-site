@@ -14,7 +14,7 @@
 <meta property="og:site_name" content="GPTishka" />
 <meta property="og:title" content="Claude — тарифные планы | GPTishka" />
 <meta property="og:description" content="Выберите тариф Claude, оплатите заказ через GPTishka, а мы подключим подписку выбранным способом." />
-<meta property="og:image" content="https://gptishka.shop/assets/img/services/claude-product-workspace-v2.webp" />
+<meta property="og:image" content="https://gptishka.shop/assets/img/services/claude-hero-bg-poster.webp" />
 <meta property="og:url" content="https://gptishka.shop/claude" />
 <title>Claude — тарифные планы | GPTishka</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,7 +27,7 @@
 <noscript><link rel="stylesheet" href="/assets/css/support-widget.css?v=20260707-support-unify3" /></noscript>
 <link rel="stylesheet" href="/assets/css/home-stability-hotfix.css?v=20260722-unified-checkout1" />
 <link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260707-header-unify9" />
-<link rel="stylesheet" href="/assets/css/claude-redesign.css?v=20260722-product2" />
+<link rel="stylesheet" href="/assets/css/claude-redesign.css?v=20260722-reference1" />
 </head>
 <body class="claude-product-body">
 <div class="page-overlay"></div>
@@ -77,45 +77,34 @@
 
 <main class="page service-page service-page--constructor claude-page" data-service-page="claude" data-service-layout="constructor" data-service-editorial="1">
   <section class="claude-hero" aria-labelledby="claude-page-title">
-    <div class="claude-hero__copy">
-      <a class="claude-back-link" href="/#pricing">← Все сервисы</a>
+    <a class="claude-back-link" href="/#pricing">← Все сервисы</a>
+    <div class="claude-hero__intro">
       <span class="claude-kicker">Claude</span>
-      <h1 id="claude-page-title">Claude для текста, кода и анализа</h1>
-      <p class="claude-hero__lead">Подписка на один месяц для работы с большими материалами — с подключением к вашему аккаунту и поддержкой GPTishka.</p>
-      <div class="claude-hero__price" data-price-state="loading" aria-live="polite" aria-label="Минимальная цена загружается">
+      <h1 id="claude-page-title">Claude AI</h1>
+      <p>Для текстов, кода, анализа и работы с большими материалами.</p>
+    </div>
+    <figure class="claude-hero__media" aria-label="Демонстрация Claude AI">
+      <video class="claude-hero__video" autoplay muted loop playsinline preload="metadata" poster="/assets/img/services/claude-hero-bg-poster.webp?v=20260722-reference1" width="722" height="406" aria-hidden="true">
+        <source src="/assets/video/claude-hero-bg-mobile.mp4?v=20260722-reference1" media="(max-width: 640px) and (prefers-reduced-motion: no-preference)" type="video/mp4">
+        <source src="/assets/video/claude-hero-bg-lite.mp4?v=20260722-reference1" media="(prefers-reduced-motion: no-preference)" type="video/mp4">
+      </video>
+    </figure>
+    <div class="claude-hero__purchase">
+      <div class="claude-hero__price" data-price-state="loading" aria-live="polite" aria-label="Цена загружается">
         <span class="claude-hero__price-prefix">от</span>
         <strong id="serviceMinPrice"></strong>
-        <span class="claude-hero__price-term">за 1 месяц</span>
         <span class="claude-price-skeleton" aria-hidden="true"></span>
       </div>
-      <div class="claude-hero__terms" aria-label="Основные условия">
-        <span><small>Срок доступа</small><b>1 месяц</b></span>
-        <span><small>Способ подключения</small><b>На аккаунт с помощью GPTishka</b></span>
-      </div>
       <div class="claude-hero__actions">
-        <a class="claude-button claude-button--primary" href="#plans">Выбрать тариф</a>
+        <a class="claude-button claude-button--primary" href="#plans">К тарифам</a>
         <a class="claude-text-link" href="https://t.me/aiiisupport" target="_blank" rel="noopener">Написать в поддержку</a>
       </div>
-      <ul class="claude-hero__proofs" aria-label="Условия сервиса">
-        <li>Гарантия на весь срок</li>
-        <li>Обычно 5 минут — 2 часа</li>
-        <li>Оплата через Enot и Lava</li>
-      </ul>
     </div>
-    <figure class="claude-hero__media">
-      <img src="/assets/img/services/claude-product-workspace-v2.webp?v=20260722-product2" alt="Рабочее пространство для текстов, аналитики и кода" width="1536" height="1024" loading="eager" decoding="async" fetchpriority="high">
-      <figcaption><b>Одно рабочее пространство</b><span>Тексты · код · документы</span></figcaption>
-    </figure>
   </section>
 
   <section class="claude-section claude-plans" id="plans" aria-labelledby="claude-plans-title">
-    <div class="claude-section__heading">
-      <div>
-        <span class="claude-kicker">Тарифы</span>
-        <h2 id="claude-plans-title">Три уровня доступа на один месяц</h2>
-      </div>
-      <p>Pro — стандартный тариф. Max 5x и Max 20x увеличивают доступный объём использования относительно Pro.</p>
-    </div>
+    <span class="claude-kicker">Тарифы</span>
+    <h2 id="claude-plans-title">Тарифы Claude</h2>
     <div class="claude-plans__grid service-selected-plan" id="servicePlansGrid" aria-live="polite">
       <div class="claude-tariff-skeleton" aria-hidden="true"></div>
       <div class="claude-tariff-skeleton" aria-hidden="true"></div>
@@ -123,110 +112,63 @@
     </div>
   </section>
 
-  <section class="claude-section claude-specs" aria-labelledby="claude-specs-title">
-    <div class="claude-specs__intro">
-      <span class="claude-kicker">Характеристики услуги</span>
-      <h2 id="claude-specs-title">Что именно вы покупаете</h2>
-      <p>Условия собраны в одном месте. Если параметр не указан в каталоге, мы прямо предлагаем уточнить его до оплаты.</p>
+  <section class="claude-section claude-about" aria-labelledby="claude-about-title">
+    <div>
+      <span class="claude-kicker">О продукте</span>
+      <h2 id="claude-about-title">Что умеет Claude</h2>
+      <p>Claude помогает работать с текстом, кодом и большими материалами, сохраняя контекст и структуру.</p>
     </div>
-    <dl class="claude-specs__list">
-      <div><dt>Тип продукта</dt><dd>Цифровая услуга подключения доступа Claude</dd></div>
-      <div><dt>Срок доступа</dt><dd>1 месяц</dd></div>
-      <div><dt>Способ подключения</dt><dd>Автоматически, с помощью GPTishka</dd></div>
-      <div><dt>Регион</dt><dd>Не указан в каталоге — уточните в поддержке до оплаты</dd></div>
-      <div><dt>Автопродление</dt><dd>Не заявлено в каталоге</dd></div>
-      <div><dt>Гарантия</dt><dd>На весь оплаченный срок</dd></div>
-      <div><dt>Совместимость</dt><dd>Требования Claude можно уточнить в поддержке до заказа</dd></div>
-      <div><dt>Что потребуется</dt><dd>Данные, которые запросит форма выбранного способа подключения</dd></div>
-      <div><dt>Важно</dt><dd>Один аккаунт — одна подписка. Это услуга подключения, не код активации.</dd></div>
-    </dl>
-  </section>
-
-  <section class="claude-section claude-capabilities" aria-labelledby="claude-capabilities-title">
-    <div class="claude-capabilities__title">
-      <span class="claude-kicker">Возможности</span>
-      <h2 id="claude-capabilities-title">Для задач, где важны контекст и структура</h2>
-      <p>Один редакционный список вместо набора одинаковых карточек.</p>
-    </div>
-    <ol class="claude-capabilities__list">
-      <li><span>01</span><div><h3>Тексты и документы</h3><p>Подготовка, редактирование и разбор больших материалов.</p></div></li>
-      <li><span>02</span><div><h3>Программирование</h3><p>Работа с кодом, объяснение решений и поиск ошибок.</p></div></li>
-      <li><span>03</span><div><h3>Аналитика</h3><p>Структурирование информации и выделение важных закономерностей.</p></div></li>
-      <li><span>04</span><div><h3>Большой контекст</h3><p>Последовательная работа с объёмными исходными материалами.</p></div></li>
-    </ol>
+    <ul class="claude-about__list">
+      <li>Тексты и документы</li>
+      <li>Программирование</li>
+      <li>Анализ информации</li>
+      <li>Работа с большими материалами</li>
+    </ul>
   </section>
 
   <section class="claude-section claude-steps" aria-labelledby="claude-steps-title">
-    <div class="claude-section__heading">
-      <div><span class="claude-kicker">Как получить доступ</span><h2 id="claude-steps-title">От выбора до подключения</h2></div>
-      <p>Цена, срок и основные условия видны до перехода к оплате.</p>
-    </div>
+    <span class="claude-kicker">Как получить</span>
+    <h2 id="claude-steps-title">Три шага до подключения</h2>
     <ol class="claude-steps__list">
-      <li><span>01</span><h3>Выберите тариф</h3><p>Сравните цену и доступный объём.</p></li>
-      <li><span>02</span><h3>Оформите заказ</h3><p>Заполните данные и выберите способ оплаты.</p></li>
-      <li><span>03</span><h3>Дождитесь подключения</h3><p>GPTishka выполнит заказ и сообщит о готовности.</p></li>
-      <li><span>04</span><h3>Пользуйтесь Claude</h3><p>Поддержка доступна весь оплаченный срок.</p></li>
+      <li><span>01</span><h3>Выбрать тариф</h3></li>
+      <li><span>02</span><h3>Оформить и оплатить заказ</h3></li>
+      <li><span>03</span><h3>Получить подключение</h3></li>
     </ol>
   </section>
 
-  <section class="claude-section claude-trust" aria-labelledby="claude-trust-title">
-    <div class="claude-trust__copy">
-      <span class="claude-kicker">Условия и доверие</span>
-      <h2 id="claude-trust-title">Всё важное — до оплаты</h2>
-      <p>Услугу оказывает команда GPTishka. По вопросам заказа можно написать в Telegram до покупки и в течение оплаченного срока.</p>
-      <div class="claude-trust__links">
-        <a href="/oferta.html">Публичная оферта</a>
-        <a href="/refund.html">Условия возврата</a>
-        <a href="/politika.html">Конфиденциальность</a>
-        <a href="/contact.html">Контакты</a>
-      </div>
-    </div>
-    <dl class="claude-trust__facts">
-      <div><dt>Поддержка</dt><dd><a href="https://t.me/aiiisupport" target="_blank" rel="noopener">@aiiisupport</a> — до заказа и после оплаты.</dd></div>
-      <div><dt>Часы обработки</dt><dd>Ежедневно с 10:00 до 20:00 по Москве.</dd></div>
-      <div><dt>Срок выполнения</dt><dd>Обычно 5 минут — 2 часа, максимальное ожидание — до 48 часов.</dd></div>
-      <div><dt>Гарантия</dt><dd>На весь оплаченный срок; вопрос по доступу проверит поддержка.</dd></div>
-      <div><dt>Оплата</dt><dd>СБП и банковские карты через Enot и Lava. GPTishka не хранит платёжные данные.</dd></div>
-    </dl>
-  </section>
-
   <section class="claude-section service-faq-section claude-faq" id="faq" aria-labelledby="claude-faq-title">
-    <div class="claude-section__heading">
-      <div><span class="claude-kicker">FAQ</span><h2 id="claude-faq-title">Частые вопросы</h2></div>
-      <p>Главное об оплате, сроках и поддержке.</p>
-    </div>
+    <span class="claude-kicker">FAQ</span>
+    <h2 id="claude-faq-title">Частые вопросы</h2>
     <div class="service-faq-list">
-      <article class="service-faq-item active">
-        <button class="service-faq-question" type="button" aria-expanded="true" aria-controls="claude-faq-payment">Какие способы оплаты доступны?<span aria-hidden="true"></span></button>
-        <div class="service-faq-answer" id="claude-faq-payment" role="region">
-          <p>На gptishka.shop доступны СБП и банковские карты через платёжные шлюзы Enot и Lava.</p>
-          <p>Мы не сохраняем платёжные данные — обработка оплаты выполняется на стороне платёжной системы.</p>
-        </div>
+      <article class="service-faq-item">
+        <button class="service-faq-question" type="button" aria-expanded="false" aria-controls="claude-faq-payment">Какие способы оплаты доступны?<span aria-hidden="true"></span></button>
+        <div class="service-faq-answer" id="claude-faq-payment" role="region"><p>Доступны СБП и банковские карты через платёжные шлюзы Enot и Lava.</p></div>
       </article>
       <article class="service-faq-item">
         <button class="service-faq-question" type="button" aria-expanded="false" aria-controls="claude-faq-time">Сколько времени занимает подключение?<span aria-hidden="true"></span></button>
-        <div class="service-faq-answer" id="claude-faq-time" role="region">
-          <p>В среднем подключение занимает от 5 минут до 2 часов после оплаты. Максимальное время ожидания — до 48 часов.</p>
-          <p>Заказы обрабатываются ежедневно с 10:00 до 20:00 по МСК. Если заказ оформлен ночью, подключение будет выполнено утром.</p>
-        </div>
+        <div class="service-faq-answer" id="claude-faq-time" role="region"><p>Обычно от 5 минут до 2 часов после оплаты. Максимальное время ожидания — до 48 часов.</p></div>
       </article>
       <article class="service-faq-item">
-        <button class="service-faq-question" type="button" aria-expanded="false" aria-controls="claude-faq-trust">Что делать, если возникнет вопрос после оплаты?<span aria-hidden="true"></span></button>
-        <div class="service-faq-answer" id="claude-faq-trust" role="region">
-          <p>Обратитесь в поддержку GPTishka. Менеджер проверит заказ и поможет разобраться с подключением или доступом.</p>
-        </div>
+        <button class="service-faq-question" type="button" aria-expanded="false" aria-controls="claude-faq-requirements">Что потребуется для подключения?<span aria-hidden="true"></span></button>
+        <div class="service-faq-answer" id="claude-faq-requirements" role="region"><p>Понадобятся данные, которые запросит форма выбранного способа подключения.</p></div>
+      </article>
+      <article class="service-faq-item">
+        <button class="service-faq-question" type="button" aria-expanded="false" aria-controls="claude-faq-guarantee">Есть ли гарантия?<span aria-hidden="true"></span></button>
+        <div class="service-faq-answer" id="claude-faq-guarantee" role="region"><p>Гарантия действует весь оплаченный срок.</p></div>
+      </article>
+      <article class="service-faq-item">
+        <button class="service-faq-question" type="button" aria-expanded="false" aria-controls="claude-faq-support">Что делать, если возникла проблема?<span aria-hidden="true"></span></button>
+        <div class="service-faq-answer" id="claude-faq-support" role="region"><p>Напишите в поддержку GPTishka — менеджер проверит заказ и поможет с доступом.</p></div>
       </article>
     </div>
   </section>
 
-  <section class="claude-final" aria-labelledby="claude-final-title">
-    <span class="claude-kicker">Claude на 1 месяц</span>
-    <h2 id="claude-final-title">Выберите подходящий объём использования</h2>
-    <p>Цена и параметры тарифа будут повторно показаны в форме до оплаты.</p>
-    <div class="claude-final__actions">
-      <a class="claude-button claude-button--primary" href="#plans">Перейти к тарифам</a>
-      <a class="claude-text-link" href="https://t.me/aiiisupport" target="_blank" rel="noopener">Написать в поддержку</a>
+  <section class="claude-support" aria-labelledby="claude-support-title">
+    <div>
+      <h2 id="claude-support-title">Остались вопросы?</h2>
+      <p>Поддержка отвечает ежедневно с 10:00 до 20:00 по Москве.</p>
     </div>
+    <a class="claude-button claude-button--primary" href="https://t.me/aiiisupport" target="_blank" rel="noopener">Написать в Telegram</a>
   </section>
 </main>
 
@@ -239,7 +181,7 @@
   </div>
   <span class="footer-copy">&copy; 2026 GPTishka. Все права защищены, копирование запрещено.</span>
 </footer>
-<script src="/assets/js/app.min.js?v=20260722-product2" defer></script>
+<script src="/assets/js/app.min.js?v=20260722-reference1" defer></script>
 <script src="/assets/js/support-widget.js?v=20260721-mascot-placeholder-webp1" defer></script>
 </body>
 </html>
