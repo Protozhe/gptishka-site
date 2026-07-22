@@ -8,7 +8,7 @@ const serverSource = fs.readFileSync("server.js", "utf8");
 const successPage = fs.readFileSync("success.html", "utf8");
 
 const expectedAssetVersion = "20260618-chatgpt-static-card2";
-const expectedJsAssetVersion = "20260722-delivery-id-only1";
+const expectedJsAssetVersion = "20260722-delivery-id-only2";
 
 const requiredSourceMarkers = [
   "chatgpt-order-summary-card",

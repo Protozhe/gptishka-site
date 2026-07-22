@@ -47,7 +47,7 @@ for (const forbidden of [
 for (const page of pages) {
   const html = read(page);
   assert.ok(!html.includes('id="serviceDeliveryFilters"'), `${page} still renders delivery filters`);
-  assert.ok(html.includes("/assets/js/app.min.js?v=20260722-delivery-id-only1"), `${page} has stale app.js version`);
+  assert.ok(html.includes("/assets/js/app.min.js?v=20260722-delivery-id-only2"), `${page} has stale app.js version`);
 }
 
 console.log("Public delivery UI removed; Claude/Grok ID-only flow verified.");
