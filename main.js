@@ -3244,7 +3244,7 @@ function initActivationResumeShortcut() {
           (displayPlanSummary ? '<p class="ai-directory-card__plans">' + escapeHtml(displayPlanSummary) + "</p>" : "") +
           '<div class="ai-directory-card__bottom">' +
             '<span class="ai-directory-card__price">' + escapeHtml(displayPriceText) + "</span>" +
-            '<a class="ai-directory-card__button" href="' + escapeHtml(displayHref) + '">' + escapeHtml(displayButtonLabel) + "</a>" +
+            '<a class="ai-directory-card__button" href="' + escapeHtml(displayHref) + '"><span class="ai-directory-card__button-label">' + escapeHtml(displayButtonLabel) + "</span></a>" +
           "</div>" +
         "</div>" +
       "</article>"

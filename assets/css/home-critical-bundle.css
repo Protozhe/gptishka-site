@@ -17339,6 +17339,7 @@ body.home-wide-body main.page::after {
 .home-wide-page .ai-directory-card--claude .ai-directory-card__button,
 .home-wide-page .ai-directory-card--grok .ai-directory-card__button {
   position: relative;
+  isolation: isolate;
   overflow: hidden;
   transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease,
     color 0.2s ease, border-color 0.2s ease;
@@ -17349,11 +17350,17 @@ body.home-wide-body main.page::after {
 .home-wide-page .ai-directory-card--grok .ai-directory-card__button::before {
   position: absolute;
   inset: 0;
+  z-index: 0;
   content: "";
   background: var(--directory-button-hover-bg);
   opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
+}
+
+.home-wide-page .ai-directory-card__button-label {
+  position: relative;
+  z-index: 1;
 }
 
 .home-wide-page .ai-directory-card--chatgpt {
