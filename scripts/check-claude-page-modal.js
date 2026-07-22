@@ -4,9 +4,6 @@ const source = fs.readFileSync("assets/js/app.js", "utf8");
 const minifiedSource = fs.readFileSync("assets/js/app.min.js", "utf8");
 const css = fs.readFileSync("assets/css/home-stability-hotfix.css", "utf8");
 const page = fs.readFileSync("claude.html", "utf8");
-const desktopHeroBytes = fs.statSync("assets/video/claude-hero-bg-lite.mp4").size;
-const mobileHeroBytes = fs.statSync("assets/video/claude-hero-bg-mobile.mp4").size;
-const heroPosterBytes = fs.statSync("assets/img/services/claude-hero-bg-poster.webp").size;
 
 const failures = [];
 
@@ -22,8 +19,8 @@ function requireCssRegex(pattern, label) {
   if (!pattern.test(css)) failures.push(`css: ${label}`);
 }
 
-const expectedAssetVersion = "20260722-unified-checkout1";
-const expectedJsAssetVersion = "20260722-claude-hero-lite2";
+const expectedAssetVersion = "20260618-claude-logo2";
+const expectedJsAssetVersion = "20260721-heavy-cards-webp1";
 
 [
   ["service-page--constructor", "claude.html: constructor page class"],
@@ -37,11 +34,8 @@ const expectedJsAssetVersion = "20260722-claude-hero-lite2";
   ["/assets/img/services/claude-card.png?v=20260618-claude-logo2", "claude.html: Claude product image cache-bust"],
   ["service-selected-plan", "claude.html: selected plan summary"],
   ['id="servicePlanFilters"', "claude.html: plan filter container"],
+  ['id="serviceDeliveryFilters"', "claude.html: delivery filter container"],
   ['id="serviceDurationFilters"', "claude.html: duration filter container"],
-  ['data-mobile-src="/assets/video/claude-hero-bg-mobile.mp4?v=20260722-claude-hero-lite2"', "claude.html: lightweight mobile hero animation"],
-  ['data-desktop-src="/assets/video/claude-hero-bg-lite.mp4?v=20260722-claude-hero-lite2"', "claude.html: lightweight desktop hero animation"],
-  ['/assets/img/services/claude-hero-bg-poster.webp?v=20260722-claude-hero-lite2', "claude.html: static hero fallback"],
-  ['preload="none"', "claude.html: deferred video preload"],
   [`/assets/css/home-stability-hotfix.css?v=${expectedAssetVersion}`, "claude.html: CSS cache-bust"],
   [`/assets/js/app.min.js?v=${expectedJsAssetVersion}`, "claude.html: JS cache-bust"],
 ].forEach(([marker, label]) => requireMarker(page, marker, label));
@@ -50,8 +44,8 @@ const expectedJsAssetVersion = "20260722-claude-hero-lite2";
   ["20260615-chatgpt-seamless1", "claude.html: old ChatGPT cache-bust"],
   ["service-hero__stats", "claude.html: old hero stats block"],
   ["payment-method-modal", "claude.html: old static payment modal markup"],
-  ["chatgpt-plans-bg", "claude.html: removed obsolete 5 MB hero video asset"],
-  ['id="serviceDeliveryFilters"', "claude.html: removed delivery filter container"],
+  ["chatgpt-plans-bg", "claude.html: removed hero video asset"],
+  ['<video class="service-hero__video"', "claude.html: removed hero video element"],
 ].forEach(([marker, label]) => rejectMarker(page, marker, label));
 
 [
@@ -67,15 +61,11 @@ const expectedJsAssetVersion = "20260722-claude-hero-lite2";
   ['class="buy-btn pay-now-btn"', "app.js: constructor checkout CTA hook"],
   ["const term = getAiOrderModalServiceConfig(serviceKey).displayName", "app.js: constructor card uses service-specific term"],
   ["function getServiceDeliveryDisplayLabel(serviceKey, deliveryKey)", "app.js: service-specific delivery display labels"],
-  ['if ((key === "claude" || key === "grok") && value === "id") return isEnPage ? "By ID" : "По ID";', "app.js: Claude/Grok delivery displays as ID"],
+  ['if ((key === "claude" || key === "grok") && value === "id") return isEnPage ? "Without login" : "Без входа";', "app.js: Claude/Grok id delivery displays as no-login"],
   ["function getServiceDeliveryFilterKey(item, serviceKey)", "app.js: service-specific delivery filter key"],
-  ['if ((key === "claude" || key === "grok") && deliveryKey !== "id") return false;', "app.js: Claude/Grok expose ID products only"],
+  ['if ((key === "claude" || key === "grok") && deliveryKey === "id") return "link";', "app.js: Claude/Grok id delivery merges into no-login filter"],
   ["function getServiceConstructorPlanTitle(item, serviceKey, planLabel)", "app.js: constructor selected plan title helper"],
   ['if (key === "claude") return String(item?.title || planLabel || "").trim();', "app.js: Claude selected plan uses product title"],
-  ['const CLAUDE_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max-5x", "max-20x"]);', "app.js: Claude modal supports all three plans"],
-  ['plan: ["pro", "max-5x", "max-20x"]', "app.js: Claude constructor exposes Pro, 5x Max and 20x Max"],
-  ['"max-5x": "5x Max"', "app.js: Claude 5x Max label"],
-  ['"max-20x": "20x Max"', "app.js: Claude 20x Max label"],
 ].forEach(([marker, label]) => requireMarker(source, marker, label));
 
 [
@@ -95,28 +85,12 @@ const expectedJsAssetVersion = "20260722-claude-hero-lite2";
   ["claudeHeroBackgroundShift", "css: Claude visible animated hero background"],
   ['[data-service-page="claude"] .service-checkout-card .buy-btn:hover:not(:disabled)', "css: Claude constructor buy hover override"],
   ["#f68b2f", "css: softer Claude hover orange"],
-  ['.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card', "css: checkout polish is shared by all service modals"],
-  ["--checkout-payment-bg-selected", "css: shared dark selected payment surface"],
-  ['label.chatgpt-payment-option[aria-checked="true"]', "css: shared ARIA selected payment state"],
-  ["overflow-wrap: anywhere", "css: Claude 20x Max text overflow protection"],
 ].forEach(([marker, label]) => requireMarker(css, marker, label));
-
-[
-  ["initLightweightServiceHeroVideo", "app.js: lightweight hero loader"],
-  ["connection.saveData", "app.js: Save-Data guard"],
-  ['matchMedia("(prefers-reduced-motion: reduce)")', "app.js: reduced-motion guard"],
-  ["video.dataset.mobileSrc", "app.js: responsive mobile source"],
-  ["video.dataset.desktopSrc", "app.js: responsive desktop source"],
-].forEach(([marker, label]) => requireMarker(source, marker, label));
 
 requireCssRegex(
   /\[data-service-page="claude"\][\s\S]*\.payment-method[\s\S]*\.payment-option/,
   "Claude payment options scoped to service page",
 );
-
-if (desktopHeroBytes > 800_000) failures.push(`desktop hero video is too large: ${desktopHeroBytes} bytes`);
-if (mobileHeroBytes > 350_000) failures.push(`mobile hero video is too large: ${mobileHeroBytes} bytes`);
-if (heroPosterBytes > 50_000) failures.push(`hero poster is too large: ${heroPosterBytes} bytes`);
 
 requireCssRegex(
   /\[data-service-page="claude"\]\s+\.service-checkout-card\s+\.buy-btn:hover:not\(:disabled\)[\s\S]*transform:\s*none;/,

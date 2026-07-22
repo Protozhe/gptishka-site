@@ -1,4 +1,4 @@
-const fs = require("fs");
+﻿const fs = require("fs");
 
 const source = fs.readFileSync("assets/js/app.js", "utf8");
 const minifiedSource = fs.readFileSync("assets/js/app.min.js", "utf8");
@@ -7,8 +7,10 @@ const chatgptPage = fs.readFileSync("chatgpt.html", "utf8");
 const serverSource = fs.readFileSync("server.js", "utf8");
 const successPage = fs.readFileSync("success.html", "utf8");
 
-const expectedAssetVersion = "20260722-unified-checkout1";
-const expectedJsAssetVersion = "20260722-unified-checkout1";
+const expectedAssetVersion = "20260618-chatgpt-static-card2";
+const expectedJsAssetVersion = "20260721-webp1";
+const createNewAccountEmailNote =
+  "\u0028!\u0029 \u041f\u0440\u0438 \u0441\u043e\u0437\u0434\u0430\u043d\u0438\u0438 \u043d\u043e\u0432\u043e\u0433\u043e \u0430\u043a\u043a\u0430\u0443\u043d\u0442\u0430 \u0431\u0443\u0434\u0435\u0442 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u044c\u0441\u044f \u0443\u043a\u0430\u0437\u0430\u043d\u043d\u0430\u044f \u0432\u044b\u0448\u0435 \u043f\u043e\u0447\u0442\u0430";
 
 const requiredSourceMarkers = [
   "chatgpt-order-summary-card",
@@ -24,6 +26,7 @@ const requiredSourceMarkers = [
   "chatgpt-order-soft-actions",
   "data-chatgpt-go-account-fields",
   "data-chatgpt-go-create-note",
+  createNewAccountEmailNote,
   "stabilizeChatGptGoOrderLayout",
   "preserveChatGptGoOrderScrollPosition",
   "modalBody.scrollTop = Math.min(maxScrollTop",
@@ -32,15 +35,22 @@ const requiredSourceMarkers = [
   "modalBody.style.maxWidth = \"100%\"",
   "data-chatgpt-go-promo-panel",
   "Сроки выполнения заказа",
+  "Без входа",
   "Нужна для связи по заказу",
-  "Сюда придет вся информация по заказу",
+  "Введите id telegram с @",
+  "У вас уже есть аккаунт ChatGPT?",
+  "Да, у меня есть почта и пароль от ChatGPT",
+  "Выберите, если обычно входите в ChatGPT через email и пароль.",
+  "Да, я вхожу через Apple",
   "Continue with Apple",
   "Войти через Apple",
+  "Нет, аккаунта ChatGPT у меня нет",
+  "Мы создадим новый аккаунт за вас. Используем почту, которую вы указали выше.",
+  "accountServiceName",
   "Почта или логин ",
   "Пароль от ",
   "summaryPlanLabel",
-  "getPublicServiceItems",
-  'servicePageState.delivery = "all"',
+  "durationLabel, deliveryLabel",
   'priceCard.classList.contains("service-checkout-card")',
   'const CHATGPT_ORDER_MODAL_PLAN_KEYS = new Set(["go", "plus", "pro-5x", "pro-20x"]);',
   "function isChatGptOrderModalPlanKey(planKey)",
@@ -150,7 +160,12 @@ const missing = [
   ...(!chatgptPage.includes(`/assets/js/app.min.js?v=${expectedJsAssetVersion}`) ? [`chatgpt.html: js ${expectedJsAssetVersion}`] : []),
   ...(!serverSource.includes("sendFreshHtml") ? ["server.js: sendFreshHtml"] : []),
   ...(!serverSource.includes("no-store, no-cache, must-revalidate, proxy-revalidate") ? ["server.js: no-cache html headers"] : []),
+  ...(!minifiedSource.includes('style.width="100%"') ? ['app.min.js: style.width="100%"'] : []),
+  ...(!minifiedSource.includes('style.minWidth="0"') ? ['app.min.js: style.minWidth="0"'] : []),
+  ...(!minifiedSource.includes('style.maxWidth="100%"') ? ['app.min.js: style.maxWidth="100%"'] : []),
   ...(!minifiedSource.includes('classList.contains("service-checkout-card")') ? ["app.min.js: service-checkout-card click guard"] : []),
+  ...(!minifiedSource.includes('new Set(["go","plus","pro-5x","pro-20x"])') ? ["app.min.js: ChatGPT modal plan allowlist"] : []),
+  ...(!chatgptPage.includes("Без входа") ? ["chatgpt.html: Без входа"] : []),
   ...(!successPage.includes("isAiServiceOrder") ? ["success.html: isAiServiceOrder"] : []),
 ];
 
@@ -165,6 +180,22 @@ if (forbidden.length) {
 
 if (missing.length) {
   console.error(`Missing ChatGPT order modal markers:\n- ${missing.join("\n- ")}`);
+  process.exit(1);
+}
+
+const brokenUtf8Markers = ["К", "П", "С", "\uFFFD", "\uFFFD"];
+const brokenUtf8 = [
+  { file: "app.js", source },
+  { file: "app.min.js", source: minifiedSource },
+  { file: "chatgpt.html", source: chatgptPage },
+  { file: "success.html", source: successPage },
+]
+  .flatMap(({ file, source: content }) =>
+    brokenUtf8Markers.filter(marker => content.includes(marker)).map(marker => `${file}: ${marker}`),
+  );
+
+if (brokenUtf8.length) {
+  console.error(`Broken UTF-8 markers found:\n- ${brokenUtf8.join("\n- ")}`);
   process.exit(1);
 }
 

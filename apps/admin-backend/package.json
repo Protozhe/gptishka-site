@@ -15,8 +15,7 @@
     "prisma:deploy": "prisma migrate deploy",
     "seed": "tsx prisma/seed.ts",
     "bootstrap:user": "tsx scripts/upsert-admin-user.ts",
-    "backfill:service-pages": "tsx scripts/backfill-service-pages.ts",
-    "catalog:upsert-claude-max": "tsx scripts/upsert-claude-max-products.ts"
+    "backfill:service-pages": "tsx scripts/backfill-service-pages.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.3.1",
