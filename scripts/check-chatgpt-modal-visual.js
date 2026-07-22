@@ -33,7 +33,7 @@ requireSource("/assets/img/payment-lava.svg", "LAVA local logo");
 requireSource("/assets/img/payment-enot.svg", "ENOT local logo");
 requireSource("СБП 0% и карты 3.2%", "short LAVA fee caption");
 requireSource("Карты 3.2% и СБП 0%", "ENOT fee caption");
-requireSource("Сюда придут статус и вся информация по заказу", "Telegram order updates helper");
+requireSource("Сюда придет вся информация по заказу", "Telegram order updates helper");
 rejectSource("СБП 0% и банковские карты 3.2%", "old long LAVA caption");
 rejectSource("Введите ник с @", "old Telegram nickname helper");
 rejectSource("Дизайн сертификата", "gift certificate design section");
@@ -96,8 +96,8 @@ requireCss("background: rgba(13, 19, 28, 0.94) !important;", "dark sticky checko
 requireCss('.chatgpt-order-title[tabindex="-1"]:focus', "focused modal title has no decorative outline");
 
 requirePage("СБП 0% и карты 3.2%", "static payment modal LAVA caption");
-requirePage("/assets/css/home-stability-hotfix.css?v=20260722-dark-checkout2", "CSS cache-bust");
-requirePage("/assets/js/app.min.js?v=20260722-claude-max-plans1", "JS cache-bust");
+requirePage("/assets/css/home-stability-hotfix.css?v=20260722-unified-checkout1", "CSS cache-bust");
+requirePage("/assets/js/app.min.js?v=20260722-unified-checkout1", "JS cache-bust");
 
 if (failures.length) {
   console.error(`ChatGPT modal visual checks failed:\n- ${failures.join("\n- ")}`);

@@ -61,8 +61,8 @@ requireSource("serviceLogin.required = showCredentials;", "login required state 
 requireSource("servicePassword.required = showPassword;", "password required state follows visibility");
 
 // Cache bust must move with JS/CSS changes on the ChatGPT page.
-requirePage("/assets/js/app.min.js?v=20260722-claude-max-plans1", "JS cache-bust");
-requirePage("/assets/css/home-stability-hotfix.css?v=20260722-dark-checkout2", "CSS cache-bust");
+requirePage("/assets/js/app.min.js?v=20260722-unified-checkout1", "JS cache-bust");
+requirePage("/assets/css/home-stability-hotfix.css?v=20260722-unified-checkout1", "CSS cache-bust");
 
 if (failures.length) {
   console.error(`ChatGPT modal UX checks failed:\n- ${failures.join("\n- ")}`);

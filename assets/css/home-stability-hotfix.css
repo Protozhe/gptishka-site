@@ -7079,8 +7079,8 @@ textarea.chatgpt-order-field__control {
   }
 }
 
-/* Claude 20x Max checkout polish. Scoped to this plan until the design is approved. */
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal:has(.chatgpt-order-card[data-plan-key="max-20x"]) {
+/* Unified checkout polish for all service order modals. */
+.service-page[data-service-page] ~ .chatgpt-go-order-modal {
   --checkout-overlay: rgba(2, 6, 12, 0.68);
   --checkout-shell: #18212d;
   --checkout-surface: #202b39;
@@ -7091,8 +7091,9 @@ textarea.chatgpt-order-field__control {
   --checkout-text: #f4f7fb;
   --checkout-text-secondary: #b7c0ce;
   --checkout-text-muted: #8994a6;
-  --checkout-accent: #ff7a2f;
-  --checkout-accent-soft: rgba(255, 122, 47, 0.12);
+  --checkout-accent: var(--product-accent);
+  --checkout-accent-strong: var(--product-accent-hover);
+  --checkout-accent-soft: var(--product-accent-soft);
   --modal-bg: var(--checkout-shell);
   --modal-surface: var(--checkout-surface);
   --modal-surface-secondary: var(--checkout-surface-raised);
@@ -7105,7 +7106,7 @@ textarea.chatgpt-order-field__control {
   --modal-overlay: var(--checkout-overlay);
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal:has(.chatgpt-order-card[data-plan-key="max-20x"]) .chatgpt-go-order-modal__dialog {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__dialog {
   background:
     radial-gradient(circle at 12% 0%, var(--checkout-accent-soft), transparent 35%),
     linear-gradient(180deg, #202b39, var(--checkout-shell) 54%, #151e29) !important;
@@ -7115,18 +7116,18 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] {
-  --max20-payment-bg: #182330;
-  --max20-payment-bg-hover: #223041;
-  --max20-payment-bg-selected: linear-gradient(145deg, rgba(255, 122, 47, 0.22), #273444 58%, #1b2634);
-  --max20-payment-border: rgba(255, 255, 255, 0.11);
-  --max20-payment-border-hover: rgba(255, 154, 82, 0.42);
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card {
+  --checkout-payment-bg: #182330;
+  --checkout-payment-bg-hover: #223041;
+  --checkout-payment-bg-selected: linear-gradient(145deg, color-mix(in srgb, var(--checkout-accent) 22%, transparent), #273444 58%, #1b2634);
+  --checkout-payment-border: rgba(255, 255, 255, 0.11);
+  --checkout-payment-border-hover: color-mix(in srgb, var(--checkout-accent-strong) 42%, transparent);
   background:
     radial-gradient(circle at 12% 0%, var(--checkout-accent-soft), transparent 34%),
     linear-gradient(180deg, #1d2836, var(--checkout-shell) 100%) !important;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] :is(
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card :is(
   .chatgpt-order-section,
   .chatgpt-order-gift-note,
   .chatgpt-order-gift-details,
@@ -7139,13 +7140,13 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.075) !important;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-summary-card {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-summary-card {
   background:
     radial-gradient(circle at 0 0, var(--checkout-accent-soft), transparent 45%),
     linear-gradient(145deg, #2a3747, #202b39) !important;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-field__control {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-field__control {
   background: var(--checkout-control) !important;
   border-color: var(--checkout-border-strong) !important;
   box-shadow:
@@ -7153,11 +7154,11 @@ textarea.chatgpt-order-field__control {
     0 8px 20px rgba(3, 8, 15, 0.16) !important;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-gift-note > strong {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-note > strong {
   color: var(--checkout-text) !important;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-footer {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-footer {
   background: rgba(27, 38, 51, 0.96) !important;
   border-top-color: var(--checkout-border-strong) !important;
   box-shadow:
@@ -7165,13 +7166,13 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] *,
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] *::before,
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] *::after {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card *,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card *::before,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card *::after {
   box-sizing: border-box;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] :is(
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card :is(
   .chatgpt-order-section,
   .chatgpt-order-section__head,
   .chatgpt-order-grid,
@@ -7192,7 +7193,7 @@ textarea.chatgpt-order-field__control {
   min-width: 0;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] :is(
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card :is(
   .chatgpt-order-title,
   .chatgpt-order-section-title,
   .chatgpt-order-section__head p,
@@ -7213,7 +7214,7 @@ textarea.chatgpt-order-field__control {
   word-break: normal;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-summary-card__body .chatgpt-order-title {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-summary-card__body .chatgpt-order-title {
   white-space: normal;
   overflow: visible;
   text-overflow: clip;
@@ -7221,26 +7222,26 @@ textarea.chatgpt-order-field__control {
   line-height: 1.08;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-summary-card__price,
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-total {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-summary-card__price,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-total {
   max-width: none;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-total strong,
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-footer__total strong {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-total strong,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-footer__total strong {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-section:has(.chatgpt-order-payment) {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-section:has(.chatgpt-order-payment) {
   padding: 18px;
-  border-color: rgba(249, 115, 22, 0.18) !important;
+  border-color: color-mix(in srgb, var(--checkout-accent) 18%, transparent) !important;
   background:
-    radial-gradient(circle at 0 0, rgba(249, 115, 22, 0.08), transparent 42%),
+    radial-gradient(circle at 0 0, color-mix(in srgb, var(--checkout-accent) 8%, transparent), transparent 42%),
     var(--modal-surface) !important;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-section:has(.chatgpt-order-payment) .chatgpt-order-section__head {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-section:has(.chatgpt-order-payment) .chatgpt-order-section__head {
   display: grid;
   grid-template-columns: 36px minmax(0, 1fr);
   grid-template-rows: auto auto;
@@ -7252,7 +7253,7 @@ textarea.chatgpt-order-field__control {
   border-bottom: 1px solid var(--modal-border);
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-section:has(.chatgpt-order-payment) .chatgpt-order-section__head::before {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-section:has(.chatgpt-order-payment) .chatgpt-order-section__head::before {
   content: "₽";
   grid-column: 1;
   grid-row: 1 / 3;
@@ -7260,48 +7261,48 @@ textarea.chatgpt-order-field__control {
   place-items: center;
   width: 36px;
   height: 36px;
-  border: 1px solid rgba(249, 115, 22, 0.34);
+  border: 1px solid color-mix(in srgb, var(--checkout-accent) 34%, transparent);
   border-radius: 12px;
-  background: rgba(249, 115, 22, 0.14);
-  color: #ff9a52;
+  background: color-mix(in srgb, var(--checkout-accent) 14%, transparent);
+  color: var(--checkout-accent-strong);
   font-size: 17px;
   font-weight: 900;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-section:has(.chatgpt-order-payment) .chatgpt-order-section-title,
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-section:has(.chatgpt-order-payment) .chatgpt-order-section__head p {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-section:has(.chatgpt-order-payment) .chatgpt-order-section-title,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-section:has(.chatgpt-order-payment) .chatgpt-order-section__head p {
   grid-column: 2;
   margin: 0;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-section:has(.chatgpt-order-payment) .chatgpt-order-section-title {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-section:has(.chatgpt-order-payment) .chatgpt-order-section-title {
   font-size: 17px;
   line-height: 1.18;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-section:has(.chatgpt-order-payment) .chatgpt-order-section__head p {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-section:has(.chatgpt-order-payment) .chatgpt-order-section__head p {
   color: var(--modal-text-secondary) !important;
   font-size: 12px;
   line-height: 1.35;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-payment {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   width: 100%;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-payment label.chatgpt-payment-option {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment label.chatgpt-payment-option {
   grid-template-columns: 38px minmax(0, 1fr) 22px;
   gap: 12px;
   align-items: center;
   width: 100%;
   min-height: 82px;
   padding: 14px;
-  border: 1px solid var(--max20-payment-border) !important;
+  border: 1px solid var(--checkout-payment-border) !important;
   border-radius: 17px !important;
-  background: var(--max20-payment-bg) !important;
+  background: var(--checkout-payment-bg) !important;
   color: var(--modal-text) !important;
   box-shadow:
     0 12px 28px rgba(0, 0, 0, 0.2),
@@ -7311,34 +7312,34 @@ textarea.chatgpt-order-field__control {
   transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-payment label.chatgpt-payment-option:hover {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment label.chatgpt-payment-option:hover {
   transform: translateY(-1px);
-  border-color: var(--max20-payment-border-hover) !important;
-  background: var(--max20-payment-bg-hover) !important;
+  border-color: var(--checkout-payment-border-hover) !important;
+  background: var(--checkout-payment-bg-hover) !important;
   box-shadow:
     0 16px 34px rgba(0, 0, 0, 0.26),
-    0 0 0 3px rgba(249, 115, 22, 0.055),
+    0 0 0 3px color-mix(in srgb, var(--checkout-accent) 5.5%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.065) !important;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-payment label.chatgpt-payment-option:has(input:checked),
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-payment label.chatgpt-payment-option[aria-checked="true"] {
-  border-color: rgba(255, 154, 82, 0.72) !important;
-  background: var(--max20-payment-bg-selected) !important;
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment label.chatgpt-payment-option:has(input:checked),
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment label.chatgpt-payment-option[aria-checked="true"] {
+  border-color: color-mix(in srgb, var(--checkout-accent-strong) 72%, transparent) !important;
+  background: var(--checkout-payment-bg-selected) !important;
   box-shadow:
     0 17px 38px rgba(0, 0, 0, 0.28),
-    0 0 0 3px rgba(249, 115, 22, 0.1),
-    0 0 28px rgba(249, 115, 22, 0.1),
+    0 0 0 3px color-mix(in srgb, var(--checkout-accent) 10%, transparent),
+    0 0 28px color-mix(in srgb, var(--checkout-accent) 10%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-payment label.chatgpt-payment-option:has(input:focus-visible) {
-  outline: 2px solid #ff9a52;
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment label.chatgpt-payment-option:has(input:focus-visible) {
+  outline: 2px solid var(--checkout-accent-strong);
   outline-offset: 3px;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-payment label.chatgpt-payment-option:has(input:disabled),
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-payment label.chatgpt-payment-option[aria-disabled="true"] {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment label.chatgpt-payment-option:has(input:disabled),
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment label.chatgpt-payment-option[aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.48;
   transform: none;
@@ -7346,7 +7347,7 @@ textarea.chatgpt-order-field__control {
   box-shadow: none !important;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-payment-logo {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-payment-logo {
   width: 38px;
   height: 38px;
   border: 1px solid rgba(255, 255, 255, 0.09);
@@ -7355,13 +7356,13 @@ textarea.chatgpt-order-field__control {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-payment-logo img {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-payment-logo img {
   width: 26px;
   height: 26px;
   object-fit: contain;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-payment-text {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-payment-text {
   display: grid;
   align-content: center;
   gap: 5px;
@@ -7369,7 +7370,7 @@ textarea.chatgpt-order-field__control {
   overflow: hidden;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-name {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-name {
   margin: 0;
   color: var(--modal-text) !important;
   font-size: 14px;
@@ -7379,7 +7380,7 @@ textarea.chatgpt-order-field__control {
   white-space: normal;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-caption {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-caption {
   margin: 0;
   color: var(--modal-text-secondary) !important;
   font-size: 12px;
@@ -7389,7 +7390,7 @@ textarea.chatgpt-order-field__control {
   overflow-wrap: anywhere;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-payment-check {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-payment-check {
   width: 22px;
   height: 22px;
   border: 1px solid rgba(255, 255, 255, 0.22) !important;
@@ -7397,14 +7398,14 @@ textarea.chatgpt-order-field__control {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check,
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check {
-  border-color: #ff9a52 !important;
-  background: linear-gradient(135deg, #f97316, #ff9a52) !important;
-  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check {
+  border-color: var(--checkout-accent-strong) !important;
+  background: linear-gradient(135deg, var(--checkout-accent), var(--checkout-accent-strong)) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--checkout-accent) 12%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-error[data-chatgpt-go-error-for="paymentMethod"] {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-error[data-chatgpt-go-error-for="paymentMethod"] {
   min-height: 0;
   margin: 8px 2px 0;
   color: #ff8d8d;
@@ -7412,24 +7413,24 @@ textarea.chatgpt-order-field__control {
   line-height: 1.4;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-processing-details {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-processing-details {
   margin-top: 14px;
   padding-top: 14px;
   border-top-color: var(--modal-border) !important;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-processing-details > summary {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-processing-details > summary {
   color: var(--modal-text) !important;
   line-height: 1.4;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-processing-details > p {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-processing-details > p {
   margin-top: 10px;
   color: var(--modal-text-secondary) !important;
   line-height: 1.55;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-legal-note {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-legal-note {
   width: auto;
   margin: 2px 8px 8px;
   padding: 4px 2px 0;
@@ -7438,48 +7439,48 @@ textarea.chatgpt-order-field__control {
   line-height: 1.55;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-legal-note a {
-  color: #ffad72 !important;
-  text-decoration-color: rgba(255, 173, 114, 0.48);
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-legal-note a {
+  color: var(--checkout-accent-strong) !important;
+  text-decoration-color: color-mix(in srgb, var(--checkout-accent-strong) 48%, transparent);
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-status {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-status {
   width: auto;
   margin: 0 8px;
   line-height: 1.45;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-status.is-error,
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-promo-msg.is-error {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-status.is-error,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-promo-msg.is-error {
   color: #ff8d8d;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-status.is-success,
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-promo-msg.is-success {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-status.is-success,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-promo-msg.is-success {
   color: #7ee2b8;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-status.is-loading,
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-promo-msg.is-loading {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-status.is-loading,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-promo-msg.is-loading {
   color: #9bc7ff;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-footer {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-footer {
   grid-template-columns: minmax(0, 1fr) minmax(172px, auto);
   gap: 14px;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-footer__total {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-footer__total {
   justify-self: end;
   max-width: 100%;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-footer__total strong {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-footer__total strong {
   max-width: 100%;
   font-size: clamp(19px, 3.6vw, 22px);
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-submit {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-submit {
   width: auto;
   min-width: 188px;
   max-width: 100%;
@@ -7488,7 +7489,7 @@ textarea.chatgpt-order-field__control {
   line-height: 1.25;
 }
 
-.service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-submit:disabled {
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-submit:disabled {
   cursor: wait;
   opacity: 0.58;
   transform: none;
@@ -7497,41 +7498,41 @@ textarea.chatgpt-order-field__control {
 }
 
 @media (max-width: 640px) {
-  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-section:has(.chatgpt-order-payment) {
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-section:has(.chatgpt-order-payment) {
     padding: 15px;
   }
 
-  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-payment {
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment {
     grid-template-columns: 1fr;
   }
 
-  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-payment label.chatgpt-payment-option {
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment label.chatgpt-payment-option {
     min-height: 78px;
   }
 
-  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-footer {
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-footer {
     grid-template-columns: 1fr;
     gap: 9px;
   }
 
-  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-footer__total {
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-footer__total {
     justify-self: end;
   }
 
-  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-submit {
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-submit {
     width: 100%;
     min-width: 0;
   }
 }
 
 @media (max-width: 360px) {
-  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-order-payment label.chatgpt-payment-option {
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment label.chatgpt-payment-option {
     grid-template-columns: 34px minmax(0, 1fr) 20px;
     gap: 9px;
     padding: 12px;
   }
 
-  .service-page[data-service-page="claude"] ~ .chatgpt-go-order-modal .chatgpt-order-card[data-plan-key="max-20x"] .chatgpt-payment-logo {
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-payment-logo {
     width: 34px;
     height: 34px;
   }

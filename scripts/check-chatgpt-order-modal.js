@@ -1,4 +1,4 @@
-﻿const fs = require("fs");
+const fs = require("fs");
 
 const source = fs.readFileSync("assets/js/app.js", "utf8");
 const minifiedSource = fs.readFileSync("assets/js/app.min.js", "utf8");
@@ -7,8 +7,8 @@ const chatgptPage = fs.readFileSync("chatgpt.html", "utf8");
 const serverSource = fs.readFileSync("server.js", "utf8");
 const successPage = fs.readFileSync("success.html", "utf8");
 
-const expectedAssetVersion = "20260722-dark-checkout2";
-const expectedJsAssetVersion = "20260722-claude-max-plans1";
+const expectedAssetVersion = "20260722-unified-checkout1";
+const expectedJsAssetVersion = "20260722-unified-checkout1";
 
 const requiredSourceMarkers = [
   "chatgpt-order-summary-card",
@@ -33,7 +33,7 @@ const requiredSourceMarkers = [
   "data-chatgpt-go-promo-panel",
   "Сроки выполнения заказа",
   "Нужна для связи по заказу",
-  "Сюда придут статус и вся информация по заказу",
+  "Сюда придет вся информация по заказу",
   "Continue with Apple",
   "Войти через Apple",
   "Почта или логин ",

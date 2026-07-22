@@ -19,8 +19,8 @@ function requireCssRegex(pattern, label) {
   if (!pattern.test(css)) failures.push(`css: ${label}`);
 }
 
-const expectedAssetVersion = "20260722-dark-checkout2";
-const expectedJsAssetVersion = "20260722-claude-max-plans1";
+const expectedAssetVersion = "20260722-unified-checkout1";
+const expectedJsAssetVersion = "20260722-unified-checkout1";
 
 [
   ["service-page--constructor", "supergrok.html: constructor page class"],

@@ -19,8 +19,8 @@ function requireCssRegex(pattern, label) {
   if (!pattern.test(css)) failures.push(`css: ${label}`);
 }
 
-const expectedAssetVersion = "20260722-claude-max20-modal3";
-const expectedJsAssetVersion = "20260722-claude-max20-copy1";
+const expectedAssetVersion = "20260722-unified-checkout1";
+const expectedJsAssetVersion = "20260722-unified-checkout1";
 
 [
   ["service-page--constructor", "claude.html: constructor page class"],
@@ -89,9 +89,9 @@ const expectedJsAssetVersion = "20260722-claude-max20-copy1";
   ["claudeHeroBackgroundShift", "css: Claude visible animated hero background"],
   ['[data-service-page="claude"] .service-checkout-card .buy-btn:hover:not(:disabled)', "css: Claude constructor buy hover override"],
   ["#f68b2f", "css: softer Claude hover orange"],
-  ['.chatgpt-order-card[data-plan-key="max-20x"]', "css: Claude 20x Max modal polish is plan-scoped"],
-  ["--max20-payment-bg-selected", "css: Claude 20x Max dark selected payment surface"],
-  ['label.chatgpt-payment-option[aria-checked="true"]', "css: Claude 20x Max ARIA selected payment state"],
+  ['.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card', "css: checkout polish is shared by all service modals"],
+  ["--checkout-payment-bg-selected", "css: shared dark selected payment surface"],
+  ['label.chatgpt-payment-option[aria-checked="true"]', "css: shared ARIA selected payment state"],
   ["overflow-wrap: anywhere", "css: Claude 20x Max text overflow protection"],
 ].forEach(([marker, label]) => requireMarker(css, marker, label));
 
