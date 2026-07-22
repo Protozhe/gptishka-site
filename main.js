@@ -2847,8 +2847,8 @@ function initActivationResumeShortcut() {
       claude: {
         all: isEnPage ? "All plans" : "Все тарифы",
         pro: "Pro",
-        "max-5x": "Max 5x",
-        "max-20x": "Max 20x",
+        "max-5x": "5x Max",
+        "max-20x": "20x Max",
       },
       grok: {
         all: isEnPage ? "All plans" : "Все тарифы",
@@ -3616,7 +3616,7 @@ function initActivationResumeShortcut() {
 
   function getServiceConstructorPlanTitle(item, serviceKey, planLabel) {
     const key = normalizeAiServiceKey(serviceKey);
-    if (key === "claude") return String(planLabel || item?.title || "").trim();
+    if (key === "claude") return String(item?.title || planLabel || "").trim();
     if (key === "grok") return String(item?.title || planLabel || "").trim();
     if (key === "vpn") return String(item?.title || planLabel || "").trim();
     return String(planLabel || "").trim();
@@ -3650,7 +3650,7 @@ function initActivationResumeShortcut() {
       servicePriceLineEl.setAttribute(
         "aria-label",
         minPrice
-          ? (isEnPage ? `Price from ${formatPriceByCurrency(minPrice, currency)}` : `Цена от ${formatPriceByCurrency(minPrice, currency)}`)
+          ? (isEnPage ? `From ${formatPriceByCurrency(minPrice, currency)} for 1 month` : `От ${formatPriceByCurrency(minPrice, currency)} за 1 месяц`)
           : (isEnPage ? "Price is temporarily unavailable" : "Цена временно недоступна")
       );
     }
@@ -3691,9 +3691,9 @@ function initActivationResumeShortcut() {
             "max-20x": "For the highest workload available in the catalog.",
           }
         : {
-            pro: "Базовый объём для регулярной работы.",
-            "max-5x": "В пять раз больше доступного объёма, чем в Pro.",
-            "max-20x": "Максимальный объём из доступных тарифов.",
+            pro: "Стандартный платный тариф для регулярных задач.",
+            "max-5x": "Для большего ежедневного объёма, чем в Claude Pro.",
+            "max-20x": "Для максимального объёма работы из доступных тарифов.",
           };
       const limitByPlan = isEnPage
         ? { pro: "Standard Claude usage", "max-5x": "5× the Pro usage level", "max-20x": "20× the Pro usage level" }
@@ -3726,9 +3726,10 @@ function initActivationResumeShortcut() {
         ' data-activation-variant="' + escapeHtml(item.activationVariant || "") + '"' +
         ' data-service-key="claude"' +
         ' data-plan-key="' + escapeHtml(planKey) + '"' +
-          ' data-delivery-key="' + escapeHtml(deliveryKey) + '"' +
-          ' data-duration-key="' + escapeHtml(durationKey) + '">' +
+        ' data-delivery-key="' + escapeHtml(deliveryKey) + '"' +
+        ' data-duration-key="' + escapeHtml(durationKey) + '">' +
           '<div class="claude-tariff-card__top">' +
+            '<span class="claude-tariff-card__brand">Claude</span>' +
             '<h3>' + escapeHtml(planTitle) + '</h3>' +
             '<p class="claude-tariff-card__purpose">' + escapeHtml(purposeLabel) + '</p>' +
             '<div class="claude-tariff-card__price">' + escapeHtml(formatPriceByCurrency(price, currency)) + ' <small>' + escapeHtml(isEnPage ? "for 1 month" : "за 1 месяц") + '</small></div>' +
@@ -3748,6 +3749,7 @@ function initActivationResumeShortcut() {
           ' data-plan-key="' + escapeHtml(planKey) + '"' +
           ' data-delivery-key="' + escapeHtml(deliveryKey) + '"' +
           ' data-duration-key="' + escapeHtml(durationKey) + '">' + escapeHtml(isEnPage ? "Choose plan" : "Выбрать тариф") + '</button>' +
+          '<p class="claude-tariff-card__note">' + escapeHtml(isEnPage ? "The price is fixed before payment" : "Цена фиксируется до перехода к оплате") + '</p>' +
         '</article>'
       );
     }
