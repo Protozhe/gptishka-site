@@ -17324,3 +17324,70 @@ body.home-wide-body main.page::after {
 .home-wide-page .ai-directory-card--grok .ai-directory-card__image {
   transform: scale(1.09) !important;
 }
+
+/* Keep the directory CTA clear of the card's rounded border without changing
+   the card height: trade four pixels of the internal gap for bottom padding. */
+.home-wide-page .ai-directory-card--chatgpt .ai-directory-card__bottom,
+.home-wide-page .ai-directory-card--claude .ai-directory-card__bottom,
+.home-wide-page .ai-directory-card--grok .ai-directory-card__bottom {
+  gap: 6px;
+  padding: 0 4px 4px;
+  box-sizing: border-box;
+}
+
+.home-wide-page .ai-directory-card--chatgpt .ai-directory-card__button,
+.home-wide-page .ai-directory-card--claude .ai-directory-card__button,
+.home-wide-page .ai-directory-card--grok .ai-directory-card__button {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease,
+    color 0.2s ease, border-color 0.2s ease;
+}
+
+.home-wide-page .ai-directory-card--chatgpt .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--claude .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--grok .ai-directory-card__button::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: "";
+  background: var(--directory-button-hover-bg);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.home-wide-page .ai-directory-card--chatgpt {
+  --directory-button-hover-bg: linear-gradient(135deg, #ffffff, #dce4e8);
+  --directory-button-hover-color: #111820;
+}
+
+.home-wide-page .ai-directory-card--claude {
+  --directory-button-hover-bg: linear-gradient(135deg, #ff7a3d, #ff4f1f);
+  --directory-button-hover-color: #ffffff;
+}
+
+.home-wide-page .ai-directory-card--grok {
+  --directory-button-hover-bg: linear-gradient(135deg, #ffffff, #d9d9dd);
+  --directory-button-hover-color: #07080a;
+}
+
+.home-wide-page .ai-directory-card--chatgpt:hover .ai-directory-card__button,
+.home-wide-page .ai-directory-card--chatgpt:focus-within .ai-directory-card__button,
+.home-wide-page .ai-directory-card--claude:hover .ai-directory-card__button,
+.home-wide-page .ai-directory-card--claude:focus-within .ai-directory-card__button,
+.home-wide-page .ai-directory-card--grok:hover .ai-directory-card__button,
+.home-wide-page .ai-directory-card--grok:focus-within .ai-directory-card__button {
+  color: var(--directory-button-hover-color) !important;
+  border-color: rgba(255, 255, 255, 0.34) !important;
+}
+
+.home-wide-page .ai-directory-card--chatgpt:hover .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--chatgpt:focus-within .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--claude:hover .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--claude:focus-within .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--grok:hover .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--grok:focus-within .ai-directory-card__button::before {
+  opacity: 1;
+}
