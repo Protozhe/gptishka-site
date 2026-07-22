@@ -17314,3 +17314,13 @@ body.home-wide-body main.page::after {
   display: none !important;
   content: none !important;
 }
+
+/* ChatGPT and SuperGrok source artwork has transparent rounded edges.
+   Keep both image states edge-to-edge inside the existing clipped media box. */
+.home-wide-page .ai-directory-card--chatgpt .ai-directory-card__image {
+  transform: scale(1.06) !important;
+}
+
+.home-wide-page .ai-directory-card--grok .ai-directory-card__image {
+  transform: scale(1.09) !important;
+}
