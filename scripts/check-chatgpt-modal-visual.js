@@ -75,7 +75,11 @@ requireCss(".chatgpt-order-summary-card__headline::after", "header separator rem
 requireCss(".service-page[data-service-page=\"chatgpt\"] ~ .chatgpt-go-order-modal .chatgpt-order-payment", "scoped payment layout");
 requireCss("grid-template-columns: repeat(2, minmax(0, 1fr));", "payment desktop two-column grid");
 requireCss("grid-template-columns: 30px minmax(0, 1fr) 22px;", "payment card logo/text/check layout");
-requireCss("linear-gradient(180deg, rgba(255, 255, 255, 0.96)", "light payment cards");
+requireCss("--modal-bg: #0d131c;", "shared dark modal background token");
+requireCss("--modal-surface: rgba(22, 29, 40, 0.96);", "shared dark modal surface token");
+requireCss("--modal-text: #f5f7fb;", "shared dark modal text token");
+requireCss("--modal-overlay: rgba(3, 8, 15, 0.8);", "shared dark modal overlay token");
+requireCss("background: var(--modal-surface-secondary) !important;", "dark payment card surface override");
 requireCss(".service-page[data-service-page=\"chatgpt\"] ~ .chatgpt-go-order-modal .chatgpt-payment-text", "payment text wrapper visibility");
 requireCss("overflow-wrap: anywhere;", "payment captions wrap safely");
 requireCss(".chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-name", "payment name overrides old strong color");
@@ -84,11 +88,14 @@ requireCss(".service-page[data-service-page=\"chatgpt\"] ~ .chatgpt-go-order-mod
 requireCss(".service-page[data-service-page=\"chatgpt\"] ~ .chatgpt-go-order-modal .chatgpt-payment-check::after", "payment checkmark");
 requireCssRegex(/\.chatgpt-order-password-toggle:hover:not\(:disabled\)[\s\S]*transform:\s*translateY\(-50%\)/, "password toggle hover stays fixed");
 requireCssRegex(/\.chatgpt-order-password-toggle:active:not\(:disabled\)[\s\S]*transform:\s*translateY\(-50%\)/, "password toggle active stays fixed");
-requireCss(".service-page[data-service-page=\"chatgpt\"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details", "light gift accordion");
+requireCss(".service-page[data-service-page=\"chatgpt\"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details", "scoped gift accordion");
 requireCss(".service-page[data-service-page=\"chatgpt\"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close", "scoped close button");
+requireCss(".service-page[data-service-page=\"claude\"] ~ .chatgpt-go-order-modal", "Claude accent token scope");
+requireCss("--product-accent: #f97316;", "Claude orange modal accent");
+requireCss("background: rgba(13, 19, 28, 0.94) !important;", "dark sticky checkout footer");
 
 requirePage("СБП 0% и карты 3.2%", "static payment modal LAVA caption");
-requirePage("/assets/css/home-stability-hotfix.css?v=20260618-chatgpt-static-card2", "CSS cache-bust");
+requirePage("/assets/css/home-stability-hotfix.css?v=20260722-dark-checkout1", "CSS cache-bust");
 requirePage("/assets/js/app.min.js?v=20260722-claude-max-plans1", "JS cache-bust");
 
 if (failures.length) {

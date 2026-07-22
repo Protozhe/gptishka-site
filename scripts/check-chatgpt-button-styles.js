@@ -27,7 +27,7 @@ function requireRegex(source, regex, label) {
 
 requireIncludes(
   page,
-  '/assets/css/home-stability-hotfix.css?v=20260618-chatgpt-static-card2',
+  '/assets/css/home-stability-hotfix.css?v=20260722-dark-checkout1',
   "chatgpt.html CSS cache-bust",
 );
 requireIncludes(
