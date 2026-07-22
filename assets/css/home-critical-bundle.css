@@ -17306,3 +17306,11 @@ body.home-wide-body .home-wide-page > .faq .faq-chat-btn {
     border-radius: 24px;
   }
 }
+
+/* 20260722: keep the homepage background continuous through the sticky header.
+   Legacy page haze starts at <main> and is clipped there, creating a hard seam. */
+body.home-wide-body main.page::before,
+body.home-wide-body main.page::after {
+  display: none !important;
+  content: none !important;
+}
