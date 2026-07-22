@@ -7,7 +7,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = relativePath => fs.readFileSync(path.join(root, relativePath), "utf8");
 const version = "20260721-vpn-bg-webp1";
 const sliderVersion = "20260722-opening-frame2";
-const cssVersion = "20260722-card-cta1";
+const cssVersion = "20260722-card-cta2";
 const assets = [
   ["assets/img/home/vpn-shortcut-bg.webp", 208744],
   ["assets/img/home/vpn-promo-bg.webp", 162652],
