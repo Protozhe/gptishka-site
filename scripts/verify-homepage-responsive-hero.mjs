@@ -20,12 +20,15 @@ assert.match(fs.readFileSync("assets/js/app.js", "utf8"), /class="ai-directory-c
 assert.match(css, /#pricingGrid \.ai-directory-card--chatgpt,[\s\S]*?background:\s*transparent !important;[\s\S]*?border:\s*0 !important;[\s\S]*?box-shadow:\s*none !important;/);
 assert.match(css, /\.ai-directory-card--chatgpt \.ai-directory-card__body,[\s\S]*?padding:\s*16px 0 0;/);
 assert.match(css, /\.ai-directory-card--chatgpt \.ai-directory-card__bottom,[\s\S]*?gap:\s*10px;[\s\S]*?padding:\s*0;/);
+assert.match(css, /\.ai-directory-card--claude\s*\{[^}]*--directory-button-hover-border:[^}]*--directory-button-hover-shadow:[^}]*--directory-button-focus:/s);
+assert.match(css, /\.ai-directory-card--grok:focus-within \.ai-directory-card__button\s*\{[^}]*background:\s*var\(--directory-button-hover-bg\) !important;[^}]*border-color:\s*var\(--directory-button-hover-border\) !important;[^}]*box-shadow:\s*var\(--directory-button-hover-shadow\) !important;/s);
+assert.match(css, /\.ai-directory-card--claude \.ai-directory-card__button:focus-visible,[\s\S]*?outline-color:\s*var\(--directory-button-focus\) !important;/);
 assert.match(css, /\.home-opening-frame \.home-promo-slide\s*\{[^}]*background-size:\s*cover/s);
 assert.match(css, /\.home-opening-frame \.home-promo-slider__controls\s*\{[^}]*inset:\s*0\s+clamp\(/s);
 assert.ok(index.includes('class="home-opening-frame"'));
 assert.match(slider, /function preloadFollowingSlide\(/);
 assert.match(slider, /requestIdleCallback\(preload/);
-assert.ok(index.includes("20260722-card-surface1"));
+assert.ok(index.includes("20260722-button-accent1"));
 assert.ok(index.includes("20260722-card-cta1"));
 
 console.log("Responsive homepage hero checks passed.");

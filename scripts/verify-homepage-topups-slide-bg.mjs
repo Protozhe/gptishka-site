@@ -33,7 +33,7 @@ assert(
   "Active SuperGrok slide must use the cache-busted WebP background.",
 );
 assert(
-  index.includes("/assets/css/home-critical-bundle.min.css?v=20260722-card-surface1"),
+  index.includes("/assets/css/home-critical-bundle.min.css?v=20260722-button-accent1"),
   "index.html must load the cache-busted homepage CSS bundle.",
 );
 assert(

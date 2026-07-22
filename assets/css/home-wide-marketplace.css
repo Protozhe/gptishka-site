@@ -2622,17 +2622,26 @@ body.home-wide-body main.page::after {
 
 .home-wide-page .ai-directory-card--chatgpt {
   --directory-button-hover-bg: linear-gradient(135deg, #ffffff, #dce4e8);
+  --directory-button-hover-border: rgba(236, 246, 250, 0.86);
+  --directory-button-hover-shadow: 0 12px 28px rgba(220, 228, 232, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.82);
   --directory-button-hover-color: #111820;
+  --directory-button-focus: #f4fafc;
 }
 
 .home-wide-page .ai-directory-card--claude {
   --directory-button-hover-bg: linear-gradient(135deg, #ff7a3d, #ff4f1f);
+  --directory-button-hover-border: rgba(255, 142, 89, 0.88);
+  --directory-button-hover-shadow: 0 12px 28px rgba(255, 79, 31, 0.34), inset 0 1px 0 rgba(255, 222, 204, 0.58);
   --directory-button-hover-color: #ffffff;
+  --directory-button-focus: #ffb38f;
 }
 
 .home-wide-page .ai-directory-card--grok {
   --directory-button-hover-bg: linear-gradient(135deg, #ffffff, #d9d9dd);
+  --directory-button-hover-border: rgba(238, 238, 242, 0.84);
+  --directory-button-hover-shadow: 0 12px 28px rgba(217, 217, 221, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.78);
   --directory-button-hover-color: #07080a;
+  --directory-button-focus: #f3f3f5;
 }
 
 .home-wide-page .ai-directory-card--chatgpt:hover .ai-directory-card__button,
@@ -2641,8 +2650,10 @@ body.home-wide-body main.page::after {
 .home-wide-page .ai-directory-card--claude:focus-within .ai-directory-card__button,
 .home-wide-page .ai-directory-card--grok:hover .ai-directory-card__button,
 .home-wide-page .ai-directory-card--grok:focus-within .ai-directory-card__button {
+  background: var(--directory-button-hover-bg) !important;
   color: var(--directory-button-hover-color) !important;
-  border-color: rgba(255, 255, 255, 0.34) !important;
+  border-color: var(--directory-button-hover-border) !important;
+  box-shadow: var(--directory-button-hover-shadow) !important;
 }
 
 .home-wide-page .ai-directory-card--chatgpt:hover .ai-directory-card__button::before,
@@ -2652,6 +2663,12 @@ body.home-wide-body main.page::after {
 .home-wide-page .ai-directory-card--grok:hover .ai-directory-card__button::before,
 .home-wide-page .ai-directory-card--grok:focus-within .ai-directory-card__button::before {
   opacity: 1;
+}
+
+.home-wide-page .ai-directory-card--chatgpt .ai-directory-card__button:focus-visible,
+.home-wide-page .ai-directory-card--claude .ai-directory-card__button:focus-visible,
+.home-wide-page .ai-directory-card--grok .ai-directory-card__button:focus-visible {
+  outline-color: var(--directory-button-focus) !important;
 }
 
 /* The three AI cards belong directly to the page surface. Keep the artwork,
