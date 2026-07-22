@@ -3063,7 +3063,7 @@ function initActivationResumeShortcut() {
       : '<div class="ai-directory-card__image-placeholder">' + escapeHtml(displayIconText) + "</div>";
     return (
       '<div class="ai-directory-grid ai-directory-grid--topups">' +
-        '<article class="ai-directory-card ai-directory-card--' + escapeHtml(displayTheme) + '" style="--ai-directory-bg:' + escapeHtml(displayBackground) + '">' +
+        '<article class="ai-directory-card ai-directory-card--integrated ai-directory-card--' + escapeHtml(displayTheme) + '" style="--ai-directory-bg:' + escapeHtml(displayBackground) + '">' +
           '<a class="ai-directory-card__media' + (displayHasHoverImage ? " has-hover" : "") + '" href="' + escapeHtml(displayHref) + '" aria-label="' + escapeHtml(displayTitle) + '">' +
             imageMarkup +
           "</a>" +
@@ -3077,7 +3077,7 @@ function initActivationResumeShortcut() {
             (displayPlanSummary ? '<p class="ai-directory-card__plans">' + escapeHtml(displayPlanSummary) + "</p>" : "") +
             '<div class="ai-directory-card__bottom">' +
               '<span class="ai-directory-card__price">' + escapeHtml(displayPriceText) + "</span>" +
-              '<a class="ai-directory-card__button" href="' + escapeHtml(displayHref) + '">' + escapeHtml(displayButtonLabel) + "</a>" +
+              '<a class="ai-directory-card__button" href="' + escapeHtml(displayHref) + '"><span class="ai-directory-card__button-label">' + escapeHtml(displayButtonLabel) + "</span></a>" +
             "</div>" +
           "</div>" +
         "</article>" +
@@ -3230,7 +3230,7 @@ function initActivationResumeShortcut() {
       : '<div class="ai-directory-card__image-placeholder">' + escapeHtml(displayIconText) + "</div>";
 
     return (
-      '<article class="ai-directory-card ai-directory-card--' + escapeHtml(displayTheme) + '" style="--ai-directory-bg:' + escapeHtml(background) + '">' +
+      '<article class="ai-directory-card ai-directory-card--integrated ai-directory-card--' + escapeHtml(displayTheme) + '" style="--ai-directory-bg:' + escapeHtml(background) + '">' +
         '<a class="ai-directory-card__media' + (hasHoverImage ? " has-hover" : "") + '" href="' + escapeHtml(displayHref) + '" aria-label="' + escapeHtml(displayTitle) + '">' +
           imageMarkup +
         "</a>" +

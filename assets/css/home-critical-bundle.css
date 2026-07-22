@@ -17325,19 +17325,18 @@ body.home-wide-body main.page::after {
   transform: scale(1.09) !important;
 }
 
-/* Keep the directory CTA clear of the card's rounded border without changing
-   the card height: trade four pixels of the internal gap for bottom padding. */
-.home-wide-page .ai-directory-card--chatgpt .ai-directory-card__bottom,
-.home-wide-page .ai-directory-card--claude .ai-directory-card__bottom,
-.home-wide-page .ai-directory-card--grok .ai-directory-card__bottom {
-  gap: 6px;
-  padding: 0 4px 4px;
-  box-sizing: border-box;
+/* Homepage directory-card standard. renderAiDirectoryCard() applies the
+   integrated marker automatically, so future AI products inherit the same
+   surface, geometry and interaction model. Only accent variables vary. */
+.home-wide-page .ai-directory-card--integrated {
+  --directory-button-hover-bg: linear-gradient(135deg, #35e58d, #0f8f5c);
+  --directory-button-hover-border: rgba(83, 235, 158, 0.58);
+  --directory-button-hover-shadow: 0 12px 28px rgba(24, 200, 120, 0.26), inset 0 1px 0 rgba(210, 255, 231, 0.46);
+  --directory-button-hover-color: #06110b;
+  --directory-button-focus: #75f0b2;
 }
 
-.home-wide-page .ai-directory-card--chatgpt .ai-directory-card__button,
-.home-wide-page .ai-directory-card--claude .ai-directory-card__button,
-.home-wide-page .ai-directory-card--grok .ai-directory-card__button {
+.home-wide-page .ai-directory-card--integrated .ai-directory-card__button {
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -17345,9 +17344,7 @@ body.home-wide-body main.page::after {
     color 0.2s ease, border-color 0.2s ease;
 }
 
-.home-wide-page .ai-directory-card--chatgpt .ai-directory-card__button::before,
-.home-wide-page .ai-directory-card--claude .ai-directory-card__button::before,
-.home-wide-page .ai-directory-card--grok .ai-directory-card__button::before {
+.home-wide-page .ai-directory-card--integrated .ai-directory-card__button::before {
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -17387,38 +17384,32 @@ body.home-wide-body main.page::after {
   --directory-button-focus: #f3f3f5;
 }
 
-.home-wide-page .ai-directory-card--chatgpt:hover .ai-directory-card__button,
-.home-wide-page .ai-directory-card--chatgpt:focus-within .ai-directory-card__button,
-.home-wide-page .ai-directory-card--claude:hover .ai-directory-card__button,
-.home-wide-page .ai-directory-card--claude:focus-within .ai-directory-card__button,
-.home-wide-page .ai-directory-card--grok:hover .ai-directory-card__button,
-.home-wide-page .ai-directory-card--grok:focus-within .ai-directory-card__button {
+.home-wide-page .ai-directory-card--topups {
+  --directory-button-hover-bg: linear-gradient(135deg, #ffe7a8, #d6a92f);
+  --directory-button-hover-border: rgba(246, 207, 104, 0.84);
+  --directory-button-hover-shadow: 0 12px 28px rgba(214, 169, 47, 0.3), inset 0 1px 0 rgba(255, 248, 220, 0.7);
+  --directory-button-hover-color: #291d06;
+  --directory-button-focus: #ffe29a;
+}
+
+.home-wide-page .ai-directory-card--integrated:hover .ai-directory-card__button,
+.home-wide-page .ai-directory-card--integrated:focus-within .ai-directory-card__button {
   background: var(--directory-button-hover-bg) !important;
   color: var(--directory-button-hover-color) !important;
   border-color: var(--directory-button-hover-border) !important;
   box-shadow: var(--directory-button-hover-shadow) !important;
 }
 
-.home-wide-page .ai-directory-card--chatgpt:hover .ai-directory-card__button::before,
-.home-wide-page .ai-directory-card--chatgpt:focus-within .ai-directory-card__button::before,
-.home-wide-page .ai-directory-card--claude:hover .ai-directory-card__button::before,
-.home-wide-page .ai-directory-card--claude:focus-within .ai-directory-card__button::before,
-.home-wide-page .ai-directory-card--grok:hover .ai-directory-card__button::before,
-.home-wide-page .ai-directory-card--grok:focus-within .ai-directory-card__button::before {
+.home-wide-page .ai-directory-card--integrated:hover .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--integrated:focus-within .ai-directory-card__button::before {
   opacity: 1;
 }
 
-.home-wide-page .ai-directory-card--chatgpt .ai-directory-card__button:focus-visible,
-.home-wide-page .ai-directory-card--claude .ai-directory-card__button:focus-visible,
-.home-wide-page .ai-directory-card--grok .ai-directory-card__button:focus-visible {
+.home-wide-page .ai-directory-card--integrated .ai-directory-card__button:focus-visible {
   outline-color: var(--directory-button-focus) !important;
 }
 
-/* The three AI cards belong directly to the page surface. Keep the artwork,
-   copy and CTA, but remove the shared glass-panel treatment from the wrapper. */
-body.home-wide-body .home-wide-page #pricingGrid .ai-directory-card--chatgpt,
-body.home-wide-body .home-wide-page #pricingGrid .ai-directory-card--claude,
-body.home-wide-body .home-wide-page #pricingGrid .ai-directory-card--grok {
+body.home-wide-body .home-wide-page #pricingGrid .ai-directory-card--integrated {
   background: transparent !important;
   border: 0 !important;
   border-radius: 0 !important;
@@ -17429,15 +17420,11 @@ body.home-wide-body .home-wide-page #pricingGrid .ai-directory-card--grok {
   overflow: visible;
 }
 
-.home-wide-page .ai-directory-card--chatgpt .ai-directory-card__body,
-.home-wide-page .ai-directory-card--claude .ai-directory-card__body,
-.home-wide-page .ai-directory-card--grok .ai-directory-card__body {
+.home-wide-page .ai-directory-card--integrated .ai-directory-card__body {
   padding: 16px 0 0;
 }
 
-.home-wide-page .ai-directory-card--chatgpt .ai-directory-card__bottom,
-.home-wide-page .ai-directory-card--claude .ai-directory-card__bottom,
-.home-wide-page .ai-directory-card--grok .ai-directory-card__bottom {
+.home-wide-page .ai-directory-card--integrated .ai-directory-card__bottom {
   gap: 10px;
   padding: 0;
 }
