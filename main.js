@@ -816,7 +816,7 @@ function initActivationResumeShortcut() {
     duration: "all",
   };
   const CHATGPT_ORDER_MODAL_PLAN_KEYS = new Set(["go", "plus", "pro-5x", "pro-20x"]);
-  const CLAUDE_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "claude"]);
+  const CLAUDE_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max-5x", "max-20x"]);
   const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["1m", "2m", "6m", "12m"]);
   const VPN_ORDER_MODAL_PLAN_KEYS = new Set(["1m", "2m", "6m", "12m"]);
   const AI_ORDER_MODAL_SERVICE_KEYS = new Set(["chatgpt", "claude", "grok", "vpn"]);
@@ -2765,6 +2765,8 @@ function initActivationResumeShortcut() {
     }
 
     if (key === "claude") {
+      if (text.includes("max-20x") || text.includes("max 20x") || text.includes("20x max") || text.includes("max20x") || joinedTags.includes("max20x")) return "max-20x";
+      if (text.includes("max-5x") || text.includes("max 5x") || text.includes("5x max") || text.includes("max5x") || joinedTags.includes("max5x")) return "max-5x";
       if (text.includes("pro")) return "pro";
       return "claude";
     }
@@ -2807,6 +2809,27 @@ function initActivationResumeShortcut() {
     return "link";
   }
 
+  function getPublicServiceItems(items, serviceKey) {
+    const key = normalizeAiServiceKey(serviceKey);
+    const allowedDurations = {
+      chatgpt: new Set(["1m"]),
+      claude: new Set(["1m"]),
+      grok: new Set(["1m", "2m"]),
+    };
+    return (Array.isArray(items) ? items : []).filter(item => {
+      const deliveryKey = getServiceDeliveryKey(item);
+      if ((key === "claude" || key === "grok") && deliveryKey !== "id") return false;
+      if (allowedDurations[key] && !allowedDurations[key].has(getServiceDurationKey(item))) return false;
+      if (key === "claude" || key === "grok") return true;
+
+      const tags = Array.isArray(item?.tags) ? item.tags : [];
+      const deliveryType = resolveDeliveryType(item?.deliveryType, item?.deliveryMethod, tags);
+      const activationVariant = String(item?.activationVariant || "").trim().toLowerCase();
+      if (activationVariant === "withlogin" || activationVariant === "with_login") return false;
+      return !["manual_login", "credentials", "support", "support_claude"].includes(deliveryType);
+    });
+  }
+
   function getServicePlanLabel(serviceKey, planKey) {
     const key = normalizeAiServiceKey(serviceKey);
     const labels = {
@@ -2822,7 +2845,8 @@ function initActivationResumeShortcut() {
       claude: {
         all: isEnPage ? "All plans" : "Все тарифы",
         pro: "Pro",
-        claude: "Claude",
+        "max-5x": "5x Max",
+        "max-20x": "20x Max",
       },
       grok: {
         all: isEnPage ? "All plans" : "Все тарифы",
@@ -2844,15 +2868,15 @@ function initActivationResumeShortcut() {
 
   function getServiceDeliveryLabel(deliveryKey) {
     const labels = isEnPage
-      ? { all: "All methods", login: "With login", link: "By link", id: "By ID", vpn: "VLESS", support: "Support" }
-      : { all: "Все способы", login: "Со входом", link: "Без входа", id: "По ID", support: "\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD \uFFFD\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD" };
+      ? { link: "Activation", id: "By ID", vpn: "VLESS", support: "Support" }
+      : { link: "Активация", id: "По ID", vpn: "VLESS", support: "Поддержка" };
     return labels[deliveryKey] || deliveryKey;
   }
 
   function getServiceDeliveryDisplayLabel(serviceKey, deliveryKey) {
     const key = normalizeAiServiceKey(serviceKey);
     const value = String(deliveryKey || "").trim();
-    if ((key === "claude" || key === "grok") && value === "id") return isEnPage ? "Without login" : "Без входа";
+    if ((key === "claude" || key === "grok") && value === "id") return isEnPage ? "By ID" : "По ID";
     if (key === "vpn" && value === "vpn") return isEnPage ? "VLESS key" : "VLESS-ключ";
     return getServiceDeliveryLabel(value);
   }
@@ -2895,7 +2919,8 @@ function initActivationResumeShortcut() {
       return months ? months * 10 : 100;
     }
     if (key === "claude") {
-      return planKey === "pro" ? 10 : 50;
+      const order = { pro: 10, "max-5x": 20, "max-20x": 30, claude: 90 };
+      return order[planKey] || 100;
     }
     return 100;
   }
@@ -3488,13 +3513,14 @@ function initActivationResumeShortcut() {
     const fixedByService = {
       chatgpt: {
         plan: ["go", "plus", "pro-5x", "pro-20x"],
-        delivery: ["login", "link"],
-        duration: ["1m", "12m"],
+        duration: ["1m"],
       },
       claude: {
-        plan: ["pro", "claude"],
-        delivery: ["login", "link"],
-        duration: ["1m", "12m"],
+        plan: ["pro", "max-5x", "max-20x"],
+        duration: ["1m"],
+      },
+      grok: {
+        duration: ["1m", "2m"],
       },
       vpn: {
         plan: ["1m", "2m", "6m", "12m"],
@@ -3637,12 +3663,11 @@ function initActivationResumeShortcut() {
     const durationKey = getServiceDurationKey(item);
     const planLabel = getServicePlanLabel(serviceKey, planKey);
     const planTitle = getServiceConstructorPlanTitle(item, serviceKey, planLabel);
-    const deliveryLabel = getServiceDeliveryDisplayLabel(serviceKey, deliveryKey);
     const durationLabel = getServiceDurationLabel(durationKey);
     const description = String(item.description || "").trim();
     const modalDescriptionRaw = String(item.modalDescription || description).trim();
     const deliveryType = resolveDeliveryType(item.deliveryType, item.deliveryMethod, tags);
-    const sub = [planLabel, deliveryLabel, durationLabel].filter(Boolean).join(" • ");
+    const sub = [planLabel, durationLabel].filter(Boolean).join(" • ");
     const term = getAiOrderModalServiceConfig(serviceKey).displayName || getServicePlanLabel(serviceKey, planKey) || "ChatGPT";
 
     return (
@@ -3667,10 +3692,6 @@ function initActivationResumeShortcut() {
           '<div>' +
             '<span class="service-checkout-card__label">' + escapeHtml(isEnPage ? "Selected plan" : "Выбранный тариф") + "</span>" +
             '<strong>' + escapeHtml(planTitle) + "</strong>" +
-          "</div>" +
-          '<div>' +
-            '<span class="service-checkout-card__label">' + escapeHtml(isEnPage ? "Delivery" : "Способ доставки") + "</span>" +
-            '<strong>' + escapeHtml(deliveryLabel) + "</strong>" +
           "</div>" +
           '<div>' +
             '<span class="service-checkout-card__label">' + escapeHtml(isEnPage ? "Duration" : "Длительность") + "</span>" +
@@ -3761,7 +3782,7 @@ function initActivationResumeShortcut() {
     const serviceKey = normalizeAiServiceKey(fallback?.serviceKey || card.getAttribute("data-service-key") || getServicePageKey());
     if (!isServiceConstructorPage() || !isAiOrderModalServiceKey(serviceKey)) return fallback;
 
-    const allItems = sortServicePageItems(serviceKey, servicePageItems);
+    const allItems = sortServicePageItems(serviceKey, getPublicServiceItems(servicePageItems, serviceKey));
     const selectedItem = filterServicePageItems(allItems, serviceKey)[0];
     if (!selectedItem) return fallback;
 
@@ -4376,18 +4397,19 @@ function initActivationResumeShortcut() {
     const description = String(item.description || "").trim();
     const modalDescriptionRaw = String(item.modalDescription || description).trim();
     const deliveryType = resolveDeliveryType(item.deliveryType, item.deliveryMethod, Array.isArray(item.tags) ? item.tags : []);
-    const sub = [planLabel, deliveryLabel, durationLabel].filter(Boolean).join(" • ");
+    const sub = [planLabel, durationLabel].filter(Boolean).join(" • ");
     const summaryPlanLabel = planLabel && planLabel !== serviceDisplayName ? planLabel : "";
     const summaryTitle = resolvedServiceKey === "claude" || resolvedServiceKey === "grok" || resolvedServiceKey === "vpn"
       ? String(title || getAiOrderModalSummaryTitle(serviceDisplayName, summaryPlanLabel || planLabel)).trim()
       : getAiOrderModalSummaryTitle(serviceDisplayName, summaryPlanLabel || planLabel);
-    const summaryDescription = [durationLabel, deliveryLabel].filter(Boolean).join(" · ");
+    const showIdDelivery = (resolvedServiceKey === "claude" || resolvedServiceKey === "grok") && deliveryKey === "id";
+    const summaryDescription = [durationLabel, showIdDelivery ? deliveryLabel : ""].filter(Boolean).join(" · ");
+    const deliveryChip = showIdDelivery ? '<span>' + escapeHtml(deliveryLabel) + '</span>' : '';
     const draft = readChatGptGoOrderDraft();
     const savedEmail = String(draft.contactEmail || localStorage.getItem("checkout_email") || "").trim().toLowerCase();
     const savedTelegram = String(draft.telegram || "").trim();
     const savedGift = Boolean(draft.isGift);
     const savedGiftDeliveryMethod = String(draft.giftDeliveryMethod || "").trim();
-    const savedAccountStatus = String(draft.accountStatus || "has_account").trim();
     const savedRecommendation = Boolean(draft.cameByRecommendation);
     const savedPaymentMethod = normalizeChatGptGoPaymentChoice(draft.paymentMethod || activePaymentMethod || "enot");
     const savedPromo = normalizePromoCodeInput(activePromoCode || "");
@@ -4395,12 +4417,8 @@ function initActivationResumeShortcut() {
     const total = Math.max(0, Number((price - discount).toFixed(2)));
     const format = value => formatPriceByCurrency(value, currency);
     const todayIso = new Date().toISOString().slice(0, 10);
-    const checked = (value, current) => value === current ? " checked" : "";
     const selected = (value, current) => value === current ? " selected" : "";
     const boolChecked = value => value ? " checked" : "";
-    const showAccountFields = savedAccountStatus !== "create_new";
-    const showPassword = savedAccountStatus === "has_account";
-    const accountServiceName = serviceDisplayName;
     const serviceLogo = serviceConfig.logo || "/assets/img/services/chatgpt-card.webp?v=20260721-webp1";
     return (
       '<form class="price-card service-checkout-card chatgpt-order-card" data-chatgpt-go-order' +
@@ -4424,16 +4442,12 @@ function initActivationResumeShortcut() {
           '<section class="chatgpt-order-section chatgpt-order-section--summary chatgpt-order-summary-card chatgpt-order-header">' +
             '<div class="chatgpt-order-summary-card__top chatgpt-order-main">' +
               '<img class="chatgpt-order-item__icon chatgpt-order-summary-card__logo chatgpt-order-icon" src="' + escapeHtml(serviceLogo) + '" alt="' + escapeHtml(serviceDisplayName) + '" loading="lazy" decoding="async">' +
-              '<div class="chatgpt-order-summary-card__body chatgpt-order-info"><h3 class="chatgpt-order-title" id="chatGptGoOrderModalTitle">' + escapeHtml(summaryTitle) + '</h3><p class="chatgpt-order-summary-card__meta chatgpt-order-meta">' + escapeHtml(summaryDescription) + '</p><div class="chatgpt-order-summary-card__chips chatgpt-order-chips"><span>' + escapeHtml(planLabel) + '</span><span>' + escapeHtml(durationLabel) + '</span><span>' + escapeHtml(deliveryLabel) + '</span></div></div>' +
+              '<div class="chatgpt-order-summary-card__body chatgpt-order-info"><h3 class="chatgpt-order-title" id="chatGptGoOrderModalTitle">' + escapeHtml(summaryTitle) + '</h3><p class="chatgpt-order-summary-card__meta chatgpt-order-meta">' + escapeHtml(summaryDescription) + '</p><div class="chatgpt-order-summary-card__chips chatgpt-order-chips"><span>' + escapeHtml(planLabel) + '</span><span>' + escapeHtml(durationLabel) + '</span>' + deliveryChip + '</div></div>' +
             '</div>' +
             '<div class="chatgpt-order-summary-card__price chatgpt-order-total"><span>Итого</span><strong data-chatgpt-go-total>' + escapeHtml(format(total)) + '</strong></div>' +
             '<div class="chatgpt-order-summary-lines"><div data-chatgpt-go-summary-discount' + (discount > 0 ? "" : " hidden") + '><span>Скидка:</span><strong>−' + escapeHtml(format(discount)) + '</strong></div></div>' +
           '</section>' +
           '<section class="chatgpt-order-section"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Контакты</h4><p>Для статуса заказа и связи</p></div><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Почта</span><small>Нужна для связи по заказу</small><input class="chatgpt-order-field__control" name="contactEmail" type="email" autocomplete="email" placeholder="name@email.com" value="' + escapeHtml(savedEmail) + '" required></label><label class="chatgpt-order-field"><span>Telegram</span><small>Введите id telegram с @</small><input class="chatgpt-order-field__control" name="telegram" type="text" autocomplete="off" placeholder="@username" value="' + escapeHtml(savedTelegram) + '" required></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="contactEmail"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="telegram"></p></div></section>' +
-          (deliveryKey === "login" ? '<section class="chatgpt-order-section" data-chatgpt-go-account-section' + (savedGift ? " hidden" : "") + '><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Данные для подключения</h4><p>Заполняйте по выбранному способу</p></div>' +
-            '<div class="chatgpt-order-question">У вас уже есть аккаунт ChatGPT?</div><div class="chatgpt-order-options chatgpt-order-account-options"><label><input name="accountStatus" type="radio" value="has_account"' + checked("has_account", savedAccountStatus) + '><span><strong>Да, у меня есть почта и пароль от ChatGPT</strong><small>Выберите, если обычно входите в ChatGPT через email и пароль.</small></span></label><label><input name="accountStatus" type="radio" value="apple_id"' + checked("apple_id", savedAccountStatus) + '><span><strong>Да, я вхожу через Apple</strong><small>Выберите, если нажимаете кнопку «Continue with Apple» / «Войти через Apple». Пароль от ChatGPT не нужен.</small></span></label><label><input name="accountStatus" type="radio" value="create_new"' + checked("create_new", savedAccountStatus) + '><span><strong>Нет, аккаунта ChatGPT у меня нет</strong><small>Мы создадим новый аккаунт за вас. Используем почту, которую вы указали выше.</small></span></label></div><p class="chatgpt-order-error" data-chatgpt-go-error-for="accountStatus"></p>' +
-            '<div class="chatgpt-order-grid" data-chatgpt-go-account-fields' + (showAccountFields ? "" : " hidden") + '><label class="chatgpt-order-field"><span>Почта или логин ' + escapeHtml(accountServiceName) + '</span><small>Нужен для подключения</small><input class="chatgpt-order-field__control" name="serviceLogin" type="text" autocomplete="username" placeholder="name@email.ru" value=""' + (showAccountFields ? "" : " disabled") + '></label><label class="chatgpt-order-field" data-chatgpt-go-password-field' + (showPassword ? "" : " hidden") + '><span>Пароль от ' + escapeHtml(accountServiceName) + '</span><small>Если не помните, напишите «Восстановить»</small><span class="chatgpt-order-password-wrap"><input class="chatgpt-order-field__control" name="servicePassword" type="password" autocomplete="current-password" placeholder="password123" value=""' + (showPassword ? "" : " disabled") + '><button type="button" class="chatgpt-order-password-toggle" data-chatgpt-go-password-toggle aria-label="Показать пароль" title="Показать пароль" aria-pressed="false"' + (showPassword ? "" : " disabled") + '><span aria-hidden="true" data-chatgpt-go-password-icon>' + getChatGptGoPasswordIcon(false) + '</span></button></span></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="serviceLogin"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="servicePassword"></p></div>' +
-            '<div class="chatgpt-order-info-alert chatgpt-order-create-note" data-chatgpt-go-create-note' + (savedAccountStatus === "create_new" ? "" : " hidden") + '><p>(!) При создании нового аккаунта будет использоваться указанная выше почта</p></div></section>' : '') +
           '<section class="chatgpt-order-section chatgpt-order-soft-actions"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Дополнительно</h4></div>' +
             '<label class="chatgpt-order-soft-action"><span><strong>Оформить в подарок</strong><small>Покажем поля получателя после включения</small></span><input name="isGift" type="checkbox"' + boolChecked(savedGift) + '><i></i></label><div class="chatgpt-order-gift-extra"' + (savedGift ? "" : " hidden") + ' data-chatgpt-go-gift-extra><div class="chatgpt-order-gift-note"><strong>🎁 Хотите устроить сюрприз?</strong><p>Вы выбираете подписку и указываете получателя. Мы сами свяжемся с ним, уточним данные и подключим подписку без передачи логинов и паролей.</p></div><div class="chatgpt-order-gift-panel"><h4 class="chatgpt-order-section-title">Данные подарка</h4><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Отправитель</span><small>Укажем в подарке</small><input class="chatgpt-order-field__control" name="giftSender" type="text" autocomplete="name" placeholder="Никита" value="' + escapeHtml(String(draft.giftSender || "")) + '"></label><label class="chatgpt-order-field"><span>Получатель</span><small>Укажем в подарке</small><input class="chatgpt-order-field__control" name="giftRecipient" type="text" autocomplete="off" placeholder="Артём" value="' + escapeHtml(String(draft.giftRecipient || "")) + '"></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftSender"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftRecipient"></p></div><label class="chatgpt-order-field chatgpt-order-field--full"><span>Где прислать подарок</span><select class="chatgpt-order-field__control" name="giftDeliveryMethod"><option value=""' + selected("", savedGiftDeliveryMethod) + '>Выберите способ</option><option value="telegram"' + selected("telegram", savedGiftDeliveryMethod) + '>Telegram</option><option value="vk"' + selected("vk", savedGiftDeliveryMethod) + '>VK</option><option value="whatsapp"' + selected("whatsapp", savedGiftDeliveryMethod) + '>WhatsApp</option><option value="email"' + selected("email", savedGiftDeliveryMethod) + '>Электронная почта</option></select></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftDeliveryMethod"></p><label class="chatgpt-order-field chatgpt-order-field--full"><span>Контакт получателя</span><input class="chatgpt-order-field__control" name="giftRecipientContact" type="text" autocomplete="off" placeholder="@telegram / vk.com/name / WhatsApp / name@mail.ru" value="' + escapeHtml(String(draft.giftRecipientContact || "")) + '"></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftRecipientContact"></p><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Дата отправки</span><input class="chatgpt-order-field__control" name="giftSendDate" type="date" min="' + escapeHtml(todayIso) + '" value="' + escapeHtml(String(draft.giftSendDate || "")) + '"></label><label class="chatgpt-order-field"><span>Время отправки (МСК)</span><input class="chatgpt-order-field__control" name="giftSendTime" type="time" value="' + escapeHtml(String(draft.giftSendTime || "")) + '"></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftSendDate"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftSendTime"></p></div><p class="chatgpt-order-gift-time-note"><strong>Подарки отправляем с 10:00 до 20:00 МСК.</strong><br>Ставьте время минимум +4 часа от оформления. Если заказ ночью, доставка должна быть не раньше 14:00.</p><label class="chatgpt-order-field chatgpt-order-field--full"><span>Сообщение получателю</span><small>Пришлём вместе с подарком</small><textarea class="chatgpt-order-field__control" name="giftMessage" rows="4" placeholder="Напишите поздравление или пожелание">' + escapeHtml(String(draft.giftMessage || "")) + '</textarea></label></div></div>' +
             '<label class="chatgpt-order-soft-action"><span><strong>Пришёл по рекомендации</strong><small>Добавим контакт друга для скидки</small></span><input name="cameByRecommendation" type="checkbox"' + boolChecked(savedRecommendation) + '><i></i></label><div class="chatgpt-order-referral-extra"' + (savedRecommendation ? "" : " hidden") + ' data-chatgpt-go-referral-extra><strong>Кто пригласил</strong><p>Пришли от друга? Дайте ему 10% скидки за ваш первый заказ — напишите его контакт ниже.</p><input class="chatgpt-order-field__control" name="referrerContact" type="text" autocomplete="off" placeholder="@telegram" value="' + escapeHtml(String(draft.referrerContact || "")) + '"></div>' +
@@ -4721,7 +4735,7 @@ function initActivationResumeShortcut() {
       : (
         '<div class="service-empty-state">' +
           '<h3>' + escapeHtml(isEnPage ? "No matching plan" : "Подходящего тарифа нет") + "</h3>" +
-          '<p>' + escapeHtml(isEnPage ? "Choose another plan, delivery method or duration." : "Выберите другой план, способ доставки или срок.") + "</p>" +
+          '<p>' + escapeHtml(isEnPage ? "Choose another plan or duration." : "Выберите другой тариф или срок.") + "</p>" +
         "</div>"
       );
   }
@@ -4729,7 +4743,7 @@ function initActivationResumeShortcut() {
   function renderServicePageFromItems() {
     if (!servicePageRootEl || !servicePlansGridEl) return;
     const serviceKey = getServicePageKey();
-    const allItems = sortServicePageItems(serviceKey, servicePageItems);
+    const allItems = sortServicePageItems(serviceKey, getPublicServiceItems(servicePageItems, serviceKey));
     updateServiceSummary(allItems);
 
     const constructorMode = isServiceConstructorPage() && (isAiOrderModalServiceKey(serviceKey) || Boolean(dynamicServicePagePayload));
@@ -4737,7 +4751,6 @@ function initActivationResumeShortcut() {
       ? getConstructorFilterOptions(serviceKey, "plan", getServiceFilterOptions(allItems, serviceKey, "plan"))
       : getServiceFilterOptions(allItems, serviceKey, "plan");
     const planLabel = isEnPage ? "Plan" : "План";
-    const deliveryLabel = isEnPage ? "Delivery method" : "Способ доставки";
     const durationLabel = isEnPage ? "Duration" : "Длительность";
 
     renderServiceFilterGroup(servicePlanFiltersEl, "plan", planLabel, planOptions, servicePageState.plan, allItems.length, serviceKey);
@@ -4745,10 +4758,8 @@ function initActivationResumeShortcut() {
     const deliverySourceItems = constructorMode && servicePageState.plan !== "all"
       ? allItems.filter(item => getServicePlanKey(item, serviceKey) === servicePageState.plan)
       : allItems;
-    const deliveryOptions = constructorMode
-      ? getConstructorFilterOptions(serviceKey, "delivery", getServiceFilterOptions(deliverySourceItems, serviceKey, "delivery"))
-      : getServiceFilterOptions(deliverySourceItems, serviceKey, "delivery");
-    renderServiceFilterGroup(serviceDeliveryFiltersEl, "delivery", deliveryLabel, deliveryOptions, servicePageState.delivery, allItems.length, serviceKey);
+    if (serviceDeliveryFiltersEl) serviceDeliveryFiltersEl.innerHTML = "";
+    servicePageState.delivery = "all";
 
     const durationSourceItems = constructorMode && servicePageState.delivery !== "all"
       ? deliverySourceItems.filter(item => getServiceDeliveryFilterKey(item, serviceKey) === servicePageState.delivery)
@@ -4774,7 +4785,7 @@ function initActivationResumeShortcut() {
     servicePlansGridEl.innerHTML = cardsMarkup || (
       '<div class="service-empty-state">' +
         '<h3>' + escapeHtml(isEnPage ? "No matching plans" : "Подходящих тарифов нет") + "</h3>" +
-        '<p>' + escapeHtml(isEnPage ? "Try another plan, delivery method or duration." : "Выберите другой план, способ доставки или срок.") + "</p>" +
+        '<p>' + escapeHtml(isEnPage ? "Try another plan or duration." : "Выберите другой тариф или срок.") + "</p>" +
       "</div>"
     );
 
@@ -6330,20 +6341,6 @@ function initActivationResumeShortcut() {
       .gptishka-compliance-note a:hover {
         text-decoration: underline;
       }
-      .gptishka-login-disabled-note {
-        margin: 12px 0;
-        padding: 12px 14px;
-        border: 1px solid rgba(53,242,143,.24);
-        border-radius: 16px;
-        background: rgba(53,242,143,.10);
-        color: rgba(255,255,255,.86);
-        font: 700 13px/1.45 "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
-      }
-      .gptishka-disabled-by-compliance {
-        opacity: .45 !important;
-        filter: grayscale(.35);
-        pointer-events: none !important;
-      }
       @media (max-width: 640px) {
         .gptishka-compliance-note {
           width: min(100% - 20px, 1160px);
@@ -6453,53 +6450,12 @@ function initActivationResumeShortcut() {
     if (logo) logo.alt = "GPTISHKA";
   }
 
-  function disableCredentialCollectionUi() {
-    const en = isEnglishPage();
-    const warningText = en
-      ? "Temporarily unavailable: this option is under compliance review. Please use the no-login activation flow or contact support."
-      : "Временно недоступно: этот вариант проходит compliance-проверку. Используйте вариант без входа или обратитесь в поддержку.";
-
-    const riskyText = /(со входом|логин|парол|password|login)/i;
-    const safeText = /(без входа|no login|without login)/i;
-    const selectors = [
-      "button",
-      "label",
-      ".service-delivery-help",
-      ".chatgpt-order-field",
-      ".chatgpt-order-password-wrap",
-      ".price-card",
-      "[data-delivery]",
-      "[data-option]",
-      "[data-value]"
-    ].join(",");
-
-    document.querySelectorAll(selectors).forEach((el) => {
-      const text = String(el.textContent || "");
-      const data = String(el.getAttribute("data-delivery") || el.getAttribute("data-option") || el.getAttribute("data-value") || "");
-      const combined = `${text} ${data}`;
-      if (!riskyText.test(combined) || safeText.test(combined)) return;
-
-      el.classList.add("gptishka-disabled-by-compliance");
-      if ("disabled" in el) {
-        try { el.disabled = true; } catch (_) {}
-      }
-      if (!el.parentElement || el.parentElement.querySelector(".gptishka-login-disabled-note")) return;
-      const note = document.createElement("div");
-      note.className = "gptishka-login-disabled-note";
-      note.textContent = warningText;
-      el.parentElement.insertBefore(note, el.nextSibling);
-    });
-  }
-
   function initComplianceLayer() {
     if (!isPublicPage()) return;
     ensureStyles();
     repairHeaderText();
     updatePublicMeta();
     insertComplianceNote();
-    disableCredentialCollectionUi();
-    window.setTimeout(disableCredentialCollectionUi, 800);
-    window.setTimeout(disableCredentialCollectionUi, 2000);
   }
 
   if (document.readyState === "loading") {
