@@ -734,3 +734,193 @@ html body.steam-topup-body:has(main.steam-topup-page) .gptishka-compliance-note 
     padding: 24px 0 58px !important;
   }
 }
+
+/*
+ * Steam checkout color hierarchy.
+ * Scoped to this form so catalog cards and other checkout implementations
+ * retain their own product themes.
+ */
+html body.steam-topup-body:has(main.steam-topup-page) .steam-topup-form {
+  --checkout-bg: #171d27;
+  --checkout-surface: #202834;
+  --checkout-surface-raised: #293341;
+  --checkout-control: #1b232e;
+  --checkout-border: rgba(255, 255, 255, 0.11);
+  --checkout-border-hover: rgba(255, 255, 255, 0.2);
+  --checkout-text: #f4f7fb;
+  --checkout-text-secondary: #b9c2cf;
+  --checkout-text-muted: #8e99a9;
+  --checkout-accent: #23d58b;
+  --checkout-accent-hover: #19bd79;
+  --checkout-accent-soft: rgba(35, 213, 139, 0.12);
+  color: var(--checkout-text) !important;
+  border-color: var(--checkout-border) !important;
+  background: var(--checkout-bg) !important;
+  box-shadow:
+    0 24px 70px rgba(4, 8, 14, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page)
+  .steam-topup-form
+  :is(.steam-topup-field small, .steam-topup-note) {
+  color: var(--checkout-text-secondary) !important;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page)
+  .steam-topup-form
+  :is(.steam-topup-field input, .steam-topup-field textarea, .steam-topup-quantity input) {
+  color: var(--checkout-text) !important;
+  border-color: var(--checkout-border) !important;
+  background: var(--checkout-control) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page)
+  .steam-topup-form
+  :is(.steam-topup-field input, .steam-topup-field textarea, .steam-topup-quantity input):hover {
+  border-color: var(--checkout-border-hover) !important;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page)
+  .steam-topup-form
+  :is(.steam-topup-field input, .steam-topup-field textarea, .steam-topup-quantity input):focus {
+  border-color: rgba(35, 213, 139, 0.72) !important;
+  background: #18222c !important;
+  box-shadow: 0 0 0 4px var(--checkout-accent-soft) !important;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page)
+  .steam-topup-form
+  :is(.steam-topup-field input, .steam-topup-field textarea, .steam-topup-quantity input)::placeholder {
+  color: var(--checkout-text-muted) !important;
+  opacity: 0.78;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page) .steam-topup-form__head > strong {
+  color: var(--checkout-text) !important;
+  border: 1px solid rgba(35, 213, 139, 0.28);
+  background:
+    linear-gradient(135deg, rgba(35, 213, 139, 0.16), rgba(35, 213, 139, 0.07)),
+    var(--checkout-surface-raised) !important;
+  box-shadow:
+    0 10px 28px rgba(3, 10, 15, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+html body.steam-topup-body:has(main.steam-topup-page) .steam-topup-summary > div {
+  border-color: var(--checkout-border) !important;
+  background: var(--checkout-surface) !important;
+  box-shadow:
+    0 10px 28px rgba(3, 8, 14, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+html body.steam-topup-body:has(main.steam-topup-page) .steam-topup-summary span {
+  color: var(--checkout-text-secondary) !important;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page) .steam-topup-summary strong {
+  color: var(--checkout-text) !important;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page) .steam-topup-payment legend {
+  color: var(--checkout-text) !important;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page) .steam-topup-payment label {
+  color: var(--checkout-text) !important;
+  border-color: var(--checkout-border) !important;
+  background: var(--checkout-control) !important;
+  box-shadow:
+    0 10px 28px rgba(3, 8, 14, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045) !important;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page) .steam-topup-payment label:hover {
+  border-color: var(--checkout-border-hover) !important;
+  background: var(--checkout-surface) !important;
+  transform: translateY(-1px);
+}
+
+html body.steam-topup-body:has(main.steam-topup-page)
+  .steam-topup-payment
+  label:has(input:checked) {
+  border-color: rgba(35, 213, 139, 0.72) !important;
+  background:
+    linear-gradient(135deg, var(--checkout-accent-soft), rgba(35, 213, 139, 0.055)),
+    var(--checkout-surface) !important;
+  box-shadow:
+    0 0 0 3px rgba(35, 213, 139, 0.09),
+    0 12px 30px rgba(3, 10, 15, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page)
+  .steam-topup-payment
+  label:has(input:checked)
+  strong {
+  color: #dffbef !important;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page) .steam-topup-payment strong {
+  color: var(--checkout-text) !important;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page) .steam-topup-payment small {
+  color: var(--checkout-text-secondary) !important;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page) .steam-topup-payment input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  display: grid;
+  place-content: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  margin: 0;
+  border: 2px solid rgba(185, 194, 207, 0.62) !important;
+  border-radius: 50%;
+  background: #141b24 !important;
+  box-shadow: inset 0 0 0 4px #141b24 !important;
+  accent-color: var(--checkout-accent);
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page)
+  .steam-topup-payment
+  input[type="radio"]:checked {
+  border-color: var(--checkout-accent) !important;
+  background: var(--checkout-accent) !important;
+  box-shadow: inset 0 0 0 4px #141b24 !important;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page)
+  .steam-topup-payment
+  label:has(input:focus-visible) {
+  outline: 2px solid rgba(35, 213, 139, 0.82);
+  outline-offset: 3px;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page)
+  .steam-topup-payment
+  input[type="radio"]:focus-visible {
+  outline: none;
+}
+
+html body.steam-topup-body:has(main.steam-topup-page) .steam-topup-payment label:active {
+  transform: translateY(0);
+}
+
+html body.steam-topup-body:has(main.steam-topup-page)
+  .steam-topup-payment
+  label:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.48;
+  filter: grayscale(0.18);
+  transform: none;
+}
