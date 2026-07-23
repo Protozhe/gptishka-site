@@ -86,6 +86,11 @@ html body.reviews-hub-body .header-product-pill {
   padding: 7px 18px 7px 9px !important;
   border-radius: 999px !important;
   font-weight: 800 !important;
+  background:
+    radial-gradient(circle at 16% 20%, rgba(255, 255, 255, 0.18), transparent 30%),
+    linear-gradient(135deg, #2bdc86 0%, #16b876 52%, #0e8a58 100%) !important;
+  color: #03110a !important;
+  box-shadow: 0 0 0 1px rgba(53, 216, 135, 0.16), 0 14px 34px rgba(24, 185, 120, 0.22) !important;
 }
 
 html body.reviews-hub-body header .header-quick-links {
@@ -99,12 +104,26 @@ html body.reviews-hub-body header .header-quick-link {
   border-radius: 999px !important;
   font-size: 13px !important;
   line-height: 1 !important;
+  color: rgba(255, 255, 255, 0.66) !important;
+  border-color: rgba(255, 255, 255, 0.07) !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 8px 18px rgba(0, 0, 0, 0.12) !important;
 }
 
-html body.reviews-hub-body header .header-quick-link.is-current {
-  border-color: rgba(53, 229, 141, 0.22) !important;
-  background: rgba(53, 229, 141, 0.1) !important;
-  color: #fff !important;
+html body.reviews-hub-body header .header-quick-link:hover,
+html body.reviews-hub-body header .header-quick-link:focus-visible {
+  color: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  background: rgba(255, 255, 255, 0.09) !important;
+}
+
+html body.reviews-hub-body header .header-quick-link--telegram,
+html body.reviews-hub-body header .header-quick-link--telegram:hover,
+html body.reviews-hub-body header .header-quick-link--telegram:focus-visible {
+  color: #06110b !important;
+  background: linear-gradient(135deg, #2bdc86, #16b876, #0e8a58) !important;
+  border-color: rgba(53, 216, 135, 0.3) !important;
+  box-shadow: 0 14px 30px rgba(24, 185, 120, 0.2) !important;
 }
 
 html body.reviews-hub-body header .header-tools {
@@ -115,6 +134,15 @@ html body.reviews-hub-body .lang-current {
   min-height: 42px !important;
   padding: 8px 14px !important;
   border-radius: 999px !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(255, 255, 255, 0.11) !important;
+  background: rgba(10, 12, 18, 0.7) !important;
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.09) !important;
+}
+
+html body.reviews-hub-body .lang-current span,
+html body.reviews-hub-body .lang-current .arrow {
+  color: rgba(255, 255, 255, 0.86) !important;
 }
 
 html body.reviews-hub-body header.is-scrolled :is(.nav, .nav-shell) {
@@ -198,7 +226,7 @@ html body.reviews-hub-body main.reviews-hub {
   text-transform: uppercase;
 }
 
-.reviews-hero h1 {
+.reviews-hero h2 {
   max-width: 780px;
   margin: 0 0 18px;
   color: var(--reviews-text);
@@ -206,6 +234,12 @@ html body.reviews-hub-body main.reviews-hub {
   font-size: clamp(2.8rem, 7.5vw, 5.8rem);
   line-height: 0.98;
   letter-spacing: -0.055em;
+}
+
+.reviews-hero--summary {
+  margin-top: clamp(54px, 7vw, 82px);
+  padding-top: clamp(42px, 5.5vw, 66px);
+  border-top: 1px solid var(--reviews-border);
 }
 
 .reviews-hero__copy > p {
@@ -282,7 +316,7 @@ html body.reviews-hub-body main.reviews-hub {
 
 .reviews-source-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 14px;
 }
 
@@ -381,7 +415,17 @@ html body.reviews-hub-body main.reviews-hub {
 }
 
 .reviews-feed {
-  margin-top: clamp(54px, 7vw, 82px);
+  padding-top: 0;
+  border-top: 0;
+}
+
+.reviews-feed__header h1 {
+  margin: 0;
+  color: var(--reviews-text);
+  font-family: "Space Grotesk", "Manrope", sans-serif;
+  font-size: clamp(2.4rem, 6vw, 4.8rem);
+  line-height: 1;
+  letter-spacing: -0.05em;
 }
 
 .reviews-filters {

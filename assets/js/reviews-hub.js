@@ -85,7 +85,9 @@
 
   function renderSources(data) {
     elements.sources.replaceChildren();
-    data.sources.forEach(function (source) {
+    data.sources.filter(function (source) {
+      return !source.hidden;
+    }).forEach(function (source) {
       var card = create("a", "reviews-source reviews-source--" + source.type);
       if (source.status !== "ok") card.classList.add("is-waiting");
       setExternalLink(card, source.url);
@@ -108,7 +110,7 @@
     var options = [{ id: "all", label: "Все отзывы" }].concat(
       data.sources
         .filter(function (source) {
-          return data.items.some(function (item) {
+          return !source.hidden && data.items.some(function (item) {
             return item.sourceId === source.id;
           });
         })

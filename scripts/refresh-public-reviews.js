@@ -23,7 +23,9 @@ const SOURCES = [
     id: "funpay-162964",
     type: "funpay",
     profileId: "162964",
-    label: "Adelka999",
+    label: "FunPay",
+    publicLabel: "FunPay",
+    hidden: true,
     url: "https://funpay.com/users/162964/#reviews",
   },
   {
@@ -107,6 +109,7 @@ function parseFunPayProfile(html, source) {
   const content = String(html || "");
   const profileNameRaw = plainText(content.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1] || "");
   const profileName = profileNameRaw.replace(/\s+Онлайн\s*$/i, "").trim() || source.label;
+  const publicLabel = source.publicLabel || profileName;
   const totalRaw = content.match(/Всего\s*([\d\s]+)<br>/i)?.[1] || "0";
   const total = Number.parseInt(totalRaw.replace(/\s+/g, ""), 10) || 0;
   const chunks = content.split(/<div class="review-container">/i).slice(1);
@@ -125,7 +128,7 @@ function parseFunPayProfile(html, source) {
       id: stableId(source.id, text, detail, dateLabel),
       sourceId: source.id,
       sourceType: source.type,
-      sourceLabel: profileName,
+      sourceLabel: publicLabel,
       author: "Покупатель FunPay",
       text,
       detail,
@@ -139,7 +142,7 @@ function parseFunPayProfile(html, source) {
   return {
     source: {
       ...source,
-      label: profileName,
+      label: publicLabel,
       total,
       rating: parseFunPayRating(content, reviewRatings),
       available: true,

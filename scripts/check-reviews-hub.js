@@ -18,7 +18,10 @@ assert.match(html, /href="\/app\/" aria-current="page">Отзывы<\/a>/);
 assert.match(html, /id="reviewsSources"/);
 assert.match(html, /id="reviewsGrid"/);
 assert.match(html, /assets\/js\/reviews-hub\.js/);
-assert.match(css, /grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+assert.ok(html.indexOf('class="reviews-feed"') < html.indexOf('class="reviews-sources"'));
+assert.ok(html.indexOf('class="reviews-sources"') < html.indexOf('class="reviews-hero reviews-hero--summary"'));
+assert.doesNotMatch(html, /Отзывы без редактирования/);
+assert.match(css, /grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(280px,\s*1fr\)\)/);
 assert.match(css, /@media \(max-width: 760px\)/);
 assert.match(client, /textContent\s*=/);
 assert.doesNotMatch(client, /\.innerHTML\s*=/);
@@ -30,9 +33,11 @@ assert.ok(data.totalReviews >= 121);
 assert.ok(data.items.length >= 20);
 assert.ok(data.sources.some(source => source.id === "funpay-19372031" && source.status === "ok"));
 assert.ok(data.sources.some(source => source.id === "funpay-162964" && source.status === "ok"));
+assert.ok(data.sources.some(source => source.id === "funpay-162964" && source.hidden === true));
 assert.ok(data.sources.some(source => source.id === "telegram-otziviaii"));
 assert.ok(data.items.every(item => item.id && item.text && item.url));
 assert.strictEqual(new Set(data.items.map(item => item.id)).size, data.items.length);
+assert.doesNotMatch(JSON.stringify(data), /Adelka999/);
 
 console.log(
   `[reviews-check] ${data.items.length} visible reviews, ${data.totalReviews} total, ` +

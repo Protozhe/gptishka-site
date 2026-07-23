@@ -27,7 +27,7 @@
 <link rel="stylesheet" href="/assets/css/support-widget.css?v=20260723-support-meta1">
 <link rel="stylesheet" href="/assets/css/gptishka-dark-pages.css?v=20260707-no-ticker-dark1">
 <link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260723-support-meta1">
-<link rel="stylesheet" href="/assets/css/reviews-hub.css?v=20260723-reviews1">
+<link rel="stylesheet" href="/assets/css/reviews-hub.css?v=20260724-reviews2">
 </head>
 <body class="reviews-hub-body">
 <div class="page-overlay"></div>
@@ -57,7 +57,7 @@
 
     <nav class="header-quick-links" aria-label="Быстрые разделы GPTishka">
       <a class="header-quick-link" href="/news/">Новости</a>
-      <a class="header-quick-link is-current" href="/app/" aria-current="page">Отзывы</a>
+      <a class="header-quick-link" href="/app/" aria-current="page">Отзывы</a>
       <a class="header-quick-link" href="https://vk.com/gptishka" target="_blank" rel="noopener">VK</a>
       <a class="header-quick-link header-quick-link--telegram" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener">Telegram</a>
     </nav>
@@ -92,10 +92,43 @@
     <span>На главную</span>
   </a>
 
-  <section class="reviews-hero" aria-labelledby="reviewsTitle">
+  <section class="reviews-feed" aria-labelledby="reviewsFeedTitle">
+    <div class="reviews-feed__header">
+      <div>
+        <h1 id="reviewsFeedTitle">Что пишут покупатели</h1>
+      </div>
+      <div class="reviews-filters" id="reviewsFilters" aria-label="Фильтр отзывов"></div>
+    </div>
+    <div class="reviews-grid" id="reviewsGrid" aria-live="polite" aria-busy="true">
+      <article class="review-card review-card--loading"></article>
+      <article class="review-card review-card--loading"></article>
+      <article class="review-card review-card--loading"></article>
+    </div>
+    <div class="reviews-empty" id="reviewsEmpty" hidden>
+      <strong>Отзывы временно не загрузились</strong>
+      <p>Откройте исходные площадки или попробуйте обновить страницу немного позже.</p>
+    </div>
+    <button class="reviews-more" id="reviewsMore" type="button" hidden>Показать ещё</button>
+  </section>
+
+  <section class="reviews-sources" aria-labelledby="reviewsSourcesTitle">
+    <div class="reviews-section-heading">
+      <div>
+        <span class="reviews-eyebrow">Откуда берём данные</span>
+        <h2 id="reviewsSourcesTitle">Источники отзывов</h2>
+      </div>
+      <p>Статус каждого источника отображается без скрытых подмен.</p>
+    </div>
+    <div class="reviews-source-grid" id="reviewsSources" aria-live="polite">
+      <div class="reviews-source reviews-source--loading"></div>
+      <div class="reviews-source reviews-source--loading"></div>
+    </div>
+  </section>
+
+  <section class="reviews-hero reviews-hero--summary" aria-labelledby="reviewsTitle">
     <div class="reviews-hero__copy">
       <span class="reviews-eyebrow">Проверяемые источники</span>
-      <h1 id="reviewsTitle">Отзывы покупателей</h1>
+      <h2 id="reviewsTitle">Отзывы покупателей</h2>
       <p>Собираем обратную связь из открытых профилей GPTishka. Каждый отзыв ведёт к исходной площадке, а данные обновляются автоматически.</p>
     </div>
     <div class="reviews-stats" aria-label="Статистика отзывов">
@@ -112,41 +145,6 @@
         <span>последняя проверка</span>
       </div>
     </div>
-  </section>
-
-  <section class="reviews-sources" aria-labelledby="reviewsSourcesTitle">
-    <div class="reviews-section-heading">
-      <div>
-        <span class="reviews-eyebrow">Откуда берём данные</span>
-        <h2 id="reviewsSourcesTitle">Источники отзывов</h2>
-      </div>
-      <p>Статус каждого источника отображается без скрытых подмен.</p>
-    </div>
-    <div class="reviews-source-grid" id="reviewsSources" aria-live="polite">
-      <div class="reviews-source reviews-source--loading"></div>
-      <div class="reviews-source reviews-source--loading"></div>
-      <div class="reviews-source reviews-source--loading"></div>
-    </div>
-  </section>
-
-  <section class="reviews-feed" aria-labelledby="reviewsFeedTitle">
-    <div class="reviews-feed__header">
-      <div>
-        <span class="reviews-eyebrow">Отзывы без редактирования</span>
-        <h2 id="reviewsFeedTitle">Что пишут покупатели</h2>
-      </div>
-      <div class="reviews-filters" id="reviewsFilters" aria-label="Фильтр отзывов"></div>
-    </div>
-    <div class="reviews-grid" id="reviewsGrid" aria-live="polite" aria-busy="true">
-      <article class="review-card review-card--loading"></article>
-      <article class="review-card review-card--loading"></article>
-      <article class="review-card review-card--loading"></article>
-    </div>
-    <div class="reviews-empty" id="reviewsEmpty" hidden>
-      <strong>Отзывы временно не загрузились</strong>
-      <p>Откройте исходные площадки или попробуйте обновить страницу немного позже.</p>
-    </div>
-    <button class="reviews-more" id="reviewsMore" type="button" hidden>Показать ещё</button>
   </section>
 
   <section class="reviews-trust" aria-labelledby="reviewsTrustTitle">
@@ -177,7 +175,7 @@
 </footer>
 
 <script src="/assets/js/app.min.js?v=20260723-reviews-nav1" defer></script>
-<script src="/assets/js/reviews-hub.js?v=20260723-reviews1" defer></script>
+<script src="/assets/js/reviews-hub.js?v=20260724-reviews2" defer></script>
 <script src="/assets/js/support-widget.js?v=20260721-mascot-placeholder-webp1" defer></script>
 </body>
 </html>
