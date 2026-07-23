@@ -50,6 +50,8 @@ html body.contact-flat-body main.contact-page {
 }
 
 html body.contact-flat-body header {
+  width: min(calc(100% - clamp(28px, 7vw, 136px)), 1780px) !important;
+  max-width: 1780px !important;
   margin-top: 8px !important;
   margin-bottom: 0 !important;
   border: 0 !important;
@@ -58,11 +60,58 @@ html body.contact-flat-body header {
 }
 
 html body.contact-flat-body header :is(.nav, .nav-shell) {
+  display: grid !important;
+  grid-template-columns: auto auto minmax(140px, 1fr) auto !important;
+  align-items: center !important;
+  gap: clamp(10px, 1.35vw, 22px) !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 54px !important;
+  margin: 0 !important;
+  padding: 0 !important;
   border: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+
+html body.contact-flat-body header .logo-img {
+  width: auto !important;
+  height: clamp(30px, 2.5vw, 42px) !important;
+  max-width: min(231px, 23vw) !important;
+  object-fit: contain !important;
+  filter: brightness(0) invert(1) drop-shadow(0 12px 24px rgba(0, 0, 0, 0.32)) !important;
+}
+
+html body.contact-flat-body .header-product-pill {
+  min-height: 42px !important;
+  padding: 7px 18px 7px 9px !important;
+  border-radius: 999px !important;
+  font-weight: 800 !important;
+}
+
+html body.contact-flat-body header .header-quick-links {
+  justify-self: center !important;
+  gap: 8px !important;
+}
+
+html body.contact-flat-body header .header-quick-link {
+  min-height: 34px !important;
+  padding: 8px 14px !important;
+  border-radius: 999px !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+}
+
+html body.contact-flat-body header .header-tools {
+  justify-self: end !important;
+}
+
+html body.contact-flat-body .lang-current {
+  min-height: 42px !important;
+  padding: 8px 14px !important;
+  border-radius: 999px !important;
 }
 
 html body.contact-flat-body header.is-scrolled :is(.nav, .nav-shell) {
@@ -382,6 +431,20 @@ html body.contact-flat-body main.contact-page {
   }
 }
 
+@media (max-width: 980px) {
+  html body.contact-flat-body header {
+    width: calc(100% - 28px) !important;
+  }
+
+  html body.contact-flat-body header :is(.nav, .nav-shell) {
+    grid-template-columns: auto auto 1fr !important;
+  }
+
+  html body.contact-flat-body header .header-quick-links {
+    display: none !important;
+  }
+}
+
 @media (max-width: 760px) {
   html body.contact-flat-body {
     --contact-page-gutter: 14px;
@@ -389,7 +452,7 @@ html body.contact-flat-body main.contact-page {
   }
 
   html body.contact-flat-body header {
-    width: calc(100% - 20px) !important;
+    width: calc(100% - 28px) !important;
     margin-top: 4px !important;
   }
 
