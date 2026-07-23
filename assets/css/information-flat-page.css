@@ -1,0 +1,400 @@
+/*
+ * Shared shell for informational and legal pages.
+ * Long-form content remains in the normal document flow, directly on the
+ * graphite site background. Only navigation and interactive elements are raised.
+ */
+
+html:has(main.information-page) {
+  background: #181b20 !important;
+}
+
+html body.information-flat-body {
+  --information-width: 1180px;
+  --information-reading-width: 920px;
+  --information-gutter: clamp(14px, 3.5vw, 46px);
+  --information-text: rgba(247, 249, 252, 0.96);
+  --information-secondary: rgba(222, 228, 237, 0.74);
+  --information-muted: rgba(198, 208, 221, 0.58);
+  --information-border: rgba(255, 255, 255, 0.1);
+  --information-border-strong: rgba(255, 255, 255, 0.16);
+  color: var(--information-text);
+  background:
+    radial-gradient(circle at 16% 14%, rgba(53, 229, 141, 0.075), transparent 30%),
+    radial-gradient(circle at 84% 12%, rgba(148, 163, 184, 0.075), transparent 32%),
+    linear-gradient(180deg, #22262d 0%, #1d2127 46%, #181b20 100%) !important;
+  background-attachment: fixed !important;
+}
+
+html body.information-flat-body::before {
+  inset: -10% -8%;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(53, 229, 141, 0.055), transparent 29%),
+    radial-gradient(circle at 78% 14%, rgba(203, 213, 225, 0.05), transparent 30%) !important;
+  filter: blur(90px) saturate(104%) !important;
+  opacity: 0.68 !important;
+}
+
+html body.information-flat-body::after {
+  opacity: 0.022;
+}
+
+html body.information-flat-body header {
+  width: min(calc(100% - clamp(28px, 7vw, 136px)), 1780px) !important;
+  max-width: 1780px !important;
+  margin: 8px auto 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html body.information-flat-body header :is(.nav, .nav-shell) {
+  display: grid !important;
+  grid-template-columns: auto auto minmax(140px, 1fr) auto !important;
+  align-items: center !important;
+  gap: clamp(10px, 1.35vw, 22px) !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 54px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body.information-flat-body header .logo-img {
+  width: auto !important;
+  height: clamp(30px, 2.5vw, 42px) !important;
+  max-width: min(231px, 23vw) !important;
+  object-fit: contain !important;
+  filter: brightness(0) invert(1) drop-shadow(0 12px 24px rgba(0, 0, 0, 0.32)) !important;
+}
+
+html body.information-flat-body .header-product-pill {
+  min-height: 42px !important;
+  padding: 7px 18px 7px 9px !important;
+  border-radius: 999px !important;
+  font-weight: 800 !important;
+}
+
+html body.information-flat-body header .header-quick-links {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  justify-self: center !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+}
+
+html body.information-flat-body header .header-quick-link {
+  min-height: 34px !important;
+  padding: 8px 14px !important;
+  border-radius: 999px !important;
+  color: rgba(255, 255, 255, 0.72) !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+}
+
+html body.information-flat-body header .header-quick-link:hover,
+html body.information-flat-body header .header-quick-link:focus-visible {
+  color: rgba(255, 255, 255, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  background: rgba(255, 255, 255, 0.065) !important;
+}
+
+html body.information-flat-body header .header-quick-link--telegram {
+  color: rgba(118, 244, 180, 0.92) !important;
+  border-color: rgba(53, 229, 141, 0.22) !important;
+  background: rgba(53, 229, 141, 0.075) !important;
+}
+
+html body.information-flat-body header .header-tools {
+  justify-self: end !important;
+}
+
+html body.information-flat-body .lang-current {
+  min-height: 42px !important;
+  padding: 8px 14px !important;
+  border-radius: 999px !important;
+  color: rgba(255, 255, 255, 0.88) !important;
+  background: rgba(10, 12, 18, 0.44) !important;
+  border-color: rgba(255, 255, 255, 0.11) !important;
+}
+
+html body.information-flat-body header.is-scrolled :is(.nav, .nav-shell) {
+  background: rgba(38, 42, 49, 0.82) !important;
+  box-shadow: 0 12px 36px rgba(8, 10, 14, 0.22) !important;
+  backdrop-filter: blur(16px) saturate(112%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(112%) !important;
+}
+
+html body.information-flat-body main.information-page {
+  width: min(
+    var(--information-width),
+    calc(100% - (var(--information-gutter) * 2))
+  ) !important;
+  max-width: var(--information-width) !important;
+  margin: 0 auto !important;
+  padding: clamp(26px, 3vw, 38px) 0 72px !important;
+}
+
+.information-page *,
+.information-page *::before,
+.information-page *::after {
+  box-sizing: border-box;
+}
+
+.information-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 40px;
+  margin: 0 0 clamp(28px, 4vw, 48px);
+  padding: 0 15px;
+  border: 1px solid var(--information-border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.86);
+  font-family: "Montserrat", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.information-page__back svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.information-page__back:hover {
+  border-color: rgba(53, 229, 141, 0.38);
+  background: rgba(53, 229, 141, 0.09);
+  color: #fff;
+}
+
+.information-page__back:focus-visible {
+  outline: 2px solid rgba(83, 235, 158, 0.82);
+  outline-offset: 3px;
+}
+
+html body.information-flat-body main.information-page
+  :is(.container, .about, .policy-content, .grid, .block) {
+  color: inherit;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none !important;
+}
+
+html body.information-flat-body main.information-page :is(.container, .about) {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html body.information-flat-body main.information-page .policy-content {
+  width: min(100%, var(--information-reading-width));
+  margin: 0;
+  padding: 0;
+}
+
+html body.information-flat-body main.information-page h1 {
+  max-width: 980px;
+  margin: 0 0 clamp(24px, 3vw, 36px) !important;
+  color: var(--information-text) !important;
+  font-family: "Space Grotesk", "Manrope", sans-serif;
+  font-size: clamp(2.65rem, 6vw, 5.1rem) !important;
+  font-weight: 700;
+  line-height: 0.99 !important;
+  letter-spacing: -0.052em !important;
+  text-wrap: balance;
+}
+
+html body.information-flat-body main.information-page :is(.intro, .policy-content > p:first-of-type) {
+  color: var(--information-secondary) !important;
+  font-size: clamp(1rem, 1.6vw, 1.14rem);
+  line-height: 1.72;
+}
+
+html body.information-flat-body main.information-page h2 {
+  margin: clamp(38px, 5vw, 58px) 0 16px !important;
+  padding-top: clamp(26px, 3.5vw, 38px);
+  border-top: 1px solid var(--information-border);
+  color: var(--information-text) !important;
+  font-family: "Space Grotesk", "Manrope", sans-serif;
+  font-size: clamp(1.3rem, 2.4vw, 1.8rem) !important;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+
+html body.information-flat-body main.information-page p,
+html body.information-flat-body main.information-page li {
+  color: var(--information-secondary) !important;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+html body.information-flat-body main.information-page p {
+  margin: 0 0 15px;
+}
+
+html body.information-flat-body main.information-page :is(ul, ol) {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 20px;
+  padding-left: 22px;
+}
+
+html body.information-flat-body main.information-page strong {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+html body.information-flat-body main.information-page a:not(.information-page__back) {
+  color: rgba(105, 241, 170, 0.9);
+  text-decoration-color: rgba(105, 241, 170, 0.34);
+}
+
+html body.information-flat-body main.information-page a:not(.information-page__back):hover {
+  color: #95f7c2;
+}
+
+html body.information-flat-body main.information-page hr {
+  height: 1px;
+  margin: clamp(28px, 3.5vw, 40px) 0 0;
+  border: 0;
+  background: var(--information-border);
+}
+
+html body.information-flat-body main.information-page hr + h2 {
+  margin-top: 0 !important;
+  padding-top: clamp(26px, 3.5vw, 38px);
+  border-top: 0;
+}
+
+html body.information-flat-body main.information-page .grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 0 clamp(34px, 6vw, 74px) !important;
+  margin-top: clamp(34px, 5vw, 56px) !important;
+}
+
+html body.information-flat-body main.information-page .block {
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 0 clamp(34px, 4vw, 48px) !important;
+  border-top: 1px solid var(--information-border) !important;
+}
+
+html body.information-flat-body main.information-page .block h2 {
+  margin: 0 0 14px !important;
+  padding-top: clamp(24px, 3vw, 32px);
+  border-top: 0;
+}
+
+html body.information-flat-body main.information-page .about {
+  width: min(100%, var(--information-reading-width)) !important;
+}
+
+html body.information-flat-body main.information-page .about p {
+  max-width: 820px;
+  font-size: clamp(1rem, 1.45vw, 1.1rem);
+}
+
+html body.information-flat-body footer {
+  width: min(var(--information-width), calc(100% - (var(--information-gutter) * 2))) !important;
+  margin: 0 auto 24px !important;
+}
+
+html body.information-flat-body footer .footer-links-primary,
+html body.information-flat-body footer .footer-links-secondary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px 9px;
+}
+
+html body.information-flat-body footer .footer-links-secondary {
+  margin-top: 8px;
+}
+
+html body.information-flat-body footer .footer-copy {
+  display: block;
+  margin-top: 12px;
+}
+
+@media (max-width: 980px) {
+  html body.information-flat-body header {
+    width: calc(100% - 28px) !important;
+  }
+
+  html body.information-flat-body header :is(.nav, .nav-shell) {
+    grid-template-columns: auto auto 1fr !important;
+  }
+
+  html body.information-flat-body header .header-quick-links {
+    display: none !important;
+  }
+}
+
+@media (max-width: 760px) {
+  html body.information-flat-body {
+    --information-gutter: 14px;
+    background-attachment: scroll !important;
+  }
+
+  html body.information-flat-body header {
+    margin-top: 4px !important;
+  }
+
+  html body.information-flat-body main.information-page {
+    padding-top: 22px !important;
+    padding-bottom: 54px !important;
+  }
+
+  html body.information-flat-body main.information-page .grid {
+    grid-template-columns: 1fr !important;
+    margin-top: 34px !important;
+  }
+
+  html body.information-flat-body main.information-page h2 {
+    margin-top: 34px !important;
+  }
+
+  html body.information-flat-body footer {
+    width: calc(100% - 28px) !important;
+  }
+}
+
+@media (max-width: 620px) {
+  html body.information-flat-body .header-product-pill {
+    max-width: 174px !important;
+    padding-right: 12px !important;
+    font-size: 12px !important;
+  }
+
+  html body.information-flat-body .header-product-pill span {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .information-page__back {
+    transition: none;
+  }
+}
