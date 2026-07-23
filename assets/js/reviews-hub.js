@@ -1,0 +1,219 @@
+(function () {
+  "use strict";
+
+  var PAGE_SIZE = 12;
+  var state = {
+    data: null,
+    filter: "all",
+    visible: PAGE_SIZE,
+  };
+
+  var elements = {
+    total: document.getElementById("reviewsTotal"),
+    rating: document.getElementById("reviewsRating"),
+    updated: document.getElementById("reviewsUpdated"),
+    sources: document.getElementById("reviewsSources"),
+    filters: document.getElementById("reviewsFilters"),
+    grid: document.getElementById("reviewsGrid"),
+    empty: document.getElementById("reviewsEmpty"),
+    more: document.getElementById("reviewsMore"),
+  };
+
+  function create(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (typeof text === "string") node.textContent = text;
+    return node;
+  }
+
+  function setExternalLink(link, url) {
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+  }
+
+  function formatNumber(value) {
+    return new Intl.NumberFormat("ru-RU").format(Number(value || 0));
+  }
+
+  function formatUpdated(value) {
+    var date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "недавно";
+    return new Intl.DateTimeFormat("ru-RU", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
+  }
+
+  function sourceStatus(source) {
+    if (source.status === "ok") return "Источник доступен";
+    if (source.status === "stale") return "Показана сохранённая копия";
+    if (source.status === "feed-not-public") return "Ожидает публичную ленту";
+    return "Источник временно недоступен";
+  }
+
+  function sourceMeta(source) {
+    if (source.type === "telegram") {
+      return source.visibleItems
+        ? formatNumber(source.visibleItems) + " публичных публикаций"
+        : "Канал подключён к системе";
+    }
+    var total = Number(source.total || 0);
+    var rating = Number(source.rating || 0);
+    return [
+      total ? formatNumber(total) + " отзывов" : "",
+      rating ? rating.toFixed(1) + " из 5" : "",
+    ].filter(Boolean).join(" · ") || "Публичный профиль";
+  }
+
+  function renderStats(data) {
+    elements.total.textContent = formatNumber(data.totalReviews);
+    var rated = data.sources.filter(function (source) {
+      return Number(source.rating) > 0 && Number(source.total || source.visibleItems) > 0;
+    });
+    var totalWeight = rated.reduce(function (sum, source) {
+      return sum + Number(source.total || source.visibleItems || 0);
+    }, 0);
+    var weightedRating = rated.reduce(function (sum, source) {
+      return sum + Number(source.rating) * Number(source.total || source.visibleItems || 0);
+    }, 0);
+    elements.rating.textContent = totalWeight ? (weightedRating / totalWeight).toFixed(1) : "—";
+    elements.updated.textContent = formatUpdated(data.fetchedAt);
+  }
+
+  function renderSources(data) {
+    elements.sources.replaceChildren();
+    data.sources.forEach(function (source) {
+      var card = create("a", "reviews-source reviews-source--" + source.type);
+      if (source.status !== "ok") card.classList.add("is-waiting");
+      setExternalLink(card, source.url);
+
+      var icon = create("span", "reviews-source__icon", source.type === "telegram" ? "TG" : "F");
+      icon.setAttribute("aria-hidden", "true");
+      var copy = create("span", "reviews-source__copy");
+      copy.append(
+        create("strong", "reviews-source__name", source.label),
+        create("span", "reviews-source__meta", sourceMeta(source)),
+        create("span", "reviews-source__status", sourceStatus(source))
+      );
+      card.append(icon, copy);
+      elements.sources.append(card);
+    });
+  }
+
+  function renderFilters(data) {
+    elements.filters.replaceChildren();
+    var options = [{ id: "all", label: "Все отзывы" }].concat(
+      data.sources
+        .filter(function (source) {
+          return data.items.some(function (item) {
+            return item.sourceId === source.id;
+          });
+        })
+        .map(function (source) {
+          return { id: source.id, label: source.label };
+        })
+    );
+
+    options.forEach(function (option) {
+      var button = create("button", "reviews-filter", option.label);
+      button.type = "button";
+      button.dataset.filter = option.id;
+      button.setAttribute("aria-pressed", String(option.id === state.filter));
+      if (option.id === state.filter) button.classList.add("is-active");
+      button.addEventListener("click", function () {
+        state.filter = option.id;
+        state.visible = PAGE_SIZE;
+        renderFilters(data);
+        renderReviews(data);
+      });
+      elements.filters.append(button);
+    });
+  }
+
+  function renderReview(item) {
+    var card = create("article", "review-card");
+    var top = create("div", "review-card__top");
+    top.append(
+      create("span", "review-card__source", item.sourceLabel || "Открытый источник"),
+      create("span", "review-card__rating", "★".repeat(Math.max(1, Math.min(5, Number(item.rating) || 5))))
+    );
+
+    var text = create("p", "review-card__text", item.text);
+    var footer = create("div", "review-card__footer");
+    var meta = create("span", "review-card__meta");
+    meta.append(
+      create("strong", "", item.detail || item.author || "Покупатель"),
+      create("span", "", item.dateLabel || formatUpdated(item.date))
+    );
+    var link = create("a", "review-card__link", "Источник ↗");
+    link.setAttribute("aria-label", "Открыть исходный отзыв");
+    setExternalLink(link, item.url);
+    footer.append(meta, link);
+    card.append(top, text, footer);
+    return card;
+  }
+
+  function filteredItems(data) {
+    if (state.filter === "all") return data.items;
+    return data.items.filter(function (item) {
+      return item.sourceId === state.filter;
+    });
+  }
+
+  function renderReviews(data) {
+    var items = filteredItems(data);
+    var visible = items.slice(0, state.visible);
+    elements.grid.replaceChildren();
+    visible.forEach(function (item) {
+      elements.grid.append(renderReview(item));
+    });
+    elements.grid.setAttribute("aria-busy", "false");
+    elements.empty.hidden = items.length > 0;
+    elements.grid.hidden = items.length === 0;
+    elements.more.hidden = visible.length >= items.length;
+  }
+
+  function showError() {
+    elements.sources.replaceChildren();
+    elements.filters.replaceChildren();
+    elements.grid.replaceChildren();
+    elements.grid.hidden = true;
+    elements.grid.setAttribute("aria-busy", "false");
+    elements.empty.hidden = false;
+    elements.more.hidden = true;
+    elements.total.textContent = "—";
+    elements.rating.textContent = "—";
+    elements.updated.textContent = "нет данных";
+  }
+
+  elements.more.addEventListener("click", function () {
+    state.visible += PAGE_SIZE;
+    renderReviews(state.data);
+  });
+
+  var eightHourBucket = Math.floor(Date.now() / (8 * 60 * 60 * 1000));
+  fetch("/data/public-reviews.json?v=" + eightHourBucket, {
+    credentials: "same-origin",
+    headers: { Accept: "application/json" },
+  })
+    .then(function (response) {
+      if (!response.ok) throw new Error("Reviews returned HTTP " + response.status);
+      return response.json();
+    })
+    .then(function (data) {
+      if (!data || !Array.isArray(data.sources) || !Array.isArray(data.items)) {
+        throw new Error("Invalid reviews payload");
+      }
+      state.data = data;
+      renderStats(data);
+      renderSources(data);
+      renderFilters(data);
+      renderReviews(data);
+    })
+    .catch(function () {
+      showError();
+    });
+})();

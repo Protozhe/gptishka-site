@@ -2107,6 +2107,7 @@ function createApp() {
   app.get(["/catalog", "/catalog/"], sendDirectoryIndex("catalog"));
   app.get(["/catalog/ai", "/catalog/ai/"], sendDirectoryIndex(path.join("catalog", "ai")));
   app.get(["/catalog/vpn", "/catalog/vpn/"], sendDirectoryIndex(path.join("catalog", "vpn")));
+  app.get(["/app", "/app/"], sendDirectoryIndex("app"));
   app.get(["/store/steam", "/store/steam/"], sendDirectoryIndex(path.join("store", "steam")));
   app.get(["/store/steam/topup", "/store/steam/topup/"], sendDirectoryIndex(path.join("store", "steam", "topup")));
 
