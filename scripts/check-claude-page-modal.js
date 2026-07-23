@@ -3,10 +3,8 @@ const fs = require("fs");
 const source = fs.readFileSync("assets/js/app.js", "utf8");
 const minifiedSource = fs.readFileSync("assets/js/app.min.js", "utf8");
 const css = fs.readFileSync("assets/css/home-stability-hotfix.css", "utf8");
+const flatCss = fs.readFileSync("assets/css/claude-flat-page.css", "utf8");
 const page = fs.readFileSync("claude.html", "utf8");
-const desktopHeroBytes = fs.statSync("assets/video/claude-hero-bg-lite.mp4").size;
-const mobileHeroBytes = fs.statSync("assets/video/claude-hero-bg-mobile.mp4").size;
-const heroPosterBytes = fs.statSync("assets/img/services/claude-hero-bg-poster.webp").size;
 
 const failures = [];
 
@@ -29,25 +27,22 @@ const expectedJsAssetVersion = "20260722-claude-hero-lite2";
   ["service-page--constructor", "claude.html: constructor page class"],
   ['data-service-page="claude"', "claude.html: Claude service scope"],
   ['data-service-layout="constructor"', "claude.html: constructor layout marker"],
-  ["service-hero--claude", "claude.html: Claude hero modifier"],
-  ['class="service-hero__orange-overlay"', "claude.html: Claude hero orange overlay"],
-  ['class="service-hero__dark-overlay"', "claude.html: Claude hero dark overlay"],
   ["service-constructor-shell", "claude.html: constructor shell"],
   ["service-product-gallery", "claude.html: product gallery"],
   ["/assets/img/services/claude-card.png?v=20260618-claude-logo2", "claude.html: Claude product image cache-bust"],
   ["service-selected-plan", "claude.html: selected plan summary"],
   ['id="servicePlanFilters"', "claude.html: plan filter container"],
   ['id="serviceDurationFilters"', "claude.html: duration filter container"],
-  ['data-mobile-src="/assets/video/claude-hero-bg-mobile.mp4?v=20260722-claude-hero-lite2"', "claude.html: lightweight mobile hero animation"],
-  ['data-desktop-src="/assets/video/claude-hero-bg-lite.mp4?v=20260722-claude-hero-lite2"', "claude.html: lightweight desktop hero animation"],
-  ['/assets/img/services/claude-hero-bg-poster.webp?v=20260722-claude-hero-lite2', "claude.html: static hero fallback"],
-  ['preload="none"', "claude.html: deferred video preload"],
+  ["/assets/css/claude-flat-page.css?v=20260723-claude-flat1", "claude.html: flat Claude page stylesheet"],
   [`/assets/css/home-stability-hotfix.css?v=${expectedAssetVersion}`, "claude.html: CSS cache-bust"],
   [`/assets/js/app.min.js?v=${expectedJsAssetVersion}`, "claude.html: JS cache-bust"],
 ].forEach(([marker, label]) => requireMarker(page, marker, label));
 
 [
   ["20260615-chatgpt-seamless1", "claude.html: old ChatGPT cache-bust"],
+  ["service-hero", "claude.html: removed Claude hero"],
+  ["data-service-hero-video", "claude.html: removed Claude hero video"],
+  ["claude-hero-bg", "claude.html: removed Claude hero media references"],
   ["service-hero__stats", "claude.html: old hero stats block"],
   ["payment-method-modal", "claude.html: old static payment modal markup"],
   ["chatgpt-plans-bg", "claude.html: removed obsolete 5 MB hero video asset"],
@@ -91,8 +86,6 @@ const expectedJsAssetVersion = "20260722-claude-hero-lite2";
   ["#ffb15a", "css: Claude orange highlight"],
   ["#f97316", "css: Claude orange primary"],
   ["#c2410c", "css: Claude orange deep"],
-  [".service-hero__orange-overlay", "css: Claude orange video overlay"],
-  ["claudeHeroBackgroundShift", "css: Claude visible animated hero background"],
   ['[data-service-page="claude"] .service-checkout-card .buy-btn:hover:not(:disabled)', "css: Claude constructor buy hover override"],
   ["#f68b2f", "css: softer Claude hover orange"],
   ['.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card', "css: checkout polish is shared by all service modals"],
@@ -102,21 +95,20 @@ const expectedJsAssetVersion = "20260722-claude-hero-lite2";
 ].forEach(([marker, label]) => requireMarker(css, marker, label));
 
 [
-  ["initLightweightServiceHeroVideo", "app.js: lightweight hero loader"],
-  ["connection.saveData", "app.js: Save-Data guard"],
-  ['matchMedia("(prefers-reduced-motion: reduce)")', "app.js: reduced-motion guard"],
-  ["video.dataset.mobileSrc", "app.js: responsive mobile source"],
-  ["video.dataset.desktopSrc", "app.js: responsive desktop source"],
-].forEach(([marker, label]) => requireMarker(source, marker, label));
+  ['main.service-page[data-service-page="claude"]', "flat css: Claude-only scope"],
+  [".service-plans-section", "flat css: plans outer surface"],
+  [".service-constructor-shell", "flat css: constructor outer surface"],
+  [".service-selected-plan", "flat css: selected plan outer surface"],
+  [".service-info-card", "flat css: informational cards"],
+  [".service-faq-item", "flat css: FAQ rows"],
+  ["background: transparent !important", "flat css: transparent surfaces"],
+  ["border-bottom: 1px solid", "flat css: lightweight FAQ separators"],
+].forEach(([marker, label]) => requireMarker(flatCss, marker, label));
 
 requireCssRegex(
   /\[data-service-page="claude"\][\s\S]*\.payment-method[\s\S]*\.payment-option/,
   "Claude payment options scoped to service page",
 );
-
-if (desktopHeroBytes > 800_000) failures.push(`desktop hero video is too large: ${desktopHeroBytes} bytes`);
-if (mobileHeroBytes > 350_000) failures.push(`mobile hero video is too large: ${mobileHeroBytes} bytes`);
-if (heroPosterBytes > 50_000) failures.push(`hero poster is too large: ${heroPosterBytes} bytes`);
 
 requireCssRegex(
   /\[data-service-page="claude"\]\s+\.service-checkout-card\s+\.buy-btn:hover:not\(:disabled\)[\s\S]*transform:\s*none;/,

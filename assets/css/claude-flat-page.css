@@ -1,0 +1,176 @@
+/*
+ * Claude storefront: flat layout.
+ * The page content sits directly on the shared site background. Only controls
+ * and the product image retain their own visual treatment.
+ */
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"] {
+  padding-top: clamp(22px, 3vw, 40px);
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  :is(
+    .service-plans-section,
+    .service-constructor-shell,
+    .service-constructor-card,
+    .service-constructor-description,
+    .service-selected-plan,
+    .service-checkout-card,
+    .service-checkout-card__summary > div,
+    .service-info-section,
+    .service-info-card,
+    .service-faq-section,
+    .service-faq-item
+  ) {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-plans-section {
+  margin-top: 0;
+  padding: 0;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-constructor-shell {
+  gap: clamp(28px, 5vw, 64px);
+  align-items: center;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-product-gallery {
+  min-height: 0;
+  padding: 0;
+  place-items: center;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-product-gallery img {
+  width: min(100%, 440px);
+  box-shadow: 0 24px 68px rgba(0, 0, 0, 0.3) !important;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-constructor-card {
+  padding: 0;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-selected-plan {
+  padding: 0 !important;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-checkout-card__summary {
+  padding-block: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-checkout-card__summary > div {
+  padding: 0 14px 0 0;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-constructor-description {
+  margin-top: 28px;
+  padding: 26px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  :is(.service-info-section, .service-faq-section) {
+  gap: 24px;
+  margin-top: clamp(46px, 7vw, 82px);
+  padding: clamp(38px, 5vw, 58px) 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-info-grid {
+  gap: clamp(30px, 6vw, 72px);
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-info-card {
+  align-content: start;
+  padding: 0;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-faq-list {
+  gap: 0;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-faq-item {
+  overflow: visible;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-faq-question {
+  padding: 20px 0;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-faq-answer {
+  padding: 0 0 20px;
+}
+
+@media (max-width: 760px) {
+  html body:has(main.service-page[data-service-page="claude"])
+    main.service-page[data-service-page="claude"] {
+    width: min(100% - 24px, 1180px);
+    padding-top: 18px;
+  }
+
+  html body:has(main.service-page[data-service-page="claude"])
+    main.service-page[data-service-page="claude"]
+    .service-constructor-shell {
+    gap: 30px;
+  }
+
+  html body:has(main.service-page[data-service-page="claude"])
+    main.service-page[data-service-page="claude"]
+    .service-product-gallery img {
+    width: min(100%, 330px);
+  }
+
+  html body:has(main.service-page[data-service-page="claude"])
+    main.service-page[data-service-page="claude"]
+    .service-checkout-card__summary > div {
+    padding: 0;
+  }
+
+  html body:has(main.service-page[data-service-page="claude"])
+    main.service-page[data-service-page="claude"]
+    :is(.service-info-section, .service-faq-section) {
+    margin-top: 44px;
+    padding-top: 34px;
+  }
+}
