@@ -4,9 +4,70 @@
  * and the product image retain their own visual treatment.
  */
 
+html:has(main.service-page[data-service-page="claude"]) {
+  background: #181b20 !important;
+}
+
+html body:has(main.service-page[data-service-page="claude"]) {
+  --claude-page-width: 1180px;
+  --claude-page-gutter: clamp(14px, 3.5vw, 46px);
+  background:
+    radial-gradient(circle at 17% 16%, rgba(249, 115, 22, 0.11), transparent 30%),
+    radial-gradient(circle at 84% 12%, rgba(148, 163, 184, 0.075), transparent 32%),
+    linear-gradient(180deg, #22262d 0%, #1d2127 46%, #181b20 100%) !important;
+  background-attachment: fixed !important;
+}
+
+html body:has(main.service-page[data-service-page="claude"])::before {
+  inset: -10% -8%;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(251, 146, 60, 0.1), transparent 29%),
+    radial-gradient(circle at 78% 14%, rgba(203, 213, 225, 0.055), transparent 30%) !important;
+  filter: blur(90px) saturate(104%) !important;
+  opacity: 0.68 !important;
+}
+
+html body:has(main.service-page[data-service-page="claude"])::after {
+  opacity: 0.022;
+}
+
+html body:has(main.service-page[data-service-page="claude"]) header,
 html body:has(main.service-page[data-service-page="claude"])
   main.service-page[data-service-page="claude"] {
-  padding-top: clamp(22px, 3vw, 40px);
+  width: min(
+    var(--claude-page-width),
+    calc(100% - (var(--claude-page-gutter) * 2))
+  ) !important;
+  max-width: var(--claude-page-width) !important;
+  margin-inline: auto !important;
+}
+
+html body:has(main.service-page[data-service-page="claude"]) header {
+  margin-top: 8px !important;
+  margin-bottom: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html body:has(main.service-page[data-service-page="claude"]) header :is(.nav, .nav-shell) {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body:has(main.service-page[data-service-page="claude"]) header.is-scrolled :is(.nav, .nav-shell) {
+  background: rgba(38, 42, 49, 0.82) !important;
+  box-shadow: 0 12px 36px rgba(8, 10, 14, 0.22) !important;
+  backdrop-filter: blur(16px) saturate(112%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(112%) !important;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"] {
+  padding: clamp(26px, 3vw, 38px) 0 72px !important;
 }
 
 html body:has(main.service-page[data-service-page="claude"])
@@ -43,7 +104,7 @@ html body:has(main.service-page[data-service-page="claude"])
   main.service-page[data-service-page="claude"]
   .service-constructor-shell {
   gap: clamp(28px, 5vw, 64px);
-  align-items: center;
+  align-items: start;
 }
 
 html body:has(main.service-page[data-service-page="claude"])
@@ -145,8 +206,8 @@ html body:has(main.service-page[data-service-page="claude"])
 @media (max-width: 760px) {
   html body:has(main.service-page[data-service-page="claude"])
     main.service-page[data-service-page="claude"] {
-    width: min(100% - 24px, 1180px);
-    padding-top: 18px;
+    width: calc(100% - 28px) !important;
+    padding: 24px 0 58px !important;
   }
 
   html body:has(main.service-page[data-service-page="claude"])
