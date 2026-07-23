@@ -33,7 +33,8 @@ const expectedJsAssetVersion = "20260722-claude-hero-lite2";
   ["service-selected-plan", "claude.html: selected plan summary"],
   ['id="servicePlanFilters"', "claude.html: plan filter container"],
   ['id="serviceDurationFilters"', "claude.html: duration filter container"],
-  ["/assets/css/claude-flat-page.css?v=20260723-claude-flat2", "claude.html: flat Claude page stylesheet"],
+  ["/assets/css/claude-flat-page.css?v=20260723-claude-flat3", "claude.html: flat Claude page stylesheet"],
+  ['class="service-directory-back" href="/catalog/ai/"', "claude.html: AI catalog back link"],
   [`/assets/css/home-stability-hotfix.css?v=${expectedAssetVersion}`, "claude.html: CSS cache-bust"],
   [`/assets/js/app.min.js?v=${expectedJsAssetVersion}`, "claude.html: JS cache-bust"],
 ].forEach(([marker, label]) => requireMarker(page, marker, label));
@@ -106,6 +107,7 @@ const expectedJsAssetVersion = "20260722-claude-hero-lite2";
   ["linear-gradient(180deg, #22262d 0%, #1d2127 46%, #181b20 100%)", "flat css: graphite Claude page background"],
   ["header :is(.nav, .nav-shell)", "flat css: seamless Claude header"],
   ["align-items: start", "flat css: product image and constructor top alignment"],
+  [".service-directory-back", "flat css: AI catalog back button"],
 ].forEach(([marker, label]) => requireMarker(flatCss, marker, label));
 
 requireCssRegex(

@@ -24,7 +24,8 @@ function requireNotIncludes(source, marker, label) {
   ["service-product-gallery", "chatgpt.html product gallery"],
   ['<img src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1"', "chatgpt.html product image"],
   ["gptishka-compliance-note", "chatgpt.html compliance notice"],
-  ["/assets/css/chatgpt-grok-flat-page.css?v=20260723-ai-flat3", "chatgpt.html flat stylesheet"],
+  ["/assets/css/chatgpt-grok-flat-page.css?v=20260723-ai-flat4", "chatgpt.html flat stylesheet"],
+  ['class="service-directory-back" href="/catalog/ai/"', "chatgpt.html AI catalog back link"],
 ].forEach(([marker, label]) => requireIncludes(page, marker, label));
 
 [
@@ -43,6 +44,7 @@ function requireNotIncludes(source, marker, label) {
   ["background: transparent !important", "flat CSS transparent surfaces"],
   ["align-items: start", "flat CSS top alignment"],
   ["linear-gradient(180deg, #22262d 0%, #1d2127 46%, #181b20 100%)", "flat CSS graphite background"],
+  [".service-directory-back", "flat CSS AI catalog back button"],
 ].forEach(([marker, label]) => requireIncludes(css, marker, label));
 
 console.log("ChatGPT flat storefront structure is valid.");
