@@ -1,142 +1,182 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <script src="/assets/js/analytics-init.js?v=20260721-defer-analytics1" defer></script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="GPTишка: безопасная активация и продление ChatGPT Plus с поддержкой и гарантией." />
+<meta name="description" content="Связаться с поддержкой GPTishka по вопросам заказа, оплаты и подключения цифровых услуг." />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="GPTishka" />
-<meta property="og:title" content="GPTишка - ChatGPT Plus" />
-<meta property="og:description" content="GPTишка: безопасная активация и продление ChatGPT Plus с поддержкой и гарантией." />
-<meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
+<meta property="og:title" content="Связь с нами — GPTishka" />
+<meta property="og:description" content="Поддержка GPTishka в Telegram, VK и по электронной почте." />
+<meta property="og:image" content="https://gptishka.shop/assets/img/site-icon.png" />
 <meta property="og:url" content="https://gptishka.shop/contact.html" />
 <link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="512x512" href="/assets/img/site-icon.png">
+<link rel="apple-touch-icon" href="/assets/img/site-icon.png">
 <link rel="canonical" href="https://gptishka.shop/contact.html">
 <link rel="alternate" hreflang="ru" href="https://gptishka.shop/contact.html">
 <link rel="alternate" hreflang="en" href="https://gptishka.shop/en/contact.html">
-<link rel="alternate" hreflang="x-default" href="https://gptishka.shop/">
-<title>Связь с нами — GPTишка</title>
+<link rel="alternate" hreflang="x-default" href="https://gptishka.shop/contact.html">
+<title>Связь с нами — GPTishka</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/logo.min.css">
-<link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2">
-<link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260310o" />
-
-<!-- GOOGLE FONTS -->
-<link rel="stylesheet" href="/assets/css/support-widget.css?v=20260707-support-unify3" />
-<link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260707-header-unify9" />
+<link rel="stylesheet" href="/assets/css/gptishka-header-refresh.css?v=20260707-header-unify9">
+<link rel="stylesheet" href="/assets/css/theme.min.css?v=20260516fix4">
+<link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260322-cardalign7" />
+<link rel="stylesheet" href="/assets/css/support-widget.css?v=20260723-support-meta1" />
+<link rel="stylesheet" href="/assets/css/gptishka-dark-pages.css?v=20260707-no-ticker-dark1" />
+<link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260723-support-meta1" />
+<link rel="stylesheet" href="/assets/css/contact-flat-page.css?v=20260723-contact-flat1" />
 </head>
-<body>
-<noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-  <div class="page-overlay"></div>
+<body class="contact-flat-body">
+<div class="page-overlay"></div>
 
-  <header>
-<div class="nav">
-      <a href="/" class="logo-link">
-        <img loading="lazy" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTишка" class="logo-img" onerror="this.onerror=null;this.src='/favicon.png';">
-      </a>
+<header>
+  <div id="siteTicker" class="site-ticker" role="status" aria-live="polite">
+    <div class="site-ticker__marquee">
+      <div class="site-ticker__track" id="siteTickerTrack">
+        <div class="site-ticker__loop"><span class="site-ticker__item">Лента активаций обновляется...</span></div>
+        <div class="site-ticker__loop" aria-hidden="true"><span class="site-ticker__item">Лента активаций обновляется...</span></div>
+      </div>
+    </div>
+    <div class="site-ticker__stats">
+      <span class="site-ticker__stat"><span class="site-ticker__stat-label">всего активаций:</span> <strong id="siteTickerSales">0</strong></span>
+    </div>
+  </div>
 
-                        <nav>
-        <a href="/">Главная</a>
-        <a href="/about.html">О сервисе</a>
-        <a href="/guarantee.html">Гарантия</a>
-        <a href="/contact.html" class="active">Связь с нами</a>
-        <a href="/#faq">Вопросы и ответы</a>
-      </nav>
+  <div class="nav nav-shell">
+    <a href="/" class="logo-link">
+      <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka" class="logo-img">
+    </a>
 
+    <a href="/chatgpt" class="header-product-pill" aria-label="ChatGPT от 1290 рублей в месяц">
+      <img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" loading="lazy" decoding="async">
+      <span>ChatGPT от 1290 ₽/мес</span>
+    </a>
 
-          <div class="header-tools">
-<div class="lang-switch" id="langSwitch">
+    <nav class="header-quick-links" aria-label="Быстрые разделы GPTishka">
+      <a class="header-quick-link" href="/news/">Новости</a>
+      <a class="header-quick-link" href="/app/">Приложение</a>
+      <a class="header-quick-link" href="https://vk.com/gptishka" target="_blank" rel="noopener">VK</a>
+      <a class="header-quick-link header-quick-link--telegram" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener">Telegram</a>
+    </nav>
+
+    <div class="header-tools header-actions">
+      <div class="lang-switch" id="langSwitch">
         <div class="lang-current" id="langCurrent">
-          <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="RU">
+          <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
           <span>Русский</span>
-          <span class="arrow">в–ѕ</span>
+          <span class="arrow">&#9662;</span>
         </div>
-
         <div class="lang-dropdown">
           <div class="lang-item" data-lang="ru">
-            <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="RU">
+            <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
             <span>Русский</span>
           </div>
           <div class="lang-item" data-lang="en">
-            <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="EN">
+            <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
             <span>English</span>
           </div>
         </div>
       </div>
     </div>
+  </div>
+</header>
+
+<main class="page contact-page">
+  <a class="contact-page__back" href="/" aria-label="Вернуться на главную">
+    <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+      <path d="M17 10H3M3 10l5-5M3 10l5 5"></path>
+    </svg>
+    <span>На главную</span>
+  </a>
+
+  <section class="contact-hero" aria-labelledby="contactTitle">
+    <div class="contact-hero__copy">
+      <span class="contact-eyebrow">Поддержка GPTishka</span>
+      <h1 id="contactTitle">Связь с нами</h1>
+      <p>Если возникли вопросы по тарифам, оплате или подключению — напишите нам. Поможем разобраться и доведём вопрос до результата.</p>
     </div>
-  </header>
+    <aside class="contact-response" aria-label="Время работы поддержки">
+      <span class="contact-response__status"><i></i> Поддержка на связи</span>
+      <strong>Обычно отвечаем за 5 минут</strong>
+      <p>По сложным вопросам может понадобиться немного больше времени.</p>
+    </aside>
+  </section>
 
-  <main class="page">
-    <section class="contact">
-      <h1>Связь с нами</h1>
+  <section class="contact-channels" aria-labelledby="contactChannelsTitle">
+    <div class="contact-section-heading">
+      <h2 id="contactChannelsTitle">Выберите удобный способ</h2>
+      <p>Для быстрого ответа рекомендуем Telegram.</p>
+    </div>
 
-      <p>
-        Если возникли вопросы по тарифам, оплате или активации — напишите нам в Telegram или на почту.
-        Отвечаем быстро и помогаем довести всё до результата.
-      </p>
+    <div class="contact-channel-list">
+      <a class="contact-channel contact-channel--telegram" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener">
+        <span class="contact-channel__icon" aria-hidden="true">
+          <img src="/assets/img/telegram.png" alt="" loading="lazy" decoding="async">
+        </span>
+        <span class="contact-channel__body">
+          <strong>Telegram</strong>
+          <span>@aimarket_gpt</span>
+        </span>
+        <span class="contact-channel__action">Написать <span aria-hidden="true">↗</span></span>
+      </a>
 
-      <p>
-        Чтобы мы сразу разобрались, можно отправить: вашу почту (если указывали при покупке),
-        скрин/номер заказа и кратко описать ситуацию.
-      </p>
+      <a class="contact-channel contact-channel--vk" href="https://vk.com/gptishka" target="_blank" rel="noopener">
+        <span class="contact-channel__icon" aria-hidden="true">
+          <img src="/assets/img/vk.png" alt="" loading="lazy" decoding="async">
+        </span>
+        <span class="contact-channel__body">
+          <strong>ВКонтакте</strong>
+          <span>vk.com/gptishka</span>
+        </span>
+        <span class="contact-channel__action">Открыть <span aria-hidden="true">↗</span></span>
+      </a>
 
-      <div class="contact-card">
-        <div class="contact-links">
-          <a class="tg-link" href="mailto:support@gptishka.shop">
-            <img loading="lazy" decoding="async" src="/assets/img/mail.png" alt="Email" style="width:18px;height:18px;vertical-align:middle;margin-right:8px;">
-            support@gptishka.shop
-          </a>
-          <a class="tg-link" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener">
-            <img loading="lazy" decoding="async" src="/assets/img/telegram.png" alt="Telegram" style="width:18px;height:18px;vertical-align:middle;margin-right:8px;">
-            GPTishka telegram
-          </a>
-          <a class="tg-link" href="https://vk.com/gptishka" target="_blank" rel="noopener">
-            <img loading="lazy" decoding="async" src="/assets/img/vk.png" alt="VK" style="width:18px;height:18px;vertical-align:middle;margin-right:8px;">
-            vk.com/gptishka
-          </a>
-        </div>
+      <a class="contact-channel contact-channel--email" href="mailto:support@gptishka.shop">
+        <span class="contact-channel__icon" aria-hidden="true">
+          <img src="/assets/img/mail.png" alt="" loading="lazy" decoding="async">
+        </span>
+        <span class="contact-channel__body">
+          <strong>Электронная почта</strong>
+          <span>support@gptishka.shop</span>
+        </span>
+        <span class="contact-channel__action">Написать <span aria-hidden="true">↗</span></span>
+      </a>
+    </div>
+  </section>
 
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-          <a class="btn" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener">Открыть Telegram</a>
-          <a class="btn" href="https://vk.com/gptishka" target="_blank" rel="noopener">Открыть VK</a>
-        </div>
-      </div>
-    </section>
-  </main>
+  <section class="contact-preparation" aria-labelledby="contactPreparationTitle">
+    <div>
+      <span class="contact-eyebrow">Чтобы помочь быстрее</span>
+      <h2 id="contactPreparationTitle">Что указать в сообщении</h2>
+    </div>
+    <ul>
+      <li><span>01</span>Почту или Telegram, указанные при оформлении</li>
+      <li><span>02</span>Номер заказа или скриншот оплаты</li>
+      <li><span>03</span>Краткое описание вопроса</li>
+    </ul>
+  </section>
+</main>
 
-  <footer>
-  <a class="footer-link" href="oferta.html">Публичная оферта</a> · <a class="footer-link" href="politika.html">Политика конфиденциальности</a> · <a class="footer-link" href="refund.html">Условия возврата</a>
-  <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
+<footer>
+  <div class="footer-links-primary">
+    <a class="footer-link" href="/oferta.html">Публичная оферта</a> &middot;
+    <a class="footer-link" href="/politika.html">Политика конфиденциальности</a> &middot;
+    <a class="footer-link" href="/refund.html">Условия возврата</a>
+  </div>
+  <div class="footer-links-secondary">
+    <a class="footer-link" href="/about.html">О сервисе</a> &middot;
+    <a class="footer-link" href="/guarantee.html">Гарантия</a> &middot;
+    <a class="footer-link" href="/contact.html">Связь с нами</a>
+  </div>
+  <span class="footer-copy">&copy; 2026 GPTishka. Все права защищены, копирование запрещено.</span>
 </footer>
 
-  <script src="/assets/js/app.min.js?v=20260721-heavy-cards-webp1" defer></script>
-
-  <script src="/assets/js/support-widget.js?v=20260721-mascot-placeholder-webp1" defer></script>
+<script src="/assets/js/app.min.js?v=20260723-lava-default1" defer></script>
+<script src="/assets/js/support-widget.js?v=20260721-mascot-placeholder-webp1" defer></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
