@@ -1,0 +1,278 @@
+/*
+ * Flat storefront layout shared by ChatGPT and SuperGrok.
+ * Product-specific color is limited to a very soft background glow.
+ */
+
+html:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"])) {
+  background: #181b20 !important;
+}
+
+html body:has(main.service-page[data-service-page="chatgpt"]) {
+  --service-flat-accent: 34, 197, 94;
+}
+
+html body:has(main.service-page[data-service-page="grok"]) {
+  --service-flat-accent: 148, 163, 184;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"])) {
+  --service-flat-width: 1180px;
+  --service-flat-gutter: clamp(14px, 3.5vw, 46px);
+  background:
+    radial-gradient(circle at 17% 16%, rgba(var(--service-flat-accent), 0.1), transparent 30%),
+    radial-gradient(circle at 84% 12%, rgba(148, 163, 184, 0.075), transparent 32%),
+    linear-gradient(180deg, #22262d 0%, #1d2127 46%, #181b20 100%) !important;
+  background-attachment: fixed !important;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))::before {
+  inset: -10% -8%;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(var(--service-flat-accent), 0.09), transparent 29%),
+    radial-gradient(circle at 78% 14%, rgba(203, 213, 225, 0.055), transparent 30%) !important;
+  filter: blur(90px) saturate(104%) !important;
+  opacity: 0.68 !important;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))::after {
+  opacity: 0.022;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  :is(header, main.service-page, .gptishka-compliance-note) {
+  width: min(
+    var(--service-flat-width),
+    calc(100% - (var(--service-flat-gutter) * 2))
+  ) !important;
+  max-width: var(--service-flat-width) !important;
+  margin-inline: auto !important;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"])) header {
+  margin-top: 8px !important;
+  margin-bottom: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  header
+  :is(.nav, .nav-shell) {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  header.is-scrolled
+  :is(.nav, .nav-shell) {
+  background: rgba(38, 42, 49, 0.82) !important;
+  box-shadow: 0 12px 36px rgba(8, 10, 14, 0.22) !important;
+  backdrop-filter: blur(16px) saturate(112%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(112%) !important;
+}
+
+html body:has(main.service-page[data-service-page="chatgpt"]) .gptishka-compliance-note {
+  margin-top: 10px !important;
+  margin-bottom: 0 !important;
+  padding: 10px 0 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: rgba(226, 235, 255, 0.58) !important;
+  font-size: 12px !important;
+  line-height: 1.55 !important;
+}
+
+html body:has(main.service-page[data-service-page="chatgpt"]) .gptishka-compliance-note strong {
+  color: rgba(255, 255, 255, 0.84) !important;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page {
+  padding: clamp(26px, 3vw, 38px) 0 72px !important;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  :is(
+    .service-plans-section,
+    .service-constructor-shell,
+    .service-constructor-card,
+    .service-constructor-description,
+    .service-delivery-help,
+    .service-selected-plan,
+    .service-checkout-card,
+    .service-checkout-card__summary > div,
+    .service-info-section,
+    .service-info-card,
+    .service-faq-section,
+    .service-faq-item
+  ) {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  .service-plans-section {
+  margin-top: 0;
+  padding: 0;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  .service-constructor-shell {
+  gap: clamp(28px, 5vw, 64px);
+  align-items: start;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  .service-product-gallery {
+  min-height: 0;
+  padding: 0;
+  place-items: center;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  .service-product-gallery img {
+  width: min(100%, 440px);
+  box-shadow: 0 24px 68px rgba(0, 0, 0, 0.3) !important;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  .service-constructor-card {
+  padding: 0;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  .service-selected-plan {
+  padding: 0 !important;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  .service-checkout-card__summary {
+  padding-block: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  .service-checkout-card__summary > div {
+  padding: 0 14px 0 0;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  .service-constructor-description {
+  margin-top: 28px;
+  padding: 26px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  .service-constructor-description
+  .service-delivery-help {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  :is(.service-info-section, .service-faq-section) {
+  gap: 24px;
+  margin-top: clamp(46px, 7vw, 82px);
+  padding: clamp(38px, 5vw, 58px) 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  .service-info-grid {
+  gap: clamp(30px, 6vw, 72px);
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  .service-info-card {
+  align-content: start;
+  padding: 0;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  .service-faq-list {
+  gap: 0;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  .service-faq-item {
+  overflow: visible;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  .service-faq-question {
+  padding: 20px 0;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  .service-faq-answer {
+  padding: 0 0 20px;
+}
+
+@media (max-width: 760px) {
+  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+    :is(header, main.service-page, .gptishka-compliance-note) {
+    width: calc(100% - 28px) !important;
+  }
+
+  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+    main.service-page {
+    padding: 24px 0 58px !important;
+  }
+
+  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+    main.service-page
+    .service-constructor-shell {
+    gap: 30px;
+  }
+
+  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+    main.service-page
+    .service-product-gallery img {
+    width: min(100%, 330px);
+  }
+
+  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+    main.service-page
+    .service-checkout-card__summary > div {
+    padding: 0;
+  }
+
+  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+    main.service-page
+    :is(.service-info-section, .service-faq-section) {
+    margin-top: 44px;
+    padding-top: 34px;
+  }
+}

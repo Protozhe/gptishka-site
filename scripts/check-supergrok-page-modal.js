@@ -3,6 +3,7 @@ const fs = require("fs");
 const source = fs.readFileSync("assets/js/app.js", "utf8");
 const minifiedSource = fs.readFileSync("assets/js/app.min.js", "utf8");
 const css = fs.readFileSync("assets/css/home-stability-hotfix.css", "utf8");
+const flatCss = fs.readFileSync("assets/css/chatgpt-grok-flat-page.css", "utf8");
 const page = fs.readFileSync("supergrok.html", "utf8");
 
 const failures = [];
@@ -26,9 +27,6 @@ const expectedJsAssetVersion = "20260722-unified-checkout1";
   ["service-page--constructor", "supergrok.html: constructor page class"],
   ['data-service-page="grok"', "supergrok.html: Grok service scope"],
   ['data-service-layout="constructor"', "supergrok.html: constructor layout marker"],
-  ["service-hero--supergrok", "supergrok.html: Grok hero modifier"],
-  ['class="service-hero__black-overlay"', "supergrok.html: Grok black overlay"],
-  ['class="service-hero__dark-overlay"', "supergrok.html: Grok dark overlay"],
   ["service-constructor-shell", "supergrok.html: constructor shell"],
   ["service-product-gallery", "supergrok.html: product gallery"],
   ["/assets/img/services/grok-card.webp?v=20260721-heavy-cards-webp1", "supergrok.html: Grok product image cache-bust"],
@@ -38,12 +36,16 @@ const expectedJsAssetVersion = "20260722-unified-checkout1";
   ["service-faq-question", "supergrok.html: FAQ questions"],
   ['id="servicePlanFilters"', "supergrok.html: plan filter container"],
   ['id="serviceDurationFilters"', "supergrok.html: duration filter container"],
+  ["/assets/css/chatgpt-grok-flat-page.css?v=20260723-ai-flat3", "supergrok.html: flat storefront stylesheet"],
   [`/assets/css/home-stability-hotfix.css?v=${expectedAssetVersion}`, "supergrok.html: CSS cache-bust"],
   [`/assets/js/app.min.js?v=${expectedJsAssetVersion}`, "supergrok.html: JS cache-bust"],
 ].forEach(([marker, label]) => requireMarker(page, marker, label));
 
 [
   ["20260615-chatgpt-seamless1", "supergrok.html: old ChatGPT cache-bust"],
+  ["service-hero", "supergrok.html: removed Grok hero"],
+  ["service-hero__black-overlay", "supergrok.html: removed Grok hero overlay"],
+  ["service-back-link", "supergrok.html: removed hero back link"],
   ["service-hero__stats", "supergrok.html: old hero stats block"],
   ["payment-method-modal", "supergrok.html: old static payment modal markup"],
   ["chatgpt-plans-bg", "supergrok.html: removed hero video asset"],
@@ -71,13 +73,21 @@ const expectedJsAssetVersion = "20260722-unified-checkout1";
   ['[data-service-page="grok"] .buy-btn', "css: scoped Grok buy CTA"],
   ['[data-service-page="grok"] .pay-now-btn', "css: scoped Grok pay CTA"],
   ['.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal', "css: scoped Grok modal theme"],
-  [".service-hero__black-overlay", "css: Grok black video overlay"],
-  ["grokHeroBackgroundShift", "css: Grok visible animated hero background"],
   ['[data-service-page="grok"] .service-checkout-card .buy-btn:hover:not(:disabled)', "css: Grok constructor buy hover override"],
   [".service-checkout-card:hover", "css: static checkout card hover override"],
   ["#05070a", "css: Grok deep black"],
   ["#f8fafc", "css: Grok high contrast text"],
 ].forEach(([marker, label]) => requireMarker(css, marker, label));
+
+[
+  ['[data-service-page="grok"]', "flat css: Grok accent scope"],
+  [".service-constructor-shell", "flat css: constructor"],
+  [".service-info-card", "flat css: information"],
+  [".service-faq-item", "flat css: FAQ"],
+  ["background: transparent !important", "flat css: transparent surfaces"],
+  ["align-items: start", "flat css: top alignment"],
+  ["linear-gradient(180deg, #22262d 0%, #1d2127 46%, #181b20 100%)", "flat css: graphite background"],
+].forEach(([marker, label]) => requireMarker(flatCss, marker, label));
 
 requireCssRegex(
   /\[data-service-page="grok"\][\s\S]*\.payment-method[\s\S]*\.payment-option/,
