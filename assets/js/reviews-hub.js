@@ -209,7 +209,8 @@
   });
 
   var eightHourBucket = Math.floor(Date.now() / (8 * 60 * 60 * 1000));
-  fetch("/data/public-reviews.json?v=privacy3-" + eightHourBucket, {
+  fetch("/data/public-reviews.json?v=privacy4-" + eightHourBucket, {
+    cache: "no-store",
     credentials: "same-origin",
     headers: { Accept: "application/json" },
   })
