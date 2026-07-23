@@ -191,8 +191,32 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
 html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
   main.service-page
   .service-product-gallery img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  box-shadow: none !important;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  main.service-page
+  .service-product-gallery__viewport {
   width: min(100%, 440px);
-  box-shadow: 0 24px 68px rgba(0, 0, 0, 0.3) !important;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 34px;
+  box-shadow: 0 24px 68px rgba(0, 0, 0, 0.3);
+}
+
+html body:has(main.service-page[data-service-page="chatgpt"])
+  main.service-page
+  .service-product-gallery img {
+  transform: scale(1.06);
+}
+
+html body:has(main.service-page[data-service-page="grok"])
+  main.service-page
+  .service-product-gallery img {
+  transform: scale(1.09);
 }
 
 html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
@@ -304,7 +328,7 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
 
   html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
     main.service-page
-    .service-product-gallery img {
+    .service-product-gallery__viewport {
     width: min(100%, 330px);
   }
 

@@ -36,9 +36,10 @@ const expectedJsAssetVersion = "20260722-unified-checkout1";
   ["service-faq-question", "supergrok.html: FAQ questions"],
   ['id="servicePlanFilters"', "supergrok.html: plan filter container"],
   ['id="serviceDurationFilters"', "supergrok.html: duration filter container"],
-  ["/assets/css/chatgpt-grok-flat-page.css?v=20260723-ai-flat5", "supergrok.html: flat storefront stylesheet"],
+  ["/assets/css/chatgpt-grok-flat-page.css?v=20260723-ai-image-fit1", "supergrok.html: flat storefront stylesheet"],
   ['class="service-directory-back" href="/catalog/ai/"', "supergrok.html: AI catalog back link"],
   ['class="service-directory-back__icon"', "supergrok.html: complete SVG back icon"],
+  ['class="service-product-gallery__viewport"', "supergrok.html: clipped product image viewport"],
   [`/assets/css/home-stability-hotfix.css?v=${expectedAssetVersion}`, "supergrok.html: CSS cache-bust"],
   [`/assets/js/app.min.js?v=${expectedJsAssetVersion}`, "supergrok.html: JS cache-bust"],
 ].forEach(([marker, label]) => requireMarker(page, marker, label));
@@ -92,6 +93,8 @@ const expectedJsAssetVersion = "20260722-unified-checkout1";
   [".service-directory-back", "flat css: AI catalog back button"],
   [".service-directory-back__icon", "flat css: complete SVG back icon"],
   ['font-family: "Montserrat", Arial, sans-serif', "flat css: matching back button font"],
+  [".service-product-gallery__viewport", "flat css: clipped product image viewport"],
+  ["transform: scale(1.09)", "flat css: SuperGrok source-edge crop"],
 ].forEach(([marker, label]) => requireMarker(flatCss, marker, label));
 
 requireCssRegex(

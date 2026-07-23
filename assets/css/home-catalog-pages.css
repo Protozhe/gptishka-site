@@ -309,6 +309,16 @@ body.home-catalog-body {
   transform: scale(1.035);
 }
 
+/* ChatGPT and SuperGrok artwork has transparent rounded source edges.
+   Keep both image states edge-to-edge in the catalog media viewport. */
+.catalog-page--ai .ai-directory-card--chatgpt .ai-directory-card__image {
+  transform: scale(1.06) !important;
+}
+
+.catalog-page--ai .ai-directory-card--grok .ai-directory-card__image {
+  transform: scale(1.09) !important;
+}
+
 .catalog-grid--directory .ai-directory-card__body {
   padding: 16px 4px 4px;
 }
