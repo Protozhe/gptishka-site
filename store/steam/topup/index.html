@@ -25,7 +25,7 @@
 <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260516fix4">
 <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260621-telegram-orders1" />
 <link rel="stylesheet" href="/assets/css/home-wide-marketplace.css?v=20260627-cardglass1" />
-<link rel="stylesheet" href="/assets/css/steam-topup.css?v=20260723-steam-checkout-contrast1" />
+<link rel="stylesheet" href="/assets/css/steam-topup.css?v=20260723-steam-checkout-controls1" />
 <link rel="preload" href="/assets/css/support-widget.css?v=20260707-support-unify3" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="/assets/css/support-widget.css?v=20260707-support-unify3" /></noscript>
 <link rel="stylesheet" href="/assets/css/gptishka-dark-pages.css?v=20260707-no-ticker-dark1" />
@@ -116,9 +116,9 @@
       </div>
 
       <label class="steam-topup-field">
-        <span>Email для статуса заказа</span>
-        <small>Нужен для связи и истории заказа.</small>
-        <input name="email" type="email" autocomplete="email" placeholder="name@email.com" required>
+        <span>Telegram</span>
+        <small>Сюда придет вся информация по заказу</small>
+        <input name="telegram" type="text" autocomplete="off" placeholder="@username" required>
       </label>
 
       <label class="steam-topup-field">
@@ -144,11 +144,11 @@
       <fieldset class="steam-topup-payment">
         <legend>Оплата</legend>
         <label>
-          <input name="paymentMethod" type="radio" value="lava">
+          <input name="paymentMethod" type="radio" value="lava" checked>
           <span><strong>LAVA</strong><small>СБП 0% и карты 3.2%</small></span>
         </label>
         <label>
-          <input name="paymentMethod" type="radio" value="enot" checked>
+          <input name="paymentMethod" type="radio" value="enot">
           <span><strong>ENOT</strong><small>Карты 3.2% и СБП 0%</small></span>
         </label>
       </fieldset>
@@ -176,7 +176,7 @@
   <span class="footer-copy">&copy; 2026 GPTishka. Все права защищены.</span>
 </footer>
 <script src="/assets/js/app.min.js?v=20260721-heavy-cards-webp1" defer></script>
-<script src="/assets/js/steam-topup.js?v=20260622-steam-page1" defer></script>
+<script src="/assets/js/steam-topup.js?v=20260723-steam-telegram1" defer></script>
 <script src="/assets/js/support-widget.js?v=20260721-mascot-placeholder-webp1" defer></script>
 </body>
 </html>

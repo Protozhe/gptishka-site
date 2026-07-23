@@ -96,8 +96,8 @@ requireCss("background: rgba(13, 19, 28, 0.94) !important;", "dark sticky checko
 requireCss('.chatgpt-order-title[tabindex="-1"]:focus', "focused modal title has no decorative outline");
 
 requirePage("СБП 0% и карты 3.2%", "static payment modal LAVA caption");
-requirePage("/assets/css/home-stability-hotfix.css?v=20260722-unified-checkout1", "CSS cache-bust");
-requirePage("/assets/js/app.min.js?v=20260722-unified-checkout1", "JS cache-bust");
+requirePage("/assets/css/home-stability-hotfix.css?v=20260723-checkout-controls1", "CSS cache-bust");
+requirePage("/assets/js/app.min.js?v=20260723-chatgpt-pro1", "JS cache-bust");
 
 if (failures.length) {
   console.error(`ChatGPT modal visual checks failed:\n- ${failures.join("\n- ")}`);

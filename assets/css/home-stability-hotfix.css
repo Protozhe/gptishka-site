@@ -7405,6 +7405,23 @@ textarea.chatgpt-order-field__control {
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--checkout-accent) 12%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
+/* Keep the shared checkout selection mark optically centered at every service accent. */
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-payment-check::after {
+  left: 50% !important;
+  top: 50% !important;
+  width: 5px;
+  height: 9px;
+  transform: translate(-50%, -58%) rotate(45deg) !important;
+  transform-origin: center;
+}
+
+/* The global glossy button texture creates a stray stripe over the modal close icon. */
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close::before,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close::after {
+  content: none !important;
+  display: none !important;
+}
+
 .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-error[data-chatgpt-go-error-for="paymentMethod"] {
   min-height: 0;
   margin: 8px 2px 0;

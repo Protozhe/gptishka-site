@@ -297,13 +297,19 @@
 
 .steam-topup-quantity {
   display: grid;
-  grid-template-columns: 54px minmax(0, 1fr) 54px;
-  align-items: stretch;
+  grid-template-columns: 52px minmax(0, 1fr) 52px;
+  align-items: end;
   gap: 10px;
 }
 
 .steam-topup-quantity button {
-  min-height: 64px;
+  width: 52px;
+  height: 52px;
+  min-height: 52px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  line-height: 1;
   border: 0;
   border-radius: 18px;
   background: #0f172a;

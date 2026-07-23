@@ -16,7 +16,7 @@
         duration: (quantity) => `${quantity} key${quantity === 1 ? "" : "s"}`,
         productConfigFetchError: "Could not load the current product configuration.",
         productNotFoundError: "The Steam product is not available in the server configuration yet. Try again later or contact support.",
-        invalidEmail: "Enter a valid email for order status updates.",
+        invalidTelegram: "Enter a valid Telegram username, for example @username.",
         invalidTradeUrl: "Enter a Steam trade URL in the tradeoffer/new format with partner and token.",
         creatingPayment: "Creating secure payment...",
         paymentCreateError: "Could not create the payment. Try again.",
@@ -29,7 +29,7 @@
         duration: (quantity) => `${quantity} ключ(ей)`,
         productConfigFetchError: "Не удалось получить актуальную конфигурацию товара.",
         productNotFoundError: "Товар Steam пока не найден в серверной конфигурации. Попробуйте позже или напишите в поддержку.",
-        invalidEmail: "Укажите корректную почту для статуса заказа.",
+        invalidTelegram: "Укажите корректный Telegram, например @username.",
         invalidTradeUrl: "Укажите Steam trade-ссылку в формате tradeoffer/new с partner и token.",
         creatingPayment: "Создаём безопасную оплату...",
         paymentCreateError: "Не удалось создать оплату. Попробуйте снова.",
@@ -57,6 +57,21 @@
 
   function normalizeTradeUrl(value) {
     return String(value || "").trim();
+  }
+
+  function normalizeTelegram(value) {
+    const raw = String(value || "").trim();
+    if (!raw) return "";
+    return `@${raw.replace(/^@+/, "")}`;
+  }
+
+  function isValidTelegram(value) {
+    return /^@[a-z0-9_]{5,32}$/i.test(normalizeTelegram(value));
+  }
+
+  function buildTelegramContactEmail(value) {
+    const username = normalizeTelegram(value).slice(1).toLowerCase();
+    return `steam_${username}@telegram.local`;
   }
 
   function isValidSteamTradeUrl(value) {
@@ -142,11 +157,11 @@
 
   function collectPaymentMethod(form) {
     const checked = qs(form, 'input[name="paymentMethod"]:checked');
-    const value = String(checked && checked.value || "enot").trim().toLowerCase();
+    const value = String(checked && checked.value || "lava").trim().toLowerCase();
     return value === "lava" ? "lava" : "enot";
   }
 
-  function buildOrderDetails(form, productId, quantity, total, tradeUrl, email, paymentMethod) {
+  function buildOrderDetails(form, productId, quantity, total, tradeUrl, telegram, email, paymentMethod) {
     const comment = String(qs(form, '[name="comment"]')?.value || "").trim();
     return {
       source: "steam_topup_page",
@@ -172,6 +187,7 @@
       },
       contact: {
         email: email,
+        telegram: telegram,
         steamTradeUrl: tradeUrl,
       },
       steam: {
@@ -185,19 +201,20 @@
   }
 
   async function submitSteamTopup(form) {
-    const emailInput = qs(form, '[name="email"]');
+    const telegramInput = qs(form, '[name="telegram"]');
     const tradeInput = qs(form, '[name="steamTradeUrl"]');
-    const email = String(emailInput && emailInput.value || "").trim().toLowerCase();
+    const telegram = normalizeTelegram(telegramInput && telegramInput.value);
+    const email = buildTelegramContactEmail(telegram);
     const tradeUrl = normalizeTradeUrl(tradeInput && tradeInput.value);
     const { quantity, total } = updateTotals(form);
 
-    markInvalid(emailInput, false);
+    markInvalid(telegramInput, false);
     markInvalid(tradeInput, false);
 
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      markInvalid(emailInput, true);
-      setStatus(form, COPY.invalidEmail, "error");
-      if (emailInput && typeof emailInput.focus === "function") emailInput.focus();
+    if (!isValidTelegram(telegram)) {
+      markInvalid(telegramInput, true);
+      setStatus(form, COPY.invalidTelegram, "error");
+      if (telegramInput && typeof telegramInput.focus === "function") telegramInput.focus();
       return;
     }
 
@@ -214,9 +231,9 @@
 
     try {
       const productId = await resolveSteamProductId(form);
-      const orderDetails = buildOrderDetails(form, productId, quantity, total, tradeUrl, email, paymentMethod);
+      const orderDetails = buildOrderDetails(form, productId, quantity, total, tradeUrl, telegram, email, paymentMethod);
       try {
-        localStorage.setItem("checkout_email", email);
+        localStorage.setItem("checkout_telegram", telegram);
         localStorage.setItem("gptishka_site_checkout_context", JSON.stringify({
           source: "steam_topup_page",
           productId: productId,
@@ -243,6 +260,7 @@
           quantity: quantity,
           payment_method: paymentMethod,
           paymentMethod: paymentMethod,
+          telegram: telegram,
           product: "Steam",
           plan: COPY.planTitle,
           deliveryMethod: "manual_login",
@@ -273,9 +291,9 @@
     const qtyInput = qs(form, "[data-steam-qty]");
     const dec = qs(form, "[data-steam-qty-dec]");
     const inc = qs(form, "[data-steam-qty-inc]");
-    const emailInput = qs(form, '[name="email"]');
-    const savedEmail = String(localStorage.getItem("checkout_email") || "").trim().toLowerCase();
-    if (emailInput && savedEmail) emailInput.value = savedEmail;
+    const telegramInput = qs(form, '[name="telegram"]');
+    const savedTelegram = normalizeTelegram(localStorage.getItem("checkout_telegram") || "");
+    if (telegramInput && savedTelegram) telegramInput.value = savedTelegram;
 
     updateTotals(form);
 
