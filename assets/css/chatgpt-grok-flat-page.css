@@ -76,9 +76,9 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
 }
 
 html body:has(main.service-page[data-service-page="chatgpt"]) .gptishka-compliance-note {
-  margin-top: 10px !important;
-  margin-bottom: 0 !important;
-  padding: 10px 0 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 24px !important;
+  padding: 0 !important;
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
@@ -110,10 +110,23 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
   background: rgba(255, 255, 255, 0.055);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.86);
+  font-family: "Montserrat", Arial, sans-serif;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
   transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  .service-directory-back__icon {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))

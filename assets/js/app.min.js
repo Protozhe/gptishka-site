@@ -2825,6 +2825,8 @@ function initActivationResumeShortcut() {
       const tags = Array.isArray(item?.tags) ? item.tags : [];
       const deliveryType = resolveDeliveryType(item?.deliveryType, item?.deliveryMethod, tags);
       const activationVariant = String(item?.activationVariant || "").trim().toLowerCase();
+      const planKey = getServicePlanKey(item, key);
+      if (key === "chatgpt" && (planKey === "pro-5x" || planKey === "pro-20x")) return true;
       if (activationVariant === "withlogin" || activationVariant === "with_login") return false;
       return !["manual_login", "credentials", "support", "support_claude"].includes(deliveryType);
     });
