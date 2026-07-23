@@ -817,7 +817,7 @@ function initActivationResumeShortcut() {
   };
   const CHATGPT_ORDER_MODAL_PLAN_KEYS = new Set(["go", "plus", "pro-5x", "pro-20x"]);
   const CLAUDE_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max-5x", "max-20x"]);
-  const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["1m", "2m", "6m", "12m"]);
+  const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["supergrok"]);
   const VPN_ORDER_MODAL_PLAN_KEYS = new Set(["1m", "2m", "6m", "12m"]);
   const AI_ORDER_MODAL_SERVICE_KEYS = new Set(["chatgpt", "claude", "grok", "vpn"]);
   const AI_ORDER_MODAL_SERVICE_CONFIG = {
@@ -985,7 +985,7 @@ function initActivationResumeShortcut() {
   const PAYMENT_METHOD_KEY = "gptishka_checkout_payment_method_v1";
   const CHATGPT_GO_ORDER_KEY = "gptishka_chatgpt_go_order_v1";
   const CHATGPT_GO_ORDER_TTL_MS = 20 * 60 * 1000;
-  const DEFAULT_PAYMENT_METHOD = "enot";
+  const DEFAULT_PAYMENT_METHOD = "lava";
   const AVAILABLE_PAYMENT_METHODS = new Set(["enot", "lava"]);
   const PROMO_TTL_MS = 30 * 60 * 1000;
   const PRODUCTS_CACHE_TTL_MS = 15 * 1000;
@@ -2757,7 +2757,7 @@ function initActivationResumeShortcut() {
     }
 
     if (key === "grok") {
-      return getServiceDurationKey(item);
+      return "supergrok";
     }
 
     if (key === "vpn") {
@@ -2852,10 +2852,7 @@ function initActivationResumeShortcut() {
       },
       grok: {
         all: isEnPage ? "All plans" : "Все тарифы",
-        "1m": isEnPage ? "1 month" : "1 месяц",
-        "2m": isEnPage ? "2 months" : "2 месяца",
-        "6m": isEnPage ? "6 months" : "6 месяцев",
-        "12m": isEnPage ? "12 months" : "12 месяцев",
+        supergrok: "SuperGrok",
       },
       vpn: {
         all: isEnPage ? "All durations" : "Все сроки",
@@ -2913,8 +2910,7 @@ function initActivationResumeShortcut() {
       return order[planKey] || 100;
     }
     if (key === "grok") {
-      const months = Number(String(planKey || "").replace(/[^\d]/g, ""));
-      return months ? months * 10 : 100;
+      return planKey === "supergrok" ? 10 : 100;
     }
     if (key === "vpn") {
       const months = Number(String(planKey || "").replace(/[^\d]/g, ""));
@@ -3522,6 +3518,7 @@ function initActivationResumeShortcut() {
         duration: ["1m"],
       },
       grok: {
+        plan: ["supergrok"],
         duration: ["1m", "2m"],
       },
       vpn: {
@@ -3837,7 +3834,7 @@ function initActivationResumeShortcut() {
       cameByRecommendation: Boolean(order.cameByRecommendation),
       referrerContact: String(order.referrerContact || "").trim(),
       orderComment: String(order.orderComment || "").trim(),
-      paymentMethod: normalizeChatGptGoPaymentChoice(order.paymentMethod || "enot"),
+      paymentMethod: normalizeChatGptGoPaymentChoice(order.paymentMethod || "lava"),
     };
     try {
       localStorage.setItem(CHATGPT_GO_ORDER_KEY, JSON.stringify({ savedAt: Date.now(), data: safeOrder }));
@@ -3862,13 +3859,13 @@ function initActivationResumeShortcut() {
     const method = String(paymentMethod || "").trim().toLowerCase();
     if (method === "lava" || method === "crypto") return "lava";
     if (method === "enot" || method === "card") return "enot";
-    return "enot";
+    return "lava";
   }
 
   function normalizeChatGptGoPaymentChoice(value) {
     const method = String(value || "").trim().toLowerCase();
     if (method === "lava" || method === "crypto") return "lava";
-    return "enot";
+    return "lava";
   }
 
   function escapeCssIdentifier(value) {
@@ -4227,7 +4224,7 @@ function initActivationResumeShortcut() {
       referrerContact: String(getChatGptGoOrderField(form, "referrerContact")?.value || "").trim(),
       orderComment: String(getChatGptGoOrderField(form, "orderComment")?.value || "").trim(),
       promoCode,
-      paymentMethod: normalizeChatGptGoPaymentChoice(getChatGptGoCheckedValue(form, "paymentMethod") || "enot"),
+      paymentMethod: normalizeChatGptGoPaymentChoice(getChatGptGoCheckedValue(form, "paymentMethod") || "lava"),
     };
   }
 
@@ -4285,7 +4282,7 @@ function initActivationResumeShortcut() {
         basePrice: Math.max(0, toAmount(safeOrder.basePrice)),
         discount: Math.max(0, toAmount(safeOrder.discount)),
         totalPrice: Math.max(0, toAmount(safeOrder.totalPrice)),
-        paymentMethod: normalizeChatGptGoPaymentChoice(safeOrder.paymentMethod || "enot"),
+        paymentMethod: normalizeChatGptGoPaymentChoice(safeOrder.paymentMethod || "lava"),
         promoCode: normalizePromoCodeInput(safeOrder.promoCode || "") || null,
       },
       contact: {
@@ -4413,7 +4410,7 @@ function initActivationResumeShortcut() {
     const savedGift = Boolean(draft.isGift);
     const savedGiftDeliveryMethod = String(draft.giftDeliveryMethod || "").trim();
     const savedRecommendation = Boolean(draft.cameByRecommendation);
-    const savedPaymentMethod = normalizeChatGptGoPaymentChoice(draft.paymentMethod || activePaymentMethod || "enot");
+    const savedPaymentMethod = normalizeChatGptGoPaymentChoice(draft.paymentMethod || activePaymentMethod || "lava");
     const savedPromo = normalizePromoCodeInput(activePromoCode || "");
     const discount = getChatGptGoDiscount({ ...item, productId }, savedPromo);
     const total = Math.max(0, Number((price - discount).toFixed(2)));

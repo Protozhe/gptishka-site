@@ -21,7 +21,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260723-checkout-controls1";
-const expectedJsAssetVersion = "20260723-lava-default1";
+const expectedJsAssetVersion = "20260723-supergrok-plan1";
 
 [
   ["service-page--constructor", "supergrok.html: constructor page class"],
@@ -62,7 +62,9 @@ const expectedJsAssetVersion = "20260723-lava-default1";
   ["AI_ORDER_MODAL_SERVICE_CONFIG", "app.js: shared AI modal config"],
   ['displayName: "SuperGrok"', "app.js: Grok display name"],
   ['logo: "/assets/img/services/grok-card.webp?v=20260721-heavy-cards-webp1"', "app.js: Grok modal logo cache-bust"],
-  ["const GROK_ORDER_MODAL_PLAN_KEYS", "app.js: Grok modal plan keys"],
+  ['const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["supergrok"])', "app.js: single SuperGrok plan key"],
+  ['if (key === "grok") {\n      return "supergrok";', "app.js: Grok plan is separate from duration"],
+  ['plan: ["supergrok"]', "app.js: constructor exposes one SuperGrok plan"],
   ['if (key === "grok") return isGrokOrderModalPlanKey(planKey);', "app.js: Grok modal plan routing"],
   ['if (key === "grok") return String(item?.title || planLabel || "").trim();', "app.js: Grok selected plan uses product title"],
 ].forEach(([marker, label]) => requireMarker(source, marker, label));

@@ -35,8 +35,10 @@ for (const relativePath of ["catalog/index.html", "catalog/ai/index.html", "en/c
   assert.ok(read(relativePath).includes(`grok-card.webp?v=${version}`), `${relativePath} keeps Grok PNG`);
 }
 assert.ok(read("catalog/ai/index.html").includes("home-catalog-pages.css?v=20260723-ai-image-fit1"));
-assert.match(catalogCss, /\.catalog-page--ai \.ai-directory-card--chatgpt \.ai-directory-card__image\s*\{[^}]*scale\(1\.06\)/s);
-assert.match(catalogCss, /\.catalog-page--ai \.ai-directory-card--grok \.ai-directory-card__image\s*\{[^}]*scale\(1\.09\)/s);
+assert.ok(read("catalog/index.html").includes("home-catalog-pages.css?v=20260723-catalog-image-fit1"));
+assert.ok(read("en/catalog/index.html").includes("home-catalog-pages.css?v=20260723-catalog-image-fit1"));
+assert.match(catalogCss, /\.catalog-page--all \.ai-directory-card--chatgpt \.ai-directory-card__image\s*\{[^}]*scale\(1\.06\)/s);
+assert.match(catalogCss, /\.catalog-page--all \.ai-directory-card--grok \.ai-directory-card__image\s*\{[^}]*scale\(1\.09\)/s);
 assert.ok(read("store/steam/index.html").includes(`steam-topup-card-hover.webp?v=${version}`));
 assert.equal(app, read("assets/js/app.min.js"), "app bundles differ");
 assert.equal(app, read("main.js"), "root app copy differs");

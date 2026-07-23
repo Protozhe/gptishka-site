@@ -311,11 +311,13 @@ body.home-catalog-body {
 
 /* ChatGPT and SuperGrok artwork has transparent rounded source edges.
    Keep both image states edge-to-edge in the catalog media viewport. */
-.catalog-page--ai .ai-directory-card--chatgpt .ai-directory-card__image {
+.catalog-page--ai .ai-directory-card--chatgpt .ai-directory-card__image,
+.catalog-page--all .ai-directory-card--chatgpt .ai-directory-card__image {
   transform: scale(1.06) !important;
 }
 
-.catalog-page--ai .ai-directory-card--grok .ai-directory-card__image {
+.catalog-page--ai .ai-directory-card--grok .ai-directory-card__image,
+.catalog-page--all .ai-directory-card--grok .ai-directory-card__image {
   transform: scale(1.09) !important;
 }
 

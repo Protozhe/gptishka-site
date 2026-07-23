@@ -817,7 +817,7 @@ function initActivationResumeShortcut() {
   };
   const CHATGPT_ORDER_MODAL_PLAN_KEYS = new Set(["go", "plus", "pro-5x", "pro-20x"]);
   const CLAUDE_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max-5x", "max-20x"]);
-  const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["1m", "2m", "6m", "12m"]);
+  const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["supergrok"]);
   const VPN_ORDER_MODAL_PLAN_KEYS = new Set(["1m", "2m", "6m", "12m"]);
   const AI_ORDER_MODAL_SERVICE_KEYS = new Set(["chatgpt", "claude", "grok", "vpn"]);
   const AI_ORDER_MODAL_SERVICE_CONFIG = {
@@ -2757,7 +2757,7 @@ function initActivationResumeShortcut() {
     }
 
     if (key === "grok") {
-      return getServiceDurationKey(item);
+      return "supergrok";
     }
 
     if (key === "vpn") {
@@ -2852,10 +2852,7 @@ function initActivationResumeShortcut() {
       },
       grok: {
         all: isEnPage ? "All plans" : "Все тарифы",
-        "1m": isEnPage ? "1 month" : "1 месяц",
-        "2m": isEnPage ? "2 months" : "2 месяца",
-        "6m": isEnPage ? "6 months" : "6 месяцев",
-        "12m": isEnPage ? "12 months" : "12 месяцев",
+        supergrok: "SuperGrok",
       },
       vpn: {
         all: isEnPage ? "All durations" : "Все сроки",
@@ -2913,8 +2910,7 @@ function initActivationResumeShortcut() {
       return order[planKey] || 100;
     }
     if (key === "grok") {
-      const months = Number(String(planKey || "").replace(/[^\d]/g, ""));
-      return months ? months * 10 : 100;
+      return planKey === "supergrok" ? 10 : 100;
     }
     if (key === "vpn") {
       const months = Number(String(planKey || "").replace(/[^\d]/g, ""));
@@ -3522,6 +3518,7 @@ function initActivationResumeShortcut() {
         duration: ["1m"],
       },
       grok: {
+        plan: ["supergrok"],
         duration: ["1m", "2m"],
       },
       vpn: {
