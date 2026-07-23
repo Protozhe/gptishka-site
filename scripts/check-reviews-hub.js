@@ -37,6 +37,13 @@ assert.ok(data.sources.some(source => source.id === "funpay-162964" && source.hi
 assert.ok(data.sources.some(source => source.id === "telegram-otziviaii"));
 assert.ok(data.items.every(item => item.id && item.text));
 assert.ok(
+  !data.items.some(
+    item =>
+      item.text === "Все честно и быстро)" &&
+      String(item.detail || "").startsWith("ArcheAge (RU), 700")
+  )
+);
+assert.ok(
   data.items
     .filter(item => item.sourceId === "funpay-162964")
     .every(item => item.sourceHidden === true && item.sourceLabel === "Покупатель" && !item.url)

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "fetchedAt": "2026-07-23T21:31:46.764Z",
+  "fetchedAt": "2026-07-23T21:45:49.966Z",
   "refreshIntervalHours": 8,
   "totalReviews": 121,
   "sources": [
@@ -489,20 +489,6 @@
       "detail": "ChatGPT, 600 ₽",
       "date": "",
       "dateLabel": "Месяц назад",
-      "rating": 5,
-      "url": ""
-    },
-    {
-      "id": "8ab1880ded5614ed82",
-      "sourceId": "funpay-162964",
-      "sourceType": "funpay",
-      "sourceLabel": "Покупатель",
-      "sourceHidden": true,
-      "author": "Покупатель",
-      "text": "Все честно и быстро)",
-      "detail": "ArcheAge (RU), 700 ₽",
-      "date": "",
-      "dateLabel": "9 лет назад",
       "rating": 5,
       "url": ""
     }

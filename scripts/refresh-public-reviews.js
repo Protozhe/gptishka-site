@@ -37,6 +37,14 @@ const SOURCES = [
   },
 ];
 
+function isExcludedReview(item) {
+  return (
+    item?.sourceId === "funpay-162964" &&
+    plainText(item?.text).toLowerCase() === "все честно и быстро)" &&
+    plainText(item?.detail).toLowerCase().startsWith("archeage (ru), 700")
+  );
+}
+
 function decodeHtml(input) {
   return String(input || "")
     .replace(/&#(\d+);/g, (match, value) => {
@@ -264,7 +272,9 @@ async function main() {
   }
 
   const sources = results.map(result => result.source);
-  const items = deduplicate(results.flatMap(result => result.items)).slice(0, 60);
+  const items = deduplicate(results.flatMap(result => result.items))
+    .filter(item => !isExcludedReview(item))
+    .slice(0, 60);
   const payload = {
     version: 1,
     fetchedAt: new Date().toISOString(),

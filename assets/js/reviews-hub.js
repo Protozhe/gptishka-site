@@ -92,8 +92,17 @@
       if (source.status !== "ok") card.classList.add("is-waiting");
       setExternalLink(card, source.url);
 
-      var icon = create("span", "reviews-source__icon", source.type === "telegram" ? "TG" : "F");
+      var icon = create("span", "reviews-source__icon");
       icon.setAttribute("aria-hidden", "true");
+      var iconImage = create("img", "reviews-source__logo");
+      iconImage.src = source.type === "telegram"
+        ? "/assets/img/telegram.png"
+        : "https://funpay.com/favicon.ico";
+      iconImage.alt = "";
+      iconImage.loading = "lazy";
+      iconImage.decoding = "async";
+      iconImage.referrerPolicy = "no-referrer";
+      icon.append(iconImage);
       var copy = create("span", "reviews-source__copy");
       copy.append(
         create("strong", "reviews-source__name", source.label),

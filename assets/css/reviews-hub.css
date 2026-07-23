@@ -350,15 +350,24 @@ html body.reviews-hub-body main.reviews-hub {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 15px;
   background: rgba(255, 255, 255, 0.075);
-  color: #fff;
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 17px;
-  font-weight: 800;
 }
 
 .reviews-source--telegram .reviews-source__icon {
-  background: rgba(42, 171, 238, 0.14);
-  color: #77cefb;
+  background: rgba(42, 171, 238, 0.1);
+}
+
+.reviews-source__logo {
+  display: block;
+  width: 29px;
+  height: 29px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.reviews-source--telegram .reviews-source__logo {
+  width: 31px;
+  height: 31px;
+  border-radius: 50%;
 }
 
 .reviews-source__copy {
