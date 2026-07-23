@@ -55,10 +55,8 @@ for (const forbidden of [
 for (const page of pages) {
   const html = read(page);
   assert.ok(!html.includes('id="serviceDeliveryFilters"'), `${page} still renders delivery filters`);
-  const expectedVersion = page === "chatgpt.html"
-    ? "20260723-chatgpt-pro1"
-    : page.endsWith("claude.html")
-    ? "20260722-claude-hero-lite2"
+  const expectedVersion = ["chatgpt.html", "claude.html", "supergrok.html", "en/chatgpt.html", "en/claude.html", "en/supergrok.html"].includes(page)
+    ? "20260723-lava-default1"
     : ["index.html", "service.html"].includes(page)
       ? "20260722-claude-max-plans1"
       : "20260722-unified-checkout1";

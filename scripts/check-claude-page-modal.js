@@ -21,7 +21,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260723-checkout-controls1";
-const expectedJsAssetVersion = "20260722-claude-hero-lite2";
+const expectedJsAssetVersion = "20260723-lava-default1";
 
 [
   ["service-page--constructor", "claude.html: constructor page class"],
