@@ -128,14 +128,15 @@ function parseFunPayProfile(html, source) {
       id: stableId(source.id, text, detail, dateLabel),
       sourceId: source.id,
       sourceType: source.type,
-      sourceLabel: publicLabel,
-      author: "Покупатель FunPay",
+      sourceLabel: source.hidden ? "Покупатель" : publicLabel,
+      sourceHidden: Boolean(source.hidden),
+      author: source.hidden ? "Покупатель" : "Покупатель FunPay",
       text,
       detail,
       date: "",
       dateLabel: dateLabel || "Публичный отзыв",
       rating,
-      url: source.url,
+      url: source.hidden ? "" : source.url,
     });
   }
 

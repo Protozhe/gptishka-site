@@ -150,10 +150,13 @@
       create("strong", "", item.detail || item.author || "Покупатель"),
       create("span", "", item.dateLabel || formatUpdated(item.date))
     );
-    var link = create("a", "review-card__link", "Источник ↗");
-    link.setAttribute("aria-label", "Открыть исходный отзыв");
-    setExternalLink(link, item.url);
-    footer.append(meta, link);
+    footer.append(meta);
+    if (item.url && !item.sourceHidden) {
+      var link = create("a", "review-card__link", "Источник ↗");
+      link.setAttribute("aria-label", "Открыть исходный отзыв");
+      setExternalLink(link, item.url);
+      footer.append(link);
+    }
     card.append(top, text, footer);
     return card;
   }

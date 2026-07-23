@@ -35,7 +35,12 @@ assert.ok(data.sources.some(source => source.id === "funpay-19372031" && source.
 assert.ok(data.sources.some(source => source.id === "funpay-162964" && source.status === "ok"));
 assert.ok(data.sources.some(source => source.id === "funpay-162964" && source.hidden === true));
 assert.ok(data.sources.some(source => source.id === "telegram-otziviaii"));
-assert.ok(data.items.every(item => item.id && item.text && item.url));
+assert.ok(data.items.every(item => item.id && item.text));
+assert.ok(
+  data.items
+    .filter(item => item.sourceId === "funpay-162964")
+    .every(item => item.sourceHidden === true && item.sourceLabel === "Покупатель" && !item.url)
+);
 assert.strictEqual(new Set(data.items.map(item => item.id)).size, data.items.length);
 assert.doesNotMatch(JSON.stringify(data), /Adelka999/);
 
