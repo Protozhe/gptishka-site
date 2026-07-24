@@ -8,6 +8,7 @@ import { money } from "../lib/format";
 type ProductDeliveryType = "activation" | "credentials" | "manual_login" | "vpn" | "support" | "support_claude";
 type ProductVisualBackgroundType = "solid" | "gradient" | "image";
 type ActivationVariantKey = "withLogin" | "withoutLogin";
+type AvailabilityFilter = "all" | "active" | "inactive";
 type ActivationVariantConfig = {
   enabled: boolean;
   price: number | string;
@@ -591,7 +592,8 @@ function servicePageToDraft(page?: ServicePage | null): Partial<ServicePage> {
 export default function ProductsPage() {
   const queryClient = useQueryClient();
   const [q, setQ] = useState("");
-  const [showInactive, setShowInactive] = useState(false);
+  const [availabilityFilter, setAvailabilityFilter] = useState<AvailabilityFilter>("all");
+  const [availabilityMessage, setAvailabilityMessage] = useState<string | null>(null);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
@@ -637,9 +639,9 @@ export default function ProductsPage() {
       limit: 50,
       q,
       isArchived: false,
-      ...(showInactive ? {} : { isActive: true }),
+      ...(availabilityFilter === "all" ? {} : { isActive: availabilityFilter === "active" }),
     }),
-    [q, showInactive]
+    [q, availabilityFilter]
   );
 
   const products = useQuery({
@@ -710,6 +712,19 @@ export default function ProductsPage() {
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name, "ru"));
   }, [categoriesSource.data?.items, categorySuggestions]);
 
+  const availabilityCounts = useMemo(() => {
+    const items = Array.isArray(categoriesSource.data?.items) ? (categoriesSource.data.items as Product[]) : [];
+    return items.reduce(
+      (counts, item) => {
+        counts.all += 1;
+        if (item.isActive) counts.active += 1;
+        else counts.inactive += 1;
+        return counts;
+      },
+      { all: 0, active: 0, inactive: 0 }
+    );
+  }, [categoriesSource.data?.items]);
+
   useEffect(() => {
     if (servicePageMode !== "existing") return;
     if (!selectedServicePageId) {
@@ -733,8 +748,20 @@ export default function ProductsPage() {
   });
 
   const toggle = useMutation({
-    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => api.patch(`/products/${id}/status`, { isActive }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["products"] }),
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean; title: string }) =>
+      api.patch(`/products/${id}/status`, { isActive }),
+    onSuccess: (_response, variables) => {
+      setAvailabilityMessage(
+        variables.isActive
+          ? `«${variables.title}» снова доступен для покупки.`
+          : `«${variables.title}» временно отключён и скрыт с сайта.`
+      );
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["products-categories"] });
+    },
+    onError: () => {
+      setAvailabilityMessage("Не удалось изменить доступность тарифа. Проверьте соединение и права доступа.");
+    },
   });
 
   const archive = useMutation({
@@ -972,7 +999,12 @@ export default function ProductsPage() {
   }
 
   async function onToggle(item: Product) {
-    await toggle.mutateAsync({ id: item.id, isActive: !item.isActive });
+    setAvailabilityMessage(null);
+    try {
+      await toggle.mutateAsync({ id: item.id, isActive: !item.isActive, title: item.title });
+    } catch {
+      // The mutation displays a contextual error and keeps the current state.
+    }
   }
 
   function onEdit(item: Product) {
@@ -2320,20 +2352,62 @@ export default function ProductsPage() {
       </section>
 
       <section className="card p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <input className="input max-w-sm" placeholder="Поиск товаров" value={q} onChange={(e) => setQ(e.target.value)} />
-          <button className="btn-secondary" onClick={onBulkMinus10} disabled={bulk.isPending}>
-            {bulk.isPending ? "Применяем..." : "Массово -10%"}
-          </button>
-          <button className="btn-secondary" type="button" onClick={() => onDeleteDisabledProducts()} disabled={isDangerActionPending}>
-            {isDangerActionPending ? "Удаляем..." : "Удалить отключенные"}
-          </button>
-          <button className="btn-secondary" type="button" onClick={() => setShowInactive((v) => !v)}>
-            {showInactive ? "Скрыть отключенные" : "Показать отключенные"}
-          </button>
+        <div className="flex flex-col gap-4">
+          <div>
+            <div className="text-base font-semibold">Продажа тарифов</div>
+            <div className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+              Переключатель «В продаже» временно скрывает тариф с сайта и запрещает его оплату. Цена, описание и размещение сохраняются.
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2" aria-label="Фильтр доступности тарифов">
+            {(
+              [
+                { value: "all", label: "Все", count: availabilityCounts.all },
+                { value: "active", label: "В продаже", count: availabilityCounts.active },
+                { value: "inactive", label: "Отключены", count: availabilityCounts.inactive },
+              ] as const
+            ).map((option) => (
+              <button
+                className={
+                  availabilityFilter === option.value
+                    ? "btn border border-cyan-600 bg-cyan-600 text-white hover:bg-cyan-700"
+                    : "btn-secondary"
+                }
+                key={option.value}
+                type="button"
+                aria-pressed={availabilityFilter === option.value}
+                onClick={() => setAvailabilityFilter(option.value)}
+              >
+                {option.label}
+                <span
+                  className={`ml-2 rounded-full px-2 py-0.5 text-xs ${
+                    availabilityFilter === option.value
+                      ? "bg-white/20 text-white"
+                      : "bg-white/70 text-slate-700 dark:bg-slate-950/70 dark:text-slate-200"
+                  }`}
+                >
+                  {option.count}
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <input className="input max-w-sm" placeholder="Поиск товаров" value={q} onChange={(e) => setQ(e.target.value)} />
+            <button className="btn-secondary" onClick={onBulkMinus10} disabled={bulk.isPending}>
+              {bulk.isPending ? "Применяем..." : "Массово -10%"}
+            </button>
+            <button className="btn-secondary" type="button" onClick={() => onDeleteDisabledProducts()} disabled={isDangerActionPending}>
+              {isDangerActionPending ? "Удаляем..." : "Удалить отключенные"}
+            </button>
+          </div>
         </div>
         {(toggle.error || archive.error || bulk.error) && (
           <div className="mt-3 text-sm text-rose-600">Не удалось выполнить действие. Проверьте доступы и соединение с API.</div>
+        )}
+        {availabilityMessage && (
+          <div className="mt-3 rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200" role="status">
+            {availabilityMessage}
+          </div>
         )}
         {dangerActionMessage && <div className="mt-3 text-sm text-slate-600 dark:text-slate-300">{dangerActionMessage}</div>}
       </section>
@@ -2355,8 +2429,14 @@ export default function ProductsPage() {
               {(Array.isArray(products.data?.items) ? products.data.items : []).map((item: Product) => {
                 const itemDeliveryType = resolveDeliveryType(item);
                 const itemVpnBundle = parseVpnBundleConfig(item.tags || []);
+                const isThisTogglePending = toggle.isPending && toggle.variables?.id === item.id;
                 return (
-                  <tr className="border-t border-slate-200 dark:border-slate-800" key={item.id}>
+                  <tr
+                    className={`border-t border-slate-200 dark:border-slate-800 ${
+                      item.isActive ? "" : "bg-slate-50/80 dark:bg-slate-950/40"
+                    }`}
+                    key={item.id}
+                  >
                     <td className="px-4 py-3">
                       <div className="font-semibold">{item.title}</div>
                       <div className="text-xs text-slate-500">{item.slug}</div>
@@ -2377,17 +2457,39 @@ export default function ProductsPage() {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`badge ${item.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-700"}`}>
-                        {item.isActive ? "Активен" : "Отключен"}
-                      </span>
+                      <div className="flex min-w-44 items-center gap-3">
+                        <button
+                          className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 ${
+                            item.isActive ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-700"
+                          }`}
+                          type="button"
+                          role="switch"
+                          aria-checked={item.isActive}
+                          aria-label={`${item.isActive ? "Отключить" : "Включить"} продажу тарифа «${item.title}»`}
+                          onClick={() => onToggle(item)}
+                          disabled={toggle.isPending || archive.isPending}
+                        >
+                          <span
+                            aria-hidden="true"
+                            className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                              item.isActive ? "translate-x-5" : "translate-x-0"
+                            }`}
+                          />
+                        </button>
+                        <div>
+                          <div className={`text-sm font-semibold ${item.isActive ? "text-emerald-700 dark:text-emerald-400" : "text-slate-600 dark:text-slate-300"}`}>
+                            {isThisTogglePending ? "Сохраняем..." : item.isActive ? "В продаже" : "Временно отключён"}
+                          </div>
+                          <div className="text-xs text-slate-500">
+                            {item.isActive ? "Доступен на сайте" : "Скрыт, данные сохранены"}
+                          </div>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
                         <button className="btn-secondary" onClick={() => onEdit(item)} disabled={isSaving || toggle.isPending || archive.isPending}>
                           Редактировать
-                        </button>
-                        <button className="btn-secondary" onClick={() => onToggle(item)} disabled={toggle.isPending || archive.isPending}>
-                          {toggle.isPending ? "Сохраняем..." : item.isActive ? "Отключить" : "Включить"}
                         </button>
                         <button className="btn-secondary" onClick={() => archive.mutate(item.id)} disabled={toggle.isPending || archive.isPending}>
                           {archive.isPending ? "Архивируем..." : "В архив"}
