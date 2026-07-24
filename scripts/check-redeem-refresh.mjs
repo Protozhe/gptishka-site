@@ -13,9 +13,9 @@ const service = read("apps/admin-backend/src/modules/orders/orders.service.ts");
 
 for (const page of [ru, en]) {
   assert.ok(page.includes('class="redeem-flow home-wide-body"'));
-  assert.ok(page.includes("/assets/css/gptishka-header-refresh.css?v=20260707-header-unify9"));
+  assert.ok(page.includes("/assets/css/gptishka-header-refresh.css?v=20260724-language-slider1"));
   assert.ok(page.includes("/assets/css/redeem-start-refresh.css?v=20260724-redeem-refresh3"));
-  assert.ok(page.includes("/assets/js/app.min.js?v=20260724-payment-logos1"));
+  assert.ok(page.includes("/assets/js/app.min.js?v=20260724-lang-all1"));
   assert.ok(page.includes('class="nav nav-shell"'));
   assert.ok(page.includes("/assets/img/logo-new-dark.png?v=20260622-header4"));
 }

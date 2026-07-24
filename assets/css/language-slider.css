@@ -1,0 +1,200 @@
+/* Shared RU/EN language slider. The control shows the language it offers. */
+html body header .language-slider-host,
+html body header.gptishka-unified-header .language-slider-host {
+  position: relative !important;
+  width: auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+html body header .language-slider {
+  position: relative;
+  width: 100px;
+  min-width: 100px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px;
+  color: #f7faff;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(27, 37, 50, 0.94), rgba(12, 18, 27, 0.94));
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  isolation: isolate;
+  overflow: hidden;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+html body header .language-slider::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(37, 221, 145, 0.09), transparent 55%);
+  opacity: 0.72;
+  transition: opacity 180ms ease, transform 240ms ease;
+}
+
+html body header .language-slider--to-ru::before {
+  transform: scaleX(-1);
+}
+
+html body header .language-slider__track {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+}
+
+html body header .language-slider__code {
+  flex: 1 1 auto;
+  color: rgba(246, 250, 255, 0.94);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+}
+
+html body header .language-slider__thumb {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(242, 247, 253, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 7px 16px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(37, 221, 145, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+html body header .language-slider__thumb img {
+  width: 24px !important;
+  height: 24px !important;
+  display: block !important;
+  object-fit: cover !important;
+  border-radius: 50% !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.22) !important;
+}
+
+html body header .language-slider--to-en .language-slider__code,
+html body header .language-slider--to-ru .language-slider__thumb {
+  order: 1;
+}
+
+html body header .language-slider--to-en .language-slider__thumb,
+html body header .language-slider--to-ru .language-slider__code {
+  order: 2;
+}
+
+html body header .language-slider:hover {
+  color: #fff;
+  border-color: rgba(43, 224, 151, 0.46);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.28), 0 0 22px rgba(35, 213, 139, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.11);
+  transform: translateY(-1px);
+}
+
+html body header .language-slider:hover::before {
+  opacity: 1;
+}
+
+html body header .language-slider--to-en:hover .language-slider__thumb {
+  transform: translateX(-2px);
+}
+
+html body header .language-slider--to-ru:hover .language-slider__thumb {
+  transform: translateX(2px);
+}
+
+html body header .language-slider:focus-visible {
+  outline: 2px solid rgba(51, 230, 158, 0.92);
+  outline-offset: 3px;
+  border-color: rgba(51, 230, 158, 0.55);
+}
+
+html body header .language-slider:active {
+  transform: translateY(0) scale(0.98);
+}
+
+html body header .language-slider.is-switching {
+  opacity: 0.74;
+  pointer-events: none;
+}
+
+html body header .language-slider-host > .lang-dropdown,
+html body header .language-slider-host > .lang-options {
+  display: none !important;
+}
+
+html body .visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+@media (max-width: 680px) {
+  html body header .language-slider {
+    width: 88px;
+    min-width: 88px;
+    height: 42px;
+  }
+
+  html body header .language-slider__thumb {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+  }
+
+  html body header .language-slider__thumb img {
+    width: 22px !important;
+    height: 22px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  html body header .language-slider {
+    width: 82px;
+    min-width: 82px;
+    height: 40px;
+  }
+
+  html body header .language-slider__thumb {
+    width: 30px;
+    height: 30px;
+    flex-basis: 30px;
+  }
+
+  html body header .language-slider__code {
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html body header .language-slider,
+  html body header .language-slider::before,
+  html body header .language-slider__thumb {
+    transition: none !important;
+  }
+}
