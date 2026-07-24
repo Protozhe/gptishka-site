@@ -15,6 +15,7 @@
   var ACTIVATION_ORDER_TOKEN_PREFIX = "gptishka_activation_order_token:";
   var ACTIVATION_RESUME_URL_KEY = "gptishka_activation_resume_url";
   var SUPPORT_WIDGET_ACTIVATION_SAVED_AT_KEY = "gptishka_activation_saved_at";
+  var ACTIVATION_RESUME_COLLAPSED_PREFIX = "gptishka_activation_resume_collapsed:";
   var ACTIVATION_RESUME_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 
   function trackWidgetEvent(eventName, payload) {
@@ -64,8 +65,9 @@
 
   function clearStoredActivationResumeContext(orderId) {
     var safeOrderId = String(orderId || "").trim();
+    var lastOrderId = safeOrderId;
     try {
-      var lastOrderId = safeOrderId || String(localStorage.getItem(ACTIVATION_LAST_ORDER_ID_KEY) || "").trim();
+      lastOrderId = safeOrderId || String(localStorage.getItem(ACTIVATION_LAST_ORDER_ID_KEY) || "").trim();
       if (lastOrderId) {
         localStorage.removeItem(ACTIVATION_ORDER_TOKEN_PREFIX + lastOrderId);
       }
@@ -74,6 +76,36 @@
       localStorage.removeItem(SUPPORT_WIDGET_ACTIVATION_SAVED_AT_KEY);
     } catch (_) {
       // localStorage may be blocked in privacy mode.
+    }
+    if (!lastOrderId) return;
+    try {
+      sessionStorage.removeItem(ACTIVATION_RESUME_COLLAPSED_PREFIX + lastOrderId);
+    } catch (_) {
+      // sessionStorage may be blocked in privacy mode.
+    }
+  }
+
+  function isActivationResumeCollapsed(orderId) {
+    var safeOrderId = String(orderId || "").trim();
+    if (!safeOrderId) return false;
+    try {
+      return sessionStorage.getItem(ACTIVATION_RESUME_COLLAPSED_PREFIX + safeOrderId) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function setActivationResumeCollapsed(orderId, collapsed) {
+    var safeOrderId = String(orderId || "").trim();
+    if (!safeOrderId) return;
+    try {
+      if (collapsed) {
+        sessionStorage.setItem(ACTIVATION_RESUME_COLLAPSED_PREFIX + safeOrderId, "1");
+      } else {
+        sessionStorage.removeItem(ACTIVATION_RESUME_COLLAPSED_PREFIX + safeOrderId);
+      }
+    } catch (_) {
+      // sessionStorage may be blocked in privacy mode.
     }
   }
 
@@ -232,6 +264,7 @@
         };
     var resumeCancelLabel = en ? "Hide" : "Скрыть";
     var resumeCancelAria = en ? "Dismiss activation reminder" : "Скрыть напоминание об активации";
+    var resumeRestoreAria = en ? "Open activation reminder" : "Развернуть напоминание об активации";
 
     var root = document.createElement("aside");
     root.id = WIDGET_ID;
@@ -250,6 +283,13 @@
           '<button class="support-widget__resume-cancel" type="button" data-resume-cancel></button>' +
         '</div>' +
       '</div>' +
+      '<button class="support-widget__resume-restore" type="button" data-resume-restore hidden aria-label="' + escapeHtml(resumeRestoreAria) + '" title="' + escapeHtml(resumeRestoreAria) + '">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+          '<path d="M7 3.75h7.6L19 8.15v11.1a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5.75a2 2 0 0 1 2-2Z"></path>' +
+          '<path d="M14 3.75v4.4h4.4M8.3 12h7.4M8.3 15.5h5.1"></path>' +
+        '</svg>' +
+        '<span class="support-widget__resume-restore-dot" aria-hidden="true"></span>' +
+      '</button>' +
       '<div class="support-widget__panel">' +
         '<h3 class="support-widget__title">' + escapeHtml(text.panelTitle) + '</h3>' +
         '<p class="support-widget__text">' + escapeHtml(text.panelText) + '</p>' +
@@ -264,6 +304,7 @@
     var resumeText = root.querySelector("[data-resume-text]");
     var resumeContinue = root.querySelector("[data-resume-continue]");
     var resumeCancel = root.querySelector("[data-resume-cancel]");
+    var resumeRestore = root.querySelector("[data-resume-restore]");
     var mascotImage = root.querySelector(".support-widget__mascot-image");
     var animationSrc = mascotImage ? String(mascotImage.getAttribute("data-animation-src") || "").trim() : "";
     var animationRequested = false;
@@ -414,24 +455,33 @@
     }
 
     var resumeUrl = resolveActivationResumeUrl();
-    if (bubble && resumeText && resumeContinue && resumeCancel) {
-      var hideResumePrompt = function () {
+    if (bubble && resumeText && resumeContinue && resumeCancel && resumeRestore) {
+      var activeResumeUrl = "";
+      var activeResumeOrderId = "";
+
+      var hideResumePrompt = function (showRestore) {
         bubble.classList.remove("is-visible");
         bubble.hidden = true;
+        resumeRestore.hidden = !showRestore;
+        resumeRestore.classList.toggle("is-visible", Boolean(showRestore));
       };
 
       var showResumePrompt = function (url) {
         var safeUrl = String(url || "").trim();
         if (!safeUrl) {
-          hideResumePrompt();
+          activeResumeUrl = "";
+          hideResumePrompt(false);
           return;
         }
+        activeResumeUrl = safeUrl;
         resumeText.textContent = text.resumeLead;
         resumeContinue.textContent = text.resumeCta;
         resumeContinue.href = safeUrl;
         resumeContinue.setAttribute("aria-label", text.resumeAria);
         resumeCancel.textContent = resumeCancelLabel;
         resumeCancel.setAttribute("aria-label", resumeCancelAria);
+        resumeRestore.hidden = true;
+        resumeRestore.classList.remove("is-visible");
         bubble.hidden = false;
         bubble.classList.add("is-visible");
         setBubbleBottom(root.classList.contains("is-open"));
@@ -445,24 +495,40 @@
 
       resumeCancel.addEventListener("click", function (event) {
         event.preventDefault();
-        clearStoredActivationResumeContext();
-        hideResumePrompt();
+        setActivationResumeCollapsed(activeResumeOrderId, true);
+        hideResumePrompt(true);
         trackWidgetEvent("resume_activation_dismiss", {
-          source: "mascot_prompt"
+          source: "mascot_prompt",
+          behavior: "collapsed"
+        });
+      });
+
+      resumeRestore.addEventListener("click", function (event) {
+        event.preventDefault();
+        setActivationResumeCollapsed(activeResumeOrderId, false);
+        showResumePrompt(activeResumeUrl || resolveActivationResumeUrl());
+        trackWidgetEvent("resume_activation_restore", {
+          source: "mascot_icon"
         });
       });
 
       if (resumeUrl) {
         var ctx = readStoredActivationResumeContext();
+        activeResumeOrderId = ctx.orderId;
         verifyActivationPending(ctx.orderId, ctx.token).then(function (shouldShowPrompt) {
           if (!shouldShowPrompt) {
-            hideResumePrompt();
+            hideResumePrompt(false);
             return;
           }
-          showResumePrompt(resolveActivationResumeUrl());
+          activeResumeUrl = resolveActivationResumeUrl();
+          if (isActivationResumeCollapsed(activeResumeOrderId)) {
+            hideResumePrompt(true);
+            return;
+          }
+          showResumePrompt(activeResumeUrl);
         });
       } else {
-        hideResumePrompt();
+        hideResumePrompt(false);
       }
     }
 
@@ -506,6 +572,12 @@
         bubbleClosedBottom = isMobile ? "148px" : "166px";
         bubbleOpenBottom = isMobile ? "246px" : "280px";
         setBubbleBottom(root.classList.contains("is-open"));
+      }
+
+      if (resumeRestore) {
+        resumeRestore.style.position = "absolute";
+        resumeRestore.style.right = isMobile ? "14px" : "20px";
+        resumeRestore.style.bottom = isMobile ? "138px" : "150px";
       }
     }
 
