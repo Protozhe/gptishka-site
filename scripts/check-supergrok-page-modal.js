@@ -21,7 +21,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260723-checkout-controls1";
-const expectedJsAssetVersion = "20260723-supergrok-plan1";
+const expectedJsAssetVersion = "20260724-lava-mark1";
 
 [
   ["service-page--constructor", "supergrok.html: constructor page class"],
@@ -36,7 +36,7 @@ const expectedJsAssetVersion = "20260723-supergrok-plan1";
   ["service-faq-question", "supergrok.html: FAQ questions"],
   ['id="servicePlanFilters"', "supergrok.html: plan filter container"],
   ['id="serviceDurationFilters"', "supergrok.html: duration filter container"],
-  ["/assets/css/chatgpt-grok-flat-page.css?v=20260723-ai-image-fit1", "supergrok.html: flat storefront stylesheet"],
+  ["/assets/css/chatgpt-grok-flat-page.css?v=20260724-grok-info1", "supergrok.html: flat storefront stylesheet"],
   ['class="service-directory-back" href="/catalog/ai/"', "supergrok.html: AI catalog back link"],
   ['class="service-directory-back__icon"', "supergrok.html: complete SVG back icon"],
   ['class="service-product-gallery__viewport"', "supergrok.html: clipped product image viewport"],

@@ -55,13 +55,7 @@ for (const forbidden of [
 for (const page of pages) {
   const html = read(page);
   assert.ok(!html.includes('id="serviceDeliveryFilters"'), `${page} still renders delivery filters`);
-  const expectedVersion = ["supergrok.html", "en/supergrok.html"].includes(page)
-    ? "20260723-supergrok-plan1"
-    : ["chatgpt.html", "claude.html", "en/chatgpt.html", "en/claude.html"].includes(page)
-    ? "20260723-lava-default1"
-    : ["index.html", "service.html"].includes(page)
-      ? "20260722-claude-max-plans1"
-      : "20260722-unified-checkout1";
+  const expectedVersion = "20260724-lava-mark1";
   assert.ok(html.includes(`/assets/js/app.min.js?v=${expectedVersion}`), `${page} has stale app.js version`);
 }
 

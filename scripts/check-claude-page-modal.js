@@ -21,7 +21,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260723-checkout-controls1";
-const expectedJsAssetVersion = "20260723-lava-default1";
+const expectedJsAssetVersion = "20260724-lava-mark1";
 
 [
   ["service-page--constructor", "claude.html: constructor page class"],
@@ -33,7 +33,7 @@ const expectedJsAssetVersion = "20260723-lava-default1";
   ["service-selected-plan", "claude.html: selected plan summary"],
   ['id="servicePlanFilters"', "claude.html: plan filter container"],
   ['id="serviceDurationFilters"', "claude.html: duration filter container"],
-  ["/assets/css/claude-flat-page.css?v=20260723-claude-flat4", "claude.html: flat Claude page stylesheet"],
+  ["/assets/css/claude-flat-page.css?v=20260724-claude-info1", "claude.html: flat Claude page stylesheet"],
   ['class="service-directory-back" href="/catalog/ai/"', "claude.html: AI catalog back link"],
   ['class="service-directory-back__icon"', "claude.html: complete SVG back icon"],
   [`/assets/css/home-stability-hotfix.css?v=${expectedAssetVersion}`, "claude.html: CSS cache-bust"],
