@@ -310,7 +310,7 @@
     var animationRequested = false;
     var animationLoaded = false;
     var bubbleClosedBottom = "166px";
-    var bubbleFaqBottom = 404;
+    var bubbleFaqBottom = 444;
     var faqIsVisible = false;
 
     var setBubbleBottom = function (isOpen) {
