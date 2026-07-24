@@ -86,7 +86,7 @@ const defaultContent: HomepageContent = {
         titleLines: ["SUPERGROK", "for 1 month"],
         description: "Grok by xAI: fast answers, analysis, creative tasks, and image generation in one 1-month subscription.",
         buttonText: "Open plans",
-        buttonHref: "/en/supergrok",
+        buttonHref: "/en/supergrok.html",
         imageUrl: "",
         themeClass: "home-promo-slide--supergrok",
         sortOrder: 10,

@@ -41,7 +41,7 @@ const pages = [
   ...pairedPages.flatMap((file) => [file, `en/${file}`]),
   ...fallbackPages
 ];
-const scriptNeedle = "/assets/js/language-switcher.js?v=20260724-language-menu3";
+const scriptNeedle = "/assets/js/language-switcher.js?v=20260724-language-menu4";
 const failures = [];
 
 for (const file of pages) {

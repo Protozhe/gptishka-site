@@ -336,6 +336,14 @@
       "/kak-oplatit-chatgpt-v-rossii.html",
       "/podklyuchenie-chatgpt-online.html"
     ]);
+    const englishProductPaths = new Map([
+      ["/chatgpt", "/en/chatgpt.html"],
+      ["/chatgpt.html", "/en/chatgpt.html"],
+      ["/claude", "/en/claude.html"],
+      ["/claude.html", "/en/claude.html"],
+      ["/supergrok", "/en/supergrok.html"],
+      ["/supergrok.html", "/en/supergrok.html"]
+    ]);
     document.querySelectorAll("a[href]").forEach((anchor) => {
       if (anchor.closest("[data-lang-switcher], #langSwitch, .lang-switch")) return;
       const raw = anchor.getAttribute("href");
@@ -347,7 +355,10 @@
         return;
       }
       if (target.origin !== window.location.origin || target.pathname.startsWith("/en/")) return;
-      if (fallbackPaths.has(target.pathname)) {
+      if (englishProductPaths.has(target.pathname)) {
+        target.pathname = englishProductPaths.get(target.pathname);
+        target.searchParams.delete("lang");
+      } else if (fallbackPaths.has(target.pathname)) {
         target.searchParams.set("lang", "en");
       } else {
         target.pathname = target.pathname === "/" ? "/en/" : `/en${target.pathname}`.replace(/\/{2,}/g, "/");

@@ -6,8 +6,8 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = relativePath => fs.readFileSync(path.join(root, relativePath), "utf8");
 const version = "20260721-vpn-bg-webp1";
-const sliderVersion = "20260722-opening-frame2";
-const cssVersion = "20260722-slider-arrows1";
+const sliderVersion = "20260724-en-product-routes1";
+const cssVersion = "20260723-support-meta1";
 const assets = [
   ["assets/img/home/vpn-shortcut-bg.webp", 208744],
   ["assets/img/home/vpn-promo-bg.webp", 162652],

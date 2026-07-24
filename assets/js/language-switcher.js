@@ -1,6 +1,22 @@
 (() => {
-  const VERSION = "20260724-language-menu3";
+  const VERSION = "20260724-language-menu4";
   const STYLESHEET = "/assets/css/language-slider.css?v=20260724-language-menu3";
+  const ENGLISH_PRODUCT_ROUTES = new Map([
+    ["/chatgpt", "/en/chatgpt.html"],
+    ["/chatgpt.html", "/en/chatgpt.html"],
+    ["/claude", "/en/claude.html"],
+    ["/claude.html", "/en/claude.html"],
+    ["/supergrok", "/en/supergrok.html"],
+    ["/supergrok.html", "/en/supergrok.html"]
+  ]);
+  const RUSSIAN_PRODUCT_ROUTES = new Map([
+    ["/en/chatgpt", "/chatgpt"],
+    ["/en/chatgpt.html", "/chatgpt"],
+    ["/en/claude", "/claude"],
+    ["/en/claude.html", "/claude"],
+    ["/en/supergrok", "/supergrok"],
+    ["/en/supergrok.html", "/supergrok"]
+  ]);
   const FALLBACK_ENGLISH_PATHS = new Set([
     "/404.html",
     "/500.html",
@@ -41,7 +57,10 @@
     const path = targetUrl.pathname || "/";
     if (targetLanguage === "en") {
       if (!/^\/en(?:\/|$)/.test(path)) {
-        if (FALLBACK_ENGLISH_PATHS.has(path)) {
+        if (ENGLISH_PRODUCT_ROUTES.has(path)) {
+          targetUrl.pathname = ENGLISH_PRODUCT_ROUTES.get(path);
+          targetUrl.searchParams.delete("lang");
+        } else if (FALLBACK_ENGLISH_PATHS.has(path)) {
           targetUrl.searchParams.set("lang", "en");
         } else {
           targetUrl.pathname = ("/en" + (path === "/" ? "/" : path)).replace(/\/{2,}/g, "/");
@@ -49,7 +68,9 @@
         }
       }
     } else {
-      targetUrl.pathname = path.replace(/^\/en(?=\/|$)/, "") || "/";
+      targetUrl.pathname = RUSSIAN_PRODUCT_ROUTES.get(path)
+        || path.replace(/^\/en(?=\/|$)/, "")
+        || "/";
       targetUrl.searchParams.delete("lang");
     }
     return `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;

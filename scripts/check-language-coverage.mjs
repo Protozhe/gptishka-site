@@ -44,10 +44,10 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "u
 
 for (const page of fallbackPages) {
   const html = read(page);
-  if (!html.includes("/assets/js/site-header-unify.js?v=20260724-lang-all1")) {
+  if (!html.includes("/assets/js/site-header-unify.js?v=20260724-en-product-routes1")) {
     failures.push(`${page}: unified language switch is missing`);
   }
-  if (!html.includes("/assets/js/client-i18n.js?v=20260724-lang-all1")) {
+  if (!html.includes("/assets/js/client-i18n.js?v=20260724-en-product-routes1")) {
     failures.push(`${page}: English fallback is missing`);
   }
 }
@@ -82,6 +82,34 @@ for (const page of [
 ]) {
   if (read(page).includes('href="/en/app/"')) {
     failures.push(`${page}: contains the removed /en/app/ route`);
+  }
+}
+
+const englishProductRoutes = [
+  ["/en/chatgpt.html", "chatgpt"],
+  ["/en/claude.html", "claude"],
+  ["/en/supergrok.html", "supergrok"]
+];
+for (const page of pairedPages.map((file) => path.join("en", file))) {
+  const html = read(page);
+  for (const [route, slug] of englishProductRoutes) {
+    const brokenHref = new RegExp(`href=["']/en/${slug}["']`, "i");
+    const brokenAbsolute = new RegExp(`https://gptishka\\.shop/en/${slug}(?=["'])`, "i");
+    if (brokenHref.test(html) || brokenAbsolute.test(html)) {
+      failures.push(`${page}: contains broken extensionless ${slug} route`);
+    }
+  }
+}
+
+for (const script of ["assets/js/app.js", "assets/js/app.min.js"]) {
+  const source = read(script);
+  for (const [route] of englishProductRoutes) {
+    if (!source.includes(route)) {
+      failures.push(`${script}: missing English product route ${route}`);
+    }
+  }
+  if (!source.includes("const displayHref = isEnPage ? getServicePagePath(serviceKey) : configuredHref;")) {
+    failures.push(`${script}: API service-card links are not localized`);
   }
 }
 

@@ -1,5 +1,5 @@
 (() => {
-  const SCRIPT_VERSION = "20260724-lang-all1";
+  const SCRIPT_VERSION = "20260724-en-product-routes1";
   const HEADER_CSS = "/assets/css/gptishka-header-refresh.css?v=20260724-language-slider1";
   const LOGO_SRC = "/assets/img/logo-new-dark.png?v=20260622-header4";
   const CHATGPT_LOGO_SRC = "/assets/img/services/chatgpt-card.webp?v=20260721-webp1";
@@ -18,6 +18,22 @@
     "/chatgpt-plus-cena.html",
     "/kak-oplatit-chatgpt-v-rossii.html",
     "/podklyuchenie-chatgpt-online.html"
+  ]);
+  const ENGLISH_PRODUCT_ROUTES = new Map([
+    ["/chatgpt", "/en/chatgpt.html"],
+    ["/chatgpt.html", "/en/chatgpt.html"],
+    ["/claude", "/en/claude.html"],
+    ["/claude.html", "/en/claude.html"],
+    ["/supergrok", "/en/supergrok.html"],
+    ["/supergrok.html", "/en/supergrok.html"]
+  ]);
+  const RUSSIAN_PRODUCT_ROUTES = new Map([
+    ["/en/chatgpt", "/chatgpt"],
+    ["/en/chatgpt.html", "/chatgpt"],
+    ["/en/claude", "/claude"],
+    ["/en/claude.html", "/claude"],
+    ["/en/supergrok", "/supergrok"],
+    ["/en/supergrok.html", "/supergrok"]
   ]);
 
   function isEnglishPage() {
@@ -40,7 +56,10 @@
     const path = targetUrl.pathname || "/";
     if (targetLang === "en") {
       if (!/^\/en(?:\/|$)/.test(path)) {
-        if (FALLBACK_ENGLISH_PATHS.has(path)) {
+        if (ENGLISH_PRODUCT_ROUTES.has(path)) {
+          targetUrl.pathname = ENGLISH_PRODUCT_ROUTES.get(path);
+          targetUrl.searchParams.delete("lang");
+        } else if (FALLBACK_ENGLISH_PATHS.has(path)) {
           targetUrl.searchParams.set("lang", "en");
         } else {
           targetUrl.pathname = ("/en" + (path === "/" ? "/" : path)).replace(/\/{2,}/g, "/");
@@ -48,7 +67,9 @@
         }
       }
     } else {
-      targetUrl.pathname = path.replace(/^\/en(?=\/|$)/, "") || "/";
+      targetUrl.pathname = RUSSIAN_PRODUCT_ROUTES.get(path)
+        || path.replace(/^\/en(?=\/|$)/, "")
+        || "/";
       targetUrl.searchParams.delete("lang");
     }
     return `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;
@@ -85,7 +106,7 @@
           <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="${LOGO_SRC}" alt="GPTISHKA" class="logo-img">
         </a>
 
-        <a href="${en ? "/en/chatgpt" : "/chatgpt"}" class="header-product-pill" aria-label="${en ? "ChatGPT from 1290 rubles per month" : "ChatGPT от 1290 рублей в месяц"}">
+        <a href="${en ? "/en/chatgpt.html" : "/chatgpt"}" class="header-product-pill" aria-label="${en ? "ChatGPT from 1290 rubles per month" : "ChatGPT от 1290 рублей в месяц"}">
           <img class="header-product-pill__logo" src="${CHATGPT_LOGO_SRC}" alt="" loading="lazy" decoding="async">
           <span>${en ? "ChatGPT from 1290 ₽/mo" : "ChatGPT от 1290 ₽/мес"}</span>
         </a>

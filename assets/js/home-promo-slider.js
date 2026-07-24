@@ -109,6 +109,21 @@
       : "ru";
   }
 
+  function localizedRouteUrl(value) {
+    var url = safeUrl(value);
+    if (!url || getLang() !== "en") return url;
+    try {
+      var target = new URL(url, window.location.origin);
+      if (target.origin !== window.location.origin) return url;
+      var match = target.pathname.match(/^\/(?:en\/)?(chatgpt|claude|supergrok)(?:\.html)?\/?$/i);
+      if (!match) return url;
+      target.pathname = "/en/" + match[1].toLowerCase() + ".html";
+      return target.pathname + target.search + target.hash;
+    } catch (_) {
+      return url;
+    }
+  }
+
   function createSlideElement(slide, active) {
     var article = document.createElement("article");
     article.className = "home-promo-slide " + text(slide.themeClass || "") + (active ? " is-active" : "");
@@ -150,7 +165,7 @@
     }
 
     var buttonText = text(slide.buttonText);
-    var buttonHref = safeUrl(slide.buttonHref || slide.buttonUrl);
+    var buttonHref = localizedRouteUrl(slide.buttonHref || slide.buttonUrl);
     if (buttonText && buttonHref) {
       var link = document.createElement("a");
       link.className = "home-promo-slide__button";
@@ -170,7 +185,7 @@
 
     grid.innerHTML = "";
     items.forEach(function (item) {
-      var href = safeUrl(item.href) || "#";
+      var href = localizedRouteUrl(item.href) || "#";
       var link = document.createElement("a");
       link.className = "home-service-shortcut " + text(item.themeClass || "");
       link.href = href;

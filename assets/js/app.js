@@ -2628,10 +2628,10 @@ function initActivationResumeShortcut() {
 
   function getServicePagePath(serviceKey) {
     const key = normalizeAiServiceKey(serviceKey);
-    if (key === "chatgpt") return "/chatgpt";
-    if (key === "claude") return "/claude";
-    if (key === "grok") return "/supergrok";
-    if (key === "vpn") return "/store/vpn";
+    if (key === "chatgpt") return isEnPage ? "/en/chatgpt.html" : "/chatgpt";
+    if (key === "claude") return isEnPage ? "/en/claude.html" : "/claude";
+    if (key === "grok") return isEnPage ? "/en/supergrok.html" : "/supergrok";
+    if (key === "vpn") return isEnPage ? "/en/store/vpn/" : "/store/vpn";
     return isEnPage ? "/en/#pricing" : "/#pricing";
   }
 
@@ -3250,7 +3250,8 @@ function initActivationResumeShortcut() {
     const displayPlanSummary = getServiceCardValue(serviceCard, "planSummary", planSummary);
     const displayPriceText = getServiceCardValue(serviceCard, "priceText", minPrice ? fromLabel + " " + formatPriceByCurrency(minPrice, currency) : "");
     const displayButtonLabel = getServiceCardValue(serviceCard, "buttonText", buttonLabel);
-    const displayHref = getServiceCardValue(serviceCard, "href", getServicePagePath(serviceKey));
+    const configuredHref = getServiceCardValue(serviceCard, "href", getServicePagePath(serviceKey));
+    const displayHref = isEnPage ? getServicePagePath(serviceKey) : configuredHref;
     const displayIconText = getServiceCardValue(serviceCard, "iconText", group.service.icon);
     const displayTheme = getServiceCardValue(serviceCard, "theme", group.service.theme);
     const primaryImageUrl = getServiceCardValue(serviceCard, "imageUrl", visual.imageUrl || visual.hoverImageUrl || fallbackImages.imageUrl || "");
