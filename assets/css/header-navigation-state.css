@@ -56,7 +56,7 @@ html body header .header-quick-link.header-social-link--telegram {
 }
 
 html body header .header-social-link--vk + .header-social-link--telegram {
-  margin-left: -6px !important;
+  margin-left: -8px !important;
 }
 
 html body header .header-quick-link.header-social-link--vk:hover,
@@ -87,6 +87,93 @@ html body header .header-social-icon.header-social-icon--telegram {
   min-width: 20px !important;
   height: 20px !important;
   flex-basis: 20px !important;
+}
+
+html body header .header-social-icon.header-social-icon--vk {
+  transform: translateX(3px);
+}
+
+html body header .header-social-icon.header-social-icon--telegram {
+  transform: translateX(-3px);
+}
+
+@media (min-width: 1181px) {
+  html body header .nav.nav-shell,
+  html body:has(main.redeem-page) header .nav.nav-shell,
+  html body:has(main.bundle-activation-page) header .nav.nav-shell,
+  html body:has(main.vpn-activation-page) header .nav.nav-shell,
+  html body:has(main.vpn-activation-wrap) header .nav.nav-shell,
+  html body.vpn-activation-flow header .nav.nav-shell {
+    width: 100% !important;
+    min-height: 54px !important;
+    height: 54px !important;
+    display: grid !important;
+    grid-template-columns: auto auto minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    justify-content: normal !important;
+    column-gap: clamp(12px, 1.35vw, 20px) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  html body header .header-product-pill,
+  html body header.gptishka-unified-header .header-product-pill {
+    min-height: 42px !important;
+    height: 42px !important;
+    padding: 7px 18px 7px 9px !important;
+  }
+
+  html body header .header-product-pill__logo,
+  html body header.gptishka-unified-header .header-product-pill__logo {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  html body header .header-quick-links,
+  html body header.gptishka-unified-header .header-quick-links,
+  html body:has(main.redeem-page) header .header-quick-links,
+  html body:has(main.bundle-activation-page) header .header-quick-links,
+  html body:has(main.vpn-activation-page) header .header-quick-links,
+  html body:has(main.vpn-activation-wrap) header .header-quick-links,
+  html body.vpn-activation-flow header .header-quick-links {
+    justify-self: end !important;
+    justify-content: flex-end !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+  }
+
+  html body header .header-tools,
+  html body header .header-actions,
+  html body header.gptishka-unified-header .header-tools,
+  html body header.gptishka-unified-header .header-actions {
+    grid-column: 4 !important;
+    justify-self: end !important;
+    gap: 10px !important;
+  }
+}
+
+@media (min-width: 1181px) and (max-width: 1320px) {
+  html body header .header-quick-link:not(.header-social-link),
+  html body header.gptishka-unified-header .header-quick-link:not(.header-social-link) {
+    min-height: 36px !important;
+    padding: 0 11px !important;
+    font-size: 12px !important;
+  }
+}
+
+@media (min-width: 1321px) {
+  html body header .header-quick-link:not(.header-social-link),
+  html body header.gptishka-unified-header .header-quick-link:not(.header-social-link) {
+    min-height: 38px !important;
+    padding: 0 14px !important;
+    font-size: 13px !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -45,7 +45,7 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "u
 
 for (const page of fallbackPages) {
   const html = read(page);
-  if (!html.includes("/assets/js/site-header-unify.js?v=20260724-social-icons2")) {
+  if (!html.includes("/assets/js/site-header-unify.js?v=20260724-header-layout1")) {
     failures.push(`${page}: unified language switch is missing`);
   }
   if (!html.includes("/assets/js/client-i18n.js?v=20260724-en-product-routes1")) {
