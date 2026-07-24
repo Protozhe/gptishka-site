@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = "20260724-header-nav-icons1";
+  const VERSION = "20260724-header-nav-icons2";
   const STYLESHEET = "/assets/css/language-slider.css?v=20260724-language-menu3";
   const HEADER_NAV_STYLESHEET = "/assets/css/header-navigation-state.css?v=20260724-header-nav-icons2";
   const ENGLISH_PRODUCT_ROUTES = new Map([

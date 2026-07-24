@@ -1,5 +1,5 @@
 (() => {
-  const SCRIPT_VERSION = "20260724-header-nav-icons1";
+  const SCRIPT_VERSION = "20260724-header-nav-icons2";
   const HEADER_CSS = "/assets/css/gptishka-header-refresh.css?v=20260724-language-slider1";
   const HEADER_NAV_CSS = "/assets/css/header-navigation-state.css?v=20260724-header-nav-icons2";
   const LOGO_SRC = "/assets/img/logo-new-dark.png?v=20260622-header4";

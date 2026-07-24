@@ -42,7 +42,7 @@ const pages = [
   ...pairedPages.flatMap((file) => [file, `en/${file}`]),
   ...fallbackPages
 ];
-const scriptNeedle = "/assets/js/language-switcher.js?v=20260724-header-nav-icons1";
+const scriptNeedle = "/assets/js/language-switcher.js?v=20260724-header-nav-icons2";
 const failures = [];
 
 for (const file of pages) {
