@@ -78,6 +78,13 @@ html body header .header-social-icon {
   fill: currentColor !important;
 }
 
+html body header .header-social-icon.header-social-icon--telegram {
+  width: 20px !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  flex-basis: 20px !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html body header .header-quick-link.header-social-link {
     transition: none !important;
