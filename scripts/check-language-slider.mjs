@@ -42,7 +42,7 @@ const pages = [
   ...pairedPages.flatMap((file) => [file, `en/${file}`]),
   ...fallbackPages
 ];
-const scriptNeedle = "/assets/js/language-switcher.js?v=20260724-language-menu4";
+const scriptNeedle = "/assets/js/language-switcher.js?v=20260724-header-nav-icons1";
 const failures = [];
 
 for (const file of pages) {
@@ -67,11 +67,16 @@ for (const marker of [
   "targetUrl.searchParams.delete(\"lang\")",
   "targetUrl.hash",
   "/assets/css/language-slider.css?v=20260724-language-menu3",
+  "/assets/css/header-navigation-state.css?v=20260724-header-nav-icons1",
   "/assets/img/iconeng.png",
   "/assets/img/iconrus.avif",
   "language-menu__popover",
   "aria-expanded",
-  "MutationObserver"
+  "MutationObserver",
+  "enhanceHeaderNavigation",
+  "createSocialIcon",
+  "is-current-section",
+  "header-social-link"
 ]) {
   if (!menuSource.includes(marker)) {
     failures.push(`language-switcher.js: missing ${marker}`);

@@ -1,6 +1,7 @@
 (() => {
-  const VERSION = "20260724-language-menu4";
+  const VERSION = "20260724-header-nav-icons1";
   const STYLESHEET = "/assets/css/language-slider.css?v=20260724-language-menu3";
+  const HEADER_NAV_STYLESHEET = "/assets/css/header-navigation-state.css?v=20260724-header-nav-icons1";
   const ENGLISH_PRODUCT_ROUTES = new Map([
     ["/chatgpt", "/en/chatgpt.html"],
     ["/chatgpt.html", "/en/chatgpt.html"],
@@ -85,6 +86,81 @@
       document.head.appendChild(link);
     }
     link.href = STYLESHEET;
+
+    let headerLink = document.querySelector("link[data-header-navigation-styles]");
+    if (!headerLink) {
+      headerLink = document.createElement("link");
+      headerLink.rel = "stylesheet";
+      headerLink.dataset.headerNavigationStyles = VERSION;
+      document.head.appendChild(headerLink);
+    }
+    headerLink.href = HEADER_NAV_STYLESHEET;
+  }
+
+  function createSocialIcon(kind) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    svg.classList.add("header-social-icon");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+    path.setAttribute(
+      "d",
+      kind === "telegram"
+        ? "M23.91 3.79 20.3 20.84c-.27 1.2-.98 1.49-1.99.93l-5.5-4.06-2.65 2.55c-.29.29-.54.54-1.1.54l.39-5.6 10.2-9.21c.44-.39-.1-.61-.68-.22L6.36 13.7.92 12c-1.18-.37-1.2-1.18.25-1.75L22.44 2.06c.98-.36 1.84.24 1.47 1.73Z"
+        : "M12.785 16.241s.288-.032.436-.194c.136-.148.132-.427.132-.427s-.019-1.304.586-1.496c.596-.188 1.362 1.26 2.174 1.817.614.421 1.08.329 1.08.329l2.169-.03s1.134-.07.596-.961c-.044-.073-.313-.658-1.611-1.863-1.36-1.262-1.177-1.058.46-3.242.997-1.33 1.395-2.142 1.27-2.49-.119-.331-.854-.244-.854-.244l-2.442.015s-.181-.025-.315.056c-.131.079-.216.263-.216.263s-.386 1.029-.9 1.904c-1.085 1.845-1.519 1.942-1.696 1.828-.413-.267-.31-1.072-.31-1.643 0-1.782.27-2.524-.526-2.716-.264-.064-.458-.105-1.132-.112-.865-.009-1.598.003-2.012.206-.276.135-.489.437-.359.454.16.021.522.098.714.359.248.34.239 1.103.239 1.103s.142 2.103-.332 2.364c-.325.18-.772-.187-1.729-1.861-.49-.858-.861-1.807-.861-1.807s-.071-.175-.199-.268c-.155-.113-.371-.149-.371-.149l-2.321.015s-.348.01-.476.161c-.114.134-.009.411-.009.411s1.816 4.248 3.872 6.389c1.886 1.963 4.028 1.834 4.028 1.834h.971Z"
+    );
+    svg.appendChild(path);
+    return svg;
+  }
+
+  function enhanceHeaderNavigation() {
+    const currentPath = String(window.location.pathname || "/").replace(/\/index\.html$/i, "/");
+    const activeSection = /^\/(?:en\/)?news(?:\/|$)/i.test(currentPath)
+      ? "news"
+      : /^\/app(?:\/|$)/i.test(currentPath)
+        ? "reviews"
+        : "";
+    const english = currentLanguage() === "en";
+
+    document.querySelectorAll("header .header-quick-link").forEach((link) => {
+      let target;
+      try {
+        target = new URL(link.href, window.location.origin);
+      } catch (_) {
+        return;
+      }
+
+      const targetPath = target.pathname.replace(/\/index\.html$/i, "/");
+      const isNews = /^\/(?:en\/)?news(?:\/|$)/i.test(targetPath);
+      const isReviews = /^\/app(?:\/|$)/i.test(targetPath);
+      const current =
+        (activeSection === "news" && isNews) ||
+        (activeSection === "reviews" && isReviews);
+      link.classList.toggle("is-current-section", current);
+      if (current) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+
+      const hostname = target.hostname.toLowerCase();
+      const kind = hostname === "t.me" || hostname.endsWith(".t.me")
+        ? "telegram"
+        : hostname === "vk.com" || hostname.endsWith(".vk.com")
+          ? "vk"
+          : "";
+      if (!kind) return;
+
+      link.classList.add("header-social-link", `header-social-link--${kind}`);
+      link.classList.remove("header-quick-link--telegram");
+      link.setAttribute(
+        "aria-label",
+        english
+          ? `GPTishka on ${kind === "vk" ? "VK" : "Telegram"}`
+          : `GPTishka в ${kind === "vk" ? "VK" : "Telegram"}`
+      );
+      if (!link.querySelector(".header-social-icon")) {
+        link.replaceChildren(createSocialIcon(kind));
+      }
+    });
   }
 
   function closeMenu(wrapper, returnFocus = false) {
@@ -183,6 +259,7 @@
   function start() {
     ensureStylesheet();
     enhanceAll();
+    enhanceHeaderNavigation();
 
     document.addEventListener("click", (event) => {
       const trigger = event.target.closest?.(".language-menu__trigger");
@@ -207,7 +284,10 @@
     });
 
     const observer = new MutationObserver((records) => {
-      if (records.some((record) => record.addedNodes.length)) enhanceAll();
+      if (records.some((record) => record.addedNodes.length)) {
+        enhanceAll();
+        enhanceHeaderNavigation();
+      }
     });
     observer.observe(document.body, { childList: true, subtree: true });
     window.setTimeout(() => observer.disconnect(), 15000);

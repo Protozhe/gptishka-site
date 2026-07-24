@@ -1,6 +1,7 @@
 (() => {
-  const SCRIPT_VERSION = "20260724-en-product-routes1";
+  const SCRIPT_VERSION = "20260724-header-nav-icons1";
   const HEADER_CSS = "/assets/css/gptishka-header-refresh.css?v=20260724-language-slider1";
+  const HEADER_NAV_CSS = "/assets/css/header-navigation-state.css?v=20260724-header-nav-icons1";
   const LOGO_SRC = "/assets/img/logo-new-dark.png?v=20260622-header4";
   const CHATGPT_LOGO_SRC = "/assets/img/services/chatgpt-card.webp?v=20260721-webp1";
   const VK_URL = "https://vk.com/gptishka?from=groups&trackcode=7f99670c_6HjhbFhCJIgWV0ALEpOr-nIlZFrs3X3-3D3-z00f1k7ylk5Mhdl7hxbRgwtUEeZ8MCZjDfHpk0ywZuW";
@@ -41,14 +42,19 @@
       || new URL(window.location.href).searchParams.get("lang") === "en";
   }
 
-  function ensureHeaderCss() {
+  function ensureStylesheet(href, filename) {
     const exists = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
-      .some((link) => String(link.getAttribute("href") || "").includes("gptishka-header-refresh.css"));
+      .some((link) => String(link.getAttribute("href") || "").includes(filename));
     if (exists) return;
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = HEADER_CSS;
+    link.href = href;
     document.head.appendChild(link);
+  }
+
+  function ensureHeaderCss() {
+    ensureStylesheet(HEADER_CSS, "gptishka-header-refresh.css");
+    ensureStylesheet(HEADER_NAV_CSS, "header-navigation-state.css");
   }
 
   function langHref(targetLang) {
@@ -79,6 +85,13 @@
     return en ? "/app/?lang=en" : "/app/";
   }
 
+  function activeHeaderSection() {
+    const path = String(window.location.pathname || "/").replace(/\/index\.html$/i, "/");
+    if (/^\/(?:en\/)?news(?:\/|$)/i.test(path)) return "news";
+    if (/^\/app(?:\/|$)/i.test(path)) return "reviews";
+    return "";
+  }
+
   function ensureLanguageAlternates() {
     const upsert = (lang, href) => {
       let link = document.head.querySelector(`link[rel="alternate"][hreflang="${lang}"]`);
@@ -97,6 +110,9 @@
 
   function buildHeader() {
     const en = isEnglishPage();
+    const activeSection = activeHeaderSection();
+    const newsCurrent = activeSection === "news";
+    const reviewsCurrent = activeSection === "reviews";
     const header = document.createElement("header");
     header.className = "gptishka-unified-header";
     header.setAttribute("data-unified-header", SCRIPT_VERSION);
@@ -112,10 +128,14 @@
         </a>
 
         <nav class="header-quick-links" aria-label="${en ? "GPTishka quick links" : "Быстрые разделы GPTishka"}">
-          <a class="header-quick-link" href="${en ? "/en/news/" : "/news/"}">${en ? "News" : "Новости"}</a>
-          <a class="header-quick-link" href="${reviewsHref(en)}">${en ? "Reviews" : "Отзывы"}</a>
-          <a class="header-quick-link" href="${VK_URL}" target="_blank" rel="noopener">VK</a>
-          <a class="header-quick-link header-quick-link--telegram" href="${TELEGRAM_URL}" target="_blank" rel="noopener">Telegram</a>
+          <a class="header-quick-link${newsCurrent ? " is-current-section" : ""}" href="${en ? "/en/news/" : "/news/"}"${newsCurrent ? ' aria-current="page"' : ""}>${en ? "News" : "Новости"}</a>
+          <a class="header-quick-link${reviewsCurrent ? " is-current-section" : ""}" href="${reviewsHref(en)}"${reviewsCurrent ? ' aria-current="page"' : ""}>${en ? "Reviews" : "Отзывы"}</a>
+          <a class="header-quick-link header-social-link header-social-link--vk" href="${VK_URL}" target="_blank" rel="noopener" aria-label="${en ? "GPTishka on VK" : "GPTishka в VK"}">
+            <svg class="header-social-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12.785 16.241s.288-.032.436-.194c.136-.148.132-.427.132-.427s-.019-1.304.586-1.496c.596-.188 1.362 1.26 2.174 1.817.614.421 1.08.329 1.08.329l2.169-.03s1.134-.07.596-.961c-.044-.073-.313-.658-1.611-1.863-1.36-1.262-1.177-1.058.46-3.242.997-1.33 1.395-2.142 1.27-2.49-.119-.331-.854-.244-.854-.244l-2.442.015s-.181-.025-.315.056c-.131.079-.216.263-.216.263s-.386 1.029-.9 1.904c-1.085 1.845-1.519 1.942-1.696 1.828-.413-.267-.31-1.072-.31-1.643 0-1.782.27-2.524-.526-2.716-.264-.064-.458-.105-1.132-.112-.865-.009-1.598.003-2.012.206-.276.135-.489.437-.359.454.16.021.522.098.714.359.248.34.239 1.103.239 1.103s.142 2.103-.332 2.364c-.325.18-.772-.187-1.729-1.861-.49-.858-.861-1.807-.861-1.807s-.071-.175-.199-.268c-.155-.113-.371-.149-.371-.149l-2.321.015s-.348.01-.476.161c-.114.134-.009.411-.009.411s1.816 4.248 3.872 6.389c1.886 1.963 4.028 1.834 4.028 1.834h.971Z"></path></svg>
+          </a>
+          <a class="header-quick-link header-social-link header-social-link--telegram" href="${TELEGRAM_URL}" target="_blank" rel="noopener" aria-label="${en ? "GPTishka on Telegram" : "GPTishka в Telegram"}">
+            <svg class="header-social-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M23.91 3.79 20.3 20.84c-.27 1.2-.98 1.49-1.99.93l-5.5-4.06-2.65 2.55c-.29.29-.54.54-1.1.54l.39-5.6 10.2-9.21c.44-.39-.1-.61-.68-.22L6.36 13.7.92 12c-1.18-.37-1.2-1.18.25-1.75L22.44 2.06c.98-.36 1.84.24 1.47 1.73Z"></path></svg>
+          </a>
         </nav>
 
         <div class="header-tools header-actions">
