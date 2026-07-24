@@ -1,6 +1,6 @@
 (() => {
-  const VERSION = "20260724-language-menu2";
-  const STYLESHEET = "/assets/css/language-slider.css?v=20260724-language-menu2";
+  const VERSION = "20260724-language-menu3";
+  const STYLESHEET = "/assets/css/language-slider.css?v=20260724-language-menu3";
   const FALLBACK_ENGLISH_PATHS = new Set([
     "/404.html",
     "/500.html",
@@ -18,12 +18,10 @@
 
   const languages = {
     ru: {
-      code: "RU",
       name: "Русский",
       flag: "/assets/img/iconrus.avif"
     },
     en: {
-      code: "EN",
       name: "English",
       flag: "/assets/img/iconeng.png"
     }
@@ -147,7 +145,6 @@
             lang="${language}" hreflang="${language}" data-language="${language}">
             <img class="language-menu__flag lang-flag-img" src="${item.flag}" alt="" width="24" height="24" loading="lazy" decoding="async">
             <span class="language-menu__option-name">${item.name}</span>
-            <span class="language-menu__code">${item.code}</span>
             <span class="language-menu__check" aria-hidden="true"></span>
           </a>
         `).join("")}
