@@ -263,12 +263,12 @@
     var animationSrc = mascotImage ? String(mascotImage.getAttribute("data-animation-src") || "").trim() : "";
     var animationRequested = false;
     var animationLoaded = false;
-    var bubbleClosedBottom = "188px";
+    var bubbleClosedBottom = "166px";
     var bubbleOpenBottom = "280px";
 
     var setBubbleBottom = function (isOpen) {
       if (!bubble || bubble.hidden) return;
-      bubble.style.bottom = isOpen ? bubbleOpenBottom : bubbleClosedBottom;
+      bubble.style.setProperty("bottom", isOpen ? bubbleOpenBottom : bubbleClosedBottom, "important");
     };
 
     applyFallbackLayout();
@@ -429,6 +429,7 @@
         resumeCancel.setAttribute("aria-label", resumeCancelAria);
         bubble.hidden = false;
         bubble.classList.add("is-visible");
+        setBubbleBottom(root.classList.contains("is-open"));
       };
 
       resumeContinue.addEventListener("click", function () {
@@ -497,7 +498,7 @@
       if (bubble) {
         bubble.style.position = "absolute";
         bubble.style.right = isMobile ? "12px" : "18px";
-        bubbleClosedBottom = isMobile ? "148px" : "188px";
+        bubbleClosedBottom = isMobile ? "148px" : "166px";
         bubbleOpenBottom = isMobile ? "246px" : "280px";
         setBubbleBottom(root.classList.contains("is-open"));
       }

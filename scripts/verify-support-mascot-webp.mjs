@@ -53,9 +53,18 @@ assert(widgetPages.length > 0, "No HTML pages load the support widget.");
 for (const file of widgetPages) {
   const html = fs.readFileSync(file, "utf8");
   assert(
-    html.includes("/assets/js/support-widget.js?v=20260721-mascot-placeholder-webp1"),
+    html.includes("/assets/js/support-widget.js?v=20260724-widget-stack1"),
     `${path.relative(root, file)} has a stale support widget cache version.`,
   );
 }
+
+assert(
+  script.includes('style.setProperty("bottom", isOpen ? bubbleOpenBottom : bubbleClosedBottom, "important")'),
+  "Activation reminder must override conflicting fixed bottom rules while the support panel is open.",
+);
+assert(
+  script.includes('setBubbleBottom(root.classList.contains("is-open"));'),
+  "Activation reminder must sync its position when it becomes visible.",
+);
 
 console.log(`Support mascot WebP wiring looks good across ${widgetPages.length} HTML pages.`);
