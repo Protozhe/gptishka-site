@@ -209,6 +209,7 @@ html body:has(main.service-page[data-service-page="claude"])
 html body:has(main.service-page[data-service-page="claude"])
   main.service-page[data-service-page="claude"]
   .service-info-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(30px, 6vw, 72px);
 }
 
@@ -216,7 +217,37 @@ html body:has(main.service-page[data-service-page="claude"])
   main.service-page[data-service-page="claude"]
   .service-info-card {
   align-content: start;
+  gap: 14px;
   padding: 0;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-info-card li {
+  line-height: 1.65;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-info-card a {
+  color: rgba(255, 174, 112, 0.92);
+  text-decoration-color: rgba(255, 138, 61, 0.42);
+  text-underline-offset: 3px;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-info-card a:hover {
+  color: #ffd2b2;
+  text-decoration-color: currentColor;
+}
+
+html body:has(main.service-page[data-service-page="claude"])
+  main.service-page[data-service-page="claude"]
+  .service-info-card__legal {
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 html body:has(main.service-page[data-service-page="claude"])
@@ -274,5 +305,12 @@ html body:has(main.service-page[data-service-page="claude"])
     :is(.service-info-section, .service-faq-section) {
     margin-top: 44px;
     padding-top: 34px;
+  }
+
+  html body:has(main.service-page[data-service-page="claude"])
+    main.service-page[data-service-page="claude"]
+    .service-info-grid {
+    grid-template-columns: 1fr;
+    gap: 34px;
   }
 }
