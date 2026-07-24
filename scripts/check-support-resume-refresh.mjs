@@ -8,7 +8,7 @@ const css = fs.readFileSync(path.join(root, "assets/css/support-widget.css"), "u
 const widgetScript = fs.readFileSync(path.join(root, "assets/js/support-widget.js"), "utf8");
 const oldVersion = "support-widget.css?v=20260707-support-unify3";
 const newVersion = "support-widget.css?v=20260724-resume-collapse1";
-const newScriptVersion = "support-widget.js?v=20260724-resume-panel-clear1";
+const newScriptVersion = "support-widget.js?v=20260724-resume-faq-clear1";
 
 function collectHtml(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -46,6 +46,8 @@ assert.ok(css.includes(".support-widget__resume-restore"));
 assert.ok(widgetScript.includes("data-resume-restore"));
 assert.ok(widgetScript.includes("panel.getBoundingClientRect().height"));
 assert.ok(widgetScript.includes("panelHeight + 16"));
+assert.ok(widgetScript.includes("bubbleFaqBottom = 404"));
+assert.ok(widgetScript.includes("faqObserver.observe(faqSection)"));
 assert.ok(widgetScript.includes("setActivationResumeCollapsed(activeResumeOrderId, true)"));
 assert.ok(widgetScript.includes('behavior: "collapsed"'));
 assert.equal(

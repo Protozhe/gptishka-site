@@ -310,22 +310,43 @@
     var animationRequested = false;
     var animationLoaded = false;
     var bubbleClosedBottom = "166px";
+    var bubbleFaqBottom = 404;
+    var faqIsVisible = false;
 
     var setBubbleBottom = function (isOpen) {
       if (!bubble || bubble.hidden) return;
+      var faqBottom = faqIsVisible && window.innerWidth > 980 ? bubbleFaqBottom : 0;
       if (!isOpen || !panel) {
-        bubble.style.setProperty("bottom", bubbleClosedBottom, "important");
+        bubble.style.setProperty(
+          "bottom",
+          faqBottom ? faqBottom + "px" : bubbleClosedBottom,
+          "important"
+        );
         return;
       }
 
       var panelStyles = window.getComputedStyle(panel);
       var panelHeight = Math.max(panel.getBoundingClientRect().height, panel.scrollHeight);
       var panelBottom = Number.parseFloat(panelStyles.bottom) || 18;
-      var openBottom = Math.ceil(panelBottom + panelHeight + 16);
+      var openBottom = Math.max(Math.ceil(panelBottom + panelHeight + 16), faqBottom);
       bubble.style.setProperty("bottom", openBottom + "px", "important");
     };
 
     applyFallbackLayout();
+
+    var faqSection = document.getElementById("faq");
+    if (faqSection && typeof window.IntersectionObserver === "function") {
+      var faqObserver = new IntersectionObserver(
+        function (entries) {
+          faqIsVisible = entries.some(function (entry) {
+            return entry.isIntersecting && entry.intersectionRatio > 0.08;
+          });
+          setBubbleBottom(root.classList.contains("is-open"));
+        },
+        { threshold: [0, 0.08, 0.25] }
+      );
+      faqObserver.observe(faqSection);
+    }
 
     var shouldAnimateMascot = function () {
       try {
