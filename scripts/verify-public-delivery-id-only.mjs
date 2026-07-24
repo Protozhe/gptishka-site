@@ -55,7 +55,7 @@ for (const forbidden of [
 for (const page of pages) {
   const html = read(page);
   assert.ok(!html.includes('id="serviceDeliveryFilters"'), `${page} still renders delivery filters`);
-  const expectedVersion = "20260724-lava-mark2";
+  const expectedVersion = "20260724-payment-logos1";
   assert.ok(html.includes(`/assets/js/app.min.js?v=${expectedVersion}`), `${page} has stale app.js version`);
 }
 

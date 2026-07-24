@@ -7,6 +7,7 @@ const script = fs.readFileSync("assets/js/steam-topup.js", "utf8");
 
 assert.ok(page.includes("/assets/css/steam-topup.css?v=20260724-lava-mark2"));
 assert.ok(page.includes("/assets/img/payment-lava.svg?v=20260724-lava-mark2"));
+assert.ok(page.includes("/assets/img/payment-enot.svg?v=20260724-enot-mark1"));
 assert.ok(page.includes("/assets/js/steam-topup.js?v=20260723-steam-telegram1"));
 assert.match(page, /name="telegram"[^>]+placeholder="@username"/);
 assert.match(page, /name="paymentMethod"[^>]+value="lava" checked/);
