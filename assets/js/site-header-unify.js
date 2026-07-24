@@ -1,13 +1,28 @@
 (() => {
-  const SCRIPT_VERSION = "20260721-webp1";
-  const HEADER_CSS = "/assets/css/gptishka-header-refresh.css?v=20260708-compliance1";
+  const SCRIPT_VERSION = "20260724-lang-all1";
+  const HEADER_CSS = "/assets/css/gptishka-header-refresh.css?v=20260724-lang-all1";
   const LOGO_SRC = "/assets/img/logo-new-dark.png?v=20260622-header4";
   const CHATGPT_LOGO_SRC = "/assets/img/services/chatgpt-card.webp?v=20260721-webp1";
   const VK_URL = "https://vk.com/gptishka?from=groups&trackcode=7f99670c_6HjhbFhCJIgWV0ALEpOr-nIlZFrs3X3-3D3-z00f1k7ylk5Mhdl7hxbRgwtUEeZ8MCZjDfHpk0ywZuW";
   const TELEGRAM_URL = "https://t.me/aimarket_gpt";
+  const FALLBACK_ENGLISH_PATHS = new Set([
+    "/404.html",
+    "/500.html",
+    "/account.html",
+    "/app/",
+    "/app/index.html",
+    "/service.html",
+    "/success.html",
+    "/fail.html",
+    "/chatgpt-plus-kupit.html",
+    "/chatgpt-plus-cena.html",
+    "/kak-oplatit-chatgpt-v-rossii.html",
+    "/podklyuchenie-chatgpt-online.html"
+  ]);
 
   function isEnglishPage() {
-    return /^\/en(?:\/|$)/.test(window.location.pathname || "");
+    return /^\/en(?:\/|$)/.test(window.location.pathname || "")
+      || new URL(window.location.href).searchParams.get("lang") === "en";
   }
 
   function ensureHeaderCss() {
@@ -21,15 +36,42 @@
   }
 
   function langHref(targetLang) {
-    const path = window.location.pathname || "/";
-    const search = window.location.search || "";
-    const hash = window.location.hash || "";
+    const targetUrl = new URL(window.location.href);
+    const path = targetUrl.pathname || "/";
     if (targetLang === "en") {
-      if (/^\/en(?:\/|$)/.test(path)) return path + search + hash;
-      return ("/en" + (path === "/" ? "/" : path)).replace(/\/{2,}/g, "/") + search + hash;
+      if (!/^\/en(?:\/|$)/.test(path)) {
+        if (FALLBACK_ENGLISH_PATHS.has(path)) {
+          targetUrl.searchParams.set("lang", "en");
+        } else {
+          targetUrl.pathname = ("/en" + (path === "/" ? "/" : path)).replace(/\/{2,}/g, "/");
+          targetUrl.searchParams.delete("lang");
+        }
+      }
+    } else {
+      targetUrl.pathname = path.replace(/^\/en(?=\/|$)/, "") || "/";
+      targetUrl.searchParams.delete("lang");
     }
-    const ruPath = path.replace(/^\/en(?=\/|$)/, "") || "/";
-    return ruPath + search + hash;
+    return `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;
+  }
+
+  function reviewsHref(en) {
+    return en ? "/app/?lang=en" : "/app/";
+  }
+
+  function ensureLanguageAlternates() {
+    const upsert = (lang, href) => {
+      let link = document.head.querySelector(`link[rel="alternate"][hreflang="${lang}"]`);
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = "alternate";
+        link.hreflang = lang;
+        document.head.appendChild(link);
+      }
+      link.href = new URL(href, window.location.origin).href;
+    };
+    upsert("ru", langHref("ru"));
+    upsert("en", langHref("en"));
+    upsert("x-default", langHref("ru"));
   }
 
   function buildHeader() {
@@ -50,7 +92,7 @@
 
         <nav class="header-quick-links" aria-label="${en ? "GPTishka quick links" : "Быстрые разделы GPTishka"}">
           <a class="header-quick-link" href="${en ? "/en/news/" : "/news/"}">${en ? "News" : "Новости"}</a>
-          <a class="header-quick-link" href="${en ? "/en/app/" : "/app/"}">${en ? "App" : "Приложение"}</a>
+          <a class="header-quick-link" href="${reviewsHref(en)}">${en ? "Reviews" : "Отзывы"}</a>
           <a class="header-quick-link" href="${VK_URL}" target="_blank" rel="noopener">VK</a>
           <a class="header-quick-link header-quick-link--telegram" href="${TELEGRAM_URL}" target="_blank" rel="noopener">Telegram</a>
         </nav>
@@ -105,6 +147,7 @@
   function unifyHeader() {
     if (/^\/admin(?:\/|$)/.test(window.location.pathname || "")) return;
     ensureHeaderCss();
+    ensureLanguageAlternates();
     removeLegacyTicker();
     const oldHeader = document.querySelector("body > header") || document.querySelector("header");
     const nextHeader = buildHeader();

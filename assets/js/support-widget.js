@@ -36,7 +36,12 @@
   }
 
   function isEnPage() {
-    return getPathLower().startsWith("/en/");
+    if (getPathLower().startsWith("/en/")) return true;
+    try {
+      return new URLSearchParams(window.location.search).get("lang") === "en";
+    } catch (_e) {
+      return false;
+    }
   }
 
   function hasForceShowFlag() {

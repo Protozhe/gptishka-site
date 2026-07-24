@@ -2,6 +2,15 @@
 // PAGE TRANSITION - FIXED
 // =========================
 
+function isEnglishRequest() {
+  if (/^\/en(?:\/|$)/.test(window.location.pathname || "")) return true;
+  try {
+    return new URLSearchParams(window.location.search).get("lang") === "en";
+  } catch (_) {
+    return false;
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   document.documentElement.classList.remove("is-leaving");
   const enteredWithTransition = initPageEnterTransition();
@@ -346,7 +355,7 @@ function addDocumentPrefetch(href) {
 }
 
 function collectWarmupRoutes() {
-  const isEnPage = String(window.location.pathname || "").toLowerCase().startsWith("/en/");
+  const isEnPage = isEnglishRequest();
   const defaults = isEnPage
     ? ["/en/", "/en/about.html", "/en/guarantee.html", "/en/contact.html", "/en/site-map.html"]
     : ["/", "/about.html", "/guarantee.html", "/contact.html", "/site-map.html"];
@@ -377,7 +386,7 @@ function canRunProgressiveWarmup() {
 }
 
 function warmupProductsEndpoint() {
-  const isEnPage = String(window.location.pathname || "").toLowerCase().startsWith("/en/");
+  const isEnPage = isEnglishRequest();
   const lang = isEnPage ? "en" : "ru";
   fetch(`/api/public/products?lang=${lang}`, {
     method: "GET",
@@ -613,7 +622,7 @@ function initReviewsSecurityBanner() {
 
   const reviewsSection = document.querySelector(".reviews");
   if (!reviewsSection || reviewsSection.querySelector(".reviews-security-banner")) return;
-  const isEnPage = currentPath.startsWith("/en/");
+  const isEnPage = currentPath.startsWith("/en/") || isEnglishRequest();
 
   const title = isEnPage
     ? "For client privacy, we fully mask personal emails in activation logs."
@@ -681,8 +690,8 @@ function initLanguageSwitch() {
       if (lang !== "ru" && lang !== "en") return;
       const targetPath = resolveLangTargetPath(lang);
       const targetUrl = new URL(targetPath, window.location.origin);
-      targetUrl.search = "";
-      targetUrl.hash = "";
+      targetUrl.search = window.location.search;
+      targetUrl.hash = window.location.hash;
       navigateWithPageTransition(targetUrl.toString());
     });
   });
@@ -768,7 +777,7 @@ function persistActivationResumeContext(orderId, token, activationUrl) {
 }
 
 function buildActivationResumeUrl(orderId, token) {
-  const isEnPage = window.location.pathname.startsWith("/en/");
+  const isEnPage = isEnglishRequest();
   const path = isEnPage ? "/en/redeem-start.html" : "/redeem-start.html";
   const url = new URL(path, window.location.origin);
   url.searchParams.set("order_id", String(orderId || "").trim());
@@ -779,7 +788,7 @@ function buildActivationResumeUrl(orderId, token) {
 function initActivationResumeShortcut() {
   const path = String(window.location.pathname || "").toLowerCase();
   if (path.includes("redeem-start.html") || path.includes("success.html")) return;
-  const isEnPage = path.startsWith("/en/");
+  const isEnPage = path.startsWith("/en/") || isEnglishRequest();
 
   const { orderId, token: orderToken } = readStoredActivationResumeContext();
   if (!orderId || !orderToken) return;
@@ -880,7 +889,7 @@ function initActivationResumeShortcut() {
   );
   const isEnPage =
     String(document.documentElement.lang || "").toLowerCase().startsWith("en") ||
-    window.location.pathname.startsWith("/en/");
+    isEnglishRequest();
   const numberLocale = isEnPage ? "en-US" : "ru-RU";
   const checkoutLandingPath = isEnPage ? "/en/#pricing" : "/#pricing";
   const TEXT = isEnPage
@@ -6327,7 +6336,7 @@ function initActivationResumeShortcut() {
   const PRODUCT_OWNERS = "OpenAI, Anthropic, xAI";
 
   function isEnglishPage() {
-    return /^\/en(?:\/|$)/.test(window.location.pathname || "");
+    return isEnglishRequest();
   }
 
   function isPublicPage() {
@@ -6571,7 +6580,7 @@ document.addEventListener("click", e => {
 
   const pathname = String(window.location.pathname || "/").toLowerCase();
   if (pathname.startsWith("/admin")) return;
-  const isEnPage = pathname.startsWith("/en/");
+  const isEnPage = pathname.startsWith("/en/") || isEnglishRequest();
   const numberLocale = isEnPage ? "en-US" : "ru-RU";
   const TEXT = isEnPage
     ? {

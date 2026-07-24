@@ -1372,7 +1372,7 @@ html body header.gptishka-unified-header .lang-item:focus-visible {
   background: rgba(53, 242, 143, 0.12) !important;
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 1440px) {
   html body header.gptishka-unified-header .nav,
   html body header.gptishka-unified-header .nav-shell {
     grid-template-columns: auto auto 1fr !important;
