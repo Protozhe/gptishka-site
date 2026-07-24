@@ -468,9 +468,107 @@ html body #gptishka-support-widget .support-widget__cta {
   box-shadow: 0 10px 22px rgba(80, 135, 255, 0.24) !important;
 }
 
-html body #gptishka-support-widget .support-widget__resume-bubble {
+html body #gptishka-support-widget .support-widget__resume-bubble,
+html body.home-wide-body #gptishka-support-widget .support-widget__resume-bubble,
+html body.home-catalog-body #gptishka-support-widget .support-widget__resume-bubble {
   right: 12px !important;
   bottom: 166px !important;
+  isolation: isolate !important;
+  overflow: visible !important;
+  width: min(360px, calc(100vw - 136px)) !important;
+  gap: 10px !important;
+  padding: 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 18px !important;
+  color: rgba(244, 247, 251, 0.96) !important;
+  background:
+    radial-gradient(260px 150px at 100% 0%, rgba(43, 217, 143, 0.1), transparent 72%),
+    linear-gradient(150deg, rgba(39, 52, 68, 0.98), rgba(20, 29, 40, 0.99)) !important;
+  box-shadow:
+    0 24px 58px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
+  backdrop-filter: blur(14px) saturate(112%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(112%) !important;
+}
+
+html body #gptishka-support-widget .support-widget__resume-bubble::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 12px auto !important;
+  height: 2px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, transparent, rgba(62, 232, 156, 0.86), transparent) !important;
+  opacity: 0.8 !important;
+}
+
+html body #gptishka-support-widget .support-widget__resume-bubble::after {
+  right: 18px !important;
+  bottom: -7px !important;
+  width: 13px !important;
+  height: 13px !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: #17212e !important;
+}
+
+html body #gptishka-support-widget .support-widget__resume-bubble:hover,
+html body #gptishka-support-widget .support-widget__resume-bubble:focus-within {
+  box-shadow:
+    0 28px 68px rgba(0, 0, 0, 0.46),
+    0 0 0 1px rgba(43, 217, 143, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.065) !important;
+}
+
+html body #gptishka-support-widget .support-widget__resume-text {
+  color: rgba(244, 247, 251, 0.94) !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+  line-height: 1.48 !important;
+}
+
+html body #gptishka-support-widget .support-widget__resume-actions {
+  gap: 8px !important;
+}
+
+html body #gptishka-support-widget .support-widget__resume-link,
+html body #gptishka-support-widget .support-widget__resume-cancel {
+  min-height: 36px !important;
+  padding: 0 12px !important;
+  border-radius: 11px !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
+}
+
+html body #gptishka-support-widget .support-widget__resume-link {
+  border: 1px solid rgba(66, 234, 157, 0.46) !important;
+  color: #06150e !important;
+  background: linear-gradient(135deg, #42ea9d, #20d184 60%, #14ad6c) !important;
+}
+
+html body #gptishka-support-widget .support-widget__resume-link:hover,
+html body #gptishka-support-widget .support-widget__resume-link:focus-visible {
+  filter: none !important;
+  color: #04110b !important;
+  background: linear-gradient(135deg, #55f0aa, #2ada8f 60%, #18b974) !important;
+  box-shadow: 0 10px 24px rgba(27, 201, 124, 0.22) !important;
+  outline: 3px solid rgba(112, 232, 178, 0.22) !important;
+  outline-offset: 2px !important;
+}
+
+html body #gptishka-support-widget .support-widget__resume-cancel {
+  border: 1px solid rgba(255, 255, 255, 0.13) !important;
+  color: rgba(226, 235, 245, 0.78) !important;
+  background: rgba(255, 255, 255, 0.065) !important;
+}
+
+html body #gptishka-support-widget .support-widget__resume-cancel:hover,
+html body #gptishka-support-widget .support-widget__resume-cancel:focus-visible {
+  border-color: rgba(255, 255, 255, 0.24) !important;
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.11) !important;
+  outline: 3px solid rgba(112, 232, 178, 0.18) !important;
+  outline-offset: 2px !important;
 }
 
 @media (max-width: 640px) {
@@ -502,5 +600,18 @@ html body #gptishka-support-widget .support-widget__resume-bubble {
   html body #gptishka-support-widget .support-widget__resume-bubble {
     right: 10px !important;
     bottom: 148px !important;
+    width: min(310px, calc(100vw - 104px)) !important;
+    padding: 12px !important;
+  }
+
+  html body #gptishka-support-widget .support-widget__resume-actions {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    align-items: stretch !important;
+  }
+
+  html body #gptishka-support-widget .support-widget__resume-link,
+  html body #gptishka-support-widget .support-widget__resume-cancel {
+    min-width: 0 !important;
   }
 }
