@@ -104,6 +104,7 @@
     svg.setAttribute("viewBox", "0 0 24 24");
     svg.setAttribute("aria-hidden", "true");
     svg.setAttribute("focusable", "false");
+    svg.setAttribute("fill", "currentColor");
     path.setAttribute(
       "d",
       kind === "telegram"
@@ -157,8 +158,11 @@
           ? `GPTishka on ${kind === "vk" ? "VK" : "Telegram"}`
           : `GPTishka в ${kind === "vk" ? "VK" : "Telegram"}`
       );
-      if (!link.querySelector(".header-social-icon")) {
+      const existingIcon = link.querySelector(".header-social-icon");
+      if (!existingIcon) {
         link.replaceChildren(createSocialIcon(kind));
+      } else {
+        existingIcon.setAttribute("fill", "currentColor");
       }
     });
   }
