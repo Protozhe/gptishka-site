@@ -5,6 +5,7 @@ const sqlite3 = require("sqlite3").verbose();
 const helmet = require("helmet");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
+const { fetchTelegramPublicFeed } = require("./scripts/telegram-public-feed");
 require("dotenv").config();
 
 const PORT = Number(process.env.PORT || 4000);
@@ -48,6 +49,22 @@ const TELEGRAM_REVIEWS_HINT_WINDOW = Number(process.env.TELEGRAM_REVIEWS_HINT_WI
 const TELEGRAM_REVIEWS_TOP_STEP = Number(process.env.TELEGRAM_REVIEWS_TOP_STEP || 20);
 const TELEGRAM_REVIEWS_FETCH_TIMEOUT_MS = Number(process.env.TELEGRAM_REVIEWS_FETCH_TIMEOUT_MS || 2500);
 const TELEGRAM_REVIEWS_REFRESH_TIMEOUT_MS = Number(process.env.TELEGRAM_REVIEWS_REFRESH_TIMEOUT_MS || 9000);
+const TELEGRAM_NEWS_CHANNEL_RAW = String(process.env.TELEGRAM_NEWS_CHANNEL || "aimarket_gpt").trim();
+const TELEGRAM_NEWS_CHANNEL = /^[a-zA-Z0-9_]{5,64}$/.test(TELEGRAM_NEWS_CHANNEL_RAW)
+  ? TELEGRAM_NEWS_CHANNEL_RAW
+  : "aimarket_gpt";
+const TELEGRAM_NEWS_CACHE_MS = Math.max(
+  60 * 1000,
+  Number(process.env.TELEGRAM_NEWS_CACHE_MS || 15 * 60 * 1000)
+);
+const TELEGRAM_NEWS_FETCH_TIMEOUT_MS = Math.max(
+  1500,
+  Number(process.env.TELEGRAM_NEWS_FETCH_TIMEOUT_MS || 12000)
+);
+const TELEGRAM_NEWS_MAX_LIMIT = Math.max(
+  1,
+  Math.min(30, Number(process.env.TELEGRAM_NEWS_MAX_LIMIT || 24))
+);
 const STATS_CACHE_TTL_MS = Math.max(500, Number(process.env.STATS_CACHE_TTL_MS || 2200));
 const HEARTBEAT_MIN_WRITE_INTERVAL_MS = Math.max(
   1000,
@@ -73,6 +90,7 @@ const NOINDEX_PUBLIC_PATHS = new Set([
 
 const dataDir = path.join(__dirname, "data");
 const dbPath = path.join(dataDir, "stats.sqlite");
+const PUBLIC_NEWS_CACHE_PATH = path.join(dataDir, "public-news.json");
 const LEGACY_PRODUCT_MODAL_BACKUP_PATH = path.join(__dirname, "_tmp_products_ru.json");
 const STOREFRONT_PRODUCTS_FALLBACK_PATH = path.join(__dirname, "_tmp_products_ru.json");
 const STOREFRONT_PRODUCTS_FALLBACK_CACHE_TTL_MS = Math.max(
@@ -87,6 +105,8 @@ let telegramReviewsCache = {
   items: [],
 };
 let telegramReviewsRefreshPromise = null;
+let publicNewsCache = null;
+let publicNewsRefreshPromise = null;
 let legacyProductModalBackupMap = new Map();
 let storefrontProductsFallbackBase = null;
 let storefrontProductsFallbackBaseLoadedAt = 0;
@@ -740,6 +760,88 @@ async function refreshTelegramReviewsCache(deadlineTs = 0) {
     items,
   };
   return telegramReviewsCache;
+}
+
+function normalizePublicNewsPayload(payload) {
+  const items = Array.isArray(payload?.items)
+    ? payload.items
+        .filter(item => item && Number(item.postId) > 0 && typeof item.url === "string")
+        .slice(0, TELEGRAM_NEWS_MAX_LIMIT)
+    : [];
+
+  return {
+    channel: TELEGRAM_NEWS_CHANNEL,
+    channelUrl: `https://t.me/${TELEGRAM_NEWS_CHANNEL}`,
+    title: String(payload?.title || "GPTishka").trim() || "GPTishka",
+    fetchedAt: String(payload?.fetchedAt || ""),
+    items,
+  };
+}
+
+function loadPublicNewsCache() {
+  if (publicNewsCache) return publicNewsCache;
+
+  try {
+    publicNewsCache = normalizePublicNewsPayload(
+      JSON.parse(fs.readFileSync(PUBLIC_NEWS_CACHE_PATH, "utf8"))
+    );
+  } catch (_) {
+    publicNewsCache = normalizePublicNewsPayload(null);
+  }
+
+  return publicNewsCache;
+}
+
+async function persistPublicNewsCache(payload) {
+  await fs.promises.mkdir(dataDir, { recursive: true });
+  const temporaryPath = `${PUBLIC_NEWS_CACHE_PATH}.${process.pid}.tmp`;
+  await fs.promises.writeFile(temporaryPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+  await fs.promises.rename(temporaryPath, PUBLIC_NEWS_CACHE_PATH);
+}
+
+async function refreshPublicNewsCache() {
+  if (publicNewsRefreshPromise) return publicNewsRefreshPromise;
+
+  publicNewsRefreshPromise = (async () => {
+    const fetched = await fetchTelegramPublicFeed(TELEGRAM_NEWS_CHANNEL, {
+      timeoutMs: TELEGRAM_NEWS_FETCH_TIMEOUT_MS,
+    });
+    const next = normalizePublicNewsPayload(fetched);
+    if (!next.items.length) {
+      throw new Error("Telegram news feed is empty");
+    }
+    publicNewsCache = next;
+    await persistPublicNewsCache(next);
+    return next;
+  })();
+
+  try {
+    return await publicNewsRefreshPromise;
+  } finally {
+    publicNewsRefreshPromise = null;
+  }
+}
+
+async function getPublicNewsPayload() {
+  const cached = loadPublicNewsCache();
+  const fetchedAtMs = Date.parse(cached.fetchedAt || "");
+  const isFresh =
+    cached.items.length > 0 &&
+    Number.isFinite(fetchedAtMs) &&
+    Date.now() - fetchedAtMs < TELEGRAM_NEWS_CACHE_MS;
+
+  if (isFresh) {
+    return { payload: cached, stale: false };
+  }
+
+  if (cached.items.length) {
+    refreshPublicNewsCache().catch(error => {
+      logError("Telegram news background refresh failed", error);
+    });
+    return { payload: cached, stale: true };
+  }
+
+  return { payload: await refreshPublicNewsCache(), stale: false };
 }
 
 async function initDb() {
@@ -1962,6 +2064,37 @@ function createApp() {
     }
   });
 
+  app.get("/api/public/news", async (req, res) => {
+    const requestedLimit = Number.parseInt(String(req.query?.limit || "18"), 10);
+    const limit = Number.isFinite(requestedLimit)
+      ? Math.max(1, Math.min(requestedLimit, TELEGRAM_NEWS_MAX_LIMIT))
+      : 18;
+
+    try {
+      const { payload, stale } = await getPublicNewsPayload();
+      res.set(
+        "Cache-Control",
+        "public, max-age=300, stale-while-revalidate=3600, stale-if-error=86400"
+      );
+      return res.json({
+        ...payload,
+        stale,
+        items: payload.items.slice(0, limit),
+      });
+    } catch (error) {
+      logError("Telegram news request failed", error);
+      return res.status(503).json({
+        channel: TELEGRAM_NEWS_CHANNEL,
+        channelUrl: `https://t.me/${TELEGRAM_NEWS_CHANNEL}`,
+        title: "GPTishka",
+        fetchedAt: "",
+        stale: true,
+        items: [],
+        error: "NEWS_TEMPORARILY_UNAVAILABLE",
+      });
+    }
+  });
+
   app.get("/api/reviews/telegram", async (req, res) => {
     const requestedLimit = Number.parseInt(String(req.query?.limit || "12"), 10);
     const limit = Number.isFinite(requestedLimit)
@@ -2108,12 +2241,14 @@ function createApp() {
   app.get(["/catalog/ai", "/catalog/ai/"], sendDirectoryIndex(path.join("catalog", "ai")));
   app.get(["/catalog/vpn", "/catalog/vpn/"], sendDirectoryIndex(path.join("catalog", "vpn")));
   app.get(["/app", "/app/"], sendDirectoryIndex("app"));
+  app.get(["/news", "/news/"], sendDirectoryIndex("news"));
   app.get(["/store/steam", "/store/steam/"], sendDirectoryIndex(path.join("store", "steam")));
   app.get(["/store/steam/topup", "/store/steam/topup/"], sendDirectoryIndex(path.join("store", "steam", "topup")));
 
   app.get(["/en/catalog", "/en/catalog/"], sendDirectoryIndex(path.join("en", "catalog")));
   app.get(["/en/catalog/ai", "/en/catalog/ai/"], sendDirectoryIndex(path.join("en", "catalog", "ai")));
   app.get(["/en/catalog/vpn", "/en/catalog/vpn/"], sendDirectoryIndex(path.join("en", "catalog", "vpn")));
+  app.get(["/en/news", "/en/news/"], sendDirectoryIndex(path.join("en", "news")));
   app.get(["/en/store/steam", "/en/store/steam/"], sendDirectoryIndex(path.join("en", "store", "steam")));
   app.get(["/en/store/steam/topup", "/en/store/steam/topup/"], sendDirectoryIndex(path.join("en", "store", "steam", "topup")));
 

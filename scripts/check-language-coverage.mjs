@@ -28,6 +28,7 @@ const pairedPages = [
   "contact.html",
   "guarantee.html",
   "oferta.html",
+  "news/index.html",
   "politika.html",
   "redeem-start.html",
   "refund.html",

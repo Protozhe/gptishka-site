@@ -353,6 +353,8 @@ const translations = [
 ];
 
 const linkMap = [
+  ["https://gptishka.shop/news/", "https://gptishka.shop/en/news/"],
+  ["https://gptishka.shop/news", "https://gptishka.shop/en/news"],
   ["https://gptishka.shop/store/vpn/activate/", "https://gptishka.shop/en/store/vpn/activate/"],
   ["https://gptishka.shop/store/vpn/activate", "https://gptishka.shop/en/store/vpn/activate"],
   ["https://gptishka.shop/store/steam/topup/", "https://gptishka.shop/en/store/steam/topup/"],
@@ -368,6 +370,8 @@ const linkMap = [
   ["https://gptishka.shop/chatgpt", "https://gptishka.shop/en/chatgpt.html"],
   ["https://gptishka.shop/claude", "https://gptishka.shop/en/claude.html"],
   ["https://gptishka.shop/supergrok", "https://gptishka.shop/en/supergrok.html"],
+  ['href="/news/"', 'href="/en/news/"'],
+  ['href="/news"', 'href="/en/news"'],
   ['href="/store/vpn/activate/"', 'href="/en/store/vpn/activate/"'],
   ['href="/store/vpn/activate"', 'href="/en/store/vpn/activate"'],
   ['href="/store/steam/topup/"', 'href="/en/store/steam/topup/"'],

@@ -10,6 +10,7 @@
   "scripts": {
     "start": "node server.js",
     "start:storefront": "node server.js",
+    "refresh:news": "node scripts/refresh-public-news.js",
     "dev:admin:api": "npm run dev --workspace @gptishka/admin-backend",
     "dev:telegram-bots": "npm run dev:telegram-bots --workspace @gptishka/admin-backend",
     "dev:admin:ui": "npm run dev --workspace @gptishka/admin-ui",

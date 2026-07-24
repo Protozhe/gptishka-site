@@ -23,6 +23,7 @@ const pairs = [
   ["redeem-start.html", "en/redeem-start.html"],
   ["refund.html", "en/refund.html"],
   ["site-map.html", "en/site-map.html"],
+  ["news/index.html", "en/news/index.html"],
   ["store/vpn/activate/index.html", "en/store/vpn/activate/index.html"]
 ];
 const cyrillic = /\p{Script=Cyrillic}/u;
