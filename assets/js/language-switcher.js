@@ -1,7 +1,7 @@
 (() => {
-  const VERSION = "20260724-unified-footer1";
+  const VERSION = "20260724-social-icons1";
   const STYLESHEET = "/assets/css/language-slider.css?v=20260724-language-menu3";
-  const HEADER_NAV_STYLESHEET = "/assets/css/header-navigation-state.css?v=20260724-header-nav-icons2";
+  const HEADER_NAV_STYLESHEET = "/assets/css/header-navigation-state.css?v=20260724-social-icons1";
   const FOOTER_STYLESHEET = "/assets/css/site-footer-unified.css?v=20260724-unified-footer1";
   const ENGLISH_PRODUCT_ROUTES = new Map([
     ["/chatgpt", "/en/chatgpt.html"],
@@ -181,8 +181,8 @@
   function createSocialIcon(kind) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    svg.classList.add("header-social-icon");
-    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.classList.add("header-social-icon", `header-social-icon--${kind}`);
+    svg.setAttribute("viewBox", kind === "vk" ? "3.8 6.8 17.4 10.2" : "0 0 24 24");
     svg.setAttribute("aria-hidden", "true");
     svg.setAttribute("focusable", "false");
     svg.setAttribute("fill", "currentColor");
@@ -243,6 +243,7 @@
       if (!existingIcon) {
         link.replaceChildren(createSocialIcon(kind));
       } else {
+        existingIcon.classList.add(`header-social-icon--${kind}`);
         existingIcon.setAttribute("fill", "currentColor");
       }
     });

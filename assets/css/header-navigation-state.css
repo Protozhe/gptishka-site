@@ -25,13 +25,15 @@ html body header.gptishka-unified-header .header-quick-link[aria-current="page"]
   box-shadow: 0 0 0 4px rgba(53, 229, 141, 0.1), 0 0 16px rgba(53, 229, 141, 0.42);
 }
 
-html body header.gptishka-unified-header .header-quick-link.header-social-link,
-html body header.gptishka-unified-header .header-quick-link.header-social-link:hover,
-html body header.gptishka-unified-header .header-quick-link.header-social-link:focus-visible {
+html body header .header-quick-link.header-social-link,
+html body header .header-quick-link.header-social-link:hover,
+html body header .header-quick-link.header-social-link:focus-visible {
   width: 40px !important;
   min-width: 40px !important;
+  max-width: 40px !important;
   height: 40px !important;
   min-height: 40px !important;
+  flex: 0 0 40px !important;
   padding: 0 !important;
   border: 0 !important;
   border-radius: 10px !important;
@@ -41,28 +43,43 @@ html body header.gptishka-unified-header .header-quick-link.header-social-link:f
   -webkit-backdrop-filter: none !important;
 }
 
-html body header.gptishka-unified-header .header-quick-link.header-social-link {
-  color: rgba(225, 233, 245, 0.7) !important;
+html body header .header-quick-link.header-social-link {
   transition: color 180ms ease, transform 180ms ease !important;
 }
 
-html body header.gptishka-unified-header .header-quick-link.header-social-link:hover,
-html body header.gptishka-unified-header .header-quick-link.header-social-link:focus-visible {
-  color: #ffffff !important;
+html body header .header-quick-link.header-social-link--vk {
+  color: #0077ff !important;
+}
+
+html body header .header-quick-link.header-social-link--telegram {
+  color: #229ed9 !important;
+}
+
+html body header .header-quick-link.header-social-link--vk:hover,
+html body header .header-quick-link.header-social-link--vk:focus-visible {
+  color: #2d91ff !important;
   transform: translateY(-2px) !important;
   outline: none !important;
 }
 
-html body header.gptishka-unified-header .header-social-icon {
+html body header .header-quick-link.header-social-link--telegram:hover,
+html body header .header-quick-link.header-social-link--telegram:focus-visible {
+  color: #4ab3e6 !important;
+  transform: translateY(-2px) !important;
+  outline: none !important;
+}
+
+html body header .header-social-icon {
   display: block;
-  width: 24px;
-  height: 24px;
-  flex: 0 0 24px;
-  fill: currentColor;
+  width: 24px !important;
+  min-width: 24px !important;
+  height: 24px !important;
+  flex: 0 0 24px !important;
+  fill: currentColor !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html body header.gptishka-unified-header .header-quick-link.header-social-link {
+  html body header .header-quick-link.header-social-link {
     transition: none !important;
   }
 }

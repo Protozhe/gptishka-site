@@ -42,7 +42,7 @@ const pages = [
   ...pairedPages.flatMap((file) => [file, `en/${file}`]),
   ...fallbackPages
 ];
-const scriptNeedle = "/assets/js/language-switcher.js?v=20260724-unified-footer1";
+const scriptNeedle = "/assets/js/language-switcher.js?v=20260724-social-icons1";
 const failures = [];
 
 for (const file of pages) {
@@ -71,7 +71,7 @@ for (const marker of [
   "targetUrl.searchParams.delete(\"lang\")",
   "targetUrl.hash",
   "/assets/css/language-slider.css?v=20260724-language-menu3",
-  "/assets/css/header-navigation-state.css?v=20260724-header-nav-icons2",
+  "/assets/css/header-navigation-state.css?v=20260724-social-icons1",
   "/assets/css/site-footer-unified.css?v=20260724-unified-footer1",
   "/assets/img/iconeng.png",
   "/assets/img/iconrus.avif",
