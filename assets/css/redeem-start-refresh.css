@@ -39,6 +39,12 @@ body.redeem-flow.home-wide-body .redeem-page {
   padding: 26px 0 44px !important;
 }
 
+@media (min-width: 761px) {
+  body.redeem-flow.home-wide-body .redeem-page {
+    zoom: 0.85;
+  }
+}
+
 body.redeem-flow.home-wide-body .redeem-card {
   overflow: visible !important;
   padding: clamp(20px, 3.2vw, 38px) !important;
