@@ -67,7 +67,7 @@ for (const marker of [
   "targetUrl.searchParams.delete(\"lang\")",
   "targetUrl.hash",
   "/assets/css/language-slider.css?v=20260724-language-menu3",
-  "/assets/css/header-navigation-state.css?v=20260724-header-nav-icons1",
+  "/assets/css/header-navigation-state.css?v=20260724-header-nav-icons2",
   "/assets/img/iconeng.png",
   "/assets/img/iconrus.avif",
   "language-menu__popover",
