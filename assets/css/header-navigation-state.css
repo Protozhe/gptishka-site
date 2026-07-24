@@ -55,6 +55,10 @@ html body header .header-quick-link.header-social-link--telegram {
   color: #229ed9 !important;
 }
 
+html body header .header-social-link--vk + .header-social-link--telegram {
+  margin-left: -6px !important;
+}
+
 html body header .header-quick-link.header-social-link--vk:hover,
 html body header .header-quick-link.header-social-link--vk:focus-visible {
   color: #2d91ff !important;
