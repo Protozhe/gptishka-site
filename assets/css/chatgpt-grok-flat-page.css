@@ -284,6 +284,47 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
   padding: 0;
 }
 
+html body:has(main.service-page[data-service-page="chatgpt"])
+  main.service-page[data-service-page="chatgpt"]
+  .service-info-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+html body:has(main.service-page[data-service-page="chatgpt"])
+  main.service-page[data-service-page="chatgpt"]
+  .service-info-card {
+  gap: 14px;
+}
+
+html body:has(main.service-page[data-service-page="chatgpt"])
+  main.service-page[data-service-page="chatgpt"]
+  .service-info-card li {
+  line-height: 1.65;
+}
+
+html body:has(main.service-page[data-service-page="chatgpt"])
+  main.service-page[data-service-page="chatgpt"]
+  .service-info-card a {
+  color: rgba(105, 240, 173, 0.92);
+  text-decoration-color: rgba(53, 242, 143, 0.38);
+  text-underline-offset: 3px;
+}
+
+html body:has(main.service-page[data-service-page="chatgpt"])
+  main.service-page[data-service-page="chatgpt"]
+  .service-info-card a:hover {
+  color: #b9fbd7;
+  text-decoration-color: currentColor;
+}
+
+html body:has(main.service-page[data-service-page="chatgpt"])
+  main.service-page[data-service-page="chatgpt"]
+  .service-info-card__legal {
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
   main.service-page
   .service-faq-list {
@@ -343,5 +384,12 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
     :is(.service-info-section, .service-faq-section) {
     margin-top: 44px;
     padding-top: 34px;
+  }
+
+  html body:has(main.service-page[data-service-page="chatgpt"])
+    main.service-page[data-service-page="chatgpt"]
+    .service-info-grid {
+    grid-template-columns: 1fr;
+    gap: 34px;
   }
 }
