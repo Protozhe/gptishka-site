@@ -1,0 +1,276 @@
+body.redeem-flow.home-wide-body {
+  --redeem-shell: #18212d;
+  --redeem-surface: #202b39;
+  --redeem-raised: #273444;
+  --redeem-control: #121a25;
+  --redeem-border: rgba(255, 255, 255, 0.1);
+  --redeem-border-strong: rgba(255, 255, 255, 0.17);
+  --redeem-text: #f4f7fb;
+  --redeem-text-secondary: #b7c0ce;
+  --redeem-text-muted: #8994a6;
+  --redeem-accent: #2bd98f;
+  --redeem-accent-hover: #20c983;
+  min-height: 100vh;
+  color: var(--redeem-text);
+  background:
+    radial-gradient(900px 520px at 8% -12%, rgba(54, 101, 160, 0.2), transparent 66%),
+    radial-gradient(720px 440px at 98% 8%, rgba(31, 190, 126, 0.11), transparent 68%),
+    linear-gradient(180deg, #171f2a 0%, #111821 58%, #0d141d 100%) !important;
+}
+
+body.redeem-flow.home-wide-body::before,
+body.redeem-flow.home-wide-body::after,
+body.redeem-flow.home-wide-body main.page::before,
+body.redeem-flow.home-wide-body main.page::after,
+body.redeem-flow.home-wide-body .redeem-card::before,
+body.redeem-flow.home-wide-body .redeem-card::after {
+  content: none !important;
+  display: none !important;
+}
+
+body.redeem-flow.home-wide-body .page-overlay {
+  display: none !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-page {
+  width: min(1180px, calc(100% - 24px)) !important;
+  max-width: 1180px !important;
+  margin: 0 auto !important;
+  padding: 26px 0 44px !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-card {
+  overflow: visible !important;
+  padding: clamp(20px, 3.2vw, 38px) !important;
+  border: 1px solid var(--redeem-border) !important;
+  border-radius: 28px !important;
+  color: var(--redeem-text) !important;
+  background:
+    linear-gradient(150deg, rgba(39, 52, 68, 0.94), rgba(24, 33, 45, 0.96)) !important;
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(18px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(120%) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-title {
+  margin: 0 !important;
+  color: var(--redeem-text) !important;
+  font-family: "Manrope", sans-serif !important;
+  font-size: clamp(34px, 5vw, 58px) !important;
+  line-height: 1.05 !important;
+  letter-spacing: -0.045em !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-subtitle {
+  max-width: 720px !important;
+  margin: 14px 0 28px !important;
+  color: var(--redeem-text-secondary) !important;
+  font-size: clamp(15px, 1.8vw, 18px) !important;
+  line-height: 1.55 !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-grid {
+  gap: 16px !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-block,
+body.redeem-flow.home-wide-body .redeem-guide,
+body.redeem-flow.home-wide-body .redeem-faq,
+body.redeem-flow.home-wide-body .redeem-vpn-offer {
+  min-width: 0 !important;
+  border: 1px solid var(--redeem-border) !important;
+  border-radius: 20px !important;
+  color: var(--redeem-text) !important;
+  background: rgba(32, 43, 57, 0.86) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-block {
+  padding: clamp(16px, 2.4vw, 24px) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-label {
+  margin-bottom: 10px !important;
+  color: #75e9b6 !important;
+  font-size: 12px !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.08em !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-order-row {
+  min-width: 0 !important;
+  border: 1px solid var(--redeem-border) !important;
+  border-radius: 14px !important;
+  background: var(--redeem-control) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-order-id,
+body.redeem-flow.home-wide-body .redeem-manual-code-label {
+  min-width: 0 !important;
+  color: var(--redeem-text) !important;
+  overflow-wrap: anywhere !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-guide {
+  margin-bottom: 12px !important;
+  color: var(--redeem-text-secondary) !important;
+  background: rgba(18, 26, 37, 0.7) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-guide summary {
+  color: var(--redeem-text-secondary) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-guide ol,
+body.redeem-flow.home-wide-body .redeem-meta,
+body.redeem-flow.home-wide-body .redeem-flow-hint,
+body.redeem-flow.home-wide-body .redeem-manual-hint,
+body.redeem-flow.home-wide-body .redeem-faq,
+body.redeem-flow.home-wide-body .redeem-vpn-offer-text {
+  color: var(--redeem-text-secondary) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-guide a,
+body.redeem-flow.home-wide-body .redeem-faq a {
+  color: #70e9b5 !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-input {
+  width: 100% !important;
+  min-height: 150px !important;
+  border: 1px solid var(--redeem-border) !important;
+  border-radius: 16px !important;
+  color: var(--redeem-text) !important;
+  caret-color: var(--redeem-accent) !important;
+  background: var(--redeem-control) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-input::placeholder {
+  color: var(--redeem-text-muted) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-input:focus {
+  border-color: rgba(43, 217, 143, 0.72) !important;
+  box-shadow: 0 0 0 4px rgba(43, 217, 143, 0.12) !important;
+  outline: none !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-btn {
+  min-height: 44px !important;
+  border: 1px solid var(--redeem-border-strong) !important;
+  border-radius: 13px !important;
+  color: var(--redeem-text) !important;
+  background: var(--redeem-raised) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  text-shadow: none !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-btn::before,
+body.redeem-flow.home-wide-body .redeem-btn::after {
+  content: none !important;
+  display: none !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-btn:hover,
+body.redeem-flow.home-wide-body .redeem-btn:focus-visible {
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: #fff !important;
+  background: #304054 !important;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-btn-primary {
+  border-color: rgba(43, 217, 143, 0.52) !important;
+  color: #04110b !important;
+  background: linear-gradient(135deg, #35ef9d, var(--redeem-accent-hover)) !important;
+  box-shadow: 0 16px 32px rgba(32, 201, 131, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-btn-primary:hover,
+body.redeem-flow.home-wide-body .redeem-btn-primary:focus-visible {
+  color: #020805 !important;
+  background: linear-gradient(135deg, #4af4aa, #27d991) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-btn:disabled {
+  border-color: rgba(255, 255, 255, 0.07) !important;
+  color: rgba(183, 192, 206, 0.48) !important;
+  background: rgba(39, 52, 68, 0.56) !important;
+  box-shadow: none !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-status {
+  border: 1px solid var(--redeem-border) !important;
+  border-radius: 16px !important;
+  color: var(--redeem-text-secondary) !important;
+  background: rgba(18, 26, 37, 0.86) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-status.pending {
+  border-color: rgba(255, 190, 86, 0.32) !important;
+  color: #ffd58f !important;
+  background: rgba(130, 84, 16, 0.17) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-status.success {
+  border-color: rgba(43, 217, 143, 0.34) !important;
+  color: #91f1c7 !important;
+  background: rgba(24, 126, 84, 0.18) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-status.error {
+  border-color: rgba(255, 113, 113, 0.38) !important;
+  color: #ffb4b4 !important;
+  background: rgba(146, 45, 45, 0.2) !important;
+}
+
+body.redeem-flow.home-wide-body .site-legal-note,
+body.redeem-flow.home-wide-body footer {
+  color: var(--redeem-text-secondary) !important;
+}
+
+@media (max-width: 760px) {
+  body.redeem-flow.home-wide-body .redeem-page {
+    width: calc(100% - 16px) !important;
+    padding-top: 16px !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-card {
+    padding: 18px !important;
+    border-radius: 22px !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-title {
+    font-size: clamp(32px, 10vw, 43px) !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-order-row {
+    align-items: stretch !important;
+  }
+}
+
+@media (max-width: 480px) {
+  body.redeem-flow.home-wide-body .redeem-page {
+    width: calc(100% - 12px) !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-card {
+    padding: 14px !important;
+    border-radius: 19px !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-block {
+    padding: 14px !important;
+    border-radius: 16px !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-actions {
+    grid-template-columns: 1fr !important;
+  }
+}

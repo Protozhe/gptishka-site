@@ -18,6 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/logo.min.css">
+  <link rel="stylesheet" href="/assets/css/gptishka-header-refresh.css?v=20260707-header-unify9">
   
   <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2">
 <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260310r" />
@@ -1271,46 +1272,59 @@
 
   </style>
 <link rel="stylesheet" href="/assets/css/support-widget.css?v=20260707-support-unify3" />
+<link rel="stylesheet" href="/assets/css/home-stability-hotfix.css?v=20260723-checkout-controls1" />
 <link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260707-header-unify9" />
+<link rel="stylesheet" href="/assets/css/redeem-start-refresh.css?v=20260724-redeem-refresh1" />
 </head>
-<body class="redeem-flow">
+<body class="redeem-flow home-wide-body">
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
   <div class="page-overlay"></div>
 
   <header>
-<div class="nav">
-      <a href="/" class="logo-link">
-        <img loading="eager" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTишка" class="logo-img" onerror="this.onerror=null;this.src='/favicon.png';">
-      </a>
-
-            <nav>
-        <a href="/">Главная</a>
-        <a href="/#pricing">Тарифы</a>
-        <a href="/#how">Как это работает</a>
-        <a href="/#payment">Оплата</a>
-        <a href="/#faq">Вопросы и ответы</a>
-      </nav>
-
-          <div class="header-tools">
-<div class="lang-switch" id="langSwitch">
-        <div class="lang-current" id="langCurrent">
-          <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
-          <span>Русский</span>
-          <span class="arrow">в–ѕ</span>
+    <div id="siteTicker" class="site-ticker" role="status" aria-live="polite">
+      <div class="site-ticker__marquee">
+        <div class="site-ticker__track" id="siteTickerTrack">
+          <div class="site-ticker__loop"><span class="site-ticker__item">Лента активаций обновляется...</span></div>
+          <div class="site-ticker__loop" aria-hidden="true"><span class="site-ticker__item">Лента активаций обновляется...</span></div>
         </div>
-
-        <div class="lang-dropdown">
-          <div class="lang-item" data-lang="ru">
+      </div>
+      <div class="site-ticker__stats">
+        <span class="site-ticker__stat"><span class="site-ticker__stat-label">всего активаций:</span> <strong id="siteTickerSales">0</strong></span>
+      </div>
+    </div>
+    <div class="nav nav-shell">
+      <a href="/" class="logo-link">
+        <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTишка" class="logo-img">
+      </a>
+      <a href="/chatgpt" class="header-product-pill" aria-label="ChatGPT от 1290 ₽/мес">
+        <img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" loading="lazy" decoding="async">
+        <span>ChatGPT от 1290 ₽/мес</span>
+      </a>
+      <nav class="header-quick-links" aria-label="Быстрые разделы GPTishka">
+        <a class="header-quick-link" href="/news/">Новости</a>
+        <a class="header-quick-link" href="/app/">Отзывы</a>
+        <a class="header-quick-link" href="https://vk.com/gptishka?from=groups&amp;trackcode=7f99670c_6HjhbFhCJIgWV0ALEpOr-nIlZFrs3X3-3D3-z00f1k7ylk5Mhdl7hxbRgwtUEeZ8MCZjDfHpk0ywZuW" target="_blank" rel="noopener">VK</a>
+        <a class="header-quick-link header-quick-link--telegram" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener">Telegram</a>
+      </nav>
+      <div class="header-tools header-actions">
+        <div class="lang-switch" id="langSwitch">
+          <div class="lang-current" id="langCurrent">
             <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
             <span>Русский</span>
+            <span class="arrow">&#9662;</span>
           </div>
-          <div class="lang-item" data-lang="en">
-            <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
-            <span>English</span>
+          <div class="lang-dropdown">
+            <div class="lang-item" data-lang="ru">
+              <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
+              <span>Русский</span>
+            </div>
+            <div class="lang-item" data-lang="en">
+              <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
+              <span>English</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </div>
   </header>
 
@@ -1440,7 +1454,7 @@
     <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
   </footer>
 
-  <script src="/assets/js/app.min.js?v=20260721-heavy-cards-webp1" defer></script>
+  <script src="/assets/js/app.min.js?v=20260724-payment-logos1" defer></script>
   <script>
     (() => {
     const params = new URLSearchParams(window.location.search);

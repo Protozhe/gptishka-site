@@ -30,6 +30,7 @@ const ACTIVATION_OUTSTOCK_RETRY_DELAY_MS = Math.min(
   Math.max(500, Number(env.ACTIVATION_OUTSTOCK_RETRY_DELAY_MS || 2_000))
 );
 const SXZFD_GROK_API_TIMEOUT_MS = 25_000;
+const CHONGZHI_JSON_API_TIMEOUT_MS = 30_000;
 const SXZFD_GROK_MAX_START_ATTEMPTS = Math.min(3, ACTIVATION_OUTSTOCK_MAX_RETRIES);
 const MIN_STORED_CLIENT_TOKEN_TTL_HOURS = 24 * 7;
 const STORED_CLIENT_TOKEN_TTL_HOURS = Math.max(
@@ -1819,7 +1820,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     }
   }
   if (!createResult.ok) {
-    throw new AppError("Activation start failed", 502, {
+    throw new AppError(String(createResult.message || "Activation start failed"), 502, {
       upstreamStatus: createResult.status || 0,
       upstreamBody: String(createResult.body || "").slice(0, 2000),
       retries: createResult.tries,
@@ -2411,6 +2412,178 @@ function shouldRetryOutstockFailure(status: number, body: string) {
   return false;
 }
 
+async function callChongzhiJsonApi(
+  base: string,
+  action: "verify_code" | "submit_recharge" | "query_code",
+  data: Record<string, unknown>
+) {
+  const apiUrl = buildActivationSiteEndpointUrl(base, "api.php") || `${base.replace(/\/+$/, "")}/api.php`;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), CHONGZHI_JSON_API_TIMEOUT_MS);
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        Accept: "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+      body: JSON.stringify({ action, ...data }),
+      signal: controller.signal,
+    });
+    const raw = await response.text().catch(() => "");
+    return {
+      status: response.status,
+      raw,
+      json: tryParseJson(raw) as any,
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function startChongzhiJsonTask(
+  input: { cdk: string; userCandidates: any[] },
+  base: string,
+  sourceLabel?: string
+) {
+  let verify;
+  try {
+    verify = await callChongzhiJsonApi(base, "verify_code", { cdk: input.cdk });
+  } catch {
+    return null;
+  }
+
+  // Older compatible providers do not expose api.php. Keep the legacy flow for them.
+  if (!verify.json) {
+    if (verify.status === 404 || verify.status === 405) return null;
+    return {
+      ok: false as const,
+      taskId: "",
+      status: verify.status || 502,
+      body: verify.raw || "Provider returned a non-JSON response",
+      tries: 1,
+      immediateSuccess: false,
+      message: "Сервис активации временно вернул некорректный ответ. Повторите позже.",
+      providerPayload: null,
+    };
+  }
+
+  const verifyStatus = String(verify.json?.status || "").trim().toLowerCase();
+  const rechargeStatus = String(verify.json?.recharge_status || "").trim().toLowerCase();
+  const alreadyCompleted =
+    Boolean(verify.json?.success) && (verifyStatus === "used" || rechargeStatus === "success");
+  if (alreadyCompleted) {
+    const taskId =
+      String(verify.json?.order_id || verify.json?.task_id || "").trim() ||
+      `chongzhi-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    return {
+      ok: true as const,
+      taskId,
+      status: verify.status || 200,
+      body: verify.raw || "",
+      tries: 1,
+      immediateSuccess: true,
+      message: String(verify.json?.message || "Activation completed"),
+      providerPayload: {
+        source: String(sourceLabel || base || "chongzhi/api.php"),
+        verify: verify.json,
+      },
+    };
+  }
+
+  if (!verify.status || verify.status >= 400 || !verify.json?.success || verify.json?.can_submit === false) {
+    return {
+      ok: false as const,
+      taskId: "",
+      status: verify.status || 502,
+      body: verify.raw || "verify_code failed",
+      tries: 1,
+      immediateSuccess: false,
+      message: String(verify.json?.message || "Ключ активации не прошёл проверку поставщика."),
+      providerPayload: null,
+    };
+  }
+
+  const tokenCandidate =
+    input.userCandidates.find((candidate) => typeof candidate === "string" && String(candidate || "").trim().startsWith("{")) ||
+    input.userCandidates.find((candidate) => typeof candidate === "string" && String(candidate || "").trim());
+  const tokenRaw = String(tokenCandidate || "").trim();
+  const sid = String(verify.json?.sid || "").trim();
+  if (!tokenRaw || !sid) {
+    return {
+      ok: false as const,
+      taskId: "",
+      status: 502,
+      body: !sid ? "Provider did not return sid" : "Token payload is empty",
+      tries: 1,
+      immediateSuccess: false,
+      message: !sid
+        ? "Сервис активации не вернул идентификатор сессии. Повторите позже."
+        : "Токен аккаунта пуст.",
+      providerPayload: null,
+    };
+  }
+
+  let submit;
+  try {
+    submit = await callChongzhiJsonApi(base, "submit_recharge", {
+      cdk: input.cdk,
+      json_token: tokenRaw,
+      sid,
+      force_overwrite: false,
+    });
+  } catch (error) {
+    return {
+      ok: false as const,
+      taskId: "",
+      status: 0,
+      body: error instanceof Error ? error.message : String(error || "submit_recharge failed"),
+      tries: 1,
+      immediateSuccess: false,
+      message: "Сервис активации не ответил вовремя. Проверьте статус заказа через минуту.",
+      providerPayload: null,
+    };
+  }
+
+  const submitPending = Boolean(submit.json?.pending);
+  if (submit.json?.success || submitPending) {
+    const taskId =
+      String(submit.json?.order_id || submit.json?.task_id || "").trim() ||
+      `chongzhi-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    return {
+      ok: true as const,
+      taskId,
+      status: submit.status || 200,
+      body: submit.raw || "",
+      tries: 1,
+      immediateSuccess: Boolean(submit.json?.success && !submitPending),
+      message: String(
+        submit.json?.message ||
+          (submitPending ? "Activation request is processing" : "Activation completed")
+      ),
+      providerPayload: {
+        source: String(sourceLabel || base || "chongzhi/api.php"),
+        verify: verify.json,
+        recharge: submit.json,
+      },
+    };
+  }
+
+  return {
+    ok: false as const,
+    taskId: "",
+    status: submit.status || 502,
+    body: submit.raw || "submit_recharge failed",
+    tries: 1,
+    immediateSuccess: false,
+    message: String(submit.json?.message || "Поставщик не смог запустить активацию."),
+    providerPayload: null,
+  };
+}
+
 async function startChongzhiTaskWithRetry(
   input: { cdk: string; deviceId: string; userCandidates: any[] },
   options?: { baseUrl?: string; sourceLabel?: string }
@@ -2438,6 +2611,9 @@ async function startChongzhiTaskWithRetry(
       providerPayload: null,
     };
   }
+
+  const jsonApiResult = await startChongzhiJsonTask(input, base, options?.sourceLabel);
+  if (jsonApiResult) return jsonApiResult;
 
   let lastStatus = 0;
   let lastBody = "";
@@ -2613,6 +2789,22 @@ async function fetchChongzhiCodeStatus(cdk: string, activationSiteUrl?: string |
   const base = String(activationSiteUrl || env.ACTIVATION_CHONGZHI_BASE_URL || "https://chongzhi.pro")
     .trim()
     .replace(/\/+$/, "");
+  try {
+    const current = await callChongzhiJsonApi(base, "query_code", {
+      cdk,
+      polling: 1,
+      silent_log: 1,
+    });
+    if (current.json) {
+      return {
+        status: current.status,
+        raw: current.raw,
+        json: current.json,
+      };
+    }
+  } catch {
+    // Older compatible providers still use the session-based endpoints below.
+  }
   const pageUrl = buildActivationSiteEndpointUrl(base, "");
   const parsedBase = tryParseUrl(pageUrl);
   const origin = parsedBase?.origin || base;
@@ -2663,8 +2855,13 @@ async function verifyChongzhiCodeStatus(base: string, cdk: string, headers: Reco
 }
 
 function isChongzhiCodeUsed(payload: { json?: any } | null | undefined) {
-  const codeStatus = String(payload?.json?.data?.code_status || payload?.json?.code_status || "").trim().toLowerCase();
-  return codeStatus === "used";
+  const codeStatus = String(
+    payload?.json?.data?.code_status || payload?.json?.code_status || payload?.json?.status || ""
+  )
+    .trim()
+    .toLowerCase();
+  const rechargeStatus = String(payload?.json?.recharge_status || "").trim().toLowerCase();
+  return codeStatus === "used" || rechargeStatus === "success";
 }
 
 function updateActivationFromChongzhiCodePayload(orderId: string, payload: { status?: number; json?: any; raw?: string }) {
@@ -2673,7 +2870,9 @@ function updateActivationFromChongzhiCodePayload(orderId: string, payload: { sta
 
   const nowIso = new Date().toISOString();
   const used = isChongzhiCodeUsed(payload);
-  const codeStatus = String(payload?.json?.data?.code_status || payload?.json?.code_status || "").trim();
+  const codeStatus = String(
+    payload?.json?.data?.code_status || payload?.json?.code_status || payload?.json?.status || ""
+  ).trim();
   const hasTask = Boolean(String(stored.taskId || "").trim());
   const nextStatus: ActivationRecord["status"] = used ? "success" : stored.status;
   const nextVerificationState: NonNullable<ActivationRecord["verificationState"]> = used
@@ -2694,9 +2893,10 @@ function updateActivationFromChongzhiCodePayload(orderId: string, payload: { sta
     lastProviderMessage: providerMessage,
     lastProviderCheckedAt: nowIso,
     lastProviderPayload: {
-      source: "chongzhi/api-verify",
+      source: "chongzhi/status",
       providerStatus: Number(payload?.status || 0),
       code_status: codeStatus || null,
+      recharge_status: String(payload?.json?.recharge_status || "").trim() || null,
       success: Boolean(payload?.json?.success),
       data: payload?.json?.data || null,
     },
