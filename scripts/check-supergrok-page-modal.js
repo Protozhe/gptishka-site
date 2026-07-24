@@ -21,7 +21,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260723-checkout-controls1";
-const expectedJsAssetVersion = "20260724-lava-mark1";
+const expectedJsAssetVersion = "20260724-lava-mark2";
 
 [
   ["service-page--constructor", "supergrok.html: constructor page class"],

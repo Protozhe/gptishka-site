@@ -97,7 +97,7 @@ requireCss('.chatgpt-order-title[tabindex="-1"]:focus', "focused modal title has
 
 requirePage("СБП 0% и карты 3.2%", "static payment modal LAVA caption");
 requirePage("/assets/css/home-stability-hotfix.css?v=20260723-checkout-controls1", "CSS cache-bust");
-requirePage("/assets/js/app.min.js?v=20260724-lava-mark1", "JS cache-bust");
+requirePage("/assets/js/app.min.js?v=20260724-lava-mark2", "JS cache-bust");
 
 if (failures.length) {
   console.error(`ChatGPT modal visual checks failed:\n- ${failures.join("\n- ")}`);

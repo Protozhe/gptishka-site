@@ -8,7 +8,7 @@ const serverSource = fs.readFileSync("server.js", "utf8");
 const successPage = fs.readFileSync("success.html", "utf8");
 
 const expectedAssetVersion = "20260723-checkout-controls1";
-const expectedJsAssetVersion = "20260724-lava-mark1";
+const expectedJsAssetVersion = "20260724-lava-mark2";
 
 const requiredSourceMarkers = [
   'const DEFAULT_PAYMENT_METHOD = "lava";',
