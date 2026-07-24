@@ -14,7 +14,7 @@ const service = read("apps/admin-backend/src/modules/orders/orders.service.ts");
 for (const page of [ru, en]) {
   assert.ok(page.includes('class="redeem-flow home-wide-body"'));
   assert.ok(page.includes("/assets/css/gptishka-header-refresh.css?v=20260707-header-unify9"));
-  assert.ok(page.includes("/assets/css/redeem-start-refresh.css?v=20260724-redeem-refresh2"));
+  assert.ok(page.includes("/assets/css/redeem-start-refresh.css?v=20260724-redeem-refresh3"));
   assert.ok(page.includes("/assets/js/app.min.js?v=20260724-payment-logos1"));
   assert.ok(page.includes('class="nav nav-shell"'));
   assert.ok(page.includes("/assets/img/logo-new-dark.png?v=20260622-header4"));
@@ -22,6 +22,8 @@ for (const page of [ru, en]) {
 
 assert.ok(css.includes("--redeem-shell: #18212d"));
 assert.ok(css.includes("zoom: 0.85"));
+assert.ok(css.includes(".redeem-leave-modal__dialog"));
+assert.ok(css.includes("rgba(3, 8, 15, 0.78)"));
 assert.ok(css.includes(".redeem-order-id"));
 assert.ok(css.includes(".redeem-status.error"));
 

@@ -236,6 +236,103 @@ body.redeem-flow.home-wide-body .redeem-status.error {
   background: rgba(146, 45, 45, 0.2) !important;
 }
 
+body.redeem-flow.home-wide-body .redeem-leave-modal__backdrop {
+  background:
+    radial-gradient(640px 360px at 50% 42%, rgba(36, 105, 78, 0.16), transparent 70%),
+    rgba(3, 8, 15, 0.78) !important;
+  backdrop-filter: blur(12px) saturate(112%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(112%) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-leave-modal__dialog {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: min(520px, 100%) !important;
+  padding: 24px !important;
+  border: 1px solid var(--redeem-border-strong) !important;
+  border-radius: 24px !important;
+  color: var(--redeem-text) !important;
+  background:
+    radial-gradient(440px 220px at 100% 0%, rgba(43, 217, 143, 0.1), transparent 68%),
+    linear-gradient(150deg, rgba(39, 52, 68, 0.99), rgba(24, 33, 45, 0.99)) !important;
+  box-shadow:
+    0 34px 90px rgba(0, 0, 0, 0.52),
+    0 0 0 1px rgba(255, 255, 255, 0.025),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-leave-modal__dialog::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #35e394 32%, #1fbd7b 68%, transparent);
+  opacity: 0.88;
+}
+
+body.redeem-flow.home-wide-body .redeem-leave-modal__title {
+  max-width: 21ch;
+  color: var(--redeem-text) !important;
+  font-family: "Space Grotesk", "Manrope", sans-serif !important;
+  font-size: clamp(23px, 3.2vw, 29px) !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.035em !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-leave-modal__text {
+  max-width: 46ch;
+  margin-top: 12px !important;
+  color: var(--redeem-text-secondary) !important;
+  font-size: 15px !important;
+  line-height: 1.58 !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-leave-modal__actions {
+  margin-top: 22px !important;
+  gap: 10px !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-leave-modal__actions .redeem-btn {
+  min-height: 46px !important;
+  padding: 11px 17px !important;
+  border: 1px solid var(--redeem-border-strong) !important;
+  border-radius: 14px !important;
+  color: var(--redeem-text) !important;
+  background: rgba(39, 52, 68, 0.94) !important;
+  box-shadow: none !important;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-leave-modal__actions .redeem-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.27) !important;
+  background: rgba(50, 66, 85, 0.98) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-leave-modal__actions .redeem-btn-primary {
+  border-color: rgba(66, 234, 157, 0.46) !important;
+  color: #06150e !important;
+  background: linear-gradient(135deg, #42ea9d, #20d184 60%, #14ad6c) !important;
+  box-shadow: 0 12px 28px rgba(27, 201, 124, 0.2) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-leave-modal__actions .redeem-btn-primary:hover {
+  border-color: rgba(104, 247, 181, 0.72) !important;
+  background: linear-gradient(135deg, #55f0aa, #2ada8f 60%, #18b974) !important;
+  box-shadow: 0 15px 34px rgba(27, 201, 124, 0.28) !important;
+}
+
+body.redeem-flow.home-wide-body .redeem-leave-modal__actions .redeem-btn:focus-visible {
+  outline: 3px solid rgba(112, 232, 178, 0.3) !important;
+  outline-offset: 3px !important;
+}
+
 body.redeem-flow.home-wide-body .site-legal-note,
 body.redeem-flow.home-wide-body footer {
   color: var(--redeem-text-secondary) !important;
@@ -258,6 +355,20 @@ body.redeem-flow.home-wide-body footer {
 
   body.redeem-flow.home-wide-body .redeem-order-row {
     align-items: stretch !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-leave-modal__dialog {
+    padding: 20px !important;
+    border-radius: 20px !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-leave-modal__actions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-leave-modal__actions .redeem-btn {
+    width: 100% !important;
   }
 }
 
