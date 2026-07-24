@@ -325,6 +325,47 @@ html body:has(main.service-page[data-service-page="chatgpt"])
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+html body:has(main.service-page[data-service-page="grok"])
+  main.service-page[data-service-page="grok"]
+  .service-info-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+html body:has(main.service-page[data-service-page="grok"])
+  main.service-page[data-service-page="grok"]
+  .service-info-card {
+  gap: 14px;
+}
+
+html body:has(main.service-page[data-service-page="grok"])
+  main.service-page[data-service-page="grok"]
+  .service-info-card li {
+  line-height: 1.65;
+}
+
+html body:has(main.service-page[data-service-page="grok"])
+  main.service-page[data-service-page="grok"]
+  .service-info-card a {
+  color: rgba(239, 243, 248, 0.94);
+  text-decoration-color: rgba(199, 208, 221, 0.42);
+  text-underline-offset: 3px;
+}
+
+html body:has(main.service-page[data-service-page="grok"])
+  main.service-page[data-service-page="grok"]
+  .service-info-card a:hover {
+  color: #ffffff;
+  text-decoration-color: currentColor;
+}
+
+html body:has(main.service-page[data-service-page="grok"])
+  main.service-page[data-service-page="grok"]
+  .service-info-card__legal {
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
   main.service-page
   .service-faq-list {
@@ -348,6 +389,15 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
   main.service-page
   .service-faq-answer {
   padding: 0 0 20px;
+}
+
+@media (max-width: 980px) {
+  html body:has(main.service-page[data-service-page="grok"])
+    main.service-page[data-service-page="grok"]
+    .service-info-grid {
+    grid-template-columns: 1fr;
+    gap: 34px;
+  }
 }
 
 @media (max-width: 760px) {
