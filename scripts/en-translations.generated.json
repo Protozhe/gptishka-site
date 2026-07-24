@@ -1,0 +1,3146 @@
+[
+  [
+    "<div class=\"karing-lightbox__dialog\"> <div class=\"karing-lightbox__top\"> <span class=\"karing-lightbox__counter\" data-karing-counter>1/1</span> <button type=\"button\" class=\"karing-lightbox__close\" data-karing-close aria-label=\"${KARING_LIGHTBOX_LABELS.close}\">Г—</button> </div> <button type=\"button\" class=\"karing-lightbox__nav karing-lightbox__nav--prev\" data-karing-prev aria-label=\"${KARING_LIGHTBOX_LABELS.previous}\">‹</button> <div class=\"karing-lightbox__image-wrap\"> <img class=\"karing-lightbox__image\" data-karing-image alt=\"\" /> </div> <button type=\"button\" class=\"karing-lightbox__nav karing-lightbox__nav--next\" data-karing-next aria-label=\"${KARING_LIGHTBOX_LABELS.next}\">›</button> </div>",
+    "<div class=\"karing-lightbox__dialog\"> <div class=\"karing-lightbox__top\"> <span class=\"karing-lightbox__counter\" data-karing-counter>1/1</span> <button type=\"button\" class=\"karing-lightbox__close\" data-karing-close aria-label=\"${KARING_LIGHTBOX_LABELS.close}\">Г—</button> </div> <button type=\"button\" class=\"karing-lightbox__nav karing-lightbox__nav--prev\" data-karing-prev aria-label=\"${KARING_LIGHTBOX_LABELS.previous}\">‹</button> <div class=\"karing-lightbox__image-wrap\"> <img class=\"karing-lightbox__image\" data-karing-image alt=\"\" /> </div> <button type=\"button\" class=\"karing-lightbox__nav karing-lightbox__nav--next\" data-karing-next aria-label=\"${KARING_LIGHTBOX_LABELS.next}\">›</button> </div>"
+  ],
+  [
+    "10.1. Стороны освобождаются от ответственности за полное или частичное неисполнение обязательств, вызванное обстоятельствами непреодолимой силы (форс-мажор), включая, но не ограничиваясь: действия государственных органов, аварии, сбои связи/интернета, пожары, наводнения, землетрясения, иные стихийные бедствия.",
+    "10.1. The parties are released from liability for complete or partial failure to fulfill obligations caused by force majeure circumstances (force majeure), including, but not limited to: actions of government bodies, accidents, communication/Internet failures, fires, floods, earthquakes, and other natural disasters."
+  ],
+  [
+    "Акцептом (принятием) Оферты является совершение Покупателем конклюдентных действий, включая оформление заказа на Сайте и/или оплату выбранного продукта. С момента акцепта договор считается заключённым, а Покупатель подтверждает, что ознакомился с условиями Оферты и принимает их полностью и без оговорок.",
+    "Acceptance (acceptance) of the Offer is the performance by the Buyer of implied actions, including placing an order on the Site and/or paying for the selected product. From the moment of acceptance, the contract is considered concluded, and the Buyer confirms that he has read the terms of the Offer and accepts them fully and without reservation."
+  ],
+  [
+    "Вы выбираете количество ключей Манн Ко, указываете Steam trade-ссылку и оплачиваете заказ. Сейчас обработка выполняется вручную: менеджер проверяет оплату и отправляет ключи по указанной trade-ссылке. После передачи ключей возврат невозможен, если ключи уже были отправлены.",
+    "You select the number of Mann Co. keys, indicate the Steam trade link and pay for the order. Now processing is done manually: the manager checks the payment and sends the keys via the specified trade link. Once the keys have been submitted, no refunds are possible if the keys have already been sent."
+  ],
+  [
+    "Для подписок сроком 6 месяцев и более действует ограниченная гарантия — 2 месяца с момента подключения. В течение гарантийного периода Продавец обязуется устранить технические проблемы, возникшие по его вине, либо предоставить замену/компенсацию согласно условиям оферты.",
+    "For subscriptions of 6 months or more, there is a limited warranty of 2 months from the date of connection. During the warranty period, the Seller undertakes to eliminate technical problems that arose due to its fault, or provide replacement/compensation in accordance with the terms of the offer."
+  ],
+  [
+    "После оплаты сайт открывает следующий шаг по выбранному товару: активацию по токену, оформление Steam-пополнения, инструкцию или передачу заказа менеджеру. Если автоматический сценарий недоступен, заказ не теряется — поддержка видит его и доводит услугу до результата.",
+    "After payment, the site opens the next step for the selected product: activation using a token, completing a Steam replenishment, instructions, or transferring the order to the manager. If the automatic script is not available, the order is not lost - support sees it and brings the service to fruition."
+  ],
+  [
+    "Если решение принято не в пользу покупателя, покупатель вправе обратиться с жалобой в платежную систему или банк (в зависимости от способа оплаты). Продавец взаимодействует с платежным интегратором (или банком-эквайером) и предоставляет необходимую информацию.",
+    "If the decision is not made in favor of the buyer, the buyer has the right to file a complaint with the payment system or bank (depending on the payment method). The merchant interacts with the payment integrator (or acquiring bank) and provides the necessary information."
+  ],
+  [
+    "Чаще всего подключение занимает несколько минут после подтверждения оплаты. Для товаров с автоматической выдачей данные открываются сразу или почти сразу. Если заказ требует ручной проверки, менеджер подключится и завершит его в рабочем порядке.",
+    "Most often, the connection takes a few minutes after confirmation of payment. For products with automatic delivery, data is opened immediately or almost immediately. If the order requires manual verification, the manager will connect and complete it as usual."
+  ],
+  [
+    "12.2. Споры и разногласия разрешаются путем переговоров и в претензионном порядке. При недостижении соглашения спор подлежит рассмотрению в суде по месту нахождения (регистрации) Продавца, если иное не установлено императивными нормами закона.",
+    "12.2. Disputes and disagreements are resolved through negotiations and through claims. If an agreement is not reached, the dispute is subject to consideration in court at the location (registration) of the Seller, unless otherwise established by imperative provisions of the law."
+  ],
+  [
+    "6.1. Покупатель понимает, что цифровой продукт после передачи может быть немедленно использован, скопирован или активирован. В связи с этим возврат возможен только в случаях и порядке, предусмотренных законодательством РФ и настоящей Офертой.",
+    "6.1. Buyer understands that the digital product, once transferred, may be immediately used, copied or activated. In this regard, a return is possible only in cases and in the manner provided for by the legislation of the Russian Federation and this Offer."
+  ],
+  [
+    "GPTishka — независимый магазин цифровых услуг. Мы не являемся официальным представителем OpenAI, Anthropic, xAI или других правообладателей. Названия продуктов используются только для описания совместимых услуг, запрошенных пользователями.",
+    "GPTishka is an independent digital services store. We are not an official representative of OpenAI, Anthropic, xAI or other copyright holders. Product names are used only to describe compatible services requested by users."
+  ],
+  [
+    "Claude помогает работать с текстами, кодом, документами и большими объёмами информации. Выберите подходящий тариф, проверьте требования к аккаунту и оформите заказ — GPTishka выполнит подключение и останется на связи после оплаты.",
+    "Claude helps you work with texts, code, documents and large amounts of information. Select the appropriate tariff, check the account requirements and place an order - GPTishka will connect and stay connected after payment."
+  ],
+  [
+    "Токен используется только для выполнения активации выбранного тарифа. Он не является паролем от аккаунта и не нужен для входа на сайт GPTishka. Вводите токен только на странице активации GPTishka и не отправляйте его посторонним.",
+    "The token is used only to activate the selected tariff. It is not an account password and is not needed to log into the GPTishka website. Enter the token only on the GPTishka activation page and do not send it to strangers."
+  ],
+  [
+    "SuperGrok помогает искать и анализировать информацию, работать с текстами и кодом и быстрее решать повседневные задачи. Выберите доступный срок и оформите заказ — GPTishka подключит подписку и останется на связи после оплаты.",
+    "SuperGrok helps you search and analyze information, work with texts and code, and solve everyday problems faster. Select an available period and place an order - GPTishka will activate the subscription and stay in touch after payment."
+  ],
+  [
+    "8.1. Продавец не является владельцем или оператором сторонних сервисов (включая, но не ограничиваясь OpenAI / ChatGPT) и не влияет на их решения, алгоритмы, ограничения, региональную доступность и требования (KYC/2FA и т.п.).",
+    "8.1. The seller is not the owner or operator of third-party services (including, but not limited to OpenAI / ChatGPT) and does not influence their decisions, algorithms, restrictions, regional availability and requirements (KYC/2FA, etc.)."
+  ],
+  [
+    "Да. Продление оформляется как новый заказ через нужный тариф. Если для товара доступен вариант «без входа», можно снова пройти активацию по инструкции. Если нужен вариант «со входом», форма заранее покажет необходимые поля.",
+    "Yes. The extension is processed as a new order using the required tariff. If the “no login” option is available for the product, you can go through activation again according to the instructions. If you need the “with login” option, the form will show the required fields in advance."
+  ],
+  [
+    "ChatGPT помогает работать с текстами, кодом, документами и повседневными задачами. Выберите подходящий тариф, проверьте условия подключения и оформите заказ — GPTishka активирует подписку и останется на связи после оплаты.",
+    "ChatGPT helps you work with texts, code, documents and everyday tasks. Select the appropriate tariff, check the connection conditions and place an order - GPTishka will activate the subscription and stay in touch after payment."
+  ],
+  [
+    "Зависит от выбранного способа подключения. Для вариантов «без входа» логин и пароль не нужны. Если вы выбираете вариант «со входом», форма заранее покажет нужные поля, чтобы мы могли подключить подписку через ваш аккаунт.",
+    "Depends on the selected connection method. For “no login” options, a login and password are not required. If you select the “with login” option, the form will show the required fields in advance so that we can connect the subscription through your account."
+  ],
+  [
+    "Напишите в поддержку и укажите email или номер заказа. Мы проверим оплату, выбранный тариф и статус активации. Если автоматический сценарий не сработал, заказ будет завершён вручную или вам предложат решение по гарантии.",
+    "Write to support and indicate your email or order number. We will check the payment, selected tariff and activation status. If the automatic script does not work, the order will be completed manually or you will be offered a warranty solution."
+  ],
+  [
+    "3.4. Для корректного исполнения заказа Покупатель обязан указать достоверные контактные данные. При необходимости Продавец может запросить подтверждение платежа (ID/номер транзакции) для идентификации заказа и поддержки.",
+    "3.4. For correct execution of the order, the Buyer must provide accurate contact information. If necessary, the Seller may request payment confirmation (ID/transaction number) for order identification and support."
+  ],
+  [
+    "GPTishka — независимый магазин цифровых услуг. Мы не являемся официальным сайтом OpenAI и не представляем OpenAI. Название ChatGPT используется только для описания совместимой услуги, которую запрашивает пользователь.",
+    "GPTishka is an independent digital services store. We are not the official website of OpenAI and do not represent OpenAI. The name ChatGPT is used only to describe the compatible service requested by the user."
+  ],
+  [
+    "Продавец несет ответственность за своевременную передачу цифрового товара после подтверждения оплаты. Ниже описан порядок обращения, сроки рассмотрения и условия возврата средств. Подробные условия также изложены в",
+    "The seller is responsible for the timely delivery of the digital product after confirmation of payment. The application procedure, review timeframes and refund conditions are described below. Detailed terms and conditions are also set out in"
+  ],
+  [
+    "На сайте используются cookies и аналитические технологии (в том числе Яндекс Метрика) для анализа посещаемости, работы интерфейса и повышения качества сервиса. Вы можете ограничить cookies в настройках браузера.",
+    "The site uses cookies and analytical technologies (including Yandex Metrica) to analyze traffic, interface performance and improve the quality of service. You can limit cookies in your browser settings."
+  ],
+  [
+    "Мы обрабатываем заказы ежедневно с 10:00 до 20:00 по МСК. Среднее время ожидания — от 5 минут до 2 часов после оплаты. Если заказ оформлен ночью — подключим с утра. Максимальное время выполнения — 2 рабочих дня.",
+    "We process orders daily from 10:00 to 20:00 Moscow time. The average waiting time is from 5 minutes to 2 hours after payment. If the order is placed at night, we will connect you in the morning. Maximum turnaround time is 2 business days."
+  ],
+  [
+    "GPTишка — это онлайн-сервис для быстрого и удобного подключения подписки ChatGPT Plus. Мы помогаем пользователям получить доступ к расширенному функционалу без сложных действий, лишних рисков и потери времени.",
+    "GPTishka is an online service for quickly and conveniently connecting to a ChatGPT Plus subscription. We help users gain access to advanced functionality without complex actions, unnecessary risks and loss of time."
+  ],
+  [
+    "При выдаче нового аккаунта доступ к официальному сайту почты может быть ограничен. Для входящих писем предоставляется отдельный защищённый веб-интерфейс; почтовый ящик закрепляется только за покупателем.",
+    "When issuing a new account, access to the official mail website may be limited. A separate secure web interface is provided for incoming letters; The mailbox is assigned only to the buyer."
+  ],
+  [
+    "Мы понимаем, что покупка цифровых услуг онлайн может вызывать вопросы, особенно при первом обращении. Поэтому мы открыто и честно объясняем, на что вы можете рассчитывать при работе с нашим сервисом.",
+    "We understand that purchasing digital services online can be challenging, especially when you first contact us. That’s why we openly and honestly explain what you can expect when working with our service."
+  ],
+  [
+    "— цифровой контент и/или цифровая услуга, предлагаемые на Сайте (включая активацию/продление подписки, предоставление данных доступа, инструкций, токенов, ссылок и иных нематериальных результатов).",
+    "— digital content and/or digital service offered on the Site (including activation/renewal of subscription, provision of access data, instructions, tokens, links and other intangible results)."
+  ],
+  [
+    "На сайте доступны СБП, банковские карты РФ/СНГ и криптовалюта через подключённые платёжные способы. Итоговая сумма всегда рассчитывается на сервере, поэтому цена в заказе фиксируется корректно.",
+    "SBP, Russian/CIS bank cards and cryptocurrency are available on the site through connected payment methods. The total amount is always calculated on the server, so the price in the order is fixed correctly."
+  ],
+  [
+    "7.2. Для рассмотрения обращения Покупатель предоставляет: дату и сумму оплаты, способ оплаты, ID/номер транзакции (при наличии), описание проблемы и подтверждающие материалы (скриншоты и т.п.).",
+    "7.2. To consider the request, the Buyer provides: date and amount of payment, payment method, transaction ID/number (if available), description of the problem and supporting materials (screenshots, etc.)."
+  ],
+  [
+    "Для подписок сроком 6 месяцев и более действует ограниченная гарантия — 2 месяца с момента подключения, в течение которых осуществляется приоритетная поддержка и решение технических вопросов.",
+    "For subscriptions of 6 months or more, there is a limited warranty of 2 months from the date of connection, during which priority support and resolution of technical issues are provided."
+  ],
+  [
+    "Мы храним персональные данные не дольше, чем это требуется для целей обработки, исполнения договора и/или требований законодательства. По достижении целей данные удаляются или обезличиваются.",
+    "We store personal data for no longer than is necessary for the purposes of processing, fulfillment of the contract and/or legal requirements. Once the goals are achieved, the data is deleted or anonymized."
+  ],
+  [
+    "Мы не запрашиваем логины и пароли от аккаунтов пользователей. Для выполнения операции используется технический токен, который применяется исключительно для активации или продления подписки.",
+    "We do not request logins and passwords from user accounts. To perform the operation, a technical token is used, which is used exclusively for activating or renewing a subscription."
+  ],
+  [
+    "Сервис работает в автоматическом режиме: после оплаты вы получаете понятную инструкцию и необходимые данные для активации. В большинстве случаев подключение занимает всего несколько минут.",
+    "The service works automatically: after payment you receive clear instructions and the necessary data for activation. In most cases, connection takes only a few minutes."
+  ],
+  [
+    "Во время использования соблюдайте правила Claude и наши инструкции. Стороннее ПО, нестабильные VPN или прокси, частая смена IP и передача аккаунта другим людям повышают риск ограничений.",
+    "During use, follow the rules of Claude and our instructions. Third-party software, unstable VPN or proxies, frequent changes of IP and transfer of the account to other people increase the risk of restrictions."
+  ],
+  [
+    "После успешной оплаты система создаёт VPN-доступ и открывает страницу, где можно скопировать VLESS-ссылку, QR-код или данные для подключения. Никакие токены активации вводить не нужно.",
+    "After successful payment, the system creates VPN access and opens a page where you can copy the VLESS link, QR code or connection data. You do not need to enter any activation tokens."
+  ],
+  [
+    "Мы не запрашиваем и не храним пароли от аккаунтов, а также не передаем данные третьим лицам. Все операции выполняются с соблюдением базовых принципов безопасности и конфиденциальности.",
+    "We do not request or store account passwords, nor do we share data with third parties. All transactions are carried out in compliance with the basic principles of security and confidentiality."
+  ],
+  [
+    "Наша цель — сделать процесс максимально прозрачным, безопасным и предсказуемым. Мы сопровождаем клиента на всех этапах и остаёмся на связи, если возникают вопросы до или после оплаты.",
+    "Our goal is to make the process as transparent, safe and predictable as possible. We accompany the client at all stages and remain in touch if questions arise before or after payment."
+  ],
+  [
+    "<li>2️⃣ Скопируйте и откройте в браузере ссылку <a href=\"https://grok.com/api/auth/session\" target=\"_blank\" rel=\"noreferrer noopener\">https://grok.com/api/auth/session</a>.</li>",
+    "<li>2️⃣ Copy and open the link <a href=\"https://grok.com/api/auth/session\" target=\"_blank\" rel=\"noreferrer noopener\">https://grok.com/api/auth/session</a>.</li> in your browser"
+  ],
+  [
+    "2.3. Цифровой продукт считается переданным с момента отправки Продавцом данных/инструкций/токена/ссылки либо с момента выполнения услуги (в зависимости от выбранного продукта).",
+    "2.3. The digital product is considered transferred from the moment the Seller sends the data/instructions/token/link or from the moment the service is performed (depending on the selected product)."
+  ],
+  [
+    "Передача цифрового товара осуществляется после подтверждения оплаты в электронном виде: на указанный e-mail и/или через канал поддержки (в зависимости от выбранного продукта).",
+    "The transfer of digital goods is carried out after confirmation of payment electronically: to the specified e-mail and/or through a support channel (depending on the selected product)."
+  ],
+  [
+    "GPTishka — независимый магазин цифровых услуг: помощь с AI-подписками, активацией, Steam-пополнением и V*N-доступом. Не является официальным сайтом OpenAI, Anthropic или xAI.",
+    "GPTishka is an independent store of digital services: assistance with AI subscriptions, activation, Steam replenishment and V*N access. Not an official site of OpenAI, Anthropic or xAI."
+  ],
+  [
+    "Оформите VPN без лишних настроек на старте. Выберите срок, оплатите заказ, а GPTishka автоматически выдаст VLESS-ключ и покажет инструкцию подключения после успешной оплаты.",
+    "Register VPN without unnecessary settings at the start. Select a period, pay for the order, and GPTishka will automatically issue a VLESS key and show connection instructions after successful payment."
+  ],
+  [
+    "(далее — «Продавец») заключить договор о предоставлении цифровых товаров и/или цифровых услуг с любым физическим лицом (далее — «Покупатель») на условиях, изложенных ниже.",
+    "(hereinafter referred to as the “Seller”) enter into an agreement for the provision of digital goods and/or digital services with any individual (hereinafter referred to as the “Buyer”) on the terms set out below."
+  ],
+  [
+    "Рекомендуемый возраст аккаунта — не менее 7 дней. Новые аккаунты, особенно созданные в регионах с ограниченным доступом, чаще попадают под автоматические проверки Claude.",
+    "The recommended account age is at least 7 days. New accounts, especially those created in regions with limited access, are more likely to be subject to automatic Claude checks."
+  ],
+  [
+    "Если тариф подключён через App Store или Google Play, дата окончания может не отображаться в интерфейсе Claude. Подписка при этом действует в течение оплаченного периода.",
+    "If the tariff is connected through the App Store or Google Play, the expiration date may not be displayed in the Claude interface. The subscription is valid for the paid period."
+  ],
+  [
+    "При возврате средств до подключения подписки сумма возврата уменьшается на 20% от оплаченной суммы в связи с удержанием комиссий платежных систем и операционных расходов.",
+    "When returning funds before connecting a subscription, the refund amount is reduced by 20% of the paid amount due to the withholding of payment system commissions and operating expenses."
+  ],
+  [
+    "В случае возникновения технических проблем по нашей вине мы обязуемся устранить их в разумный срок, предоставить замену услуги или компенсацию согласно условиям оферты.",
+    "If technical problems arise due to our fault, we undertake to eliminate them within a reasonable time, provide a replacement service or compensation in accordance with the terms of the offer."
+  ],
+  [
+    "Мы не игнорируем обращения и не перекладываем ответственность. Каждая ситуация рассматривается индивидуально с целью найти максимально справедливое и разумное решение.",
+    "We do not ignore requests and do not shift responsibility. Each situation is considered individually in order to find the most fair and reasonable solution."
+  ],
+  [
+    "Соблюдайте правила ChatGPT и наши инструкции. Стороннее ПО, передача аккаунта другим людям, нестабильные VPN или прокси и частая смена IP повышают риск ограничений.",
+    "Follow the rules ChatGPT and our instructions. Third-party software, transferring your account to other people, unstable VPN or proxies and frequent IP changes increase the risk of restrictions."
+  ],
+  [
+    "GPTишка подходит как для новичков, которые только знакомятся с ChatGPT, так и для опытных пользователей, которым важна стабильная работа сервиса и экономия времени.",
+    "GPTishka is suitable for both beginners who are just getting acquainted with ChatGPT, and for experienced users who value stable operation of the service and saving time."
+  ],
+  [
+    "8.3. Покупатель принимает риск изменений правил/политик сторонних сервисов, а также возможных дополнительных проверок со стороны платежных систем и антифрод-систем.",
+    "8.3. The buyer accepts the risk of changes in the rules/policies of third-party services, as well as possible additional checks from payment systems and anti-fraud systems."
+  ],
+  [
+    "— предоставление Покупателю цифрового продукта в электронном виде (через Сайт, электронную почту, мессенджер/чат поддержки либо иным способом, указанным на Сайте).",
+    "— provision of a digital product to the Buyer in electronic form (via the Site, email, messenger/support chat, or in any other way specified on the Site)."
+  ],
+  [
+    "11.1. Покупатель дает согласие на обработку персональных данных, необходимых для исполнения заказа, взаимодействия с поддержкой и выполнения обязанностей Продавца.",
+    "11.1. The Buyer consents to the processing of personal data necessary to fulfill the order, interact with support and fulfill the Seller’s obligations."
+  ],
+  [
+    "Ограничения со стороны ChatGPT, нарушение правил сервиса, стороннее ПО, VPN или прокси и действия владельца аккаунта не относятся к проблемам на стороне GPTishka.",
+    "Restrictions on the part of ChatGPT, violation of service rules, third-party software, VPN or proxies and actions of the account owner do not apply to problems on the side of GPTishka."
+  ],
+  [
+    "Ограничения со стороны Claude, нарушение правил сервиса, стороннее ПО, VPN или прокси и действия владельца аккаунта не относятся к проблемам на стороне GPTishka.",
+    "Restrictions on the part of Claude, violation of service rules, third-party software, VPN or proxies and actions of the account owner do not apply to problems on the side of GPTishka."
+  ],
+  [
+    "<li class=\"redeem-guide-shot\"><img src=\"/assets/img/supergrok-activation-1.png\" alt=\"Где найти ID аккаунта Grok — пример 1\" loading=\"lazy\" decoding=\"async\"></li>",
+    "<li class=\"redeem-guide-shot\"><img src=\"/assets/img/supergrok-activation-1.png\" alt=\"Где найти ID аккаунта Grok — пример 1\" loading=\"lazy\" decoding=\"async\"></li>"
+  ],
+  [
+    "<li class=\"redeem-guide-shot\"><img src=\"/assets/img/supergrok-activation-2.png\" alt=\"Где найти ID аккаунта Grok — пример 2\" loading=\"lazy\" decoding=\"async\"></li>",
+    "<li class=\"redeem-guide-shot\"><img src=\"/assets/img/supergrok-activation-2.png\" alt=\"Где найти ID аккаунта Grok — пример 2\" loading=\"lazy\" decoding=\"async\"></li>"
+  ],
+  [
+    "На странице активации будет подробная инструкция с фото. Вставьте ID и нажмите «Активировать». После запуска ожидайте 5–10 минут, в редких случаях до 12 часов.",
+    "There will be detailed instructions with photos on the activation page. Insert the ID and click “Activate”. After starting, wait 5-10 minutes, in rare cases up to 12 hours."
+  ],
+  [
+    "обращением по вопросу качества спустя более чем 30 (тридцать) календарных дней с момента передачи, если иной срок не указан на Сайте для конкретного продукта.",
+    "appeal on a quality issue more than 30 (thirty) calendar days from the date of transfer, unless a different period is indicated on the Site for a specific product."
+  ],
+  [
+    "7.3. Стороны согласовали претензионный (досудебный) порядок урегулирования споров. Срок ответа на претензию — 10 (десять) рабочих дней с момента ее получения.",
+    "7.3. The parties agreed on a claim (pre-trial) procedure for resolving disputes. The deadline for responding to a claim is 10 (ten) working days from the date of its receipt."
+  ],
+  [
+    "<li class=\"redeem-guide-shot\"><img src=\"/assets/img/claude-account-id-settings.png\" alt=\"Где найти ID аккаунта Claude\" loading=\"lazy\" decoding=\"async\"></li>",
+    "<li class=\"redeem-guide-shot\"><img src=\"/assets/img/claude-account-id-settings.png\" alt=\"Где найти ID аккаунта Claude\" loading=\"lazy\" decoding=\"async\"></li>"
+  ],
+  [
+    "3.1. Оформление заказа осуществляется на Сайте путем выбора продукта и нажатия кнопки «Купить» (или аналогичной), после чего Покупатель переходит к оплате.",
+    "3.1. An order is placed on the Site by selecting a product and clicking the “Buy” button (or similar), after which the Buyer proceeds to pay."
+  ],
+  [
+    "При необходимости трансграничной передачи данных мы принимаем меры для соблюдения применимого законодательства и защиты прав субъектов персональных данных.",
+    "When cross-border data transfers are necessary, we take measures to comply with applicable laws and protect the rights of personal data subjects."
+  ],
+  [
+    "<li>Как это работает / видео инструкция — <a href=\"https://www.youtube.com/watch?v=v_1MnQjwWDc\" target=\"_blank\" rel=\"noreferrer noopener\">смотреть</a></li>",
+    "<li>How it works / video instructions - <a href=\"https://www.youtube.com/watch?v=v_1MnQjwWDc\" target=\"_blank\" rel=\"noreferrer noopener\">watch</a></li>"
+  ],
+  [
+    "<li>Перейдите на сайт <a href=\"https://claude.ai/settings/account\" target=\"_blank\" rel=\"noreferrer noopener\">claude.ai</a> и войдите в свой аккаунт.</li>",
+    "<li>Go to the website <a href=\"https://claude.ai/settings/account\" target=\"_blank\" rel=\"noreferrer noopener\">claude.ai</a> and log in to your account.</li>"
+  ],
+  [
+    "Выберите ChatGPT, Claude или SuperGrok. После оплаты сайт откроет нужный сценарий подключения, а поддержка поможет, если потребуется ручная обработка.",
+    "Select ChatGPT, Claude or SuperGrok. After payment, the site will open the required connection script, and support will help if manual processing is required."
+  ],
+  [
+    "8.2. Продавец не гарантирует бесперебойную работу сторонних сервисов, а также сохранность доступа при нарушении Покупателем правил стороннего сервиса.",
+    "8.2. The Seller does not guarantee the uninterrupted operation of third-party services, or the security of access if the Buyer violates the rules of the third-party service."
+  ],
+  [
+    "Помощь с оформлением и активацией ChatGPT через независимый сервис GPTishka. GPTishka не является официальным сайтом OpenAI и не представляет OpenAI.",
+    "Help with registration and activation of ChatGPT through the independent service GPTishka. GPTishka is not an official website of OpenAI and does not represent OpenAI."
+  ],
+  [
+    "Укажите Steam trade-ссылку, выберите количество ключей и оплатите удобным способом. Подходит, если торговая площадка открыта и баланс нужен срочно.",
+    "Indicate the Steam trade link, select the number of keys and pay in a convenient way. Suitable if the trading platform is open and the balance is needed urgently."
+  ],
+  [
+    "На странице выдачи будет инструкция. Обычно VLESS-ссылку нужно импортировать в приложение Karing, V2Ray, Hiddify или другой совместимый VPN-клиент.",
+    "There will be instructions on the issue page. Typically, the VLESS link needs to be imported into the Karing application, V2Ray, Hiddify or another compatible VPN client."
+  ],
+  [
+    "6.2. Продавец гарантирует корректность передачи цифрового продукта на момент передачи либо осуществляет исправление/замену по обращению Покупателя.",
+    "6.2. The Seller guarantees the correctness of the transfer of the digital product at the time of transfer or carries out correction/replacement at the request of the Buyer."
+  ],
+  [
+    "<li>Откройте ссылку <a href=\"https://chatgpt.com/api/auth/session\" target=\"_blank\" rel=\"noreferrer noopener\">chatgpt.com/api/auth/session</a></li>",
+    "<li>Open the link <a href=\"https://chatgpt.com/api/auth/session\" target=\"_blank\" rel=\"noreferrer noopener\">chatgpt.com/api/auth/session</a></li>"
+  ],
+  [
+    "3.5. В случае указания Покупателем неверных данных Продавец не несет ответственности за задержку передачи до момента получения корректных данных.",
+    "3.5. If the Buyer provides incorrect data, the Seller is not responsible for the delay in transmission until the correct data is received."
+  ],
+  [
+    "Вы получаете выбранный тариф на указанный срок, инструкцию по подключению и поддержку GPTishka. Условия зависят от конкретного товара и тарифа.",
+    "You receive the selected tariff for the specified period, connection instructions and support GPTishka. Conditions depend on the specific product and tariff."
+  ],
+  [
+    "13.2. Продавец вправе изменять условия Оферты путем публикации новой редакции на Сайте. Изменения не распространяются на уже оплаченные заказы.",
+    "13.2. The Seller has the right to change the terms of the Offer by publishing a new version on the Site. Changes do not apply to already paid orders."
+  ],
+  [
+    "2.2. Наименование, описание, срок, стоимость и состав цифрового продукта указываются на Сайте и являются неотъемлемой частью настоящей Оферты.",
+    "2.2. The name, description, term, cost and composition of the digital product are indicated on the Site and are an integral part of this Offer."
+  ],
+  [
+    "приостанавливать или отменять исполнение заказа при подозрении на мошенничество/антифрод-риски с последующим возвратом средств до передачи;",
+    "suspend or cancel the execution of an order if fraud/anti-fraud risks are suspected, followed by a refund of funds before transfer;"
+  ],
+  [
+    "<li>1️⃣ Перейдите на сайт <a href=\"https://grok.com\" target=\"_blank\" rel=\"noreferrer noopener\">grok.com</a> и войдите в свой аккаунт.</li>",
+    "<li>1️⃣ Go to the website <a href=\"https://grok.com\" target=\"_blank\" rel=\"noreferrer noopener\">grok.com</a> and log in to your account.</li>"
+  ],
+  [
+    "6.5. Возврат/замена не предоставляются, если проблема вызвана действиями Покупателя или внешними факторами, включая, но не ограничиваясь:",
+    "6.5. Refunds/replacements will not be provided if the problem is caused by the Buyer or external factors, including but not limited to:"
+  ],
+  [
+    "Каталог пополнений GPTishka: сейчас доступно пополнение Steam через ключи Манн Ко. Выберите товар и оформите заказ без модального окна.",
+    "Catalog of replenishments GPTishka: replenishment Steam is now available through Mann Co. keys. Select a product and place an order without a modal window."
+  ],
+  [
+    "Политика конфиденциальности GPTишка: какие данные мы собираем, зачем, как защищаем и как пользователь может управлять своими данными.",
+    "Privacy Policy GPTishka: what data we collect, why, how we protect it and how the user can manage their data."
+  ],
+  [
+    "Если конкретный товар предусматривает создание нового аккаунта, состав выдачи и способ доступа к почте будут указаны в форме заказа.",
+    "If a specific product requires the creation of a new account, the contents of the delivery and the method of access to mail will be indicated in the order form."
+  ],
+  [
+    "На gptishka.shop доступны банковские карты Мир, Visa, MasterCard, СБП, криптовалюта и иностранные карты через обращение в поддержку.",
+    "Mir, Visa, MasterCard, SBP, cryptocurrency and foreign cards are available at gptishka.shop by contacting support."
+  ],
+  [
+    "Да. Если приложение не подключается или нужна помощь с импортом ключа, менеджер GPTishka поможет разобраться по указанным контактам.",
+    "Yes. If the application does not connect or you need help importing the key, the GPTishka manager will help you figure it out using the specified contacts."
+  ],
+  [
+    "— платформа/сервис третьего лица, к которому относится подписка/доступ (в т.ч. сервисы, обозначаемые товарными знаками третьих лиц).",
+    "— a third party platform/service to which the subscription/access relates (including services designated by third party trademarks)."
+  ],
+  [
+    "Платежи проходят безопасно. Мы не сохраняем платёжные данные — обработка оплаты осуществляется через платёжные системы Enot и Lava.",
+    "Payments are processed securely. We do not save payment data - payment processing is carried out through the Enot and Lava payment systems."
+  ],
+  [
+    "Да. GPTishka подключает подписки и сопровождает заказ после оплаты: если возникнет вопрос по доступу, менеджер поможет разобраться.",
+    "Yes. GPTishka connects subscriptions and accompanies the order after payment: if there is a question about access, the manager will help you figure it out."
+  ],
+  [
+    "11.2. Продавец обрабатывает персональные данные в соответствии с применимым законодательством РФ и политикой, размещенной на Сайте.",
+    "11.2. The Seller processes personal data in accordance with the applicable legislation of the Russian Federation and the policy posted on the Site."
+  ],
+  [
+    "Если автоматическая активация недоступна или что-то пошло не так, менеджер видит заказ и помогает довести услугу до результата.",
+    "If automatic activation is not available or something goes wrong, the manager sees the order and helps bring the service to fruition."
+  ],
+  [
+    "Да. gptishka.shop — надёжный сервис подключения подписок ChatGPT. Вы оформляете заказ — мы берём всю техническую часть на себя.",
+    "Yes. gptishka.shop is a reliable service for connecting ChatGPT subscriptions. You place an order - we take care of all the technical part."
+  ],
+  [
+    "GPTishka VPN — тарифы VLESS Reality с автоматической выдачей ключа после оплаты, поддержкой и понятной инструкцией подключения.",
+    "GPTishka VPN - VLESS Reality tariffs with automatic key issuance after payment, support and clear connection instructions."
+  ],
+  [
+    "поддерживать работоспособность Сайта, за исключением периодов профилактических работ и иных случаев, не зависящих от Продавца.",
+    "maintain the functionality of the Site, with the exception of periods of maintenance and other cases beyond the control of the Seller."
+  ],
+  [
+    "Если автоматическая активация недоступна, заказ обрабатывает поддержка. Статус и результат отправляются на указанный контакт.",
+    "If automatic activation is not available, support processes the order. The status and result are sent to the specified contact."
+  ],
+  [
+    "Состав функций, лимиты и доступность инструментов внутри ChatGPT определяются OpenAI и могут меняться независимо от GPTishka.",
+    "The composition of functions, limits and availability of tools within ChatGPT are determined by OpenAI and may change independently of GPTishka."
+  ],
+  [
+    "Пополнение баланса Steam через ключи Манн Ко: укажите количество ключей, Steam trade-ссылку и оплатите заказ через GPTishka.",
+    "Top up your Steam balance via Mann Co. keys: indicate the number of keys, Steam trade link and pay for the order via GPTishka."
+  ],
+  [
+    "Вставьте ID на странице активации и нажмите «Активировать». После запуска ожидайте 5–10 минут, в редких случаях до 12 часов.",
+    "Paste the ID on the activation page and click “Activate”. After starting, wait 5-10 minutes, in rare cases up to 12 hours."
+  ],
+  [
+    "Если возникли вопросы по тарифам, оплате или подключению — напишите нам. Поможем разобраться и доведём вопрос до результата.",
+    "If you have any questions about tariffs, payment or connection, write to us. We will help you figure it out and bring the issue to a conclusion."
+  ],
+  [
+    "Заказы обрабатываются в рабочее время; заказ, оформленный поздно вечером или ночью, может быть выполнен на следующей смене.",
+    "Orders are processed during business hours; An order placed late in the evening or at night can be completed on the next shift."
+  ],
+  [
+    "6.6. Срок рассмотрения обращений — до 72 часов. Срок возврата денежных средств — до 10 рабочих дней после принятия решения.",
+    "6.6. The processing time for requests is up to 72 hours. The refund period is up to 10 working days after the decision is made."
+  ],
+  [
+    "Оформляйте ChatGPT, Claude Pro и SuperGrok без передачи логина и пароля. Быстрая активация, поддержка и гарантия GPTishka.",
+    "Register ChatGPT, Claude Pro and SuperGrok without transferring your login and password. Fast activation, support and warranty GPTishka."
+  ],
+  [
+    "Оплата проходит через общий checkout GPTishka, а backend выдаёт именно VPN-ключ — без перехода в окно активации по токену.",
+    "Payment goes through the general checkout GPTishka, and the backend issues exactly the VPN key - without going to the token activation window."
+  ],
+  [
+    "После успешной оплаты заказ получает статус «оплачен», backend создаёт VPN-доступ и открывает страницу выдачи VLESS-ключа.",
+    "After successful payment, the order receives the “paid” status, the backend creates VPN access and opens the VLESS key issuance page."
+  ],
+  [
+    "Мы обрабатываем заказы ежедневно с 10:00 до 20:00 по МСК. Если заказ оформлен ночью, подключение будет выполнено утром.",
+    "We process orders daily from 10:00 to 20:00 Moscow time. If the order is placed at night, the connection will be made in the morning."
+  ],
+  [
+    "GPTishka оказывает независимую помощь с оформлением и активацией AI-сервисов. Мы не являемся официальным сайтом OpenAI.",
+    "GPTishka provides independent assistance with the design and activation of AI services. We are not the official website of OpenAI."
+  ],
+  [
+    "Выберите срок GPTishka VPN, оплатите заказ, а система выдаст VLESS-ключ и инструкцию подключения после успешной оплаты.",
+    "Select the term GPTishka VPN, pay for the order, and the system will issue a VLESS key and connection instructions after successful payment."
+  ],
+  [
+    "В зависимости от ситуации может быть предложено исправление, замена услуги или компенсация в рамках действующих правил.",
+    "Depending on the situation, a correction, replacement service, or compensation may be offered within the framework of applicable regulations."
+  ],
+  [
+    "9.1. Совокупная ответственность Продавца ограничена суммой, фактически оплаченной Покупателем за соответствующий заказ.",
+    "9.1. Seller’s aggregate liability is limited to the amount actually paid by Buyer for the applicable order."
+  ],
+  [
+    "Оператором персональных данных является администрация сайта GPTишка (далее — «Оператор»). По вопросам обработки данных:",
+    "The operator of personal data is the administration of the GPTishka website (hereinafter referred to as the “Operator”). Regarding data processing issues:"
+  ],
+  [
+    "Заказы обрабатываются ежедневно с 10:00 до 20:00 по МСК. Если заказ оформлен ночью, подключение будет выполнено утром.",
+    "Orders are processed daily from 10:00 to 20:00 Moscow time. If the order is placed at night, the connection will be made in the morning."
+  ],
+  [
+    "Мы гарантируем корректное предоставление оплаченной услуги и её работоспособность на весь оплаченный период подписки.",
+    "We guarantee the correct provision of the paid service and its functionality for the entire paid subscription period."
+  ],
+  [
+    "Для выполнения операции используется только технический токен или служебные данные, необходимые для активации услуги.",
+    "To perform the operation, only the technical token or service data necessary to activate the service is used."
+  ],
+  [
+    "Если для выбранного тарифа нужен ID аккаунта, система покажет нужный сценарий без лишних полей для логина и пароля.",
+    "If the selected tariff requires an account ID, the system will show the required scenario without unnecessary fields for login and password."
+  ],
+  [
+    "Каталог нейросетей GPTishka: ChatGPT, Claude и SuperGrok. Выберите сервис и откройте готовую страницу с тарифами.",
+    "Catalog of neural networks GPTishka: ChatGPT, Claude and SuperGrok. Select a service and open a ready-made page with tariffs."
+  ],
+  [
+    "6.7. Возврат осуществляется тем же способом оплаты либо по согласованию сторон, с учетом правил платежных систем.",
+    "6.7. Refunds are made using the same payment method or as agreed by the parties, taking into account the rules of payment systems."
+  ],
+  [
+    "После оплаты откроется сценарий для выбранного товара: активация по токену, инструкция или дальнейшие действия.",
+    "After payment, a script for the selected product will open: activation by token, instructions or further actions."
+  ],
+  [
+    "13.1. Оферта вступает в силу с момента размещения на Сайте и действует до ее отзыва или замены новой редакцией.",
+    "13.1. The Offer comes into force from the moment it is posted on the Site and is valid until it is withdrawn or replaced by a new edition."
+  ],
+  [
+    "Для поддерживаемых тарифов используется активация по auth-токену — пароль от аккаунта передавать не требуется.",
+    "For supported tariffs, activation using an auth token is used - no account password is required."
+  ],
+  [
+    "В среднем подключение занимает от 5 минут до 2 часов после оплаты. Максимальное время ожидания — до 48 часов.",
+    "On average, connection takes from 5 minutes to 2 hours after payment. The maximum waiting time is up to 48 hours."
+  ],
+  [
+    "Все еще в обработке. Task: ${currentTaskId}. Нажмите «Проверить статус» позже или «Сменить ключ и повторить».",
+    "Still in processing. Task: ${currentTaskId}. Click ”Check Status” later or ”Change Key and Repeat.”"
+  ],
+  [
+    "Весь процесс рассчитан на быстрый запуск: выбрать срок, оплатить, получить ключ и добавить его в приложение.",
+    "The whole process is designed to start quickly: select a period, pay, receive a key and add it to the application."
+  ],
+  [
+    "Для этого товара выдача состоит из двух разделов: сначала настройка V*N, затем активация выбранной подписки.",
+    "For this product, the issuance consists of two sections: first setting up V*N, then activating the selected subscription."
+  ],
+  [
+    "4.2. Датой оплаты считается дата поступления денежных средств в распоряжение Продавца/платежного агрегатора.",
+    "4.2. The date of payment is the date of receipt of funds at the disposal of the Seller/payment aggregator."
+  ],
+  [
+    "Grok от xAI: быстрые ответы, анализ, креативные задачи и генерация изображений в одной подписке на 1 месяц.",
+    "Grok from xAI: quick answers, analysis, creative challenges and image generation in one 1 month subscription."
+  ],
+  [
+    "Если возникнет проблема, поддержка поможет восстановить доступ или предложит решение по условиям гарантии.",
+    "If a problem arises, support will help restore access or offer a solution under the terms of the warranty."
+  ],
+  [
+    "Вы выбираете срок подписки, оформляете заказ, а после оплаты получаете дальнейшую инструкцию по активации.",
+    "You select the subscription period, place an order, and after payment you will receive further activation instructions."
+  ],
+  [
+    "Для VPN не используется окно «Продлить/активировать» с токеном — клиент сразу получает данные подключения.",
+    "For VPN, the “Renew/Activate” window with a token is not used - the client immediately receives connection data."
+  ],
+  [
+    "1 ключ = 151 RUB. Укажите количество ключей и Steam trade-ссылку — менеджер обработает заказ после оплаты.",
+    "1 key = 151 RUB. Specify the number of keys and Steam trade link - the manager will process the order after payment."
+  ],
+  [
+    "2.1. Продавец предоставляет Покупателю выбранный цифровой продукт, а Покупатель оплачивает его стоимость.",
+    "2.1. The Seller provides the Buyer with the selected digital product, and the Buyer pays its cost."
+  ],
+  [
+    "Для этого товара выдача состоит из двух разделов: сначала настройка V*N, затем активация ${serviceName}.",
+    "For this product, the issuance consists of two sections: first, setting up V*N, then activating ${serviceName}."
+  ],
+  [
+    "до оплаты ознакомиться с описанием цифрового продукта, сроками, условиями передачи и правилами возврата;",
+    "Before payment, read the description of the digital product, terms, conditions of transfer and return rules;"
+  ],
+  [
+    "соблюдать правила стороннего сервиса, если цифровой продукт связан с доступом/подпиской на такой сервис.",
+    "comply with the rules of a third-party service if a digital product is associated with access/subscription to such a service."
+  ],
+  [
+    "О сервисе GPTишка: как работает активация и продление ChatGPT Plus, безопасность, поддержка и гарантия.",
+    "About the GPTishka service: how activation and renewal of ChatGPT Plus works, security, support and warranty."
+  ],
+  [
+    "Обращения рассматриваются в кратчайшие сроки, а поддержка остается на связи до полного решения вопроса.",
+    "Appeals are reviewed as soon as possible, and support remains in touch until the issue is completely resolved."
+  ],
+  [
+    "AI-подписки, активация, Steam-пополнение и V*N-доступ. GPTishka не связан с OpenAI, Anthropic или xAI.",
+    "AI subscriptions, activation, Steam replenishment and V*N access. GPTishka is not related to OpenAI, Anthropic or xAI."
+  ],
+  [
+    "У вас должен сохраняться доступ к аккаунту и привязанной электронной почте на время выполнения заказа.",
+    "You must retain access to your account and associated email for the duration of your order."
+  ],
+  [
+    "и описывает, какие данные мы собираем, как используем, как защищаем и какие права есть у пользователя.",
+    "and describes what data we collect, how we use it, how we protect it, and what rights the user has."
+  ],
+  [
+    "<li>💡 <strong>Важно:</strong> отправляйте только ID без дополнительных комментариев и символов.</li>",
+    "<li>💡 <strong>Important:</strong> send only ID without additional comments and symbols.</li>"
+  ],
+  [
+    "Мы отвечаем за корректное подключение услуги и устраняем проблемы, возникшие по нашей вине, в рамках",
+    "We are responsible for the correct connection of the service and eliminate problems that arose through our fault, within the framework of"
+  ],
+  [
+    "Выберите тариф SuperGrok, оплатите заказ через GPTishka, а мы подключим подписку выбранным способом.",
+    "Select the SuperGrok tariff, pay for the order via GPTishka, and we will connect the subscription using the chosen method."
+  ],
+  [
+    "После оплаты заполняете автоматическую форму и передаёте только необходимые для подключения данные.",
+    "After payment, fill out the automatic form and submit only the data necessary for connection."
+  ],
+  [
+    "Раздел пополнений GPTishka. Сейчас доступно пополнение Steam через ключи Манн Ко: 1 ключ = 151 RUB.",
+    "Replenishment section GPTishka. Replenishment of Steam through Mann Co. keys is now available: 1 key = 151 RUB."
+  ],
+  [
+    "Настоящая публичная оферта (далее — «Оферта») является официальным предложением Администрации сайта",
+    "This public offer (hereinafter referred to as the “Offer”) is an official offer from the Site Administration"
+  ],
+  [
+    "6.4. Продавец вправе предложить вместо возврата исправление, замену либо альтернативный эквивалент.",
+    "6.4. The seller has the right to offer a correction, replacement or alternative equivalent instead of a return."
+  ],
+  [
+    "запрашивать у Покупателя данные, необходимые для исполнения заказа, а также подтверждение платежа;",
+    "request from the Buyer the data necessary to complete the order, as well as confirmation of payment;"
+  ],
+  [
+    "Выберите тариф Claude, оплатите заказ через GPTishka, а мы подключим подписку выбранным способом.",
+    "Select the Claude tariff, pay for the order via GPTishka, and we will connect the subscription using the chosen method."
+  ],
+  [
+    "Технические данные: IP-адрес, тип устройства, браузер, язык, страницы, время посещения, referrer.",
+    "Technical data: IP address, device type, browser, language, pages, time of visit, referrer."
+  ],
+  [
+    "Подключите GPTishka VPN за 1-2 минуты: выберите устройство, вставьте ключ и включите подключение.",
+    "Connect GPTishka VPN in 1-2 minutes: select the device, insert the key and turn on the connection."
+  ],
+  [
+    "Отвечаем за корректное выполнение услуги и устраняем проблемы, возникшие по нашей вине, в рамках",
+    "We are responsible for the correct performance of the service and eliminate problems that arose through our fault, within the framework of"
+  ],
+  [
+    "Доступ к возможностям тарифа для работы с текстами, кодом, документами, идеями и изображениями.",
+    "Access to the tariff’s capabilities for working with texts, code, documents, ideas and images."
+  ],
+  [
+    "<li>Скопируйте его полностью, например: <code>e191659c-0258-4be3-951a-e1cbffa3322f</code>.</li>",
+    "<li>Copy it completely, for example: <code>e191659c-0258-4be3-951a-e1cbffa3322f</code>.</li>"
+  ],
+  [
+    "Укажите дату и сумму оплаты, способ оплаты, ID/номер транзакции (если есть), описание проблемы.",
+    "Indicate the date and amount of payment, payment method, transaction ID/number (if any), description of the problem."
+  ],
+  [
+    "Мы не сохраняем платёжные данные — обработка оплаты выполняется на стороне платёжной системы.",
+    "We do not save payment data - payment processing is performed on the side of the payment system."
+  ],
+  [
+    "7.1. Претензии и обращения принимаются по контактам, указанным в разделе 14 настоящей Оферты.",
+    "7.1. Claims and appeals are accepted via the contacts specified in section 14 of this Offer."
+  ],
+  [
+    "10.2. Срок исполнения обязательств переносится на время действия форс-мажорных обстоятельств.",
+    "10.2. The deadline for fulfilling obligations is postponed for the duration of force majeure circumstances."
+  ],
+  [
+    "Мы можем обновлять настоящую Политику. Актуальная версия всегда размещается на этой странице:",
+    "We may update this Policy. The current version is always posted on this page:"
+  ],
+  [
+    "Подскажем, какой тариф выбрать, какой способ подключения подойдёт и что делать после оплаты.",
+    "We’ll tell you which tariff to choose, which connection method is suitable and what to do after payment."
+  ],
+  [
+    "Перед подключением Plus или Pro на аккаунте не должно быть другой активной платной подписки.",
+    "Before connecting to Plus or Pro, you must not have another active paid subscription on your account."
+  ],
+  [
+    ". География передачи — без территориальных ограничений, если иное прямо не указано на Сайте.",
+    ". Geography of transmission - without territorial restrictions, unless otherwise expressly stated on the Site."
+  ],
+  [
+    "передать цифровой продукт в порядке, предусмотренном настоящей Офертой и описанием на Сайте;",
+    "transfer the digital product in the manner prescribed by this Offer and the description on the Site;"
+  ],
+  [
+    "использованием VPN/прокси/подозрительных IP, мультивходами, передачей доступа третьим лицам;",
+    "using VPN/proxy/suspicious IPs, multi-logins, transferring access to third parties;"
+  ],
+  [
+    "<li>Войдите через браузер в аккаунт ChatGPT (если ещё не вошли — просто авторизуйтесь).</li>",
+    "<li>Login through your browser to your ChatGPT account (if you haven’t logged in yet, just log in).</li>"
+  ],
+  [
+    "Тарифные планы Claude и Claude Pro с быстрым подключением, гарантией и поддержкой GPTishka.",
+    "Tariff plans Claude and Claude Pro with fast connection, warranty and support GPTishka."
+  ],
+  [
+    "Спасибо за покупку. Оставьте короткий отзыв в Telegram и получите персональный промокод 5%.",
+    "Thanks for your purchase. Leave a short review at Telegram and receive a personal 5% promo code."
+  ],
+  [
+    "предоставлять достоверные контактные данные и сведения, необходимые для исполнения заказа;",
+    "provide reliable contact details and information necessary to complete the order;"
+  ],
+  [
+    "Контактные данные, которые вы сами указываете: e-mail, Telegram, иные данные в обращениях.",
+    "Contact information that you provide yourself: e-mail, Telegram, other information in requests."
+  ],
+  [
+    "<li>3️⃣ Найдите строку <strong>ID</strong> (на 2 скриншотах нужная область выделена).</li>",
+    "<li>3️⃣ Find the line <strong>ID</strong> (in 2 screenshots the desired area is highlighted).</li>"
+  ],
+  [
+    "Если что-то пойдёт не по автоматическому сценарию, поддержка доведёт заказ до результата.",
+    "If something does not go according to the automatic scenario, support will bring the order to fruition."
+  ],
+  [
+    "Если для подключения нужен ID аккаунта, форма запросит его без полей для логина и пароля.",
+    "If you need an account ID to connect, the form will ask for it without fields for login and password."
+  ],
+  [
+    "Рабочий VLESS Reality доступ, инструкцию подключения и поддержку на весь оплаченный срок.",
+    "Working VLESS Reality access, connection instructions and support for the entire paid period."
+  ],
+  [
+    "Для части тарифов клиент активирует доступ самостоятельно, без передачи логина и пароля.",
+    "For some tariffs, the client activates access independently, without transferring a login and password."
+  ],
+  [
+    "Нажмите «Активировать». После запуска ожидайте 5–10 минут, в редких случаях до 12 часов.",
+    "Click ”Activate”. After starting, wait 5-10 minutes, in rare cases up to 12 hours."
+  ],
+  [
+    "Связаться с поддержкой GPTishka по вопросам заказа, оплаты и подключения цифровых услуг.",
+    "Contact GPTishka support regarding ordering, payment and connecting digital services."
+  ],
+  [
+    "<li>4️⃣ Скопируйте ID и отправьте его <strong>одним сообщением в это поле</strong>.</li>",
+    "<li>4️⃣ Copy the ID and send it to <strong> in one message in this field</strong>.</li>"
+  ],
+  [
+    "Срок зачисления средств зависит от способа оплаты и может составлять до 10 рабочих дней.",
+    "The term for crediting funds depends on the payment method and can be up to 10 business days."
+  ],
+  [
+    "Формат: https://steamcommunity.com/tradeoffer/new/?partner=123456789&amp;token=AbCdEfGh",
+    "Format: https://steamcommunity.com/tradeoffer/new/?partner=123456789&amp;token=AbCdEfGh"
+  ],
+  [
+    "цифровой продукт неработоспособен на момент передачи и не может быть исправлен/заменен;",
+    "the digital product is inoperative at the time of delivery and cannot be corrected/replaced;"
+  ],
+  [
+    "неработоспособность товара по вине Продавца (при невозможности исправления или замены);",
+    "inoperability of the goods due to the fault of the Seller (if repair or replacement is impossible);"
+  ],
+  [
+    "Набор функций и лимиты определяются выбранным тарифом и могут меняться на стороне xAI.",
+    "The set of functions and limits are determined by the selected tariff and can be changed on the xAI side."
+  ],
+  [
+    "рассматривать обращения Покупателя по вопросам качества и передачи цифрового продукта;",
+    "consider the Buyer’s requests regarding the quality and transfer of the digital product;"
+  ],
+  [
+    "потребовать уточнения, блокирования или удаления данных, если есть законные основания;",
+    "demand clarification, blocking or deletion of data if there are legal grounds;"
+  ],
+  [
+    "Прозрачные правила обработки и защиты персональных данных пользователей сайта GPTишка.",
+    "Transparent rules for processing and protecting personal data of users of the GPTishka website."
+  ],
+  [
+    "изменять ассортимент и цены на Сайте. Изменения не затрагивают уже оплаченные заказы.",
+    "change the range and prices on the Site. Changes do not affect already paid orders."
+  ],
+  [
+    "Вставьте VPN-ключ. Вставьте ключ, который вы получили на сайте, и нажмите «Вставить».",
+    "Insert the VPN key. Paste the key you received on the site and click ”Insert”."
+  ],
+  [
+    "Платёжные данные обрабатываются на стороне платёжной системы, GPTishka их не хранит.",
+    "Payment data is processed on the side of the payment system; GPTishka does not store it."
+  ],
+  [
+    "<li><strong>🚀 Для активации SUPERGROK отправьте ваш ID аккаунта Grok.</strong></li>",
+    "<li><strong>🚀 To activate SUPERGROK send your account ID Grok.</strong></li>"
+  ],
+  [
+    "СБП, карты РФ/СНГ и Криптовалюта. Оплата проходит на защищенной платежной странице.",
+    "SBP, RF/CIS cards and Cryptocurrency. Payment takes place on a secure payment page."
+  ],
+  [
+    "Перед подключением PRO или MAX аккаунт должен находиться на бесплатном тарифе FREE.",
+    "Before connecting to PRO or MAX, the account must be on the FREE tariff."
+  ],
+  [
+    "На gptishka.shop доступны СБП и банковские карты через платёжные шлюзы Enot и Lava.",
+    "SBP and bank cards are available at gptishka.shop through payment gateways Enot and Lava."
+  ],
+  [
+    "Каталог V*N GPTishka. Откройте страницу GPTishka V*N и выберите срок VLESS-доступа.",
+    "Catalog V*N GPTishka. Open the GPTishka V*N page and select the VLESS access period."
+  ],
+  [
+    "сервисам коммуникации и поддержки (например, e-mail/мессенджеры) по вашему запросу;",
+    "communication and support services (for example, e-mail/messengers) at your request;"
+  ],
+  [
+    "Войдите через браузер в аккаунт ChatGPT (если ещё не вошли — просто авторизуйтесь).",
+    "Log in through your browser to your ChatGPT account (if you haven’t logged in yet, just log in)."
+  ],
+  [
+    "Подключение занимает 1-2 минуты: выберите устройство, вставьте ключ и включите VPN.",
+    "Connection takes 1-2 minutes: select the device, insert the key and turn on VPN."
+  ],
+  [
+    "Основные страницы сервиса для быстрого перехода и индексации поисковыми системами.",
+    "The main pages of the service for quick navigation and indexing by search engines."
+  ],
+  [
+    "Карта сайта GPTishka: основные разделы, юридические страницы и полезные материалы.",
+    "Site map GPTishka: main sections, legal pages and useful materials."
+  ],
+  [
+    "После подключения VPN переходите к следующему шагу и завершите активацию аккаунта.",
+    "After connecting VPN, proceed to the next step and complete account activation."
+  ],
+  [
+    "Тарифные планы SuperGrok с быстрым подключением, гарантией и поддержкой GPTishka.",
+    "Tariff plans SuperGrok with fast connection, warranty and support GPTishka."
+  ],
+  [
+    "GPTишка: безопасная активация и продление ChatGPT Plus с поддержкой и гарантией.",
+    "GPTishka: secure activation and renewal of ChatGPT Plus with support and guarantee."
+  ],
+  [
+    "12.1. Применимым правом по настоящей Оферте является право Российской Федерации.",
+    "12.1. The applicable law under this Offer is the law of the Russian Federation."
+  ],
+  [
+    "Проверка платежей, возвраты, антифрод-проверки и предотвращение злоупотреблений.",
+    "Payment verification, refunds, anti-fraud checks and abuse prevention."
+  ],
+  [
+    "Оператор применяет правовые, организационные и технические меры защиты, включая:",
+    "The operator applies legal, organizational and technical protection measures, including:"
+  ],
+  [
+    "— заявка Покупателя на приобретение цифрового продукта, оформленная через Сайт.",
+    "— the Buyer’s application for the purchase of a digital product, completed through the Site."
+  ],
+  [
+    "— условия использования, политики, AUP/Terms и иные правила стороннего сервиса.",
+    "— terms of use, policies, AUP/Terms and other rules of the third-party service."
+  ],
+  [
+    "3.3. Передача (доставка) осуществляется в электронном виде через сеть Интернет.",
+    "3.3. Transfer (delivery) is carried out electronically via the Internet."
+  ],
+  [
+    "4.1. Цена цифрового продукта указывается на Сайте и действует на момент оплаты.",
+    "4.1. The price of a digital product is indicated on the Site and is valid at the time of payment."
+  ],
+  [
+    "Помогает готовить и редактировать тексты, разбирать документы и находить идеи.",
+    "Helps prepare and edit texts, parse documents and find ideas."
+  ],
+  [
+    "Шаги выдачи заказа: сначала настройка V*N, затем активация выбранной подписки.",
+    "Steps for issuing an order: first setting up V*N, then activating the selected subscription."
+  ],
+  [
+    "4.3. Комиссии платежных систем и банков оплачивает Покупатель, если применимо.",
+    "4.3. Commissions of payment systems and banks are paid by the Buyer, if applicable."
+  ],
+  [
+    "9.2. Продавец не несет ответственности за упущенную выгоду и косвенные убытки.",
+    "9.2. The seller is not responsible for lost profits and indirect damages."
+  ],
+  [
+    "Данные заказа: выбранный тариф, сумма, статус и идентификаторы заказа/платежа.",
+    "Order details: selected rate, amount, status and order/payment IDs."
+  ],
+  [
+    "Ищет, сравнивает и структурирует информацию для рабочих и повседневных задач.",
+    "Searches, compares and structures information for work and daily tasks."
+  ],
+  [
+    "Соблюдение требований законодательства и выполнение юридических обязанностей.",
+    "Complying with legal requirements and fulfilling legal obligations."
+  ],
+  [
+    "отозвать согласие на обработку данных (когда обработка основана на согласии);",
+    "withdraw consent to data processing (when processing is based on consent);"
+  ],
+  [
+    "<li>В настройках найдите ваш ID аккаунта (на скриншоте указана область).</li>",
+    "<li>In the settings, find your account ID (the area is indicated in the screenshot).</li>"
+  ],
+  [
+    "Система откроет активацию, покажет инструкцию или передаст заявку менеджеру.",
+    "The system will open the activation, show instructions or transfer the application to the manager."
+  ],
+  [
+    "Подходит, если у вас открыта торговая площадка Steam и нужен быстрый баланс.",
+    "Suitable if you have a Steam trading platform and need a quick balance."
+  ],
+  [
+    "Если окно мешает, нажмите «Позже» или клавишу Esc. Бонус останется доступен.",
+    "If the window is in the way, click Later or the Esc key. The bonus will remain available."
+  ],
+  [
+    "Возможности сервиса, требования к аккаунту и условия сопровождения заказа.",
+    "Service capabilities, account requirements and order support conditions."
+  ],
+  [
+    "<li>Скопируйте все содержимое и вставьте его в поле «Токен аккаунта».</li>",
+    "<li>Copy all contents and paste it into the Account Token field.</li>"
+  ],
+  [
+    "Поддержку GPTishka по вопросам подключения в течение оплаченного периода.",
+    "GPTishka support on connection issues during the paid period."
+  ],
+  [
+    "Работает с кодом, объясняет технические вопросы и помогает искать ошибки.",
+    "Works with the code, explains technical issues and helps find errors."
+  ],
+  [
+    "Короткие ответы по оплате, выдаче VLESS-ключа и подключению GPTishka VPN.",
+    "Short answers on payment, issuance of a VLESS key and connection GPTishka VPN."
+  ],
+  [
+    "Есть активная проверка. Task: ${currentTaskId}. Автопроверка остановлена.",
+    "There is an active check. Task: ${currentTaskId}. Autocheck has stopped."
+  ],
+  [
+    "Подключитесь к VPN. Нажмите на значок дома и затем кнопку «Подключиться».",
+    "Connect to VPN. Click on the home icon and then the Connect button."
+  ],
+  [
+    "Коротко о покупке, активации, Steam-пополнении и поддержке после оплаты.",
+    "Briefly about purchase, activation, Steam-replenishment and support after payment."
+  ],
+  [
+    "Законные интересы Оператора (без нарушения прав и свобод пользователя).",
+    "Legitimate interests of the Operator (without violating the rights and freedoms of the user)."
+  ],
+  [
+    "хостинг- и инфраструктурным провайдерам для обеспечения работы сервиса;",
+    "hosting and infrastructure providers to ensure the operation of the service;"
+  ],
+  [
+    "При необходимости приложите подтверждающие материалы (скриншоты/видео).",
+    "If necessary, attach supporting materials (screenshots/videos)."
+  ],
+  [
+    "После сохранения профиль появится в списке и будет готов к подключению.",
+    "After saving, the profile will appear in the list and will be ready to connect."
+  ],
+  [
+    "Сравните варианты по цене и сроку. Все условия сразу видны в карточке.",
+    "Compare options by price and duration. All conditions are immediately visible on the card."
+  ],
+  [
+    "Откройте ссылку https://grok.com/api/auth/session и найдите строку ID.",
+    "Open the link https://grok.com/api/auth/session and find the ID line."
+  ],
+  [
+    "— физическое лицо, оформившее заказ и/или оплатившее цифровой продукт.",
+    "— an individual who placed an order and/or paid for a digital product."
+  ],
+  [
+    "Данные cookies и localStorage для корректной работы сайта и аналитики.",
+    "Cookies and localStorage data for the correct operation of the site and analytics."
+  ],
+  [
+    "Доступны карта, СБП и криптовалюта — итоговая цена берётся с сервера.",
+    "Card, SBP and cryptocurrency are available - the final price is taken from the server."
+  ],
+  [
+    "Два раздела: настройте V*N и завершите активацию выбранной подписки.",
+    "Two sections: Configure V*N and complete activation of the selected subscription."
+  ],
+  [
+    "Активация в обработке. Можно проверить статус на странице активации.",
+    "Activation in processing. You can check the status on the activation page."
+  ],
+  [
+    "Выбранный тариф ChatGPT Go, Plus, Pro 5x или Pro 20x на один месяц.",
+    "Selected tariff ChatGPT Go, Plus, Pro 5x or Pro 20x for one month."
+  ],
+  [
+    "Для метода 5 используется только ID аккаунта Claude в формате UUID.",
+    "Method 5 uses only the account ID Claude in the format UUID."
+  ],
+  [
+    "Откройте нужный сервис ниже и выберите подходящий вариант покупки.",
+    "Open the desired service below and select the appropriate purchase option."
+  ],
+  [
+    "Возможность оформить продление или повторный заказ через наш сайт.",
+    "Possibility to place an extension or repeat order through our website."
+  ],
+  [
+    "Мы проверяем возможность подключения и активируем выбранный тариф.",
+    "We check connectivity and activate the selected tariff."
+  ],
+  [
+    "Остаёмся на связи после оплаты и помогаем по вопросам подключения.",
+    "We stay in touch after payment and help with connection issues."
+  ],
+  [
+    "платежным провайдерам и банкам для обработки платежей и возвратов;",
+    "payment providers and banks to process payments and refunds;"
+  ],
+  [
+    "Основные возможности, порядок подключения и сопровождение заказа.",
+    "Main features, connection procedure and order support."
+  ],
+  [
+    "После подтверждения оплаты откроется страница выдачи VPN-доступа.",
+    "After confirmation of payment, the page for issuing VPN access will open."
+  ],
+  [
+    "3.2. Оплата производится на условиях 100% предварительной оплаты.",
+    "3.2. Payment is made on the basis of 100% advance payment."
+  ],
+  [
+    "Заказ принят в работу, мы с вами свяжемся, если возникнут вопросы",
+    "Your order has been processed, we will contact you if you have any questions"
+  ],
+  [
+    "Скопируйте все содержимое и вставьте его в поле «Токен аккаунта».",
+    "Copy all the contents and paste it into the Account Token field."
+  ],
+  [
+    "Для метода 4 используется только ID аккаунта Grok в формате UUID.",
+    "Method 4 uses only the account ID Grok in the format UUID."
+  ],
+  [
+    "&copy; 2026 GPTishka. Все права защищены, копирование запрещено.",
+    "&copy; 2026 GPTishka. All rights reserved, copying prohibited."
+  ],
+  [
+    "Вы выбираете доступный срок и оформляете заказ на gptishka.shop.",
+    "You select an available period and place an order at gptishka.shop."
+  ],
+  [
+    "Мы подключаем подписку и отправляем статус на указанный контакт.",
+    "We connect the subscription and send the status to the specified contact."
+  ],
+  [
+    "V*N-доступ с выдачей VLESS-ключа через текущую систему GPTishka.",
+    "V*N access with issuance of a VLESS key through the current GPTishka system."
+  ],
+  [
+    "Оформите заказ через модальное окно и оплатите удобным способом.",
+    "Place an order through a modal window and pay in a convenient way."
+  ],
+  [
+    "Claude PRO для текста, анализа, сценариев и повседневных задач.",
+    "Claude PRO for text, analysis, scripts and everyday tasks."
+  ],
+  [
+    "Выберите AI-сервис и перейдите к тарифам, оплате и подключению.",
+    "Select the AI ​​service and go to tariffs, payment and connection."
+  ],
+  [
+    "Скопируйте VLESS-ссылку или QR-код и добавьте его в приложение.",
+    "Copy the VLESS link or QR code and add it to the application."
+  ],
+  [
+    "Слишком часто. Повторите через ${Math.ceil(remain / 1000)} сек.",
+    "Too often. Repeat after ${Math.ceil(remain / 1000)} sec."
+  ],
+  [
+    "Замена, компенсация и возврат рассматриваются индивидуально по",
+    "Replacement, compensation and return are considered individually"
+  ],
+  [
+    "Claude для работы с текстами, кодом, документами и аналитикой.",
+    "Claude for working with texts, code, documents and analytics."
+  ],
+  [
+    "После подтверждения оплаты следуете инструкции в форме заказа.",
+    "After payment is confirmed, follow the instructions on the order form."
+  ],
+  [
+    "Тарифы SuperGrok с быстрым подключением и поддержкой GPTishka.",
+    "Tariffs SuperGrok with fast connection and support GPTishka."
+  ],
+  [
+    "По сложным вопросам может понадобиться немного больше времени.",
+    "Complex questions may take a little longer."
+  ],
+  [
+    "сбоями/ограничениями/проверками со стороны стороннего сервиса;",
+    "failures/limitations/checks from a third-party service;"
+  ],
+  [
+    "Ключ пока не выдан. Нажмите «Обновить» через несколько секунд.",
+    "The key has not yet been issued. Click ”Update” after a few seconds."
+  ],
+  [
+    "Подсказываем по продлению или повторному оформлению подписки.",
+    "We provide advice on renewing or re-subscribing."
+  ],
+  [
+    "3. Оформление заказа и передача (доставка) цифрового продукта",
+    "3. Placing an order and transfer (delivery) of a digital product"
+  ],
+  [
+    "исполнение заказа невозможно по причинам на стороне Продавца.",
+    "execution of the order is impossible due to reasons on the Seller’s side."
+  ],
+  [
+    "Подключение выполняется по токену без передачи данных входа.",
+    "The connection is made using a token without transmitting login data."
+  ],
+  [
+    "Go, Plus и Pro для работы, учёбы, текста, кода и документов.",
+    "Go, Plus and Pro for work, school, text, code and documents."
+  ],
+  [
+    "Пополнение баланса Steam ключами Манн Ко через trade-ссылку.",
+    "Top up your Steam balance with Mann Co. keys via a trade link."
+  ],
+  [
+    "Необязательно. Можно указать пожелания или детали по трейду.",
+    "Optional. You can indicate wishes or details regarding the trade."
+  ],
+  [
+    "Мы не сохраняем токен и используем его только для активации.",
+    "We do not store the token and use it only for activation."
+  ],
+  [
+    "Нажмите ✔️ в правом верхнем углу, чтобы сохранить настройки.",
+    "Click ✔️ in the top right corner to save your settings."
+  ],
+  [
+    "Скачайте установщик GPTishkaVPN-Setup-1.0.0-x64.exe с сайта.",
+    "Download the installer GPTishkaVPN-Setup-1.0.0-x64.exe from the website."
+  ],
+  [
+    "© 2026 GPTishka. Все права защищены, копирование запрещено.",
+    "© 2026 GPTishka. All rights reserved, copying prohibited."
+  ],
+  [
+    "Улучшение качества сайта, аналитика и стабильность сервиса.",
+    "Improving the quality of the site, analytics and service stability."
+  ],
+  [
+    "Не используйте ключ одновременно на нескольких устройствах.",
+    "Do not use the key on several devices at the same time."
+  ],
+  [
+    "В открывшемся меню нажмите пункт добавления нового профиля.",
+    "In the menu that opens, click the option to add a new profile."
+  ],
+  [
+    "пароли от ваших аккаунтов и полные данные банковских карт.",
+    "passwords for your accounts and full bank card details."
+  ],
+  [
+    "ограничение доступа к данным и разграничение прав доступа;",
+    "restriction of access to data and differentiation of access rights;"
+  ],
+  [
+    "Сначала настройте VPN-доступ, затем вернитесь к активации.",
+    "First set up VPN access, then return to activation."
+  ],
+  [
+    "<li>Вставьте ID в поле ниже и нажмите «Активировать».</li>",
+    "<li>Insert the ID in the field below and click “Activate”.</li>"
+  ],
+  [
+    "Откройте страницу из ссылки после оплаты (с order_id и t).",
+    "Open the page from the link after payment (with order_id and t)."
+  ],
+  [
+    "VLESS-доступ с автоматической выдачей ключа после оплаты.",
+    "VLESS-access with automatic key issuance after payment."
+  ],
+  [
+    "Поддержка GPTishka в Telegram, VK и по электронной почте.",
+    "Support for GPTishka in Telegram, VK and by email."
+  ],
+  [
+    "изменением критичных данных аккаунта вопреки инструкциям;",
+    "changing critical account data contrary to instructions;"
+  ],
+  [
+    "Настоящая Политика конфиденциальности применяется к сайту",
+    "This Privacy Policy applies to the site"
+  ],
+  [
+    "Исполнение обязанностей, установленных законодательством.",
+    "Fulfillment of duties established by law."
+  ],
+  [
+    "При положительном решении возврат инициируется Продавцом.",
+    "If the decision is positive, the return is initiated by the Seller."
+  ],
+  [
+    "Данные для входа готовы. Скопируйте логин и пароль ниже.",
+    "Login details are ready. Copy your username and password below."
+  ],
+  [
+    "Добавьте ключ доступа. В правом нижнем углу нажмите «+».",
+    "Add a passkey. In the lower right corner, click ”+”."
+  ],
+  [
+    "После выбора вы перейдете к безопасной странице оплаты.",
+    "Once selected, you will be taken to a secure payment page."
+  ],
+  [
+    "Вы выбираете тариф и оформляете заказ на gptishka.shop.",
+    "You choose a tariff and place an order at gptishka.shop."
+  ],
+  [
+    "Помощь с продлением или повторным оформлением подписки.",
+    "Help with renewing or re-subscription."
+  ],
+  [
+    "Оформление и исполнение заказа, поддержка пользователя.",
+    "Placement and execution of orders, user support."
+  ],
+  [
+    "Мы можем передавать данные только в необходимом объеме:",
+    "We can transfer data only to the extent necessary:"
+  ],
+  [
+    "госорганам — только в случаях, предусмотренных законом.",
+    "to government agencies - only in cases provided for by law."
+  ],
+  [
+    "Выбранный тариф PRO, 5x MAX или 20x MAX на один месяц.",
+    "Selected PRO, 5x MAX or 20x MAX tariff for one month."
+  ],
+  [
+    "резервное копирование и меры по восстановлению данных.",
+    "backup and data recovery measures."
+  ],
+  [
+    "обратиться с жалобой в уполномоченный орган или в суд.",
+    "file a complaint with an authorized body or court."
+  ],
+  [
+    "Токен выглядит корректным по формату (без сохранения).",
+    "The token appears to be in the correct format (without saving)."
+  ],
+  [
+    "${copy.photoPrefix || \"Фото\"} ${step.photoIndex + 1} →",
+    "${copy.photoPrefix || \"Фото\"} ${step.photoIndex + 1} →"
+  ],
+  [
+    "После подтверждения оплаты заказ поступает менеджеру.",
+    "After confirmation of payment, the order is sent to the manager."
+  ],
+  [
+    "Укажите данные, которые нужны для выбранного сервиса.",
+    "Provide the information required for the selected service."
+  ],
+  [
+    "Завершите активацию Claude Pro по ID аккаунта Claude.",
+    "Complete activation of Claude Pro using account ID Claude."
+  ],
+  [
+    "Что делать, если автоматическая активация не прошла?",
+    "What to do if automatic activation fails?"
+  ],
+  [
+    "Короткие ответы на самые частые вопросы по SuperGrok",
+    "Short answers to the most frequently asked questions about SuperGrok"
+  ],
+  [
+    "Перейдите на сайт grok.com и войдите в свой аккаунт.",
+    "Go to grok.com and log in to your account."
+  ],
+  [
+    "Проверим отзыв и отправим вам персональный промокод.",
+    "We’ll check your review and send you a personal promo code."
+  ],
+  [
+    "Обнаружен JSON: будет использован извлеченный токен.",
+    "JSON detected: The extracted token will be used."
+  ],
+  [
+    "Продавец рассматривает обращение в течение 72 часов.",
+    "The seller reviews the request within 72 hours."
+  ],
+  [
+    "Статус и результат отправляем на указанный контакт.",
+    "The status and result are sent to the specified contact."
+  ],
+  [
+    "Исполнение договора (в том числе публичной оферты).",
+    "Execution of the contract (including public offer)."
+  ],
+  [
+    "Сначала скопируйте VLESS-ключ, полученный на сайте.",
+    "First, copy the VLESS key you received on the website."
+  ],
+  [
+    "Убедитесь, что ключ успешно добавился в приложение.",
+    "Verify that the key was successfully added to the application."
+  ],
+  [
+    "Завершите активацию SuperGrok по ID аккаунта Grok.",
+    "Complete activation of SuperGrok using account ID Grok."
+  ],
+  [
+    "Скопируйте ID аккаунта Claude из раздела Account.",
+    "Copy the account ID Claude from the Account section."
+  ],
+  [
+    "цифровой продукт не был передан по вине Продавца;",
+    "the digital product was not transferred through the fault of the Seller;"
+  ],
+  [
+    "ID аккаунта выглядит корректным (без сохранения).",
+    "The account ID appears to be correct (no saving)."
+  ],
+  [
+    "Запустите программу GPTishka VPN после установки.",
+    "Run the GPTishka VPN program after installation."
+  ],
+  [
+    "Мы не продаем персональные данные пользователей.",
+    "We do not sell users’ personal data."
+  ],
+  [
+    "Можно продолжить активацию ChatGPT в блоке ниже.",
+    "You can continue activating ChatGPT in the block below."
+  ],
+  [
+    "отказ от услуги до момента подключения подписки.",
+    "refusal of the service until the subscription is activated."
+  ],
+  [
+    "Запустите установщик и следуйте шагам установки.",
+    "Run the installer and follow the installation steps."
+  ],
+  [
+    "${copy.openPhoto || \"Открыть фото\"} ${index + 1}",
+    "${copy.openPhoto || \"Открыть фото\"} ${index + 1}"
+  ],
+  [
+    "Не удалось скопировать ключ. Скопируйте вручную.",
+    "Failed to copy key. Copy manually."
+  ],
+  [
+    "Нейросети GPTishka — ChatGPT, Claude, SuperGrok",
+    "Neural networks GPTishka - ChatGPT, Claude, SuperGrok"
+  ],
+  [
+    "Завершите активацию ChatGPT по токену аккаунта.",
+    "Complete the activation of ChatGPT using your account token."
+  ],
+  [
+    "Вставьте токен из chatgpt.com/api/auth/session.",
+    "Paste the token from chatgpt.com/api/auth/session."
+  ],
+  [
+    "Войдите в Claude и откройте настройки аккаунта.",
+    "Log in to Claude and open your account settings."
+  ],
+  [
+    "журналирование событий и мониторинг инцидентов;",
+    "event logging and incident monitoring;"
+  ],
+  [
+    "запросить информацию об обработке ваших данных;",
+    "request information about the processing of your data;"
+  ],
+  [
+    "Выберите устройство, затем скачайте приложение.",
+    "Select your device, then download the app."
+  ],
+  [
+    "Помощь с ChatGPT — независимый сервис GPTishka",
+    "Help with ChatGPT - independent service GPTishka"
+  ],
+  [
+    "Для этого заказа токен-активация не требуется.",
+    "No token activation is required for this order."
+  ],
+  [
+    "GPTishka — независимый магазин цифровых услуг",
+    "GPTishka - independent digital services store"
+  ],
+  [
+    "6. Гарантия, замена, возврат и отмена платежа",
+    "6. Warranty, replacement, refund and cancellation of payment"
+  ],
+  [
+    "✅ Поддержка помогает с настройкой приложения",
+    "✅ Support helps with setting up the application"
+  ],
+  [
+    "Почту или Telegram, указанные при оформлении",
+    "Mail or Telegram specified during registration"
+  ],
+  [
+    "попыткой чарджбека до обращения в поддержку;",
+    "attempting a chargeback before contacting support;"
+  ],
+  [
+    "GPTишка: продление и активация ChatGPT Plus.",
+    "GPTishka: renewal and activation of ChatGPT Plus."
+  ],
+  [
+    "В поле «Примечание» укажите название профиля",
+    "In the “Note” field, enter the profile name"
+  ],
+  [
+    "Готово. VPN подключен, и ваш трафик защищён.",
+    "Ready. VPN is connected and your traffic is secure."
+  ],
+  [
+    "Пополнение Steam ключами Манн Ко | GPTishka",
+    "Replenishment of Steam with Mann Co. keys | GPTishka"
+  ],
+  [
+    "Нажмите «Активировать» и дождитесь статуса.",
+    "Click ”Activate” and wait for the status."
+  ],
+  [
+    "Активация аккаунта для активации Claude Pro",
+    "Account activation to activate Claude Pro"
+  ],
+  [
+    "несоответствие товара заявленному описанию;",
+    "the product does not correspond to the stated description;"
+  ],
+  [
+    "✅ Ключ выдаётся автоматически после оплаты",
+    "✅ The key is issued automatically after payment"
+  ],
+  [
+    "Получите ключ V*N и подключите устройство.",
+    "Get the V*N key and connect the device."
+  ],
+  [
+    "поддержка в течение срока действия услуги.",
+    "support during the service period."
+  ],
+  [
+    "— интернет-ресурс, расположенный по адресу",
+    "- Internet resource located at"
+  ],
+  [
+    "Согласие пользователя на обработку данных.",
+    "User consent to data processing."
+  ],
+  [
+    "В обработке. Task: ${currentTaskId}${msg ?",
+    "In processing. Task: ${currentTaskId}${msg ?"
+  ],
+  [
+    "${copy.photoPrefix || \"Фото\"} ${index + 1}",
+    "${copy.photoPrefix || \"Фото\"} ${index + 1}"
+  ],
+  [
+    "&copy; 2026 GPTishka. Все права защищены.",
+    "&copy; 2026 GPTishka. All rights reserved."
+  ],
+  [
+    "Для быстрого ответа рекомендуем Telegram.",
+    "For a quick response, we recommend Telegram."
+  ],
+  [
+    "Обратитесь в поддержку по контактам ниже.",
+    "Contact support using the contacts below."
+  ],
+  [
+    "8. Важные заявления о сторонних сервисах",
+    "8. Important Statements About Third Party Services"
+  ],
+  [
+    "12. Разрешение споров и применимое право",
+    "12. Dispute resolution and applicable law"
+  ],
+  [
+    "ID аккаунта Grok для активации SUPERGROK",
+    "Account ID Grok for activation SUPERGROK"
+  ],
+  [
+    "Karing: заполнить примечание и сохранить",
+    "Karing: fill out the note and save"
+  ],
+  [
+    "Короткие ответы на самые частые вопросы",
+    "Short answers to the most frequently asked questions"
+  ],
+  [
+    "Завершите активацию выбранной подписки.",
+    "Complete activation of the selected subscription."
+  ],
+  [
+    "<li><strong>Как найти ID:</strong></li>",
+    "<li><strong>How to find ID:</strong></li>"
+  ],
+  [
+    "GPTishka VPN — VLESS-доступ | GPTishka",
+    "GPTishka VPN - VLESS-access | GPTishka"
+  ],
+  [
+    "✅ Можно продлить доступ через GPTishka",
+    "✅ You can extend access via GPTishka"
+  ],
+  [
+    "Можно ли получить помощь с настройкой?",
+    "Can I get help with the setup?"
+  ],
+  [
+    "Сколько времени занимает подключение?",
+    "How long does it take to connect?"
+  ],
+  [
+    "SuperGrok — тарифные планы | GPTishka",
+    "SuperGrok - tariff plans | GPTishka"
+  ],
+  [
+    "✅ Доступ привязан к оплаченному сроку",
+    "✅ Access is tied to the paid period"
+  ],
+  [
+    "нарушением правил стороннего сервиса;",
+    "violation of the rules of a third-party service;"
+  ],
+  [
+    "Политика конфиденциальности — GPTишка",
+    "Privacy Policy – ​​GPTishka"
+  ],
+  [
+    "Как это работает / видео инструкция —",
+    "How it works / video instructions -"
+  ],
+  [
+    "Где найти ID аккаунта Grok — пример 1",
+    "Where to find account ID Grok - example 1"
+  ],
+  [
+    "Где найти ID аккаунта Grok — пример 2",
+    "Where to find account ID Grok - example 2"
+  ],
+  [
+    "Не удалось загрузить статус активации",
+    "Failed to load activation status"
+  ],
+  [
+    "<li>Откройте настройки аккаунта.</li>",
+    "<li>Open your account settings.</li>"
+  ],
+  [
+    "недоставка товара (товар не передан);",
+    "non-delivery of goods (goods not delivered);"
+  ],
+  [
+    "Сюда придет вся информация по заказу",
+    "All order information will come here"
+  ],
+  [
+    "13. Срок действия и изменение Оферты",
+    "13. Validity period and changes to the Offer"
+  ],
+  [
+    "Не удалось вставить из буфера обмена",
+    "Failed to paste from clipboard"
+  ],
+  [
+    "© 2026 GPTishka. Все права защищены.",
+    "© 2026 GPTishka. All rights reserved."
+  ],
+  [
+    "Откройте меню в правом верхнем углу.",
+    "Open the menu in the upper right corner."
+  ],
+  [
+    "Ошибка сети при запросе VPN-доступа.",
+    "Network error when requesting VPN access."
+  ],
+  [
+    "Как проходит подключение SuperGrok?",
+    "How is SuperGrok connected?"
+  ],
+  [
+    "Ошибка сети при проверке активации.",
+    "Network error when checking activation."
+  ],
+  [
+    "В обработке. Task: ${currentTaskId}",
+    "In processing. Task: ${currentTaskId}"
+  ],
+  [
+    "Берем новый ключ и перезапускаем...",
+    "We take a new key and restart..."
+  ],
+  [
+    "Claude — тарифные планы | GPTishka",
+    "Claude - tariff plans | GPTishka"
+  ],
+  [
+    "VPN с автоматической выдачей ключа",
+    "VPN with automatic key issuance"
+  ],
+  [
+    "✅ Не нужно вводить токен активации",
+    "✅ No need to enter an activation token"
+  ],
+  [
+    "Откройте страницу токен-активации.",
+    "Open the activation token page."
+  ],
+  [
+    "Ошибка сети при загрузке активации",
+    "Network error loading activation"
+  ],
+  [
+    "Выберите «Импорт из буфера обмена»",
+    "Select ”Import from Clipboard”"
+  ],
+  [
+    "Уведомление о независимом сервисе",
+    "Independent Service Notice"
+  ],
+  [
+    "Выберите нужный срок VPN-доступа.",
+    "Select the desired period of VPN access."
+  ],
+  [
+    "+10% к пополнению ключами Манн Ко",
+    "+10% to replenishment of Mann Co. keys"
+  ],
+  [
+    "Нажимая кнопку, вы соглашаетесь с",
+    "By clicking the button, you agree to"
+  ],
+  [
+    "Выберите инструкцию для вашей ОС.",
+    "Select instructions for your OS."
+  ],
+  [
+    "Продлить / Активировать - GPTишка",
+    "Renew / Activate - GPTishka"
+  ],
+  [
+    "Ошибка сети при запуске активации",
+    "Network error when starting activation"
+  ],
+  [
+    "СБП, карты РФ/СНГ и Криптовалюта",
+    "SBP, RF/CIS cards and Cryptocurrency"
+  ],
+  [
+    "Пополнение Steam ключами Манн Ко",
+    "Replenishment of Steam with Mann Co. keys"
+  ],
+  [
+    "V*N + Активация заказа - GPTишка",
+    "V*N + Order activation - GPTishka"
+  ],
+  [
+    "Откройте страницу активации V*N.",
+    "Open the V*N activation page."
+  ],
+  [
+    "Не удалось скопировать Order ID.",
+    "Failed to copy Order ID."
+  ],
+  [
+    "Номер заказа или скриншот оплаты",
+    "Order number or payment screenshot"
+  ],
+  [
+    "5. Передача данных третьим лицам",
+    "5. Transfer of data to third parties"
+  ],
+  [
+    "Для реализации прав напишите на:",
+    "To exercise your rights, write to:"
+  ],
+  [
+    "Ошибка сети при проверке статуса",
+    "Network error when checking status"
+  ],
+  [
+    "Ручная активация через поддержку",
+    "Manual activation via support"
+  ],
+  [
+    "Ожидаем выдачу данных для входа.",
+    "We are waiting for your login information to be issued."
+  ],
+  [
+    "Активация VPN-доступа - GPTishka",
+    "Activation of VPN access - GPTishka"
+  ],
+  [
+    "Не удалось скачать конфигурацию.",
+    "Failed to download configuration."
+  ],
+  [
+    "Например: отправить после 18:00",
+    "For example: send after 18:00"
+  ],
+  [
+    "Проверяем статус V*N-доступа...",
+    "Checking the V*N access status..."
+  ],
+  [
+    "шифрование трафика (HTTPS/TLS);",
+    "traffic encryption (HTTPS/TLS);"
+  ],
+  [
+    "Успешно. Task: ${currentTaskId}",
+    "Successfully. Task: ${currentTaskId}"
+  ],
+  [
+    "Ошибка сети при проверке токена",
+    "Network error when validating token"
+  ],
+  [
+    "Karing: импорт из буфера обмена",
+    "Karing: import from clipboard"
+  ],
+  [
+    "Фото ${karingLightboxIndex + 1}",
+    "Photo ${karingLightboxIndex + 1}"
+  ],
+  [
+    "Не удалось получить VPN-доступ.",
+    "Failed to obtain VPN access."
+  ],
+  [
+    "Лента активаций обновляется...",
+    "The activation feed is being updated..."
+  ],
+  [
+    "Понятный сценарий после оплаты",
+    "Clear scenario after payment"
+  ],
+  [
+    "Что входит в покупку подписки?",
+    "What’s included in purchasing a subscription?"
+  ],
+  [
+    "Как работает Steam-пополнение?",
+    "How does Steam replenishment work?"
+  ],
+  [
+    "Какие способы оплаты доступны?",
+    "What payment methods are available?"
+  ],
+  [
+    "Новости и предложения GPTishka",
+    "News and offers GPTishka"
+  ],
+  [
+    "Вернуться в каталог нейросетей",
+    "Return to neural networks catalog"
+  ],
+  [
+    "ChatGPT от 1290 рублей в месяц",
+    "ChatGPT from 1290 rubles per month"
+  ],
+  [
+    "Не удалось запустить активацию",
+    "Failed to start activation"
+  ],
+  [
+    "Подключение успешно завершено.",
+    "Connection completed successfully."
+  ],
+  [
+    "Подписка успешно активирована.",
+    "The subscription has been successfully activated."
+  ],
+  [
+    "Завершите активацию подписки.",
+    "Complete your subscription activation."
+  ],
+  [
+    "Проверяем статус активации...",
+    "Checking the activation status..."
+  ],
+  [
+    "Ошибка сети при проверке V*N.",
+    "Network error when checking V*N."
+  ],
+  [
+    ", включая связанные страницы.",
+    ", including related pages."
+  ],
+  [
+    "5. Права и обязанности сторон",
+    "5. Rights and obligations of the parties"
+  ],
+  [
+    "Ваш тариф успешно активирован",
+    "Your tariff has been successfully activated"
+  ],
+  [
+    "Как оплатить ChatGPT в России",
+    "How to pay for ChatGPT in Russia"
+  ],
+  [
+    "Шаг 2 — установите приложение",
+    "Step 2 - Install the application"
+  ],
+  [
+    "Перейдите в раздел «Профили».",
+    "Go to the ”Profiles” section."
+  ],
+  [
+    "Получите инструкцию или ключ",
+    "Get instructions or key"
+  ],
+  [
+    "Что происходит после оплаты?",
+    "What happens after payment?"
+  ],
+  [
+    "Главные предложения GPTishka",
+    "Main offers GPTishka"
+  ],
+  [
+    "Закрыть выбор способа оплаты",
+    "Close payment method selection"
+  ],
+  [
+    "политикой конфиденциальности",
+    "privacy policy"
+  ],
+  [
+    "Откройте страницу активации.",
+    "Open the activation page."
+  ],
+  [
+    "консультация перед покупкой;",
+    "consultation before purchase;"
+  ],
+  [
+    "Где найти ID аккаунта Claude",
+    "Where to find account ID Claude"
+  ],
+  [
+    "Запрос не может обработаться",
+    "The request cannot be processed"
+  ],
+  [
+    "Не указан order_id в ссылке.",
+    "The order_id is not specified in the link."
+  ],
+  [
+    "Купить ChatGPT Plus в России",
+    "Buy ChatGPT Plus in Russia"
+  ],
+  [
+    "Один ключ = одно устройство.",
+    "One key = one device."
+  ],
+  [
+    "Karing: кнопка меню профилей",
+    "Karing: profile menu button"
+  ],
+  [
+    "Доступны варианты без входа",
+    "No login options available"
+  ],
+  [
+    "Поддержка поможет завершить",
+    "Support will help you complete"
+  ],
+  [
+    "Как быстро приходит доступ?",
+    "How quickly does access come?"
+  ],
+  [
+    "Можно ли продлить подписку?",
+    "Is it possible to renew my subscription?"
+  ],
+  [
+    "Готовы подключить подписку?",
+    "Are you ready to subscribe?"
+  ],
+  [
+    "Политика конфиденциальности",
+    "Privacy Policy"
+  ],
+  [
+    "лента активаций обновляется",
+    "activation feed is updated"
+  ],
+  [
+    "Как подключить GPTishka VPN",
+    "How to connect GPTishka VPN"
+  ],
+  [
+    "Пополнения GPTishka — Steam",
+    "Replenishments GPTishka — Steam"
+  ],
+  [
+    "Оформление пополнения Steam",
+    "Registration of replenishment Steam"
+  ],
+  [
+    "Открыть активацию SuperGrok",
+    "Open activation SuperGrok"
+  ],
+  [
+    "V*N-доступ готов${expires ?",
+    "V*N-access ready${expires ?"
+  ],
+  [
+    "Ожидается запуск активации.",
+    "Waiting for activation to start."
+  ],
+  [
+    "Дата последнего обновления:",
+    "Last update date:"
+  ],
+  [
+    "2. Какие данные мы собираем",
+    "2. What data we collect"
+  ],
+  [
+    "10. Трансграничная передача",
+    "10. Cross-border transfer"
+  ],
+  [
+    "Бонус 5% на следующий заказ",
+    "5% bonus on your next order"
+  ],
+  [
+    "Сначала запустите активацию",
+    "First run activation"
+  ],
+  [
+    "Ошибка сети при перезапуске",
+    "Network error on restart"
+  ],
+  [
+    "Шаг 1 — выберите устройство",
+    "Step 1 - Select your device"
+  ],
+  [
+    "Скриншоты инструкции Karing",
+    "Screenshots of Karing instructions"
+  ],
+  [
+    "Выберите «Добавить профиль»",
+    "Select ”Add Profile”"
+  ],
+  [
+    "Что такое токен активации?",
+    "What is an activation token?"
+  ],
+  [
+    "Популярные услуги GPTishka",
+    "Popular services GPTishka"
+  ],
+  [
+    "О SuperGrok перед покупкой",
+    "About SuperGrok before purchasing"
+  ],
+  [
+    "Выберите количество ключей",
+    "Select number of keys"
+  ],
+  [
+    "Обычно отвечаем за 5 минут",
+    "We usually respond within 5 minutes"
+  ],
+  [
+    "Поддержка и обратная связь",
+    "Support and feedback"
+  ],
+  [
+    "Публичная оферта — GPTишка",
+    "Public offer - GPTishka"
+  ],
+  [
+    "Правила стороннего сервиса",
+    "Third party service rules"
+  ],
+  [
+    "5.3. Покупатель обязуется:",
+    "5.3. The buyer undertakes:"
+  ],
+  [
+    "1. Кто обрабатывает данные",
+    "1. Who processes the data"
+  ],
+  [
+    "не запрашиваем и не храним",
+    "we do not request and do not store"
+  ],
+  [
+    "Не удалось получить статус",
+    "Failed to get status"
+  ],
+  [
+    "Не удалось проверить токен",
+    "Failed to verify token"
+  ],
+  [
+    "Условия возврата — GPTишка",
+    "Return conditions - GPTishka"
+  ],
+  [
+    "Цена ChatGPT Plus в России",
+    "Price ChatGPT Plus in Russia"
+  ],
+  [
+    "Подключение ChatGPT онлайн",
+    "Connect ChatGPT online"
+  ],
+  [
+    "Откройте приложение Karing",
+    "Open the Karing app"
+  ],
+  [
+    "Оплатите удобным способом",
+    "Pay in a convenient way"
+  ],
+  [
+    "Гарантия и важные условия",
+    "Warranty and important conditions"
+  ],
+  [
+    "Открыть активацию ChatGPT",
+    "Open activation ChatGPT"
+  ],
+  [
+    "Активация пока не готова.",
+    "Activation is not ready yet."
+  ],
+  [
+    "Если что-то пойдёт не так",
+    "If something goes wrong"
+  ],
+  [
+    "ID аккаунта Claude (UUID)",
+    "Account ID Claude (UUID)"
+  ],
+  [
+    "Передача цифрового товара",
+    "Transfer of digital goods"
+  ],
+  [
+    "Если спор не урегулирован",
+    "If the dispute is not resolved"
+  ],
+  [
+    "на +10% ключами Манн Ко.",
+    "+10% with Mann Co. keys."
+  ],
+  [
+    "Как проходит подключение",
+    "How does the connection work?"
+  ],
+  [
+    "Нужен ли логин и пароль?",
+    "Do I need a login and password?"
+  ],
+  [
+    "Быстрые разделы GPTishka",
+    "Quick sections GPTishka"
+  ],
+  [
+    "Открыть пополнения Steam",
+    "Open refills Steam"
+  ],
+  [
+    "Часто задаваемые вопросы",
+    "Frequently Asked Questions"
+  ],
+  [
+    "Открыть тарифы SuperGrok",
+    "Open tariffs SuperGrok"
+  ],
+  [
+    "Открыть пополнение Steam",
+    "Open replenishment Steam"
+  ],
+  [
+    "Куда вводить VLESS-ключ?",
+    "Where to enter the VLESS key?"
+  ],
+  [
+    "Скопируйте VLESS-ссылку.",
+    "Copy the VLESS link."
+  ],
+  [
+    "Открыть активацию Claude",
+    "Open activation Claude"
+  ],
+  [
+    "V*N-доступ еще не готов.",
+    "V*N access is not ready yet."
+  ],
+  [
+    "Активация уже завершена.",
+    "Activation has already been completed."
+  ],
+  [
+    "Краткое описание вопроса",
+    "Brief description of the issue"
+  ],
+  [
+    "1. Термины и определения",
+    "1. Terms and definitions"
+  ],
+  [
+    "Стоимость доставки — 0 ₽",
+    "Delivery cost - 0 ₽"
+  ],
+  [
+    "4. Цена и порядок оплаты",
+    "4. Price and payment procedure"
+  ],
+  [
+    "5.1. Продавец обязуется:",
+    "5.1. The seller undertakes:"
+  ],
+  [
+    "7. Претензии и поддержка",
+    "7. Claims and support"
+  ],
+  [
+    "Где взять токен аккаунта",
+    "Where to get an account token"
+  ],
+  [
+    "Сменить ключ и повторить",
+    "Change key and repeat"
+  ],
+  [
+    "Не удалось перезапустить",
+    "Failed to restart"
+  ],
+  [
+    "Автопроверка остановлена",
+    "Autocheck stopped"
+  ],
+  [
+    "Karing: добавить профиль",
+    "Karing: add profile"
+  ],
+  [
+    "Например: gptishka.shop.",
+    "For example: gptishka.shop."
+  ],
+  [
+    "Нужна помощь с выбором?",
+    "Need help choosing?"
+  ],
+  [
+    "Steam / цифровые товары",
+    "Steam / digital goods"
+  ],
+  [
+    "Вернуться к пополнениям",
+    "Return to replenishment"
+  ],
+  [
+    "Продлить / Активировать",
+    "Renew / Activate"
+  ],
+  [
+    "Связь с нами — GPTishka",
+    "Contact us - GPTishka"
+  ],
+  [
+    "Выберите удобный способ",
+    "Choose a convenient method"
+  ],
+  [
+    "Что указать в сообщении",
+    "What to include in the message"
+  ],
+  [
+    "помощь при подключении;",
+    "connection assistance;"
+  ],
+  [
+    "11. Персональные данные",
+    "11. Personal data"
+  ],
+  [
+    "Пароль пока не назначен",
+    "No password has been assigned yet"
+  ],
+  [
+    "ID аккаунта Grok (UUID)",
+    "Account ID Grok (UUID)"
+  ],
+  [
+    "Особые условия возврата",
+    "Special return conditions"
+  ],
+  [
+    "Проверяем VPN-доступ...",
+    "Checking VPN access..."
+  ],
+  [
+    "Выберите способ оплаты",
+    "Select payment method"
+  ],
+  [
+    "СБП и банковские карты",
+    "SBP and bank cards"
+  ],
+  [
+    "Перед покупкой ChatGPT",
+    "Before purchasing ChatGPT"
+  ],
+  [
+    "Можно ли вам доверять?",
+    "Can you be trusted?"
+  ],
+  [
+    "Открыть тарифы ChatGPT",
+    "Open tariffs ChatGPT"
+  ],
+  [
+    "GPTishka V*N — каталог",
+    "GPTishka V*N - catalog"
+  ],
+  [
+    "GPTишка - ChatGPT Plus",
+    "GPTishka - ChatGPT Plus"
+  ],
+  [
+    "Время работы поддержки",
+    "Support hours"
+  ],
+  [
+    "Редакция от 10.02.2026",
+    "Revision dated 02/10/2026"
+  ],
+  [
+    "7. Cookies и аналитика",
+    "7. Cookies and analytics"
+  ],
+  [
+    "8. Безопасность данных",
+    "8. Data security"
+  ],
+  [
+    "11. Изменения политики",
+    "11. Policy changes"
+  ],
+  [
+    "Не удалось скопировать",
+    "Failed to copy"
+  ],
+  [
+    "Логин пока не назначен",
+    "Login has not yet been assigned"
+  ],
+  [
+    "Когда возможен возврат",
+    "When is a return possible?"
+  ],
+  [
+    "Как оформить обращение",
+    "How to submit an appeal"
+  ],
+  [
+    "Karing: раздел Профили",
+    "Karing: Profiles section"
+  ],
+  [
+    "Переход к активации...",
+    "Proceed to activation..."
+  ],
+  [
+    "ChatGPT от 1290 ₽/мес",
+    "ChatGPT from 1290 ₽/month"
+  ],
+  [
+    "Переключение баннеров",
+    "Switching banners"
+  ],
+  [
+    "Требования к аккаунту",
+    "Account requirements"
+  ],
+  [
+    "Перед покупкой Claude",
+    "Before purchasing Claude"
+  ],
+  [
+    "Поддержка и продление",
+    "Support and extension"
+  ],
+  [
+    "Открыть тарифы Claude",
+    "Open tariffs Claude"
+  ],
+  [
+    "Как происходит выдача",
+    "How is the issuance carried out?"
+  ],
+  [
+    "5.2. Продавец вправе:",
+    "5.2. The seller has the right:"
+  ],
+  [
+    "4. Правовые основания",
+    "4. Legal basis"
+  ],
+  [
+    "9. Права пользователя",
+    "9. User rights"
+  ],
+  [
+    "Карта сайта — GPTишка",
+    "Sitemap - GPTishka"
+  ],
+  [
+    "Покупка и подключение",
+    "Purchase and connection"
+  ],
+  [
+    "Активация VPN-доступа",
+    "Activation of VPN access"
+  ],
+  [
+    "Устройство не выбрано",
+    "Device not selected"
+  ],
+  [
+    "Пополни баланс Steam",
+    "Top up your balance Steam"
+  ],
+  [
+    "Получите подключение",
+    "Get connected"
+  ],
+  [
+    "Безопасная активация",
+    "Secure activation"
+  ],
+  [
+    "Поддержка и гарантия",
+    "Support and Warranty"
+  ],
+  [
+    "Как проходит покупка",
+    "How does the purchase work?"
+  ],
+  [
+    "Написать в поддержку",
+    "Write to support"
+  ],
+  [
+    "Открыть GPTishka V*N",
+    "Open GPTishka V*N"
+  ],
+  [
+    "Комментарий к заказу",
+    "Comments on the order"
+  ],
+  [
+    "Уменьшить количество",
+    "Reduce quantity"
+  ],
+  [
+    "Увеличить количество",
+    "Increase quantity"
+  ],
+  [
+    "О магазине — GPTишка",
+    "About the store - GPTishka"
+  ],
+  [
+    "Вернуться на главную",
+    "Return to home"
+  ],
+  [
+    "Заказ с V*N в пакете",
+    "Order with V*N in the package"
+  ],
+  [
+    "Активация Claude Pro",
+    "Activation Claude Pro"
+  ],
+  [
+    "Order ID скопирован.",
+    "Order ID copied."
+  ],
+  [
+    "Чтобы помочь быстрее",
+    "To help faster"
+  ],
+  [
+    "Продолжить активацию",
+    "Continue activation"
+  ],
+  [
+    "Карта сайта GPTishka",
+    "Sitemap GPTishka"
+  ],
+  [
+    "Скачать конфигурацию",
+    "Download configuration"
+  ],
+  [
+    "Конфигурация скачана",
+    "Configuration downloaded"
+  ],
+  [
+    "Карты 3.2% и СБП 0%",
+    "Cards 3.2% and SBP 0%"
+  ],
+  [
+    "СБП 0% и карты 3.2%",
+    "SBP 0% and cards 3.2%"
+  ],
+  [
+    "Что умеет SuperGrok",
+    "What SuperGrok can do"
+  ],
+  [
+    "Все товары GPTishka",
+    "All products GPTishka"
+  ],
+  [
+    "Что получает клиент",
+    "What does the client get?"
+  ],
+  [
+    "Порядок подключения",
+    "Connection procedure"
+  ],
+  [
+    "Фильтры VPN-тарифов",
+    "Filters VPN-tariffs"
+  ],
+  [
+    "Активация SuperGrok",
+    "Activation SuperGrok"
+  ],
+  [
+    "Не указан order_id.",
+    "order_id not specified."
+  ],
+  [
+    "Безопасность данных",
+    "Data Security"
+  ],
+  [
+    "Остановить проверку",
+    "Stop scanning"
+  ],
+  [
+    "Запрос отправлен...",
+    "Request sent..."
+  ],
+  [
+    "Символов: ${length}",
+    "Characters: ${length}"
+  ],
+  [
+    "Введите ID аккаунта",
+    "Enter your account ID"
+  ],
+  [
+    "Order ID скопирован",
+    "Order ID copied"
+  ],
+  [
+    "Активация по заказу",
+    "Activation upon request"
+  ],
+  [
+    "Перейти к активации",
+    "Go to activation"
+  ],
+  [
+    "Доступ активирован.",
+    "Access activated."
+  ],
+  [
+    "СБП и карты РФ/СНГ",
+    "SBP and maps of the Russian Federation/CIS"
+  ],
+  [
+    "Гарантии и доверие",
+    "Guarantees and trust"
+  ],
+  [
+    "Каталог нейросетей",
+    "Catalog of neural networks"
+  ],
+  [
+    "Steam trade-ссылка",
+    "Steam trade link"
+  ],
+  [
+    "Поддержка GPTishka",
+    "Support GPTishka"
+  ],
+  [
+    "Поддержка на связи",
+    "Contact support"
+  ],
+  [
+    "Гарантия — GPTишка",
+    "Warranty – GPTishka"
+  ],
+  [
+    "Что мы гарантируем",
+    "What we guarantee"
+  ],
+  [
+    "9. Ответственность",
+    "9. Responsibility"
+  ],
+  [
+    "Скопировать пароль",
+    "Copy password"
+  ],
+  [
+    "Task ID скопирован",
+    "Task ID copied"
+  ],
+  [
+    "Контакты поддержки",
+    "Support contacts"
+  ],
+  [
+    "Полезные материалы",
+    "Useful materials"
+  ],
+  [
+    "Скачать приложение",
+    "Download the application"
+  ],
+  [
+    "Нажмите кнопку «⋮»",
+    "Click the ”⋮” button"
+  ],
+  [
+    "Выберите подписку",
+    "Select subscription"
+  ],
+  [
+    "Предыдущий баннер",
+    "Previous banner"
+  ],
+  [
+    "Открыть нейросети",
+    "Open neural networks"
+  ],
+  [
+    "ChatGPT без входа",
+    "ChatGPT without login"
+  ],
+  [
+    "условиям возврата",
+    "return conditions"
+  ],
+  [
+    "Почему это удобно",
+    "Why is this convenient?"
+  ],
+  [
+    "Оформление заказа",
+    "Placing an order"
+  ],
+  [
+    "Количество ключей",
+    "Number of keys"
+  ],
+  [
+    "Открыть активацию",
+    "Open activation"
+  ],
+  [
+    "Активация ChatGPT",
+    "Activation ChatGPT"
+  ],
+  [
+    "Электронная почта",
+    "E-mail"
+  ],
+  [
+    "2. Предмет Оферты",
+    "2. Subject of the Offer"
+  ],
+  [
+    "3. Цели обработки",
+    "3. Purposes of processing"
+  ],
+  [
+    "6. Сроки хранения",
+    "6. Shelf life"
+  ],
+  [
+    "VPN в этом заказе",
+    "VPN in this order"
+  ],
+  [
+    "Скопировать логин",
+    "Copy login"
+  ],
+  [
+    "Закрыть сообщение",
+    "Close message"
+  ],
+  [
+    "Токен не подходит",
+    "The token is not suitable"
+  ],
+  [
+    "Пароль скопирован",
+    "Password copied"
+  ],
+  [
+    "Загрузка ключа...",
+    "Loading key..."
+  ],
+  [
+    "Сохраните профиль",
+    "Save your profile"
+  ],
+  [
+    "всего активаций:",
+    "total activations:"
+  ],
+  [
+    "Вопросы и ответы",
+    "Questions and answers"
+  ],
+  [
+    "Публичная оферта",
+    "Public offer"
+  ],
+  [
+    "Условия возврата",
+    "Return Policy"
+  ],
+  [
+    "Следующий баннер",
+    "Next banner"
+  ],
+  [
+    "Разделы GPTishka",
+    "Sections GPTishka"
+  ],
+  [
+    "Пополнение Steam",
+    "Replenishment Steam"
+  ],
+  [
+    "Что вы получаете",
+    "What do you get"
+  ],
+  [
+    "условий гарантии",
+    "warranty terms"
+  ],
+  [
+    "публичной оферте",
+    "public offer"
+  ],
+  [
+    "Каталог GPTishka",
+    "Catalog GPTishka"
+  ],
+  [
+    "1 ключ = 151 RUB",
+    "1 key = 151 RUB"
+  ],
+  [
+    "Разделы каталога",
+    "Catalog sections"
+  ],
+  [
+    "Оплатить 151 RUB",
+    "Pay 151 RUB"
+  ],
+  [
+    "Цифровой продукт",
+    "Digital product"
+  ],
+  [
+    "Сторонний сервис",
+    "Third party service"
+  ],
+  [
+    "Данные для входа",
+    "Login details"
+  ],
+  [
+    "Проверить статус",
+    "Check status"
+  ],
+  [
+    "Ожидаю действия.",
+    "I’m waiting for action."
+  ],
+  [
+    "Скопировать Task",
+    "Copy Task"
+  ],
+  [
+    "Логин скопирован",
+    "Login copied"
+  ],
+  [
+    "Основные разделы",
+    "Main sections"
+  ],
+  [
+    "Скопировать ключ",
+    "Copy key"
+  ],
+  [
+    "Выбор устройства",
+    "Device selection"
+  ],
+  [
+    "Проверьте импорт",
+    "Check the import"
+  ],
+  [
+    "Фильтры тарифов",
+    "Tariff filters"
+  ],
+  [
+    "возможен, если:",
+    "possible if:"
+  ],
+  [
+    "Откройте ссылку",
+    "Open the link"
+  ],
+  [
+    "Посмотреть фото",
+    "View photo"
+  ],
+  [
+    "Предыдущее фото",
+    "Previous photo"
+  ],
+  [
+    "Ключ скопирован",
+    "Key copied"
+  ],
+  [
+    "Открыть тарифы",
+    "Open tariffs"
+  ],
+  [
+    "Выберите тариф",
+    "Select tariff"
+  ],
+  [
+    "Оплатите заказ",
+    "Pay for your order"
+  ],
+  [
+    "Удобная оплата",
+    "Convenient payment"
+  ],
+  [
+    "Тарифные планы",
+    "Tariff plans"
+  ],
+  [
+    "10. Форс-мажор",
+    "10. Force majeure"
+  ],
+  [
+    "Токен аккаунта",
+    "Account token"
+  ],
+  [
+    "Оставить отзыв",
+    "Leave feedback"
+  ],
+  [
+    "Токен вставлен",
+    "Token inserted"
+  ],
+  [
+    "Фотоинструкция",
+    "Photo instructions"
+  ],
+  [
+    "Дата окончания",
+    "End date"
+  ],
+  [
+    "Следующее фото",
+    "Next photo"
+  ],
+  [
+    "VPN 12 месяцев",
+    "VPN 12 months"
+  ],
+  [
+    "Выбрать тариф",
+    "Select tariff"
+  ],
+  [
+    "← Все сервисы",
+    "← All services"
+  ],
+  [
+    "Настроить V*N",
+    "Set V*N"
+  ],
+  [
+    "Настроить VPN",
+    "Configure VPN"
+  ],
+  [
+    "Введите токен",
+    "Enter token"
+  ],
+  [
+    "VPN 6 месяцев",
+    "VPN 6 months"
+  ],
+  [
+    "Связь с нами",
+    "Contact us"
+  ],
+  [
+    "Закрыть меню",
+    "Close menu"
+  ],
+  [
+    "Открыть меню",
+    "Open menu"
+  ],
+  [
+    "от 1 290 RUB",
+    "from 1 290 RUB"
+  ],
+  [
+    "от 1 999 RUB",
+    "from 1 999 RUB"
+  ],
+  [
+    "1 / 2 месяца",
+    "1/2 month"
+  ],
+  [
+    "от 1 490 RUB",
+    "from 1 490 RUB"
+  ],
+  [
+    "Цена за ключ",
+    "Price per key"
+  ],
+  [
+    "Выбрать язык",
+    "Select language"
+  ],
+  [
+    "14. Контакты",
+    "14. Contacts"
+  ],
+  [
+    "12. Контакты",
+    "12. Contacts"
+  ],
+  [
+    "Активировать",
+    "Activate"
+  ],
+  [
+    "Поле очищено",
+    "Field cleared"
+  ],
+  [
+    "Ваш VPN ключ",
+    "Your VPN key"
+  ],
+  [
+    "Открыть фото",
+    "Open photo"
+  ],
+  [
+    "Скопировать",
+    "Copy"
+  ],
+  [
+    "Открыть V*N",
+    "Open V*N"
+  ],
+  [
+    "Рекомендуем",
+    "We recommend"
+  ],
+  [
+    "Символов: 0",
+    "Characters: 0"
+  ],
+  [
+    "Карта сайта",
+    "Site map"
+  ],
+  [
+    "VPN 1 месяц",
+    "VPN 1 month"
+  ],
+  [
+    "на 1 месяц",
+    "for 1 month"
+  ],
+  [
+    "Пополнения",
+    "Replenishments"
+  ],
+  [
+    "от 151 RUB",
+    "from 151 RUB"
+  ],
+  [
+    "ИИ-сервисы",
+    "AI services"
+  ],
+  [
+    "от 199 RUB",
+    "from 199 RUB"
+  ],
+  [
+    "VPN-доступ",
+    "VPN-access"
+  ],
+  [
+    "На главную",
+    "Home"
+  ],
+  [
+    "Покупатель",
+    "Buyer"
+  ],
+  [
+    "Вы вправе:",
+    "You have the right:"
+  ],
+  [
+    "Инструкция",
+    "Instructions"
+  ],
+  [
+    "Пополнить",
+    "Top up"
+  ],
+  [
+    "Нейросети",
+    "Neural networks"
+  ],
+  [
+    "Поддержка",
+    "Support"
+  ],
+  [
+    "О сервисе",
+    "About the service"
+  ],
+  [
+    "6 тарифов",
+    "6 tariffs"
+  ],
+  [
+    "К тарифам",
+    "To tariffs"
+  ],
+  [
+    "К покупке",
+    "For purchase"
+  ],
+  [
+    "Навигация",
+    "Navigation"
+  ],
+  [
+    "ВКонтакте",
+    "VKontakte"
+  ],
+  [
+    "Документы",
+    "Documents"
+  ],
+  [
+    "Сохранить",
+    "Save"
+  ],
+  [
+    "Гарантия",
+    "Guarantee"
+  ],
+  [
+    "2 тарифа",
+    "2 tariffs"
+  ],
+  [
+    "3 тарифа",
+    "3 tariffs"
+  ],
+  [
+    "К оплате",
+    "For payment"
+  ],
+  [
+    "Раздел 1",
+    "Section 1"
+  ],
+  [
+    "Раздел 2",
+    "Section 2"
+  ],
+  [
+    "подписки",
+    "subscriptions"
+  ],
+  [
+    "Написать",
+    "Write"
+  ],
+  [
+    "Передача",
+    "Broadcast"
+  ],
+  [
+    "смотреть",
+    "look"
+  ],
+  [
+    "Показать",
+    "Show"
+  ],
+  [
+    "Вставить",
+    "Insert"
+  ],
+  [
+    "Очистить",
+    "Clear"
+  ],
+  [
+    "Обновить",
+    "Update"
+  ],
+  [
+    "Добавить",
+    "Add"
+  ],
+  [
+    "Новости",
+    "News"
+  ],
+  [
+    "Русский",
+    "Russian"
+  ],
+  [
+    "GPTишка",
+    "GPTishka"
+  ],
+  [
+    "Закрыть",
+    "Close"
+  ],
+  [
+    "Главная",
+    "Home"
+  ],
+  [
+    "Каталог",
+    "Catalog"
+  ],
+  [
+    "1 тариф",
+    "1 tariff"
+  ],
+  [
+    "1 товар",
+    "1 product"
+  ],
+  [
+    "1 месяц",
+    "1 month"
+  ],
+  [
+    "офертой",
+    "offer"
+  ],
+  [
+    "Открыть",
+    "Open"
+  ],
+  [
+    "Возврат",
+    "Return"
+  ],
+  [
+    "пЈї iOS",
+    "pЈї iOS"
+  ],
+  [
+    "Профили",
+    "Profiles"
+  ],
+  [
+    "Отзывы",
+    "Reviews"
+  ],
+  [
+    "Оплата",
+    "Payment"
+  ],
+  [
+    "Скрыть",
+    "Hide"
+  ],
+  [
+    "Тарифы",
+    "Tariffs"
+  ],
+  [
+    "Готово",
+    "Ready"
+  ],
+  [
+    "Импорт",
+    "Import"
+  ],
+  [
+    "Заказ",
+    "Order"
+  ],
+  [
+    "Сайт:",
+    "Website:"
+  ],
+  [
+    "Позже",
+    "Later"
+  ],
+  [
+    "Сроки",
+    "Deadlines"
+  ],
+  [
+    "Тариф",
+    "Rate"
+  ],
+  [
+    "Сайт",
+    "Website"
+  ],
+  [
+    "Фото",
+    "Photo"
+  ],
+  [
+    "Меню",
+    "Menu"
+  ],
+  [
+    "вњ“",
+    "њ“"
+  ],
+  [
+    "в–ѕ",
+    "in–*"
+  ],
+  [
+    "Мы",
+    "We"
+  ],
+  [
+    "и",
+    "And"
+  ]
+]

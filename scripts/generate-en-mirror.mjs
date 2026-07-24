@@ -2,6 +2,17 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
+const generatedTranslations = JSON.parse(
+  fs.readFileSync(path.join(root, "scripts/en-translations.generated.json"), "utf8")
+);
+const forcedTranslations = [
+  [". \u0414\u0435\u0439\u0441\u0442\u0432\u0443\u0435\u0442 \u0434\u043e:", ". Valid until:"],
+  ["\u0413\u2014", "\u00d7"],
+  ["\u0432\u045a\u201c", "\u2713"],
+  ["\u045a\u201c", "\u2713"],
+  ["\u043f\u0408\u0457 iOS", "\uf8ff iOS"],
+  ["p\u0408\u0457 iOS", "\uf8ff iOS"]
+];
 
 const pages = [
   ["index.html", "en/index.html"],
@@ -14,6 +25,16 @@ const pages = [
   ["store/vpn/index.html", "en/store/vpn/index.html"],
   ["store/steam/index.html", "en/store/steam/index.html"],
   ["store/steam/topup/index.html", "en/store/steam/topup/index.html"],
+  ["about.html", "en/about.html"],
+  ["bundle-activation.html", "en/bundle-activation.html"],
+  ["contact.html", "en/contact.html"],
+  ["guarantee.html", "en/guarantee.html"],
+  ["oferta.html", "en/oferta.html"],
+  ["politika.html", "en/politika.html"],
+  ["redeem-start.html", "en/redeem-start.html"],
+  ["refund.html", "en/refund.html"],
+  ["site-map.html", "en/site-map.html"],
+  ["store/vpn/activate/index.html", "en/store/vpn/activate/index.html"],
 ];
 
 const translations = [
@@ -364,6 +385,7 @@ const linkMap = [
   ['href="/chatgpt"', 'href="/en/chatgpt"'],
   ['href="/claude"', 'href="/en/claude"'],
   ['href="/supergrok"', 'href="/en/supergrok"'],
+  ['href="/app/"', 'href="/app/?lang=en"'],
   ['href="/#', 'href="/en/#'],
   ['href="/about.html"', 'href="/en/about.html"'],
   ['href="/guarantee.html"', 'href="/en/guarantee.html"'],
@@ -385,8 +407,18 @@ function replaceAllLiteral(input, from, to) {
   return input.split(from).join(to);
 }
 
+function replaceTranslation(input, from, to) {
+  const escaped = from
+    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    .replace(/\s+/g, "\\s+");
+  const startsWithWord = /^[\p{L}\p{N}]/u.test(from);
+  const endsWithWord = /[\p{L}\p{N}]$/u.test(from);
+  const pattern = `${startsWithWord ? "(?<![\\p{L}\\p{N}])" : ""}${escaped}${endsWithWord ? "(?![\\p{L}\\p{N}])" : ""}`;
+  return input.replace(new RegExp(pattern, "gu"), () => to);
+}
+
 function stripTrailingWhitespace(input) {
-  return input.replace(/[ \t]+$/gm, "");
+  return input.replace(/[ \t]+$/gm, "").replace(/\r?\n(?:\r?\n)+$/, "\n");
 }
 
 function canonicalPathFor(targetRel) {
@@ -436,7 +468,10 @@ function translateHtml(html, targetRel) {
   out = out.replace('<html lang="ru">', '<html lang="en">');
   out = out.replace(/"inLanguage": "ru"/g, '"inLanguage": "en"');
 
-  for (const [from, to] of [...translations].sort((a, b) => b[0].length - a[0].length)) {
+  for (const [from, to] of [...generatedTranslations].sort((a, b) => b[0].length - a[0].length)) {
+    out = replaceTranslation(out, from, to);
+  }
+  for (const [from, to] of forcedTranslations) {
     out = replaceAllLiteral(out, from, to);
   }
 

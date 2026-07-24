@@ -4,14 +4,14 @@
   <script src="/assets/js/analytics-init.js?v=20260721-defer-analytics1" defer></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Order delivery steps: set up VPN first, then complete ChatGPT activation." />
+  <meta name="description" content="Steps for issuing an order: first setting up V*N, then activating the selected subscription." />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="GPTishka" />
-  <meta property="og:title" content="VPN + Order activation - GPTishka" />
-  <meta property="og:description" content="Two sections: VPN setup and activation." />
+  <meta property="og:title" content="V*N + Order activation - GPTishka" />
+  <meta property="og:description" content="Two sections: Configure V*N and complete activation of the selected subscription." />
   <meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
   <meta property="og:url" content="https://gptishka.shop/en/bundle-activation.html" />
-  <title>VPN + Order activation - GPTishka</title>
+  <title>V*N + Order activation - GPTishka</title>
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="shortcut icon" href="/favicon.ico" />
   <link rel="apple-touch-icon" href="/assets/img/logo.png" />
@@ -193,13 +193,19 @@
       <a href="/en/" class="logo-link">
         <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka" class="logo-img">
       </a>
-      <a href="/en/chatgpt" class="header-product-pill" aria-label="ChatGPT from 1290 RUB/mo">
+      <a href="/en/chatgpt" class="header-product-pill" aria-label="ChatGPT from 1290 ₽/month">
         <img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" loading="lazy" decoding="async">
-        <span>ChatGPT from 1290 RUB/mo</span>
+        <span>ChatGPT from 1290 ₽/month</span>
       </a>
+      <nav class="header-quick-links" aria-label="Quick sections GPTishka">
+        <a class="header-quick-link" href="/news/">News</a>
+        <a class="header-quick-link" href="/app/?lang=en">Reviews</a>
+        <a class="header-quick-link" href="https://vk.com/gptishka?from=groups&amp;trackcode=7f99670c_6HjhbFhCJIgWV0ALEpOr-nIlZFrs3X3-3D3-z00f1k7ylk5Mhdl7hxbRgwtUEeZ8MCZjDfHpk0ywZuW" target="_blank" rel="noopener">VK</a>
+        <a class="header-quick-link header-quick-link--telegram" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener">Telegram</a>
+      </nav>
       <div class="header-tools header-actions">
         <div class="lang-switch" id="langSwitch">
-          <button type="button" class="lang-current" id="langCurrent" aria-label="Choose language">
+          <button type="button" class="lang-current" id="langCurrent" aria-label="Select language">
             <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
             <span>English</span>
             <span class="arrow">&#9662;</span>
@@ -221,8 +227,8 @@
 
   <main class="page bundle-page">
     <section class="bundle-card">
-      <h1 class="bundle-title">Order with VPN bundle</h1>
-      <p class="bundle-subtitle">This product has two delivery sections: VPN setup first, then activation.</p>
+      <h1 id="bundleTitle" class="bundle-title">Order with V*N in the package</h1>
+      <p id="bundleSubtitle" class="bundle-subtitle">For this product, the issuance consists of two sections: first setting up V*N, then activating the selected subscription.</p>
 
       <div class="bundle-order">
         <div>Order ID: <strong id="orderId" class="bundle-order-id">-</strong></div>
@@ -232,31 +238,31 @@
       <div class="bundle-grid">
         <section class="bundle-section">
           <p class="bundle-step">Section 1</p>
-          <h2>Set up VPN</h2>
-          <p>Get your VPN key and connect your device.</p>
+          <h2>Set V*N</h2>
+          <p>Get the V*N key and connect the device.</p>
           <ol>
-            <li>Open the VPN activation page.</li>
-            <li>Copy your VLESS link.</li>
-            <li>Choose setup instructions for your OS.</li>
+            <li>Open the V*N activation page.</li>
+            <li>Copy the VLESS link.</li>
+            <li>Select instructions for your OS.</li>
           </ol>
-          <div id="vpnStatus" class="bundle-status">Checking VPN access...</div>
+          <div id="vpnStatus" class="bundle-status">Checking the V*N access status...</div>
           <div class="bundle-actions">
-            <a id="openVpnBtn" class="btn primary" href="/store/vpn/activate">Open VPN</a>
+            <a id="openVpnBtn" class="btn primary" href="/en/store/vpn/activate">Open V*N</a>
           </div>
         </section>
 
         <section class="bundle-section">
           <p class="bundle-step">Section 2</p>
-          <h2>Extend / Activate</h2>
-          <p>Finish subscription activation.</p>
-          <ol>
+          <h2 id="activationTitle">Renew / Activate</h2>
+          <p id="activationLead">Complete your subscription activation.</p>
+          <ol id="activationSteps">
             <li>Open the activation page.</li>
-            <li>Paste token from `chatgpt.com/api/auth/session`.</li>
-            <li>Click "Activate" and wait for success status.</li>
+            <li>Provide the information required for the selected service.</li>
+            <li>Click ”Activate” and wait for the status.</li>
           </ol>
-          <div id="activationStatus" class="bundle-status">Checking activation status...</div>
+          <div id="activationStatus" class="bundle-status">Checking the activation status...</div>
           <div class="bundle-actions">
-            <a id="openActivationBtn" class="btn" href="/en/redeem-start.html">Open activation</a>
+            <a id="openActivationBtn" class="btn" href="/redeem-start.html">Open activation</a>
           </div>
         </section>
       </div>
@@ -264,8 +270,8 @@
   </main>
 
   <footer>
-    <a class="footer-link" href="/en/oferta.html">Public offer</a> · <a class="footer-link" href="/en/politika.html">Privacy policy</a> · <a class="footer-link" href="/en/refund.html">Refund policy</a>
-    <span class="footer-copy">© 2026 GPTishka. All rights reserved.</span>
+    <a class="footer-link" href="/en/oferta.html">Public offer</a> · <a class="footer-link" href="/en/politika.html">Privacy Policy</a> · <a class="footer-link" href="/en/refund.html">Return Policy</a>
+    <span class="footer-copy">© 2026 GPTishka. All rights reserved, copying prohibited.</span>
   </footer>
 
   <script>
@@ -279,6 +285,93 @@
     const openActivationBtn = document.getElementById("openActivationBtn");
     const vpnStatusEl = document.getElementById("vpnStatus");
     const activationStatusEl = document.getElementById("activationStatus");
+    const bundleSubtitleEl = document.getElementById("bundleSubtitle");
+    const activationTitleEl = document.getElementById("activationTitle");
+    const activationLeadEl = document.getElementById("activationLead");
+    const activationStepsEl = document.getElementById("activationSteps");
+
+    const SERVICE_COPY = {
+      chatgpt: {
+        name: "ChatGPT",
+        title: "Activation ChatGPT",
+        lead: "Complete the activation of ChatGPT using your account token.",
+        steps: [
+          "Open the activation token page.",
+          "Paste the token from chatgpt.com/api/auth/session.",
+          "Click ”Activate”. After starting, wait 5-10 minutes, in rare cases up to 12 hours.",
+        ],
+        button: "Open activation ChatGPT",
+      },
+      claude: {
+        name: "Claude",
+        title: "Activation Claude Pro",
+        lead: "Complete activation of Claude Pro using account ID Claude.",
+        steps: [
+          "Log in to Claude and open your account settings.",
+          "Copy the account ID Claude from the Account section.",
+          "Paste the ID on the activation page and click “Activate”. After starting, wait 5-10 minutes, in rare cases up to 12 hours.",
+        ],
+        button: "Open activation Claude",
+      },
+      grok: {
+        name: "SuperGrok",
+        title: "Activation SuperGrok",
+        lead: "Complete activation of SuperGrok using account ID Grok.",
+        steps: [
+          "Go to grok.com and log in to your account.",
+          "Open the link https://grok.com/api/auth/session and find the ID line.",
+          "There will be detailed instructions with photos on the activation page. Insert the ID and click “Activate”. After starting, wait 5-10 minutes, in rare cases up to 12 hours.",
+        ],
+        button: "Open activation SuperGrok",
+      },
+      generic: {
+        name: "subscriptions",
+        title: "Renew / Activate",
+        lead: "Complete activation of the selected subscription.",
+        steps: [
+          "Open the activation page.",
+          "Provide the information required for the selected service.",
+          "Click ”Activate” and wait for the status.",
+        ],
+        button: "Open activation",
+      },
+    };
+
+    function getPayloadFingerprint(payload) {
+      return [
+        payload?.activationFlow,
+        payload?.deliveryMode,
+        payload?.productKey,
+        payload?.product,
+        payload?.product?.slug,
+        payload?.product?.key,
+        payload?.product?.title,
+        payload?.product?.name,
+        payload?.title,
+        payload?.name,
+      ].filter(Boolean).join(" ").toLowerCase();
+    }
+
+    function resolveServiceCopy(payload) {
+      const text = getPayloadFingerprint(payload);
+      if (text.includes("claude") || text.includes("sdk5")) return SERVICE_COPY.claude;
+      if (text.includes("grok") || text.includes("supergrok") || text.includes("sdk4")) return SERVICE_COPY.grok;
+      if (text.includes("chatgpt") || text.includes("gpt") || text.includes("plus") || text.includes("go")) return SERVICE_COPY.chatgpt;
+      return SERVICE_COPY.generic;
+    }
+
+    function applyServiceCopy(copy) {
+      const serviceName = copy?.name || SERVICE_COPY.generic.name;
+      if (bundleSubtitleEl) {
+        bundleSubtitleEl.textContent = `For this product, the issuance consists of two sections: first, setting up V*N, then activating ${serviceName}.`;
+      }
+      if (activationTitleEl) activationTitleEl.textContent = copy.title;
+      if (activationLeadEl) activationLeadEl.textContent = copy.lead;
+      if (activationStepsEl) {
+        activationStepsEl.innerHTML = copy.steps.map((step) => `<li>${step}</li>`).join("");
+      }
+      if (openActivationBtn) openActivationBtn.textContent = copy.button;
+    }
 
     function buildVpnUrl() {
       const url = new URL("/store/vpn/activate", window.location.origin);
@@ -288,7 +381,7 @@
     }
 
     function buildActivationUrl() {
-      const url = new URL("/en/redeem-start.html", window.location.origin);
+      const url = new URL("/redeem-start.html", window.location.origin);
       if (orderId) url.searchParams.set("order_id", orderId);
       if (linkToken) url.searchParams.set("t", linkToken);
       url.searchParams.set("skip_bundle_redirect", "1");
@@ -302,7 +395,7 @@
 
     async function loadVpnStatus() {
       if (!orderId) {
-        setStatus(vpnStatusEl, "error", "Missing order_id.");
+        setStatus(vpnStatusEl, "error", "order_id not specified.");
         return;
       }
       try {
@@ -312,19 +405,19 @@
         const response = await fetch(url.toString(), { cache: "no-store" });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-          setStatus(vpnStatusEl, "warn", String(payload?.message || "VPN access is not ready yet."));
+          setStatus(vpnStatusEl, "warn", String(payload?.message || "V*N access is not ready yet."));
           return;
         }
         const expires = payload?.expiresAt ? new Date(payload.expiresAt).toLocaleString("en-US") : "";
-        setStatus(vpnStatusEl, "ok", `VPN access is ready${expires ? `. Expires: ${expires}` : "."}`);
+        setStatus(vpnStatusEl, "ok", `V*N-access ready${expires ? `. Valid until: ${expires}` : "."}`);
       } catch (_) {
-        setStatus(vpnStatusEl, "error", "Network error while checking VPN.");
+        setStatus(vpnStatusEl, "error", "Network error when checking V*N.");
       }
     }
 
     async function loadActivationStatus() {
       if (!orderId) {
-        setStatus(activationStatusEl, "error", "Missing order_id.");
+        setStatus(activationStatusEl, "error", "order_id not specified.");
         return;
       }
       try {
@@ -335,23 +428,25 @@
           setStatus(activationStatusEl, "warn", String(payload?.message || "Activation is not ready yet."));
           return;
         }
+        const serviceCopy = resolveServiceCopy(payload);
+        applyServiceCopy(serviceCopy);
         const mode = String(payload?.deliveryMode || "").toLowerCase();
-        if (mode !== "activation") {
-          setStatus(activationStatusEl, "warn", "Token activation is not required for this order.");
+        if (mode !== "activation" && mode !== "support") {
+          setStatus(activationStatusEl, "warn", "No token activation is required for this order.");
           return;
         }
         const status = String(payload?.status || "").toLowerCase();
         if (status === "success") {
-          setStatus(activationStatusEl, "ok", "Activation is already completed.");
+          setStatus(activationStatusEl, "ok", "Activation has already been completed.");
           return;
         }
         if (status === "processing") {
-          setStatus(activationStatusEl, "warn", "Activation is processing. You can check it on activation page.");
+          setStatus(activationStatusEl, "warn", "Activation in processing. You can check the status on the activation page.");
           return;
         }
-        setStatus(activationStatusEl, "", "Waiting for activation start.");
+        setStatus(activationStatusEl, "", "Waiting for activation to start.");
       } catch (_) {
-        setStatus(activationStatusEl, "error", "Network error while checking activation.");
+        setStatus(activationStatusEl, "error", "Network error when checking activation.");
       }
     }
 
@@ -393,7 +488,6 @@
     })();
   </script>
 <script src="/assets/js/support-widget.js?v=20260724-resume-collapse1" defer></script>
-  <script src="/assets/js/language-switcher.js?v=20260724-language-slider1" defer></script>
+  <script src="/assets/js/language-switcher.js?v=20260724-language-menu2" defer></script>
 </body>
 </html>
-

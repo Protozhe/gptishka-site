@@ -41,7 +41,7 @@ const pages = [
   ...pairedPages.flatMap((file) => [file, `en/${file}`]),
   ...fallbackPages
 ];
-const scriptNeedle = "/assets/js/language-switcher.js?v=20260724-language-slider1";
+const scriptNeedle = "/assets/js/language-switcher.js?v=20260724-language-menu2";
 const failures = [];
 
 for (const file of pages) {
@@ -53,11 +53,11 @@ for (const file of pages) {
   const html = fs.readFileSync(fullPath, "utf8");
   const count = html.split(scriptNeedle).length - 1;
   if (count !== 1) {
-    failures.push(`${file}: expected one language slider script, found ${count}`);
+    failures.push(`${file}: expected one language menu script, found ${count}`);
   }
 }
 
-const sliderSource = fs.readFileSync(
+const menuSource = fs.readFileSync(
   path.join(root, "assets/js/language-switcher.js"),
   "utf8"
 );
@@ -65,12 +65,14 @@ for (const marker of [
   "targetUrl.searchParams.set(\"lang\", \"en\")",
   "targetUrl.searchParams.delete(\"lang\")",
   "targetUrl.hash",
-  "/assets/css/language-slider.css?v=20260724-language-slider1",
+  "/assets/css/language-slider.css?v=20260724-language-menu2",
   "/assets/img/iconeng.png",
   "/assets/img/iconrus.avif",
+  "language-menu__popover",
+  "aria-expanded",
   "MutationObserver"
 ]) {
-  if (!sliderSource.includes(marker)) {
+  if (!menuSource.includes(marker)) {
     failures.push(`language-switcher.js: missing ${marker}`);
   }
 }
@@ -80,4 +82,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Language slider coverage OK: ${pages.length} client pages.`);
+console.log(`Language menu coverage OK: ${pages.length} client pages.`);

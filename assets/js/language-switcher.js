@@ -1,6 +1,6 @@
 (() => {
-  const VERSION = "20260724-language-slider1";
-  const STYLESHEET = "/assets/css/language-slider.css?v=20260724-language-slider1";
+  const VERSION = "20260724-language-menu2";
+  const STYLESHEET = "/assets/css/language-slider.css?v=20260724-language-menu2";
   const FALLBACK_ENGLISH_PATHS = new Set([
     "/404.html",
     "/500.html",
@@ -16,16 +16,29 @@
     "/podklyuchenie-chatgpt-online.html"
   ]);
 
-  function isEnglishPage() {
-    if (/^\/en(?:\/|$)/.test(window.location.pathname || "")) return true;
+  const languages = {
+    ru: {
+      code: "RU",
+      name: "Русский",
+      flag: "/assets/img/iconrus.avif"
+    },
+    en: {
+      code: "EN",
+      name: "English",
+      flag: "/assets/img/iconeng.png"
+    }
+  };
+
+  function currentLanguage() {
+    if (/^\/en(?:\/|$)/.test(window.location.pathname || "")) return "en";
     try {
-      return new URLSearchParams(window.location.search).get("lang") === "en";
+      return new URLSearchParams(window.location.search).get("lang") === "en" ? "en" : "ru";
     } catch (_) {
-      return false;
+      return "ru";
     }
   }
 
-  function targetHref(targetLanguage) {
+  function languageHref(targetLanguage) {
     const targetUrl = new URL(window.location.href);
     const path = targetUrl.pathname || "/";
     if (targetLanguage === "en") {
@@ -44,69 +57,139 @@
     return `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;
   }
 
-  function buildSlider() {
-    const currentEnglish = isEnglishPage();
-    const targetLanguage = currentEnglish ? "ru" : "en";
-    const targetName = targetLanguage === "en" ? "English" : "Русский";
-    const targetCode = targetLanguage.toUpperCase();
-    const targetFlag = targetLanguage === "en"
-      ? "/assets/img/iconeng.png"
-      : "/assets/img/iconrus.avif";
-    const ariaLabel = currentEnglish ? "Switch to Russian" : "Переключить на English";
-
-    const link = document.createElement("a");
-    link.className = `language-slider language-slider--to-${targetLanguage}`;
-    link.href = targetHref(targetLanguage);
-    link.dataset.languageTarget = targetLanguage;
-    link.setAttribute("aria-label", ariaLabel);
-    link.setAttribute("title", ariaLabel);
-    link.innerHTML = `
-      <span class="language-slider__track" aria-hidden="true">
-        <span class="language-slider__code">${targetCode}</span>
-        <span class="language-slider__thumb">
-          <img src="${targetFlag}" alt="" width="24" height="24" loading="eager" decoding="async">
-        </span>
-      </span>
-      <span class="visually-hidden">${targetName}</span>
-    `;
-    link.addEventListener("click", () => {
-      link.classList.add("is-switching");
-      document.documentElement.classList.add("is-language-switching");
-    });
-    return link;
+  function ensureStylesheet() {
+    let link = document.querySelector("link[data-language-menu-styles]");
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.dataset.languageMenuStyles = VERSION;
+      document.head.appendChild(link);
+    }
+    link.href = STYLESHEET;
   }
 
-  function enhanceSwitcher(wrapper) {
-    if (!(wrapper instanceof Element)) return;
-    if (wrapper.dataset.languageSliderVersion === VERSION) return;
-    wrapper.dataset.languageSliderVersion = VERSION;
-    wrapper.classList.add("language-slider-host");
+  function closeMenu(wrapper, returnFocus = false) {
+    const trigger = wrapper.querySelector(".language-menu__trigger");
+    const popover = wrapper.querySelector(".language-menu__popover");
     wrapper.classList.remove("open");
-    wrapper.replaceChildren(buildSlider());
+    trigger?.setAttribute("aria-expanded", "false");
+    popover?.setAttribute("aria-hidden", "true");
+    if (returnFocus) trigger?.focus();
+  }
+
+  function openMenu(wrapper) {
+    document.querySelectorAll(".language-menu-host.open").forEach((other) => {
+      if (other !== wrapper) closeMenu(other);
+    });
+    const trigger = wrapper.querySelector(".language-menu__trigger");
+    const popover = wrapper.querySelector(".language-menu__popover");
+    wrapper.classList.add("open");
+    trigger?.setAttribute("aria-expanded", "true");
+    popover?.setAttribute("aria-hidden", "false");
+  }
+
+  function bindMenu(wrapper) {
+    const trigger = wrapper.querySelector(".language-menu__trigger");
+    const options = Array.from(wrapper.querySelectorAll(".language-menu__option"));
+    if (!trigger || !options.length) return;
+
+    trigger.addEventListener("keydown", (event) => {
+      if (!["ArrowDown", "ArrowUp"].includes(event.key)) return;
+      event.preventDefault();
+      openMenu(wrapper);
+      (event.key === "ArrowUp" ? options.at(-1) : options[0])?.focus();
+    });
+
+    options.forEach((option, index) => {
+      option.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closeMenu(wrapper, true);
+          return;
+        }
+        if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+        event.preventDefault();
+        let nextIndex = index;
+        if (event.key === "ArrowDown") nextIndex = (index + 1) % options.length;
+        if (event.key === "ArrowUp") nextIndex = (index - 1 + options.length) % options.length;
+        if (event.key === "Home") nextIndex = 0;
+        if (event.key === "End") nextIndex = options.length - 1;
+        options[nextIndex]?.focus();
+      });
+    });
+  }
+
+  function buildMenu(wrapper) {
+    if (!(wrapper instanceof Element)) return;
+    if (wrapper.dataset.languageMenuVersion === VERSION) return;
+
+    const activeLanguage = currentLanguage();
+    const active = languages[activeLanguage];
+    const labels = activeLanguage === "en"
+      ? { choose: "Choose language", menu: "Available languages" }
+      : { choose: "Выбрать язык", menu: "Доступные языки" };
+
+    wrapper.dataset.languageMenuVersion = VERSION;
+    wrapper.classList.add("language-menu-host");
+    wrapper.classList.remove("language-slider-host", "open");
+    wrapper.innerHTML = `
+      <button class="language-menu__trigger lang-current" type="button"
+        aria-label="${labels.choose}" aria-haspopup="menu" aria-expanded="false">
+        <img class="language-menu__flag lang-flag-img" src="${active.flag}" alt="" width="24" height="24" decoding="async">
+        <span class="language-menu__current-name">${active.name}</span>
+        <span class="language-menu__chevron lang-arrow" aria-hidden="true"></span>
+      </button>
+      <div class="language-menu__popover lang-options lang-dropdown" role="menu"
+        aria-label="${labels.menu}" aria-hidden="true">
+        ${Object.entries(languages).map(([language, item]) => `
+          <a class="language-menu__option lang-item${language === activeLanguage ? " is-active" : ""}"
+            href="${languageHref(language)}" role="menuitem"
+            lang="${language}" hreflang="${language}" data-language="${language}">
+            <img class="language-menu__flag lang-flag-img" src="${item.flag}" alt="" width="24" height="24" loading="lazy" decoding="async">
+            <span class="language-menu__option-name">${item.name}</span>
+            <span class="language-menu__code">${item.code}</span>
+            <span class="language-menu__check" aria-hidden="true"></span>
+          </a>
+        `).join("")}
+      </div>
+    `;
+    bindMenu(wrapper);
   }
 
   function enhanceAll() {
-    const candidates = document.querySelectorAll(
+    document.querySelectorAll(
       "[data-lang-switcher], #langSwitch, .lang-switch, .lang-switcher"
-    );
-    candidates.forEach(enhanceSwitcher);
-  }
-
-  function ensureStylesheet() {
-    if (document.querySelector('link[data-language-slider-styles]')) return;
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = STYLESHEET;
-    link.dataset.languageSliderStyles = VERSION;
-    document.head.appendChild(link);
+    ).forEach(buildMenu);
   }
 
   function start() {
     ensureStylesheet();
     enhanceAll();
+
+    document.addEventListener("click", (event) => {
+      const trigger = event.target.closest?.(".language-menu__trigger");
+      if (trigger) {
+        const wrapper = trigger.closest(".language-menu-host");
+        if (wrapper) {
+          event.preventDefault();
+          if (wrapper.classList.contains("open")) closeMenu(wrapper);
+          else openMenu(wrapper);
+          return;
+        }
+      }
+      document.querySelectorAll(".language-menu-host.open").forEach((wrapper) => {
+        if (!wrapper.contains(event.target)) closeMenu(wrapper);
+      });
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      document.querySelectorAll(".language-menu-host.open").forEach((wrapper) => {
+        closeMenu(wrapper, true);
+      });
+    });
+
     const observer = new MutationObserver((records) => {
-      if (!records.some((record) => record.addedNodes.length)) return;
-      enhanceAll();
+      if (records.some((record) => record.addedNodes.length)) enhanceAll();
     });
     observer.observe(document.body, { childList: true, subtree: true });
     window.setTimeout(() => observer.disconnect(), 15000);

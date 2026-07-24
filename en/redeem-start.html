@@ -4,26 +4,48 @@
 <script src="/assets/js/analytics-init.js?v=20260721-defer-analytics1" defer></script>
 <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="GPTishka activation page for independent digital service orders." />
+  <meta name="description" content="GPTishka: renewal and activation of ChatGPT Plus." />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="GPTishka" />
-  <meta property="og:title" content="Extend / Activate - GPTishka" />
-  <meta property="og:description" content="GPTishka activation page for independent digital service orders." />
+  <meta property="og:title" content="Renew / Activate - GPTishka" />
+  <meta property="og:description" content="GPTishka: renewal and activation of ChatGPT Plus." />
   <meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
   <meta property="og:url" content="https://gptishka.shop/en/redeem-start.html" />
   <link rel="icon" href="/favicon.ico" sizes="any">
-  <title>Extend / Activate - GPTishka</title>
+  <title>Renew / Activate - GPTishka</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/logo.min.css">
   <link rel="stylesheet" href="/assets/css/gptishka-header-refresh.css?v=20260724-language-slider1">
-  
+
   <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2">
-<link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260401-perf6" />
+<link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260310r" />
 
   <style>
+    :root {
+      --redeem-surface: #f8fafc;
+      --redeem-card: rgba(255, 255, 255, 0.9);
+      --redeem-card-strong: #ffffff;
+      --redeem-ink: #112235;
+      --redeem-muted: #55667a;
+      --redeem-line: rgba(17, 34, 53, 0.16);
+      --redeem-line-soft: rgba(17, 34, 53, 0.1);
+      --redeem-primary: #2a5bff;
+      --redeem-primary-dark: #2148d6;
+      --redeem-accent: #f29b59;
+      --redeem-glow: rgba(42, 91, 255, 0.26);
+    }
+
+    body {
+      background:
+        radial-gradient(760px 360px at 8% -14%, rgba(42, 91, 255, 0.22), transparent 68%),
+        radial-gradient(680px 340px at 100% 2%, rgba(242, 155, 89, 0.2), transparent 66%),
+        linear-gradient(180deg, #f6faf9 0%, #f7f9fc 52%, #eef3f9 100%);
+      min-height: 100vh;
+    }
+
     body.redeem-flow::before,
     body.redeem-flow::after,
     body.redeem-flow main.page::before,
@@ -42,36 +64,83 @@
       -webkit-backdrop-filter: none !important;
     }
 
+    .page-overlay {
+      pointer-events: none;
+      opacity: 0 !important;
+      background: transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
     .redeem-page {
-      max-width: 1080px;
+      position: relative;
+      z-index: 1;
+      max-width: 1120px;
       margin: 0 auto;
-      padding: 20px 0 0;
+      padding: 28px 14px 0;
+      animation: redeem-fade-up 0.45s ease both;
     }
 
     .redeem-card {
-      background: #fff;
-      border: 1px solid rgba(25, 34, 51, 0.08);
-      border-radius: 24px;
-      box-shadow: 0 18px 44px rgba(25, 34, 51, 0.08);
-      padding: 26px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.78);
+      border-radius: 30px;
+      padding: 30px;
+      background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 252, 255, 0.94) 40%, rgba(241, 250, 248, 0.92) 100%),
+        radial-gradient(circle at 1px 1px, rgba(10, 31, 53, 0.03) 1px, transparent 0);
+      background-size: auto, 16px 16px;
+      box-shadow:
+        0 24px 64px rgba(14, 28, 44, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.88);
+    }
+
+    .redeem-card::before,
+    .redeem-card::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+      border-radius: 999px;
+      filter: blur(0.2px);
+    }
+
+    .redeem-card::before {
+      width: 300px;
+      height: 300px;
+      right: -110px;
+      top: -150px;
+      background: radial-gradient(circle, rgba(42, 91, 255, 0.17), transparent 70%);
+    }
+
+    .redeem-card::after {
+      width: 260px;
+      height: 260px;
+      left: -130px;
+      bottom: -150px;
+      background: radial-gradient(circle, rgba(242, 155, 89, 0.16), transparent 72%);
     }
 
     .redeem-title {
       margin: 0;
-      font-size: clamp(30px, 4vw, 44px);
-      line-height: 1.14;
-      font-weight: 800;
-      color: #1f2937;
+      max-width: 100%;
+      font-family: "Space Grotesk", "Manrope", sans-serif;
+      font-size: clamp(34px, 5vw, 50px);
+      line-height: 1.12;
       letter-spacing: 0;
+      font-weight: 700;
+      color: var(--redeem-ink);
+      text-wrap: balance;
       overflow-wrap: normal;
       word-break: normal;
     }
 
     .redeem-subtitle {
-      margin: 10px 0 0;
+      margin: 12px 0 0;
+      max-width: 64ch;
+      color: var(--redeem-muted);
       font-size: 16px;
-      line-height: 1.45;
-      color: #5c6778;
+      line-height: 1.6;
     }
 
     .redeem-vpn-offer {
@@ -129,74 +198,133 @@
     }
 
     .redeem-grid {
-      margin-top: 18px;
+      margin-top: 22px;
       display: grid;
-      gap: 14px;
+      gap: 16px;
       grid-template-columns: 1fr;
     }
 
     .redeem-block {
-      background: #fbfaf6;
-      border: 1px solid rgba(25, 34, 51, 0.08);
-      border-radius: 16px;
-      padding: 14px;
+      position: relative;
+      border-radius: 20px;
+      border: 1px solid var(--redeem-line-soft);
+      background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.94), rgba(248, 252, 255, 0.9));
+      box-shadow: 0 12px 28px rgba(13, 31, 46, 0.08);
+      padding: 16px;
+    }
+
+    .redeem-block::before {
+      content: "";
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      top: 0;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.85), rgba(42, 91, 255, 0.24), rgba(255, 255, 255, 0.85));
+      pointer-events: none;
     }
 
     .redeem-label {
-      margin: 0 0 8px;
-      font-size: 16px;
-      font-weight: 700;
-      color: #1f2937;
+      margin: 0 0 10px;
+      color: #3f5368;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
     }
 
     .redeem-order-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
       flex-wrap: wrap;
-      border: 1px solid rgba(25, 34, 51, 0.1);
-      background: #fff;
-      border-radius: 12px;
-      padding: 10px 12px;
+      gap: 12px;
+      border: 1px solid var(--redeem-line-soft);
+      border-radius: 14px;
+      background:
+        linear-gradient(150deg, rgba(255, 255, 255, 0.92), rgba(246, 250, 255, 0.84));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+      padding: 11px 13px;
+    }
+
+    .redeem-order-row + .redeem-order-row {
+      margin-top: 8px;
     }
 
     .redeem-order-id {
+      flex: 1 1 270px;
       min-width: 0;
-      font-size: 14px;
-      color: #253041;
-      font-weight: 700;
+      max-width: 100%;
       overflow: hidden;
-      white-space: nowrap;
       text-overflow: ellipsis;
-      max-width: 760px;
+      white-space: nowrap;
+      color: #172c42;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
     }
 
     .redeem-guide {
-      margin: 0 0 10px;
-      border: 1px solid rgba(25, 34, 51, 0.1);
-      border-radius: 12px;
-      background: #fff;
-      padding: 10px 12px;
-      color: #3a4556;
-      line-height: 1.45;
+      margin: 0 0 12px;
+      border: 1px solid var(--redeem-line-soft);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 11px 12px;
+      color: #2f4156;
       font-size: 14px;
+      line-height: 1.55;
     }
 
     .redeem-guide summary {
+      list-style: none;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
       font-weight: 700;
-      color: #1f2937;
+      color: #1d354d;
+    }
+
+    .redeem-guide summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .redeem-guide summary::after {
+      content: "+";
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--redeem-line-soft);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      line-height: 1;
+      color: #335066;
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+
+    .redeem-guide[open] summary::after {
+      transform: rotate(45deg);
     }
 
     .redeem-guide ol {
-      margin: 8px 0 0 18px;
+      margin: 10px 0 0;
       padding: 0;
+      list-style: none;
+    }
+
+    .redeem-guide li + li {
+      margin-top: 5px;
     }
 
     .redeem-guide a {
-      color: #2a5bff;
-      text-decoration: underline;
+      color: var(--redeem-primary-dark);
+      font-weight: 700;
+      text-decoration-thickness: 1px;
       text-underline-offset: 2px;
     }
 
@@ -297,28 +425,29 @@
 
     .redeem-input {
       width: 100%;
-      min-height: 150px;
+      min-height: 152px;
       resize: vertical;
-      border: 1px solid rgba(25, 34, 51, 0.14);
-      border-radius: 14px;
-      background: #fff;
+      border: 1px solid rgba(17, 34, 53, 0.2);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.95);
       padding: 12px 14px;
+      color: #0f2338;
       font: inherit;
-      line-height: 1.45;
-      color: #1f2937;
+      line-height: 1.5;
       outline: none;
-      transition: border-color .15s ease, box-shadow .15s ease;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
     }
 
     .redeem-input:focus {
-      border-color: #2a5bff;
-      box-shadow: 0 0 0 3px rgba(31, 143, 127, 0.14);
+      border-color: rgba(42, 91, 255, 0.56);
+      box-shadow: 0 0 0 4px rgba(42, 91, 255, 0.14);
+      background: #ffffff;
     }
 
     .redeem-input.masked {
       color: transparent;
-      text-shadow: 0 0 6px rgba(31, 41, 55, 0.7);
-      caret-color: #1f2937;
+      text-shadow: 0 0 8px rgba(17, 34, 53, 0.72);
+      caret-color: #0f2338;
     }
 
     .redeem-meta {
@@ -326,34 +455,79 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
       flex-wrap: wrap;
+      gap: 8px;
+      color: #607386;
       font-size: 13px;
-      color: #667288;
     }
 
     .redeem-meta .warn {
-      color: #b42318;
+      color: #bf4a1f;
       font-weight: 700;
     }
 
-    .redeem-flow-hint {
-      margin: 8px 0 12px;
+    .redeem-manual-hint {
+      margin: 12px 0 0;
+      border-radius: 14px;
+      border: 1px solid rgba(17, 34, 53, 0.14);
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.9), rgba(246, 250, 255, 0.82));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+      padding: 13px 14px;
       color: #2f4458;
-      font-size: 13px;
-      line-height: 1.5;
+      font-size: 14px;
+      line-height: 1.54;
       font-weight: 600;
     }
 
-    .redeem-manual-hint {
-      margin: 10px 0 0;
-      color: #4b5563;
+    .redeem-manual-hint.is-alert {
+      border-color: rgba(213, 117, 59, 0.42);
+      background: linear-gradient(145deg, rgba(255, 247, 236, 0.95), rgba(255, 241, 224, 0.87));
+      color: #8d3c1c;
+      box-shadow:
+        0 10px 20px rgba(188, 94, 44, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.92);
+    }
+
+    .redeem-manual-hint.is-ok {
+      border-color: rgba(16, 141, 101, 0.34);
+      background: linear-gradient(150deg, rgba(233, 252, 244, 0.95), rgba(243, 253, 250, 0.84));
+      color: #10674e;
+      box-shadow:
+        0 10px 20px rgba(42, 91, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .redeem-manual-code-row {
+      margin-top: 8px;
+    }
+
+    .redeem-manual-code-label {
+      flex: 1 1 250px;
+      min-width: 0;
+      color: #1d344b;
       font-size: 14px;
-      line-height: 1.45;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .redeem-manual-link-btn {
+      min-width: 168px;
+    }
+
+    .redeem-manual-code-row a:not(.redeem-btn) {
+      color: var(--redeem-primary-dark);
+      font-weight: 700;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+    }
+
+    #manualSupportBtn {
+      margin-top: 10px !important;
+      min-height: 46px;
     }
 
     .redeem-actions {
-      margin-top: 14px;
+      margin-top: 16px;
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
@@ -371,28 +545,28 @@
       isolation: isolate;
       overflow: hidden;
       border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 12px;
       background:
         radial-gradient(160% 120% at 0% 0%, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0.08) 58%),
         linear-gradient(136deg, var(--redeem-liquid-a), var(--redeem-liquid-b));
       color: var(--redeem-liquid-ink);
       text-decoration: none;
-      border-radius: 12px;
       padding: 10px 14px;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
+      min-height: 44px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      min-height: 44px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
       box-shadow:
         0 12px 24px rgba(9, 20, 34, 0.16),
         inset 0 1px 0 rgba(255, 255, 255, 0.86),
         inset 0 -8px 14px rgba(9, 20, 34, 0.08);
       backdrop-filter: blur(12px) saturate(150%);
       -webkit-backdrop-filter: blur(12px) saturate(150%);
-      transition: transform .14s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease, color .16s ease;
+      transition: transform 0.14s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
     }
 
     .redeem-btn::before {
@@ -432,9 +606,10 @@
     }
 
     .redeem-btn:disabled {
-      opacity: 0.55;
+      opacity: 0.56;
       cursor: not-allowed;
       transform: none;
+      box-shadow: none;
     }
 
     .redeem-btn-primary {
@@ -452,17 +627,18 @@
 
     .redeem-btn-primary:hover {
       border-color: rgba(255, 255, 255, 0.74);
-      color: #fff;
+      color: #ffffff;
     }
 
     .redeem-status {
       margin-top: 12px;
-      border: 1px solid rgba(25, 34, 51, 0.11);
-      background: #fff;
-      border-radius: 12px;
-      padding: 10px 12px;
+      border: 1px solid var(--redeem-line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.86);
+      padding: 11px 12px;
+      color: #31475d;
       font-size: 14px;
-      color: #334154;
+      font-weight: 600;
       display: flex;
       align-items: center;
       flex-wrap: wrap;
@@ -473,9 +649,23 @@
       display: none !important;
     }
 
-    .redeem-status.pending { border-color: rgba(186, 131, 25, 0.35); background: #fff8e9; color: #9a6700; }
-    .redeem-status.success { border-color: rgba(17, 120, 90, 0.35); background: #eaf7f3; color: #0f7a5d; }
-    .redeem-status.error { border-color: rgba(178, 60, 60, 0.35); background: #ffefef; color: #b33f3f; }
+    .redeem-status.pending {
+      border-color: rgba(199, 129, 51, 0.42);
+      background: linear-gradient(145deg, rgba(255, 248, 232, 0.95), rgba(255, 242, 220, 0.9));
+      color: #8a5a08;
+    }
+
+    .redeem-status.success {
+      border-color: rgba(16, 141, 101, 0.38);
+      background: linear-gradient(145deg, rgba(232, 251, 243, 0.95), rgba(239, 253, 248, 0.9));
+      color: #0f684f;
+    }
+
+    .redeem-status.error {
+      border-color: rgba(181, 70, 62, 0.42);
+      background: linear-gradient(145deg, rgba(255, 238, 236, 0.95), rgba(255, 232, 231, 0.9));
+      color: #9c312f;
+    }
 
     .redeem-spinner {
       width: 13px;
@@ -484,17 +674,18 @@
       border-top-color: transparent;
       border-radius: 50%;
       display: none;
-      animation: redeem-spin .8s linear infinite;
+      animation: redeem-spin 0.8s linear infinite;
     }
 
     .redeem-faq {
       margin-top: 12px;
-      border: 1px solid rgba(25, 34, 51, 0.08);
-      border-radius: 12px;
-      padding: 10px 12px;
-      background: #fff;
-      color: #5e6a7d;
+      border-radius: 14px;
+      border: 1px solid var(--redeem-line-soft);
+      background: rgba(255, 255, 255, 0.84);
+      color: #4d6074;
       font-size: 14px;
+      line-height: 1.5;
+      padding: 11px 12px;
     }
 
     .redeem-review-reward[hidden] {
@@ -509,176 +700,242 @@
       place-items: center;
       padding: 18px;
       background:
-        radial-gradient(720px 360px at 50% -10%, rgba(31, 143, 127, 0.22), transparent 65%),
-        radial-gradient(620px 320px at 95% 115%, rgba(231, 125, 79, 0.2), transparent 70%),
-        rgba(19, 27, 39, 0.62);
-      backdrop-filter: blur(4px) saturate(120%);
-      animation: redeem-review-fade .2s ease;
+        radial-gradient(820px 420px at 8% -8%, rgba(14, 168, 141, 0.24), transparent 64%),
+        radial-gradient(720px 380px at 100% 100%, rgba(230, 132, 75, 0.2), transparent 68%),
+        linear-gradient(135deg, rgba(10, 17, 27, 0.76), rgba(11, 22, 35, 0.7));
+      backdrop-filter: blur(10px) saturate(138%);
+      animation: redeem-review-fade 0.2s ease;
     }
 
     .redeem-review-card {
       position: relative;
       overflow: hidden;
-      width: min(580px, 100%);
-      border: 1px solid rgba(255, 255, 255, 0.48);
-      border-radius: 20px;
-      padding: 22px;
+      isolation: isolate;
+      width: min(660px, 100%);
+      border: 1px solid rgba(214, 228, 244, 0.66);
+      border-radius: 28px;
+      padding: 26px;
       color: #183345;
       background:
-        linear-gradient(150deg, rgba(255, 255, 255, 0.9), rgba(240, 251, 246, 0.92)),
-        radial-gradient(circle at 2px 2px, rgba(23, 64, 83, 0.06) 1px, transparent 0);
-      background-size: auto, 14px 14px;
-      box-shadow: 0 28px 58px rgba(9, 21, 33, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-      animation: redeem-review-pop .24s ease;
+        radial-gradient(130% 120% at 100% 0%, rgba(14, 168, 141, 0.11), transparent 58%),
+        radial-gradient(120% 130% at 0% 0%, rgba(67, 56, 202, 0.09), transparent 54%),
+        linear-gradient(162deg, rgba(255, 255, 255, 0.98), rgba(246, 251, 255, 0.93));
+      box-shadow:
+        0 34px 70px rgba(8, 19, 31, 0.36),
+        0 10px 28px rgba(17, 70, 95, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.96);
+      animation: redeem-review-pop 0.24s ease;
     }
 
     .redeem-review-card::before {
       content: "";
       position: absolute;
-      width: 230px;
-      height: 230px;
-      right: -92px;
-      top: -108px;
+      width: 300px;
+      height: 300px;
+      right: -128px;
+      top: -172px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(31, 143, 127, 0.22), transparent 70%);
+      background: radial-gradient(circle, rgba(14, 168, 141, 0.26), transparent 68%);
       pointer-events: none;
+    }
+
+    .redeem-review-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background:
+        linear-gradient(102deg, rgba(255, 255, 255, 0.42), transparent 22%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
+      mix-blend-mode: screen;
+      opacity: 0.7;
+      z-index: -1;
     }
 
     .redeem-review-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 7px 12px;
       border-radius: 999px;
-      border: 1px solid rgba(31, 143, 127, 0.25);
-      background: rgba(31, 143, 127, 0.1);
-      color: #116c5b;
+      border: 1px solid rgba(13, 148, 136, 0.34);
+      background: linear-gradient(140deg, rgba(13, 148, 136, 0.16), rgba(59, 130, 246, 0.1));
+      color: #0f5f66;
       font-size: 12px;
       font-weight: 800;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.045em;
       text-transform: uppercase;
+      padding: 8px 13px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
     }
 
     .redeem-review-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 12px;
     }
 
     .redeem-review-close {
-      width: 34px;
-      height: 34px;
-      border: 1px solid rgba(24, 51, 69, 0.14);
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.86);
-      color: #41576b;
-      font-size: 21px;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      border: 1px solid rgba(35, 56, 79, 0.18);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(239, 246, 254, 0.86));
+      color: #34495f;
+      font-size: 22px;
       line-height: 1;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: background .16s ease, border-color .16s ease, color .16s ease, transform .12s ease;
+      box-shadow: 0 10px 22px rgba(13, 31, 46, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.96);
+      transition: transform 0.14s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
     }
 
     .redeem-review-close:hover {
-      background: #fff;
-      border-color: rgba(24, 51, 69, 0.22);
-      color: #223748;
+      border-color: rgba(35, 56, 79, 0.32);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 1), rgba(246, 251, 255, 0.92));
       transform: translateY(-1px);
+      box-shadow: 0 14px 26px rgba(13, 31, 46, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.98);
     }
 
     .redeem-review-close:active {
       transform: translateY(0);
     }
 
+    .redeem-review-body {
+      margin-top: 14px;
+    }
+
     .redeem-review-head {
-      margin-top: 12px;
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: start;
+      gap: 14px;
+    }
+
+    .redeem-review-mark-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(140deg, rgba(14, 168, 141, 0.24), rgba(59, 130, 246, 0.22));
+      box-shadow: 0 10px 24px rgba(14, 74, 97, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.68);
     }
 
     .redeem-review-mark {
-      flex-shrink: 0;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      border-radius: 13px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       font-family: "Space Grotesk", "Manrope", sans-serif;
-      font-size: 18px;
+      font-size: 19px;
       font-weight: 700;
-      color: #fff;
-      background: linear-gradient(140deg, #2a5bff, #214fdc);
-      box-shadow: 0 6px 16px rgba(31, 143, 127, 0.36);
+      color: #ffffff;
+      background: linear-gradient(138deg, #0da58c, #0e8f76 48%, #1d7f9f);
+      box-shadow: 0 10px 22px rgba(42, 91, 255, 0.34);
     }
 
     .redeem-review-card h3 {
       margin: 0;
       font-family: "Space Grotesk", "Manrope", sans-serif;
-      font-size: clamp(22px, 3vw, 30px);
-      line-height: 1.08;
+      font-size: clamp(24px, 3.3vw, 34px);
+      line-height: 1.05;
       letter-spacing: -0.02em;
-      color: #183345;
+      color: #132b40;
       text-wrap: balance;
     }
 
     .redeem-review-lead {
-      margin: 12px 0 0;
+      margin: 9px 0 0;
+      color: #37516a;
       font-size: 15px;
-      line-height: 1.55;
-      color: #33475c;
+      line-height: 1.6;
+      max-width: 46ch;
+      text-wrap: pretty;
+    }
+
+    .redeem-review-points {
+      margin: 16px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 9px;
+    }
+
+    .redeem-review-points li {
+      position: relative;
+      padding: 11px 13px 11px 36px;
+      border-radius: 12px;
+      border: 1px solid rgba(188, 205, 223, 0.78);
+      background: linear-gradient(156deg, rgba(255, 255, 255, 0.84), rgba(242, 248, 255, 0.72));
+      color: #2f4860;
+      font-size: 14px;
+      line-height: 1.48;
+      font-weight: 600;
+    }
+
+    .redeem-review-points li::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: 17px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(140deg, #0da58c, #1a80a5);
+      box-shadow: 0 0 0 5px rgba(13, 165, 140, 0.18);
     }
 
     .redeem-review-note {
-      margin: 8px 0 0;
+      margin: 12px 0 0;
+      color: #60758b;
       font-size: 13px;
       line-height: 1.5;
-      color: #567085;
     }
 
     .redeem-review-links {
-      margin-top: 16px;
-      padding-top: 14px;
-      border-top: 1px solid rgba(24, 51, 69, 0.12);
-      display: flex;
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
       gap: 10px;
-      flex-wrap: wrap;
+      align-items: center;
     }
 
     .redeem-review-links .redeem-btn {
-      width: 100%;
-      min-height: 50px;
+      min-height: 48px;
       border-radius: 14px;
-      justify-content: center;
       font-family: "Space Grotesk", "Manrope", sans-serif;
       font-size: 15px;
       letter-spacing: 0.01em;
-      box-shadow: 0 10px 26px rgba(31, 143, 127, 0.28);
+      justify-content: center;
     }
 
-    .redeem-review-links .redeem-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 14px 30px rgba(31, 143, 127, 0.34);
+    .redeem-review-links .redeem-btn-primary {
+      min-width: 220px;
+      box-shadow: 0 14px 30px rgba(42, 91, 255, 0.26);
     }
 
-    @keyframes redeem-review-fade {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    .redeem-btn-soft {
+      --redeem-liquid-a: rgba(255, 251, 247, 0.96);
+      --redeem-liquid-b: rgba(245, 234, 223, 0.78);
+      --redeem-liquid-ink: #3f3a34;
+      border-color: rgba(207, 192, 175, 0.82);
+      color: #3f3a34;
+      box-shadow:
+        0 10px 22px rgba(13, 31, 46, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.94),
+        inset 0 -8px 12px rgba(57, 43, 30, 0.08);
     }
 
-    @keyframes redeem-review-pop {
-      from {
-        opacity: 0;
-        transform: translateY(8px) scale(0.98);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
+    .redeem-btn-soft:hover {
+      border-color: rgba(166, 144, 120, 0.6);
+      color: #3a342e;
     }
 
     .redeem-btn.loading {
@@ -692,11 +949,51 @@
       border: 2px solid currentColor;
       border-top-color: transparent;
       border-radius: 50%;
-      animation: redeem-spin .8s linear infinite;
+      animation: redeem-spin 0.8s linear infinite;
     }
 
     @keyframes redeem-spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes redeem-fade-up {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes redeem-review-fade {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes redeem-review-pop {
+      from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .redeem-card {
+        border-radius: 24px;
+        padding: 24px;
+      }
     }
 
     @media (max-width: 860px) {
@@ -706,6 +1003,24 @@
 
       .redeem-actions .full {
         grid-column: auto;
+      }
+
+      .redeem-order-row {
+        align-items: stretch;
+      }
+
+      .redeem-order-id,
+      .redeem-manual-code-label {
+        white-space: normal;
+        word-break: break-word;
+      }
+
+      .redeem-order-row .redeem-btn {
+        width: 100%;
+      }
+
+      .redeem-manual-link-btn {
+        width: 100%;
       }
 
       .redeem-vpn-offer-head {
@@ -719,22 +1034,22 @@
 
     @media (max-width: 640px) {
       .redeem-page {
-        padding-top: 14px;
+        padding-top: 16px;
       }
 
       .redeem-card {
-        padding: 16px;
         border-radius: 18px;
+        padding: 16px;
+      }
+
+      .redeem-block,
+      .redeem-guide {
+        border-radius: 12px;
       }
 
       .redeem-title {
         font-size: 30px;
         line-height: 1.16;
-      }
-
-      .redeem-guide,
-      .redeem-block {
-        border-radius: 12px;
       }
 
       .redeem-review-card {
@@ -743,12 +1058,34 @@
       }
 
       .redeem-review-head {
-        gap: 10px;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .redeem-review-mark-wrap {
+        width: 46px;
+        height: 46px;
+        border-radius: 13px;
       }
 
       .redeem-review-mark {
-        width: 30px;
-        height: 30px;
+        width: 34px;
+        height: 34px;
+        border-radius: 11px;
+        font-size: 17px;
+      }
+
+      .redeem-review-points li {
+        padding: 10px 12px 10px 34px;
+        font-size: 13px;
+      }
+
+      .redeem-review-links {
+        grid-template-columns: 1fr;
+      }
+
+      .redeem-review-links .redeem-btn {
+        width: 100%;
       }
 
       .redeem-review-close {
@@ -756,7 +1093,7 @@
         height: 32px;
       }
     }
-  
+
 
     /* Unified redeem visual language with main site */
     body.redeem-flow {
@@ -802,7 +1139,8 @@
 
     body.redeem-flow .redeem-title {
       color: var(--lp-text, #161f2f) !important;
-      line-height: 1.14 !important;
+      max-width: 100% !important;
+      line-height: 1.12 !important;
       letter-spacing: 0 !important;
       overflow-wrap: normal !important;
       word-break: normal !important;
@@ -922,67 +1260,6 @@
       gap: 8px;
     }
 
-    .lang-switch {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .lang-current {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 104px;
-      padding: 10px 14px;
-      border-radius: 16px;
-      border: 1px solid rgba(186, 198, 224, 0.55);
-      background: rgba(255, 255, 255, 0.75);
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .lang-current img,
-    .lang-item img {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      object-fit: cover;
-      flex: 0 0 18px;
-    }
-
-    .lang-dropdown {
-      position: absolute;
-      top: calc(100% + 8px);
-      right: 0;
-      min-width: 164px;
-      padding: 8px;
-      border-radius: 14px;
-      border: 1px solid rgba(186, 198, 224, 0.55);
-      background: rgba(252, 254, 255, 0.97);
-      box-shadow: 0 18px 36px rgba(16, 29, 46, 0.18);
-      display: none;
-      z-index: 80;
-    }
-
-    .lang-switch.open .lang-dropdown {
-      display: block;
-    }
-
-    .lang-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 10px;
-      border-radius: 10px;
-      cursor: pointer;
-      color: #2f4057;
-      font-weight: 600;
-    }
-
-    .lang-item:hover {
-      background: rgba(93, 124, 255, 0.1);
-    }
-
     @media (max-width: 640px) {
       body.redeem-flow .redeem-page {
         padding: 14px 10px 0 !important;
@@ -1007,8 +1284,8 @@
     <div id="siteTicker" class="site-ticker" role="status" aria-live="polite">
       <div class="site-ticker__marquee">
         <div class="site-ticker__track" id="siteTickerTrack">
-          <div class="site-ticker__loop"><span class="site-ticker__item">Activation feed is updating...</span></div>
-          <div class="site-ticker__loop" aria-hidden="true"><span class="site-ticker__item">Activation feed is updating...</span></div>
+          <div class="site-ticker__loop"><span class="site-ticker__item">The activation feed is being updated...</span></div>
+          <div class="site-ticker__loop" aria-hidden="true"><span class="site-ticker__item">The activation feed is being updated...</span></div>
         </div>
       </div>
       <div class="site-ticker__stats">
@@ -1019,17 +1296,23 @@
       <a href="/en/" class="logo-link">
         <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka" class="logo-img">
       </a>
-      <a href="/en/chatgpt" class="header-product-pill" aria-label="ChatGPT from 1290 RUB/mo">
+      <a href="/en/chatgpt" class="header-product-pill" aria-label="ChatGPT from 1290 ₽/month">
         <img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" loading="lazy" decoding="async">
-        <span>ChatGPT from 1290 RUB/mo</span>
+        <span>ChatGPT from 1290 ₽/month</span>
       </a>
+      <nav class="header-quick-links" aria-label="Quick sections GPTishka">
+        <a class="header-quick-link" href="/news/">News</a>
+        <a class="header-quick-link" href="/app/?lang=en">Reviews</a>
+        <a class="header-quick-link" href="https://vk.com/gptishka?from=groups&amp;trackcode=7f99670c_6HjhbFhCJIgWV0ALEpOr-nIlZFrs3X3-3D3-z00f1k7ylk5Mhdl7hxbRgwtUEeZ8MCZjDfHpk0ywZuW" target="_blank" rel="noopener">VK</a>
+        <a class="header-quick-link header-quick-link--telegram" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener">Telegram</a>
+      </nav>
       <div class="header-tools header-actions">
         <div class="lang-switch" id="langSwitch">
-          <button type="button" class="lang-current" id="langCurrent" aria-label="Choose language">
+          <div class="lang-current" id="langCurrent">
             <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
             <span>English</span>
-            <span class="arrow">▾</span>
-          </button>
+            <span class="arrow">&#9662;</span>
+          </div>
           <div class="lang-dropdown">
             <div class="lang-item" data-lang="ru">
               <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
@@ -1047,17 +1330,17 @@
 
   <main class="page redeem-page">
     <section class="redeem-card">
-      <h1 class="redeem-title">Extend / Activate</h1>
-      <p class="redeem-subtitle">After payment, complete your order delivery using the instructions below.</p>
+      <h1 class="redeem-title">Renew / Activate</h1>
+      <p class="redeem-subtitle">Your order has been processed, we will contact you if you have any questions</p>
 
       <section id="vpnOfferBlock" class="redeem-vpn-offer" hidden>
         <div class="redeem-vpn-offer-head">
           <p class="redeem-label" style="margin-bottom:0;">VPN in this order</p>
-          <span class="redeem-vpn-pill">Recommended</span>
+          <span class="redeem-vpn-pill">We recommend</span>
         </div>
-        <p class="redeem-vpn-offer-text">Set up VPN access first, then return here to finish activation.</p>
+        <p class="redeem-vpn-offer-text">First set up VPN access, then return to activation.</p>
         <div class="redeem-vpn-offer-actions">
-          <a id="vpnOfferSetupBtn" class="redeem-btn redeem-btn-primary" href="/store/vpn/activate" data-redeem-leave-bypass>Set up VPN</a>
+          <a id="vpnOfferSetupBtn" class="redeem-btn redeem-btn-primary" href="/en/store/vpn/activate" data-redeem-leave-bypass>Configure VPN</a>
           <button id="vpnOfferSkipBtn" type="button" class="redeem-btn">Continue activation</button>
         </div>
       </section>
@@ -1072,29 +1355,28 @@
         </section>
 
         <section class="redeem-block" id="tokenBlock">
-          <p class="redeem-label">Account token</p>
-          <details class="redeem-guide" open>
-            <summary>Where to get the account token</summary>
-            <ol>
-              <li>Sign in to ChatGPT in your browser.</li>
-              <li>Open <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>
-              <li>Copy the full content and paste it into the "Account token" field.</li>
-              <li>How it works / video instruction: <a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">watch</a></li>
+          <p class="redeem-label" id="tokenLabel">Account token</p>
+          <details class="redeem-guide">
+            <summary id="tokenGuideSummary">Where to get an account token</summary>
+            <ol id="tokenGuideList">
+              <li>Login through your browser to your ChatGPT account (if you haven’t logged in yet, just log in).</li>
+              <li>Open the link <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>
+              <li>Copy all contents and paste it into the Account Token field.</li>
+              <li>How it works / video instructions - <a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">watch</a></li>
             </ol>
           </details>
-          <p id="tokenFlowHint" class="redeem-flow-hint" hidden></p>
 
           <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
             <button id="toggleMaskBtn" type="button" class="redeem-btn">Show</button>
-            <button id="pasteBtn" type="button" class="redeem-btn">Paste</button>
+            <button id="pasteBtn" type="button" class="redeem-btn">Insert</button>
             <button id="clearBtn" type="button" class="redeem-btn">Clear</button>
           </div>
 
           <textarea id="tokenInput" class="redeem-input masked" placeholder="Account token" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
 
           <div class="redeem-meta">
-            <span id="tokenInfo">Chars: 0</span>
-            <span id="tokenWarn">We do not store the token. It is used only for activation.</span>
+            <span id="tokenInfo">Characters: 0</span>
+            <span id="tokenWarn">We do not store the token and use it only for activation.</span>
           </div>
         </section>
 
@@ -1104,7 +1386,7 @@
             <span id="manualLoginValue" class="redeem-order-id">-</span>
             <button id="copyLoginBtn" type="button" class="redeem-btn">Copy login</button>
           </div>
-          <div class="redeem-order-row" style="margin-top:8px;">
+          <div class="redeem-order-row">
             <span id="manualPasswordValue" class="redeem-order-id">-</span>
             <button id="copyPasswordBtn" type="button" class="redeem-btn">Copy password</button>
           </div>
@@ -1116,47 +1398,57 @@
             target="_blank"
             rel="noopener noreferrer"
             style="display:none; margin-top:8px;"
-          >Contact support</a>
+          >Write to support</a>
         </section>
       </div>
 
       <section id="actionsRow" class="redeem-actions">
         <button id="checkBtn" type="button" class="redeem-btn">Check status</button>
+        <button id="retryNewKeyBtn" type="button" class="redeem-btn">Change key and repeat</button>
         <button id="startBtn" type="button" class="redeem-btn redeem-btn-primary full" disabled>Activate</button>
-        <button id="stopPollingBtn" type="button" class="redeem-btn full" style="display:none">Stop checking</button>
+        <button id="stopPollingBtn" type="button" class="redeem-btn full" style="display:none">Stop scanning</button>
       </section>
 
       <section id="statusBox" class="redeem-status" hidden>
-        <span id="statusText">Waiting for action.</span>
+        <span id="statusText">I’m waiting for action.</span>
         <span id="statusSpinner" class="redeem-spinner" aria-hidden="true"></span>
         <span id="taskWrap" style="display:none">Task: <strong id="taskIdValue"></strong></span>
         <button id="copyTaskBtn" type="button" class="redeem-btn" style="display:none">Copy Task</button>
       </section>
 
-      <section id="reviewRewardBox" class="redeem-review-reward" hidden aria-modal="true" role="dialog" aria-live="polite">
+      <section id="reviewRewardBox" class="redeem-review-reward" hidden aria-modal="true" role="dialog" aria-live="polite" aria-labelledby="reviewRewardTitle">
         <div class="redeem-review-card">
           <div class="redeem-review-top">
-            <span class="redeem-review-badge">5% bonus for your next order</span>
+            <span class="redeem-review-badge">5% bonus on your next order</span>
             <button id="reviewRewardCloseBtn" type="button" class="redeem-review-close" aria-label="Close message" title="Close">&times;</button>
           </div>
-          <div class="redeem-review-head">
-            <span class="redeem-review-mark" aria-hidden="true">&#10003;</span>
-            <h3>Your plan has been successfully activated</h3>
-          </div>
-          <p class="redeem-review-lead">Thanks for your purchase. Leave a short Telegram review and receive a personal 5% promo code.</p>
-          <ul class="redeem-review-points">
-            <li>We will review your feedback and send you a personal promo code.</li>
-          </ul>
-          <div class="redeem-review-links">
-            <a class="redeem-btn redeem-btn-primary" href="https://t.me/aiiisupport" target="_blank" rel="noopener noreferrer">Leave a review</a>
+          <div class="redeem-review-body">
+            <div class="redeem-review-head">
+              <span class="redeem-review-mark-wrap" aria-hidden="true">
+                <span class="redeem-review-mark">✓</span>
+              </span>
+              <div class="redeem-review-copy">
+                <h3 id="reviewRewardTitle">Your tariff has been successfully activated</h3>
+                <p class="redeem-review-lead">Thanks for your purchase. Leave a short review at Telegram and receive a personal 5% promo code.</p>
+              </div>
+            </div>
+            <ul class="redeem-review-points">
+              <li>We’ll check your review and send you a personal promo code.</li>
+            </ul>
+            <div class="redeem-review-links">
+              <a class="redeem-btn redeem-btn-primary" href="https://t.me/aiiisupport" target="_blank" rel="noopener noreferrer">Leave feedback</a>
+              <button id="reviewRewardDismissBtn" type="button" class="redeem-btn redeem-btn-soft">Later</button>
+            </div>
+            <p class="redeem-review-note">If the window is in the way, click Later or the Esc key. The bonus will remain available.</p>
           </div>
         </div>
       </section>
     </section>
   </main>
+
   <footer>
-    <a class="footer-link" href="/en/oferta.html">Public offer</a> · <a class="footer-link" href="/en/politika.html">Privacy policy</a> · <a class="footer-link" href="/en/refund.html">Refund policy</a>
-    <span class="footer-copy">© 2026 GPTishka. All rights reserved.</span>
+    <a class="footer-link" href="/en/oferta.html">Public offer</a> · <a class="footer-link" href="/en/politika.html">Privacy Policy</a> · <a class="footer-link" href="/en/refund.html">Return Policy</a>
+    <span class="footer-copy">© 2026 GPTishka. All rights reserved, copying prohibited.</span>
   </footer>
 
   <script src="/assets/js/app.min.js?v=20260724-lang-all1" defer></script>
@@ -1170,11 +1462,9 @@
     const orderIdEl = document.getElementById('orderId');
     const copyOrderIdBtn = document.getElementById('copyOrderIdBtn');
     const tokenBlock = document.getElementById('tokenBlock');
-    const tokenLabelEl = tokenBlock ? tokenBlock.querySelector('.redeem-label') : null;
-    const tokenGuideEl = tokenBlock ? tokenBlock.querySelector('.redeem-guide') : null;
-    const tokenGuideSummaryEl = tokenGuideEl ? tokenGuideEl.querySelector('summary') : null;
-    const tokenGuideListEl = tokenGuideEl ? tokenGuideEl.querySelector('ol') : null;
-    const tokenFlowHint = document.getElementById('tokenFlowHint');
+    const tokenLabelEl = document.getElementById('tokenLabel');
+    const tokenGuideSummaryEl = document.getElementById('tokenGuideSummary');
+    const tokenGuideListEl = document.getElementById('tokenGuideList');
     const tokenInput = document.getElementById('tokenInput');
     const tokenInfo = document.getElementById('tokenInfo');
     const tokenWarn = document.getElementById('tokenWarn');
@@ -1209,22 +1499,27 @@
     const copyTaskBtn = document.getElementById('copyTaskBtn');
     const reviewRewardBox = document.getElementById('reviewRewardBox');
     const reviewRewardCloseBtn = document.getElementById('reviewRewardCloseBtn');
+    const reviewRewardDismissBtn = document.getElementById('reviewRewardDismissBtn');
 
     const POLL_INTERVAL_MS = 2000;
     // Provider processing may take a few minutes. Don't auto-restart tasks on short timeouts.
     const POLL_MAX_MS = 5 * 60 * 1000;
-    const SUPPORT_PROGRESS_MAX_MS = 15 * 60 * 1000;
-    const SUPPORT_POLL_INTERVAL_MS = 4000;
-    const POST_TIMEOUT_RECHECK_MS = 12000;
     const RETRY_COOLDOWN_MS = 20000;
     const TOKEN_VALIDATE_DEBOUNCE_MS = 600;
+    const LAST_PAID_ORDER_KEY = 'gptishka_last_paid_order_id';
     const REDEEM_ACTIVATION_SAVED_AT_KEY = 'gptishka_activation_saved_at';
     const ACTIVATION_RESUME_TTL_MS = 365 * 24 * 60 * 60 * 1000;
+    const CART_STORAGE_KEYS = [
+      'gptishka_cart_v1',
+      'gptishka_card_qty_v1',
+      'selected_cart',
+      'gptishka_cart_promo_v1',
+      'selected_product',
+    ];
 
     let currentTaskId = '';
     let pollTimer = null;
     let pollStartedAt = 0;
-    let pollRequestInFlight = false;
     let lastToken = '';
     let restartAttempts = 0;
     let isRetryRunning = false;
@@ -1236,14 +1531,12 @@
     const SUPPORT_ACTIVATION_FLOW_GROK = 'grok_token';
     const SUPPORT_ACTIVATION_FLOW_CLAUDE = 'claude_token';
     const SUPPORT_TELEGRAM_URL = 'https://t.me/aiiisupport';
-    const MANUAL_SUPPORT_MESSAGE = 'We process orders every day from 10:00 to 20:00 Moscow time. Average waiting time is 5 minutes to 2 hours after payment. If the order is placed at night, we will connect it in the morning. Maximum completion time is 2 business days.';
+    const MANUAL_SUPPORT_MESSAGE = 'We process orders daily from 10:00 to 20:00 Moscow time. The average waiting time is from 5 minutes to 2 hours after payment. If the order is placed at night, we will connect you in the morning. Maximum turnaround time is 2 business days.';
     let isCredentialsDelivery = false;
     let isSupportTokenDelivery = false;
     let supportActivationFlow = SUPPORT_ACTIVATION_FLOW_GROK;
-    let supportProgressStartedAt = 0;
     let vpnOfferDismissed = false;
     let activationCompleted = false;
-    let postTimeoutRecheckTimer = 0;
     let leaveGuardBypass = false;
     let leaveConfirmModalEl = null;
     let leaveConfirmProceedBtn = null;
@@ -1255,22 +1548,21 @@
     let imageZoomCloseBtn = null;
 
     // By default, allow retry only after explicit failure or pending timeout.
-    if (retryNewKeyBtn) retryNewKeyBtn.disabled = true;
+    retryNewKeyBtn.disabled = true;
 
     const pollPauseKey = orderId ? `gptishka_activation_poll_paused:${orderId}` : '';
-    const supportProgressKey = orderId ? `gptishka_support_progress_started:${orderId}` : '';
     const reviewRewardReadyKey = orderId ? `gptishka_review_reward_ready:${orderId}` : '';
     const vpnOfferDismissKey = orderId ? `gptishka_vpn_offer_dismissed:${orderId}` : '';
 
     const LEAVE_CONFIRM_TEXT = {
-      title: 'Are you sure you want to leave before subscription activation?',
-      subtitle: 'If you leave now, the activation flow may be interrupted. We recommend staying until the status is "Success".',
-      proceed: 'Yes, leave',
-      stay: 'No, stay',
+      title: '\u0412\u044b \u0443\u0432\u0435\u0440\u0435\u043d\u044b, \u0447\u0442\u043e \u0445\u043e\u0442\u0438\u0442\u0435 \u043f\u043e\u043a\u0438\u043d\u0443\u0442\u044c \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0443 \u0434\u043e \u0430\u043a\u0442\u0438\u0432\u0430\u0446\u0438\u0438 \u043f\u043e\u0434\u043f\u0438\u0441\u043a\u0438?',
+      subtitle: '\u0415\u0441\u043b\u0438 \u0432\u044b\u0439\u0442\u0438 \u0441\u0435\u0439\u0447\u0430\u0441, \u043f\u0440\u043e\u0446\u0435\u0441\u0441 \u0430\u043a\u0442\u0438\u0432\u0430\u0446\u0438\u0438 \u043c\u043e\u0436\u0435\u0442 \u043f\u0440\u0435\u0440\u0432\u0430\u0442\u044c\u0441\u044f. \u0420\u0435\u043a\u043e\u043c\u0435\u043d\u0434\u0443\u0435\u043c \u043e\u0441\u0442\u0430\u0442\u044c\u0441\u044f \u0434\u043e \u0441\u0442\u0430\u0442\u0443\u0441\u0430 \u00ab\u0423\u0441\u043f\u0435\u0448\u043d\u043e\u00bb.',
+      proceed: '\u0414\u0430, \u043f\u043e\u043a\u0438\u043d\u0443\u0442\u044c',
+      stay: '\u041d\u0435\u0442, \u043e\u0441\u0442\u0430\u0442\u044c\u0441\u044f',
     };
 
     const IMAGE_ZOOM_TEXT = {
-      close: 'Close image',
+      close: '\u0417\u0430\u043a\u0440\u044b\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435',
     };
 
     function markActivationCompleted() {
@@ -1397,7 +1689,7 @@
       document.addEventListener('click', (event) => {
         const target = event.target;
         const langItem = target && target.closest ? target.closest('.lang-item[data-lang]') : null;
-        if (langItem) {
+        if (langItem && shouldBlockLeaving()) {
           const lang = String(langItem.getAttribute('data-lang') || '').trim().toLowerCase();
           const currentUrl = new URL(window.location.href);
           const isEnPath = currentUrl.pathname.startsWith('/en/');
@@ -1406,13 +1698,9 @@
           if (lang === 'ru' && isEnPath) nextPath = '/redeem-start.html';
           const nextHref = `${window.location.origin}${nextPath}${currentUrl.search}${currentUrl.hash}`;
           if (nextHref !== window.location.href) {
-            if (shouldBlockLeaving()) {
-              event.preventDefault();
-              event.stopPropagation();
-              openLeaveConfirm(nextHref);
-            } else {
-              window.location.href = nextHref;
-            }
+            event.preventDefault();
+            event.stopPropagation();
+            openLeaveConfirm(nextHref);
             return;
           }
         }
@@ -1455,24 +1743,6 @@
       });
     }
 
-    function setupLanguageSwitch() {
-      const langSwitch = document.getElementById('langSwitch');
-      const langCurrent = document.getElementById('langCurrent');
-      if (!langSwitch || !langCurrent) return;
-
-      langCurrent.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        langSwitch.classList.toggle('open');
-      });
-
-      document.addEventListener('click', (event) => {
-        if (!langSwitch.contains(event.target)) {
-          langSwitch.classList.remove('open');
-        }
-      });
-    }
-
     function isPollPaused() {
       if (!pollPauseKey) return false;
       try { return localStorage.getItem(pollPauseKey) === '1'; } catch (_) { return false; }
@@ -1511,6 +1781,61 @@
     }
 
     restoreReviewReward();
+
+    function setCredentialsDeliveryMode(payload) {
+      isCredentialsDelivery = true;
+      stopPolling();
+      hideVpnOffer(false);
+      if (tokenBlock) tokenBlock.style.display = 'none';
+      if (actionsRow) actionsRow.style.display = 'none';
+      if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'block';
+
+      const deliveryMode = String(payload?.deliveryMode || '').trim().toLowerCase();
+      const isSupportDelivery = deliveryMode === 'support' || deliveryMode === 'manual_login';
+      const status = String(payload?.status || '').trim().toLowerCase();
+      const credentials = payload?.credentials && typeof payload.credentials === 'object' ? payload.credentials : null;
+      const login = String(credentials?.login || '').trim();
+      const password = String(credentials?.password || '').trim();
+      const defaultMessage = isSupportDelivery
+        ? MANUAL_SUPPORT_MESSAGE
+        : 'Login and password are not assigned yet. Please contact support or wait for manual assignment.';
+      const message = isSupportDelivery ? MANUAL_SUPPORT_MESSAGE : (String(payload?.message || '').trim() || defaultMessage);
+
+      if (manualBlockLabel) {
+        manualBlockLabel.textContent = isSupportDelivery ? 'Manual activation via support' : 'Login details';
+      }
+      if (manualLoginRow) {
+        manualLoginRow.style.display = isSupportDelivery ? 'none' : 'flex';
+      }
+      if (manualPasswordRow) {
+        manualPasswordRow.style.display = isSupportDelivery ? 'none' : 'flex';
+      }
+
+      if (manualLoginValue) manualLoginValue.textContent = login || 'Login has not yet been assigned';
+      if (manualPasswordValue) manualPasswordValue.textContent = password || 'No password has been assigned yet';
+      if (manualCredentialsHint) manualCredentialsHint.textContent = message;
+
+      const hasCredentials = !isSupportDelivery && status === 'credentials_ready' && login && password;
+      if (hasCredentials) markActivationCompleted();
+      if (manualCredentialsHint) {
+        manualCredentialsHint.classList.toggle('is-alert', !hasCredentials);
+        manualCredentialsHint.classList.toggle('is-ok', Boolean(hasCredentials));
+      }
+      if (manualSupportBtn) {
+        manualSupportBtn.href = SUPPORT_TELEGRAM_URL;
+        manualSupportBtn.style.display = hasCredentials ? 'none' : 'inline-flex';
+      }
+      if (copyLoginBtn) copyLoginBtn.style.display = isSupportDelivery ? 'none' : '';
+      if (copyPasswordBtn) copyPasswordBtn.style.display = isSupportDelivery ? 'none' : '';
+
+      if (hasCredentials) {
+        setStatus('success', 'Login details are ready. Copy your username and password below.', false);
+      } else if (isSupportDelivery) {
+        hideStatus();
+      } else {
+        setStatus('pending', 'We are waiting for your login information to be issued.', false);
+      }
+    }
 
     function normalizeSupportActivationFlow(value) {
       return String(value || '').trim().toLowerCase() === SUPPORT_ACTIVATION_FLOW_CLAUDE
@@ -1577,209 +1902,66 @@
       supportActivationFlow = isSupportTokenDelivery
         ? normalizeSupportActivationFlow(flow || supportActivationFlow)
         : SUPPORT_ACTIVATION_FLOW_GROK;
-      const claudeSupportFlow = isClaudeSupportFlow();
-      if (isSupportTokenDelivery) {
-        supportProgressStartedAt = readSupportProgressStartedAt();
-      } else {
-        resetSupportProgress();
-      }
       isCredentialsDelivery = false;
+      const claudeSupportFlow = isClaudeSupportFlow();
+
       if (tokenBlock) tokenBlock.style.display = 'block';
       if (actionsRow) actionsRow.style.display = '';
       if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'none';
-      syncRetryActionVisibility();
 
       if (tokenLabelEl) {
         tokenLabelEl.textContent = claudeSupportFlow
-          ? 'Account ID for Claude Pro activation'
-          : (isSupportTokenDelivery ? 'SuperGrok account ID' : 'Account token');
+          ? 'Account activation to activate Claude Pro'
+          : (isSupportTokenDelivery ? 'Account ID Grok for activation SUPERGROK' : 'Account token');
       }
       if (tokenGuideSummaryEl) {
         tokenGuideSummaryEl.textContent = claudeSupportFlow
-          ? 'Where to find your Claude account ID'
-          : (isSupportTokenDelivery ? 'Where to get your Grok account ID' : 'Where to get the account token');
+          ? 'Instructions'
+          : (isSupportTokenDelivery ? 'Instructions' : 'Where to get an account token');
       }
       if (tokenGuideListEl) {
         if (isSupportTokenDelivery) {
           tokenGuideListEl.innerHTML = claudeSupportFlow
             ? [
-                '<li>Go to <a href="https://claude.ai/settings/account" target="_blank" rel="noreferrer noopener">claude.ai</a> and sign in to your account.</li>',
-                '<li>Go to account settings.</li>',
-                '<li>In settings, find your account ID (highlighted area on the screenshot).</li>',
-                '<li class="redeem-guide-shot"><img src="/assets/img/claude-account-id-settings.png" alt="Where to find Claude account ID" loading="lazy" decoding="async"></li>',
-                '<li>Copy it in full, for example: <code>e191659c-0258-4be3-951a-e1cbffa3322f</code>.</li>',
-                '<li>Paste it below and click "Activate".</li>',
+                '<li>Go to the website <a href="https://claude.ai/settings/account" target="_blank" rel="noreferrer noopener">claude.ai</a> and log in to your account.</li>',
+                '<li>Open your account settings.</li>',
+                '<li>In the settings, find your account ID (the area is indicated in the screenshot).</li>',
+                '<li class="redeem-guide-shot"><img src="/assets/img/claude-account-id-settings.png" alt="Where to find account ID Claude" loading="lazy" decoding="async"></li>',
+                '<li>Copy it completely, for example: <code>e191659c-0258-4be3-951a-e1cbffa3322f</code>.</li>',
+                '<li>Insert the ID in the field below and click “Activate”.</li>',
               ].join('')
             : [
-                '<li><strong>рџљЂ To activate SUPERGROK, send your Grok account ID.</strong></li>',
-                '<li><strong>How to find the ID:</strong></li>',
-                '<li>1пёЏвѓЈ Go to <a href="https://grok.com" target="_blank" rel="noreferrer noopener">grok.com</a> and sign in to your account.</li>',
-                '<li>2пёЏвѓЈ Copy and open this link in your browser: <a href="https://grok.com/api/auth/session" target="_blank" rel="noreferrer noopener">https://grok.com/api/auth/session</a>.</li>',
-                '<li>3пёЏвѓЈ Find the <strong>ID</strong> line (the needed area is highlighted on the 2 screenshots).</li>',
-                '<li class="redeem-guide-shot"><img src="/assets/img/supergrok-activation-1.png" alt="Where to find Grok account ID — example 1" loading="lazy" decoding="async"></li>',
-                '<li class="redeem-guide-shot"><img src="/assets/img/supergrok-activation-2.png" alt="Where to find Grok account ID — example 2" loading="lazy" decoding="async"></li>',
-                '<li>4пёЏвѓЈ Copy the ID and send it <strong>as one message in this chat</strong>.</li>',
-                '<li>рџ’Ў <strong>Important:</strong> send only the ID, without extra comments or symbols.</li>',
+                '<li><strong>🚀 To activate SUPERGROK send your account ID Grok.</strong></li>',
+                '<li><strong>How to find ID:</strong></li>',
+                '<li>1️⃣ Go to the website <a href="https://grok.com" target="_blank" rel="noreferrer noopener">grok.com</a> and log in to your account.</li>',
+                '<li>2️⃣ Copy and open the link <a href="https://grok.com/api/auth/session" target="_blank" rel="noreferrer noopener">https://grok.com/api/auth/session</a>.</li> in your browser',
+                '<li>3️⃣ Find the line <strong>ID</strong> (in 2 screenshots the desired area is highlighted).</li>',
+                '<li class="redeem-guide-shot"><img src="/assets/img/supergrok-activation-1.png" alt="Where to find account ID Grok - example 1" loading="lazy" decoding="async"></li>',
+                '<li class="redeem-guide-shot"><img src="/assets/img/supergrok-activation-2.png" alt="Where to find account ID Grok - example 2" loading="lazy" decoding="async"></li>',
+                '<li>4️⃣ Copy the ID and send it to <strong> in one message in this field</strong>.</li>',
+                '<li>💡 <strong>Important:</strong> send only ID without additional comments and symbols.</li>',
               ].join('');
         } else {
           tokenGuideListEl.innerHTML = [
-            '<li>Sign in to ChatGPT in your browser.</li>',
-            '<li>Open <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>',
-            '<li>Copy the full content and paste it into the "Account token" field.</li>',
-            '<li>How it works / video instruction: <a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">watch</a></li>',
+            '<li>Login through your browser to your ChatGPT account (if you haven’t logged in yet, just log in).</li>',
+            '<li>Open the link <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>',
+            '<li>Copy all contents and paste it into the Account Token field.</li>',
+            '<li>How it works / video instructions - <a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">watch</a></li>',
           ].join('');
         }
       }
+
       if (tokenInput) {
         tokenInput.placeholder = claudeSupportFlow
-          ? 'Claude account ID (UUID)'
-          : (isSupportTokenDelivery ? 'Grok account ID (UUID)' : 'Account token');
+          ? 'Account ID Claude (UUID)'
+          : (isSupportTokenDelivery ? 'Account ID Grok (UUID)' : 'Account token');
       }
-      if (tokenFlowHint) {
-        tokenFlowHint.hidden = !isSupportTokenDelivery;
-        tokenFlowHint.textContent = isSupportTokenDelivery
-          ? (claudeSupportFlow
-            ? 'Method 5 requires your Claude account ID. After submission, processing usually takes 5-15 minutes.'
-            : 'Method 4 requires your Grok account ID. After submission, processing usually takes 5-15 minutes.')
-          : '';
+      if (toggleMaskBtn) {
+        toggleMaskBtn.style.display = isSupportTokenDelivery ? 'none' : '';
       }
-    }
-
-    function syncRetryActionVisibility() {
-      if (!retryNewKeyBtn) return;
-      if (isSupportTokenDelivery) {
-        retryNewKeyBtn.style.display = 'none';
-        retryNewKeyBtn.disabled = true;
-        retryNewKeyBtn.classList.remove('loading');
-        return;
-      }
-      retryNewKeyBtn.style.display = '';
-    }
-
-    function getTokenSafeWarnText() {
-      return isSupportTokenDelivery
-        ? (isClaudeSupportFlow() ? 'Claude account ID is used only for activation.' : 'Grok account ID is used only for activation.')
-        : 'We do not store the token. It is used only for activation.';
-    }
-
-    function getProcessingStatusText(taskId, providerMessage) {
-      const progress = isSupportTokenDelivery ? getSupportProgressPercent() : null;
-      const progressSuffix = isSupportTokenDelivery && Number.isFinite(progress) ? ` ${progress}%` : '';
-      const base = isSupportTokenDelivery ? `Processing${progressSuffix} (usually 5-15 minutes)` : 'Processing';
-      const suffix = providerMessage ? `. ${providerMessage}` : '';
-      return `${base}. Task: ${taskId}${suffix}`;
-    }
-
-    function getStartPendingStatusText() {
-      return isSupportTokenDelivery
-        ? (isClaudeSupportFlow()
-          ? 'Request sent. Method 5 processing usually takes 5-15 minutes.'
-          : 'Request sent. Method 4 processing usually takes 5-15 minutes.')
-        : 'Request sent...';
-    }
-
-    function readSupportProgressStartedAt() {
-      if (!supportProgressKey) return 0;
-      try {
-        const value = Number(localStorage.getItem(supportProgressKey) || '0');
-        return Number.isFinite(value) && value > 0 ? value : 0;
-      } catch (_) {
-        return 0;
-      }
-    }
-
-    function writeSupportProgressStartedAt(value) {
-      if (!supportProgressKey) return;
-      try {
-        localStorage.setItem(supportProgressKey, String(value));
-      } catch (_) {
-        // Ignore storage write failures.
-      }
-    }
-
-    function ensureSupportProgressStartedAt() {
-      if (!isSupportTokenDelivery) return 0;
-      if (supportProgressStartedAt > 0) return supportProgressStartedAt;
-      supportProgressStartedAt = readSupportProgressStartedAt();
-      if (supportProgressStartedAt > 0) return supportProgressStartedAt;
-      supportProgressStartedAt = Date.now();
-      writeSupportProgressStartedAt(supportProgressStartedAt);
-      return supportProgressStartedAt;
-    }
-
-    function markSupportProgressStarted() {
-      if (!isSupportTokenDelivery) return;
-      supportProgressStartedAt = Date.now();
-      writeSupportProgressStartedAt(supportProgressStartedAt);
-    }
-
-    function resetSupportProgress() {
-      supportProgressStartedAt = 0;
-      if (!supportProgressKey) return;
-      try {
-        localStorage.removeItem(supportProgressKey);
-      } catch (_) {
-        // Ignore storage cleanup failures.
-      }
-    }
-
-    function getSupportProgressPercent() {
-      if (!isSupportTokenDelivery) return null;
-      const startedAt = ensureSupportProgressStartedAt();
-      if (!startedAt) return null;
-      const elapsed = Math.max(0, Date.now() - startedAt);
-      const percent = Math.floor((elapsed / SUPPORT_PROGRESS_MAX_MS) * 100);
-      return Math.max(1, Math.min(99, percent));
-    }
-
-    function setCredentialsDeliveryMode(payload) {
-      isCredentialsDelivery = true;
-      stopPolling();
-      hideVpnOffer(false);
-      if (tokenBlock) tokenBlock.style.display = 'none';
-      if (actionsRow) actionsRow.style.display = 'none';
-      if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'block';
-
-      const deliveryMode = String(payload?.deliveryMode || '').trim().toLowerCase();
-      const isSupportDelivery = deliveryMode === 'support' || deliveryMode === 'manual_login';
-      const status = String(payload?.status || '').trim().toLowerCase();
-      const credentials = payload?.credentials && typeof payload.credentials === 'object' ? payload.credentials : null;
-      const login = String(credentials?.login || '').trim();
-      const password = String(credentials?.password || '').trim();
-      const defaultMessage = isSupportDelivery
-        ? MANUAL_SUPPORT_MESSAGE
-        : 'No free login details are available right now. Contact support or wait for an email with your data.';
-      const message = isSupportDelivery ? MANUAL_SUPPORT_MESSAGE : (String(payload?.message || '').trim() || defaultMessage);
-
-      if (manualBlockLabel) {
-        manualBlockLabel.textContent = isSupportDelivery ? 'Manual activation via support' : 'Login details';
-      }
-      if (manualLoginRow) {
-        manualLoginRow.style.display = isSupportDelivery ? 'none' : 'flex';
-      }
-      if (manualPasswordRow) {
-        manualPasswordRow.style.display = isSupportDelivery ? 'none' : 'flex';
-      }
-      if (manualLoginValue) manualLoginValue.textContent = login || 'Login is not assigned yet';
-      if (manualPasswordValue) manualPasswordValue.textContent = password || 'Password is not assigned yet';
-      if (manualCredentialsHint) manualCredentialsHint.textContent = message;
-
-      const hasCredentials = !isSupportDelivery && status === 'credentials_ready' && login && password;
-      if (hasCredentials) markActivationCompleted();
-      if (manualSupportBtn) {
-        manualSupportBtn.href = SUPPORT_TELEGRAM_URL;
-        manualSupportBtn.style.display = hasCredentials ? 'none' : 'inline-flex';
-      }
-      if (copyLoginBtn) copyLoginBtn.style.display = isSupportDelivery ? 'none' : '';
-      if (copyPasswordBtn) copyPasswordBtn.style.display = isSupportDelivery ? 'none' : '';
-
-      if (hasCredentials) {
-        setStatus('success', 'Login details are ready. Copy login and password below.', false);
-      } else if (isSupportDelivery) {
-        hideStatus();
-      } else {
-        setStatus('pending', message, false);
-      }
+      isMasked = !isSupportTokenDelivery;
+      if (tokenInput) tokenInput.classList.toggle('masked', isMasked);
+      if (toggleMaskBtn) toggleMaskBtn.textContent = isMasked ? 'Show' : 'Hide';
     }
 
     function buildVpnActivateUrl() {
@@ -1858,6 +2040,12 @@
       });
     }
 
+    if (reviewRewardDismissBtn) {
+      reviewRewardDismissBtn.addEventListener('click', () => {
+        dismissReviewReward();
+      });
+    }
+
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && imageZoomModalEl && !imageZoomModalEl.hidden) {
         closeGuideImageZoom();
@@ -1877,7 +2065,7 @@
       try {
         const { orderId: lastId, token: lastToken } = readStoredActivationResumeContext();
         if (lastId && lastToken) {
-          const url = new URL('/en/redeem-start.html', window.location.origin);
+          const url = new URL('/redeem-start.html', window.location.origin);
           url.searchParams.set('order_id', lastId);
           url.searchParams.set('t', lastToken);
           leaveGuardBypass = true;
@@ -1885,10 +2073,10 @@
         }
       } catch (_) {}
 
-      setStatus('error', 'Missing order_id in the link.', false);
+      setStatus('error', 'The order_id is not specified in the link.', false);
       startBtn.disabled = true;
       checkBtn.disabled = true;
-      if (retryNewKeyBtn) retryNewKeyBtn.disabled = true;
+      retryNewKeyBtn.disabled = true;
     } else {
       orderIdEl.textContent = orderId;
       try {
@@ -1930,7 +2118,7 @@
           tokenInput.value = clipboard;
           updateTokenMeta();
           scheduleValidateToken();
-          setStatus('success', 'Token pasted', false);
+          setStatus('success', 'Token inserted', false);
         }
       } catch {
         setStatus('error', 'Failed to paste from clipboard', false);
@@ -1941,7 +2129,7 @@
       tokenInput.value = '';
       updateTokenMeta();
       scheduleValidateToken();
-      setStatus('pending', 'Cleared', false);
+      setStatus('pending', 'Field cleared', false);
     });
 
     copyOrderIdBtn.addEventListener('click', () => copyText(orderId, 'Order ID copied'));
@@ -1962,7 +2150,7 @@
     if (vpnOfferSkipBtn) {
       vpnOfferSkipBtn.addEventListener('click', () => {
         hideVpnOffer(true);
-        setStatus('pending', 'You can continue ChatGPT activation below.', false);
+        setStatus('pending', 'You can continue activating ChatGPT in the block below.', false);
       });
     }
 
@@ -1980,7 +2168,7 @@
       restartAttempts = 0;
       setButtonLoading(startBtn, true);
       try {
-        setStatus('pending', getStartPendingStatusText(), true);
+        setStatus('pending', 'Request sent...', true);
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/start`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2005,11 +2193,10 @@
         }
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
-        markSupportProgressStarted();
-        setStatus('pending', getProcessingStatusText(currentTaskId, ''), true);
+        setStatus('pending', `In processing. Task: ${currentTaskId}`, true);
         startPolling();
       } catch {
-        setStatus('error', 'Network error while starting activation', false);
+        setStatus('error', 'Network error when starting activation', false);
       } finally {
         setButtonLoading(startBtn, false);
       }
@@ -2018,73 +2205,67 @@
     checkBtn.addEventListener('click', async () => {
       if (isCredentialsDelivery) return;
       if (!currentTaskId) {
-        setStatus('pending', 'Start activation first', false);
+        setStatus('pending', 'First run activation', false);
         return;
       }
       setButtonLoading(checkBtn, true);
-      const done = await checkTaskStatus();
-      if (!done) {
-        await resolveActivationSuccessFallback();
-      }
+      await checkTaskStatus();
       setButtonLoading(checkBtn, false);
     });
 
-    if (retryNewKeyBtn) {
-      retryNewKeyBtn.addEventListener('click', async () => {
-        if (isCredentialsDelivery) return;
-        if (isRetryRunning) return;
-        const now = Date.now();
-        const remain = RETRY_COOLDOWN_MS - (now - lastRetryAt);
-        if (remain > 0) {
-          setStatus('error', `Too often. Try again in ${Math.ceil(remain / 1000)} sec.`, false);
+    retryNewKeyBtn.addEventListener('click', async () => {
+      if (isCredentialsDelivery) return;
+      if (isRetryRunning) return;
+      const now = Date.now();
+      const remain = RETRY_COOLDOWN_MS - (now - lastRetryAt);
+      if (remain > 0) {
+        setStatus('error', `Too often. Repeat after ${Math.ceil(remain / 1000)} sec.`, false);
+        return;
+      }
+
+      const token = getTokenForSubmit();
+      if (!token) {
+        setStatus('error', 'Enter token', false);
+        return;
+      }
+
+      const validated = await validateTokenNow();
+      if (!validated) return;
+
+      setPollPaused(false);
+      lastRetryAt = now;
+      lastToken = token;
+      restartAttempts = 0;
+      isRetryRunning = true;
+      setButtonLoading(retryNewKeyBtn, true);
+      try {
+        setStatus('pending', 'We take a new key and restart...', true);
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/restart-with-new-key`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, orderToken: orderLinkToken }),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setStatus('error', payload?.message || 'Failed to restart', false);
           return;
         }
-
-        const token = getTokenForSubmit();
-        if (!token) {
-          setStatus('error', 'Enter token', false);
-          return;
-        }
-
-        const validated = await validateTokenNow();
-        if (!validated) return;
-
-        setPollPaused(false);
-        lastRetryAt = now;
-        lastToken = token;
-        restartAttempts = 0;
-        isRetryRunning = true;
-        setButtonLoading(retryNewKeyBtn, true);
-        try {
-          setStatus('pending', 'Getting a new key and retrying...', true);
-          const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/restart-with-new-key`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token, orderToken: orderLinkToken }),
-          });
-          const payload = await response.json().catch(() => ({}));
-          if (!response.ok) {
-            setStatus('error', payload?.message || 'Failed to retry', false);
-            return;
-          }
-          currentTaskId = String(payload.taskId || '');
-          renderTask(currentTaskId);
-          markSupportProgressStarted();
-          setStatus('pending', getProcessingStatusText(currentTaskId, ''), true);
-          startPolling();
-        } catch {
-          setStatus('error', 'Network error while retrying', false);
-        } finally {
-          isRetryRunning = false;
-          setButtonLoading(retryNewKeyBtn, false);
-        }
-      });
-    }
+        currentTaskId = String(payload.taskId || '');
+        renderTask(currentTaskId);
+        setStatus('pending', `In processing. Task: ${currentTaskId}`, true);
+        startPolling();
+      } catch {
+        setStatus('error', 'Network error on restart', false);
+      } finally {
+        isRetryRunning = false;
+        setButtonLoading(retryNewKeyBtn, false);
+      }
+    });
 
     stopPollingBtn.addEventListener('click', () => {
       stopPolling();
       setPollPaused(true);
-      setStatus('pending', 'Auto-check stopped', false);
+      setStatus('pending', 'Autocheck stopped', false);
     });
 
     async function loadActivation() {
@@ -2102,11 +2283,13 @@
         }
         const deliveryMode = String(payload?.deliveryMode || '').toLowerCase();
         applyActivationPayloadMode(payload, deliveryMode);
-        if (deliveryMode === 'credentials') {
+        if (deliveryMode === 'credentials' || deliveryMode === 'manual_login') {
+          handlePaidOrder(orderId);
           setCredentialsDeliveryMode(payload);
           return;
         }
         if (deliveryMode === 'vpn') {
+          handlePaidOrder(orderId);
           const url = new URL('/store/vpn', window.location.origin);
           url.searchParams.set('order_id', orderId);
           if (orderLinkToken) url.searchParams.set('t', orderLinkToken);
@@ -2116,20 +2299,20 @@
         }
         const hasBundleVpn = await maybeShowVpnOffer();
         if (!skipBundleRedirect && deliveryMode === 'activation' && hasBundleVpn) {
-          const url = new URL('/en/bundle-activation.html', window.location.origin);
+          const url = new URL('/bundle-activation.html', window.location.origin);
           url.searchParams.set('order_id', orderId);
           if (orderLinkToken) url.searchParams.set('t', orderLinkToken);
           leaveGuardBypass = true;
           window.location.href = url.toString();
           return;
         }
+        handlePaidOrder(orderId);
         const activationStatus = String(payload?.status || '').trim().toLowerCase();
         if (activationStatus === 'success') {
           currentTaskId = String(payload.taskId || '');
           renderTask(currentTaskId);
           markActivationCompleted();
-          resetSupportProgress();
-          setStatus('success', currentTaskId ? `Success. Task: ${currentTaskId}` : 'Activation completed successfully.', false);
+          setStatus('success', currentTaskId ? `Successfully. Task: ${currentTaskId}` : 'Connection completed successfully.', false);
           clearActivationResumeStorage();
           hideActionButtons();
           showReviewReward();
@@ -2138,22 +2321,46 @@
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
         if (currentTaskId) {
-          if (isSupportTokenDelivery) ensureSupportProgressStartedAt();
           if (isPollPaused()) {
-            setStatus('pending', `There is an active check. Task: ${currentTaskId}. Auto-check is stopped.`, false);
+            setStatus('pending', `There is an active check. Task: ${currentTaskId}. Autocheck has stopped.`, false);
           } else {
-            setStatus('pending', getProcessingStatusText(currentTaskId, ''), true);
+            setStatus('pending', `In processing. Task: ${currentTaskId}`, true);
             startPolling();
           }
           return;
         }
-        setStatus('pending', 'Waiting for action.', false);
+        setStatus('pending', 'I’m waiting for action.', false);
       } catch {
         const fallbackContext = await resolveOrderDeliveryContext();
         if (fallbackContext.deliveryMode) {
           applyActivationPayloadMode(fallbackContext, fallbackContext.deliveryMode);
         }
-        setStatus('error', 'Network error while loading activation', false);
+        setStatus('error', 'Network error loading activation', false);
+      }
+    }
+
+    function handlePaidOrder(id) {
+      const normalizedId = String(id || '').trim();
+      if (!normalizedId) return;
+
+      try {
+        const lastPaid = String(localStorage.getItem(LAST_PAID_ORDER_KEY) || '').trim();
+        if (lastPaid === normalizedId) return;
+
+        CART_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+        localStorage.setItem(LAST_PAID_ORDER_KEY, normalizedId);
+      } catch (_) {
+        // Ignore storage write errors.
+      }
+
+      notifyCartCleared();
+    }
+
+    function notifyCartCleared() {
+      try {
+        window.dispatchEvent(new CustomEvent('gptishka:cart-cleared'));
+      } catch (_) {
+        // Ignore event dispatch failures.
       }
     }
 
@@ -2183,7 +2390,7 @@
 
         const deliveryMode = String(payload?.deliveryMode || '').trim().toLowerCase();
         applyActivationPayloadMode(payload, deliveryMode);
-        if (deliveryMode === 'credentials') {
+        if (deliveryMode === 'credentials' || deliveryMode === 'manual_login') {
           setCredentialsDeliveryMode(payload);
           return true;
         }
@@ -2195,8 +2402,11 @@
         currentTaskId = finalizedTaskId;
         renderTask(currentTaskId);
         markActivationCompleted();
-        resetSupportProgress();
-        setStatus('success', currentTaskId ? `Success. Task: ${currentTaskId}` : 'Activation completed successfully.', false);
+        setStatus(
+          'success',
+          currentTaskId ? `Successfully. Task: ${currentTaskId}` : 'The subscription has been successfully activated.',
+          false
+        );
         clearActivationResumeStorage();
         hideActionButtons();
         showReviewReward();
@@ -2211,38 +2421,19 @@
       setPollPaused(false);
       stopPollingBtn.style.display = 'inline-flex';
       pollStartedAt = Date.now();
-      pollRequestInFlight = false;
-      const pollLimitMs = isSupportTokenDelivery ? SUPPORT_PROGRESS_MAX_MS : POLL_MAX_MS;
-      const pollIntervalMs = isSupportTokenDelivery ? SUPPORT_POLL_INTERVAL_MS : POLL_INTERVAL_MS;
       pollTimer = setInterval(async () => {
-        if (pollRequestInFlight) return;
-        pollRequestInFlight = true;
-        try {
         const done = await checkTaskStatus();
-        const timeout = Date.now() - pollStartedAt >= pollLimitMs;
+        const timeout = Date.now() - pollStartedAt >= POLL_MAX_MS;
         if (done || timeout) {
           stopPolling();
           if (!done && timeout) {
             const resolved = await resolveActivationSuccessFallback();
             if (resolved) return;
-            setStatus(
-              'pending',
-              isSupportTokenDelivery
-                ? `Still processing${(() => { const p = getSupportProgressPercent(); return Number.isFinite(p) ? ` (${p}%)` : ''; })()} (can take up to 15 minutes). Task: ${currentTaskId}. Click "Check status" later.`
-                : `Still processing. Task: ${currentTaskId}. Click "Check status" later.`,
-              false
-            );
-            if (isSupportTokenDelivery) {
-              schedulePostTimeoutRecheck();
-            } else {
-              if (retryNewKeyBtn) retryNewKeyBtn.disabled = false;
-            }
+            setStatus('pending', `Still in processing. Task: ${currentTaskId}. Click ”Check Status” later or ”Change Key and Repeat.”`, false);
+            retryNewKeyBtn.disabled = false;
           }
         }
-        } finally {
-          pollRequestInFlight = false;
-        }
-      }, pollIntervalMs);
+      }, POLL_INTERVAL_MS);
     }
 
     function stopPolling() {
@@ -2250,36 +2441,10 @@
         clearInterval(pollTimer);
         pollTimer = null;
       }
-      pollRequestInFlight = false;
-      clearPostTimeoutRecheck();
       stopPollingBtn.style.display = 'none';
     }
 
-    function clearPostTimeoutRecheck() {
-      if (!postTimeoutRecheckTimer) return;
-      clearTimeout(postTimeoutRecheckTimer);
-      postTimeoutRecheckTimer = 0;
-    }
-
-    function schedulePostTimeoutRecheck() {
-      if (!isSupportTokenDelivery || !currentTaskId || activationCompleted) return;
-      clearPostTimeoutRecheck();
-      postTimeoutRecheckTimer = setTimeout(async () => {
-        postTimeoutRecheckTimer = 0;
-        if (!isSupportTokenDelivery || activationCompleted || !currentTaskId) return;
-        const done = await checkTaskStatus();
-        let resolved = false;
-        if (!done) {
-          resolved = await resolveActivationSuccessFallback();
-        }
-        if (!activationCompleted && !resolved && currentTaskId) {
-          schedulePostTimeoutRecheck();
-        }
-      }, POST_TIMEOUT_RECHECK_MS);
-    }
-
     async function checkTaskStatus() {
-      if (!currentTaskId) return true;
       try {
         const suffix = orderLinkToken ? `?t=${encodeURIComponent(orderLinkToken)}` : '';
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/task/${encodeURIComponent(currentTaskId)}${suffix}`);
@@ -2292,16 +2457,19 @@
         }
 
         if (payload.pending) {
+          if (isSupportTokenDelivery) {
+            const resolved = await resolveActivationSuccessFallback();
+            if (resolved) return true;
+          }
           const msg = String(payload?.message || '').trim();
-          setStatus('pending', getProcessingStatusText(currentTaskId, msg), true);
-          if (retryNewKeyBtn) retryNewKeyBtn.disabled = true;
+          setStatus('pending', `In processing. Task: ${currentTaskId}${msg ? `. ${msg}` : ''}`, true);
+          retryNewKeyBtn.disabled = true;
           return false;
         }
 
         if (payload.success) {
-          setStatus('success', `Success. Task: ${currentTaskId}`, false);
+          setStatus('success', `Successfully. Task: ${currentTaskId}`, false);
           markActivationCompleted();
-          resetSupportProgress();
           clearActivationResumeStorage();
           hideActionButtons();
           showReviewReward();
@@ -2310,13 +2478,13 @@
 
         const resolved = await resolveActivationSuccessFallback();
         if (resolved) return true;
-        setStatus('error', payload?.message || 'Request failed', false);
-        if (retryNewKeyBtn) retryNewKeyBtn.disabled = false;
+        setStatus('error', payload?.message || 'The request cannot be processed', false);
+        retryNewKeyBtn.disabled = false;
         return true;
       } catch {
         const resolved = await resolveActivationSuccessFallback();
         if (resolved) return true;
-        setStatus('error', 'Network error while checking status', false);
+        setStatus('error', 'Network error when checking status', false);
         return false;
       }
     }
@@ -2378,15 +2546,15 @@
       const raw = String(tokenInput.value || '').trim();
       const token = extractTokenFromInput(raw);
       const length = token.length;
-      tokenInfo.textContent = `Chars: ${length}`;
+      tokenInfo.textContent = `Characters: ${length}`;
       if (!isSupportTokenDelivery && raw.startsWith('{') && token && token !== raw) {
-        tokenWarn.textContent = 'JSON detected: extracted token will be used.';
+        tokenWarn.textContent = 'JSON detected: The extracted token will be used.';
       } else if (isSupportTokenDelivery) {
         tokenWarn.textContent = isClaudeSupportFlow()
-          ? 'For method 5, paste your Claude account ID in UUID format.'
-          : 'For method 4, paste your Grok account ID in UUID format.';
+          ? 'Method 5 uses only the account ID Claude in the format UUID.'
+          : 'Method 4 uses only the account ID Grok in the format UUID.';
       } else {
-        tokenWarn.textContent = getTokenSafeWarnText();
+        tokenWarn.textContent = 'We do not store the token and use it only for activation.';
       }
       tokenWarn.className = '';
     }
@@ -2426,7 +2594,7 @@
       const token = getTokenForSubmit();
       if (!orderId || !token) {
         tokenValidatedOk = false;
-        lastValidateReason = isSupportTokenDelivery ? 'Enter account ID' : 'Enter token';
+        lastValidateReason = isSupportTokenDelivery ? 'Enter your account ID' : 'Enter token';
         tokenWarn.textContent = lastValidateReason;
         tokenWarn.className = 'warn';
         updateStartButtonState();
@@ -2442,7 +2610,7 @@
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
           tokenValidatedOk = false;
-          lastValidateReason = payload?.message || 'Failed to validate token';
+          lastValidateReason = payload?.message || 'Failed to verify token';
           tokenWarn.textContent = lastValidateReason;
           tokenWarn.className = 'warn';
           updateStartButtonState();
@@ -2456,11 +2624,11 @@
 
         if (ok) {
           tokenWarn.textContent = isSupportTokenDelivery
-            ? 'Account ID format looks valid.'
-            : 'Token format looks valid (not stored).';
+            ? 'The account ID appears to be correct (no saving).'
+            : 'The token appears to be in the correct format (without saving).';
           tokenWarn.className = '';
         } else {
-          tokenWarn.textContent = lastValidateReason || 'Token is not valid';
+          tokenWarn.textContent = lastValidateReason || 'The token is not suitable';
           tokenWarn.className = 'warn';
         }
 
@@ -2468,7 +2636,7 @@
         return ok;
       } catch {
         tokenValidatedOk = false;
-        lastValidateReason = 'Network error while validating token';
+        lastValidateReason = 'Network error when validating token';
         tokenWarn.textContent = lastValidateReason;
         tokenWarn.className = 'warn';
         updateStartButtonState();
@@ -2533,21 +2701,15 @@
         await navigator.clipboard.writeText(text);
         setStatus('success', okMessage, false);
       } catch {
-        setStatus('error', 'Copy failed', false);
+        setStatus('error', 'Failed to copy', false);
       }
     }
 
     setupLeaveGuard();
     setupGuideImageZoom();
-    setupLanguageSwitch();
     })();
   </script>
 <script src="/assets/js/support-widget.js?v=20260724-resume-collapse1" defer></script>
-  <script src="/assets/js/language-switcher.js?v=20260724-language-slider1" defer></script>
+  <script src="/assets/js/language-switcher.js?v=20260724-language-menu2" defer></script>
 </body>
 </html>
-
-
-
-
-

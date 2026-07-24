@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <script src="/assets/js/analytics-init.js?v=20260721-defer-analytics1" defer></script>
@@ -8,15 +8,15 @@
 <link rel="apple-touch-icon" href="/assets/img/site-icon.png">
 <link rel="canonical" href="https://gptishka.shop/en/store/steam/topup/">
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="Steam balance top-up with Mann Co. keys: enter the number of keys, Steam trade URL, and pay through GPTishka." />
+<meta name="description" content="Top up your Steam balance via Mann Co. keys: indicate the number of keys, Steam trade link and pay for the order via GPTishka." />
 <meta name="robots" content="index, follow">
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="GPTishka" />
-<meta property="og:title" content="Steam top-up with Mann Co. keys | GPTishka" />
-<meta property="og:description" content="1 key = 151 RUB. Enter the number of keys and Steam trade URL — a manager will process the order after payment." />
-<meta property="og:image" content="https://gptishka.shop/assets/img/home/topups-promo-bg.png" />
+<meta property="og:title" content="Replenishment of Steam with Mann Co. keys | GPTishka" />
+<meta property="og:description" content="1 key = 151 RUB. Specify the number of keys and Steam trade link - the manager will process the order after payment." />
+<meta property="og:image" content="https://gptishka.shop/assets/img/steam/steam-balance-card.png" />
 <meta property="og:url" content="https://gptishka.shop/en/store/steam/topup/" />
-<title>Steam top-up with Mann Co. keys | GPTishka</title>
+<title>Replenishment of Steam with Mann Co. keys | GPTishka</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -24,108 +24,111 @@
 <link rel="stylesheet" href="/assets/css/gptishka-header-refresh.css?v=20260724-language-slider1">
 <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260516fix4">
 <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260621-telegram-orders1" />
-<link rel="stylesheet" href="/assets/css/home-wide-marketplace.css?v=20260707-dark-all-pages4" />
+<link rel="stylesheet" href="/assets/css/home-wide-marketplace.css?v=20260627-cardglass1" />
 <link rel="stylesheet" href="/assets/css/steam-topup.css?v=20260724-lava-mark2" />
 <link rel="preload" href="/assets/css/support-widget.css?v=20260724-resume-collapse1" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="/assets/css/support-widget.css?v=20260724-resume-collapse1" /></noscript>
-  <script src="/assets/js/site-header-unify.js?v=20260724-lang-all1" defer></script>
+<link rel="stylesheet" href="/assets/css/gptishka-dark-pages.css?v=20260707-no-ticker-dark1" />
+<link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260707-header-unify9" />
 </head>
 <body class="home-gradient-page home-wide-body steam-topup-body">
 <div class="page-overlay"></div>
 <header>
-  <div id="siteTicker" class="site-ticker" role="status" aria-live="polite">
-    <div class="site-ticker__marquee">
-      <div class="site-ticker__track" id="siteTickerTrack">
-        <div class="site-ticker__loop"><span class="site-ticker__item">Activation feed is updating...</span></div>
-        <div class="site-ticker__loop" aria-hidden="true"><span class="site-ticker__item">Activation feed is updating...</span></div>
-      </div>
-    </div>
-    <div class="site-ticker__stats">
-      <span class="site-ticker__stat"><span class="site-ticker__stat-label">total activations:</span> <strong id="siteTickerSales">0</strong></span>
+<div id="siteTicker" class="site-ticker" role="status" aria-live="polite">
+  <div class="site-ticker__marquee">
+    <div class="site-ticker__track" id="siteTickerTrack">
+      <div class="site-ticker__loop"><span class="site-ticker__item">The activation feed is being updated...</span></div>
+      <div class="site-ticker__loop" aria-hidden="true"><span class="site-ticker__item">The activation feed is being updated...</span></div>
     </div>
   </div>
-  <div class="nav nav-shell">
-    <a href="/en/" class="logo-link">
-      <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka" class="logo-img">
-    </a>
-    <a href="/en/chatgpt" class="header-product-pill" aria-label="ChatGPT from 1290 RUB/mo"><img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" loading="lazy" decoding="async"><span>ChatGPT from 1290 RUB/mo</span></a>
-    <nav class="header-quick-links" aria-label="GPTishka quick sections">
-      <a class="header-quick-link" href="/en/news/">News</a>
+  <div class="site-ticker__stats">
+    <span class="site-ticker__stat"><span class="site-ticker__stat-label">total activations:</span> <strong id="siteTickerSales">0</strong></span>
+  </div>
+</div>
+<div class="nav nav-shell">
+
+          <a href="/en/" class="logo-link">
+            <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka" class="logo-img">
+          </a>
+    <a href="/en/chatgpt" class="header-product-pill" aria-label="ChatGPT from 1290 ₽/month"><img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" loading="lazy" decoding="async"><span>ChatGPT from 1290 ₽/month</span></a>
+    <nav class="header-quick-links" aria-label="Quick sections GPTishka">
+      <a class="header-quick-link" href="/news/">News</a>
       <a class="header-quick-link" href="/app/?lang=en">Reviews</a>
       <a class="header-quick-link" href="https://vk.com/gptishka?from=groups&amp;trackcode=7f99670c_6HjhbFhCJIgWV0ALEpOr-nIlZFrs3X3-3D3-z00f1k7ylk5Mhdl7hxbRgwtUEeZ8MCZjDfHpk0ywZuW" target="_blank" rel="noopener">VK</a>
       <a class="header-quick-link header-quick-link--telegram" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener">Telegram</a>
     </nav>
-    <div class="header-tools header-actions">
-      <div class="lang-switch" id="langSwitch">
-        <button type="button" class="lang-current" id="langCurrent" aria-label="Choose language">
-          <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
-          <span>English</span>
-          <span class="arrow">▾</span>
-        </button>
-        <div class="lang-dropdown">
-          <div class="lang-item" data-lang="ru">
-            <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
-            <span>Russian</span>
+
+
+
+
+
+
+          <div class="header-tools header-actions">
+            <div class="lang-switch" id="langSwitch">
+              <div class="lang-current" id="langCurrent">
+                <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
+                <span>English</span>
+                <span class="arrow">&#9662;</span>
+              </div>
+
+              <div class="lang-dropdown">
+                <div class="lang-item" data-lang="ru">
+                  <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
+                  <span>Russian</span>
+                </div>
+                <div class="lang-item" data-lang="en">
+                  <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
+                <span>English</span>
+                </div>
+              </div>
+            </div>
+
           </div>
-          <div class="lang-item" data-lang="en">
-            <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
-            <span>English</span>
-          </div>
+
         </div>
-      </div>
-    </div>
-  </div>
 </header>
 
 <main class="page service-page steam-topup-page" data-service-page="steam" data-service-layout="manual-topup">
-  <section class="steam-topup-hero">
-    <div class="steam-topup-hero__bg" aria-hidden="true"></div>
-    <a class="service-back-link steam-topup-back" href="/en/store/steam/">← Top-ups</a>
-    <div class="steam-topup-hero__content">
-      <span class="steam-topup-eyebrow">Top-ups</span>
-      <h1>Steam top-up with Mann Co. keys</h1>
-      <p>Enter the number of keys and your Steam trade URL. After payment, the order goes to a manager: delivery is manual for now, automatic key sending will be added later.</p>
-      <div class="steam-topup-hero__facts">
-        <span>1 key = 151 RUB</span>
-        <span>Card or SBP payment</span>
-        <span>Trade URL is required</span>
-      </div>
-    </div>
-  </section>
+  <a class="service-directory-back steam-topup-directory-back" href="/en/store/steam/" aria-label="Return to replenishment">
+    <svg class="service-directory-back__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+      <path d="M17 10H3M3 10l5-5M3 10l5 5"></path>
+    </svg>
+    <span>Replenishments</span>
+  </a>
 
-  <section class="steam-topup-shell" aria-label="Steam top-up checkout">
+  <section class="steam-topup-shell" aria-label="Registration of replenishment Steam">
     <div class="steam-topup-card steam-topup-card--visual">
-      <img src="/uploads/products/f693844c-ccdb-4aa5-a6bd-28cb58f70927.png?v=20260627-steam-admin1" alt="" loading="lazy" decoding="async">
+      <img src="/assets/img/steam/steam-balance-card.webp?v=20260721-cards-webp1" alt="" loading="lazy" decoding="async">
       <div>
         <span>Steam Balance</span>
-        <h2>+10% top-up with Mann Co. keys</h2>
-        <p>Suitable if your Steam market is unlocked and you need balance quickly.</p>
+        <h2>+10% to replenishment of Mann Co. keys</h2>
+        <p>Suitable if you have a Steam trading platform and need a quick balance.</p>
       </div>
     </div>
 
     <form class="steam-topup-card steam-topup-form" data-steam-topup-form data-product-slug="steam-mannco-key" novalidate>
       <div class="steam-topup-form__head">
         <div>
-          <span>Order checkout</span>
-          <h2>Choose the number of keys</h2>
+          <span>Placing an order</span>
+          <h2>Select number of keys</h2>
         </div>
         <strong data-steam-topup-total>151 RUB</strong>
       </div>
 
       <label class="steam-topup-field">
-        <span>Email for order status</span>
-        <small>Needed for contact and order history.</small>
-        <input name="email" type="email" autocomplete="email" placeholder="name@email.com" required>
+        <span>Telegram</span>
+        <small>All order information will come here</small>
+        <input name="telegram" type="text" autocomplete="off" placeholder="@username" required>
       </label>
 
       <label class="steam-topup-field">
-        <span>Steam trade URL</span>
+        <span>Steam trade link</span>
         <small>Format: https://steamcommunity.com/tradeoffer/new/?partner=123456789&amp;token=AbCdEfGh</small>
         <input name="steamTradeUrl" type="url" inputmode="url" autocomplete="off" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh" required>
       </label>
 
       <div class="steam-topup-quantity" aria-label="Number of keys">
-        <button type="button" data-steam-qty-dec aria-label="Decrease quantity">−</button>
+        <button type="button" data-steam-qty-dec aria-label="Reduce quantity">−</button>
         <label>
           <span>Number of keys</span>
           <input name="quantity" type="number" min="1" max="100" step="1" value="1" inputmode="numeric" data-steam-qty>
@@ -135,30 +138,30 @@
 
       <div class="steam-topup-summary">
         <div><span>Price per key</span><strong>1 key = 151 RUB</strong></div>
-        <div><span>Total</span><strong data-steam-topup-total>151 RUB</strong></div>
+        <div><span>For payment</span><strong data-steam-topup-total>151 RUB</strong></div>
       </div>
 
       <fieldset class="steam-topup-payment">
         <legend>Payment</legend>
         <label>
-          <input name="paymentMethod" type="radio" value="lava">
+          <input name="paymentMethod" type="radio" value="lava" checked>
           <span class="steam-topup-payment__logo"><img src="/assets/img/payment-lava.svg?v=20260724-lava-mark2" alt="" width="36" height="36" loading="lazy" decoding="async"></span>
           <span><strong>LAVA</strong><small>SBP 0% and cards 3.2%</small></span>
         </label>
         <label>
-          <input name="paymentMethod" type="radio" value="enot" checked>
+          <input name="paymentMethod" type="radio" value="enot">
           <span class="steam-topup-payment__logo"><img src="/assets/img/payment-enot.svg?v=20260724-enot-mark1" alt="" width="36" height="36" loading="lazy" decoding="async"></span>
           <span><strong>ENOT</strong><small>Cards 3.2% and SBP 0%</small></span>
         </label>
       </fieldset>
 
       <label class="steam-topup-field">
-        <span>Order comment</span>
-        <small>Optional. You can add preferences or trade details.</small>
-        <textarea name="comment" rows="3" placeholder="Example: send after 18:00"></textarea>
+        <span>Comments on the order</span>
+        <small>Optional. You can indicate wishes or details regarding the trade.</small>
+        <textarea name="comment" rows="3" placeholder="For example: send after 18:00"></textarea>
       </label>
 
-      <p class="steam-topup-note">By clicking the button, you agree to the <a href="/en/oferta.html" target="_blank" rel="noopener">public offer</a> and <a href="/en/politika.html" target="_blank" rel="noopener">privacy policy</a>.</p>
+      <p class="steam-topup-note">By clicking the button, you agree to <a href="/en/oferta.html" target="_blank" rel="noopener">offer</a> And <a href="/en/politika.html" target="_blank" rel="noopener">privacy policy</a>.</p>
       <p class="steam-topup-status" data-steam-topup-status aria-live="polite"></p>
       <button class="steam-topup-submit" type="submit" data-steam-topup-submit>Pay 151 RUB</button>
     </form>
@@ -167,16 +170,16 @@
 
 <footer>
   <div class="footer-links-primary">
-    <a class="footer-link" href="/en/oferta.html">Public offer</a> &middot; <a class="footer-link" href="/en/politika.html">Privacy policy</a> &middot; <a class="footer-link" href="/en/refund.html">Refund policy</a>
+    <a class="footer-link" href="/en/oferta.html">Public offer</a> &middot; <a class="footer-link" href="/en/politika.html">Privacy Policy</a> &middot; <a class="footer-link" href="/en/refund.html">Return Policy</a>
   </div>
   <div class="footer-links-secondary">
-    <a class="footer-link" href="/en/about.html">About</a> &middot; <a class="footer-link" href="/en/guarantee.html">Guarantee</a> &middot; <a class="footer-link" href="/en/contact.html">Contact us</a>
+    <a class="footer-link" href="/en/about.html">About the service</a> &middot; <a class="footer-link" href="/en/guarantee.html">Guarantee</a> &middot; <a class="footer-link" href="/en/contact.html">Contact us</a>
   </div>
   <span class="footer-copy">&copy; 2026 GPTishka. All rights reserved.</span>
 </footer>
 <script src="/assets/js/app.min.js?v=20260724-lang-all1" defer></script>
-<script src="/assets/js/steam-topup.js?v=20260622-steam-page1" defer></script>
+<script src="/assets/js/steam-topup.js?v=20260723-steam-telegram1" defer></script>
 <script src="/assets/js/support-widget.js?v=20260724-resume-collapse1" defer></script>
-  <script src="/assets/js/language-switcher.js?v=20260724-language-slider1" defer></script>
+  <script src="/assets/js/language-switcher.js?v=20260724-language-menu2" defer></script>
 </body>
 </html>
