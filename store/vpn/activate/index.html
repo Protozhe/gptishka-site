@@ -1420,27 +1420,32 @@
     border-color: rgba(53, 229, 141, 0.35) !important;
   }
 </style>
+  <link rel="stylesheet" href="/assets/css/activation-pages-refresh.css?v=20260724-activation-pages1" />
 </head>
-<body class="vpn-activation-flow">
+<body class="vpn-activation-flow home-wide-body">
   <div class="page-overlay"></div>
   <header>
     <div class="nav nav-shell">
       <a href="/" class="logo-link">
-        <img src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka" class="logo-img" loading="eager" decoding="async" />
+        <img src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka" class="logo-img" width="300" height="127" loading="eager" decoding="async" fetchpriority="high" />
       </a>
-      <nav>
-        <a href="/">Главная</a>
-        <a href="/#pricing">Тарифы</a>
-        <a href="/store/vpn" class="active">VPN</a>
-        <a href="/contact.html">Контакты</a>
+      <a href="/chatgpt" class="header-product-pill" aria-label="ChatGPT от 1290 ₽/мес">
+        <img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" loading="lazy" decoding="async" />
+        <span>ChatGPT от 1290 ₽/мес</span>
+      </a>
+      <nav class="header-quick-links" aria-label="Быстрые разделы GPTishka">
+        <a class="header-quick-link" href="/news/">Новости</a>
+        <a class="header-quick-link" href="/app/">Отзывы</a>
+        <a class="header-quick-link" href="https://vk.com/gptishka?from=groups&amp;trackcode=7f99670c_6HjhbFhCJIgWV0ALEpOr-nIlZFrs3X3-3D3-z00f1k7ylk5Mhdl7hxbRgwtUEeZ8MCZjDfHpk0ywZuW" target="_blank" rel="noopener">VK</a>
+        <a class="header-quick-link header-quick-link--telegram" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener">Telegram</a>
       </nav>
       <div class="header-tools header-actions">
         <div class="lang-switch" id="langSwitch">
-          <div class="lang-current" id="langCurrent">
+          <button type="button" class="lang-current" id="langCurrent" aria-label="Выбрать язык">
             <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="" />
             <span>Русский</span>
-            <span class="arrow">в–ѕ</span>
-          </div>
+            <span class="arrow">&#9662;</span>
+          </button>
           <div class="lang-dropdown">
             <div class="lang-item" data-lang="ru">
               <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="" />

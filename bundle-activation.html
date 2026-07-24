@@ -19,6 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/css/logo.min.css" />
+  <link rel="stylesheet" href="/assets/css/gptishka-header-refresh.css?v=20260707-header-unify9" />
   <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2" />
   <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260310r" />
   <style>
@@ -183,20 +184,44 @@
     }
   </style>
 <link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260707-header-unify9" />
+<link rel="stylesheet" href="/assets/css/activation-pages-refresh.css?v=20260724-activation-pages1" />
 </head>
-<body>
+<body class="activation-bundle-flow home-wide-body">
   <div class="page-overlay"></div>
   <header>
-    <div class="nav">
-      <a href="/" class="logo-link" aria-label="GPTишка">
-        <img loading="eager" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTишка" class="logo-img" onerror="this.onerror=null;this.src='/favicon.png';">
+    <div class="nav nav-shell">
+      <a href="/" class="logo-link">
+        <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTишка" class="logo-img">
       </a>
-      <nav>
-        <a href="/">Главная</a>
-        <a href="/#pricing">Тарифы</a>
-        <a href="/store/vpn/">V*N</a>
-        <a href="/contact.html">Контакты</a>
+      <a href="/chatgpt" class="header-product-pill" aria-label="ChatGPT от 1290 ₽/мес">
+        <img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" loading="lazy" decoding="async">
+        <span>ChatGPT от 1290 ₽/мес</span>
+      </a>
+      <nav class="header-quick-links" aria-label="Быстрые разделы GPTishka">
+        <a class="header-quick-link" href="/news/">Новости</a>
+        <a class="header-quick-link" href="/app/">Отзывы</a>
+        <a class="header-quick-link" href="https://vk.com/gptishka?from=groups&amp;trackcode=7f99670c_6HjhbFhCJIgWV0ALEpOr-nIlZFrs3X3-3D3-z00f1k7ylk5Mhdl7hxbRgwtUEeZ8MCZjDfHpk0ywZuW" target="_blank" rel="noopener">VK</a>
+        <a class="header-quick-link header-quick-link--telegram" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener">Telegram</a>
       </nav>
+      <div class="header-tools header-actions">
+        <div class="lang-switch" id="langSwitch">
+          <button type="button" class="lang-current" id="langCurrent" aria-label="Выбрать язык">
+            <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
+            <span>Русский</span>
+            <span class="arrow">&#9662;</span>
+          </button>
+          <div class="lang-dropdown">
+            <div class="lang-item" data-lang="ru">
+              <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
+              <span>Русский</span>
+            </div>
+            <div class="lang-item" data-lang="en">
+              <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
+              <span>English</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -243,6 +268,11 @@
       </div>
     </section>
   </main>
+
+  <footer>
+    <a class="footer-link" href="/oferta.html">Публичная оферта</a> · <a class="footer-link" href="/politika.html">Политика конфиденциальности</a> · <a class="footer-link" href="/refund.html">Условия возврата</a>
+    <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
+  </footer>
 
   <script>
     const params = new URLSearchParams(window.location.search);
@@ -438,6 +468,24 @@
 
     loadVpnStatus();
     loadActivationStatus();
+  </script>
+  <script>
+    (() => {
+      const langSwitch = document.getElementById("langSwitch");
+      const langCurrent = document.getElementById("langCurrent");
+      if (!langSwitch || !langCurrent) return;
+      langCurrent.addEventListener("click", () => langSwitch.classList.toggle("open"));
+      langSwitch.querySelectorAll(".lang-item[data-lang]").forEach((item) => {
+        item.addEventListener("click", () => {
+          const lang = String(item.getAttribute("data-lang") || "").toLowerCase();
+          const target = lang === "en" ? "/en/bundle-activation.html" : "/bundle-activation.html";
+          window.location.href = `${target}${window.location.search}${window.location.hash}`;
+        });
+      });
+      document.addEventListener("click", (event) => {
+        if (!langSwitch.contains(event.target)) langSwitch.classList.remove("open");
+      });
+    })();
   </script>
   <script src="/assets/js/support-widget.js?v=20260721-mascot-placeholder-webp1" defer></script>
 </body>

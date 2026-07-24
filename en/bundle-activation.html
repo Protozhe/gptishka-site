@@ -19,6 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/css/logo.min.css" />
+  <link rel="stylesheet" href="/assets/css/gptishka-header-refresh.css?v=20260707-header-unify9" />
   <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2" />
   <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260310r" />
   <style>
@@ -183,20 +184,38 @@
     }
   </style>
 <link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260707-header-unify9" />
+<link rel="stylesheet" href="/assets/css/activation-pages-refresh.css?v=20260724-activation-pages1" />
 </head>
-<body>
+<body class="activation-bundle-flow home-wide-body">
   <div class="page-overlay"></div>
   <header>
-    <div class="nav">
-      <a href="/en/" class="logo-link" aria-label="GPTishka">
-        <img loading="eager" decoding="async" fetchpriority="high" src="/assets/img/logo.png" alt="GPTishka" class="logo-img" onerror="this.onerror=null;this.src='/favicon.png';">
+    <div class="nav nav-shell">
+      <a href="/en/" class="logo-link">
+        <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka" class="logo-img">
       </a>
-      <nav>
-        <a href="/en/">Home</a>
-        <a href="/en/#pricing">Plans</a>
-        <a href="/store/vpn/">VPN</a>
-        <a href="/en/contact.html">Contacts</a>
-      </nav>
+      <a href="/en/chatgpt" class="header-product-pill" aria-label="ChatGPT from 1290 RUB/mo">
+        <img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" loading="lazy" decoding="async">
+        <span>ChatGPT from 1290 RUB/mo</span>
+      </a>
+      <div class="header-tools header-actions">
+        <div class="lang-switch" id="langSwitch">
+          <button type="button" class="lang-current" id="langCurrent" aria-label="Choose language">
+            <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
+            <span>English</span>
+            <span class="arrow">&#9662;</span>
+          </button>
+          <div class="lang-dropdown">
+            <div class="lang-item" data-lang="ru">
+              <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
+              <span>Russian</span>
+            </div>
+            <div class="lang-item" data-lang="en">
+              <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
+              <span>English</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -243,6 +262,11 @@
       </div>
     </section>
   </main>
+
+  <footer>
+    <a class="footer-link" href="/en/oferta.html">Public offer</a> · <a class="footer-link" href="/en/politika.html">Privacy policy</a> · <a class="footer-link" href="/en/refund.html">Refund policy</a>
+    <span class="footer-copy">© 2026 GPTishka. All rights reserved.</span>
+  </footer>
 
   <script>
     const params = new URLSearchParams(window.location.search);
@@ -349,6 +373,24 @@
 
     loadVpnStatus();
     loadActivationStatus();
+  </script>
+  <script>
+    (() => {
+      const langSwitch = document.getElementById("langSwitch");
+      const langCurrent = document.getElementById("langCurrent");
+      if (!langSwitch || !langCurrent) return;
+      langCurrent.addEventListener("click", () => langSwitch.classList.toggle("open"));
+      langSwitch.querySelectorAll(".lang-item[data-lang]").forEach((item) => {
+        item.addEventListener("click", () => {
+          const lang = String(item.getAttribute("data-lang") || "").toLowerCase();
+          const target = lang === "en" ? "/en/bundle-activation.html" : "/bundle-activation.html";
+          window.location.href = `${target}${window.location.search}${window.location.hash}`;
+        });
+      });
+      document.addEventListener("click", (event) => {
+        if (!langSwitch.contains(event.target)) langSwitch.classList.remove("open");
+      });
+    })();
   </script>
   <script src="/assets/js/support-widget.js?v=20260721-mascot-placeholder-webp1" defer></script>
 </body>
