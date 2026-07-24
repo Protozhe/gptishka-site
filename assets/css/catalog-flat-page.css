@@ -1,0 +1,108 @@
+/*
+ * Catalog shell shared by /catalog/, /catalog/ai/ and /store/steam/.
+ * Matches the flatter graphite treatment used by the product pages while
+ * keeping the existing catalog cards and their hover states intact.
+ */
+
+html:has(body.home-catalog-body) {
+  background: #181b20 !important;
+}
+
+html body.home-gradient-page.home-catalog-body {
+  --catalog-flat-width: 1180px;
+  --catalog-flat-gutter: clamp(14px, 3.5vw, 46px);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 17% 16%, rgba(45, 212, 191, 0.075), transparent 30%),
+    radial-gradient(circle at 84% 12%, rgba(148, 163, 184, 0.075), transparent 32%),
+    linear-gradient(180deg, #22262d 0%, #1d2127 46%, #181b20 100%) !important;
+  background-attachment: fixed !important;
+}
+
+html body.home-gradient-page.home-catalog-body::before {
+  content: "" !important;
+  display: block !important;
+  inset: -10% -8%;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(45, 212, 191, 0.07), transparent 29%),
+    radial-gradient(circle at 78% 14%, rgba(203, 213, 225, 0.055), transparent 30%) !important;
+  filter: blur(90px) saturate(104%) !important;
+  opacity: 0.68 !important;
+}
+
+html body.home-gradient-page.home-catalog-body::after {
+  content: "" !important;
+  display: block !important;
+  opacity: 0.022 !important;
+}
+
+html body.home-gradient-page.home-catalog-body :is(header, main.catalog-page) {
+  width: min(
+    var(--catalog-flat-width),
+    calc(100% - (var(--catalog-flat-gutter) * 2))
+  ) !important;
+  max-width: var(--catalog-flat-width) !important;
+  margin-inline: auto !important;
+}
+
+html body.home-gradient-page.home-catalog-body header {
+  margin-top: 8px !important;
+  margin-bottom: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body.home-gradient-page.home-catalog-body header :is(.nav, .nav-shell) {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body.home-gradient-page.home-catalog-body header.is-scrolled :is(.nav, .nav-shell) {
+  border-radius: 22px !important;
+  background: rgba(38, 42, 49, 0.82) !important;
+  box-shadow: 0 12px 36px rgba(8, 10, 14, 0.22) !important;
+  backdrop-filter: blur(16px) saturate(112%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(112%) !important;
+}
+
+html body.home-gradient-page.home-catalog-body main.catalog-page {
+  margin: 0 auto !important;
+  padding: clamp(26px, 3vw, 38px) 0 clamp(70px, 8vw, 110px) !important;
+}
+
+html body.home-gradient-page.home-catalog-body .catalog-top {
+  margin: 0 0 clamp(30px, 4vw, 48px) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body.home-gradient-page.home-catalog-body .catalog-title {
+  margin: 12px 0 18px !important;
+}
+
+@media (max-width: 760px) {
+  html body.home-gradient-page.home-catalog-body {
+    --catalog-flat-gutter: 14px;
+  }
+
+  html body.home-gradient-page.home-catalog-body main.catalog-page {
+    width: calc(100% - 28px) !important;
+    padding: 24px 0 64px !important;
+  }
+
+  html body.home-gradient-page.home-catalog-body .catalog-top {
+    margin-bottom: 28px !important;
+    padding: 0 !important;
+  }
+}
