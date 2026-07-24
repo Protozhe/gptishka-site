@@ -310,11 +310,19 @@
     var animationRequested = false;
     var animationLoaded = false;
     var bubbleClosedBottom = "166px";
-    var bubbleOpenBottom = "280px";
 
     var setBubbleBottom = function (isOpen) {
       if (!bubble || bubble.hidden) return;
-      bubble.style.setProperty("bottom", isOpen ? bubbleOpenBottom : bubbleClosedBottom, "important");
+      if (!isOpen || !panel) {
+        bubble.style.setProperty("bottom", bubbleClosedBottom, "important");
+        return;
+      }
+
+      var panelStyles = window.getComputedStyle(panel);
+      var panelHeight = Math.max(panel.getBoundingClientRect().height, panel.scrollHeight);
+      var panelBottom = Number.parseFloat(panelStyles.bottom) || 18;
+      var openBottom = Math.ceil(panelBottom + panelHeight + 16);
+      bubble.style.setProperty("bottom", openBottom + "px", "important");
     };
 
     applyFallbackLayout();

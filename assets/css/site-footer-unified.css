@@ -1,0 +1,115 @@
+/*
+ * Shared footer for every customer-facing page.
+ * Loaded by language-switcher.js after legacy page styles.
+ */
+
+html body footer.gptishka-unified-footer {
+  width: min(1320px, calc(100% - clamp(24px, 7vw, 136px))) !important;
+  max-width: 1320px !important;
+  margin: clamp(42px, 6vw, 82px) auto 24px !important;
+  padding: 22px 0 24px !important;
+  overflow: visible !important;
+  border: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  color: rgba(202, 213, 228, 0.64) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  text-align: center !important;
+}
+
+html body footer.gptishka-unified-footer::before,
+html body footer.gptishka-unified-footer::after {
+  display: none !important;
+  content: none !important;
+}
+
+html body footer.gptishka-unified-footer hr {
+  display: none !important;
+}
+
+html body footer.gptishka-unified-footer .footer-links-primary,
+html body footer.gptishka-unified-footer .footer-links-secondary {
+  display: flex !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px 12px !important;
+  border: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html body footer.gptishka-unified-footer .footer-links-secondary {
+  margin-top: 9px !important;
+}
+
+html body footer.gptishka-unified-footer .footer-link {
+  display: inline-flex !important;
+  min-width: 0 !important;
+  padding: 2px 0 !important;
+  border: 0 !important;
+  color: rgba(238, 243, 250, 0.78) !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  text-decoration: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transition: color 180ms ease !important;
+}
+
+html body footer.gptishka-unified-footer .footer-link:hover,
+html body footer.gptishka-unified-footer .footer-link:focus-visible {
+  color: rgba(72, 237, 157, 0.96) !important;
+  outline: none !important;
+}
+
+html body footer.gptishka-unified-footer .footer-separator {
+  flex: 0 0 auto !important;
+  color: rgba(159, 173, 192, 0.42) !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  user-select: none !important;
+}
+
+html body footer.gptishka-unified-footer .footer-copy {
+  display: block !important;
+  margin: 14px 0 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  color: rgba(174, 187, 205, 0.56) !important;
+  font-size: 12px !important;
+  line-height: 1.55 !important;
+}
+
+@media (max-width: 640px) {
+  html body footer.gptishka-unified-footer {
+    width: calc(100% - 24px) !important;
+    margin-top: 48px !important;
+    padding: 18px 4px calc(20px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  html body footer.gptishka-unified-footer .footer-links-primary,
+  html body footer.gptishka-unified-footer .footer-links-secondary {
+    gap: 6px 10px !important;
+  }
+
+  html body footer.gptishka-unified-footer .footer-link {
+    font-size: 12px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html body footer.gptishka-unified-footer .footer-link {
+    transition: none !important;
+  }
+}

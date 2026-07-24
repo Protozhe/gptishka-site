@@ -1,7 +1,8 @@
 (() => {
-  const VERSION = "20260724-header-nav-icons2";
+  const VERSION = "20260724-unified-footer1";
   const STYLESHEET = "/assets/css/language-slider.css?v=20260724-language-menu3";
   const HEADER_NAV_STYLESHEET = "/assets/css/header-navigation-state.css?v=20260724-header-nav-icons2";
+  const FOOTER_STYLESHEET = "/assets/css/site-footer-unified.css?v=20260724-unified-footer1";
   const ENGLISH_PRODUCT_ROUTES = new Map([
     ["/chatgpt", "/en/chatgpt.html"],
     ["/chatgpt.html", "/en/chatgpt.html"],
@@ -95,6 +96,86 @@
       document.head.appendChild(headerLink);
     }
     headerLink.href = HEADER_NAV_STYLESHEET;
+
+    let footerLink = document.querySelector("link[data-unified-footer-styles]");
+    if (!footerLink) {
+      footerLink = document.createElement("link");
+      footerLink.rel = "stylesheet";
+      footerLink.dataset.unifiedFooterStyles = VERSION;
+      document.head.appendChild(footerLink);
+    }
+    footerLink.href = FOOTER_STYLESHEET;
+  }
+
+  function makeFooterGroup(items, className) {
+    const group = document.createElement("div");
+    group.className = className;
+
+    items.forEach((item, index) => {
+      if (index > 0) {
+        const separator = document.createElement("span");
+        separator.className = "footer-separator";
+        separator.setAttribute("aria-hidden", "true");
+        separator.textContent = "·";
+        group.appendChild(separator);
+      }
+
+      const link = document.createElement("a");
+      link.className = "footer-link";
+      link.href = item.href;
+      link.textContent = item.label;
+      group.appendChild(link);
+    });
+
+    return group;
+  }
+
+  function enhanceUnifiedFooter() {
+    let footer = document.querySelector("body > footer");
+    if (!footer) {
+      footer = document.createElement("footer");
+      document.body.appendChild(footer);
+    }
+    if (footer.dataset.unifiedFooterVersion === VERSION) return;
+
+    const english = currentLanguage() === "en";
+    const prefix = english ? "/en" : "";
+    const primary = english
+      ? [
+          { href: `${prefix}/oferta.html`, label: "Public offer" },
+          { href: `${prefix}/politika.html`, label: "Privacy policy" },
+          { href: `${prefix}/refund.html`, label: "Refund policy" }
+        ]
+      : [
+          { href: "/oferta.html", label: "Публичная оферта" },
+          { href: "/politika.html", label: "Политика конфиденциальности" },
+          { href: "/refund.html", label: "Условия возврата" }
+        ];
+    const secondary = english
+      ? [
+          { href: `${prefix}/about.html`, label: "About the service" },
+          { href: `${prefix}/guarantee.html`, label: "Guarantee" },
+          { href: `${prefix}/contact.html`, label: "Contact us" }
+        ]
+      : [
+          { href: "/about.html", label: "О сервисе" },
+          { href: "/guarantee.html", label: "Гарантия" },
+          { href: "/contact.html", label: "Связь с нами" }
+        ];
+    const copy = document.createElement("span");
+    copy.className = "footer-copy";
+    copy.textContent = english
+      ? "© 2026 GPTishka. All rights reserved. Copying is prohibited."
+      : "© 2026 GPTishka. Все права защищены, копирование запрещено.";
+
+    footer.classList.add("gptishka-unified-footer");
+    footer.dataset.unifiedFooterVersion = VERSION;
+    footer.setAttribute("aria-label", english ? "Legal information" : "Юридическая информация");
+    footer.replaceChildren(
+      makeFooterGroup(primary, "footer-links-primary"),
+      makeFooterGroup(secondary, "footer-links-secondary"),
+      copy
+    );
   }
 
   function createSocialIcon(kind) {
@@ -264,6 +345,7 @@
     ensureStylesheet();
     enhanceAll();
     enhanceHeaderNavigation();
+    enhanceUnifiedFooter();
 
     document.addEventListener("click", (event) => {
       const trigger = event.target.closest?.(".language-menu__trigger");
@@ -291,6 +373,7 @@
       if (records.some((record) => record.addedNodes.length)) {
         enhanceAll();
         enhanceHeaderNavigation();
+        enhanceUnifiedFooter();
       }
     });
     observer.observe(document.body, { childList: true, subtree: true });

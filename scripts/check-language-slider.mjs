@@ -42,7 +42,7 @@ const pages = [
   ...pairedPages.flatMap((file) => [file, `en/${file}`]),
   ...fallbackPages
 ];
-const scriptNeedle = "/assets/js/language-switcher.js?v=20260724-header-nav-icons2";
+const scriptNeedle = "/assets/js/language-switcher.js?v=20260724-unified-footer1";
 const failures = [];
 
 for (const file of pages) {
@@ -56,6 +56,10 @@ for (const file of pages) {
   if (count !== 1) {
     failures.push(`${file}: expected one language menu script, found ${count}`);
   }
+  const footerCount = (html.match(/<footer\b/gi) || []).length;
+  if (footerCount > 1) {
+    failures.push(`${file}: expected at most one page footer, found ${footerCount}`);
+  }
 }
 
 const menuSource = fs.readFileSync(
@@ -68,6 +72,7 @@ for (const marker of [
   "targetUrl.hash",
   "/assets/css/language-slider.css?v=20260724-language-menu3",
   "/assets/css/header-navigation-state.css?v=20260724-header-nav-icons2",
+  "/assets/css/site-footer-unified.css?v=20260724-unified-footer1",
   "/assets/img/iconeng.png",
   "/assets/img/iconrus.avif",
   "language-menu__popover",
@@ -76,7 +81,9 @@ for (const marker of [
   "enhanceHeaderNavigation",
   "createSocialIcon",
   "is-current-section",
-  "header-social-link"
+  "header-social-link",
+  "enhanceUnifiedFooter",
+  "gptishka-unified-footer"
 ]) {
   if (!menuSource.includes(marker)) {
     failures.push(`language-switcher.js: missing ${marker}`);
