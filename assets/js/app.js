@@ -522,11 +522,18 @@ function initFaqAccordions() {
   const questions = Array.from(document.querySelectorAll(".faq-question"));
   if (!questions.length) return;
   questions.forEach(btn => {
+    const item = btn.parentElement;
+    const answer = item ? item.querySelector(".faq-answer") : null;
+    if (!item) return;
+    item.classList.remove("active");
+    btn.setAttribute("aria-expanded", "false");
+    if (answer) answer.setAttribute("aria-hidden", "true");
+
     btn.addEventListener("click", () => {
-      const item = btn.parentElement;
-      if (!item) return;
       const nextState = !item.classList.contains("active");
-      item.classList.toggle("active");
+      item.classList.toggle("active", nextState);
+      btn.setAttribute("aria-expanded", String(nextState));
+      if (answer) answer.setAttribute("aria-hidden", String(!nextState));
       if (nextState) {
         trackAnalyticsEvent("faq_open", {
           question: String(btn.textContent || "").replace(/\s+/g, " ").trim().slice(0, 120),

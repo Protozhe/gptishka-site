@@ -91,6 +91,17 @@ html body.home-gradient-page.home-catalog-body .catalog-title {
   margin: 12px 0 18px !important;
 }
 
+/*
+ * Keep the 2px hover lift inside the tabs' scroll box. `overflow-x: auto`
+ * makes the computed vertical overflow scrollable too, so the old zero top
+ * padding clipped the raised edge. The reduced margin preserves the tabs'
+ * original position and the surrounding vertical rhythm.
+ */
+html body.home-gradient-page.home-catalog-body .catalog-tabs {
+  margin-top: 18px !important;
+  padding-top: 4px !important;
+}
+
 @media (max-width: 760px) {
   html body.home-gradient-page.home-catalog-body {
     --catalog-flat-gutter: 14px;

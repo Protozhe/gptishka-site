@@ -3,8 +3,7 @@
   const grid = document.getElementById("newsGrid");
   const empty = document.getElementById("newsEmpty");
   const more = document.getElementById("newsMore");
-  const updated = document.getElementById("newsUpdated");
-  if (!root || !grid || !empty || !more || !updated) return;
+  if (!root || !grid || !empty || !more) return;
 
   const language = document.body.dataset.newsLanguage === "en" ? "en" : "ru";
   const locale = language === "en" ? "en-US" : "ru-RU";
@@ -13,19 +12,26 @@
         source: "Telegram",
         read: "Read on Telegram",
         video: "Video",
-        updated: "Last synced",
-        stale: "Showing the latest saved posts",
       }
     : {
         source: "Telegram",
         read: "Читать в Telegram",
         video: "Видео",
-        updated: "Обновлено",
-        stale: "Показаны последние сохранённые публикации",
       };
-  const pageSize = 6;
+  const pageSize = 5;
   let visibleCount = pageSize;
   let items = [];
+  const mediaObserver = "IntersectionObserver" in window
+    ? new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const image = entry.target;
+          const source = image.dataset.src;
+          if (source) image.src = source;
+          mediaObserver.unobserve(image);
+        });
+      }, { rootMargin: "160px 0px" })
+    : null;
 
   function textNode(tag, className, value) {
     const element = document.createElement(tag);
@@ -44,9 +50,9 @@
     }).format(date);
   }
 
-  function renderCard(item, index) {
+  function renderCard(item) {
     const article = document.createElement("article");
-    article.className = `news-card${index === 0 ? " news-card--featured" : ""}`;
+    article.className = `news-card ${item.imageUrl ? "news-card--with-media" : "news-card--text-only"}`;
 
     if (item.imageUrl) {
       const mediaLink = document.createElement("a");
@@ -57,12 +63,20 @@
       mediaLink.setAttribute("aria-label", labels.read);
 
       const image = document.createElement("img");
-      image.src = item.imageUrl;
+      image.dataset.src = item.imageUrl;
       image.alt = "";
-      image.loading = index < 2 ? "eager" : "lazy";
+      image.loading = "lazy";
       image.decoding = "async";
+      image.fetchPriority = "low";
+      image.width = 320;
+      image.height = 180;
       image.referrerPolicy = "no-referrer";
       mediaLink.appendChild(image);
+      if (mediaObserver) {
+        mediaObserver.observe(image);
+      } else {
+        image.src = item.imageUrl;
+      }
 
       if (item.hasVideo) {
         const badge = textNode("span", "news-card__video", labels.video);
@@ -102,10 +116,11 @@
   }
 
   function render() {
+    if (mediaObserver) mediaObserver.disconnect();
     grid.replaceChildren();
     const fragment = document.createDocumentFragment();
-    items.slice(0, visibleCount).forEach((item, index) => {
-      fragment.appendChild(renderCard(item, index));
+    items.slice(0, visibleCount).forEach(item => {
+      fragment.appendChild(renderCard(item));
     });
     grid.appendChild(fragment);
     grid.setAttribute("aria-busy", "false");
@@ -113,19 +128,54 @@
     more.hidden = visibleCount >= items.length;
   }
 
-  async function readPayload() {
+  function payloadItems(payload) {
+    return (Array.isArray(payload?.items) ? payload.items : []).filter(item => {
+      const text = String(item?.text || "").trim();
+      return item && item.url && !/^Channel (?:photo updated|created)$/i.test(text);
+    });
+  }
+
+  function applyPayload(payload) {
+    const nextItems = payloadItems(payload);
+    if (!nextItems.length) return false;
+    items = nextItems;
+    render();
+    return true;
+  }
+
+  async function readSavedPayload() {
+    const response = await fetch("/data/public-news.json", {
+      cache: "force-cache",
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) throw new Error(`Saved feed HTTP ${response.status}`);
+    return response.json();
+  }
+
+  async function readFreshPayload() {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 4000);
     try {
-      const response = await fetch("/api/public/news?limit=24", {
+      const response = await fetch("/api/public/news?limit=18", {
+        cache: "no-cache",
         headers: { Accept: "application/json" },
+        signal: controller.signal,
       });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) throw new Error(`Live feed HTTP ${response.status}`);
       return await response.json();
-    } catch (_) {
-      const fallback = await fetch("/data/public-news.json", {
-        headers: { Accept: "application/json" },
-      });
-      if (!fallback.ok) throw new Error(`Fallback HTTP ${fallback.status}`);
-      return { ...(await fallback.json()), stale: true };
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  }
+
+  function scheduleRefresh() {
+    const refresh = () => {
+      readFreshPayload().then(applyPayload).catch(() => {});
+    };
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(refresh, { timeout: 1500 });
+    } else {
+      window.setTimeout(refresh, 250);
     }
   }
 
@@ -134,20 +184,16 @@
     render();
   });
 
-  readPayload()
+  readSavedPayload()
     .then(payload => {
-      items = Array.isArray(payload.items) ? payload.items : [];
-      const synced = safeDate(payload.fetchedAt);
-      updated.textContent = payload.stale
-        ? labels.stale
-        : synced
-          ? `${labels.updated}: ${synced}`
-          : labels.stale;
-      render();
+      if (!applyPayload(payload)) render();
+      scheduleRefresh();
     })
     .catch(() => {
-      items = [];
-      updated.textContent = labels.stale;
-      render();
+      readFreshPayload()
+        .then(payload => {
+          if (!applyPayload(payload)) render();
+        })
+        .catch(render);
     });
 })();

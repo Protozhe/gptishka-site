@@ -1,7 +1,7 @@
 (() => {
-  const VERSION = "20260724-header-layout1";
+  const VERSION = "20260724-header-layout3";
   const STYLESHEET = "/assets/css/language-slider.css?v=20260724-language-menu3";
-  const HEADER_NAV_STYLESHEET = "/assets/css/header-navigation-state.css?v=20260724-header-layout1";
+  const HEADER_NAV_STYLESHEET = "/assets/css/header-navigation-state.css?v=20260724-header-layout3";
   const FOOTER_STYLESHEET = "/assets/css/site-footer-unified.css?v=20260724-unified-footer1";
   const ENGLISH_PRODUCT_ROUTES = new Map([
     ["/chatgpt", "/en/chatgpt.html"],
@@ -197,6 +197,10 @@
   }
 
   function enhanceHeaderNavigation() {
+    document.querySelectorAll("header").forEach((header) => {
+      header.classList.add("gptishka-canonical-header");
+    });
+
     const currentPath = String(window.location.pathname || "/").replace(/\/index\.html$/i, "/");
     const activeSection = /^\/(?:en\/)?news(?:\/|$)/i.test(currentPath)
       ? "news"
