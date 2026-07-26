@@ -377,6 +377,8 @@ function collectWarmupRoutes() {
 }
 
 function canRunProgressiveWarmup() {
+  const visualBudget = String(document.body?.dataset?.visualBudget || "").toLowerCase();
+  if (visualBudget === "low" || document.visibilityState === "hidden") return false;
   const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   if (!connection) return true;
   if (connection.saveData) return false;
@@ -841,19 +843,19 @@ function initActivationResumeShortcut() {
       displayName: "ChatGPT",
       fallbackTitle: "ChatGPT Go",
       fallbackPlan: "go",
-      logo: "/assets/img/services/chatgpt-card.webp?v=20260721-webp1",
+      logo: "/assets/img/services/chatgpt-card-640.webp?v=20260726-card-responsive1",
     },
     claude: {
       displayName: "Claude",
       fallbackTitle: "Claude Pro",
       fallbackPlan: "pro",
-      logo: "/assets/img/services/claude-card.png?v=20260618-claude-logo2",
+      logo: "/assets/img/services/claude-card-640.webp?v=20260726-card-responsive1",
     },
     grok: {
       displayName: "SuperGrok",
       fallbackTitle: "SuperGrok",
       fallbackPlan: "1m",
-      logo: "/assets/img/services/grok-card.webp?v=20260721-heavy-cards-webp1",
+      logo: "/assets/img/services/grok-card-640.webp?v=20260726-card-responsive1",
     },
     vpn: {
       displayName: "GPTishka VPN",
@@ -2043,16 +2045,18 @@ function initActivationResumeShortcut() {
 
   function getOptimizedServiceImageUrl(value) {
     return String(value || "").trim()
-      .replace(/\/assets\/img\/services\/chatgpt-card-hover\.png(?:\?[^#]*)?/i, "/assets/img/services/chatgpt-card-hover.webp?v=20260721-webp1")
-      .replace(/\/assets\/img\/services\/chatgpt-card\.png(?:\?[^#]*)?/i, "/assets/img/services/chatgpt-card.webp?v=20260721-webp1")
+      .replace(/\/assets\/img\/services\/chatgpt-card-hover\.(?:png|webp)(?:\?[^#]*)?/i, "/assets/img/services/chatgpt-card-hover-640.webp?v=20260726-card-responsive1")
+      .replace(/\/assets\/img\/services\/chatgpt-card\.(?:png|webp)(?:\?[^#]*)?/i, "/assets/img/services/chatgpt-card-640.webp?v=20260726-card-responsive1")
+      .replace(/\/assets\/img\/services\/claude-card-hover\.(?:png|webp)(?:\?[^#]*)?/i, "/assets/img/services/claude-card-hover-640.webp?v=20260726-card-responsive1")
+      .replace(/\/assets\/img\/services\/claude-card\.(?:png|webp)(?:\?[^#]*)?/i, "/assets/img/services/claude-card-640.webp?v=20260726-card-responsive1")
       .replace(/\/assets\/img\/services\/vpn-card-hover\.png(?:\?[^#]*)?/i, "/assets/img/services/vpn-card-hover.webp?v=20260721-cards-webp1")
       .replace(/\/assets\/img\/services\/vpn-card\.png(?:\?[^#]*)?/i, "/assets/img/services/vpn-card.webp?v=20260721-cards-webp1")
       .replace(/\/assets\/img\/services\/vstar-card-hover\.png(?:\?[^#]*)?/i, "/assets/img/services/vstar-card-hover.webp?v=20260721-cards-webp1")
       .replace(/\/assets\/img\/services\/vstar-card\.png(?:\?[^#]*)?/i, "/assets/img/services/vstar-card.webp?v=20260721-cards-webp1")
-      .replace(/\/assets\/img\/services\/grok-card-hover\.png(?:\?[^#]*)?/i, "/assets/img/services/grok-card-hover.webp?v=20260721-heavy-cards-webp1")
-      .replace(/\/assets\/img\/services\/grok-card\.png(?:\?[^#]*)?/i, "/assets/img/services/grok-card.webp?v=20260721-heavy-cards-webp1")
-      .replace(/\/uploads\/products\/49e55246-a678-4f16-8b55-48ffc77a88eb\.png(?:\?[^#]*)?/i, "/assets/img/steam/steam-topup-card.webp?v=20260721-heavy-cards-webp1")
-      .replace(/\/uploads\/products\/655563e1-f4f4-478b-9b33-28374b868709\.png(?:\?[^#]*)?/i, "/assets/img/steam/steam-topup-card-hover.webp?v=20260721-heavy-cards-webp1");
+      .replace(/\/assets\/img\/services\/grok-card-hover\.(?:png|webp)(?:\?[^#]*)?/i, "/assets/img/services/grok-card-hover-640.webp?v=20260726-card-responsive1")
+      .replace(/\/assets\/img\/services\/grok-card\.(?:png|webp)(?:\?[^#]*)?/i, "/assets/img/services/grok-card-640.webp?v=20260726-card-responsive1")
+      .replace(/\/uploads\/products\/49e55246-a678-4f16-8b55-48ffc77a88eb\.png(?:\?[^#]*)?/i, "/assets/img/steam/steam-topup-card-640.webp?v=20260726-card-responsive1")
+      .replace(/\/uploads\/products\/655563e1-f4f4-478b-9b33-28374b868709\.png(?:\?[^#]*)?/i, "/assets/img/steam/steam-topup-card-hover-640.webp?v=20260726-card-responsive1");
   }
 
   function getVisualConfig(item) {
@@ -3227,20 +3231,20 @@ function initActivationResumeShortcut() {
     const background = getServiceCardBackground(serviceCard, visual);
     const fallbackImagesByService = {
       chatgpt: {
-        imageUrl: "/assets/img/services/chatgpt-card.webp?v=20260721-webp1",
-        hoverImageUrl: "/assets/img/services/chatgpt-card-hover.webp?v=20260721-webp1",
+        imageUrl: "/assets/img/services/chatgpt-card-640.webp?v=20260726-card-responsive1",
+        hoverImageUrl: "/assets/img/services/chatgpt-card-hover-640.webp?v=20260726-card-responsive1",
         imageAlt: "ChatGPT",
         hoverImageAlt: "ChatGPT",
       },
       claude: {
-        imageUrl: "/assets/img/services/claude-card.png?v=20260618-claude-logo2",
-        hoverImageUrl: "/assets/img/services/claude-card-hover.png?v=20260618-claude-logo2",
+        imageUrl: "/assets/img/services/claude-card-640.webp?v=20260726-card-responsive1",
+        hoverImageUrl: "/assets/img/services/claude-card-hover-640.webp?v=20260726-card-responsive1",
         imageAlt: "Claude",
         hoverImageAlt: "Claude",
       },
       grok: {
-        imageUrl: "/assets/img/services/grok-card.webp?v=20260721-heavy-cards-webp1",
-        hoverImageUrl: "/assets/img/services/grok-card-hover.webp?v=20260721-heavy-cards-webp1",
+        imageUrl: "/assets/img/services/grok-card-640.webp?v=20260726-card-responsive1",
+        hoverImageUrl: "/assets/img/services/grok-card-hover-640.webp?v=20260726-card-responsive1",
         imageAlt: "SuperGrok",
         hoverImageAlt: "SuperGrok",
       },
@@ -4435,7 +4439,7 @@ function initActivationResumeShortcut() {
     const todayIso = new Date().toISOString().slice(0, 10);
     const selected = (value, current) => value === current ? " selected" : "";
     const boolChecked = value => value ? " checked" : "";
-    const serviceLogo = serviceConfig.logo || "/assets/img/services/chatgpt-card.webp?v=20260721-webp1";
+    const serviceLogo = serviceConfig.logo || "/assets/img/services/chatgpt-card-640.webp?v=20260726-card-responsive1";
     return (
       '<form class="price-card service-checkout-card chatgpt-order-card" data-chatgpt-go-order' +
       ' data-product="' + escapeHtml(product) + '"' +
@@ -6574,6 +6578,11 @@ document.addEventListener("click", e => {
 
 // Live ticker with masked activation events and split counters.
 (() => {
+  // Лента активаций отключена: элемент не создаётся, опросы
+  // /api/stats и /api/heartbeat не запускаются. Вернуть — поставить true.
+  const TICKER_ENABLED = false;
+  if (!TICKER_ENABLED) return;
+
   const API_STATS_URL = "/api/stats";
   const API_HEARTBEAT_URL = "/api/heartbeat";
   const STATS_REFRESH_MS = 15000;
@@ -6849,7 +6858,10 @@ document.addEventListener("click", e => {
 
     const separator = '<span class="site-ticker__sep">•</span>';
     const joined = baseItems.join(separator);
-    const repeated = new Array(4).fill(joined).join(separator);
+    const visualBudget = String(document.body?.dataset?.visualBudget || "balanced").toLowerCase();
+    const targetItemsPerLoop = visualBudget === "rich" ? 48 : visualBudget === "balanced" ? 24 : 12;
+    const repeatCount = Math.max(1, Math.ceil(targetItemsPerLoop / Math.max(1, baseItems.length)));
+    const repeated = new Array(repeatCount).fill(joined).join(separator);
 
     tickerTrack.innerHTML =
       '<div class="site-ticker__loop">' +
