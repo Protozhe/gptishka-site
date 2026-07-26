@@ -100,15 +100,15 @@
 <link rel="preload" href="/assets/img/home/supergrok-promo-bg.webp?v=20260721-promo-webp1" as="image" type="image/webp" fetchpriority="high">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="/assets/css/home-critical-bundle.min.css?v=20260723-support-meta1">
-<link rel="stylesheet" href="/assets/css/home-info-sections.css?v=20260724-home-info2">
+<link rel="stylesheet" href="/assets/css/home-critical-bundle.min.css?v=20260726-performance-budget2">
+<link rel="stylesheet" href="/assets/css/home-info-sections.css?v=20260725-faq-heading4">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20260724-header-layout3">
 
 <!-- GOOGLE FONTS -->
 <link rel="preload" href="/assets/css/support-widget.css?v=20260724-resume-collapse1" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="/assets/css/support-widget.css?v=20260724-resume-collapse1" /></noscript>
 </head>
-<body class="home-wide-body">
+<body class="home-wide-body balanced-visual-budget home-gradient-page-lite">
 <script>
   (function () {
     try {
@@ -180,6 +180,10 @@
         }
       }
 
+      body.classList.remove("low-visual-budget");
+      body.classList.remove("balanced-visual-budget");
+      body.classList.remove("home-gradient-page");
+      body.classList.remove("home-gradient-page-lite");
       body.dataset.visualBudget = mode;
       if (mode === "low") body.classList.add("low-visual-budget");
       if (mode === "balanced") body.classList.add("balanced-visual-budget");
@@ -213,7 +217,7 @@
           <a href="/en/" class="logo-link">
             <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka" class="logo-img">
           </a>
-    <a href="/en/chatgpt.html" class="header-product-pill" aria-label="ChatGPT from 1290 ₽/month"><img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" loading="lazy" decoding="async"><span>ChatGPT from 1290 ₽/month</span></a>
+    <a href="/en/chatgpt.html" class="header-product-pill" aria-label="ChatGPT from 1290 ₽/month"><img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card-96.webp?v=20260726-card-responsive1" alt="" width="96" height="96" loading="lazy" decoding="async"><span>ChatGPT from 1290 ₽/month</span></a>
     <nav class="header-quick-links" aria-label="Quick sections GPTishka">
       <a class="header-quick-link" href="/news/">News</a>
       <a class="header-quick-link" href="/app/?lang=en">Reviews</a>
@@ -423,7 +427,6 @@
 
 <section class="faq" id="faq">
   <div class="faq-header">
-    <span class="faq-eyebrow">FAQ GPTishka</span>
     <h2>Questions and answers</h2>
     <p>Briefly about purchase, activation, Steam-replenishment and support after payment.</p>
   </div>
@@ -589,7 +592,7 @@
   <span class="footer-copy">&copy; 2026 GPTishka. All rights reserved, copying prohibited.</span>
 </footer>
 <script src="/assets/js/hero-lite.js?v=20260516-fix4" defer></script>
-  <script src="/assets/js/app.min.js?v=20260724-faq-closed1" defer></script>
+  <script src="/assets/js/app.min.js?v=20260726-performance-budget2" defer></script>
 <script src="/assets/js/home-promo-slider.js?v=20260724-en-product-routes1" defer></script>
 <script id="home-wide-hash-sync">
   (function () {

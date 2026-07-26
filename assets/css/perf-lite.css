@@ -1,40 +1,110 @@
 /* =============================================================
-   perf-lite.css — снижение нагрузки на слабых телефонах и ПК.
+   perf-lite.css — оптимизация стоимости отрисовки.
 
-   Работает поверх режима body.low-visual-budget, который выставляет
-   инлайновый скрипт определения "тира" устройства (см. <body> страниц).
-   Ничего не меняет для мощных устройств (rich / balanced).
+   Подход: НЕ удаляем "матовое стекло" там, где оно видно, а убираем
+   его там, где оно ничего не даёт визуально, и снижаем радиус там,
+   где эффект должен остаться.
 
-   Зачем: в основном бандле backdrop-filter отключается перечислением
-   отдельных селекторов (~48 правил на 174 объявления blur), поэтому
-   часть элементов на слабых устройствах всё равно получала размытие —
-   это главный источник подтормаживаний при скролле на слабых GPU.
+   Почему это работает:
+   - backdrop-filter пересчитывается заново каждый кадр, пока под
+     элементом что-то движется (скролл). Стоимость ~ площадь в
+     физических пикселях, поэтому на ноутбуках с плотным экраном
+     (Retina / 2x) она кратно выше.
+   - Размытие плоского цвета или гладкого градиента математически
+     почти не меняет картинку. Под карточками у нас именно градиент,
+     то есть блюр там — оплаченная, но невидимая работа.
+   - Реально эффект читается только там, где под стеклом ДЕТАЛИ:
+     шапка поверх прокручивающегося текста и картинок.
    ============================================================= */
 
-/* 1. Полностью снимаем backdrop-filter и лишние композитные слои.
-      backdrop-filter пересчитывается на каждом кадре скролла — на
-      бюджетных телефонах это основная причина рывков.
-      will-change держит слой в видеопамяти даже когда анимации нет. */
+/* -------------------------------------------------------------
+   1. ВСЕ УСТРОЙСТВА — снимаем то, что не видно вообще.
+   ------------------------------------------------------------- */
+
+/* Оверлей переходов между страницами: он на весь экран, а размытие
+   всего 2px поверх фона с непрозрачностью 72% — глазом не различить.
+   При этом каждый переход заставлял браузер размывать весь вьюпорт. */
+.page-overlay {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* -------------------------------------------------------------
+   2. СРЕДНИЙ ТИР — обычные ноутбуки и ПК.
+      Стекло остаётся, но дешевеет.
+   ------------------------------------------------------------- */
+
+/* Шапка при скролле — единственное место, где стекло реально читается
+   (под ним движется контент). Радиус 19px -> 10px: визуально почти
+   то же самое, а ядро размытия примерно вдвое дешевле. */
+body.balanced-visual-budget header.is-scrolled {
+  -webkit-backdrop-filter: blur(10px) saturate(130%) !important;
+  backdrop-filter: blur(10px) saturate(130%) !important;
+}
+
+/* Крупные поверхности: площадь большая, а деталей под ними нет. */
+body.balanced-visual-budget footer,
+body.balanced-visual-budget .service-info-section,
+body.balanced-visual-budget .service-plans-section,
+body.balanced-visual-budget .home-info-section {
+  -webkit-backdrop-filter: blur(6px) !important;
+  backdrop-filter: blur(6px) !important;
+}
+
+/* Карточки и панели лежат на гладком градиенте — размытие градиента
+   даёт тот же градиент. Убираем размытие, полупрозрачный фон карточки
+   остаётся, вид не меняется. Это снимает десятки отдельных проходов. */
+body.balanced-visual-budget .card,
+body.balanced-visual-budget .block,
+body.balanced-visual-budget .price-card,
+body.balanced-visual-budget .how-card,
+body.balanced-visual-budget .faq-item,
+body.balanced-visual-budget .faq-sticky,
+body.balanced-visual-budget .review,
+body.balanced-visual-budget .contact-card,
+body.balanced-visual-budget .lang-options,
+body.balanced-visual-budget .home-service-shortcut,
+body.balanced-visual-budget .trust-bar {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Слои композитора держат видеопамять даже без анимации.
+   Шапку не трогаем — там will-change нужен для её сдвига при скролле. */
+body.balanced-visual-budget *:not(header):not(header *),
+body.balanced-visual-budget *:not(header)::before,
+body.balanced-visual-budget *:not(header)::after {
+  will-change: auto !important;
+}
+
+/* -------------------------------------------------------------
+   3. СЛАБЫЙ ТИР — телефоны, ПК с 4 ГБ / 4 ядрами, экономия трафика.
+      Здесь стекло дороже, чем красивее: снимаем полностью.
+   ------------------------------------------------------------- */
+
 body.low-visual-budget *,
 body.low-visual-budget *::before,
 body.low-visual-budget *::after {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
+}
+
+body.low-visual-budget *:not(header):not(header *),
+body.low-visual-budget *:not(header)::before,
+body.low-visual-budget *:not(header)::after {
   will-change: auto !important;
 }
 
-/* 2. Шапка держалась на размытии при прозрачном фоне — без блюра текст
-      стал бы нечитаемым, поэтому даём плотный фон вместо размытия.
-      Цвет взят из существующей палитры (rgba(10,12,18,.62) в тёмной теме). */
-body.low-visual-budget header,
-body.low-visual-budget header .nav-shell,
-body.low-visual-budget .gptishka-canonical-header,
-body.low-visual-budget .gptishka-canonical-header .nav-shell {
-  background: rgba(10, 12, 18, 0.94) !important;
+/* Шапка держалась на размытии поверх прозрачного фона — без него
+   текст лёг бы прямо на контент. Даём плотную подложку из той же
+   палитры, читаемость сохраняется. */
+body.low-visual-budget header.is-scrolled,
+body.low-visual-budget header.is-scrolled .nav-shell {
+  background-color: rgba(10, 12, 18, 0.94) !important;
 }
 
-/* 3. Декоративные бесконечные анимации фона: постоянная перерисовка
-      греет батарею и занимает главный поток. Контент не затрагиваем. */
+/* Декоративные бесконечные анимации фона: постоянная перерисовка
+   впустую расходует батарею. Контентные анимации не трогаем. */
 body.low-visual-budget .home-gradient-bg,
 body.low-visual-budget [class*="gradient-bg"],
 body.low-visual-budget .service-hero::before,
@@ -45,8 +115,7 @@ body.low-visual-budget .hero::after {
   filter: none !important;
 }
 
-/* 4. Тяжёлые тени с большим радиусом размытия — дорогая растеризация.
-      Оставляем читаемую, но недорогую тень. */
+/* Тени с большим радиусом тоже растрируются заново — упрощаем. */
 body.low-visual-budget .card,
 body.low-visual-budget .block,
 body.low-visual-budget .price-card,
@@ -57,8 +126,10 @@ body.low-visual-budget .review {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35) !important;
 }
 
-/* 5. Системная настройка "меньше движения" — уважаем на всех устройствах,
-      независимо от тира и страницы. */
+/* -------------------------------------------------------------
+   4. СИСТЕМНЫЕ НАСТРОЙКИ ПОЛЬЗОВАТЕЛЯ — на всех устройствах.
+   ------------------------------------------------------------- */
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -67,5 +138,15 @@ body.low-visual-budget .review {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Пользователь просил меньше прозрачности (настройка ОС) — уважаем. */
+@media (prefers-reduced-transparency: reduce) {
+  *,
+  *::before,
+  *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
   }
 }
