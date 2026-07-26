@@ -36,6 +36,11 @@ function sanitizeNextPath(value: string) {
   const fallback = DEFAULT_ACCOUNT_NEXT_PATH;
   const raw = String(value || "").trim();
   if (!raw) return fallback;
+  // Браузер трактует "/\\evil.com" как протокол-относительный адрес и уводит
+  // на чужой сайт, поэтому backslash и управляющие символы отклоняем.
+  if (raw.includes("\\") || [...raw].some((c) => c.charCodeAt(0) < 32 || c.charCodeAt(0) === 127)) {
+    return fallback;
+  }
   if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
   try {
     const parsed = new URL(raw);
