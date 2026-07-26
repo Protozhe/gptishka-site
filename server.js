@@ -76,6 +76,11 @@ const TELEGRAM_NEWS_MAX_LIMIT = Math.max(
   1,
   Math.min(30, Number(process.env.TELEGRAM_NEWS_MAX_LIMIT || 24))
 );
+// Лента активаций удалена, потребителей у публичной статистики не осталось.
+// Эндпоинт отдавал наружу общее число продаж, список последних покупателей
+// и счётчик онлайна, поэтому по умолчанию выключен.
+// Вернуть можно переменной окружения PUBLIC_STATS_ENABLED=true.
+const PUBLIC_STATS_ENABLED = String(process.env.PUBLIC_STATS_ENABLED || "false").trim().toLowerCase() === "true";
 const STATS_CACHE_TTL_MS = envNumber(process.env.STATS_CACHE_TTL_MS, 2200, { min: 500 });
 const HEARTBEAT_MIN_WRITE_INTERVAL_MS = envNumber(
   process.env.HEARTBEAT_MIN_WRITE_INTERVAL_MS,
@@ -1348,6 +1353,7 @@ function createApp() {
   app.use("/api/telegram", proxyPrefix("/api/telegram"));
 
   app.post("/api/heartbeat", async (req, res) => {
+    if (!PUBLIC_STATS_ENABLED) return res.status(404).send("Not found");
     const sessionId = String(req.body?.sessionId || "").trim();
     const currentPath = String(req.body?.path || "").trim().slice(0, 200);
 
@@ -1973,6 +1979,7 @@ function createApp() {
   });
 
   app.get("/api/public/storefront-stats", (req, res) => {
+    if (!PUBLIC_STATS_ENABLED) return res.status(404).send("Not found");
     const suffix = extractQuerySuffix(req);
     return res.redirect(307, suffix ? `/api/stats${suffix}` : "/api/stats");
   });
@@ -2024,6 +2031,7 @@ function createApp() {
   }
 
   app.get("/api/stats", async (req, res) => {
+    if (!PUBLIC_STATS_ENABLED) return res.status(404).send("Not found");
     const now = Date.now();
     if (statsPayloadCache && now - statsPayloadCacheTs < STATS_CACHE_TTL_MS) {
       return res.json(statsPayloadCache);
