@@ -29,7 +29,7 @@
 <link rel="stylesheet" href="/assets/css/gptishka-dark-pages.css?v=20260707-no-ticker-dark1" />
 <link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260723-support-meta1" />
 <link rel="stylesheet" href="/assets/css/information-flat-page.css?v=20260723-information-flat1" />
-<link rel="stylesheet" href="/assets/css/perf-lite.css?v=20260726-perf-lite2" />
+<link rel="stylesheet" href="/assets/css/perf-lite.css?v=20260726-responsive1" />
 </head>
 <body class="information-flat-body">
 <script data-id="gptishka-visual-budget">!function(){try{var b=document.body;if(!b||b.dataset.visualBudget)return;var m=window.matchMedia?window.matchMedia.bind(window):null,q=function(s){return m?m(s).matches:!1},f=null;try{var p=new URLSearchParams(location.search||"");f=p.get("lite")||p.get("performance")}catch(e){}try{f=f||localStorage.getItem("gptishka_force_lite")}catch(e){}f=String(f||"").toLowerCase();var mode;if(["1","true","on","yes","lite"].indexOf(f)>-1){mode="low"}else if(["0","false","off","no","full"].indexOf(f)>-1){mode="rich"}else{var mem=+(navigator.deviceMemory||0),cpu=+(navigator.hardwareConcurrency||0),c=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{},et=String(c.effectiveType||"").toLowerCase();mode=(q("(prefers-reduced-motion: reduce)")||(mem>0&&mem<=4)||(cpu>0&&cpu<=4)||/android|iphone|ipad|ipod|mobile|windows phone/i.test(navigator.userAgent||"")||c.saveData||et.indexOf("2g")>-1||et.indexOf("3g")>-1)?"low":((mem>=12&&cpu>=10&&q("(hover: hover)")&&q("(min-width: 1400px)"))?"rich":"balanced")}b.dataset.visualBudget=mode;b.classList.add(mode==="low"?"low-visual-budget":(mode==="rich"?"rich-visual-budget":"balanced-visual-budget"))}catch(e){}}();</script>

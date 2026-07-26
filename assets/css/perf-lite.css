@@ -150,3 +150,27 @@ body.low-visual-budget .review {
     backdrop-filter: none !important;
   }
 }
+
+/* -------------------------------------------------------------
+   5. АДАПТИВ: стрелки промо-слайдера не должны уезжать за экран.
+
+   Стрелки намеренно вынесены за край слайдера на половину своей
+   ширины (--promo-arrow-x: -50% / 50%) — на широких мониторах для
+   этого есть место. Правило @media (max-width:1180px) задвигало их
+   обратно внутрь, но следом идёт
+   @media (min-width:761px) .home-opening-frame .home-promo-slider__arrow,
+   у которого специфичность выше — и в диапазоне 761...1180px он снова
+   выдвигал стрелки наружу. На таком экране слайдер занимает почти всю
+   ширину, поэтому стрелки вылезали за вьюпорт и обрезались
+   (у body стоит overflow-x: clip, так что вместо прокрутки — обрез).
+   ------------------------------------------------------------- */
+@media (max-width: 1180px) {
+  .home-promo-slider__arrow,
+  .home-promo-slider__arrow:first-child,
+  .home-promo-slider__arrow:last-child,
+  .home-opening-frame .home-promo-slider__arrow,
+  .home-opening-frame .home-promo-slider__arrow:first-child,
+  .home-opening-frame .home-promo-slider__arrow:last-child {
+    --promo-arrow-x: 0 !important;
+  }
+}
