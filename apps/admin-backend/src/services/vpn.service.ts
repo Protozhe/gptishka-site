@@ -197,6 +197,16 @@ function extractSetCookies(response: Response) {
   return single ? [single] : [];
 }
 
+async function fetchWithTimeout(url: string, init: RequestInit = {}, ms = 8000): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function ensure3xUiCookie(forceRefresh = false) {
   if (!is3xUiConfigured()) return "";
   if (!forceRefresh && xuiCookie && Date.now() - xuiCookieIssuedAt < XUI_COOKIE_TTL_MS) {
@@ -209,7 +219,7 @@ async function ensure3xUiCookie(forceRefresh = false) {
     password: String(env.VPN_3XUI_PASSWORD || "").trim(),
   });
 
-  const response = await fetch(`${baseUrl}/login`, {
+  const response = await fetchWithTimeout(`${baseUrl}/login`, {
     method: "POST",
     headers: {
       Accept: "application/json, text/plain, */*",
@@ -240,7 +250,7 @@ async function call3xUi(path: string, payload: unknown, canRetry = true): Promis
   if (!is3xUiConfigured()) return null;
 
   const cookie = await ensure3xUiCookie(false);
-  const response = await fetch(`${resolve3xUiBaseUrl()}${path}`, {
+  const response = await fetchWithTimeout(`${resolve3xUiBaseUrl()}${path}`, {
     method: "POST",
     headers: {
       Accept: "application/json, text/plain, */*",

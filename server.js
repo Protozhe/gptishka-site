@@ -424,7 +424,11 @@ loadLegacyProductModalBackup();
 let db;
 
 function createDb() {
-  return new sqlite3.Database(dbPath);
+  const database = new sqlite3.Database(dbPath);
+  database.run("PRAGMA busy_timeout = 5000");
+  database.run("PRAGMA journal_mode = WAL");
+  database.run("PRAGMA synchronous = NORMAL");
+  return database;
 }
 
 function run(sql, params = []) {
@@ -1039,10 +1043,7 @@ function createApp() {
       max: 600,
       standardHeaders: true,
       legacyHeaders: false,
-      skip: req => {
-        const apiPath = String(req.path || "").toLowerCase();
-        return apiPath === "/stats" || apiPath === "/heartbeat";
-      },
+      skip: req => String(req.path || "").toLowerCase() === "/stats",
     })
   );
   app.use(express.json({ limit: "256kb" }));
@@ -1097,6 +1098,15 @@ function createApp() {
     return next();
   });
 
+  const BLOCKED_STATIC_PATH = /^\/(?:data|scripts|includes|apps|backups|node_modules|server\.js|package(?:-lock)?\.json|ecosystem\.config\.js|deploy\.sh|_tmp_)/i;
+  app.use((req, res, next) => {
+    const p = String(req.path || "");
+    if (BLOCKED_STATIC_PATH.test(p) || /\.(sqlite(?:-shm|-wal)?|db|log|bak|env|ini)$/i.test(p)) {
+      return res.status(404).send("Not found");
+    }
+    return next();
+  });
+
   app.use(
     express.static(__dirname, {
       dotfiles: "ignore",
@@ -1112,17 +1122,9 @@ function createApp() {
   );
 
   function buildForwardedFor(req) {
-    const existing = String(req.headers["x-forwarded-for"] || "").trim();
-    const ip = String(req.headers["x-real-ip"] || req.ip || req.socket?.remoteAddress || "")
-      .replace("::ffff:", "")
-      .trim();
-
-    if (!existing) return ip;
-    if (!ip) return existing;
-
-    const parts = existing.split(",").map(part => part.trim()).filter(Boolean);
-    if (parts.includes(ip)) return existing;
-    return `${existing}, ${ip}`;
+    // Доверяем только проверенному req.ip (Express резолвит его из одного доверенного прокси-хопа).
+    // Не пробрасываем клиентские X-Forwarded-For/X-Real-IP на бэкенд — иначе их можно подделать.
+    return String(req.ip || req.socket?.remoteAddress || "").replace("::ffff:", "").trim();
   }
 
   function buildAdminProxyHeaders(req, options = {}) {
@@ -1147,7 +1149,7 @@ function createApp() {
     if (forwardedFor) {
       headers["X-Forwarded-For"] = forwardedFor;
     }
-    const realIp = String(req.headers["x-real-ip"] || req.ip || "").replace("::ffff:", "").trim();
+    const realIp = String(req.ip || "").replace("::ffff:", "").trim();
     if (realIp) {
       headers["X-Real-IP"] = realIp;
     }
@@ -1300,8 +1302,6 @@ function createApp() {
           if (Number(ts || 0) < staleBefore) heartbeatWriteTracker.delete(key);
         }
       }
-      statsPayloadCache = null;
-      statsPayloadCacheTs = 0;
       res.json({ ok: true });
     } catch (_error) {
       res.status(500).json({ error: "Failed to update heartbeat" });

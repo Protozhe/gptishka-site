@@ -36,6 +36,10 @@ function sanitizeNextPath(value: string) {
   const fallback = DEFAULT_ACCOUNT_NEXT_PATH;
   const raw = String(value || "").trim();
   if (!raw) return fallback;
+  // Reject backslash (browsers treat "/\\evil.com" as protocol-relative) and control chars.
+  if (raw.includes("\\") || [...raw].some((c) => c.charCodeAt(0) < 32 || c.charCodeAt(0) === 127)) {
+    return fallback;
+  }
   if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
   try {
     const parsed = new URL(raw);

@@ -202,7 +202,11 @@ export const exportOrdersCsv = asyncHandler(async (req: Request, res: Response) 
       o.telegramLastError || "",
       o.createdAt.toISOString(),
     ]
-      .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
+      .map((cell) => {
+        let s = String(cell ?? "");
+        if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+        return `"${s.replace(/"/g, '""')}"`;
+      })
       .join(",")
   );
 
