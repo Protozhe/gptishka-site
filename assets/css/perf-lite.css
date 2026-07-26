@@ -251,6 +251,11 @@ body.low-visual-budget .review {
      не «не помещаются», их явно растягивают и переставляют в конец.
      Возвращаем в общий ряд. */
   html body header .nav-shell > nav.header-quick-links {
+    /* Ключевое: при max-width:900px сайт ставит grid-column: 1 / -1,
+       то есть отдаёт ссылкам всю ширину грида — это и есть вторая
+       строка. Возвращаем обычное размещение в колонке. */
+    grid-column: auto !important;
+    flex-wrap: nowrap !important;
     width: auto !important;
     order: 0 !important;
     grid-row: auto !important;
@@ -260,5 +265,19 @@ body.low-visual-budget .review {
   html body header .header-tools.header-tools.header-tools {
     min-width: 0 !important;
     width: auto !important;
+  }
+}
+
+/* Ниже 1000px места впритык: ужимаем отступы и кегль ссылок,
+   чтобы они помещались рядом с языком, а не переносились. */
+@media (min-width: 761px) and (max-width: 1000px) {
+  html body header .header-quick-links.header-quick-links {
+    gap: 4px !important;
+  }
+
+  html body header .header-quick-links .header-quick-link {
+    padding-left: 9px !important;
+    padding-right: 9px !important;
+    font-size: 13px !important;
   }
 }
