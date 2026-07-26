@@ -8,9 +8,20 @@ const rateLimit = require("express-rate-limit");
 const { fetchTelegramPublicFeed } = require("./scripts/telegram-public-feed");
 require("dotenv").config();
 
+// Number("abc") даёт NaN, а Math.max(500, NaN) — тоже NaN. Раньше кривое
+// значение в .env молча ломало логику: сессии переставали чиститься, кэш
+// не срабатывал. Теперь при некорректном значении берём значение по умолчанию.
+function envNumber(rawValue, fallback, { min, max } = {}) {
+  let parsed = Number(rawValue);
+  if (!Number.isFinite(parsed)) parsed = Number(fallback);
+  if (Number.isFinite(min)) parsed = Math.max(min, parsed);
+  if (Number.isFinite(max)) parsed = Math.min(max, parsed);
+  return Number.isFinite(parsed) ? parsed : Number(fallback);
+}
+
 const PORT = Number(process.env.PORT || 4000);
 const HOST = String(process.env.HOST || process.env.BIND_HOST || "127.0.0.1").trim() || "127.0.0.1";
-const ONLINE_TTL_SECONDS = Number(process.env.ONLINE_TTL_SECONDS || 45);
+const ONLINE_TTL_SECONDS = envNumber(process.env.ONLINE_TTL_SECONDS, 45, { min: 5 });
 const ONLINE_TTL_MS = ONLINE_TTL_SECONDS * 1000;
 const ADMIN_BACKEND_URL = String(process.env.ADMIN_BACKEND_URL || "http://localhost:4100").replace(/\/$/, "");
 const ADMIN_BACKEND_FALLBACK_URLS = String(
@@ -65,10 +76,11 @@ const TELEGRAM_NEWS_MAX_LIMIT = Math.max(
   1,
   Math.min(30, Number(process.env.TELEGRAM_NEWS_MAX_LIMIT || 24))
 );
-const STATS_CACHE_TTL_MS = Math.max(500, Number(process.env.STATS_CACHE_TTL_MS || 2200));
-const HEARTBEAT_MIN_WRITE_INTERVAL_MS = Math.max(
-  1000,
-  Number(process.env.HEARTBEAT_MIN_WRITE_INTERVAL_MS || 6000)
+const STATS_CACHE_TTL_MS = envNumber(process.env.STATS_CACHE_TTL_MS, 2200, { min: 500 });
+const HEARTBEAT_MIN_WRITE_INTERVAL_MS = envNumber(
+  process.env.HEARTBEAT_MIN_WRITE_INTERVAL_MS,
+  6000,
+  { min: 1000 }
 );
 const TELEGRAM_FETCH_HEADERS = {
   "User-Agent":
@@ -424,11 +436,7 @@ loadLegacyProductModalBackup();
 let db;
 
 function createDb() {
-  const database = new sqlite3.Database(dbPath);
-  database.run("PRAGMA busy_timeout = 5000");
-  database.run("PRAGMA journal_mode = WAL");
-  database.run("PRAGMA synchronous = NORMAL");
-  return database;
+  return new sqlite3.Database(dbPath);
 }
 
 function run(sql, params = []) {
@@ -1035,6 +1043,35 @@ function createApp() {
       crossOriginResourcePolicy: { policy: "cross-origin" },
     })
   );
+
+  // CSP пока в режиме отчётов: НИЧЕГО не блокирует, только сообщает о том,
+  // что было бы заблокировано. Дайте поработать несколько дней, посмотрите
+  // /api/csp-report в логах и, когда список нарушений опустеет, переключите
+  // заголовок на "Content-Security-Policy" — тогда он начнёт защищать от XSS.
+  const CSP_REPORT_ONLY_POLICY = [
+    "default-src 'self'",
+    // 'unsafe-inline' нужен, пока на страницах есть инлайновые скрипты
+    // (детектор тира устройства и т.п.). Убрать после перевода их в файлы.
+    "script-src 'self' 'unsafe-inline' https://mc.yandex.ru",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https:",
+    "connect-src 'self' https://mc.yandex.ru",
+    "frame-src 'self' https://mc.yandex.ru",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'self'",
+    "report-uri /api/csp-report",
+  ].join("; ");
+
+  app.use((req, res, next) => {
+    if (req.method === "GET" || req.method === "HEAD") {
+      res.setHeader("Content-Security-Policy-Report-Only", CSP_REPORT_ONLY_POLICY);
+    }
+    return next();
+  });
+
   app.use(compression());
   app.use(
     "/api",
@@ -1043,10 +1080,40 @@ function createApp() {
       max: 600,
       standardHeaders: true,
       legacyHeaders: false,
-      skip: req => String(req.path || "").toLowerCase() === "/stats",
+      skip: req => {
+        const apiPath = String(req.path || "").toLowerCase();
+        return apiPath === "/stats" || apiPath === "/heartbeat";
+      },
     })
   );
   app.use(express.json({ limit: "256kb" }));
+
+  // Приём отчётов CSP. Браузер шлёт их с особым content-type, поэтому свой
+  // парсер. Одинаковые нарушения логируем не чаще раза в 10 минут, иначе
+  // один битый ресурс зальёт логи.
+  const cspSeen = new Map();
+  app.post(
+    "/api/csp-report",
+    express.json({ type: ["application/csp-report", "application/json"], limit: "16kb" }),
+    (req, res) => {
+      try {
+        const report = req.body?.["csp-report"] || req.body || {};
+        const directive = String(report["violated-directive"] || report.effectiveDirective || "?");
+        const blocked = String(report["blocked-uri"] || report.blockedURL || "?").slice(0, 200);
+        const key = `${directive}|${blocked}`;
+        const now = Date.now();
+        if (!cspSeen.has(key) || now - cspSeen.get(key) > 10 * 60 * 1000) {
+          cspSeen.set(key, now);
+          if (cspSeen.size > 500) cspSeen.clear();
+          console.warn(`[csp] ${directive} заблокировал бы: ${blocked}`);
+        }
+      } catch (_) {
+        // отчёт кривой — молча игнорируем, это не критично
+      }
+      return res.status(204).end();
+    }
+  );
+
   app.get("/favicon.ico", (_req, res) => {
     if (!faviconPath) {
       return res.status(404).end();
@@ -1098,15 +1165,6 @@ function createApp() {
     return next();
   });
 
-  const BLOCKED_STATIC_PATH = /^\/(?:data|scripts|includes|apps|backups|node_modules|server\.js|package(?:-lock)?\.json|ecosystem\.config\.js|deploy\.sh|_tmp_)/i;
-  app.use((req, res, next) => {
-    const p = String(req.path || "");
-    if (BLOCKED_STATIC_PATH.test(p) || /\.(sqlite(?:-shm|-wal)?|db|log|bak|env|ini)$/i.test(p)) {
-      return res.status(404).send("Not found");
-    }
-    return next();
-  });
-
   app.use(
     express.static(__dirname, {
       dotfiles: "ignore",
@@ -1122,9 +1180,17 @@ function createApp() {
   );
 
   function buildForwardedFor(req) {
-    // Доверяем только проверенному req.ip (Express резолвит его из одного доверенного прокси-хопа).
-    // Не пробрасываем клиентские X-Forwarded-For/X-Real-IP на бэкенд — иначе их можно подделать.
-    return String(req.ip || req.socket?.remoteAddress || "").replace("::ffff:", "").trim();
+    const existing = String(req.headers["x-forwarded-for"] || "").trim();
+    const ip = String(req.headers["x-real-ip"] || req.ip || req.socket?.remoteAddress || "")
+      .replace("::ffff:", "")
+      .trim();
+
+    if (!existing) return ip;
+    if (!ip) return existing;
+
+    const parts = existing.split(",").map(part => part.trim()).filter(Boolean);
+    if (parts.includes(ip)) return existing;
+    return `${existing}, ${ip}`;
   }
 
   function buildAdminProxyHeaders(req, options = {}) {
@@ -1149,7 +1215,7 @@ function createApp() {
     if (forwardedFor) {
       headers["X-Forwarded-For"] = forwardedFor;
     }
-    const realIp = String(req.ip || "").replace("::ffff:", "").trim();
+    const realIp = String(req.headers["x-real-ip"] || req.ip || "").replace("::ffff:", "").trim();
     if (realIp) {
       headers["X-Real-IP"] = realIp;
     }
@@ -1253,23 +1319,32 @@ function createApp() {
   let lastOnlineCleanupTs = 0;
   const heartbeatWriteTracker = new Map();
 
-  app.use("/api/admin", async (req, res) => {
-    const query = extractQuerySuffix(req);
-    const basePath = `/api/admin${req.path}`;
-    return proxyToAdminBackend(req, res, `${basePath}${query}`);
-  });
+  // req.path не нормализуется, а fetch() схлопывает "..", поэтому запрос вида
+  // /api/admin/../<путь> уходил бы на бэкенд за пределы разрешённого префикса.
+  function hasPathTraversal(req) {
+    const raw = String(req.path || "");
+    let decoded = raw;
+    try {
+      decoded = decodeURIComponent(raw);
+    } catch (_) {
+      return true; // некорректное кодирование — не пропускаем
+    }
+    return raw.includes("..") || decoded.includes("..") || decoded.includes("\\");
+  }
 
-  app.use("/api/account", async (req, res) => {
-    const query = extractQuerySuffix(req);
-    const basePath = `/api/account${req.path}`;
-    return proxyToAdminBackend(req, res, `${basePath}${query}`);
-  });
+  function proxyPrefix(prefix) {
+    return async (req, res) => {
+      if (hasPathTraversal(req)) {
+        return res.status(400).json({ error: "Bad request" });
+      }
+      const query = extractQuerySuffix(req);
+      return proxyToAdminBackend(req, res, `${prefix}${req.path}${query}`);
+    };
+  }
 
-  app.use("/api/telegram", async (req, res) => {
-    const query = extractQuerySuffix(req);
-    const basePath = `/api/telegram${req.path}`;
-    return proxyToAdminBackend(req, res, `${basePath}${query}`);
-  });
+  app.use("/api/admin", proxyPrefix("/api/admin"));
+  app.use("/api/account", proxyPrefix("/api/account"));
+  app.use("/api/telegram", proxyPrefix("/api/telegram"));
 
   app.post("/api/heartbeat", async (req, res) => {
     const sessionId = String(req.body?.sessionId || "").trim();
@@ -1302,6 +1377,8 @@ function createApp() {
           if (Number(ts || 0) < staleBefore) heartbeatWriteTracker.delete(key);
         }
       }
+      statsPayloadCache = null;
+      statsPayloadCacheTs = 0;
       res.json({ ok: true });
     } catch (_error) {
       res.status(500).json({ error: "Failed to update heartbeat" });

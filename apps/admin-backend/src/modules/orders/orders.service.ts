@@ -1423,7 +1423,13 @@ async function assertOrderTokenAccess(orderId: string, orderToken?: string) {
     const provided = String(orderToken || "").trim();
     if (!provided) throw new AppError("Activation link token is required", 401);
     const providedHash = crypto.createHash("sha256").update(provided).digest("hex");
-    if (providedHash !== expected) throw new AppError("Invalid activation link token", 403);
+    // Сравнение за постоянное время: обычный !== завершается на первом
+    // несовпавшем символе и по времени ответа выдаёт, сколько угадано.
+    const providedBuf = Buffer.from(providedHash);
+    const expectedBuf = Buffer.from(expected);
+    if (providedBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(providedBuf, expectedBuf)) {
+      throw new AppError("Invalid activation link token", 403);
+    }
   }
 
   return order;

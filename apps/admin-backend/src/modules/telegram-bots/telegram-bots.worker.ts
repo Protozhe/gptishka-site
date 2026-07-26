@@ -807,8 +807,47 @@ async function runBotLoop(config: BotConfig) {
     try {
       const updates = await client.getUpdates(offset);
       for (const update of updates) {
-        await processUpdate(client, config, update).catch(() => undefined);
         const updateId = Number(update.update_id || 0);
+
+        try {
+          await processUpdate(client, config, update);
+        } catch (firstError) {
+          // Раньше любая ошибка обработки молча проглатывалась, а offset всё
+          // равно сдвигался — сообщение пользователя терялось навсегда, без
+          // следа в логах. Теперь: одна повторная попытка (переживаем разовый
+          // сбой сети или БД), затем громкий лог и уведомление админа.
+          // Offset всё же двигаем: иначе одно "ядовитое" обновление
+          // заблокировало бы бота в бесконечном цикле повторов.
+          let failure: unknown = firstError;
+          try {
+            await sleep(500);
+            await processUpdate(client, config, update);
+            failure = null;
+          } catch (retryError) {
+            failure = retryError;
+          }
+
+          if (failure) {
+            const reason = failure instanceof Error ? failure.message : String(failure);
+            console.error(
+              `[tg-bot] update processing failed type=${config.botType} update_id=${updateId}: ${reason}`,
+              failure
+            );
+            await telegramBotEventsService
+              .log({
+                botType: config.botType,
+                eventType: "update_failed",
+                meta: { updateId, reason },
+              })
+              .catch(() => undefined);
+            await notifyAdmin("⚠️ Обращение в боте не обработано", [
+              `Бот: ${config.botType}`,
+              `update_id: ${updateId}`,
+              `Причина: ${reason}`,
+            ]).catch(() => undefined);
+          }
+        }
+
         if (updateId > 0) {
           offset = updateId + 1;
           setStoredOffset(config.botType, updateId);
