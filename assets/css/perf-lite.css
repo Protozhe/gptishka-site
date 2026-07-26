@@ -176,76 +176,79 @@ body.low-visual-budget .review {
 }
 
 /* -------------------------------------------------------------
-   6. АДАПТИВ: текст слайда не должен заезжать под стрелку.
-
-   Стрелки стоят внутри карточки у самого её края и занимают
-   первые ~34px, а собственный отступ слайда всего 22px — заголовок
-   заезжал под стрелку. Раздвигаем боковые отступы.
-
-   Диапазон от 601px: перекрытие подтверждено и на 700-740px, где
-   работает мобильная раскладка. Ниже 600px не трогаем, иначе на
-   узких телефонах текст сожмётся.
+   6. АДАПТИВ: текст слайда не заезжает под стрелку.
+   Стрелка стоит у края карточки и занимает ~34px, собственный
+   отступ слайда 22px. Ниже 760px стрелка крупнее относительно
+   карточки, поэтому там отступ больше.
    ------------------------------------------------------------- */
-@media (min-width: 601px) and (max-width: 900px) {
+@media (min-width: 761px) and (max-width: 900px) {
   html body .home-promo-slide {
     padding-left: 48px !important;
     padding-right: 48px !important;
   }
+  html body .home-promo-slide__content { width: min(58%, 640px); }
+}
 
-  html body .home-promo-slide__content {
-    width: min(58%, 640px);
+@media (min-width: 601px) and (max-width: 760px) {
+  html body .home-promo-slide {
+    padding-left: 66px !important;
+    padding-right: 66px !important;
   }
 }
 
 /* -------------------------------------------------------------
-   7. КОМПАКТНАЯ ШАПКА: элементы не должны падать на вторую строку.
+   7. КОМПАКТНАЯ ШАПКА.
 
-   .nav-shell — грид: то, что не помещается, уезжает вниз. Вместо
-   переноса убираем подписи и ужимаем элементы, оставляя иконки.
+   Две прошлые попытки провалились из-за специфичности: у сайта
+   есть html body header.gptishka-canonical-header .logo-img.logo-img
+   = (0,3,3) с object-fit: contain !important, а также
+   body .lang-current с min-width: 112px !important. При равном
+   !important побеждает более специфичный селектор, поэтому
+   ниже классы намеренно продублированы — это поднимает вес
+   правила, не меняя того, на что оно указывает.
 
-   Селекторы намеренно длинные (html body header ...): у сайта свои
-   правила с !important, и без повышенной специфичности они
-   перебивали эти. По той же причине !important стоит на object-fit
-   и object-position — иначе логотип сжимался вместе с надписью
-   вместо обрезки.
+   Галочку выпадающего списка не трогаем: сайт прячет её своим
+   глобальным правилом, а флага достаточно как индикатора.
+
+   Логотип обрезаем через object-fit, а не подменяем фоном:
+   на картинке висит filter brightness(0) invert(1), который
+   перекрашивает тёмный логотип в белый. У фона фильтр не
+   сработал бы и знак стал бы невидимым на тёмной шапке.
    ------------------------------------------------------------- */
 @media (min-width: 761px) and (max-width: 1120px) {
-  /* --- Язык: только флаг и стрелка --- */
+  /* Держим один ряд: грид переносит вниз то, что не помещается */
+  html body header .nav-shell.nav-shell.nav-shell {
+    grid-template-columns: auto auto minmax(0, 1fr) auto !important;
+    align-items: center !important;
+  }
+
+  /* Логотип: только знак (первые ~290px из 980 при высоте 208) */
+  html body header .logo-link .logo-img.logo-img.logo-img.logo-img {
+    width: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
+    height: 31px !important;
+    object-fit: cover !important;
+    object-position: left center !important;
+  }
+
+  /* Язык: прячем подпись */
   html body header .lang-switch .lang-current > span:not(.arrow) {
     display: none !important;
   }
 
-  /* Стрелку возвращаем: сайт прячет её на этих ширинах вместе с текстом */
-  html body header .lang-switch .lang-current > span.arrow {
-    display: inline-block !important;
-  }
-
-  /* Кнопка держала фиксированную ширину даже без текста — ужимаем,
-     иначе освобождённое место никуда не девается. */
-  html body header .lang-switch,
-  html body header .lang-switch .lang-current,
-  html body header .header-tools {
-    width: auto !important;
+  /* и снимаем минимальную ширину, иначе место не освобождается */
+  html body header .lang-switch .lang-current.lang-current.lang-current {
     min-width: 0 !important;
-    flex: 0 0 auto !important;
-  }
-
-  html body header .lang-switch .lang-current {
+    width: auto !important;
     gap: 6px !important;
     padding-left: 12px !important;
     padding-right: 12px !important;
   }
 
-  /* --- Логотип: только знак, надпись обрезаем --- */
-  /* Знак занимает первые ~285px из 980 при высоте 208,
-     поэтому окно 44x31 с прижатием влево показывает ровно его. */
-  html body header .logo-link .logo-img {
-    width: 44px !important;
-    min-width: 44px !important;
-    max-width: 44px !important;
-    height: 31px !important;
-    aspect-ratio: auto !important;
-    object-fit: cover !important;
-    object-position: left center !important;
+  html body header .lang-switch.lang-switch.lang-switch,
+  html body header .header-tools.header-tools.header-tools {
+    min-width: 0 !important;
+    width: auto !important;
   }
 }
