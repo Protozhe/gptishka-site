@@ -1,0 +1,71 @@
+/* =============================================================
+   perf-lite.css — снижение нагрузки на слабых телефонах и ПК.
+
+   Работает поверх режима body.low-visual-budget, который выставляет
+   инлайновый скрипт определения "тира" устройства (см. <body> страниц).
+   Ничего не меняет для мощных устройств (rich / balanced).
+
+   Зачем: в основном бандле backdrop-filter отключается перечислением
+   отдельных селекторов (~48 правил на 174 объявления blur), поэтому
+   часть элементов на слабых устройствах всё равно получала размытие —
+   это главный источник подтормаживаний при скролле на слабых GPU.
+   ============================================================= */
+
+/* 1. Полностью снимаем backdrop-filter и лишние композитные слои.
+      backdrop-filter пересчитывается на каждом кадре скролла — на
+      бюджетных телефонах это основная причина рывков.
+      will-change держит слой в видеопамяти даже когда анимации нет. */
+body.low-visual-budget *,
+body.low-visual-budget *::before,
+body.low-visual-budget *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  will-change: auto !important;
+}
+
+/* 2. Шапка держалась на размытии при прозрачном фоне — без блюра текст
+      стал бы нечитаемым, поэтому даём плотный фон вместо размытия.
+      Цвет взят из существующей палитры (rgba(10,12,18,.62) в тёмной теме). */
+body.low-visual-budget header,
+body.low-visual-budget header .nav-shell,
+body.low-visual-budget .gptishka-canonical-header,
+body.low-visual-budget .gptishka-canonical-header .nav-shell {
+  background: rgba(10, 12, 18, 0.94) !important;
+}
+
+/* 3. Декоративные бесконечные анимации фона: постоянная перерисовка
+      греет батарею и занимает главный поток. Контент не затрагиваем. */
+body.low-visual-budget .home-gradient-bg,
+body.low-visual-budget [class*="gradient-bg"],
+body.low-visual-budget .service-hero::before,
+body.low-visual-budget .service-hero::after,
+body.low-visual-budget .hero::before,
+body.low-visual-budget .hero::after {
+  animation: none !important;
+  filter: none !important;
+}
+
+/* 4. Тяжёлые тени с большим радиусом размытия — дорогая растеризация.
+      Оставляем читаемую, но недорогую тень. */
+body.low-visual-budget .card,
+body.low-visual-budget .block,
+body.low-visual-budget .price-card,
+body.low-visual-budget .how-card,
+body.low-visual-budget .faq-item,
+body.low-visual-budget .contact-card,
+body.low-visual-budget .review {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* 5. Системная настройка "меньше движения" — уважаем на всех устройствах,
+      независимо от тира и страницы. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
