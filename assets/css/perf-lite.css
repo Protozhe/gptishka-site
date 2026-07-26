@@ -82,9 +82,9 @@ body.balanced-visual-budget *:not(header)::after {
       Здесь стекло дороже, чем красивее: снимаем полностью.
    ------------------------------------------------------------- */
 
-body.low-visual-budget *,
-body.low-visual-budget *::before,
-body.low-visual-budget *::after {
+body.low-visual-budget *:not(header):not(header *),
+body.low-visual-budget *:not(header)::before,
+body.low-visual-budget *:not(header)::after {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
 }
@@ -95,13 +95,6 @@ body.low-visual-budget *:not(header)::after {
   will-change: auto !important;
 }
 
-/* Шапка держалась на размытии поверх прозрачного фона — без него
-   текст лёг бы прямо на контент. Даём плотную подложку из той же
-   палитры, читаемость сохраняется. */
-body.low-visual-budget header.is-scrolled,
-body.low-visual-budget header.is-scrolled .nav-shell {
-  background-color: rgba(10, 12, 18, 0.94) !important;
-}
 
 /* Декоративные бесконечные анимации фона: постоянная перерисовка
    впустую расходует батарею. Контентные анимации не трогаем. */
@@ -143,9 +136,9 @@ body.low-visual-budget .review {
 
 /* Пользователь просил меньше прозрачности (настройка ОС) — уважаем. */
 @media (prefers-reduced-transparency: reduce) {
-  *,
-  *::before,
-  *::after {
+  *:not(header):not(header *),
+  *:not(header)::before,
+  *:not(header)::after {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
