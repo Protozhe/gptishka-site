@@ -274,3 +274,28 @@ body.low-visual-budget .review {
     font-size: 13px !important;
   }
 }
+
+/* -------------------------------------------------------------
+   8. Возвращаем скрытие шапки при прокрутке (баг был до правок).
+
+   JS исправно вешает на шапку класс header-hidden, и правило
+   body header.header-hidden (0,1,2) уводит её вверх через
+   translate3d(0,-120%,0). Но выше по каскаду стоит
+
+     @media (min-width: 1181px) {
+       html body header.gptishka-canonical-header {
+         transform: none !important } }
+
+   со специфичностью (0,1,3) и !important — оно побеждает, и на
+   экранах шире 1181px шапка не пряталась никогда. Скорее всего
+   два правила писались независимо и столкнулись.
+
+   Ниже селектор (0,2,3): те же три элемента плюс два класса.
+   ------------------------------------------------------------- */
+@media (min-width: 1181px) {
+  html body header.gptishka-canonical-header.header-hidden,
+  html body header.gptishka-unified-header.header-hidden,
+  html body header.header-hidden.header-hidden {
+    transform: translate3d(0, -120%, 0) !important;
+  }
+}
