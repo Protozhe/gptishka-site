@@ -108,6 +108,7 @@ const NOINDEX_PUBLIC_PATHS = new Set([
 const dataDir = path.join(__dirname, "data");
 const dbPath = path.join(dataDir, "stats.sqlite");
 const PUBLIC_NEWS_CACHE_PATH = path.join(dataDir, "public-news.json");
+const PUBLIC_REVIEWS_PATH = path.join(dataDir, "public-reviews.json");
 const LEGACY_PRODUCT_MODAL_BACKUP_PATH = path.join(__dirname, "_tmp_products_ru.json");
 const STOREFRONT_PRODUCTS_FALLBACK_PATH = path.join(__dirname, "_tmp_products_ru.json");
 const STOREFRONT_PRODUCTS_FALLBACK_CACHE_TTL_MS = Math.max(
@@ -1351,6 +1352,24 @@ function createApp() {
   app.use("/api/admin", proxyPrefix("/api/admin"));
   app.use("/api/account", proxyPrefix("/api/account"));
   app.use("/api/telegram", proxyPrefix("/api/telegram"));
+
+  app.get("/api/public/reviews", async (_req, res) => {
+    try {
+      const payload = JSON.parse(await fs.promises.readFile(PUBLIC_REVIEWS_PATH, "utf8"));
+      if (!Array.isArray(payload?.sources) || !Array.isArray(payload?.items)) {
+        throw new Error("Invalid public reviews payload");
+      }
+
+      res.set(
+        "Cache-Control",
+        "public, max-age=300, stale-while-revalidate=3600, stale-if-error=86400"
+      );
+      return res.json(payload);
+    } catch (error) {
+      logError("Public reviews request failed", error);
+      return res.status(503).json({ error: "REVIEWS_TEMPORARILY_UNAVAILABLE" });
+    }
+  });
 
   app.post("/api/heartbeat", async (req, res) => {
     if (!PUBLIC_STATS_ENABLED) return res.status(404).send("Not found");

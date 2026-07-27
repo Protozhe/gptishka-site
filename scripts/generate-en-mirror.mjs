@@ -202,7 +202,6 @@ const translations = [
   ["При необходимости продлеваете подписку через наш сайт.", "Renew the subscription through our site when needed."],
   ["Почему GPTishka", "Why GPTishka"],
   ["Работаем с 2023 года", "Operating since 2023"],
-  ["Более 5000 успешных подключений", "Over 5,000 successful connections"],
   ["Есть отзывы и постоянные клиенты", "Reviews and returning clients"],
   ["Даём гарантию на весь срок подписки", "Warranty for the full subscription period"],
   ["Помогаем с подключением и продлением", "Help with connection and renewal"],
