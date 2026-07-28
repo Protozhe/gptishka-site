@@ -108,6 +108,7 @@ const NOINDEX_PUBLIC_PATHS = new Set([
 const dataDir = path.join(__dirname, "data");
 const dbPath = path.join(dataDir, "stats.sqlite");
 const PUBLIC_NEWS_CACHE_PATH = path.join(dataDir, "public-news.json");
+const PUBLIC_NEWS_MEDIA_DIR = path.join(__dirname, "assets", "img", "news");
 const PUBLIC_REVIEWS_PATH = path.join(dataDir, "public-reviews.json");
 const LEGACY_PRODUCT_MODAL_BACKUP_PATH = path.join(__dirname, "_tmp_products_ru.json");
 const STOREFRONT_PRODUCTS_FALLBACK_PATH = path.join(__dirname, "_tmp_products_ru.json");
@@ -935,6 +936,25 @@ async function refreshPublicNewsMediaCache() {
 async function getPublicNewsMedia(postId) {
   const cached = publicNewsMediaCache.get(postId);
   if (cached) return cached;
+  const bundledVariants = [
+    ["jpg", "image/jpeg"],
+    ["jpeg", "image/jpeg"],
+    ["png", "image/png"],
+    ["webp", "image/webp"],
+    ["gif", "image/gif"],
+  ];
+  for (const [extension, contentType] of bundledVariants) {
+    try {
+      const buffer = await fs.promises.readFile(
+        path.join(PUBLIC_NEWS_MEDIA_DIR, `${TELEGRAM_NEWS_CHANNEL}-${postId}.${extension}`)
+      );
+      const media = { buffer, contentType };
+      publicNewsMediaCache.set(postId, media);
+      return media;
+    } catch (error) {
+      if (error?.code !== "ENOENT") throw error;
+    }
+  }
   const knownPost = loadPublicNewsCache().items.some(
     item => Number(item?.postId) === postId && Boolean(item?.imageUrl)
   );
