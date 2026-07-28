@@ -63,7 +63,7 @@
       mediaLink.setAttribute("aria-label", labels.read);
 
       const image = document.createElement("img");
-      image.dataset.src = item.imageUrl;
+      image.dataset.src = `/api/public/news/${encodeURIComponent(item.postId)}/image`;
       image.alt = "";
       image.loading = "lazy";
       image.decoding = "async";

@@ -125,6 +125,8 @@ let telegramReviewsCache = {
 let telegramReviewsRefreshPromise = null;
 let publicNewsCache = null;
 let publicNewsRefreshPromise = null;
+let publicNewsMediaCache = new Map();
+let publicNewsMediaRefreshPromise = null;
 let legacyProductModalBackupMap = new Map();
 let storefrontProductsFallbackBase = null;
 let storefrontProductsFallbackBaseLoadedAt = 0;
@@ -864,6 +866,81 @@ async function getPublicNewsPayload() {
   }
 
   return { payload: await refreshPublicNewsCache(), stale: false };
+}
+
+async function refreshPublicNewsMediaCache() {
+  if (publicNewsMediaRefreshPromise) return publicNewsMediaRefreshPromise;
+
+  publicNewsMediaRefreshPromise = (async () => {
+    const fetched = await fetchTelegramPublicFeed(TELEGRAM_NEWS_CHANNEL, {
+      timeoutMs: TELEGRAM_NEWS_FETCH_TIMEOUT_MS,
+    });
+    const mediaItems = (Array.isArray(fetched?.items) ? fetched.items : []).filter(
+      item => Number(item?.postId) > 0 && typeof item?.imageUrl === "string" && item.imageUrl
+    );
+    const resolved = await Promise.all(
+      mediaItems.map(async item => {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), TELEGRAM_NEWS_FETCH_TIMEOUT_MS);
+        try {
+          const response = await fetch(item.imageUrl, {
+            headers: {
+              Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+              "User-Agent": PUBLIC_FETCH_HEADERS["User-Agent"],
+            },
+            redirect: "follow",
+            signal: controller.signal,
+          });
+          if (!response.ok) return null;
+
+          const contentType = String(response.headers.get("content-type") || "")
+            .split(";")[0]
+            .trim()
+            .toLowerCase();
+          if (!contentType.startsWith("image/")) return null;
+
+          const buffer = Buffer.from(await response.arrayBuffer());
+          if (!buffer.length || buffer.length > 5 * 1024 * 1024) return null;
+
+          return [
+            Number(item.postId),
+            {
+              buffer,
+              contentType,
+            },
+          ];
+        } catch (_) {
+          return null;
+        } finally {
+          clearTimeout(timeout);
+        }
+      })
+    );
+
+    const nextCache = new Map(resolved.filter(Boolean));
+    if (!nextCache.size) {
+      throw new Error("Telegram news media is empty");
+    }
+    publicNewsMediaCache = nextCache;
+    return nextCache;
+  })();
+
+  try {
+    return await publicNewsMediaRefreshPromise;
+  } finally {
+    publicNewsMediaRefreshPromise = null;
+  }
+}
+
+async function getPublicNewsMedia(postId) {
+  const cached = publicNewsMediaCache.get(postId);
+  if (cached) return cached;
+  const knownPost = loadPublicNewsCache().items.some(
+    item => Number(item?.postId) === postId && Boolean(item?.imageUrl)
+  );
+  if (!knownPost) return null;
+  const refreshed = await refreshPublicNewsMediaCache();
+  return refreshed.get(postId) || null;
 }
 
 async function initDb() {
@@ -2195,6 +2272,28 @@ function createApp() {
         items: [],
         error: "NEWS_TEMPORARILY_UNAVAILABLE",
       });
+    }
+  });
+
+  app.get("/api/public/news/:postId/image", async (req, res) => {
+    const postId = Number.parseInt(String(req.params?.postId || ""), 10);
+    if (!Number.isInteger(postId) || postId <= 0) {
+      return res.status(404).send("Not found");
+    }
+
+    try {
+      const media = await getPublicNewsMedia(postId);
+      if (!media) return res.status(404).send("Not found");
+
+      res.set("Content-Type", media.contentType);
+      res.set(
+        "Cache-Control",
+        "public, max-age=86400, stale-while-revalidate=604800, stale-if-error=2592000"
+      );
+      return res.send(media.buffer);
+    } catch (error) {
+      logError("Telegram news media request failed", error);
+      return res.status(503).send("News media temporarily unavailable");
     }
   });
 

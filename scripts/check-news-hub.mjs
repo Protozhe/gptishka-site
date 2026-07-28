@@ -23,14 +23,19 @@ function structuralSignature(html) {
 }
 
 assert.equal(structuralSignature(ru), structuralSignature(en), "RU and EN news layouts differ");
+assert.match(ru, /news-hub\.js\?v=20260728-news-media1/);
+assert.match(en, /news-hub\.js\?v=20260728-news-media1/);
 assert.match(ru, /href="https:\/\/gptishka\.shop\/news\/"/);
 assert.match(en, /href="https:\/\/gptishka\.shop\/en\/news\/"/);
 assert.match(server, /app\.get\("\/api\/public\/news"/);
+assert.match(server, /app\.get\("\/api\/public\/news\/:postId\/image"/);
+assert.match(server, /publicNewsMediaCache/);
 assert.match(server, /\["\/news", "\/news\/"\]/);
 assert.match(server, /\["\/en\/news", "\/en\/news\/"\]/);
 assert.match(server, /stale-while-revalidate=3600/);
 assert.match(client, /\.textContent\s*=/);
 assert.match(client, /document\.createElement/);
+assert.match(client, /\/api\/public\/news\/\$\{encodeURIComponent\(item\.postId\)\}\/image/);
 assert.doesNotMatch(client, /\.innerHTML\s*=/);
 assert.equal(payload.channel, "aimarket_gpt");
 assert.ok(Array.isArray(payload.items) && payload.items.length > 0, "News cache is empty");
