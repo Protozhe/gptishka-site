@@ -4,7 +4,6 @@
   var PAGE_SIZE = 12;
   var state = {
     data: null,
-    filter: "all",
     visible: PAGE_SIZE,
   };
 
@@ -13,7 +12,6 @@
     rating: document.getElementById("reviewsRating"),
     updated: document.getElementById("reviewsUpdated"),
     sources: document.getElementById("reviewsSources"),
-    filters: document.getElementById("reviewsFilters"),
     grid: document.getElementById("reviewsGrid"),
     empty: document.getElementById("reviewsEmpty"),
     more: document.getElementById("reviewsMore"),
@@ -114,36 +112,6 @@
     });
   }
 
-  function renderFilters(data) {
-    elements.filters.replaceChildren();
-    var options = [{ id: "all", label: "Все отзывы" }].concat(
-      data.sources
-        .filter(function (source) {
-          return !source.hidden && data.items.some(function (item) {
-            return item.sourceId === source.id;
-          });
-        })
-        .map(function (source) {
-          return { id: source.id, label: source.label };
-        })
-    );
-
-    options.forEach(function (option) {
-      var button = create("button", "reviews-filter", option.label);
-      button.type = "button";
-      button.dataset.filter = option.id;
-      button.setAttribute("aria-pressed", String(option.id === state.filter));
-      if (option.id === state.filter) button.classList.add("is-active");
-      button.addEventListener("click", function () {
-        state.filter = option.id;
-        state.visible = PAGE_SIZE;
-        renderFilters(data);
-        renderReviews(data);
-      });
-      elements.filters.append(button);
-    });
-  }
-
   function renderReview(item) {
     var card = create("article", "review-card");
     var top = create("div", "review-card__top");
@@ -170,15 +138,8 @@
     return card;
   }
 
-  function filteredItems(data) {
-    if (state.filter === "all") return data.items;
-    return data.items.filter(function (item) {
-      return item.sourceId === state.filter;
-    });
-  }
-
   function renderReviews(data) {
-    var items = filteredItems(data);
+    var items = data.items;
     var visible = items.slice(0, state.visible);
     elements.grid.replaceChildren();
     visible.forEach(function (item) {
@@ -192,7 +153,6 @@
 
   function showError() {
     elements.sources.replaceChildren();
-    elements.filters.replaceChildren();
     elements.grid.replaceChildren();
     elements.grid.hidden = true;
     elements.grid.setAttribute("aria-busy", "false");
@@ -225,7 +185,6 @@
       state.data = data;
       renderStats(data);
       renderSources(data);
-      renderFilters(data);
       renderReviews(data);
     })
     .catch(function () {
