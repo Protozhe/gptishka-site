@@ -433,3 +433,17 @@ body.home-wide-body .home-wide-page > .home-final-cta .btn.secondary {
     transition: none !important;
   }
 }
+
+/* Keep the first heading glyph clear of the section's zero-padding edge. */
+body.home-wide-body .home-wide-page > .faq .faq-header {
+  box-sizing: border-box;
+  overflow: visible !important;
+  padding-inline-start: clamp(8px, 0.5em, 18px) !important;
+}
+
+body.home-wide-body .home-wide-page > .faq .faq-header h2 {
+  position: relative;
+  z-index: 2;
+  overflow: visible !important;
+  padding: 0;
+}
