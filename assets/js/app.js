@@ -2056,7 +2056,9 @@ function initActivationResumeShortcut() {
       .replace(/\/assets\/img\/services\/grok-card-hover\.(?:png|webp)(?:\?[^#]*)?/i, "/assets/img/services/grok-card-hover-640.webp?v=20260726-card-responsive1")
       .replace(/\/assets\/img\/services\/grok-card\.(?:png|webp)(?:\?[^#]*)?/i, "/assets/img/services/grok-card-640.webp?v=20260726-card-responsive1")
       .replace(/\/uploads\/products\/49e55246-a678-4f16-8b55-48ffc77a88eb\.png(?:\?[^#]*)?/i, "/assets/img/steam/steam-topup-card-640.webp?v=20260726-card-responsive1")
-      .replace(/\/uploads\/products\/655563e1-f4f4-478b-9b33-28374b868709\.png(?:\?[^#]*)?/i, "/assets/img/steam/steam-topup-card-hover-640.webp?v=20260726-card-responsive1");
+      .replace(/\/uploads\/products\/655563e1-f4f4-478b-9b33-28374b868709\.png(?:\?[^#]*)?/i, "/assets/img/steam/steam-topup-card-hover-640.webp?v=20260726-card-responsive1")
+      .replace(/\/uploads\/products\/3f69a45a-37b8-45fc-9266-9ea11a35eae4\.png(?:\?[^#]*)?/i, "/assets/img/steam/steam-topup-card-640.webp?v=20260726-card-responsive1")
+      .replace(/\/uploads\/products\/62ba3fe3-3006-408d-bf84-7ac10b9628a6\.png(?:\?[^#]*)?/i, "/assets/img/steam/steam-topup-card-hover-640.webp?v=20260726-card-responsive1");
   }
 
   function getVisualConfig(item) {
