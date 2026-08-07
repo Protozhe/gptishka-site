@@ -2843,7 +2843,6 @@ function initActivationResumeShortcut() {
     const allowedDurations = {
       chatgpt: new Set(["1m"]),
       claude: new Set(["1m"]),
-      grok: new Set(["1m", "2m"]),
     };
     return (Array.isArray(items) ? items : []).filter(item => {
       const deliveryKey = getServiceDeliveryKey(item);
