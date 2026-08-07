@@ -262,6 +262,51 @@ function withDurationLine(description: string, durationLabel: string, lang: "ru"
   return withoutDuration ? `${withoutDuration}\n${prefix}${cleanedDuration}` : `${prefix}${cleanedDuration}`;
 }
 
+const MONTH_TAG_RE = /^month:(\d+)$/i;
+const DURATION_UNIT_TAG_RE = /^(?:месяц|месяца|месяцев|мес|month|months|год|года|лет|year|years)$/i;
+
+function parseDurationMonths(...values: Array<string | null | undefined>): number | null {
+  for (const value of values) {
+    const text = String(value || "").trim().toLowerCase();
+    if (!text) continue;
+    const monthTagMatch = text.match(/(?:^|\s)month:(\d+)(?:\s|$)/i);
+    if (monthTagMatch) {
+      const months = Number(monthTagMatch[1]);
+      if (Number.isInteger(months) && months > 0) return months;
+    }
+    const monthMatch = text.match(/(\d+)\s*(?:[-–—]\s*)?(?:месяц(?:а|ев)?|мес\.?|months?)/i);
+    if (monthMatch) {
+      const months = Number(monthMatch[1]);
+      if (Number.isInteger(months) && months > 0) return months;
+    }
+    const yearMatch = text.match(/(\d+)\s*(?:[-–—]\s*)?(?:год(?:а|ов)?|лет|years?)/i);
+    if (yearMatch) {
+      const years = Number(yearMatch[1]);
+      if (Number.isInteger(years) && years > 0) return years * 12;
+    }
+  }
+  return null;
+}
+
+function formatDurationMonths(months: number, lang: "ru" | "en"): string {
+  if (lang === "en") return `${months} ${months === 1 ? "month" : "months"}`;
+  const mod10 = Math.abs(months) % 10;
+  const mod100 = Math.abs(months) % 100;
+  const unit = mod10 === 1 && mod100 !== 11 ? "месяц" : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? "месяца" : "месяцев";
+  return `${months} ${unit}`;
+}
+
+function withDurationMonthTag(tags: string[], durationMonths: number | null): string[] {
+  const normalizedTags = (Array.isArray(tags) ? tags : []).map((tag) => String(tag || "").trim()).filter(Boolean);
+  const cleanedTags = normalizedTags.filter((tag, index) => {
+    if (MONTH_TAG_RE.test(tag) || DURATION_UNIT_TAG_RE.test(tag)) return false;
+    if (/^\d+$/.test(tag) && DURATION_UNIT_TAG_RE.test(normalizedTags[index + 1] || "")) return false;
+    return true;
+  });
+  if (!durationMonths) return Array.from(new Set(cleanedTags));
+  return Array.from(new Set([...cleanedTags, `month:${durationMonths}`]));
+}
+
 function resolveDeliveryType(item: Product): ProductDeliveryType {
   const fromMethod = String(item.deliveryMethod || "").trim();
   if (fromMethod === "5") return "support_claude";
@@ -1268,6 +1313,15 @@ export default function ProductsPage() {
     let cleanDescriptionEn = parseDescriptionWithMedia(descriptionEn).cleanDescription.trim();
     let cleanDurationRu = String(durationLabelRu || "").trim() || parseDurationLabel(cleanDescription);
     let cleanDurationEn = String(durationLabelEn || "").trim() || parseDurationLabel(cleanDescriptionEn);
+    const titleDurationMonths = parseDurationMonths(cleanTitle, cleanTitleEn);
+    let durationMonths = parseDurationMonths(cleanDurationRu, cleanDurationEn);
+    if (!durationMonths && titleDurationMonths) {
+      durationMonths = titleDurationMonths;
+      cleanDurationRu = formatDurationMonths(titleDurationMonths, "ru");
+      cleanDurationEn = formatDurationMonths(titleDurationMonths, "en");
+      setDurationLabelRu(cleanDurationRu);
+      setDurationLabelEn(cleanDurationEn);
+    }
     cleanDescription = withDurationLine(cleanDescription, "", "ru");
     cleanDescriptionEn = withDurationLine(cleanDescriptionEn, "", "en");
     const cleanModalDescription = normalizeModalDescriptionText(modalDescription);
@@ -1341,6 +1395,13 @@ export default function ProductsPage() {
     }
     if (cleanCategory.length > 100) {
       setFormError("Категория должна быть не длиннее 100 символов.");
+      return;
+    }
+
+    if (durationMonths && titleDurationMonths && durationMonths !== titleDurationMonths) {
+      setFormError(
+        `Срок в названии (${formatDurationMonths(titleDurationMonths, "ru")}) не совпадает с полем срока (${formatDurationMonths(durationMonths, "ru")}). Исправьте одно из значений.`
+      );
       return;
     }
 
@@ -1418,10 +1479,11 @@ export default function ProductsPage() {
     const primaryDeliveryType = withoutLoginEnabled ? withoutLoginDeliveryType : withLoginDeliveryType;
 
     if (editingId) {
-      const preparedTags =
+      const deliveryTags =
         primaryDeliveryType === "vpn"
           ? withDirectVpnTags(editingTags, normalizedVpnDurationDays, normalizedVpnUsersLimit)
           : withVpnBundleTags(editingTags, vpnBundleEnabled, normalizedVpnDurationDays, normalizedVpnUsersLimit);
+      const preparedTags = primaryDeliveryType === "vpn" ? deliveryTags : withDurationMonthTag(deliveryTags, durationMonths);
       await updateProduct.mutateAsync({
         id: editingId,
         payload: {
@@ -1446,10 +1508,11 @@ export default function ProductsPage() {
     }
 
     const createdBaseTags = buildTags(cleanTitle);
-    const preparedTags =
+    const deliveryTags =
       primaryDeliveryType === "vpn"
         ? withDirectVpnTags(createdBaseTags, normalizedVpnDurationDays, normalizedVpnUsersLimit)
         : withVpnBundleTags(createdBaseTags, vpnBundleEnabled, normalizedVpnDurationDays, normalizedVpnUsersLimit);
+    const preparedTags = primaryDeliveryType === "vpn" ? deliveryTags : withDurationMonthTag(deliveryTags, durationMonths);
     const created = await createProduct.mutateAsync({
       title: cleanTitle,
       titleEn: cleanTitleEn,
@@ -2241,6 +2304,11 @@ export default function ProductsPage() {
           />
           <div className="md:col-span-4 text-xs text-slate-600 dark:text-slate-300">
             Поле добавляет отдельную строку на карточке: <strong>✓ Срок: ...</strong> (для EN: <strong>✓ Duration: ...</strong>).
+            {parseDurationMonths(durationLabelRu, durationLabelEn, title) ? (
+              <> Группировка на витрине: <strong>{formatDurationMonths(parseDurationMonths(durationLabelRu, durationLabelEn, title)!, "ru")}</strong>.</>
+            ) : (
+              <> Для автоматической группировки укажите количество месяцев, например <strong>3 месяца</strong>.</>
+            )}
           </div>
 
           <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">

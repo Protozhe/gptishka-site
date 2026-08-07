@@ -2541,8 +2541,7 @@ function initActivationResumeShortcut() {
       if (text.includes("pro")) return 50;
     }
     if (serviceKey === "grok") {
-      if (text.includes("1-month") || text.includes("1 month") || text.includes("1 мес")) return 10;
-      if (text.includes("2-month") || text.includes("2 month") || text.includes("2 мес")) return 20;
+      return getServiceDurationSortScore(getServiceDurationKey(item));
     }
     if (serviceKey === "vpn") {
       return getServiceDurationSortScore(getServiceDurationKey(item));
@@ -2811,6 +2810,16 @@ function initActivationResumeShortcut() {
       if (days >= 170) return "6m";
       if (days >= 55) return "2m";
       if (days > 0) return "1m";
+    }
+    const monthMatch = text.match(/(\d+)\s*(?:[-–—]\s*)?(?:месяц(?:а|ев)?|мес\.?|months?)/i);
+    if (monthMatch) {
+      const months = Number(monthMatch[1] || 0);
+      if (months > 0) return `${months}m`;
+    }
+    const yearMatch = text.match(/(\d+)\s*(?:[-–—]\s*)?(?:год(?:а|ов)?|лет|years?)/i);
+    if (yearMatch) {
+      const years = Number(yearMatch[1] || 0);
+      if (years > 0) return `${years * 12}m`;
     }
     if (text.includes("12 месяцев") || text.includes("12 месяц") || text.includes("12 month") || text.includes("year") || text.includes("365")) return "12m";
     if (text.includes("6 месяцев") || text.includes("6 месяц") || text.includes("6 month") || text.includes("180")) return "6m";
@@ -3129,12 +3138,6 @@ function initActivationResumeShortcut() {
   }
 
   function formatVpnPlanSummary(items) {
-    const labels = {
-      "1m": isEnPage ? "1 month" : "1 месяц",
-      "2m": isEnPage ? "2 months" : "2 месяца",
-      "6m": isEnPage ? "6 months" : "6 месяцев",
-      "12m": isEnPage ? "12 months" : "12 месяцев",
-    };
     const seen = new Set();
     return (Array.isArray(items) ? items : [])
       .slice()
@@ -3146,7 +3149,7 @@ function initActivationResumeShortcut() {
         return true;
       })
       .slice(0, 4)
-      .map(key => labels[key] || key)
+      .map(key => getServiceDurationLabel(key))
       .join(" / ");
   }
 
@@ -3203,6 +3206,9 @@ function initActivationResumeShortcut() {
 
   function formatServicePlanSummary(group) {
     const serviceKey = normalizeAiServiceKey(group?.service?.key);
+    if (serviceKey === "grok" || serviceKey === "vpn") {
+      return formatVpnPlanSummary(group.items);
+    }
     const seen = new Set();
     const labels = [];
     group.items.forEach(item => {
@@ -3258,7 +3264,9 @@ function initActivationResumeShortcut() {
     const fallbackImages = fallbackImagesByService[serviceKey] || {};
     const displayTitle = getServiceCardValue(serviceCard, "title", group.service.name);
     const displayDescription = getServiceCardValue(serviceCard, "description", group.service.description);
-    const displayPlanSummary = getServiceCardValue(serviceCard, "planSummary", planSummary);
+    const displayPlanSummary = serviceKey === "grok" || serviceKey === "vpn"
+      ? planSummary
+      : getServiceCardValue(serviceCard, "planSummary", planSummary);
     const displayPriceText = getServiceCardValue(serviceCard, "priceText", minPrice ? fromLabel + " " + formatPriceByCurrency(minPrice, currency) : "");
     const displayButtonLabel = getServiceCardValue(serviceCard, "buttonText", buttonLabel);
     const configuredHref = getServiceCardValue(serviceCard, "href", getServicePagePath(serviceKey));
