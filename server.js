@@ -5,23 +5,15 @@ const sqlite3 = require("sqlite3").verbose();
 const helmet = require("helmet");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
-const { fetchTelegramPublicFeed } = require("./scripts/telegram-public-feed");
+const {
+  cacheTelegramFeedMedia,
+  fetchTelegramPublicFeed,
+} = require("./scripts/telegram-public-feed");
 require("dotenv").config();
-
-// Number("abc") даёт NaN, а Math.max(500, NaN) — тоже NaN. Раньше кривое
-// значение в .env молча ломало логику: сессии переставали чиститься, кэш
-// не срабатывал. Теперь при некорректном значении берём значение по умолчанию.
-function envNumber(rawValue, fallback, { min, max } = {}) {
-  let parsed = Number(rawValue);
-  if (!Number.isFinite(parsed)) parsed = Number(fallback);
-  if (Number.isFinite(min)) parsed = Math.max(min, parsed);
-  if (Number.isFinite(max)) parsed = Math.min(max, parsed);
-  return Number.isFinite(parsed) ? parsed : Number(fallback);
-}
 
 const PORT = Number(process.env.PORT || 4000);
 const HOST = String(process.env.HOST || process.env.BIND_HOST || "127.0.0.1").trim() || "127.0.0.1";
-const ONLINE_TTL_SECONDS = envNumber(process.env.ONLINE_TTL_SECONDS, 45, { min: 5 });
+const ONLINE_TTL_SECONDS = Number(process.env.ONLINE_TTL_SECONDS || 45);
 const ONLINE_TTL_MS = ONLINE_TTL_SECONDS * 1000;
 const ADMIN_BACKEND_URL = String(process.env.ADMIN_BACKEND_URL || "http://localhost:4100").replace(/\/$/, "");
 const ADMIN_BACKEND_FALLBACK_URLS = String(
@@ -76,16 +68,10 @@ const TELEGRAM_NEWS_MAX_LIMIT = Math.max(
   1,
   Math.min(30, Number(process.env.TELEGRAM_NEWS_MAX_LIMIT || 24))
 );
-// Лента активаций удалена, потребителей у публичной статистики не осталось.
-// Эндпоинт отдавал наружу общее число продаж, список последних покупателей
-// и счётчик онлайна, поэтому по умолчанию выключен.
-// Вернуть можно переменной окружения PUBLIC_STATS_ENABLED=true.
-const PUBLIC_STATS_ENABLED = String(process.env.PUBLIC_STATS_ENABLED || "false").trim().toLowerCase() === "true";
-const STATS_CACHE_TTL_MS = envNumber(process.env.STATS_CACHE_TTL_MS, 2200, { min: 500 });
-const HEARTBEAT_MIN_WRITE_INTERVAL_MS = envNumber(
-  process.env.HEARTBEAT_MIN_WRITE_INTERVAL_MS,
-  6000,
-  { min: 1000 }
+const STATS_CACHE_TTL_MS = Math.max(500, Number(process.env.STATS_CACHE_TTL_MS || 2200));
+const HEARTBEAT_MIN_WRITE_INTERVAL_MS = Math.max(
+  1000,
+  Number(process.env.HEARTBEAT_MIN_WRITE_INTERVAL_MS || 6000)
 );
 const TELEGRAM_FETCH_HEADERS = {
   "User-Agent":
@@ -108,8 +94,8 @@ const NOINDEX_PUBLIC_PATHS = new Set([
 const dataDir = path.join(__dirname, "data");
 const dbPath = path.join(dataDir, "stats.sqlite");
 const PUBLIC_NEWS_CACHE_PATH = path.join(dataDir, "public-news.json");
+const PUBLIC_REVIEWS_CACHE_PATH = path.join(dataDir, "public-reviews.json");
 const PUBLIC_NEWS_MEDIA_DIR = path.join(__dirname, "assets", "img", "news");
-const PUBLIC_REVIEWS_PATH = path.join(dataDir, "public-reviews.json");
 const LEGACY_PRODUCT_MODAL_BACKUP_PATH = path.join(__dirname, "_tmp_products_ru.json");
 const STOREFRONT_PRODUCTS_FALLBACK_PATH = path.join(__dirname, "_tmp_products_ru.json");
 const STOREFRONT_PRODUCTS_FALLBACK_CACHE_TTL_MS = Math.max(
@@ -126,8 +112,6 @@ let telegramReviewsCache = {
 let telegramReviewsRefreshPromise = null;
 let publicNewsCache = null;
 let publicNewsRefreshPromise = null;
-let publicNewsMediaCache = new Map();
-let publicNewsMediaRefreshPromise = null;
 let legacyProductModalBackupMap = new Map();
 let storefrontProductsFallbackBase = null;
 let storefrontProductsFallbackBaseLoadedAt = 0;
@@ -316,7 +300,7 @@ function isHiddenPublicVpnProduct(item) {
 
   const normalizedTags = tags.map((tag) => String(tag || "").trim().toLowerCase());
   const isAiSubscription = normalizedTags.some((tag) =>
-    ["chatgpt", "claude", "supergrok", "grok"].includes(tag)
+    ["chatgpt", "claude", "supergrok", "grok", "perplexity", "pplx", "gemini", "google-ai", "suno"].includes(tag)
   );
   if (isAiSubscription) return false;
 
@@ -445,11 +429,7 @@ loadLegacyProductModalBackup();
 let db;
 
 function createDb() {
-  const database = new sqlite3.Database(dbPath);
-  database.run("PRAGMA busy_timeout = 5000");
-  database.run("PRAGMA journal_mode = WAL");
-  database.run("PRAGMA synchronous = NORMAL");
-  return database;
+  return new sqlite3.Database(dbPath);
 }
 
 function run(sql, params = []) {
@@ -831,6 +811,11 @@ async function refreshPublicNewsCache() {
     const fetched = await fetchTelegramPublicFeed(TELEGRAM_NEWS_CHANNEL, {
       timeoutMs: TELEGRAM_NEWS_FETCH_TIMEOUT_MS,
     });
+    await cacheTelegramFeedMedia(fetched, {
+      imageDirectory: PUBLIC_NEWS_MEDIA_DIR,
+      publicBasePath: "/assets/img/news",
+      timeoutMs: TELEGRAM_NEWS_FETCH_TIMEOUT_MS,
+    });
     const next = normalizePublicNewsPayload(fetched);
     if (!next.items.length) {
       throw new Error("Telegram news feed is empty");
@@ -867,100 +852,6 @@ async function getPublicNewsPayload() {
   }
 
   return { payload: await refreshPublicNewsCache(), stale: false };
-}
-
-async function refreshPublicNewsMediaCache() {
-  if (publicNewsMediaRefreshPromise) return publicNewsMediaRefreshPromise;
-
-  publicNewsMediaRefreshPromise = (async () => {
-    const fetched = await fetchTelegramPublicFeed(TELEGRAM_NEWS_CHANNEL, {
-      timeoutMs: TELEGRAM_NEWS_FETCH_TIMEOUT_MS,
-    });
-    const mediaItems = (Array.isArray(fetched?.items) ? fetched.items : []).filter(
-      item => Number(item?.postId) > 0 && typeof item?.imageUrl === "string" && item.imageUrl
-    );
-    const resolved = await Promise.all(
-      mediaItems.map(async item => {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), TELEGRAM_NEWS_FETCH_TIMEOUT_MS);
-        try {
-          const response = await fetch(item.imageUrl, {
-            headers: {
-              Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
-              "User-Agent": PUBLIC_FETCH_HEADERS["User-Agent"],
-            },
-            redirect: "follow",
-            signal: controller.signal,
-          });
-          if (!response.ok) return null;
-
-          const contentType = String(response.headers.get("content-type") || "")
-            .split(";")[0]
-            .trim()
-            .toLowerCase();
-          if (!contentType.startsWith("image/")) return null;
-
-          const buffer = Buffer.from(await response.arrayBuffer());
-          if (!buffer.length || buffer.length > 5 * 1024 * 1024) return null;
-
-          return [
-            Number(item.postId),
-            {
-              buffer,
-              contentType,
-            },
-          ];
-        } catch (_) {
-          return null;
-        } finally {
-          clearTimeout(timeout);
-        }
-      })
-    );
-
-    const nextCache = new Map(resolved.filter(Boolean));
-    if (!nextCache.size) {
-      throw new Error("Telegram news media is empty");
-    }
-    publicNewsMediaCache = nextCache;
-    return nextCache;
-  })();
-
-  try {
-    return await publicNewsMediaRefreshPromise;
-  } finally {
-    publicNewsMediaRefreshPromise = null;
-  }
-}
-
-async function getPublicNewsMedia(postId) {
-  const cached = publicNewsMediaCache.get(postId);
-  if (cached) return cached;
-  const bundledVariants = [
-    ["jpg", "image/jpeg"],
-    ["jpeg", "image/jpeg"],
-    ["png", "image/png"],
-    ["webp", "image/webp"],
-    ["gif", "image/gif"],
-  ];
-  for (const [extension, contentType] of bundledVariants) {
-    try {
-      const buffer = await fs.promises.readFile(
-        path.join(PUBLIC_NEWS_MEDIA_DIR, `${TELEGRAM_NEWS_CHANNEL}-${postId}.${extension}`)
-      );
-      const media = { buffer, contentType };
-      publicNewsMediaCache.set(postId, media);
-      return media;
-    } catch (error) {
-      if (error?.code !== "ENOENT") throw error;
-    }
-  }
-  const knownPost = loadPublicNewsCache().items.some(
-    item => Number(item?.postId) === postId && Boolean(item?.imageUrl)
-  );
-  if (!knownPost) return null;
-  const refreshed = await refreshPublicNewsMediaCache();
-  return refreshed.get(postId) || null;
 }
 
 async function initDb() {
@@ -1150,35 +1041,6 @@ function createApp() {
       crossOriginResourcePolicy: { policy: "cross-origin" },
     })
   );
-
-  // CSP пока в режиме отчётов: НИЧЕГО не блокирует, только сообщает о том,
-  // что было бы заблокировано. Дайте поработать несколько дней, посмотрите
-  // /api/csp-report в логах и, когда список нарушений опустеет, переключите
-  // заголовок на "Content-Security-Policy" — тогда он начнёт защищать от XSS.
-  const CSP_REPORT_ONLY_POLICY = [
-    "default-src 'self'",
-    // 'unsafe-inline' нужен, пока на страницах есть инлайновые скрипты
-    // (детектор тира устройства и т.п.). Убрать после перевода их в файлы.
-    "script-src 'self' 'unsafe-inline' https://mc.yandex.ru",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' data: https://fonts.gstatic.com",
-    "img-src 'self' data: blob: https:",
-    "connect-src 'self' https://mc.yandex.ru",
-    "frame-src 'self' https://mc.yandex.ru",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'self'",
-    "report-uri /api/csp-report",
-  ].join("; ");
-
-  app.use((req, res, next) => {
-    if (req.method === "GET" || req.method === "HEAD") {
-      res.setHeader("Content-Security-Policy-Report-Only", CSP_REPORT_ONLY_POLICY);
-    }
-    return next();
-  });
-
   app.use(compression());
   app.use(
     "/api",
@@ -1187,37 +1049,13 @@ function createApp() {
       max: 600,
       standardHeaders: true,
       legacyHeaders: false,
-      skip: req => String(req.path || "").toLowerCase() === "/stats",
+      skip: req => {
+        const apiPath = String(req.path || "").toLowerCase();
+        return apiPath === "/stats" || apiPath === "/heartbeat";
+      },
     })
   );
   app.use(express.json({ limit: "256kb" }));
-
-  // Приём отчётов CSP. Браузер шлёт их с особым content-type, поэтому свой
-  // парсер. Одинаковые нарушения логируем не чаще раза в 10 минут, иначе
-  // один битый ресурс зальёт логи.
-  const cspSeen = new Map();
-  app.post(
-    "/api/csp-report",
-    express.json({ type: ["application/csp-report", "application/json"], limit: "16kb" }),
-    (req, res) => {
-      try {
-        const report = req.body?.["csp-report"] || req.body || {};
-        const directive = String(report["violated-directive"] || report.effectiveDirective || "?");
-        const blocked = String(report["blocked-uri"] || report.blockedURL || "?").slice(0, 200);
-        const key = `${directive}|${blocked}`;
-        const now = Date.now();
-        if (!cspSeen.has(key) || now - cspSeen.get(key) > 10 * 60 * 1000) {
-          cspSeen.set(key, now);
-          if (cspSeen.size > 500) cspSeen.clear();
-          console.warn(`[csp] ${directive} заблокировал бы: ${blocked}`);
-        }
-      } catch (_) {
-        // отчёт кривой — молча игнорируем, это не критично
-      }
-      return res.status(204).end();
-    }
-  );
-
   app.get("/favicon.ico", (_req, res) => {
     if (!faviconPath) {
       return res.status(404).end();
@@ -1269,15 +1107,6 @@ function createApp() {
     return next();
   });
 
-  const BLOCKED_STATIC_PATH = /^\/(?:data|scripts|includes|apps|backups|node_modules|server\.js|package(?:-lock)?\.json|ecosystem\.config\.js|deploy\.sh|_tmp_)/i;
-  app.use((req, res, next) => {
-    const p = String(req.path || "");
-    if (BLOCKED_STATIC_PATH.test(p) || /\.(sqlite(?:-shm|-wal)?|db|log|bak|env|ini)$/i.test(p)) {
-      return res.status(404).send("Not found");
-    }
-    return next();
-  });
-
   app.use(
     express.static(__dirname, {
       dotfiles: "ignore",
@@ -1293,8 +1122,17 @@ function createApp() {
   );
 
   function buildForwardedFor(req) {
-    // Доверяем только req.ip: клиентские x-forwarded-for / x-real-ip подделываются.
-    return String(req.ip || req.socket?.remoteAddress || "").replace("::ffff:", "").trim();
+    const existing = String(req.headers["x-forwarded-for"] || "").trim();
+    const ip = String(req.headers["x-real-ip"] || req.ip || req.socket?.remoteAddress || "")
+      .replace("::ffff:", "")
+      .trim();
+
+    if (!existing) return ip;
+    if (!ip) return existing;
+
+    const parts = existing.split(",").map(part => part.trim()).filter(Boolean);
+    if (parts.includes(ip)) return existing;
+    return `${existing}, ${ip}`;
   }
 
   function buildAdminProxyHeaders(req, options = {}) {
@@ -1319,7 +1157,7 @@ function createApp() {
     if (forwardedFor) {
       headers["X-Forwarded-For"] = forwardedFor;
     }
-    const realIp = String(req.ip || "").replace("::ffff:", "").trim();
+    const realIp = String(req.headers["x-real-ip"] || req.ip || "").replace("::ffff:", "").trim();
     if (realIp) {
       headers["X-Real-IP"] = realIp;
     }
@@ -1423,53 +1261,25 @@ function createApp() {
   let lastOnlineCleanupTs = 0;
   const heartbeatWriteTracker = new Map();
 
-  // req.path не нормализуется, а fetch() схлопывает "..", поэтому запрос вида
-  // /api/admin/../<путь> уходил бы на бэкенд за пределы разрешённого префикса.
-  function hasPathTraversal(req) {
-    const raw = String(req.path || "");
-    let decoded = raw;
-    try {
-      decoded = decodeURIComponent(raw);
-    } catch (_) {
-      return true; // некорректное кодирование — не пропускаем
-    }
-    return raw.includes("..") || decoded.includes("..") || decoded.includes("\\");
-  }
+  app.use("/api/admin", async (req, res) => {
+    const query = extractQuerySuffix(req);
+    const basePath = `/api/admin${req.path}`;
+    return proxyToAdminBackend(req, res, `${basePath}${query}`);
+  });
 
-  function proxyPrefix(prefix) {
-    return async (req, res) => {
-      if (hasPathTraversal(req)) {
-        return res.status(400).json({ error: "Bad request" });
-      }
-      const query = extractQuerySuffix(req);
-      return proxyToAdminBackend(req, res, `${prefix}${req.path}${query}`);
-    };
-  }
+  app.use("/api/account", async (req, res) => {
+    const query = extractQuerySuffix(req);
+    const basePath = `/api/account${req.path}`;
+    return proxyToAdminBackend(req, res, `${basePath}${query}`);
+  });
 
-  app.use("/api/admin", proxyPrefix("/api/admin"));
-  app.use("/api/account", proxyPrefix("/api/account"));
-  app.use("/api/telegram", proxyPrefix("/api/telegram"));
-
-  app.get("/api/public/reviews", async (_req, res) => {
-    try {
-      const payload = JSON.parse(await fs.promises.readFile(PUBLIC_REVIEWS_PATH, "utf8"));
-      if (!Array.isArray(payload?.sources) || !Array.isArray(payload?.items)) {
-        throw new Error("Invalid public reviews payload");
-      }
-
-      res.set(
-        "Cache-Control",
-        "public, max-age=300, stale-while-revalidate=3600, stale-if-error=86400"
-      );
-      return res.json(payload);
-    } catch (error) {
-      logError("Public reviews request failed", error);
-      return res.status(503).json({ error: "REVIEWS_TEMPORARILY_UNAVAILABLE" });
-    }
+  app.use("/api/telegram", async (req, res) => {
+    const query = extractQuerySuffix(req);
+    const basePath = `/api/telegram${req.path}`;
+    return proxyToAdminBackend(req, res, `${basePath}${query}`);
   });
 
   app.post("/api/heartbeat", async (req, res) => {
-    if (!PUBLIC_STATS_ENABLED) return res.status(404).send("Not found");
     const sessionId = String(req.body?.sessionId || "").trim();
     const currentPath = String(req.body?.path || "").trim().slice(0, 200);
 
@@ -1500,6 +1310,8 @@ function createApp() {
           if (Number(ts || 0) < staleBefore) heartbeatWriteTracker.delete(key);
         }
       }
+      statsPayloadCache = null;
+      statsPayloadCacheTs = 0;
       res.json({ ok: true });
     } catch (_error) {
       res.status(500).json({ error: "Failed to update heartbeat" });
@@ -1659,6 +1471,14 @@ function createApp() {
     } catch (_) {
       return res.status(502).json({ error: "Homepage content API unavailable" });
     }
+  });
+
+  app.get("/api/public/ai-battle", async (req, res) => {
+    return proxyToAdminBackend(req, res, "/api/public/ai-battle");
+  });
+
+  app.post("/api/public/ai-battle", async (req, res) => {
+    return proxyToAdminBackend(req, res, "/api/public/ai-battle");
   });
 
   app.get("/api/public/service-pages/:slug", async (req, res) => {
@@ -2095,7 +1915,6 @@ function createApp() {
   });
 
   app.get("/api/public/storefront-stats", (req, res) => {
-    if (!PUBLIC_STATS_ENABLED) return res.status(404).send("Not found");
     const suffix = extractQuerySuffix(req);
     return res.redirect(307, suffix ? `/api/stats${suffix}` : "/api/stats");
   });
@@ -2147,7 +1966,6 @@ function createApp() {
   }
 
   app.get("/api/stats", async (req, res) => {
-    if (!PUBLIC_STATS_ENABLED) return res.status(404).send("Not found");
     const now = Date.now();
     if (statsPayloadCache && now - statsPayloadCacheTs < STATS_CACHE_TTL_MS) {
       return res.json(statsPayloadCache);
@@ -2295,25 +2113,24 @@ function createApp() {
     }
   });
 
-  app.get("/api/public/news/:postId/image", async (req, res) => {
-    const postId = Number.parseInt(String(req.params?.postId || ""), 10);
-    if (!Number.isInteger(postId) || postId <= 0) {
-      return res.status(404).send("Not found");
-    }
-
+  app.get("/api/public/reviews", async (_req, res) => {
     try {
-      const media = await getPublicNewsMedia(postId);
-      if (!media) return res.status(404).send("Not found");
-
-      res.set("Content-Type", media.contentType);
+      const payload = JSON.parse(await fs.promises.readFile(PUBLIC_REVIEWS_CACHE_PATH, "utf8"));
+      if (!Array.isArray(payload?.sources) || !Array.isArray(payload?.items)) {
+        throw new Error("Public reviews cache is invalid");
+      }
       res.set(
         "Cache-Control",
-        "public, max-age=86400, stale-while-revalidate=604800, stale-if-error=2592000"
+        "public, max-age=300, stale-while-revalidate=3600, stale-if-error=86400"
       );
-      return res.send(media.buffer);
+      return res.json(payload);
     } catch (error) {
-      logError("Telegram news media request failed", error);
-      return res.status(503).send("News media temporarily unavailable");
+      logError("Public reviews request failed", error);
+      return res.status(503).json({
+        sources: [],
+        items: [],
+        error: "REVIEWS_TEMPORARILY_UNAVAILABLE",
+      });
     }
   });
 
@@ -2438,6 +2255,38 @@ function createApp() {
 
   app.get(["/supergrok", "/supergrok/"], (_req, res) => {
     sendFreshHtml(res, path.join(__dirname, "supergrok.html"));
+  });
+
+  app.get(["/perplexity", "/perplexity/"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "perplexity.html"));
+  });
+
+  app.get(["/gemini", "/gemini/"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "gemini.html"));
+  });
+
+  app.get(["/suno", "/suno/"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "suno.html"));
+  });
+
+  app.get(["/itunes", "/itunes/"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "itunes.html"));
+  });
+
+  app.get(["/en/perplexity", "/en/perplexity/", "/en/perplexity.html"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "perplexity.html"));
+  });
+
+  app.get(["/en/gemini", "/en/gemini/", "/en/gemini.html"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "gemini.html"));
+  });
+
+  app.get(["/en/suno", "/en/suno/", "/en/suno.html"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "en", "suno.html"));
+  });
+
+  app.get(["/en/itunes", "/en/itunes/", "/en/itunes.html"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "itunes.html"));
   });
 
   app.get("/en", (_req, res) => {

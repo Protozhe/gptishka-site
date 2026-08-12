@@ -4,6 +4,7 @@
   var PAGE_SIZE = 12;
   var state = {
     data: null,
+    filter: "all",
     visible: PAGE_SIZE,
   };
 
@@ -12,6 +13,7 @@
     rating: document.getElementById("reviewsRating"),
     updated: document.getElementById("reviewsUpdated"),
     sources: document.getElementById("reviewsSources"),
+    filters: document.getElementById("reviewsFilters"),
     grid: document.getElementById("reviewsGrid"),
     empty: document.getElementById("reviewsEmpty"),
     more: document.getElementById("reviewsMore"),
@@ -112,6 +114,44 @@
     });
   }
 
+  function renderFilters(data) {
+    elements.filters.replaceChildren();
+    var options = [{ id: "all", label: "Все отзывы" }].concat(
+      data.sources
+        .filter(function (source) {
+          return !source.hidden && String(source.label || "").trim().toLowerCase() !== "reznikshop" && data.items.some(function (item) {
+            return item.sourceId === source.id;
+          });
+        })
+        .map(function (source) {
+          return { id: source.id, label: source.label };
+        })
+    );
+
+    options.forEach(function (option) {
+      var button = create("button", "reviews-filter", option.label);
+      button.type = "button";
+      button.dataset.filter = option.id;
+      button.setAttribute("aria-pressed", String(option.id === state.filter));
+      if (option.id === state.filter) button.classList.add("is-active");
+      button.addEventListener("click", function () {
+        state.filter = option.id;
+        state.visible = PAGE_SIZE;
+        renderFilters(data);
+        renderReviews(data);
+      });
+      elements.filters.append(button);
+    });
+  }
+
+  function reviewNickname(item) {
+    var explicitNickname = String(item.nickname || "").trim();
+    if (explicitNickname) return explicitNickname;
+
+    var author = String(item.author || "").trim();
+    return author || "Покупатель";
+  }
+
   function renderReview(item) {
     var card = create("article", "review-card");
     var top = create("div", "review-card__top");
@@ -123,10 +163,9 @@
     var text = create("p", "review-card__text", item.text);
     var footer = create("div", "review-card__footer");
     var meta = create("span", "review-card__meta");
-    meta.append(
-      create("strong", "", item.detail || item.author || "Покупатель"),
-      create("span", "", item.dateLabel || formatUpdated(item.date))
-    );
+    meta.append(create("strong", "review-card__nickname", reviewNickname(item)));
+    if (item.detail) meta.append(create("span", "review-card__purchase", item.detail));
+    meta.append(create("span", "review-card__date", item.dateLabel || formatUpdated(item.date)));
     footer.append(meta);
     if (item.url && !item.sourceHidden) {
       var link = create("a", "review-card__link", "Источник ↗");
@@ -138,8 +177,15 @@
     return card;
   }
 
+  function filteredItems(data) {
+    if (state.filter === "all") return data.items;
+    return data.items.filter(function (item) {
+      return item.sourceId === state.filter;
+    });
+  }
+
   function renderReviews(data) {
-    var items = data.items;
+    var items = filteredItems(data);
     var visible = items.slice(0, state.visible);
     elements.grid.replaceChildren();
     visible.forEach(function (item) {
@@ -153,6 +199,7 @@
 
   function showError() {
     elements.sources.replaceChildren();
+    elements.filters.replaceChildren();
     elements.grid.replaceChildren();
     elements.grid.hidden = true;
     elements.grid.setAttribute("aria-busy", "false");
@@ -169,7 +216,7 @@
   });
 
   var eightHourBucket = Math.floor(Date.now() / (8 * 60 * 60 * 1000));
-  fetch("/api/public/reviews?v=privacy4-" + eightHourBucket, {
+  fetch("/api/public/reviews?v=privacy5-" + eightHourBucket, {
     cache: "no-store",
     credentials: "same-origin",
     headers: { Accept: "application/json" },
@@ -185,6 +232,7 @@
       state.data = data;
       renderStats(data);
       renderSources(data);
+      renderFilters(data);
       renderReviews(data);
     })
     .catch(function () {

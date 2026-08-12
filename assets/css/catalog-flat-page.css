@@ -77,7 +77,8 @@ html body.home-gradient-page.home-catalog-body main.catalog-page {
 }
 
 html body.home-gradient-page.home-catalog-body .catalog-top {
-  margin: 0 0 clamp(30px, 4vw, 48px) !important;
+  gap: 14px !important;
+  margin: 0 0 16px !important;
   padding: 0 !important;
   border: 0 !important;
   border-radius: 0 !important;
@@ -98,8 +99,76 @@ html body.home-gradient-page.home-catalog-body .catalog-title {
  * original position and the surrounding vertical rhythm.
  */
 html body.home-gradient-page.home-catalog-body .catalog-tabs {
-  margin-top: 18px !important;
+  margin-top: 2px !important;
   padding-top: 4px !important;
+}
+
+/* Steam directory is intentionally denser than multi-product listings. */
+html body.home-gradient-page.home-catalog-body
+  .catalog-page--topups
+  .ai-directory-card__body {
+  min-height: 0 !important;
+  gap: 5px !important;
+  padding: 12px 3px 3px !important;
+}
+
+html body.home-gradient-page.home-catalog-body
+  .catalog-page--topups
+  .ai-directory-card__bottom {
+  margin-top: 3px !important;
+  gap: 5px !important;
+}
+
+@media (min-width: 721px) and (max-width: 1279px) {
+  html body.home-gradient-page.home-catalog-body .catalog-grid--single {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Full HD catalog: keep five products in one compact row. */
+@media (min-width: 1280px) {
+  html body.home-gradient-page.home-catalog-body {
+    --catalog-flat-width: 1640px;
+  }
+
+  html body.home-gradient-page.home-catalog-body
+    :is(.catalog-grid, .catalog-grid--directory, .ai-directory-grid) {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+  }
+
+  html body.home-gradient-page.home-catalog-body .ai-directory-card {
+    padding: 10px !important;
+    border-radius: 26px !important;
+  }
+
+  html body.home-gradient-page.home-catalog-body .ai-directory-card__media {
+    border-radius: 20px !important;
+  }
+
+  html body.home-gradient-page.home-catalog-body .ai-directory-card__body {
+    min-height: 220px !important;
+    padding: 15px 3px 3px !important;
+  }
+
+  html body.home-gradient-page.home-catalog-body
+    :is(.ai-directory-card__name, .ai-directory-card__title) {
+    font-size: 26px !important;
+  }
+
+  html body.home-gradient-page.home-catalog-body
+    :is(.ai-directory-card__desc, .ai-directory-card__plans) {
+    font-size: 14px !important;
+  }
+
+  html body.home-gradient-page.home-catalog-body .ai-directory-card__price {
+    font-size: 20px !important;
+  }
+
+  html body.home-gradient-page.home-catalog-body .ai-directory-card__button {
+    min-height: 46px !important;
+    border-radius: 15px !important;
+  }
 }
 
 @media (max-width: 760px) {

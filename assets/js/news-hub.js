@@ -63,7 +63,7 @@
       mediaLink.setAttribute("aria-label", labels.read);
 
       const image = document.createElement("img");
-      image.dataset.src = `/api/public/news/${encodeURIComponent(item.postId)}/image`;
+      image.dataset.src = item.imageUrl;
       image.alt = "";
       image.loading = "lazy";
       image.decoding = "async";
@@ -144,11 +144,11 @@
   }
 
   async function readSavedPayload() {
-    const response = await fetch("/data/public-news.json", {
+    const response = await fetch("/api/public/news?limit=18", {
       cache: "force-cache",
       headers: { Accept: "application/json" },
     });
-    if (!response.ok) throw new Error(`Saved feed HTTP ${response.status}`);
+    if (!response.ok) throw new Error(`Cached feed HTTP ${response.status}`);
     return response.json();
   }
 

@@ -1,9 +1,9 @@
 /*
- * Flat storefront layout shared by ChatGPT and SuperGrok.
+ * Flat storefront layout shared by ChatGPT, SuperGrok and Perplexity.
  * Product-specific color is limited to a very soft background glow.
  */
 
-html:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"])) {
+html:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"])) {
   background: #181b20 !important;
 }
 
@@ -15,7 +15,15 @@ html body:has(main.service-page[data-service-page="grok"]) {
   --service-flat-accent: 148, 163, 184;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"])) {
+html body:has(main.service-page[data-service-page="perplexity"]) {
+  --service-flat-accent: 91, 189, 199;
+}
+
+html body:has(main.service-page[data-service-page="suno"]) {
+  --service-flat-accent: 196, 71, 255;
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"])) {
   --service-flat-width: 1180px;
   --service-flat-gutter: clamp(14px, 3.5vw, 46px);
   background:
@@ -25,7 +33,7 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
   background-attachment: fixed !important;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))::before {
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))::before {
   inset: -10% -8%;
   background:
     radial-gradient(circle at 18% 18%, rgba(var(--service-flat-accent), 0.09), transparent 29%),
@@ -34,11 +42,11 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
   opacity: 0.68 !important;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))::after {
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))::after {
   opacity: 0.022;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   :is(header, main.service-page, .gptishka-compliance-note) {
   width: min(
     var(--service-flat-width),
@@ -48,7 +56,7 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
   margin-inline: auto !important;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"])) header {
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"])) header {
   margin-top: 8px !important;
   margin-bottom: 0 !important;
   border: 0 !important;
@@ -56,7 +64,7 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
   box-shadow: none !important;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   header
   :is(.nav, .nav-shell) {
   border: 0 !important;
@@ -66,7 +74,7 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
   -webkit-backdrop-filter: none !important;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   header.is-scrolled
   :is(.nav, .nav-shell) {
   background: rgba(38, 42, 49, 0.82) !important;
@@ -92,12 +100,12 @@ html body:has(main.service-page[data-service-page="chatgpt"]) .gptishka-complian
   color: rgba(255, 255, 255, 0.84) !important;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page {
   padding: clamp(26px, 3vw, 38px) 0 72px !important;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   .service-directory-back {
   display: inline-flex;
   align-items: center;
@@ -117,7 +125,7 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
   transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   .service-directory-back__icon {
   width: 17px;
   height: 17px;
@@ -129,20 +137,20 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
   stroke-linejoin: round;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   .service-directory-back:hover {
   border-color: rgba(var(--service-flat-accent), 0.42);
   background: rgba(var(--service-flat-accent), 0.1);
   color: #fff;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   .service-directory-back:focus-visible {
   outline: 2px solid rgba(var(--service-flat-accent), 0.82);
   outline-offset: 3px;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   :is(
     .service-plans-section,
@@ -166,21 +174,21 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
   -webkit-backdrop-filter: none !important;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   .service-plans-section {
   margin-top: 0;
   padding: 0;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   .service-constructor-shell {
   gap: clamp(28px, 5vw, 64px);
   align-items: start;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   .service-product-gallery {
   min-height: 0;
@@ -188,7 +196,7 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
   place-items: center;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   .service-product-gallery img {
   width: 100%;
@@ -197,7 +205,7 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
   box-shadow: none !important;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   .service-product-gallery__viewport {
   width: min(100%, 440px);
@@ -219,19 +227,25 @@ html body:has(main.service-page[data-service-page="grok"])
   transform: scale(1.09);
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page[data-service-page="perplexity"])
+  main.service-page
+  .service-product-gallery img {
+  transform: scale(1.045);
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   .service-constructor-card {
   padding: 0;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   .service-selected-plan {
   padding: 0 !important;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   .service-checkout-card__summary {
   padding-block: 14px;
@@ -239,13 +253,13 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   .service-checkout-card__summary > div {
   padding: 0 14px 0 0;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   .service-constructor-description {
   margin-top: 28px;
@@ -253,7 +267,7 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
   border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   .service-constructor-description
   .service-delivery-help {
@@ -262,7 +276,7 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
   border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   :is(.service-info-section, .service-faq-section) {
   gap: 24px;
@@ -271,13 +285,13 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
   border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   .service-info-grid {
   gap: clamp(30px, 6vw, 72px);
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   .service-info-card {
   align-content: start;
@@ -366,26 +380,67 @@ html body:has(main.service-page[data-service-page="grok"])
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page[data-service-page="perplexity"])
+  main.service-page[data-service-page="perplexity"]
+  .service-info-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+html body:has(main.service-page[data-service-page="perplexity"])
+  main.service-page[data-service-page="perplexity"]
+  .service-info-card {
+  gap: 14px;
+}
+
+html body:has(main.service-page[data-service-page="perplexity"])
+  main.service-page[data-service-page="perplexity"]
+  .service-info-card li {
+  line-height: 1.65;
+}
+
+html body:has(main.service-page[data-service-page="perplexity"])
+  main.service-page[data-service-page="perplexity"]
+  .service-info-card a {
+  color: rgba(142, 216, 223, 0.96);
+  text-decoration-color: rgba(91, 189, 199, 0.45);
+  text-underline-offset: 3px;
+}
+
+html body:has(main.service-page[data-service-page="perplexity"])
+  main.service-page[data-service-page="perplexity"]
+  .service-info-card a:hover {
+  color: #d9f1f2;
+  text-decoration-color: currentColor;
+}
+
+html body:has(main.service-page[data-service-page="perplexity"])
+  main.service-page[data-service-page="perplexity"]
+  .service-info-card__legal {
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   .service-faq-list {
   gap: 0;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   .service-faq-item {
   overflow: visible;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   .service-faq-question {
   padding: 20px 0;
 }
 
-html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
   main.service-page
   .service-faq-answer {
   padding: 0 0 20px;
@@ -401,35 +456,35 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
 }
 
 @media (max-width: 760px) {
-  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
     :is(header, main.service-page, .gptishka-compliance-note) {
     width: calc(100% - 28px) !important;
   }
 
-  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
     main.service-page {
     padding: 24px 0 58px !important;
   }
 
-  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
     main.service-page
     .service-constructor-shell {
     gap: 30px;
   }
 
-  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
     main.service-page
     .service-product-gallery__viewport {
     width: min(100%, 330px);
   }
 
-  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
     main.service-page
     .service-checkout-card__summary > div {
     padding: 0;
   }
 
-  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"]))
+  html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
     main.service-page
     :is(.service-info-section, .service-faq-section) {
     margin-top: 44px;

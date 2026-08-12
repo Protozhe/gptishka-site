@@ -65,24 +65,6 @@ if [ "$SKIP_BACKEND_DEPLOY" -eq 0 ]; then
   pm2 save
 else
   echo "WARN: backend deploy steps were skipped. Admin UI and static files are updated."
-
-  # Раньше перезапуск PM2 жил только в ветке выше, поэтому при пропуске
-  # backend-шагов на прод уезжала одна статика: HTML/CSS/JS читаются с диска
-  # на каждый запрос и обновлялись, а server.js остаётся в памяти процесса и
-  # продолжал работать в старой версии. Из-за этого правки серверного кода
-  # (в том числе закрытие доступа к /data/*.sqlite и исходникам) молча не
-  # доезжали до прода, хотя деплой рапортовал об успехе.
-  # Сторефронт не зависит от apps/admin-backend/.env, поэтому перезапускаем
-  # его всегда.
-  echo "INFO: restarting storefront so server.js changes take effect"
-  if pm2 describe gptishka-storefront >/dev/null 2>&1; then
-    pm2 restart gptishka-storefront --update-env || echo "WARN: storefront restart failed"
-  elif [ -f ecosystem.config.js ]; then
-    pm2 start ecosystem.config.js --only gptishka-storefront --update-env || echo "WARN: storefront start failed"
-  else
-    echo "WARN: cannot restart storefront: no PM2 process and no ecosystem.config.js"
-  fi
-  pm2 save || true
 fi
 
 echo "DEPLOY OK"

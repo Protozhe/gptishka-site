@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="/assets/css/gptishka-header-refresh.css?v=20260724-language-slider1">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20260724-header-layout3">
   
-  <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260726-minified1">
+  <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2">
 <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260310r" />
 
   <style>
@@ -1275,14 +1275,25 @@
 <link rel="stylesheet" href="/assets/css/support-widget.css?v=20260724-resume-collapse1" />
 <link rel="stylesheet" href="/assets/css/home-stability-hotfix.css?v=20260723-checkout-controls1" />
 <link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260707-header-unify9" />
-<link rel="stylesheet" href="/assets/css/redeem-start-refresh.css?v=20260724-redeem-refresh3" />
+<link rel="stylesheet" href="/assets/css/redeem-start-refresh.css?v=20260811-redeem-alert1" />
 </head>
 <body class="redeem-flow home-wide-body">
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
   <div class="page-overlay"></div>
 
   <header class="gptishka-canonical-header">
-        <div class="nav nav-shell">
+    <div id="siteTicker" class="site-ticker" role="status" aria-live="polite">
+      <div class="site-ticker__marquee">
+        <div class="site-ticker__track" id="siteTickerTrack">
+          <div class="site-ticker__loop"><span class="site-ticker__item">Лента активаций обновляется...</span></div>
+          <div class="site-ticker__loop" aria-hidden="true"><span class="site-ticker__item">Лента активаций обновляется...</span></div>
+        </div>
+      </div>
+      <div class="site-ticker__stats">
+        <span class="site-ticker__stat"><span class="site-ticker__stat-label">всего активаций:</span> <strong id="siteTickerSales">0</strong></span>
+      </div>
+    </div>
+    <div class="nav nav-shell">
       <a href="/" class="logo-link">
         <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTишка" class="logo-img">
       </a>
@@ -1320,8 +1331,8 @@
 
   <main class="page redeem-page">
     <section class="redeem-card">
-      <h1 class="redeem-title">Продлить / Активировать</h1>
-      <p class="redeem-subtitle">Заказ принят в работу, мы с вами свяжемся, если возникнут вопросы</p>
+      <h1 class="redeem-title" id="redeemTitle">Продлить / Активировать</h1>
+      <p class="redeem-subtitle" id="redeemSubtitle">Заказ принят в работу, мы с вами свяжемся, если возникнут вопросы</p>
 
       <section id="vpnOfferBlock" class="redeem-vpn-offer" hidden>
         <div class="redeem-vpn-offer-head">
@@ -1441,15 +1452,22 @@
     <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
   </footer>
 
-  <script src="/assets/js/app.min.js?v=20260726-minified1" defer></script>
+  <script src="/assets/js/app.min.js?v=20260724-en-product-routes1" defer></script>
   <script>
     (() => {
     const params = new URLSearchParams(window.location.search);
-    const orderId = String(params.get('order_id') || params.get('orderId') || '').trim();
+    const previewServiceKey = String(params.get('service') || '').trim().toLowerCase().replace(/[\s_-]+/g, '');
+    const previewMode = ['1', 'true', 'yes'].includes(String(params.get('preview') || '').trim().toLowerCase())
+      && ['claude', 'grok', 'supergrok', 'perplexity', 'pplx'].includes(previewServiceKey);
+    const orderId = previewMode
+      ? `preview-${previewServiceKey}`
+      : String(params.get('order_id') || params.get('orderId') || '').trim();
     let orderLinkToken = String(params.get('t') || '').trim();
     const skipBundleRedirect = String(params.get('skip_bundle_redirect') || '').trim() === '1';
 
     const orderIdEl = document.getElementById('orderId');
+    const redeemTitleEl = document.getElementById('redeemTitle');
+    const redeemSubtitleEl = document.getElementById('redeemSubtitle');
     const copyOrderIdBtn = document.getElementById('copyOrderIdBtn');
     const tokenBlock = document.getElementById('tokenBlock');
     const tokenLabelEl = document.getElementById('tokenLabel');
@@ -1561,6 +1579,7 @@
 
     function shouldBlockLeaving() {
       if (leaveGuardBypass) return false;
+      if (previewMode) return false;
       if (!orderId) return false;
       if (activationCompleted) return false;
       return true;
@@ -1790,9 +1809,26 @@
         ? MANUAL_SUPPORT_MESSAGE
         : 'Login and password are not assigned yet. Please contact support or wait for manual assignment.';
       const message = isSupportDelivery ? MANUAL_SUPPORT_MESSAGE : (String(payload?.message || '').trim() || defaultMessage);
+      const productFingerprint = [payload?.productKey, payload?.productSlug, payload?.productTitle, payload?.serviceKey]
+        .map((value) => String(value || '').trim().toLowerCase())
+        .join(' ');
+      let serviceName = 'подписки';
+      if (productFingerprint.includes('perplexity') || productFingerprint.includes('pplx')) serviceName = 'Perplexity Pro';
+      else if (productFingerprint.includes('claude')) serviceName = 'Claude';
+      else if (productFingerprint.includes('gemini') || productFingerprint.includes('google ai')) serviceName = 'Gemini Pro';
+      else if (productFingerprint.includes('suno')) serviceName = 'Suno Premier';
+      else if (productFingerprint.includes('supergrok') || productFingerprint.includes('grok')) serviceName = 'SuperGrok';
+      else if (productFingerprint.includes('chatgpt')) serviceName = 'ChatGPT';
+      else if (productFingerprint.includes('steam') || productFingerprint.includes('mann co')) serviceName = 'пополнения Steam';
+
+      if (isSupportDelivery) {
+        if (redeemTitleEl) redeemTitleEl.textContent = `Подключение ${serviceName}`;
+        if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата подтверждена. Заказ передан специалисту GPTishka.';
+        document.title = `Подключение ${serviceName} - GPTишка`;
+      }
 
       if (manualBlockLabel) {
-        manualBlockLabel.textContent = isSupportDelivery ? 'Ручная активация через поддержку' : 'Данные для входа';
+        manualBlockLabel.textContent = isSupportDelivery ? 'Статус подключения' : 'Данные для входа';
       }
       if (manualLoginRow) {
         manualLoginRow.style.display = isSupportDelivery ? 'none' : 'flex';
@@ -1901,7 +1937,7 @@
 
       if (tokenLabelEl) {
         tokenLabelEl.textContent = claudeSupportFlow
-          ? 'Активация аккаунта для активации Claude Pro'
+          ? 'ID аккаунта Claude для активации Claude Pro'
           : (isSupportTokenDelivery ? 'ID аккаунта Grok для активации SUPERGROK' : 'Токен аккаунта');
       }
       if (tokenGuideSummaryEl) {
@@ -1952,6 +1988,54 @@
       isMasked = !isSupportTokenDelivery;
       if (tokenInput) tokenInput.classList.toggle('masked', isMasked);
       if (toggleMaskBtn) toggleMaskBtn.textContent = isMasked ? 'Показать' : 'Скрыть';
+    }
+
+    function renderActivationPreview(serviceKey) {
+      const normalizedKey = serviceKey === 'supergrok'
+        ? 'grok'
+        : (serviceKey === 'pplx' ? 'perplexity' : serviceKey);
+      const configs = {
+        claude: {
+          name: 'Claude',
+          flow: SUPPORT_ACTIVATION_FLOW_CLAUDE,
+        },
+        grok: {
+          name: 'SuperGrok',
+          flow: SUPPORT_ACTIVATION_FLOW_GROK,
+        },
+        perplexity: {
+          name: 'Perplexity Pro',
+          deliveryMode: 'manual_login',
+        },
+      };
+      const config = configs[normalizedKey] || configs.perplexity;
+
+      document.body.classList.add('redeem-preview-mode');
+      if (orderIdEl) orderIdEl.textContent = 'ПРЕДПРОСМОТР';
+      if (redeemTitleEl) redeemTitleEl.textContent = `Продлить / Активировать ${config.name}`;
+      if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Безопасный предпросмотр страницы после успешной оплаты.';
+      document.title = `Продлить / Активировать ${config.name} - GPTишка`;
+
+      if (config.deliveryMode === 'manual_login') {
+        setCredentialsDeliveryMode({
+          deliveryMode: 'manual_login',
+          status: 'pending_manual',
+          productKey: normalizedKey,
+          productTitle: config.name,
+          serviceKey: normalizedKey,
+        });
+        if (redeemTitleEl) redeemTitleEl.textContent = `Продлить / Активировать ${config.name}`;
+        if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Безопасный предпросмотр страницы после успешной оплаты.';
+        document.title = `Продлить / Активировать ${config.name} - GPTишка`;
+      } else {
+        applyTokenFlowMode(true, config.flow);
+        hideVpnOffer(false);
+        setStatus('pending', 'Предпросмотр: данные не отправляются, активация не запускается.', false);
+      }
+
+      [startBtn, checkBtn, retryNewKeyBtn, stopPollingBtn].forEach((button) => {
+        if (button) button.disabled = true;
+      });
     }
 
     function buildVpnActivateUrl() {
@@ -2050,7 +2134,9 @@
       }
     });
 
-    if (!orderId) {
+    if (previewMode) {
+      renderActivationPreview(previewServiceKey);
+    } else if (!orderId) {
       // Allow returning if the client closed the window but is in the same browser.
       try {
         const { orderId: lastId, token: lastToken } = readStoredActivationResumeContext();
@@ -2550,7 +2636,7 @@
     }
 
     function updateStartButtonState() {
-      if (isCredentialsDelivery) {
+      if (previewMode || isCredentialsDelivery) {
         startBtn.disabled = true;
         return;
       }
@@ -2559,6 +2645,11 @@
     }
 
     function scheduleValidateToken() {
+      if (previewMode) {
+        tokenValidatedOk = false;
+        updateStartButtonState();
+        return;
+      }
       if (isCredentialsDelivery) {
         tokenValidatedOk = true;
         if (tokenWarn) tokenWarn.textContent = '';
@@ -2576,6 +2667,11 @@
     }
 
     async function validateTokenNow() {
+      if (previewMode) {
+        tokenValidatedOk = false;
+        updateStartButtonState();
+        return false;
+      }
       if (isCredentialsDelivery) {
         tokenValidatedOk = true;
         updateStartButtonState();
@@ -2700,7 +2796,7 @@
     })();
   </script>
 <script src="/assets/js/support-widget.js?v=20260724-resume-faq-clear2" defer></script>
-  <script src="/assets/js/language-switcher.js?v=20260724-header-layout3" defer></script>
+  <script src="/assets/js/language-switcher.js?v=20260810-language-persist1" defer></script>
 </body>
 </html>
 

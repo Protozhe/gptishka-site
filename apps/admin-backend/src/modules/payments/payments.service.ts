@@ -12,6 +12,7 @@ import { WELCOME_PROMO_CODE } from "../promocodes/welcome-promo.service";
 import crypto from "crypto";
 import { resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { resolveActivationVariant } from "../../common/utils/product-activation-variants";
+import { canonicalProductKey } from "../../common/utils/product-key";
 
 const ORDER_SOURCE_SITE = "site";
 const ORDER_SOURCE_TELEGRAM = "telegram";
@@ -196,6 +197,15 @@ export const paymentsService = {
     );
     if (!selectedVariant.enabled) {
       throw new AppError("Selected activation option is not available", 400);
+    }
+    if (selectedVariant.deliveryType === "code") {
+      const productKey = canonicalProductKey(product.slug || product.id);
+      const availableCodes = productKey
+        ? await prisma.licenseKey.count({ where: { productKey, status: "available" } })
+        : 0;
+      if (availableCodes < 1) {
+        throw new AppError("Digital codes are temporarily out of stock", 409);
+      }
     }
     const effectiveOrderDetails = {
       ...(rawOrderDetails || {}),

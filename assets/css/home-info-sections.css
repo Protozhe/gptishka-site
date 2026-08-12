@@ -118,11 +118,18 @@ body.home-wide-body .home-wide-page > .faq {
   padding: 0 !important;
 }
 
+body.home-wide-body .home-wide-page > .faq::before {
+  display: none !important;
+  content: none !important;
+}
+
 body.home-wide-body .home-wide-page > .faq .faq-header {
   position: relative !important;
-  z-index: 2 !important;
+  z-index: 4 !important;
   max-width: 820px !important;
   margin-bottom: clamp(28px, 3.5vw, 46px) !important;
+  padding: 8px 0 0 8px !important;
+  overflow: visible !important;
 }
 
 body.home-wide-body .home-wide-page > .faq .faq-eyebrow {
@@ -144,11 +151,15 @@ body.home-wide-body .home-wide-page > .faq .faq-eyebrow {
 }
 
 body.home-wide-body .home-wide-page > .faq .faq-header h2 {
+  position: relative !important;
+  z-index: 2 !important;
+  display: block !important;
+  overflow: visible !important;
   margin: 0 0 12px !important;
   color: rgba(247, 249, 252, 0.97) !important;
-  font-family: "Space Grotesk", "Manrope", system-ui, sans-serif !important;
+  font-family: "Manrope", system-ui, sans-serif !important;
   font-size: clamp(2rem, 4vw, 3.35rem) !important;
-  font-weight: 650 !important;
+  font-weight: 700 !important;
   line-height: 1.04 !important;
   letter-spacing: -0.045em !important;
 }
@@ -432,18 +443,4 @@ body.home-wide-body .home-wide-page > .home-final-cta .btn.secondary {
   body.home-wide-body .home-wide-page > .faq .faq-item {
     transition: none !important;
   }
-}
-
-/* Keep the first heading glyph clear of the section's zero-padding edge. */
-body.home-wide-body .home-wide-page > .faq .faq-header {
-  box-sizing: border-box;
-  overflow: visible !important;
-  padding-inline-start: clamp(8px, 0.5em, 18px) !important;
-}
-
-body.home-wide-body .home-wide-page > .faq .faq-header h2 {
-  position: relative;
-  z-index: 2;
-  overflow: visible !important;
-  padding: 0;
 }

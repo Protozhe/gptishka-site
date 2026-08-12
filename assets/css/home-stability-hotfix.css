@@ -238,6 +238,10 @@ body.balanced-visual-budget .hero .hero-react__word {
   background: linear-gradient(135deg, #161a25, #69738a);
 }
 
+.ai-service-card__icon--perplexity {
+  background: linear-gradient(135deg, #102426, #21808d);
+}
+
 .ai-service-card__body {
   display: grid;
   gap: 5px;
@@ -585,7 +589,7 @@ body.balanced-visual-budget .hero .hero-react__word {
 
 .ai-directory-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   gap: 18px;
   width: 100%;
   max-width: none;
@@ -593,7 +597,7 @@ body.balanced-visual-budget .hero .hero-react__word {
 
 #pricingGrid .ai-directory-grid {
   display: grid !important;
-  grid-template-columns: repeat(3, minmax(260px, 1fr)) !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)) !important;
   gap: 18px !important;
   width: 100% !important;
   max-width: none !important;
@@ -725,6 +729,108 @@ body.balanced-visual-budget .hero .hero-react__word {
   font-size: clamp(2.2rem, 4.4vw, 3.6rem);
   font-weight: 950;
   letter-spacing: 0.04em;
+}
+
+.ai-directory-card__image-placeholder--appstore {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  overflow: hidden;
+  color: #ffffff;
+  background:
+    radial-gradient(circle at 72% 16%, rgba(255, 255, 255, 0.42), transparent 25%),
+    radial-gradient(circle at 18% 84%, rgba(112, 56, 255, 0.72), transparent 42%),
+    linear-gradient(145deg, #27b7ff 0%, #087cff 46%, #5038d8 100%);
+  isolation: isolate;
+}
+
+.ai-directory-card__image-placeholder--appstore::before,
+.ai-directory-card__image-placeholder--appstore::after {
+  content: "";
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ai-directory-card__image-placeholder--appstore::before {
+  width: 82%;
+  height: 82%;
+  transform: translate(32%, -36%);
+}
+
+.ai-directory-card__image-placeholder--appstore::after {
+  width: 58%;
+  height: 58%;
+  transform: translate(-58%, 56%);
+}
+
+.ai-directory-card__appstore-mark {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 42%;
+  aspect-ratio: 1;
+  border: 3px solid rgba(255, 255, 255, 0.92);
+  border-radius: 28%;
+  background: rgba(255, 255, 255, 0.13);
+  box-shadow: 0 22px 48px rgba(19, 38, 116, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  font-family: "Manrope", "Inter", system-ui, sans-serif;
+  font-size: clamp(3rem, 5vw, 4.8rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.08em;
+  text-indent: -0.08em;
+  transition: transform 0.28s ease, background 0.28s ease;
+}
+
+.ai-directory-card__appstore-copy {
+  position: relative;
+  z-index: 1;
+  font-family: "Manrope", "Inter", system-ui, sans-serif;
+  font-size: clamp(1rem, 1.4vw, 1.28rem);
+  font-weight: 850;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  text-align: center;
+  text-shadow: 0 6px 24px rgba(14, 26, 91, 0.4);
+}
+
+.ai-directory-card__appstore-copy b {
+  opacity: 0.7;
+  font-weight: 700;
+}
+
+.ai-directory-card--appstore:hover .ai-directory-card__appstore-mark,
+.ai-directory-card--appstore:focus-within .ai-directory-card__appstore-mark {
+  transform: translateY(-4px) rotate(-3deg) scale(1.04);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.ai-directory-card--appstore .ai-directory-card__media {
+  transition: transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.38s ease, filter 0.38s ease;
+}
+
+.ai-directory-card--appstore .ai-directory-card__image--appstore {
+  transition: transform 0.48s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.48s ease, opacity 0.2s ease;
+  will-change: transform;
+}
+
+.ai-directory-card--appstore:hover .ai-directory-card__media,
+.ai-directory-card--appstore:focus-within .ai-directory-card__media {
+  box-shadow: 0 26px 58px rgba(10, 132, 255, 0.25);
+  filter: saturate(1.08) brightness(1.04);
+  transform: translateY(-4px) rotate(-1deg);
+}
+
+.ai-directory-card--appstore:hover .ai-directory-card__image--appstore,
+.ai-directory-card--appstore:focus-within .ai-directory-card__image--appstore {
+  filter: saturate(1.08) brightness(1.04);
+  transform: scale(1.085) rotate(1.4deg);
 }
 
 .ai-directory-card__body {
@@ -5272,8 +5378,8 @@ textarea.chatgpt-order-field__control {
 
 /* Grok page scoped black controls */
 [data-service-page="grok"],
-.service-page[data-service-page="grok"] ~ .payment-method-modal,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .payment-method-modal,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal {
   --grok-black: #05070a;
   --grok-black-2: #111827;
   --grok-black-3: #000000;
@@ -5354,7 +5460,7 @@ textarea.chatgpt-order-field__control {
 
 [data-service-page="grok"] .buy-btn,
 [data-service-page="grok"] .pay-now-btn,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-submit {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-submit {
   position: relative;
   min-height: 48px;
   border: 1px solid rgba(248, 250, 252, 0.16);
@@ -5377,7 +5483,7 @@ textarea.chatgpt-order-field__control {
 
 [data-service-page="grok"] .buy-btn:hover:not(:disabled),
 [data-service-page="grok"] .pay-now-btn:hover:not(:disabled),
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-submit:hover:not(:disabled) {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-submit:hover:not(:disabled) {
   transform: translateY(-1px);
   filter: brightness(1.12);
   border-color: rgba(248, 250, 252, 0.26) !important;
@@ -5389,7 +5495,7 @@ textarea.chatgpt-order-field__control {
 
 [data-service-page="grok"] .buy-btn:active:not(:disabled),
 [data-service-page="grok"] .pay-now-btn:active:not(:disabled),
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-submit:active:not(:disabled) {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-submit:active:not(:disabled) {
   transform: translateY(0) scale(0.985);
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.24),
@@ -5436,9 +5542,9 @@ textarea.chatgpt-order-field__control {
 }
 
 [data-service-page="grok"] .service-back-link,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle,
-.service-page[data-service-page="grok"] ~ .payment-method-modal .payment-method-modal__close {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .payment-method-modal .payment-method-modal__close {
   border: 1px solid rgba(255, 255, 255, 0.13);
   border-color: rgba(255, 255, 255, 0.13) !important;
   border-radius: 999px;
@@ -5459,9 +5565,9 @@ textarea.chatgpt-order-field__control {
 }
 
 [data-service-page="grok"] .service-back-link:hover,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn:hover:not(:disabled),
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle:hover:not(:disabled),
-.service-page[data-service-page="grok"] ~ .payment-method-modal .payment-method-modal__close:hover {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn:hover:not(:disabled),
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle:hover:not(:disabled),
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .payment-method-modal .payment-method-modal__close:hover {
   transform: translateY(-1px);
   border-color: rgba(248, 250, 252, 0.28) !important;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.055));
@@ -5472,11 +5578,11 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal {
   font-family: "Manrope", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__dialog {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__dialog {
   position: relative;
   background:
     radial-gradient(circle at 14% 0%, rgba(15, 23, 42, 0.12), transparent 34%),
@@ -5487,7 +5593,7 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close {
   top: 14px;
   right: 14px;
   width: 38px;
@@ -5504,18 +5610,18 @@ textarea.chatgpt-order-field__control {
   transform: none !important;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close:hover,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close:active {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close:hover,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close:active {
   background: rgba(248, 250, 252, 0.98) !important;
   color: #05070a !important;
   transform: none !important;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-card {
   color: #05070a;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-section {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-section {
   border-color: rgba(15, 23, 42, 0.14);
   background: rgba(255, 255, 255, 0.76);
   box-shadow:
@@ -5523,19 +5629,19 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.84);
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-section__head h4,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-section-title {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-section__head h4,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-section-title {
   color: #05070a;
   font-weight: 850;
   letter-spacing: -0.025em;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-section__head p,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-field small {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-section__head p,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-field small {
   color: rgba(15, 23, 42, 0.58);
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -5552,16 +5658,16 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::before,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::after,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::before,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::after {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::before,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::after,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::before,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::after {
   content: none;
   display: none;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__top,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-main {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__top,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-main {
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr);
   gap: 28px;
@@ -5569,7 +5675,7 @@ textarea.chatgpt-order-field__control {
   min-width: 0;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
   width: 56px;
   height: 56px;
   border-radius: 16px;
@@ -5577,12 +5683,12 @@ textarea.chatgpt-order-field__control {
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__body,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-info {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__body,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-info {
   min-width: 0;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-info {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-info {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -5591,14 +5697,14 @@ textarea.chatgpt-order-field__control {
   transform: none;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   gap: 12px;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__body .chatgpt-order-title {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__body .chatgpt-order-title {
   margin: 0;
   padding: 0;
   border: 0;
@@ -5615,8 +5721,8 @@ textarea.chatgpt-order-field__control {
   transform: none;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__meta,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-meta {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__meta,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-meta {
   margin: 4px 0 0;
   color: rgba(15, 23, 42, 0.62);
   font-size: 13px;
@@ -5627,8 +5733,8 @@ textarea.chatgpt-order-field__control {
   transform: none;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-total {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-total {
   align-self: center;
   justify-self: end;
   min-width: 132px;
@@ -5646,12 +5752,12 @@ textarea.chatgpt-order-field__control {
   transform: none;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price::before {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price::before {
   content: none;
   display: none;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-total span {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-total span {
   display: block;
   margin: 0;
   color: rgba(15, 23, 42, 0.5);
@@ -5662,7 +5768,7 @@ textarea.chatgpt-order-field__control {
   text-transform: uppercase;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-total strong {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-total strong {
   display: block;
   margin-top: 5px;
   color: #05070a;
@@ -5673,8 +5779,8 @@ textarea.chatgpt-order-field__control {
   white-space: nowrap;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-chips {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
@@ -5684,7 +5790,7 @@ textarea.chatgpt-order-field__control {
   transform: none;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips span {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips span {
   min-height: 25px;
   padding: 6px 9px;
   border-radius: 999px;
@@ -5696,12 +5802,12 @@ textarea.chatgpt-order-field__control {
   font-weight: 760;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
   grid-column: 1 / -1;
   margin: 0 0 0 63px;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
@@ -5709,8 +5815,8 @@ textarea.chatgpt-order-field__control {
 
 [data-service-page="grok"] .payment-method,
 [data-service-page="grok"] .payment-option,
-.service-page[data-service-page="grok"] ~ .payment-method-modal .payment-method-modal__option,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .payment-method-modal .payment-method-modal__option,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option {
   position: relative;
   border: 1px solid rgba(15, 23, 42, 0.2) !important;
   border-radius: 18px !important;
@@ -5726,7 +5832,7 @@ textarea.chatgpt-order-field__control {
     box-shadow 180ms ease;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option {
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr) 22px;
   align-items: center;
@@ -5740,8 +5846,8 @@ textarea.chatgpt-order-field__control {
 
 [data-service-page="grok"] .payment-method:hover,
 [data-service-page="grok"] .payment-option:hover,
-.service-page[data-service-page="grok"] ~ .payment-method-modal .payment-method-modal__option:hover,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option:hover {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .payment-method-modal .payment-method-modal__option:hover,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option:hover {
   transform: translateY(-1px);
   border-color: rgba(15, 23, 42, 0.42) !important;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(241, 245, 249, 0.92)) !important;
@@ -5750,10 +5856,10 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.94) !important;
 }
 
-.service-page[data-service-page="grok"] ~ .payment-method-modal .payment-method-modal__option.is-active,
-.service-page[data-service-page="grok"] ~ .payment-method-modal .payment-method-modal__option[aria-pressed="true"],
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option:has(input:checked),
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option[aria-checked="true"] {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .payment-method-modal .payment-method-modal__option.is-active,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .payment-method-modal .payment-method-modal__option[aria-pressed="true"],
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option:has(input:checked),
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option[aria-checked="true"] {
   border-color: rgba(15, 23, 42, 0.62) !important;
   background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(226, 232, 240, 0.92)) !important;
   box-shadow:
@@ -5762,7 +5868,7 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.94) !important;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option input {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option input {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -5773,7 +5879,7 @@ textarea.chatgpt-order-field__control {
   pointer-events: none;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-logo {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-payment-logo {
   width: 30px;
   height: 30px;
   border-radius: 10px;
@@ -5783,21 +5889,21 @@ textarea.chatgpt-order-field__control {
   overflow: hidden;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-logo img {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-payment-logo img {
   width: 22px;
   height: 22px;
   display: block;
   object-fit: contain;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-text {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-payment-text {
   display: grid;
   gap: 3px;
   min-width: 0;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-name,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-name {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-payment-name,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-name {
   display: block;
   color: #05070a !important;
   font-size: 14px;
@@ -5806,8 +5912,8 @@ textarea.chatgpt-order-field__control {
   letter-spacing: -0.01em;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-caption,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-caption {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-payment-caption,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-caption {
   display: block;
   color: rgba(15, 23, 42, 0.72) !important;
   font-size: 12px;
@@ -5817,7 +5923,7 @@ textarea.chatgpt-order-field__control {
   overflow-wrap: anywhere;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-check {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-payment-check {
   position: relative;
   width: 20px;
   height: 20px;
@@ -5826,13 +5932,13 @@ textarea.chatgpt-order-field__control {
   background: rgba(255, 255, 255, 0.76);
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check {
   border-color: rgba(15, 23, 42, 0.9);
   background: #05070a;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-check::after {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-payment-check::after {
   content: "";
   position: absolute;
   left: 6px;
@@ -5845,21 +5951,21 @@ textarea.chatgpt-order-field__control {
   transform: rotate(45deg);
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check::after,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check::after {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check::after,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check::after {
   opacity: 1;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-password-wrap {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-password-wrap {
   position: relative;
   display: block;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-password-wrap .chatgpt-order-field__control {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-password-wrap .chatgpt-order-field__control {
   padding-right: 48px;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle {
   position: absolute;
   right: 8px;
   top: 50%;
@@ -5879,24 +5985,24 @@ textarea.chatgpt-order-field__control {
   transition: background 160ms ease, color 160ms ease;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:hover:not(:disabled),
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:active:not(:disabled),
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:focus-visible {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:hover:not(:disabled),
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:active:not(:disabled),
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:focus-visible {
   background: rgba(15, 23, 42, 0.06) !important;
   color: #05070a !important;
   box-shadow: none !important;
   transform: translateY(-50%) !important;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-note,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-note,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-details {
   border: 1px solid rgba(15, 23, 42, 0.16);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.78);
   box-shadow: none;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary {
   min-height: 52px;
   padding: 14px 16px;
   color: #05070a;
@@ -5905,11 +6011,11 @@ textarea.chatgpt-order-field__control {
   list-style: none;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary::-webkit-details-marker {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary::-webkit-details-marker {
   display: none;
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary::after {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary::after {
   width: 22px;
   height: 22px;
   border-radius: 999px;
@@ -5935,8 +6041,8 @@ textarea.chatgpt-order-field__control {
 [data-service-page="grok"] button:focus-visible,
 [data-service-page="grok"] .buy-btn:focus-visible,
 [data-service-page="grok"] a:focus-visible,
-.service-page[data-service-page="grok"] ~ .payment-method-modal button:focus-visible,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button:focus-visible {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .payment-method-modal button:focus-visible,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal button:focus-visible {
   outline: none;
   box-shadow:
     0 0 0 3px rgba(248, 250, 252, 0.9),
@@ -5946,9 +6052,9 @@ textarea.chatgpt-order-field__control {
 [data-service-page="grok"] button:disabled,
 [data-service-page="grok"] .buy-btn:disabled,
 [data-service-page="grok"] .pay-now-btn:disabled,
-.service-page[data-service-page="grok"] ~ .payment-method-modal button:disabled,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button:disabled,
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal [aria-busy="true"] {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .payment-method-modal button:disabled,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal button:disabled,
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal [aria-busy="true"] {
   opacity: 0.52;
   cursor: not-allowed;
   transform: none;
@@ -5977,41 +6083,41 @@ textarea.chatgpt-order-field__control {
   [data-service-page="grok"] .pay-now-btn,
   [data-service-page="grok"] .service-filter-chip,
   [data-service-page="grok"] .service-back-link,
-  .service-page[data-service-page="grok"] ~ .payment-method-modal button,
-  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button {
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .payment-method-modal button,
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal button {
     min-height: 48px;
     font-size: 15px;
   }
 
   [data-service-page="grok"] .service-checkout-card .buy-btn,
-  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-submit {
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-submit {
     width: 100%;
   }
 
-  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
     grid-template-columns: 1fr;
     padding: 16px 54px 16px 14px;
   }
 
-  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__top,
-  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-main {
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__top,
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-main {
     grid-template-columns: 48px minmax(0, 1fr);
     gap: 16px;
   }
 
-  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
     width: 48px;
     height: 48px;
     border-radius: 14px;
   }
 
-  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline,
-  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment {
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline,
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment {
     grid-template-columns: 1fr;
   }
 
-  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price,
-  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-total {
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price,
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-total {
     width: 100%;
     max-width: none;
     min-width: 0;
@@ -6019,9 +6125,9 @@ textarea.chatgpt-order-field__control {
     text-align: left;
   }
 
-  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips,
-  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-chips,
-  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips,
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-chips,
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
     margin-left: 0;
   }
 }
@@ -6036,10 +6142,10 @@ textarea.chatgpt-order-field__control {
   [data-service-page="grok"] .pay-now-btn,
   [data-service-page="grok"] .service-filter-chip,
   [data-service-page="grok"] .service-back-link,
-  .service-page[data-service-page="grok"] ~ .payment-method-modal button,
-  .service-page[data-service-page="grok"] ~ .payment-method-modal .payment-method-modal__option,
-  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button,
-  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label {
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .payment-method-modal button,
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .payment-method-modal .payment-method-modal__option,
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal button,
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label {
     transition: none;
   }
 
@@ -6048,14 +6154,54 @@ textarea.chatgpt-order-field__control {
   [data-service-page="grok"] .pay-now-btn:hover,
   [data-service-page="grok"] .service-filter-chip:hover,
   [data-service-page="grok"] .service-back-link:hover,
-  .service-page[data-service-page="grok"] ~ .payment-method-modal button:hover,
-  .service-page[data-service-page="grok"] ~ .payment-method-modal .payment-method-modal__option:hover,
-  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal button:hover,
-  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label:hover {
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .payment-method-modal button:hover,
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .payment-method-modal .payment-method-modal__option:hover,
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal button:hover,
+  .service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label:hover {
     transform: none;
   }
 }
 /* End Grok page scoped black controls */
+
+/* Perplexity reuses the proven Grok checkout layout with its own teal-black accent. */
+.service-page[data-service-page="perplexity"] ~ .payment-method-modal,
+.service-page[data-service-page="perplexity"] ~ .chatgpt-go-order-modal {
+  --grok-black: #03100f;
+  --grok-black-2: #0b3a37;
+  --grok-black-3: #061d1b;
+  --grok-ink: #f5fffe;
+}
+
+.service-page[data-service-page="perplexity"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__dialog {
+  background:
+    radial-gradient(circle at 14% 0%, rgba(32, 178, 170, 0.14), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(243, 250, 249, 0.96)) !important;
+}
+
+.service-page[data-service-page="perplexity"] ~ .chatgpt-go-order-modal .chatgpt-order-submit {
+  border-color: rgba(77, 215, 207, 0.28) !important;
+  box-shadow:
+    0 16px 38px rgba(6, 71, 67, 0.3),
+    inset 0 1px 0 rgba(220, 255, 252, 0.22) !important;
+}
+
+.service-page[data-service-page="gemini"] ~ .payment-method-modal,
+.service-page[data-service-page="gemini"] ~ .chatgpt-go-order-modal {
+  --grok-black: #070b18;
+  --grok-black-2: #172554;
+  --grok-black-3: #6d28d9;
+  --grok-ink: #ffffff;
+}
+
+.service-page[data-service-page="gemini"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__dialog {
+  background: radial-gradient(circle at 88% 4%, rgba(168, 85, 247, 0.2), transparent 38%),
+    linear-gradient(145deg, #070b18, #111b3e 58%, #17103d);
+}
+
+.service-page[data-service-page="gemini"] ~ .chatgpt-go-order-modal .chatgpt-order-submit {
+  background: linear-gradient(135deg, #4285f4, #8b5cf6 60%, #ea4335);
+  box-shadow: 0 14px 32px rgba(66, 133, 244, 0.3);
+}
 
 [data-service-page="chatgpt"] .service-checkout-card .buy-btn:hover:not(:disabled),
 [data-service-page="chatgpt"] .service-checkout-card .pay-now-btn:hover:not(:disabled) {
@@ -6786,7 +6932,7 @@ textarea.chatgpt-order-field__control {
   --product-accent-soft: rgba(249, 115, 22, 0.16);
 }
 
-.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal {
+.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal {
   --product-accent: #d8dee9;
   --product-accent-hover: #ffffff;
   --product-accent-soft: rgba(216, 222, 233, 0.13);
@@ -7403,6 +7549,12 @@ textarea.chatgpt-order-field__control {
   border-color: var(--checkout-accent-strong) !important;
   background: linear-gradient(135deg, var(--checkout-accent), var(--checkout-accent-strong)) !important;
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--checkout-accent) 12%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.service-page[data-service-page="perplexity"] ~ .chatgpt-go-order-modal {
+  --product-accent: #5bbdc7;
+  --product-accent-hover: #8ed8df;
+  --product-accent-soft: rgba(91, 189, 199, 0.16);
 }
 
 /* Keep the shared checkout selection mark optically centered at every service accent. */

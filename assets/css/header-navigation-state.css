@@ -175,6 +175,11 @@ html body header .header-social-icon.header-social-icon--telegram {
     transform: none !important;
   }
 
+  html body header.gptishka-canonical-header.header-hidden {
+    transform: translate3d(0, -120%, 0) !important;
+    pointer-events: none !important;
+  }
+
   html body header .nav.nav-shell,
   html body header.gptishka-canonical-header .nav.nav-shell,
   html body:has(main.redeem-page) header .nav.nav-shell,
@@ -593,8 +598,14 @@ html body header .header-social-icon.header-social-icon--telegram {
 
   html body header.gptishka-canonical-header .lang-current img,
   html body header.gptishka-canonical-header .lang-current .lang-flag-img {
-    width: 23px !important;
-    height: 17px !important;
+    width: 27px !important;
+    height: 18px !important;
+    flex: 0 0 27px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 3px !important;
+    background: transparent !important;
+    box-shadow: none !important;
   }
 
   html body header.gptishka-canonical-header .header-product-pill {

@@ -80,6 +80,22 @@ const builtInPages: BuiltInServicePage[] = [
     match: /supergrok|grok|xai/i,
   },
   {
+    slug: "perplexity",
+    path: "/perplexity",
+    serviceKey: "perplexity",
+    title: "Perplexity",
+    theme: "custom",
+    accentColor: "#21808d",
+    accentGradient: "linear-gradient(135deg,#d9f1f2,#21808d,#102426)",
+    darkOverlay: "linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.62))",
+    colorOverlay: "linear-gradient(135deg,rgba(33,128,141,.34),rgba(16,36,38,.22),rgba(0,0,0,.28))",
+    heroDescription:
+      "Оформите Perplexity Pro без лишних сложностей. Выберите тариф, оплатите заказ, а GPTishka поможет с подключением и останется на связи после оплаты.",
+    constructorDescription:
+      "Perplexity Pro помогает искать и проверять информацию, проводить исследования и получать ответы со ссылками на источники. Оформите подписку на 1 месяц — GPTishka поможет с подключением и поддержкой.",
+    match: /perplexity|pplx/i,
+  },
+  {
     slug: "gptishka-vpn",
     path: "/store/vpn",
     serviceKey: "vpn",

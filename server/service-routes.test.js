@@ -18,6 +18,7 @@ test("service landing routes serve their dedicated static pages", async () => {
       ["/chatgpt", 'data-service-page="chatgpt"'],
       ["/claude", 'data-service-page="claude"'],
       ["/supergrok", 'data-service-page="grok"'],
+      ["/suno", 'data-service-page="suno"'],
     ]) {
       const response = await fetch(`${baseUrl}${route}`);
       const body = await response.text();

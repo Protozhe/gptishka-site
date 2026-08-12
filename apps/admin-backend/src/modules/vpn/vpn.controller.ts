@@ -90,9 +90,7 @@ async function resolveVpnAccessByOrder(orderId: string, orderToken?: string) {
 }
 
 function toCsvCell(value: unknown) {
-  let s = String(value ?? "");
-  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
-  return `"${s.replace(/"/g, '""')}"`;
+  return `"${String(value ?? "").replace(/"/g, '""')}"`;
 }
 
 function toIsoOrEmpty(value: Date | null | undefined) {

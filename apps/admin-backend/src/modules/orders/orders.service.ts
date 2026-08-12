@@ -526,6 +526,19 @@ export const ordersService = {
       throw new AppError("Activation key is not issued yet", 409);
     }
 
+    if (deliveryType === "code") {
+      return {
+        orderId: current.orderId,
+        deliveryMode: "code",
+        status: "code_ready",
+        product: current.productKey,
+        productTitle,
+        code: current.cdk,
+        issuedAt: current.issuedAt,
+        message: "Цифровой код готов к использованию.",
+      };
+    }
+
     return {
       orderId: current.orderId,
       deliveryMode: isSupportTokenFlow ? "support" : "activation",
@@ -1423,13 +1436,7 @@ async function assertOrderTokenAccess(orderId: string, orderToken?: string) {
     const provided = String(orderToken || "").trim();
     if (!provided) throw new AppError("Activation link token is required", 401);
     const providedHash = crypto.createHash("sha256").update(provided).digest("hex");
-    // Сравнение за постоянное время: обычный !== завершается на первом
-    // несовпавшем символе и по времени ответа выдаёт, сколько угадано.
-    const providedBuf = Buffer.from(providedHash);
-    const expectedBuf = Buffer.from(expected);
-    if (providedBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(providedBuf, expectedBuf)) {
-      throw new AppError("Invalid activation link token", 403);
-    }
+    if (providedHash !== expected) throw new AppError("Invalid activation link token", 403);
   }
 
   return order;

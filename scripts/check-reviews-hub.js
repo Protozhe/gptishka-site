@@ -24,7 +24,9 @@ assert.doesNotMatch(html, /Отзывы без редактирования/);
 assert.match(css, /grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(280px,\s*1fr\)\)/);
 assert.match(css, /@media \(max-width: 760px\)/);
 assert.match(client, /textContent\s*=/);
+assert.match(client, /fetch\("\/api\/public\/reviews/);
 assert.doesNotMatch(client, /\.innerHTML\s*=/);
+assert.match(server, /app\.get\("\/api\/public\/reviews"/);
 assert.match(server, /app\.get\(\["\/app", "\/app\/"\], sendDirectoryIndex\("app"\)\)/);
 
 assert.strictEqual(data.version, 1);

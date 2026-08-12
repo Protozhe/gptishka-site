@@ -1,4 +1,4 @@
-export type ProductDeliveryType = "activation" | "credentials" | "manual_login" | "vpn" | "support" | "support_claude";
+export type ProductDeliveryType = "activation" | "code" | "credentials" | "manual_login" | "vpn" | "support" | "support_claude";
 export type ProductDeliveryMethod = 1 | 2 | 3 | 4 | 5;
 
 const DELIVERY_TAG_PREFIX = "delivery:";
@@ -22,6 +22,9 @@ export function normalizeDeliveryType(value: string): ProductDeliveryType {
   }
   if (["credentials", "manual", "login-password", "login_password", "account"].includes(normalized)) {
     return "credentials";
+  }
+  if (["code", "direct-code", "direct_code", "gift-card", "gift_card", "digital-code", "digital_code"].includes(normalized)) {
+    return "code";
   }
   if (["support", "manual-support", "manual_support", "support-chat", "support_chat", "telegram", "tg"].includes(normalized)) {
     return "support";
@@ -54,6 +57,13 @@ export function resolveOrderDeliveryType(
       const serverDeliveryType = String((selection as Record<string, any>).serverDeliveryType || "").trim();
       if (serverDeliveryType) return normalizeDeliveryType(serverDeliveryType);
 
+      // Perplexity is fulfilled by a manager after payment. It must never fall
+      // through to the generic token flow, which contains ChatGPT instructions.
+      const serviceKey = String((selection as Record<string, any>).serviceKey || "")
+        .trim()
+        .toLowerCase();
+      if (serviceKey === "perplexity" || serviceKey === "suno") return "manual_login";
+
       const activationVariant = String((selection as Record<string, any>).activationVariant || "")
         .trim()
         .toLowerCase()
@@ -69,6 +79,9 @@ export function resolveOrderDeliveryType(
         .trim()
         .toLowerCase()
         .replace(/[\s_-]+/g, "");
+      if (["code", "directcode", "giftcard", "digitalcode"].includes(deliveryMethod)) {
+        return "code";
+      }
       if (["link", "withoutlogin", "nologin", "token", "key", "activation", "id", "1"].includes(deliveryMethod)) {
         return "activation";
       }
@@ -91,6 +104,8 @@ export function applyProductDeliveryTypeTag(
     cleaned.push("delivery:manual_login");
   } else if (normalized === "credentials") {
     cleaned.push("delivery:credentials");
+  } else if (normalized === "code") {
+    cleaned.push("delivery:code");
   } else if (normalized === "support") {
     cleaned.push("delivery:support");
   } else if (normalized === "support_claude") {
@@ -105,6 +120,7 @@ export function deliveryTypeToMethod(deliveryType: ProductDeliveryType | null | 
   const normalized = normalizeDeliveryType(String(deliveryType || "activation"));
   if (normalized === "manual_login") return 2;
   if (normalized === "credentials") return 2;
+  if (normalized === "code") return 1;
   if (normalized === "support") return 4;
   if (normalized === "support_claude") return 5;
   if (normalized === "vpn") return 3;
@@ -128,6 +144,9 @@ export function methodToDeliveryType(value: unknown): ProductDeliveryType {
   }
   if (raw === "2" || raw === "credentials" || raw === "manual" || raw === "login_password" || raw === "login-password") {
     return "credentials";
+  }
+  if (["code", "direct-code", "direct_code", "gift-card", "gift_card", "digital-code", "digital_code"].includes(raw)) {
+    return "code";
   }
   if (
     raw === "4" ||

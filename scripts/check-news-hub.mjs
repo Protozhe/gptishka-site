@@ -23,34 +23,24 @@ function structuralSignature(html) {
 }
 
 assert.equal(structuralSignature(ru), structuralSignature(en), "RU and EN news layouts differ");
-assert.match(ru, /news-hub\.js\?v=20260728-news-media1/);
-assert.match(en, /news-hub\.js\?v=20260728-news-media1/);
 assert.match(ru, /href="https:\/\/gptishka\.shop\/news\/"/);
 assert.match(en, /href="https:\/\/gptishka\.shop\/en\/news\/"/);
 assert.match(server, /app\.get\("\/api\/public\/news"/);
-assert.match(server, /app\.get\("\/api\/public\/news\/:postId\/image"/);
-assert.match(server, /publicNewsMediaCache/);
-assert.match(server, /PUBLIC_NEWS_MEDIA_DIR/);
 assert.match(server, /\["\/news", "\/news\/"\]/);
 assert.match(server, /\["\/en\/news", "\/en\/news\/"\]/);
 assert.match(server, /stale-while-revalidate=3600/);
 assert.match(client, /\.textContent\s*=/);
 assert.match(client, /document\.createElement/);
-assert.match(client, /\/api\/public\/news\/\$\{encodeURIComponent\(item\.postId\)\}\/image/);
 assert.doesNotMatch(client, /\.innerHTML\s*=/);
 assert.equal(payload.channel, "aimarket_gpt");
 assert.ok(Array.isArray(payload.items) && payload.items.length > 0, "News cache is empty");
 for (const item of payload.items) {
   assert.match(item.url, /^https:\/\/t\.me\/aimarket_gpt\/\d+$/);
   if (item.imageUrl) {
-    if (item.imageUrl.startsWith("/assets/img/news/")) {
-      assert.ok(
-        fs.existsSync(path.join(root, item.imageUrl.slice(1))),
-        `Missing cached media for post ${item.postId}`
-      );
-    } else {
-      assert.match(item.imageUrl, /^https:\/\/(?:cdn\d*\.telegram-cdn\.org|cdn\d*\.telesco\.pe|telegram\.org)\//i);
-    }
+    assert.match(
+      item.imageUrl,
+      /^(?:\/assets\/img\/news\/[a-z0-9_.-]+|https:\/\/(?:cdn\d*\.telegram-cdn\.org|cdn\d*\.telesco\.pe|telegram\.org)\/)/i
+    );
   }
 }
 

@@ -1,7 +1,8 @@
 (() => {
-  const VERSION = "20260724-header-layout3";
-  const STYLESHEET = "/assets/css/language-slider.css?v=20260724-language-menu3";
-  const HEADER_NAV_STYLESHEET = "/assets/css/header-navigation-state.css?v=20260724-header-layout3";
+  const VERSION = "20260811-mobile-header1";
+  const LANGUAGE_STORAGE_KEY = "gptishka-language";
+  const STYLESHEET = "/assets/css/language-slider.css?v=20260811-mobile-header1";
+  const HEADER_NAV_STYLESHEET = "/assets/css/header-navigation-state.css?v=20260811-mobile-header1";
   const FOOTER_STYLESHEET = "/assets/css/site-footer-unified.css?v=20260724-unified-footer1";
   const ENGLISH_PRODUCT_ROUTES = new Map([
     ["/chatgpt", "/en/chatgpt.html"],
@@ -9,7 +10,15 @@
     ["/claude", "/en/claude.html"],
     ["/claude.html", "/en/claude.html"],
     ["/supergrok", "/en/supergrok.html"],
-    ["/supergrok.html", "/en/supergrok.html"]
+    ["/supergrok.html", "/en/supergrok.html"],
+    ["/perplexity", "/en/perplexity.html"],
+    ["/perplexity.html", "/en/perplexity.html"],
+    ["/gemini", "/en/gemini.html"],
+    ["/gemini.html", "/en/gemini.html"],
+    ["/suno", "/en/suno.html"],
+    ["/suno.html", "/en/suno.html"],
+    ["/itunes", "/en/itunes.html"],
+    ["/itunes.html", "/en/itunes.html"]
   ]);
   const RUSSIAN_PRODUCT_ROUTES = new Map([
     ["/en/chatgpt", "/chatgpt"],
@@ -17,7 +26,15 @@
     ["/en/claude", "/claude"],
     ["/en/claude.html", "/claude"],
     ["/en/supergrok", "/supergrok"],
-    ["/en/supergrok.html", "/supergrok"]
+    ["/en/supergrok.html", "/supergrok"],
+    ["/en/perplexity", "/perplexity"],
+    ["/en/perplexity.html", "/perplexity"],
+    ["/en/gemini", "/gemini"],
+    ["/en/gemini.html", "/gemini"],
+    ["/en/suno", "/suno"],
+    ["/en/suno.html", "/suno"],
+    ["/en/itunes", "/itunes"],
+    ["/en/itunes.html", "/itunes"]
   ]);
   const FALLBACK_ENGLISH_PATHS = new Set([
     "/404.html",
@@ -45,13 +62,33 @@
     }
   };
 
+  function readStoredLanguage() {
+    try {
+      const value = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+      return value === "en" || value === "ru" ? value : "";
+    } catch (_) {
+      return "";
+    }
+  }
+
+  function storeLanguage(language) {
+    if (language !== "en" && language !== "ru") return;
+    try {
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+    } catch (_) {
+      // Language persistence is optional when storage is unavailable.
+    }
+  }
+
   function currentLanguage() {
     if (/^\/en(?:\/|$)/.test(window.location.pathname || "")) return "en";
     try {
-      return new URLSearchParams(window.location.search).get("lang") === "en" ? "en" : "ru";
+      const queryLanguage = new URLSearchParams(window.location.search).get("lang");
+      if (queryLanguage === "en" || queryLanguage === "ru") return queryLanguage;
     } catch (_) {
-      return "ru";
+      // Ignore invalid query strings.
     }
+    return readStoredLanguage() || "ru";
   }
 
   function languageHref(targetLanguage) {
@@ -286,6 +323,9 @@
     });
 
     options.forEach((option, index) => {
+      option.addEventListener("click", () => {
+        storeLanguage(option.dataset.language || option.getAttribute("lang") || "");
+      });
       option.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
           event.preventDefault();
@@ -346,11 +386,70 @@
     ).forEach(buildMenu);
   }
 
+  function rewriteLinksForActiveLanguage() {
+    if (currentLanguage() !== "en") return;
+    document.querySelectorAll("a[href]").forEach((anchor) => {
+      if (anchor.closest(".language-menu-host")) return;
+      const rawHref = anchor.getAttribute("href");
+      if (!rawHref || rawHref.startsWith("#") || /^(?:mailto:|tel:|javascript:)/i.test(rawHref)) return;
+
+      let target;
+      try {
+        target = new URL(rawHref, window.location.origin);
+      } catch (_) {
+        return;
+      }
+      if (target.origin !== window.location.origin || /^\/en(?:\/|$)/.test(target.pathname)) return;
+
+      if (ENGLISH_PRODUCT_ROUTES.has(target.pathname)) {
+        target.pathname = ENGLISH_PRODUCT_ROUTES.get(target.pathname);
+        target.searchParams.delete("lang");
+      } else if (FALLBACK_ENGLISH_PATHS.has(target.pathname)) {
+        target.searchParams.set("lang", "en");
+      } else {
+        target.pathname = ("/en" + (target.pathname === "/" ? "/" : target.pathname)).replace(/\/{2,}/g, "/");
+        target.searchParams.delete("lang");
+      }
+      anchor.setAttribute("href", `${target.pathname}${target.search}${target.hash}`);
+    });
+  }
+
+  function applyStoredLanguage() {
+    const pathIsEnglish = /^\/en(?:\/|$)/.test(window.location.pathname || "");
+    let queryLanguage = "";
+    try {
+      queryLanguage = new URLSearchParams(window.location.search).get("lang") || "";
+    } catch (_) {
+      // Ignore invalid query strings.
+    }
+
+    if (pathIsEnglish || queryLanguage === "en") {
+      storeLanguage("en");
+      document.documentElement.lang = "en";
+      return false;
+    }
+    if (queryLanguage === "ru") {
+      storeLanguage("ru");
+      return false;
+    }
+    if (readStoredLanguage() !== "en") return false;
+
+    const target = languageHref("en");
+    const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (target && target !== current) {
+      window.location.replace(target);
+      return true;
+    }
+    return false;
+  }
+
   function start() {
+    if (applyStoredLanguage()) return;
     ensureStylesheet();
     enhanceAll();
     enhanceHeaderNavigation();
     enhanceUnifiedFooter();
+    rewriteLinksForActiveLanguage();
 
     document.addEventListener("click", (event) => {
       const trigger = event.target.closest?.(".language-menu__trigger");
@@ -379,6 +478,7 @@
         enhanceAll();
         enhanceHeaderNavigation();
         enhanceUnifiedFooter();
+        rewriteLinksForActiveLanguage();
       }
     });
     observer.observe(document.body, { childList: true, subtree: true });

@@ -7,6 +7,7 @@ import { prisma } from "../../config/prisma";
 import { resolveVpnProvisionPayload, vpnService } from "../../services/vpn.service";
 import { manualCredentialsStore } from "../products/manual-credentials.store";
 import { activationStore } from "./activation.store";
+import { sendDirectCodeTelegram } from "./direct-code-notifications.service";
 
 export function hasTrustedPaidPayment(order: any) {
   if (!order || order.status !== OrderStatus.PAID) return false;
@@ -129,6 +130,14 @@ export async function deliverProduct(order: Order) {
   const existing = activationStore.findByOrderId(order.id);
   if (existing) {
     console.info(`[delivery] activation already exists order=${order.id} cdk=${existing.cdk}`);
+    if (deliveryType === "code") {
+      await sendDirectCodeTelegram({
+        orderId: order.id,
+        email: order.email,
+        productTitle: String(product?.title || firstItem?.productRaw || "Цифровой товар"),
+        code: existing.cdk,
+      }).catch((error) => console.error(`[delivery] direct-code telegram failed order=${order.id}`, error));
+    }
     await ensureBundleVpnAccess();
     return;
   }
@@ -177,6 +186,14 @@ export async function deliverProduct(order: Order) {
   });
 
   console.info(`[delivery] issued CDK for order ${order.id} (${order.email}) product=${productKey} site=${reserved.activationSiteUrl || activationSiteUrl || "-"}`);
+  if (deliveryType === "code") {
+    await sendDirectCodeTelegram({
+      orderId: order.id,
+      email: order.email,
+      productTitle: String(product?.title || firstItem?.productRaw || "Цифровой товар"),
+      code: reserved.code,
+    }).catch((error) => console.error(`[delivery] direct-code telegram failed order=${order.id}`, error));
+  }
   await ensureBundleVpnAccess();
 }
 

@@ -235,6 +235,10 @@ body.home-catalog-body {
 .catalog-grid--directory .ai-directory-card--chatgpt,
 .catalog-grid--directory .ai-directory-card--claude,
 .catalog-grid--directory .ai-directory-card--grok,
+.catalog-grid--directory .ai-directory-card--perplexity,
+.catalog-grid--directory .ai-directory-card--gemini,
+.catalog-grid--directory .ai-directory-card--suno,
+.catalog-grid--directory .ai-directory-card--appstore,
 .catalog-grid--directory .ai-directory-card--vpn,
 .catalog-grid--directory .ai-directory-card--topup {
   padding: 0;
@@ -246,6 +250,10 @@ body.home-catalog-body {
 .catalog-grid--directory .ai-directory-card--chatgpt:hover,
 .catalog-grid--directory .ai-directory-card--claude:hover,
 .catalog-grid--directory .ai-directory-card--grok:hover,
+.catalog-grid--directory .ai-directory-card--perplexity:hover,
+.catalog-grid--directory .ai-directory-card--gemini:hover,
+.catalog-grid--directory .ai-directory-card--suno:hover,
+.catalog-grid--directory .ai-directory-card--appstore:hover,
 .catalog-grid--directory .ai-directory-card--vpn:hover,
 .catalog-grid--directory .ai-directory-card--topup:hover {
   transform: translateY(-6px);
@@ -321,6 +329,11 @@ body.home-catalog-body {
   transform: scale(1.09) !important;
 }
 
+.catalog-page--ai .ai-directory-card--perplexity .ai-directory-card__image,
+.catalog-page--all .ai-directory-card--perplexity .ai-directory-card__image {
+  transform: scale(1.06) !important;
+}
+
 .catalog-grid--directory .ai-directory-card__body {
   padding: 16px 4px 4px;
 }
@@ -358,6 +371,14 @@ body.home-catalog-body {
 .catalog-grid--directory .ai-directory-card__button:focus-visible {
   transform: translateY(-1px);
   filter: saturate(112%) brightness(1.03);
+}
+
+.catalog-grid--directory .ai-directory-card--suno:hover .ai-directory-card__button,
+.catalog-grid--directory .ai-directory-card--suno:focus-within .ai-directory-card__button {
+  border-color: rgba(255, 156, 74, 0.9) !important;
+  background: linear-gradient(135deg, #ffb000 0%, #ff5a2f 55%, #f62b72 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 12px 30px rgba(255, 83, 45, 0.34), inset 0 1px 0 rgba(255, 236, 207, 0.58) !important;
 }
 
 .catalog-card {

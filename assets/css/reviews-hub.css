@@ -425,7 +425,6 @@ html body.reviews-hub-body main.reviews-hub {
 
 .reviews-feed {
   padding-top: 0;
-  padding-bottom: clamp(24px, 3vw, 36px);
   border-top: 0;
 }
 
@@ -438,6 +437,14 @@ html body.reviews-hub-body main.reviews-hub {
   letter-spacing: -0.05em;
 }
 
+.reviews-filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.reviews-filter,
 .reviews-more {
   min-height: 38px;
   padding: 0 14px;
@@ -448,6 +455,13 @@ html body.reviews-hub-body main.reviews-hub {
   font: 700 12px/1 "Manrope", sans-serif;
   cursor: pointer;
   transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.reviews-filter:hover,
+.reviews-filter.is-active {
+  border-color: rgba(53, 229, 141, 0.34);
+  background: rgba(53, 229, 141, 0.1);
+  color: #fff;
 }
 
 .reviews-grid {
@@ -495,21 +509,10 @@ html body.reviews-hub-body main.reviews-hub {
 }
 
 .review-card__text {
-  margin: 20px 0;
-  padding: 14px 16px;
-  border: 1px solid rgba(83, 235, 158, 0.18);
-  border-left: 3px solid rgba(83, 235, 158, 0.72);
-  border-radius: 0 12px 12px 0;
-  color: rgba(252, 254, 255, 0.97) !important;
-  background:
-    linear-gradient(90deg, rgba(83, 235, 158, 0.13), rgba(83, 235, 158, 0.035) 72%),
-    rgba(7, 12, 10, 0.2);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.62;
-  letter-spacing: -0.005em;
-  text-shadow: 0 1px 16px rgba(255, 255, 255, 0.045);
+  margin: 22px 0;
+  color: var(--reviews-text);
+  font-size: 14px;
+  line-height: 1.64;
   overflow-wrap: anywhere;
 }
 
@@ -528,8 +531,8 @@ html body.reviews-hub-body main.reviews-hub {
 .review-card__meta strong {
   overflow: hidden;
   color: var(--reviews-text-secondary);
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -537,6 +540,11 @@ html body.reviews-hub-body main.reviews-hub {
 .review-card__meta span {
   color: var(--reviews-text-muted);
   font-size: 10px;
+}
+
+.review-card__meta .review-card__purchase {
+  color: var(--reviews-text-secondary);
+  font-size: 11px;
 }
 
 .review-card__link {
@@ -695,6 +703,7 @@ html body.reviews-hub-body main.reviews-hub {
     text-align: left;
   }
 
+  .reviews-filters,
   .reviews-trust__actions {
     justify-content: flex-start;
   }
@@ -711,6 +720,7 @@ html body.reviews-hub-body main.reviews-hub {
 
 @media (prefers-reduced-motion: reduce) {
   .reviews-source,
+  .reviews-filter,
   .reviews-more {
     transition: none;
   }

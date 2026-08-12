@@ -31,3 +31,33 @@ test("resolveOrderDeliveryType keeps with-login order details as manual login", 
     "manual_login"
   );
 });
+
+test("resolveOrderDeliveryType keeps direct gift-card code delivery isolated from activation", () => {
+  assert.equal(
+    resolveOrderDeliveryType(
+      {
+        selection: {
+          deliveryMethod: "code",
+        },
+      },
+      ["delivery:activation"]
+    ),
+    "code"
+  );
+  assert.equal(resolveOrderDeliveryType(null, ["delivery:code"]), "code");
+});
+
+test("resolveOrderDeliveryType keeps Perplexity out of the ChatGPT token flow", () => {
+  assert.equal(
+    resolveOrderDeliveryType(
+      {
+        selection: {
+          serviceKey: "perplexity",
+          deliveryMethod: "link",
+        },
+      },
+      ["perplexity"]
+    ),
+    "manual_login"
+  );
+});

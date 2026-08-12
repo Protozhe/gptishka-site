@@ -52,7 +52,7 @@
     "@type": "WebSite",
     "name": "GPTishka",
     "url": "https://gptishka.shop/",
-    "description": "Оформляйте ChatGPT, Claude Pro и SuperGrok без передачи логина и пароля. Быстрая активация, поддержка и гарантия GPTishka.",
+  "description": "Оформляйте ChatGPT, Claude Pro, SuperGrok и Perplexity Pro с помощью в подключении. Быстрая активация, поддержка и гарантия GPTishka.",
     "inLanguage": "ru"
   }
 </script>
@@ -83,12 +83,18 @@
     {
       "@type": "SiteNavigationElement",
       "position": 4,
+      "name": "Perplexity Pro",
+      "url": "https://gptishka.shop/perplexity"
+    },
+    {
+      "@type": "SiteNavigationElement",
+      "position": 5,
       "name": "Пополнение Steam",
       "url": "https://gptishka.shop/store/steam/"
     },
     {
       "@type": "SiteNavigationElement",
-      "position": 5,
+      "position": 6,
       "name": "Каталог нейросетей",
       "url": "https://gptishka.shop/catalog/ai/"
     }
@@ -97,19 +103,19 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" href="/assets/img/home/supergrok-promo-bg.webp?v=20260721-promo-webp1" as="image" type="image/webp" fetchpriority="high">
+<link rel="preload" href="/assets/img/home/ai-battle-logo-bg-v2.webp?v=20260810-ai-battle-logo1" as="image" type="image/webp" fetchpriority="high">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="/assets/css/home-critical-bundle.min.css?v=20260726-minified1">
-<link rel="stylesheet" href="/assets/css/home-info-sections.css?v=20260730-faq-heading5">
-<link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20260724-header-layout3">
+<link rel="stylesheet" href="/assets/css/home-critical-bundle.min.css?v=20260812-ai-battle-spacing1">
+<link rel="stylesheet" href="/assets/css/appstore-card-motion.css?v=20260810-appstore-modal1">
+<link rel="stylesheet" href="/assets/css/home-info-sections.css?v=20260811-faq-title1">
+<link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20260811-mobile-header1">
 
 <!-- GOOGLE FONTS -->
 <link rel="preload" href="/assets/css/support-widget.css?v=20260724-resume-collapse1" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="/assets/css/support-widget.css?v=20260724-resume-collapse1" /></noscript>
-<link rel="stylesheet" href="/assets/css/perf-lite.css?v=20260726-fps1" />
 </head>
-<body class="home-wide-body balanced-visual-budget home-gradient-page-lite">
+<body class="home-wide-body">
 <script>
   (function () {
     try {
@@ -181,10 +187,6 @@
         }
       }
 
-      body.classList.remove("low-visual-budget");
-      body.classList.remove("balanced-visual-budget");
-      body.classList.remove("home-gradient-page");
-      body.classList.remove("home-gradient-page-lite");
       body.dataset.visualBudget = mode;
       if (mode === "low") body.classList.add("low-visual-budget");
       if (mode === "balanced") body.classList.add("balanced-visual-budget");
@@ -202,12 +204,23 @@
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <div class="page-overlay"></div>
 <header class="gptishka-canonical-header">
+<div id="siteTicker" class="site-ticker" role="status" aria-live="polite">
+  <div class="site-ticker__marquee">
+    <div class="site-ticker__track" id="siteTickerTrack">
+      <div class="site-ticker__loop"><span class="site-ticker__item">Лента активаций обновляется...</span></div>
+      <div class="site-ticker__loop" aria-hidden="true"><span class="site-ticker__item">Лента активаций обновляется...</span></div>
+    </div>
+  </div>
+  <div class="site-ticker__stats">
+    <span class="site-ticker__stat"><span class="site-ticker__stat-label">всего активаций:</span> <strong id="siteTickerSales">0</strong></span>
+  </div>
+</div>
 <div class="nav nav-shell">
       
           <a href="/" class="logo-link">
             <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTишка" class="logo-img">
           </a>
-    <a href="/chatgpt" class="header-product-pill" aria-label="ChatGPT от 1290 ₽/мес"><img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card-96.webp?v=20260726-card-responsive1" alt="" width="96" height="96" loading="lazy" decoding="async"><span>ChatGPT от 1290 ₽/мес</span></a>
+    <a href="/chatgpt" class="header-product-pill" aria-label="ChatGPT от 1290 ₽/мес"><img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" loading="lazy" decoding="async"><span>ChatGPT от 1290 ₽/мес</span></a>
     <nav class="header-quick-links" aria-label="Быстрые разделы GPTishka">
       <a class="header-quick-link" href="/news/">Новости</a>
       <a class="header-quick-link" href="/app/">Отзывы</a>
@@ -251,7 +264,28 @@
   <div class="home-hero-wide__content home-hero-wide__content--promo">
     <aside class="home-hero-wide__panel" data-home-promo-slider aria-label="Новости и предложения GPTishka">
       <div class="home-promo-slider" data-home-promo-slider-track>
-        <article class="home-promo-slide home-promo-slide--supergrok is-active" data-home-promo-slide>
+        <article class="home-promo-slide home-promo-slide--ai-battle is-active" data-home-promo-slide>
+          <div class="home-ai-battle">
+            <div class="home-ai-battle__intro">
+              <h2 class="home-ai-battle__title"><span class="home-ai-battle__title-chatgpt">ChatGPT</span><span class="home-ai-battle__versus">VS</span><span class="home-ai-battle__title-claude">Claude</span></h2>
+              <p class="home-ai-battle__description">Выбери своего фаворита в мире искусственного интеллекта.</p>
+            </div>
+            <div class="home-ai-battle__choices">
+              <button type="button" class="home-ai-battle__choice home-ai-battle__choice--chatgpt" data-ai-battle-choice="chatgpt" data-ai-battle-href="/chatgpt" aria-pressed="false" aria-label="Выбрать ChatGPT"><span class="home-ai-battle__logo home-ai-battle__logo--chatgpt" aria-hidden="true"></span><span class="home-ai-battle__choice-copy"><strong>ChatGPT</strong><small>Я на этой стороне</small></span><span class="home-ai-battle__percent" data-ai-battle-percent="chatgpt">45%</span></button>
+              <button type="button" class="home-ai-battle__choice home-ai-battle__choice--claude" data-ai-battle-choice="claude" data-ai-battle-href="/claude" aria-pressed="false" aria-label="Выбрать Claude"><span class="home-ai-battle__logo home-ai-battle__logo--claude" aria-hidden="true"></span><span class="home-ai-battle__choice-copy"><strong>Claude</strong><small>Я на этой стороне</small></span><span class="home-ai-battle__percent" data-ai-battle-percent="claude">55%</span></button>
+            </div>
+            <div class="home-ai-battle__stats"><div class="home-ai-battle__bar" aria-hidden="true"><span class="home-ai-battle__bar-chatgpt" data-ai-battle-bar style="width:45%"></span></div><span class="home-ai-battle__total" data-ai-battle-total>142 клика всего</span><span class="home-ai-battle__status" data-ai-battle-status aria-live="polite"></span></div>
+          </div>
+        </article>
+        <article class="home-promo-slide home-promo-slide--perplexity" data-home-promo-slide>
+          <div class="home-promo-slide__content">
+            <span class="home-promo-slide__badge">Новинка</span>
+            <h2><span class="home-promo-slide__title-line">Perplexity Pro</span><span class="home-promo-slide__title-line">теперь в GPTishka</span></h2>
+            <p>AI-поиск с ответами по источникам, глубокие исследования и работа с файлами. Подписка Pro на 1 месяц — 1 999 ₽.</p>
+            <a class="home-promo-slide__button" href="/perplexity">Открыть тариф</a>
+          </div>
+        </article>
+        <article class="home-promo-slide home-promo-slide--supergrok" data-home-promo-slide>
           <div class="home-promo-slide__content">
             <span class="home-promo-slide__badge">SUPERGROK</span>
             <h2><span class="home-promo-slide__title-line">SUPERGROK</span><span class="home-promo-slide__title-line">на 1 месяц</span></h2>
@@ -306,8 +340,9 @@
 <section class="home-service-shortcuts" aria-label="Разделы GPTishka">
   <div class="home-service-shortcuts__grid">
     <a class="home-service-shortcut home-service-shortcut--topups" href="/store/steam/" aria-label="Открыть пополнения Steam">
-      <span class="home-service-shortcut__art" aria-hidden="true">
-        <img class="home-service-shortcut__image" src="/assets/img/home/topups-shortcut-384.webp?v=20260807-shortcut-restore1" srcset="/assets/img/home/topups-shortcut-384.webp?v=20260807-shortcut-restore1 384w, /assets/img/home/topups-shortcut-724.webp?v=20260807-shortcut-restore1 724w, /assets/img/home/topups-shortcut.webp?v=20260807-shortcut-restore1 1448w" sizes="(max-width: 760px) calc((100vw - 26px) / 2), min(490px, 50vw)" alt="" loading="lazy" decoding="async">
+      <span class="home-service-shortcut__art has-hover" aria-hidden="true">
+        <img class="home-service-shortcut__image home-service-shortcut__image--primary" src="/uploads/products/f693844c-ccdb-4aa5-a6bd-28cb58f70927.png?v=20260627-steam-admin1" alt="" loading="lazy" decoding="async">
+        <img class="home-service-shortcut__image home-service-shortcut__image--hover" src="/uploads/products/8fd9da65-1a02-4fe3-b6ed-e7cb04ece6f1.png?v=20260627-steam-admin1" alt="" loading="lazy" decoding="async">
       </span>
       <span class="home-service-shortcut__title">Пополнения</span>
     </a>
@@ -581,8 +616,8 @@
   <span class="footer-copy">&copy; 2026 GPTishka. Все права защищены, копирование запрещено.</span>
 </footer>
 <script src="/assets/js/hero-lite.js?v=20260516-fix4" defer></script>
-  <script src="/assets/js/app.min.js?v=20260807-topups-image1" defer></script>
-<script src="/assets/js/home-promo-slider.js?v=20260724-en-product-routes1" defer></script>
+  <script src="/assets/js/app.min.js?v=20260812-suno5" defer></script>
+<script src="/assets/js/home-promo-slider.js?v=20260809-ai-battle3" defer></script>
 <script id="home-wide-hash-sync">
   (function () {
     var knownHashes = {
@@ -687,9 +722,73 @@
     applyHashStateWithRetries("auto");
   })();
 </script>
+<script>
+  (function () {
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function shouldApplyFallback(track, salesEl) {
+      if (!track || !salesEl) return false;
+      const text = String(track.textContent || "").toLowerCase();
+      const placeholderRu = text.indexOf("лента активаций обновляется") !== -1;
+      const placeholderEn = text.indexOf("activation feed is updating") !== -1;
+      const digits = String(salesEl.textContent || "").replace(/[^\d]/g, "");
+      const total = digits ? Number(digits) : 0;
+      return placeholderRu || placeholderEn || !Number.isFinite(total) || total === 0;
+    }
+
+    async function runTickerFallback() {
+      const track = document.getElementById("siteTickerTrack");
+      const salesEl = document.getElementById("siteTickerSales");
+      if (!shouldApplyFallback(track, salesEl)) return;
+
+      try {
+        const response = await fetch("/api/stats", { cache: "no-store" });
+        if (!response.ok) return;
+        const payload = await response.json();
+        const isTickerEmailVisible = (email) => {
+          const value = String(email || "").trim().toLowerCase();
+          return value && !value.endsWith("@telegram.local") && !value.endsWith(".local");
+        };
+        const entries = Array.isArray(payload?.tickerEntries)
+          ? payload.tickerEntries.map((entry) => String(entry?.email || "").trim()).filter(isTickerEmailVisible)
+          : [];
+        const total = Number(payload?.sales || 0);
+
+        if (Number.isFinite(total) && salesEl) {
+          salesEl.textContent = total.toLocaleString("ru-RU");
+        }
+        if (!track || !entries.length) return;
+
+        const sep = '<span class="site-ticker__sep">•</span>';
+        const items = entries.map((email) => '<span class="site-ticker__item">' + escapeHtml(email) + "</span>").join(sep);
+        const repeated = new Array(4).fill(items).join(sep);
+        track.innerHTML =
+          '<div class="site-ticker__loop">' + repeated + "</div>" +
+          '<div class="site-ticker__loop" aria-hidden="true">' + repeated + "</div>";
+      } catch (_) {
+        // Keep default ticker state on network errors.
+      }
+    }
+
+    if (document.readyState === "complete") {
+      setTimeout(runTickerFallback, 450);
+    } else {
+      window.addEventListener("load", function () {
+        setTimeout(runTickerFallback, 450);
+      }, { once: true });
+    }
+  })();
+</script>
 <script src="/assets/js/support-widget.js?v=20260724-resume-faq-clear2" defer></script>
-  <script src="/assets/js/language-switcher.js?v=20260724-header-layout3" defer></script>
-<script src="/assets/js/perf-watchdog.js?v=20260726-fps1" defer></script>
+  <script src="/assets/js/header-scroll-behavior.js?v=20260810-header-scroll1" defer></script>
+  <script src="/assets/js/language-switcher.js?v=20260811-mobile-header1" defer></script>
 </body>
 </html>
 

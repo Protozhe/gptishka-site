@@ -1,4 +1,4 @@
-﻿import { ProductVisualBackgroundType } from "@prisma/client";
+import { ProductVisualBackgroundType } from "@prisma/client";
 import slugify from "../../common/utils/slugify";
 import { AppError } from "../../common/errors/app-error";
 import { prisma } from "../../config/prisma";
@@ -102,6 +102,52 @@ const SERVICE_CARD_DEFAULTS: Record<string, Record<string, any>> = {
     isActive: true,
     sortOrder: 30,
   },
+  perplexity: {
+    serviceKey: "perplexity",
+    title: "Perplexity",
+    description: "Perplexity Pro для поиска, исследований и ответов с источниками.",
+    planSummary: "Pro · 1 месяц",
+    priceText: "1 999 RUB",
+    buttonText: "К тарифу",
+    href: "/perplexity",
+    iconText: "PPLX",
+    theme: "perplexity",
+    imageUrl: "/assets/img/services/perplexity-card.webp?v=20260809-perplexity1",
+    hoverImageUrl: "/assets/img/services/perplexity-card-hover.webp?v=20260809-perplexity1",
+    imageAlt: "Perplexity — тёмный логотип",
+    hoverImageAlt: "Perplexity — светлый логотип",
+    backgroundType: ProductVisualBackgroundType.solid,
+    backgroundColor: "#080c0d",
+    backgroundGradient: "",
+    textColor: "",
+    buttonBackground: "",
+    buttonTextColor: "",
+    isActive: true,
+    sortOrder: 40,
+  },
+  suno: {
+    serviceKey: "suno",
+    title: "Suno",
+    description: "Suno Premier для создания музыки, вокала и редактирования треков с помощью AI.",
+    planSummary: "Premier · 1 месяц",
+    priceText: "2 999 RUB",
+    buttonText: "К тарифу",
+    href: "/suno",
+    iconText: "SU",
+    theme: "suno",
+    imageUrl: "/assets/img/services/suno-card.webp?v=20260812-suno5",
+    hoverImageUrl: "/assets/img/services/suno-card-hover.webp?v=20260812-suno5",
+    imageAlt: "Suno Premier",
+    hoverImageAlt: "Suno Premier",
+    backgroundType: ProductVisualBackgroundType.solid,
+    backgroundColor: "#0b0712",
+    backgroundGradient: "",
+    textColor: "",
+    buttonBackground: "",
+    buttonTextColor: "",
+    isActive: true,
+    sortOrder: 50,
+  },
   vpn: {
     serviceKey: "vpn",
     title: "GPTishka VPN",
@@ -122,7 +168,7 @@ const SERVICE_CARD_DEFAULTS: Record<string, Record<string, any>> = {
     buttonBackground: "",
     buttonTextColor: "",
     isActive: true,
-    sortOrder: 40,
+    sortOrder: 60,
   },
   topups: {
     serviceKey: "topups",
@@ -145,13 +191,14 @@ const SERVICE_CARD_DEFAULTS: Record<string, Record<string, any>> = {
     buttonBackground: "linear-gradient(135deg,#35f28f,#18c878,#0f8f5c)",
     buttonTextColor: "#06110b",
     isActive: true,
-    sortOrder: 50,
+    sortOrder: 70,
   },
 };
 
 function normalizeServiceCardKey(value: unknown) {
   const key = String(value || "").trim().toLowerCase();
   if (key === "supergrok" || key === "xai") return "grok";
+  if (key === "pplx") return "perplexity";
   if (key === "gptishka-vpn" || key === "vless") return "vpn";
   if (key === "steam" || key === "topup" || key === "popolneniya") return "topups";
   return key.replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");

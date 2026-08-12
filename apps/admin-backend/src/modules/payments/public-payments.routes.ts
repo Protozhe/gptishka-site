@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
+import { prisma } from "../../config/prisma";
 import { validateBody } from "../../common/middleware/validation";
 import { asyncHandler } from "../../common/http/async-handler";
 import { AppError } from "../../common/errors/app-error";
@@ -13,6 +14,8 @@ const createPaymentSchema = z.object({
   planId: z.preprocess((value) => String(value || "").trim(), z.string().optional()),
   product_id: z.preprocess((value) => String(value || "").trim(), z.string().optional()),
   productId: z.preprocess((value) => String(value || "").trim(), z.string().optional()),
+  product_slug: z.preprocess((value) => String(value || "").trim().toLowerCase(), z.string().max(120).optional()),
+  productSlug: z.preprocess((value) => String(value || "").trim().toLowerCase(), z.string().max(120).optional()),
   promo_code: z.preprocess((value) => {
     const normalized = String(value || "").trim();
     return normalized ? normalized : undefined;
@@ -180,7 +183,15 @@ publicPaymentsRouter.post(
     }
 
     const body = req.body as z.infer<typeof createPaymentSchema>;
-    const productId = String(body.plan_id || body.planId || body.product_id || body.productId || "").trim();
+    let productId = String(body.plan_id || body.planId || body.product_id || body.productId || "").trim();
+    const productSlug = String(body.product_slug || body.productSlug || "").trim().toLowerCase();
+    if (!productId && productSlug) {
+      const product = await prisma.product.findUnique({
+        where: { slug: productSlug },
+        select: { id: true, isActive: true, isArchived: true },
+      });
+      if (product?.isActive && !product.isArchived) productId = product.id;
+    }
     if (!productId) {
       throw new AppError("Validation failed", 422, {
         formErrors: [],

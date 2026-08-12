@@ -124,6 +124,188 @@
     }
   }
 
+  function isAiBattleSlide(slide) {
+    var id = text(slide && slide.id).toLowerCase();
+    var themeClass = text(slide && (slide.themeClass || slide.className)).toLowerCase();
+    return id === "ai-battle" || themeClass.indexOf("home-promo-slide--ai-battle") !== -1;
+  }
+
+  function createAiBattleContent(article, slide) {
+    var english = getLang() === "en";
+    var battle = document.createElement("div");
+    battle.className = "home-ai-battle";
+
+    var intro = document.createElement("div");
+    intro.className = "home-ai-battle__intro";
+
+    var title = document.createElement("h2");
+    title.className = "home-ai-battle__title";
+    var chatgptName = document.createElement("span");
+    chatgptName.className = "home-ai-battle__title-chatgpt";
+    chatgptName.textContent = "ChatGPT";
+    var versus = document.createElement("span");
+    versus.className = "home-ai-battle__versus";
+    versus.textContent = "VS";
+    var claudeName = document.createElement("span");
+    claudeName.className = "home-ai-battle__title-claude";
+    claudeName.textContent = "Claude";
+    title.appendChild(chatgptName);
+    title.appendChild(versus);
+    title.appendChild(claudeName);
+
+    var description = document.createElement("p");
+    description.className = "home-ai-battle__description";
+    description.textContent = text(slide.description) || (english
+      ? "Choose your favorite and see which AI is leading right now."
+      : "Выбери своего фаворита в мире искусственного интеллекта.");
+
+    intro.appendChild(title);
+    intro.appendChild(description);
+
+    var choices = document.createElement("div");
+    choices.className = "home-ai-battle__choices";
+    ["chatgpt", "claude"].forEach(function (side) {
+      var label = side === "chatgpt" ? "ChatGPT" : "Claude";
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "home-ai-battle__choice home-ai-battle__choice--" + side;
+      button.setAttribute("data-ai-battle-choice", side);
+      button.setAttribute("data-ai-battle-href", localizedRouteUrl("/" + side));
+      button.setAttribute("aria-pressed", "false");
+      button.setAttribute("aria-label", english ? "Vote for " + label : "Выбрать " + label);
+
+      var logo = document.createElement("span");
+      logo.className = "home-ai-battle__logo home-ai-battle__logo--" + side;
+      logo.setAttribute("aria-hidden", "true");
+
+      var copy = document.createElement("span");
+      copy.className = "home-ai-battle__choice-copy";
+      var name = document.createElement("strong");
+      name.textContent = label;
+      var callToAction = document.createElement("small");
+      callToAction.textContent = english ? "I'm on this side" : "Я на этой стороне";
+      copy.appendChild(name);
+      copy.appendChild(callToAction);
+
+      var percent = document.createElement("span");
+      percent.className = "home-ai-battle__percent";
+      percent.setAttribute("data-ai-battle-percent", side);
+      percent.textContent = "50%";
+
+      button.appendChild(logo);
+      button.appendChild(copy);
+      button.appendChild(percent);
+      choices.appendChild(button);
+    });
+
+    var stats = document.createElement("div");
+    stats.className = "home-ai-battle__stats";
+    var bar = document.createElement("div");
+    bar.className = "home-ai-battle__bar";
+    bar.setAttribute("aria-hidden", "true");
+    var fill = document.createElement("span");
+    fill.className = "home-ai-battle__bar-chatgpt";
+    fill.setAttribute("data-ai-battle-bar", "");
+    bar.appendChild(fill);
+    var total = document.createElement("span");
+    total.className = "home-ai-battle__total";
+    total.setAttribute("data-ai-battle-total", "");
+    total.textContent = english ? "No clicks yet — be the first" : "Пока 0 кликов — выбери первым";
+    var status = document.createElement("span");
+    status.className = "home-ai-battle__status";
+    status.setAttribute("data-ai-battle-status", "");
+    status.setAttribute("aria-live", "polite");
+    stats.appendChild(bar);
+    stats.appendChild(total);
+    stats.appendChild(status);
+
+    battle.appendChild(intro);
+    battle.appendChild(choices);
+    battle.appendChild(stats);
+    article.appendChild(battle);
+  }
+
+  function renderAiBattleStats(article, stats) {
+    var english = getLang() === "en";
+    var chatgptPercent = Number(stats && stats.chatgptPercent);
+    var claudePercent = Number(stats && stats.claudePercent);
+    var total = Number(stats && stats.total);
+    if (!Number.isFinite(chatgptPercent)) chatgptPercent = 50;
+    if (!Number.isFinite(claudePercent)) claudePercent = 100 - chatgptPercent;
+    if (!Number.isFinite(total) || total < 0) total = 0;
+
+    var chatgptEl = article.querySelector('[data-ai-battle-percent="chatgpt"]');
+    var claudeEl = article.querySelector('[data-ai-battle-percent="claude"]');
+    var barEl = article.querySelector("[data-ai-battle-bar]");
+    var totalEl = article.querySelector("[data-ai-battle-total]");
+    if (chatgptEl) chatgptEl.textContent = chatgptPercent + "%";
+    if (claudeEl) claudeEl.textContent = claudePercent + "%";
+    if (barEl) barEl.style.width = chatgptPercent + "%";
+    if (totalEl) {
+      totalEl.textContent = total > 0
+        ? total.toLocaleString(english ? "en-US" : "ru-RU") + (english ? " total clicks" : " кликов всего")
+        : (english ? "No clicks yet — be the first" : "Пока 0 кликов — выбери первым");
+    }
+  }
+
+  function initAiBattleSlide(article) {
+    if (!article || article.getAttribute("data-ai-battle-ready") === "true") return;
+    article.setAttribute("data-ai-battle-ready", "true");
+    var buttons = Array.prototype.slice.call(article.querySelectorAll("[data-ai-battle-choice]"));
+    var status = article.querySelector("[data-ai-battle-status]");
+
+    fetch("/api/public/ai-battle", { cache: "no-store", credentials: "same-origin" })
+      .then(function (response) { return response.ok ? response.json() : null; })
+      .then(function (stats) { if (stats) renderAiBattleStats(article, stats); })
+      .catch(function () {});
+
+    buttons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        var side = button.getAttribute("data-ai-battle-choice");
+        var targetUrl = safeUrl(button.getAttribute("data-ai-battle-href")) || localizedRouteUrl("/" + side);
+        var redirected = false;
+        var openProduct = function () {
+          if (redirected || !targetUrl) return;
+          redirected = true;
+          window.location.assign(targetUrl);
+        };
+        var redirectTimer = window.setTimeout(openProduct, 1200);
+        buttons.forEach(function (item) { item.disabled = true; });
+        if (status) status.textContent = getLang() === "en" ? "Counting your click…" : "Считаем твой клик…";
+        fetch("/api/public/ai-battle", {
+          method: "POST",
+          cache: "no-store",
+          credentials: "same-origin",
+          keepalive: true,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ side: side })
+        })
+          .then(function (response) {
+            if (!response.ok) throw new Error("Vote request failed");
+            return response.json();
+          })
+          .then(function (stats) {
+            renderAiBattleStats(article, stats);
+            buttons.forEach(function (item) {
+              item.setAttribute("aria-pressed", item === button ? "true" : "false");
+            });
+            if (status) status.textContent = getLang() === "en" ? "Your click is counted" : "Твой выбор учтён";
+            if (typeof window.gptishkaTrackEvent === "function") {
+              window.gptishkaTrackEvent("ai_battle_click", { side: side });
+            }
+          })
+          .catch(function () {
+            if (status) status.textContent = getLang() === "en" ? "Please try again" : "Не получилось — попробуй ещё раз";
+          })
+          .finally(function () {
+            window.clearTimeout(redirectTimer);
+            buttons.forEach(function (item) { item.disabled = false; });
+            openProduct();
+          });
+      });
+    });
+  }
+
   function createSlideElement(slide, active) {
     var article = document.createElement("article");
     article.className = "home-promo-slide " + text(slide.themeClass || "") + (active ? " is-active" : "");
@@ -132,6 +314,11 @@
     var imageUrl = optimizedSlideImageUrl(slide.imageUrl) || fallbackSlideImageUrl(slide);
     if (imageUrl) {
       article.setAttribute("data-promo-image-url", imageUrl);
+    }
+
+    if (isAiBattleSlide(slide)) {
+      createAiBattleContent(article, slide);
+      return article;
     }
 
     var content = document.createElement("div");
@@ -315,6 +502,10 @@
         track.appendChild(createSlideElement(slide, index === 0));
       });
     }
+
+    slides().forEach(function (slide) {
+      if (slide.classList.contains("home-promo-slide--ai-battle")) initAiBattleSlide(slide);
+    });
 
     if (prev) prev.addEventListener("click", function () { show(activeIndex - 1, true); });
     if (next) next.addEventListener("click", function () { show(activeIndex + 1, true); });

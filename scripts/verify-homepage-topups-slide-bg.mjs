@@ -4,6 +4,7 @@ import path from "node:path";
 const root = process.cwd();
 const topupsAssetPath = path.join(root, "assets", "img", "home", "topups-promo-bg.webp");
 const supergrokAssetPath = path.join(root, "assets", "img", "home", "supergrok-promo-bg.webp");
+const perplexityAssetPath = path.join(root, "assets", "img", "services", "perplexity-card.webp");
 const cssPath = path.join(root, "assets", "css", "home-wide-marketplace.css");
 const indexPath = path.join(root, "index.html");
 const servicePath = path.join(root, "apps", "admin-backend", "src", "modules", "homepage", "homepage-content.service.ts");
@@ -23,6 +24,7 @@ const slider = fs.readFileSync(sliderPath, "utf8");
 
 assert(fs.existsSync(topupsAssetPath), "Missing Steam topups WebP background asset.");
 assert(fs.existsSync(supergrokAssetPath), "Missing SuperGrok WebP background asset.");
+assert(fs.existsSync(perplexityAssetPath), "Missing Perplexity WebP promo artwork.");
 const topupsCssBlock = css.match(/\.home-promo-slide--topups\s*\{([\s\S]*?)\n\}/);
 assert(
   topupsCssBlock && !/url\(/.test(topupsCssBlock[1]),
@@ -33,16 +35,16 @@ assert(
   "Active SuperGrok slide must use the cache-busted WebP background.",
 );
 assert(
-  index.includes("/assets/css/home-critical-bundle.min.css?v=20260723-support-meta1"),
+  index.includes("/assets/css/home-critical-bundle.min.css?v=20260812-ai-battle-spacing1"),
   "index.html must load the cache-busted homepage CSS bundle.",
 );
 assert(
-  index.includes("/assets/js/home-promo-slider.js?v=20260724-en-product-routes1"),
+  index.includes("/assets/js/home-promo-slider.js?v=20260809-ai-battle3"),
   "index.html must cache-bust home-promo-slider.js for lazy promo backgrounds.",
 );
 assert(
-  index.includes('rel="preload" href="/assets/img/home/supergrok-promo-bg.webp?v=20260721-promo-webp1"') && index.includes('fetchpriority="high"'),
-  "index.html must preload the active SuperGrok LCP image with high priority.",
+  index.includes('rel="preload" href="/assets/img/home/ai-battle-logo-bg-v2.webp?v=20260810-ai-battle-logo1"') && index.includes('fetchpriority="high"'),
+  "index.html must preload the active AI battle background with high priority.",
 );
 assert(
   (service.match(/imageUrl:\s*"\/assets\/img\/home\/topups-promo-bg\.webp\?v=20260721-promo-webp1"/g) || []).length >= 2,

@@ -36,11 +36,6 @@ function sanitizeNextPath(value: string) {
   const fallback = DEFAULT_ACCOUNT_NEXT_PATH;
   const raw = String(value || "").trim();
   if (!raw) return fallback;
-  // Браузер трактует "/\\evil.com" как протокол-относительный адрес и уводит
-  // на чужой сайт, поэтому backslash и управляющие символы отклоняем.
-  if (raw.includes("\\") || [...raw].some((c) => c.charCodeAt(0) < 32 || c.charCodeAt(0) === 127)) {
-    return fallback;
-  }
   if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
   try {
     const parsed = new URL(raw);
@@ -111,8 +106,7 @@ function resolveVpnStatus(isActive: boolean, expiresAt: Date) {
 function resolveDaysLeft(expiresAt: Date) {
   const expiresTs = Number(new Date(expiresAt).getTime());
   if (!Number.isFinite(expiresTs)) return null;
-  // Для истёкшего доступа не показываем отрицательные "дни".
-  return Math.max(0, Math.ceil((expiresTs - Date.now()) / (24 * 60 * 60 * 1000)));
+  return Math.ceil((expiresTs - Date.now()) / (24 * 60 * 60 * 1000));
 }
 
 async function ensureNotificationPreference(customerId: string) {
@@ -136,20 +130,14 @@ async function resolveAccountEligibilityByEmail(rawEmail: string) {
     };
   }
 
-  // Сравнение без учёта регистра: заказы исторически сохранялись с тем
-  // регистром, который ввёл покупатель ("John@mail.ru"), а вход всегда
-  // приводится к нижнему. Без insensitive такой клиент не находил свои
-  // покупки и не получал ссылку для входа.
-  const emailFilter = { equals: email, mode: "insensitive" as const };
-
   const [hasPaidOrder, hasLinkedAccess] = await Promise.all([
     prisma.order.count({
-      where: { email: emailFilter, status: OrderStatus.PAID },
+      where: { email, status: OrderStatus.PAID },
       take: 1,
     }),
     prisma.vpnAccess.count({
       where: {
-        OR: [{ email: emailFilter }, { order: { email: emailFilter, status: OrderStatus.PAID } }],
+        OR: [{ email }, { order: { email, status: OrderStatus.PAID } }],
       },
       take: 1,
     }),
@@ -394,8 +382,12 @@ export const accountService = {
         throw new AppError("Telegram login token was already consumed", 409);
       }
 
-      // Вход через Telegram не доказывает владение почтой, поэтому
-      // emailVerifiedAt здесь не выставляем — это делает только магик-ссылка.
+      await tx.customer.update({
+        where: { id: loginToken.customerId as string },
+        data: {
+          emailVerifiedAt: approvedCustomer.emailVerifiedAt || now,
+        },
+      });
 
       await tx.customerSession.create({
         data: {
@@ -546,12 +538,11 @@ export const accountService = {
     const notificationPreference = await ensureNotificationPreference(customer.id);
     const linkedTelegram = customer.telegramLink && customer.telegramLink.isActive ? customer.telegramLink : null;
 
-    const customerEmailFilter = { equals: customer.email, mode: "insensitive" as const };
     const accesses = await prisma.vpnAccess.findMany({
       where: {
         OR: [
-          { email: customerEmailFilter },
-          { order: { email: customerEmailFilter, status: OrderStatus.PAID } },
+          { email: customer.email },
+          { order: { email: customer.email, status: OrderStatus.PAID } },
         ],
       },
       include: {
@@ -908,13 +899,12 @@ export const accountService = {
     const customer = await prisma.customer.findUnique({ where: { id: customerId } });
     if (!customer) throw new AppError("Customer not found", 404);
 
-    const revealEmailFilter = { equals: customer.email, mode: "insensitive" as const };
     const access = await prisma.vpnAccess.findFirst({
       where: {
         id: vpnAccessId,
         OR: [
-          { email: revealEmailFilter },
-          { order: { email: revealEmailFilter, status: OrderStatus.PAID } },
+          { email: customer.email },
+          { order: { email: customer.email, status: OrderStatus.PAID } },
         ],
       },
     });

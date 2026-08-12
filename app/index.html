@@ -22,18 +22,30 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/logo.min.css">
 <link rel="stylesheet" href="/assets/css/gptishka-header-refresh.css?v=20260724-language-slider1">
-<link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20260724-header-layout3">
+<link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20260810-header-scroll1">
 <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260516fix4">
 <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260322-cardalign7">
 <link rel="stylesheet" href="/assets/css/support-widget.css?v=20260724-resume-collapse1">
 <link rel="stylesheet" href="/assets/css/gptishka-dark-pages.css?v=20260707-no-ticker-dark1">
 <link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260723-support-meta1">
-<link rel="stylesheet" href="/assets/css/reviews-hub.css?v=20260730-review-spacing2">
+<link rel="stylesheet" href="/assets/css/reviews-hub.css?v=20260811-review-authors2">
 </head>
 <body class="reviews-hub-body">
 <div class="page-overlay"></div>
 
 <header class="gptishka-canonical-header">
+  <div id="siteTicker" class="site-ticker" role="status" aria-live="polite">
+    <div class="site-ticker__marquee">
+      <div class="site-ticker__track" id="siteTickerTrack">
+        <div class="site-ticker__loop"><span class="site-ticker__item">Лента активаций обновляется...</span></div>
+        <div class="site-ticker__loop" aria-hidden="true"><span class="site-ticker__item">Лента активаций обновляется...</span></div>
+      </div>
+    </div>
+    <div class="site-ticker__stats">
+      <span class="site-ticker__stat"><span class="site-ticker__stat-label">всего активаций:</span> <strong id="siteTickerSales">0</strong></span>
+    </div>
+  </div>
+
   <div class="nav nav-shell">
     <a href="/" class="logo-link">
       <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka" class="logo-img">
@@ -86,6 +98,7 @@
       <div>
         <h1 id="reviewsFeedTitle">Что пишут покупатели</h1>
       </div>
+      <div class="reviews-filters" id="reviewsFilters" aria-label="Фильтр отзывов"></div>
     </div>
     <div class="reviews-grid" id="reviewsGrid" aria-live="polite" aria-busy="true">
       <article class="review-card review-card--loading"></article>
@@ -162,11 +175,12 @@
   <span class="footer-copy">&copy; 2026 GPTishka. Все права защищены, копирование запрещено.</span>
 </footer>
 
-<script src="/assets/js/app.min.js?v=20260807-duration-months1" defer></script>
-<script src="/assets/js/reviews-hub.js?v=20260730-no-filters1" defer></script>
+<script src="/assets/js/app.min.js?v=20260724-en-product-routes1" defer></script>
+<script src="/assets/js/reviews-hub.js?v=20260812-hide-reznik-filter1" defer></script>
 <script src="/assets/js/support-widget.js?v=20260724-resume-faq-clear2" defer></script>
 <script src="/assets/js/site-header-unify.js?v=20260724-header-layout3" defer></script>
 <script src="/assets/js/client-i18n.js?v=20260724-en-product-routes1" defer></script>
-  <script src="/assets/js/language-switcher.js?v=20260724-header-layout3" defer></script>
+  <script src="/assets/js/header-scroll-behavior.js?v=20260810-header-scroll1" defer></script>
+  <script src="/assets/js/language-switcher.js?v=20260810-language-persist1" defer></script>
 </body>
 </html>

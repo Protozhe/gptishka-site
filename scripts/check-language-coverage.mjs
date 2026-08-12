@@ -45,7 +45,7 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "u
 
 for (const page of fallbackPages) {
   const html = read(page);
-  if (!html.includes("/assets/js/site-header-unify.js?v=20260724-header-layout1")) {
+  if (!html.includes("/assets/js/site-header-unify.js?v=20260724-header-layout3")) {
     failures.push(`${page}: unified language switch is missing`);
   }
   if (!html.includes("/assets/js/client-i18n.js?v=20260724-en-product-routes1")) {
@@ -89,7 +89,10 @@ for (const page of [
 const englishProductRoutes = [
   ["/en/chatgpt.html", "chatgpt"],
   ["/en/claude.html", "claude"],
-  ["/en/supergrok.html", "supergrok"]
+  ["/en/supergrok.html", "supergrok"],
+  ["/en/perplexity.html", "perplexity"],
+  ["/en/gemini.html", "gemini"],
+  ["/en/itunes.html", "itunes"]
 ];
 for (const page of pairedPages.map((file) => path.join("en", file))) {
   const html = read(page);
@@ -99,6 +102,13 @@ for (const page of pairedPages.map((file) => path.join("en", file))) {
     if (brokenHref.test(html) || brokenAbsolute.test(html)) {
       failures.push(`${page}: contains broken extensionless ${slug} route`);
     }
+  }
+}
+
+const serverSource = read("server.js");
+for (const [route] of englishProductRoutes.slice(3)) {
+  if (!serverSource.includes(route)) {
+    failures.push(`server.js: missing English product route ${route}`);
   }
 }
 

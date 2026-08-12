@@ -141,6 +141,20 @@ body.redeem-flow.home-wide-body .redeem-vpn-offer-text {
   color: var(--redeem-text-secondary) !important;
 }
 
+body.redeem-flow.home-wide-body .redeem-manual-hint.is-alert {
+  border: 1px solid rgba(244, 178, 78, 0.72) !important;
+  background:
+    linear-gradient(135deg, rgba(52, 43, 30, 0.98), rgba(25, 32, 40, 0.98)) !important;
+  color: #fff1d2 !important;
+  box-shadow:
+    inset 4px 0 0 #f2b34f,
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 28px rgba(0, 0, 0, 0.22) !important;
+  font-weight: 700 !important;
+  line-height: 1.58 !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.28);
+}
+
 body.redeem-flow.home-wide-body .redeem-guide a,
 body.redeem-flow.home-wide-body .redeem-faq a {
   color: #70e9b5 !important;

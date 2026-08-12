@@ -1,0 +1,35 @@
+.ai-directory-card--appstore .ai-directory-card__media {
+  transition: transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.38s ease, filter 0.38s ease;
+}
+
+.ai-directory-card--appstore .ai-directory-card__image--appstore {
+  transition: transform 0.48s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.48s ease, opacity 0.2s ease;
+  will-change: transform;
+}
+
+.ai-directory-card--appstore:hover .ai-directory-card__media,
+.ai-directory-card--appstore:focus-within .ai-directory-card__media {
+  box-shadow: 0 26px 58px rgba(10, 132, 255, 0.25);
+  filter: saturate(1.08) brightness(1.04);
+  transform: translateY(-4px) rotate(-1deg);
+}
+
+.ai-directory-card--appstore:hover .ai-directory-card__image--appstore,
+.ai-directory-card--appstore:focus-within .ai-directory-card__image--appstore {
+  filter: saturate(1.08) brightness(1.04);
+  transform: scale(1.085) rotate(1.4deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-directory-card--appstore .ai-directory-card__media,
+  .ai-directory-card--appstore .ai-directory-card__image--appstore {
+    transition: none;
+  }
+
+  .ai-directory-card--appstore:hover .ai-directory-card__media,
+  .ai-directory-card--appstore:focus-within .ai-directory-card__media,
+  .ai-directory-card--appstore:hover .ai-directory-card__image--appstore,
+  .ai-directory-card--appstore:focus-within .ai-directory-card__image--appstore {
+    transform: none;
+  }
+}

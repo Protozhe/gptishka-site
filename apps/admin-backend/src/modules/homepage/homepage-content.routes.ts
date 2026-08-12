@@ -3,6 +3,7 @@ import { asyncHandler } from "../../common/http/async-handler";
 import { allowRoles, requireAuth } from "../auth/auth.middleware";
 import { imageUpload } from "../files/files.middleware";
 import { homepageContentService } from "./homepage-content.service";
+import { aiBattleStatsService } from "./ai-battle-stats.service";
 
 export const homepageContentAdminRouter = Router();
 export const homepageContentPublicRouter = Router();
@@ -48,5 +49,21 @@ homepageContentPublicRouter.get(
   "/homepage-content",
   asyncHandler(async (req, res) => {
     res.json(homepageContentService.getPublic(req.query.lang));
+  })
+);
+
+homepageContentPublicRouter.get(
+  "/ai-battle",
+  asyncHandler(async (_req, res) => {
+    res.setHeader("Cache-Control", "no-store");
+    res.json(aiBattleStatsService.get());
+  })
+);
+
+homepageContentPublicRouter.post(
+  "/ai-battle",
+  asyncHandler(async (req, res) => {
+    res.setHeader("Cache-Control", "no-store");
+    res.json(aiBattleStatsService.registerClick(req.body?.side));
   })
 );

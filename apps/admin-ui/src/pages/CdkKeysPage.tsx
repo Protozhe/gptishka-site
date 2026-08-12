@@ -2,7 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
-type ProductDeliveryType = "activation" | "credentials" | "vpn" | "support" | "support_claude";
+type ProductDeliveryType = "activation" | "code" | "credentials" | "vpn" | "support" | "support_claude";
 type CdkStatus = "unused" | "used" | "archived";
 type CredentialStatus = "available" | "assigned";
 
@@ -191,6 +191,10 @@ function CdkImportSummary({ result }: { result: CdkImportResult }) {
 }
 
 function resolveDeliveryType(product: ProductItem): ProductDeliveryType {
+  const fromType = String(product.deliveryType || "")
+    .trim()
+    .toLowerCase();
+  if (fromType === "code") return "code";
   const fromMethod = String(product.deliveryMethod || "").trim();
   if (fromMethod === "5") return "support_claude";
   if (fromMethod === "4") return "support";
@@ -198,9 +202,6 @@ function resolveDeliveryType(product: ProductItem): ProductDeliveryType {
   if (fromMethod === "2") return "credentials";
   if (fromMethod === "1") return "activation";
 
-  const fromType = String(product.deliveryType || "")
-    .trim()
-    .toLowerCase();
   if (fromType === "support_claude") return "support_claude";
   if (fromType === "support") return "support";
   if (fromType === "credentials") return "credentials";

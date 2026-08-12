@@ -21,9 +21,7 @@
     "seed:admin": "npm run seed --workspace @gptishka/admin-backend",
     "migrate:admin": "npm run prisma:migrate --workspace @gptishka/admin-backend",
     "deploy:admin:init": "npm run prisma:deploy --workspace @gptishka/admin-backend && npm run seed --workspace @gptishka/admin-backend",
-    "bootstrap:admin:user": "npm run bootstrap:user --workspace @gptishka/admin-backend",
-    "build:assets": "node scripts/minify-assets.js",
-    "perf:apply-lite": "node scripts/apply-perf-lite.js"
+    "bootstrap:admin:user": "npm run bootstrap:user --workspace @gptishka/admin-backend"
   },
   "dependencies": {
     "compression": "^1.8.1",

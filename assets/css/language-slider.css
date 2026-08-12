@@ -52,13 +52,16 @@ html body header .language-menu__trigger:focus-visible {
 }
 
 html body header .language-menu__flag {
-  width: 24px !important;
-  height: 24px !important;
-  flex: 0 0 24px !important;
+  width: 28px !important;
+  height: 18px !important;
+  flex: 0 0 28px !important;
   display: block !important;
   object-fit: cover !important;
-  border-radius: 50% !important;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2), 0 4px 10px rgba(0, 0, 0, 0.2) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 3px !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 html body header .language-menu__current-name {
@@ -195,9 +198,9 @@ html body header .language-menu__option.is-active .language-menu__check {
   }
 
   html body header .language-menu__flag {
-    width: 22px !important;
-    height: 22px !important;
-    flex-basis: 22px !important;
+    width: 27px !important;
+    height: 18px !important;
+    flex-basis: 27px !important;
   }
 
   html body header .language-menu__popover,

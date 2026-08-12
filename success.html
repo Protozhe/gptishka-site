@@ -5,6 +5,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Оплата обрабатывается - GPTишка</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/css/status-pages.css?v=20260310a" />
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="shortcut icon" href="/favicon.ico" />
@@ -21,29 +24,451 @@
     }
   </style>
 <link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260707-header-unify9" />
+  <style>
+    html:has(body.status-page) {
+      min-height: 100%;
+      background: #20262e !important;
+    }
+
+    body.status-page {
+      margin: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      background:
+        radial-gradient(880px 440px at 8% 0%, rgba(22, 120, 112, 0.2), transparent 68%),
+        radial-gradient(760px 420px at 100% 16%, rgba(50, 72, 105, 0.22), transparent 70%),
+        linear-gradient(180deg, #20262e 0%, #151a21 54%, #0e1319 100%) !important;
+      color: #f4f7fb;
+    }
+
+    body.status-page > header.gptishka-canonical-header {
+      margin-top: 0 !important;
+    }
+
+    .status-page--center {
+      display: block;
+      padding: 0 18px 46px;
+    }
+
+    .status-shell {
+      width: min(980px, 100%);
+      margin: clamp(34px, 7vh, 88px) auto 0;
+    }
+
+    .status-card.status-card--payment {
+      position: relative;
+      width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+      padding: clamp(24px, 4vw, 44px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 30px;
+      background:
+        linear-gradient(145deg, rgba(37, 44, 53, 0.98), rgba(22, 28, 35, 0.98)),
+        #171d24;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+
+    .status-card--payment::before {
+      content: "";
+      position: absolute;
+      width: 440px;
+      height: 440px;
+      right: -210px;
+      top: -270px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(54, 224, 157, 0.17), transparent 68%);
+      pointer-events: none;
+    }
+
+    .status-card__head {
+      position: relative;
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .status-state-icon {
+      display: grid;
+      place-items: center;
+      width: 64px;
+      height: 64px;
+      border: 1px solid rgba(53, 242, 143, 0.34);
+      border-radius: 20px;
+      color: #42e39b;
+      background: linear-gradient(145deg, rgba(53, 242, 143, 0.14), rgba(13, 27, 28, 0.44));
+      box-shadow: 0 16px 38px rgba(14, 104, 74, 0.18);
+    }
+
+    .status-state-icon svg {
+      width: 30px;
+      height: 30px;
+    }
+
+    .status-preview-note[hidden] {
+      display: none !important;
+    }
+
+    .status-preview-note {
+      display: inline-flex;
+      margin: 0 0 10px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      color: #b7c4d5;
+      background: rgba(255, 255, 255, 0.055);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .status-card--payment .status-title {
+      max-width: 760px;
+      margin: 0;
+      color: #f7f9fc;
+      font-family: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: clamp(30px, 5vw, 50px);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+    }
+
+    .status-card--payment .status-text {
+      max-width: 650px;
+      margin: 12px 0 0;
+      color: #aeb8c7;
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    .status-summary {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
+      margin-top: 28px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .status-summary__item {
+      min-width: 0;
+      padding: 17px 18px;
+      background: rgba(10, 15, 20, 0.72);
+    }
+
+    .status-summary__item span {
+      display: block;
+      margin-bottom: 7px;
+      color: #78879a;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .status-summary__item strong {
+      display: block;
+      overflow: hidden;
+      color: #f3f6fa;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.35;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .status-card--payment .status {
+      margin-top: 22px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .status-card--payment .status.pending {
+      border-color: rgba(241, 176, 75, 0.25);
+      color: #f1c778;
+      background: rgba(161, 105, 25, 0.13);
+    }
+
+    .status-card--payment .status.paid {
+      border-color: rgba(53, 242, 143, 0.25);
+      color: #9df2cb;
+      background: rgba(26, 156, 107, 0.12);
+    }
+
+    .status-next {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+      margin-top: 16px;
+      padding: 17px 18px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .status-next__number {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
+      color: #07140f;
+      background: #42e39b;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .status-next strong {
+      display: block;
+      color: #f2f5f8;
+      font-size: 14px;
+    }
+
+    .status-next p {
+      margin: 5px 0 0;
+      color: #8e9aab;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .status-card--payment .actions {
+      margin-top: 24px;
+    }
+
+    .status-card--payment .btn {
+      min-height: 48px;
+      padding-inline: 20px;
+      border-radius: 14px;
+      font-size: 14px;
+    }
+
+    @media (min-width: 1181px) {
+      html body.status-page header.gptishka-canonical-header .nav.nav-shell {
+        grid-template-columns: auto auto minmax(0, 1fr) auto !important;
+      }
+
+      html body.status-page header.gptishka-canonical-header .header-quick-links {
+        display: flex !important;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .status-shell { margin-top: 24px; }
+      .status-card.status-card--payment { padding: 24px; border-radius: 24px; }
+      .status-card__head { grid-template-columns: 52px minmax(0, 1fr); gap: 15px; }
+      .status-state-icon { width: 52px; height: 52px; border-radius: 16px; }
+      .status-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 520px) {
+      .status-page--center { padding-inline: 12px; }
+      .status-card.status-card--payment { padding: 20px; }
+      .status-card__head { grid-template-columns: 1fr; }
+      .status-state-icon { width: 48px; height: 48px; }
+      .status-summary { grid-template-columns: 1fr; }
+      .actions .btn { flex: 1 1 100%; }
+    }
+
+    /* Compact operation receipt. */
+    .status-shell {
+      width: min(560px, 100%);
+      margin-top: clamp(28px, 6vh, 64px);
+    }
+
+    .status-card.status-card--payment {
+      padding: 30px;
+      border-radius: 24px;
+      background: linear-gradient(155deg, rgba(34, 41, 50, 0.99), rgba(17, 22, 28, 0.99));
+      box-shadow: 0 26px 70px rgba(0, 0, 0, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .status-card__head {
+      display: block;
+      text-align: center;
+    }
+
+    .status-state-icon {
+      width: 54px;
+      height: 54px;
+      margin: 0 auto 14px;
+      border-radius: 17px;
+    }
+
+    .status-preview-note {
+      margin: 0 0 9px;
+      font-size: 10px;
+    }
+
+    .status-kicker {
+      margin: 0 0 6px;
+      color: #42e39b;
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .status-card--payment .status-title {
+      margin: 0;
+      font-size: clamp(26px, 5vw, 34px);
+      line-height: 1.12;
+      letter-spacing: -0.035em;
+    }
+
+    .status-card--payment .status-text {
+      margin: 9px auto 0;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .status-summary {
+      display: block;
+      margin-top: 24px;
+      overflow: visible;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      background: rgba(7, 11, 15, 0.42);
+    }
+
+    .status-summary__item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+      min-height: 48px;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      background: transparent;
+    }
+
+    .status-summary__item:last-child {
+      border-bottom: 0;
+    }
+
+    .status-summary__item span {
+      flex: 0 0 auto;
+      margin: 0;
+      font-size: 10px;
+    }
+
+    .status-summary__item strong {
+      min-width: 0;
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .status-card--payment .status {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 13px;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .status-redirect {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 38px;
+      margin-top: 10px;
+      color: #8794a5;
+      font-size: 11px;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .status-redirect__spinner {
+      flex: 0 0 auto;
+      width: 13px;
+      height: 13px;
+      border: 2px solid rgba(66, 227, 155, 0.2);
+      border-top-color: #42e39b;
+      border-radius: 50%;
+      animation: status-spin 0.9s linear infinite;
+    }
+
+    @keyframes status-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .status-card--payment .actions {
+      justify-content: center;
+      margin-top: 14px;
+    }
+
+    .status-card--payment .btn {
+      min-height: 42px;
+      padding: 9px 15px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 520px) {
+      .status-card.status-card--payment { padding: 22px 18px; border-radius: 21px; }
+      .status-summary__item { min-height: 45px; padding-inline: 13px; }
+      .status-card--payment .actions { display: grid; grid-template-columns: 1fr 1fr; }
+      .status-card--payment .actions .btn { min-width: 0; padding-inline: 9px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .status-redirect__spinner { animation: none; }
+    }
+  </style>
 </head>
 <body class="status-page status-page--center">
   <noscript>
     <div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div>
   </noscript>
 
-  <section class="status-card">
-    <h1 class="status-title">Оплата обрабатывается</h1>
-    <p class="status-text">Проверяем платеж через webhook. Обычно это занимает до 30 секунд.</p>
-    <div class="meta">Заказ: <strong id="orderId">-</strong></div>
-    <div class="meta">Email: <strong id="emailMasked">-</strong></div>
-    <div class="meta">Сумма: <strong id="amount">-</strong></div>
-    <div class="status pending" id="statusText">Ожидаем подтверждение платежа...</div>
-    <div class="actions">
-      <a class="btn primary" href="/">На главную</a>
-      <a class="btn" href="/#pricing">К тарифам</a>
-    </div>
-  </section>
+  <main class="status-shell">
+    <section class="status-card status-card--payment">
+      <div class="status-card__head">
+        <div class="status-state-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M7 12.5l3.1 3.1L17.5 8" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <p class="status-preview-note" id="statusPreviewNote" hidden>Предпросмотр</p>
+        <p class="status-kicker" id="statusKicker">Проверка операции</p>
+        <h1 class="status-title" id="statusTitle">Оплата обрабатывается</h1>
+        <p class="status-text" id="statusLead">Проверяем подтверждение платёжной системы.</p>
+      </div>
+
+      <div class="status-summary" aria-label="Информация о заказе">
+        <div class="status-summary__item"><span>Сервис</span><strong id="serviceName">-</strong></div>
+        <div class="status-summary__item"><span>Заказ</span><strong id="orderId">-</strong></div>
+        <div class="status-summary__item"><span>Email</span><strong id="emailMasked">-</strong></div>
+        <div class="status-summary__item"><span>Сумма</span><strong id="amount">-</strong></div>
+      </div>
+
+      <div class="status pending" id="statusText">Ожидаем подтверждение платежа...</div>
+      <div class="status-redirect" id="statusRedirect">
+        <span class="status-redirect__spinner" aria-hidden="true"></span>
+        <span id="statusRedirectText">После подтверждения откроем страницу активации.</span>
+      </div>
+      <div class="actions">
+        <a class="btn primary" href="/">На главную</a>
+        <a class="btn" id="tariffLink" href="/#pricing">К тарифам</a>
+      </div>
+    </section>
+  </main>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const orderId = String(params.get("order_id") || params.get("orderId") || "").trim();
     const linkToken = String(params.get("t") || "").trim();
+    const previewMode = String(params.get("preview") || "").trim().toLowerCase() === "paid";
+    const previewServiceKey = normalizeServiceKey(params.get("service"));
     const LAST_PAID_ORDER_KEY = "gptishka_last_paid_order_id";
     const CART_STORAGE_KEYS = [
       "gptishka_cart_v1",
@@ -54,6 +479,13 @@
     ];
 
     const orderIdEl = document.getElementById("orderId");
+    const statusTitleEl = document.getElementById("statusTitle");
+    const statusLeadEl = document.getElementById("statusLead");
+    const statusKickerEl = document.getElementById("statusKicker");
+    const serviceNameEl = document.getElementById("serviceName");
+    const statusPreviewNoteEl = document.getElementById("statusPreviewNote");
+    const tariffLinkEl = document.getElementById("tariffLink");
+    const statusRedirectTextEl = document.getElementById("statusRedirectText");
     const emailMaskedEl = document.getElementById("emailMasked");
     const amountEl = document.getElementById("amount");
     const statusEl = document.getElementById("statusText");
@@ -74,10 +506,16 @@
     supportObserver.observe(document.documentElement, { childList: true, subtree: true });
     setTimeout(() => supportObserver.disconnect(), 35000);
 
-    if (!orderId) {
+    const initialServiceKey = previewServiceKey || resolveServiceKey(null);
+    applyServiceContext(initialServiceKey);
+
+    if (previewMode && previewServiceKey) {
+      renderPaidPreview(previewServiceKey);
+    } else if (!orderId) {
       orderIdEl.textContent = "не найден";
       statusEl.className = "status failed";
       statusEl.textContent = "Не удалось определить order_id. Откройте оплату заново.";
+      setNextStep("Оформите заказ заново", "Вернитесь к тарифам, выберите нужный сервис и повторите оформление.");
     } else {
       orderIdEl.textContent = orderId;
       try {
@@ -114,7 +552,8 @@
         const amount = Number(payload?.finalAmount || 0);
         const currency = String(payload?.currency || "RUB");
         const deliveryMode = String(payload?.deliveryMode || "activation").trim().toLowerCase();
-        const aiServiceOrder = isAiServiceOrder(payload);
+        const serviceKey = resolveServiceKey(payload);
+        const service = applyServiceContext(serviceKey);
 
         if (payload?.emailMasked) emailMaskedEl.textContent = payload.emailMasked;
         amountEl.textContent = `${formatAmount(amount)} ${currency}`;
@@ -123,8 +562,10 @@
           trackPurchaseRecord(id, payload);
           handlePaidOrder(id);
           if (deliveryMode === "vpn") {
+            setPaidReceipt(service, `Доступ ${service.name} готовится к подключению.`);
             statusEl.className = "status paid";
-            statusEl.textContent = "Оплачено. Переводим в активацию VPN...";
+            statusEl.textContent = "Платёж подтверждён. Подготавливаем страницу активации.";
+            setNextStep("Откроется активация VPN", "Страница переключится автоматически — повторно оплачивать заказ не нужно.");
             try {
               localStorage.setItem("gptishka_vpn_order_id", id);
               if (linkToken) localStorage.setItem(`gptishka_vpn_order_token:${id}`, linkToken);
@@ -140,9 +581,31 @@
             return true;
           }
 
-          if (aiServiceOrder && deliveryMode === "manual_login") {
+          if (deliveryMode === "code") {
+            setPaidReceipt(service, `Цифровой товар ${service.name} успешно оплачен.`);
             statusEl.className = "status paid";
-            statusEl.textContent = "Оплачено. Заявка передана менеджеру — мы свяжемся с вами по указанным контактам.";
+            statusEl.textContent = "Платёж подтверждён. Подготавливаем страницу выдачи.";
+            setNextStep("Откроется выданный код", "Страница с цифровым кодом загрузится автоматически.");
+            setTimeout(() => {
+              const url = new URL("/itunes", window.location.origin);
+              url.searchParams.set("order_id", id);
+              if (linkToken) url.searchParams.set("t", linkToken);
+              window.location.href = url.toString();
+            }, 900);
+            return true;
+          }
+
+          if (deliveryMode === "manual_login") {
+            setPaidReceipt(service, `Заказ ${service.name} создан и передан в обработку.`);
+            statusEl.className = "status paid";
+            statusEl.textContent = "Платёж подтверждён. Подготавливаем страницу активации.";
+            setNextStep("Открываем активацию", "Автоматически переходим к статусу подключения…");
+            setTimeout(() => {
+              const url = new URL("/redeem-start.html", window.location.origin);
+              url.searchParams.set("order_id", id);
+              if (linkToken) url.searchParams.set("t", linkToken);
+              window.location.href = url.toString();
+            }, 1800);
             return true;
           }
 
@@ -151,6 +614,7 @@
             if (hasBundleVpnAccess) {
               statusEl.className = "status paid";
               statusEl.textContent = "Оплачено. Открываем шаги: VPN + активация подписки...";
+              setNextStep("Откроется мастер подключения", "Страница автоматически перейдёт к VPN и активации подписки.");
               setTimeout(() => {
                 const url = new URL("/bundle-activation.html", window.location.origin);
                 url.searchParams.set("order_id", id);
@@ -162,7 +626,9 @@
           }
 
           statusEl.className = "status paid";
-          statusEl.textContent = "Оплачено. Переводим на страницу активации...";
+          setPaidReceipt(service, `Заказ ${service.name} создан. Остался последний шаг подключения.`);
+          statusEl.textContent = "Платёж подтверждён. Подготавливаем страницу активации.";
+          setNextStep("Откроется форма активации", `Через секунду вы автоматически перейдёте к подключению ${service.name}.`);
           setTimeout(() => {
             const url = new URL("/redeem-start.html", window.location.origin);
             url.searchParams.set("order_id", id);
@@ -179,38 +645,158 @@
         }
 
         statusEl.className = "status pending";
+        statusTitleEl.textContent = `Оплата ${service.name} обрабатывается`;
+        statusLeadEl.textContent = "Проверяем платеж через webhook. Обычно это занимает до 30 секунд.";
         statusEl.textContent = "Ожидаем подтверждение платежа...";
+        setNextStep("Ожидаем платёжную систему", "Как только платёж подтвердится, мы автоматически покажем следующий шаг.");
         return false;
       } catch (_) {
         return false;
       }
     }
 
-    function isAiServiceOrder(payload) {
-      const planId = String(payload?.planId || payload?.productId || "").trim();
-      const directSignals = [
-        payload?.product,
-        payload?.productSlug,
-        payload?.productTitle,
-        payload?.serviceKey,
-      ]
-        .map((value) => String(value || "").toLowerCase())
-        .join(" ");
-      if (/chatgpt|chat gpt|claude|grok|supergrok/.test(directSignals)) return true;
+    function normalizeServiceKey(value) {
+      const normalized = String(value || "").trim().toLowerCase().replace(/[\s_-]+/g, "");
+      if (normalized.includes("itunes") || normalized.includes("appstore") || normalized.includes("appleid")) return "itunes";
+      if (normalized.includes("steam") || normalized.includes("mannco")) return "steam";
+      if (normalized.includes("perplexity") || normalized.includes("pplx")) return "perplexity";
+      if (normalized.includes("claude")) return "claude";
+      if (normalized.includes("gemini") || normalized.includes("googleai")) return "gemini";
+      if (normalized.includes("suno")) return "suno";
+      if (normalized.includes("vpn") || normalized.includes("vless")) return "vpn";
+      if (normalized.includes("supergrok") || normalized === "grok") return "grok";
+      if (normalized.includes("chatgpt") || normalized === "chatgpt") return "chatgpt";
+      return "";
+    }
 
+    function serviceConfig(serviceKey) {
+      const configs = {
+        chatgpt: {
+          name: "ChatGPT",
+          href: "/chatgpt",
+          icon: "/assets/img/services/chatgpt-card.webp?v=20260721-webp1",
+          price: 1290,
+        },
+        claude: {
+          name: "Claude",
+          href: "/claude",
+          icon: "/assets/img/services/claude-card.png",
+          price: 2299,
+        },
+        perplexity: {
+          name: "Perplexity Pro",
+          href: "/perplexity",
+          icon: "/assets/img/services/perplexity-card.webp?v=20260809-perplexity1",
+          price: 1999,
+        },
+        gemini: {
+          name: "Gemini Pro",
+          href: "/gemini",
+          icon: "/assets/img/services/gemini-card.webp",
+          price: 1500,
+        },
+        suno: {
+          name: "Suno Premier",
+          href: "/suno",
+          icon: "/assets/img/services/suno-card.webp?v=20260812-suno5",
+          price: 2999,
+        },
+        grok: {
+          name: "SuperGrok",
+          href: "/supergrok",
+          icon: "/assets/img/services/grok-card.png",
+          price: 4850,
+        },
+        itunes: {
+          name: "iTunes и App Store",
+          href: "/itunes",
+          icon: "/assets/img/services/appstore-card-v3.webp",
+          price: 300,
+        },
+        steam: {
+          name: "Пополнение Steam",
+          href: "/store/steam/",
+          icon: "/assets/img/steam/steam-topup-card.webp",
+          price: 151,
+        },
+        vpn: {
+          name: "GPTishka VPN",
+          href: "/store/vpn/",
+          icon: "/assets/img/services/vpn-card.webp",
+          price: 0,
+        },
+      };
+      return configs[serviceKey] || { name: "подписки", href: "/catalog/ai/", icon: "", price: 0 };
+    }
+
+    function readCheckoutContext() {
       try {
         const raw = String(localStorage.getItem("gptishka_site_checkout_context") || "");
-        if (!raw) return false;
+        if (!raw) return null;
         const context = JSON.parse(raw);
-        const serviceKey = String(context?.serviceKey || "").toLowerCase();
-        const productId = String(context?.productId || "").trim();
         const createdAt = Number(context?.createdAt || 0);
-        const isFresh = createdAt > 0 && Date.now() - createdAt < 24 * 60 * 60 * 1000;
-        const isSameProduct = !planId || !productId || planId === productId;
-        return isFresh && isSameProduct && ["chatgpt", "claude", "grok", "supergrok"].includes(serviceKey);
+        if (!createdAt || Date.now() - createdAt >= 24 * 60 * 60 * 1000) return null;
+        return context;
       } catch (_) {
-        return false;
+        return null;
       }
+    }
+
+    function resolveServiceKey(payload) {
+      const directSignals = [
+        payload?.serviceKey,
+        payload?.productSlug,
+        payload?.productTitle,
+        payload?.product,
+      ];
+      for (const signal of directSignals) {
+        const key = normalizeServiceKey(signal);
+        if (key) return key;
+      }
+      const context = readCheckoutContext();
+      return normalizeServiceKey(context?.serviceKey || context?.source || "");
+    }
+
+    function applyServiceContext(serviceKey) {
+      const config = serviceConfig(serviceKey);
+      if (serviceKey) {
+        serviceNameEl.textContent = config.name;
+        if (!previewMode && statusEl.classList.contains("pending")) {
+          statusTitleEl.textContent = "Проверяем оплату";
+          document.title = `Оплата ${config.name} обрабатывается - GPTишка`;
+        }
+        tariffLinkEl.href = config.href;
+        tariffLinkEl.textContent = `К тарифам ${config.name}`;
+        document.body.dataset.paymentService = serviceKey;
+      }
+      return config;
+    }
+
+    function setNextStep(title, text) {
+      if (statusRedirectTextEl) statusRedirectTextEl.textContent = String(text || title || "Открываем страницу активации…");
+    }
+
+    function setPaidReceipt(service, lead) {
+      const safeService = service || serviceConfig("");
+      statusKickerEl.textContent = "Операция выполнена";
+      statusTitleEl.textContent = "Оплата прошла успешно";
+      document.title = `Оплата ${safeService.name} прошла успешно - GPTишка`;
+      statusLeadEl.textContent = String(lead || `Заказ ${safeService.name} успешно создан.`);
+    }
+
+    function renderPaidPreview(serviceKey) {
+      const service = applyServiceContext(serviceKey);
+      statusPreviewNoteEl.hidden = false;
+      statusKickerEl.textContent = "Операция выполнена";
+      statusTitleEl.textContent = "Оплата прошла успешно";
+      document.title = `Оплата ${service.name} прошла успешно - GPTишка`;
+      statusLeadEl.textContent = `Заказ ${service.name} создан и готов к подключению.`;
+      orderIdEl.textContent = "ПРЕДПРОСМОТР";
+      emailMaskedEl.textContent = "po***@example.com";
+      amountEl.textContent = `${formatAmount(service.price)} RUB`;
+      statusEl.className = "status paid";
+      statusEl.textContent = "Платёж подтверждён. Подготавливаем страницу активации.";
+      setNextStep("Открываем активацию", `В реальном заказе переход к подключению ${service.name} произойдёт автоматически.`);
     }
 
     async function checkBundleVpnAccess(id) {
@@ -324,7 +910,7 @@
   </script>
   <script src="/assets/js/site-header-unify.js?v=20260724-header-layout3" defer></script>
   <script src="/assets/js/client-i18n.js?v=20260724-en-product-routes1" defer></script>
-  <script src="/assets/js/language-switcher.js?v=20260724-header-layout3" defer></script>
+  <script src="/assets/js/language-switcher.js?v=20260810-language-persist1" defer></script>
 </body>
 </html>
 

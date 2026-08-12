@@ -53,12 +53,13 @@ function containsHiddenVpnMarker(value: unknown) {
 
 export function isHiddenPublicVpnProduct(item: any) {
   const tags = Array.isArray(item?.tags) ? item.tags : [];
+  if (tags.some((tag: unknown) => String(tag || "").trim().toLowerCase() === "internal:checkout")) return true;
   const deliveryType = resolveProductDeliveryType(tags);
   if (deliveryType === "vpn") return true;
 
   const normalizedTags = tags.map((tag: unknown) => String(tag || "").trim().toLowerCase());
   const isAiSubscription = normalizedTags.some((tag: string) =>
-    ["chatgpt", "claude", "supergrok", "grok"].includes(tag)
+    ["chatgpt", "claude", "supergrok", "grok", "perplexity", "pplx", "gemini", "google-ai", "suno"].includes(tag)
   );
   if (isAiSubscription) return false;
 

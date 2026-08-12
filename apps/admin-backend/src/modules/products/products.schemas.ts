@@ -32,7 +32,7 @@ export const productQuerySchema = pagination.extend({
 const activationVariantSchema = z.object({
   enabled: z.boolean().default(true),
   price: z.coerce.number().positive(),
-  deliveryType: z.enum(["activation", "credentials", "manual_login", "vpn", "support", "support_claude"]),
+  deliveryType: z.enum(["activation", "code", "credentials", "manual_login", "vpn", "support", "support_claude"]),
   activationSiteUrl: z.string().max(2048).optional(),
 });
 
@@ -58,7 +58,7 @@ const productBody = z.object({
   tags: z.array(z.string().min(1).max(40)).max(20).default([]),
   stock: z.coerce.number().int().min(0).nullable().optional(),
   isActive: z.boolean().default(true),
-  deliveryType: z.enum(["activation", "credentials", "manual_login", "vpn", "support", "support_claude"]).default("activation"),
+  deliveryType: z.enum(["activation", "code", "credentials", "manual_login", "vpn", "support", "support_claude"]).default("activation"),
   deliveryMethod: z
     .union([
       z.literal(1),
