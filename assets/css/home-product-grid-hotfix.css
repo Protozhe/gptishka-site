@@ -3,25 +3,25 @@
  * Product data can contain both grouped service cards and standalone cards;
  * treating either wrapper as a grid item compresses all of its children.
  */
-#pricingGrid > .product-showcase-section:has(> .product-showcase-grid > .product-showcase-grid--mixed) > .product-showcase-grid {
+#pricingGrid > .product-showcase-section > .product-showcase-grid {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)) !important;
   align-items: stretch;
 }
 
-#pricingGrid > .product-showcase-section:has(> .product-showcase-grid > .product-showcase-grid--mixed) > .product-showcase-grid > .ai-directory-grid,
-#pricingGrid > .product-showcase-section:has(> .product-showcase-grid > .product-showcase-grid--mixed) > .product-showcase-grid > .product-showcase-grid--mixed {
+#pricingGrid > .product-showcase-section > .product-showcase-grid > .ai-directory-grid,
+#pricingGrid > .product-showcase-section > .product-showcase-grid > .product-showcase-grid--mixed {
   display: contents !important;
 }
 
-#pricingGrid > .product-showcase-section:has(> .product-showcase-grid > .product-showcase-grid--mixed) > .product-showcase-grid > .ai-directory-grid > .ai-directory-card,
-#pricingGrid > .product-showcase-section:has(> .product-showcase-grid > .product-showcase-grid--mixed) > .product-showcase-grid > .product-showcase-grid--mixed > .product-showcase-card {
+#pricingGrid > .product-showcase-section > .product-showcase-grid > .ai-directory-grid > .ai-directory-card,
+#pricingGrid > .product-showcase-section > .product-showcase-grid > .product-showcase-grid--mixed > .product-showcase-card {
   min-width: 0 !important;
   width: 100% !important;
   margin: 0 !important;
 }
 
 @media (max-width: 760px) {
-  #pricingGrid > .product-showcase-section:has(> .product-showcase-grid > .product-showcase-grid--mixed) > .product-showcase-grid {
+  #pricingGrid > .product-showcase-section > .product-showcase-grid {
     grid-template-columns: 1fr !important;
   }
 }
