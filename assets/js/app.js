@@ -24,7 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 2200);
   initLinkPageTransitions();
   initProgressiveResourceWarmup();
-  captureAttributionContext();
   window.addEventListener("pageshow", () => {
     pageNavigationInProgress = false;
     document.documentElement.classList.remove("is-leaving");
@@ -84,11 +83,6 @@ const WARMUP_MAX_ROUTES = 7;
 const WARMUP_PRODUCTS_DELAY_MS = 4400;
 const METRIKA_COUNTER_ID = 106969126;
 const TOP_MAIL_COUNTER_ID = "3744660";
-const ATTRIBUTION_STORAGE_KEY = "gptishka_attribution_v1";
-const METRIKA_GOAL_NAME_MAP = Object.freeze({
-  checkout_start: "ym-begin-checkout",
-  payment_method_selected: "ym-add-payment-info",
-});
 const prefetchedNavigationKeys = new Set();
 
 function markTransitionNavigationIntent() {
@@ -128,8 +122,7 @@ function trackAnalyticsEvent(eventName, payload = {}) {
 
   if (typeof window.ym === "function") {
     try {
-      const metrikaGoalName = METRIKA_GOAL_NAME_MAP[safeName] || safeName;
-      window.ym(METRIKA_COUNTER_ID, "reachGoal", metrikaGoalName, safePayload);
+      window.ym(METRIKA_COUNTER_ID, "reachGoal", safeName, safePayload);
     } catch (_) {
       // Ignore analytics transport errors.
     }
@@ -149,114 +142,6 @@ function trackAnalyticsEvent(eventName, payload = {}) {
 }
 
 window.gptishkaTrackEvent = trackAnalyticsEvent;
-
-function safeAttributionValue(value, maxLength = 500) {
-  return String(value || "").trim().slice(0, maxLength);
-}
-
-function readMetrikaClientIdCookie() {
-  try {
-    const match = String(document.cookie || "").match(/(?:^|;\s*)_ym_uid=([^;]+)/);
-    return match ? safeAttributionValue(decodeURIComponent(match[1]), 80) : "";
-  } catch (_) {
-    return "";
-  }
-}
-
-function currentAttributionTouch() {
-  let params;
-  try {
-    params = new URLSearchParams(window.location.search || "");
-  } catch (_) {
-    params = new URLSearchParams();
-  }
-  const touch = {
-    capturedAt: new Date().toISOString(),
-    landingPage: safeAttributionValue(window.location.href, 1000),
-    referrer: safeAttributionValue(document.referrer, 1000),
-  };
-  ["yclid", "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach((key) => {
-    const value = safeAttributionValue(params.get(key), 500);
-    if (value) touch[key] = value;
-  });
-  return touch;
-}
-
-function readStoredAttribution() {
-  try {
-    const parsed = JSON.parse(String(localStorage.getItem(ATTRIBUTION_STORAGE_KEY) || "null"));
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : null;
-  } catch (_) {
-    return null;
-  }
-}
-
-function captureAttributionContext() {
-  const current = currentAttributionTouch();
-  const stored = readStoredAttribution();
-  const hasCampaignSignal = Boolean(
-    current.yclid || current.utm_source || current.utm_medium || current.utm_campaign || current.utm_content || current.utm_term
-  );
-  const next = {
-    firstTouch: stored?.firstTouch || current,
-    lastTouch: hasCampaignSignal || !stored?.lastTouch ? current : stored.lastTouch,
-    clientId: safeAttributionValue(stored?.clientId || readMetrikaClientIdCookie(), 80),
-    updatedAt: new Date().toISOString(),
-  };
-  try {
-    localStorage.setItem(ATTRIBUTION_STORAGE_KEY, JSON.stringify(next));
-  } catch (_) {
-    // Ignore storage errors in strict privacy modes.
-  }
-  return next;
-}
-
-function requestMetrikaClientId(timeoutMs = 1200) {
-  return new Promise((resolve) => {
-    let settled = false;
-    const finish = (value) => {
-      if (settled) return;
-      settled = true;
-      resolve(safeAttributionValue(value || readMetrikaClientIdCookie(), 80));
-    };
-    const timer = window.setTimeout(() => finish(""), timeoutMs);
-    try {
-      if (typeof window.ym !== "function") {
-        window.clearTimeout(timer);
-        finish("");
-        return;
-      }
-      window.ym(METRIKA_COUNTER_ID, "getClientID", (clientId) => {
-        window.clearTimeout(timer);
-        finish(clientId);
-      });
-    } catch (_) {
-      window.clearTimeout(timer);
-      finish("");
-    }
-  });
-}
-
-async function buildCheckoutAttribution() {
-  const stored = captureAttributionContext();
-  const clientId = (await requestMetrikaClientId()) || safeAttributionValue(stored?.clientId, 80);
-  const firstTouch = stored?.firstTouch || currentAttributionTouch();
-  const lastTouch = stored?.lastTouch || firstTouch;
-  const attribution = {
-    clientId,
-    yclid: safeAttributionValue(lastTouch?.yclid || firstTouch?.yclid, 500),
-    firstTouch,
-    lastTouch,
-    checkoutPage: safeAttributionValue(window.location.href, 1000),
-    capturedAt: new Date().toISOString(),
-  };
-  try {
-    localStorage.setItem(ATTRIBUTION_STORAGE_KEY, JSON.stringify({ ...stored, clientId, updatedAt: attribution.capturedAt }));
-  } catch (_) {
-    // Ignore storage errors in strict privacy modes.
-  }
-  return attribution;
-}
 
 function navigateWithPageTransition(targetHref, delayMs = PAGE_TRANSITION_LEAVE_MS) {
   const href = String(targetHref || "").trim();
@@ -5221,11 +5106,6 @@ function initActivationResumeShortcut() {
         },
       };
     }
-    const attribution = await buildCheckoutAttribution();
-    orderDetails = {
-      ...orderDetails,
-      attribution,
-    };
     if (orderDetails && typeof orderDetails === "object") {
       payload.order_details = orderDetails;
       payload.orderDetails = orderDetails;

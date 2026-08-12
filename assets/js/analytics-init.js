@@ -81,8 +81,6 @@
     }
   }
 
-  window.gptishkaStartExternalAnalytics = startExternalAnalytics;
-
   function scheduleAfterLoad() {
     analyticsTimer = window.setTimeout(startExternalAnalytics, 4000);
   }
@@ -94,9 +92,7 @@
     });
   }
 
-  if (/\/(?:success|fail)\.html$/i.test(window.location.pathname || "")) {
-    startExternalAnalytics();
-  } else if (document.readyState === "complete") {
+  if (document.readyState === "complete") {
     scheduleAfterLoad();
   } else {
     window.addEventListener("load", scheduleAfterLoad, { once: true });

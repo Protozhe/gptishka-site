@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <script src="/assets/js/analytics-init.js?v=20260812-attribution1" defer></script>
+  <script src="/assets/js/analytics-init.js?v=20260721-defer-analytics1" defer></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Оплата обрабатывается - GPTишка</title>
@@ -45,7 +45,6 @@
     const orderId = String(params.get("order_id") || params.get("orderId") || "").trim();
     const linkToken = String(params.get("t") || "").trim();
     const LAST_PAID_ORDER_KEY = "gptishka_last_paid_order_id";
-    const METRIKA_COUNTER_ID = 106969126;
     const CART_STORAGE_KEYS = [
       "gptishka_cart_v1",
       "gptishka_card_qty_v1",
@@ -121,7 +120,6 @@
         amountEl.textContent = `${formatAmount(amount)} ${currency}`;
 
         if (status === "PAID") {
-          trackConfirmedPurchase(id, payload);
           trackPurchaseRecord(id, payload);
           handlePaidOrder(id);
           if (deliveryMode === "vpn") {
@@ -273,49 +271,6 @@
         sessionStorage.setItem(trackedKey, "1");
       } catch (_) {
         // Ignore storage write errors.
-      }
-    }
-
-    function trackConfirmedPurchase(orderId, payload) {
-      const safeOrderId = String(orderId || "").trim();
-      if (!safeOrderId) return;
-      const trackedKey = `gptishka_metrika_purchase:${safeOrderId}`;
-      try {
-        if (localStorage.getItem(trackedKey) === "1") return;
-      } catch (_) {
-        // Continue without persistent idempotency in strict privacy modes.
-      }
-
-      const amount = Number(payload?.finalAmount || payload?.totalAmount || payload?.amount || 0);
-      const currency = String(payload?.currency || "RUB").trim().toUpperCase() || "RUB";
-      const productName = String(payload?.productTitle || payload?.product || payload?.serviceKey || "Digital product").trim();
-      const goalPayload = {
-        order_price: Number.isFinite(amount) ? amount : 0,
-        currency,
-        order_id: safeOrderId,
-        product: productName,
-      };
-
-      try {
-        if (typeof window.gptishkaStartExternalAnalytics === "function") {
-          window.gptishkaStartExternalAnalytics();
-        }
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-          ecommerce: {
-            currencyCode: currency,
-            purchase: {
-              actionField: { id: safeOrderId, revenue: goalPayload.order_price },
-              products: [{ id: safeOrderId, name: productName, price: goalPayload.order_price, quantity: 1 }],
-            },
-          },
-        });
-        if (typeof window.ym === "function") {
-          window.ym(METRIKA_COUNTER_ID, "reachGoal", "ym-purchase", goalPayload);
-        }
-        localStorage.setItem(trackedKey, "1");
-      } catch (_) {
-        // Analytics must never block the paid-order flow.
       }
     }
 
