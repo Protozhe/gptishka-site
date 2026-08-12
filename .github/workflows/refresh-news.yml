@@ -35,6 +35,6 @@ jobs:
           fi
           git config user.name "GPTishka News Bot"
           git config user.email "support@gptishka.shop"
-          git add data/public-news.json assets/img/news
+          git add data/public-news.json assets/data/public-news.json assets/img/news
           git commit -m "chore: refresh public news cache"
           git push origin HEAD:main

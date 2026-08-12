@@ -148,7 +148,7 @@
   }
 
   async function readSavedPayload() {
-    const response = await fetch("/data/public-news.json", {
+    const response = await fetch("/assets/data/public-news.json", {
       cache: "no-cache",
       headers: { Accept: "application/json" },
     });

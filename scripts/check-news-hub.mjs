@@ -9,6 +9,7 @@ const en = read("en/news/index.html");
 const client = read("assets/js/news-hub.js");
 const server = read("server.js");
 const payload = JSON.parse(read("data/public-news.json"));
+const publicPayload = JSON.parse(read("assets/data/public-news.json"));
 
 function structuralSignature(html) {
   return [...html.matchAll(/<\/?([a-z0-9-]+)([^>]*)>/gi)]
@@ -33,6 +34,7 @@ assert.match(client, /\.textContent\s*=/);
 assert.match(client, /document\.createElement/);
 assert.doesNotMatch(client, /\.innerHTML\s*=/);
 assert.equal(payload.channel, "aimarket_gpt");
+assert.deepEqual(publicPayload, payload, "Public and server news caches differ");
 assert.ok(Array.isArray(payload.items) && payload.items.length > 0, "News cache is empty");
 for (const item of payload.items) {
   assert.match(item.url, /^https:\/\/t\.me\/aimarket_gpt\/\d+$/);
