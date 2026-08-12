@@ -21,6 +21,7 @@
   const pageSize = 5;
   let visibleCount = pageSize;
   let items = [];
+  let appliedFetchedAt = 0;
   const mediaObserver = "IntersectionObserver" in window
     ? new IntersectionObserver(entries => {
         entries.forEach(entry => {
@@ -138,17 +139,20 @@
   function applyPayload(payload) {
     const nextItems = payloadItems(payload);
     if (!nextItems.length) return false;
+    const nextFetchedAt = Date.parse(String(payload?.fetchedAt || "")) || 0;
+    if (appliedFetchedAt && nextFetchedAt && nextFetchedAt < appliedFetchedAt) return false;
     items = nextItems;
+    appliedFetchedAt = Math.max(appliedFetchedAt, nextFetchedAt);
     render();
     return true;
   }
 
   async function readSavedPayload() {
-    const response = await fetch("/api/public/news?limit=18", {
-      cache: "force-cache",
+    const response = await fetch("/data/public-news.json", {
+      cache: "no-cache",
       headers: { Accept: "application/json" },
     });
-    if (!response.ok) throw new Error(`Cached feed HTTP ${response.status}`);
+    if (!response.ok) throw new Error(`Saved feed HTTP ${response.status}`);
     return response.json();
   }
 

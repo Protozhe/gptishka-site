@@ -1,0 +1,40 @@
+name: Refresh public news
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-public-news
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Refresh and publish Telegram news cache
+        run: |
+          BEFORE_ID="$(node -p "require('./data/public-news.json').items[0]?.postId || ''")"
+          node scripts/refresh-public-news.js
+          AFTER_ID="$(node -p "require('./data/public-news.json').items[0]?.postId || ''")"
+          if [ "$BEFORE_ID" = "$AFTER_ID" ]; then
+            echo "No new Telegram posts"
+            exit 0
+          fi
+          git config user.name "GPTishka News Bot"
+          git config user.email "support@gptishka.shop"
+          git add data/public-news.json assets/img/news
+          git commit -m "chore: refresh public news cache"
+          git push origin HEAD:main
