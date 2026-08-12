@@ -2633,42 +2633,6 @@ function initActivationResumeShortcut() {
         sort: 30,
       };
     }
-    if (text.includes("perplexity")) {
-      return {
-        key: "perplexity",
-        name: "Perplexity",
-        icon: "P",
-        description: isEnPage
-          ? "Perplexity Pro for AI search, research and source-backed answers."
-          : "Perplexity Pro для поиска, исследований и ответов с источниками.",
-        theme: "perplexity",
-        sort: 40,
-      };
-    }
-    if (text.includes("gemini")) {
-      return {
-        key: "gemini",
-        name: "Gemini",
-        icon: "G",
-        description: isEnPage
-          ? "Gemini Pro for work, study, analysis and creative tasks."
-          : "Gemini Pro для работы, учёбы, анализа и творчества.",
-        theme: "gemini",
-        sort: 50,
-      };
-    }
-    if (text.includes("suno")) {
-      return {
-        key: "suno",
-        name: "Suno",
-        icon: "S",
-        description: isEnPage
-          ? "Suno Premier for creating music with AI."
-          : "Suno Premier для создания музыки с искусственным интеллектом.",
-        theme: "suno",
-        sort: 60,
-      };
-    }
     if (isStandaloneVpnProduct(item)) {
       return {
         key: "vpn",
@@ -2761,9 +2725,6 @@ function initActivationResumeShortcut() {
     if (normalized === "vpn" || normalized === "vless" || normalized === "xray" || normalized === "reality" || normalized.includes("gptishka vpn")) return "vpn";
     if (normalized.includes("chatgpt") || normalized.includes("openai")) return "chatgpt";
     if (normalized.includes("claude")) return "claude";
-    if (normalized.includes("perplexity")) return "perplexity";
-    if (normalized.includes("gemini")) return "gemini";
-    if (normalized.includes("suno")) return "suno";
     if (normalized.includes("grok")) return "grok";
     if (normalized.includes("vpn") || normalized.includes("vless")) return "vpn";
     return normalized;
@@ -2797,9 +2758,6 @@ function initActivationResumeShortcut() {
     if (key === "chatgpt") return isEnPage ? "/en/chatgpt.html" : "/chatgpt";
     if (key === "claude") return isEnPage ? "/en/claude.html" : "/claude";
     if (key === "grok") return isEnPage ? "/en/supergrok.html" : "/supergrok";
-    if (key === "perplexity") return isEnPage ? "/en/perplexity.html" : "/perplexity";
-    if (key === "gemini") return isEnPage ? "/en/gemini.html" : "/gemini";
-    if (key === "suno") return isEnPage ? "/en/suno.html" : "/suno";
     if (key === "vpn") return isEnPage ? "/en/store/vpn/" : "/store/vpn";
     return isEnPage ? "/en/#pricing" : "/#pricing";
   }
@@ -3364,9 +3322,6 @@ function initActivationResumeShortcut() {
 
   function formatServicePlanSummary(group) {
     const serviceKey = normalizeAiServiceKey(group?.service?.key);
-    if (serviceKey === "perplexity") return isEnPage ? "Pro · 1 month" : "Pro · 1 месяц";
-    if (serviceKey === "gemini") return isEnPage ? "Pro · 12 or 18 months" : "Pro · 12 или 18 месяцев";
-    if (serviceKey === "suno") return isEnPage ? "Premier · 1 month" : "Premier · 1 месяц";
     if (serviceKey === "grok" || serviceKey === "vpn") {
       return formatVpnPlanSummary(group.items);
     }
