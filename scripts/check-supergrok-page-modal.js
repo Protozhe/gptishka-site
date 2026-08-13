@@ -21,7 +21,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260723-checkout-controls1";
-const expectedJsAssetVersion = "20260724-en-product-routes1";
+const expectedJsAssetVersion = "20260813-supergrok-stock3";
 
 [
   ["service-page--constructor", "supergrok.html: constructor page class"],
@@ -58,26 +58,26 @@ const expectedJsAssetVersion = "20260724-en-product-routes1";
 
 [
   ["AI_ORDER_MODAL_SERVICE_KEYS", "app.js: shared AI modal service allowlist"],
-  ['new Set(["chatgpt", "claude", "grok", "perplexity", "vpn"])', "app.js: Grok in modal service allowlist"],
+  ['new Set(["chatgpt", "claude", "grok", "perplexity", "gemini", "suno", "vpn"])', "app.js: Grok in modal service allowlist"],
   ["AI_ORDER_MODAL_SERVICE_CONFIG", "app.js: shared AI modal config"],
   ['displayName: "SuperGrok"', "app.js: Grok display name"],
   ['logo: "/assets/img/services/grok-card.webp?v=20260721-heavy-cards-webp1"', "app.js: Grok modal logo cache-bust"],
-  ['const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["supergrok"])', "app.js: single SuperGrok plan key"],
-  ['if (key === "grok") {\n      return "supergrok";', "app.js: Grok plan is separate from duration"],
-  ['plan: ["supergrok"]', "app.js: constructor exposes one SuperGrok plan"],
+  ['const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["supergrok", "supergrok-heavy"])', "app.js: SuperGrok and Heavy modal plan keys"],
+  ['if (text.includes("supergrok-heavy") || text.includes("supergrok heavy") || joinedTags.includes("heavy")) return "supergrok-heavy";', "app.js: Heavy product plan routing"],
+  ['plan: ["supergrok", "supergrok-heavy"]', "app.js: constructor exposes SuperGrok and Heavy plans"],
   ['if (key === "grok") return isGrokOrderModalPlanKey(planKey);', "app.js: Grok modal plan routing"],
   ['if (key === "grok") return String(item?.title || planLabel || "").trim();', "app.js: Grok selected plan uses product title"],
 ].forEach(([marker, label]) => requireMarker(source, marker, label));
 
 [
-  ['new Set(["chatgpt", "claude", "grok", "perplexity", "vpn"])', "app.min.js: shared AI modal allowlist"],
+  ['new Set(["chatgpt", "claude", "grok", "perplexity", "gemini", "suno", "vpn"])', "app.min.js: shared AI modal allowlist"],
   ["grok-card.webp?v=20260721-heavy-cards-webp1", "app.min.js: Grok modal logo cache-bust"],
 ].forEach(([marker, label]) => requireMarker(minifiedSource, marker, label));
 
 [
   ['[data-service-page="grok"] .buy-btn', "css: scoped Grok buy CTA"],
   ['[data-service-page="grok"] .pay-now-btn', "css: scoped Grok pay CTA"],
-  ['.service-page:is([data-service-page="grok"], [data-service-page="perplexity"]) ~ .chatgpt-go-order-modal', "css: shared Grok/Perplexity modal theme"],
+  ['.service-page:is([data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="itunes"]) ~ .chatgpt-go-order-modal', "css: shared Grok/Perplexity modal theme"],
   ['[data-service-page="grok"] .service-checkout-card .buy-btn:hover:not(:disabled)', "css: Grok constructor buy hover override"],
   [".service-checkout-card:hover", "css: static checkout card hover override"],
   ["#05070a", "css: Grok deep black"],
