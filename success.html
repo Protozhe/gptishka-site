@@ -557,6 +557,13 @@
         const serviceKey = resolveServiceKey(payload);
         const service = applyServiceContext(serviceKey);
 
+        if (serviceKey === "steam" && paymentStatus !== "SUCCESS") {
+          setNextStep(
+            "Ожидаем подтверждение оплаты",
+            "После подтверждения передадим ключи по указанной Steam trade-ссылке."
+          );
+        }
+
         if (payload?.emailMasked) emailMaskedEl.textContent = payload.emailMasked;
         amountEl.textContent = `${formatAmount(amount)} ${currency}`;
 
@@ -599,6 +606,16 @@
           }
 
           if (deliveryMode === "manual_login") {
+            if (serviceKey === "steam") {
+              setPaidReceipt(service, "Оплата подтверждена. Заказ Steam передан менеджеру.");
+              statusEl.className = "status paid";
+              statusEl.textContent = "Платёж подтверждён. Передаём ключи по указанной trade-ссылке.";
+              setNextStep(
+                "Заказ передан в обработку",
+                "Ключи будут переданы на указанную Steam trade-ссылку. Статус сообщим в Telegram."
+              );
+              return true;
+            }
             setPaidReceipt(service, `Заказ ${service.name} создан и передан в обработку.`);
             statusEl.className = "status paid";
             statusEl.textContent = "Платёж подтверждён. Подготавливаем страницу активации.";
@@ -639,6 +656,14 @@
             window.location.href = url.toString();
           }, 1200);
           return true;
+        }
+
+        if (status === "FAILED" && paymentStatus === "PROCESSING") {
+          statusEl.className = "status pending";
+          statusTitleEl.textContent = `Оплата ${service.name} обрабатывается`;
+          statusLeadEl.textContent = "Платёжная система ещё проверяет поступление средств.";
+          statusEl.textContent = "Ожидаем подтверждение платежа от платёжной системы...";
+          return false;
         }
 
         if (status === "FAILED" || status === "REFUNDED") {

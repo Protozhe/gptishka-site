@@ -1455,14 +1455,14 @@ async function getOrderWithFirstItem(orderId: string) {
   });
 }
 
-type PendingPaymentProbeOrder = {
+type ReconcilePaymentProbeOrder = {
   id: string;
   status: OrderStatus;
   botType: string | null;
   payments: Array<{ providerRef: string | null; provider: string }>;
 };
 
-async function tryReconcilePendingOrderPayment(orderId: string, cachedOrder?: PendingPaymentProbeOrder) {
+async function tryReconcilePendingOrderPayment(orderId: string, cachedOrder?: ReconcilePaymentProbeOrder) {
   const order =
     cachedOrder ||
     (await prisma.order.findUnique({
@@ -1479,7 +1479,7 @@ async function tryReconcilePendingOrderPayment(orderId: string, cachedOrder?: Pe
       },
     }));
   if (!order) return;
-  if (order.status !== OrderStatus.PENDING) return;
+  if (order.status !== OrderStatus.PENDING && order.status !== OrderStatus.FAILED) return;
 
   const payment = order.payments[0];
   const providerRef = String(payment?.providerRef || "").trim();
