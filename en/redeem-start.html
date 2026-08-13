@@ -1533,6 +1533,7 @@
     const SUPPORT_ACTIVATION_FLOW_CLAUDE = 'claude_token';
     const SUPPORT_TELEGRAM_URL = 'https://t.me/aiiisupport';
     const MANUAL_SUPPORT_MESSAGE = 'We process orders daily from 10:00 to 20:00 Moscow time. The average waiting time is from 5 minutes to 2 hours after payment. If the order is placed at night, we will connect you in the morning. Maximum turnaround time is 2 business days.';
+    const STEAM_KEY_DELIVERY_MESSAGE = 'We transfer Steam keys daily from 10:00 to 20:00 Moscow time. The average waiting time is 5 minutes to 2 hours after payment. Orders placed at night will be handled in the morning. Maximum turnaround time is 2 business days. The keys will be transferred through the Steam trade link provided with the order.';
     let isCredentialsDelivery = false;
     let isSupportTokenDelivery = false;
     let supportActivationFlow = SUPPORT_ACTIVATION_FLOW_GROK;
@@ -1797,13 +1798,26 @@
       const credentials = payload?.credentials && typeof payload.credentials === 'object' ? payload.credentials : null;
       const login = String(credentials?.login || '').trim();
       const password = String(credentials?.password || '').trim();
+      const productFingerprint = [payload?.productKey, payload?.productSlug, payload?.productTitle, payload?.serviceKey]
+        .map((value) => String(value || '').trim().toLowerCase())
+        .join(' ');
+      const isSteamKeyDelivery = productFingerprint.includes('steam') || productFingerprint.includes('mann co');
+      const supportMessage = isSteamKeyDelivery ? STEAM_KEY_DELIVERY_MESSAGE : MANUAL_SUPPORT_MESSAGE;
       const defaultMessage = isSupportDelivery
-        ? MANUAL_SUPPORT_MESSAGE
+        ? supportMessage
         : 'Login and password are not assigned yet. Please contact support or wait for manual assignment.';
-      const message = isSupportDelivery ? MANUAL_SUPPORT_MESSAGE : (String(payload?.message || '').trim() || defaultMessage);
+      const message = isSupportDelivery ? supportMessage : (String(payload?.message || '').trim() || defaultMessage);
+
+      if (isSupportDelivery && isSteamKeyDelivery) {
+        if (redeemTitleEl) redeemTitleEl.textContent = 'Steam key transfer';
+        if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Payment confirmed. Your key transfer order has been assigned to a GPTishka specialist.';
+        document.title = 'Steam key transfer - GPTishka';
+      }
 
       if (manualBlockLabel) {
-        manualBlockLabel.textContent = isSupportDelivery ? 'Manual activation via support' : 'Login details';
+        manualBlockLabel.textContent = isSupportDelivery
+          ? (isSteamKeyDelivery ? 'Key transfer status' : 'Manual activation via support')
+          : 'Login details';
       }
       if (manualLoginRow) {
         manualLoginRow.style.display = isSupportDelivery ? 'none' : 'flex';

@@ -1540,6 +1540,7 @@
     const SUPPORT_ACTIVATION_FLOW_CLAUDE = 'claude_token';
     const SUPPORT_TELEGRAM_URL = 'https://t.me/aiiisupport';
     const MANUAL_SUPPORT_MESSAGE = 'Мы обрабатываем заказы ежедневно с 10:00 до 20:00 по МСК. Среднее время ожидания — от 5 минут до 2 часов после оплаты. Если заказ оформлен ночью — подключим с утра. Максимальное время выполнения — 2 рабочих дня.';
+    const STEAM_KEY_DELIVERY_MESSAGE = 'Мы передаём ключи ежедневно с 10:00 до 20:00 по МСК. Среднее время ожидания — от 5 минут до 2 часов после оплаты. Если заказ оформлен ночью — передадим ключи утром. Максимальное время выполнения — 2 рабочих дня. Ключи будут переданы по указанной Steam trade-ссылке.';
     let isCredentialsDelivery = false;
     let isSupportTokenDelivery = false;
     let supportActivationFlow = SUPPORT_ACTIVATION_FLOW_GROK;
@@ -1805,13 +1806,15 @@
       const credentials = payload?.credentials && typeof payload.credentials === 'object' ? payload.credentials : null;
       const login = String(credentials?.login || '').trim();
       const password = String(credentials?.password || '').trim();
-      const defaultMessage = isSupportDelivery
-        ? MANUAL_SUPPORT_MESSAGE
-        : 'Login and password are not assigned yet. Please contact support or wait for manual assignment.';
-      const message = isSupportDelivery ? MANUAL_SUPPORT_MESSAGE : (String(payload?.message || '').trim() || defaultMessage);
       const productFingerprint = [payload?.productKey, payload?.productSlug, payload?.productTitle, payload?.serviceKey]
         .map((value) => String(value || '').trim().toLowerCase())
         .join(' ');
+      const isSteamKeyDelivery = productFingerprint.includes('steam') || productFingerprint.includes('mann co');
+      const supportMessage = isSteamKeyDelivery ? STEAM_KEY_DELIVERY_MESSAGE : MANUAL_SUPPORT_MESSAGE;
+      const defaultMessage = isSupportDelivery
+        ? supportMessage
+        : 'Login and password are not assigned yet. Please contact support or wait for manual assignment.';
+      const message = isSupportDelivery ? supportMessage : (String(payload?.message || '').trim() || defaultMessage);
       let serviceName = 'подписки';
       if (productFingerprint.includes('perplexity') || productFingerprint.includes('pplx')) serviceName = 'Perplexity Pro';
       else if (productFingerprint.includes('claude')) serviceName = 'Claude';
@@ -1822,13 +1825,17 @@
       else if (productFingerprint.includes('steam') || productFingerprint.includes('mann co')) serviceName = 'пополнения Steam';
 
       if (isSupportDelivery) {
-        if (redeemTitleEl) redeemTitleEl.textContent = `Подключение ${serviceName}`;
-        if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата подтверждена. Заказ передан специалисту GPTishka.';
-        document.title = `Подключение ${serviceName} - GPTишка`;
+        if (redeemTitleEl) redeemTitleEl.textContent = isSteamKeyDelivery ? 'Передача ключей Steam' : `Подключение ${serviceName}`;
+        if (redeemSubtitleEl) redeemSubtitleEl.textContent = isSteamKeyDelivery
+          ? 'Оплата подтверждена. Заказ на передачу ключей передан специалисту GPTishka.'
+          : 'Оплата подтверждена. Заказ передан специалисту GPTishka.';
+        document.title = isSteamKeyDelivery ? 'Передача ключей Steam - GPTишка' : `Подключение ${serviceName} - GPTишка`;
       }
 
       if (manualBlockLabel) {
-        manualBlockLabel.textContent = isSupportDelivery ? 'Статус подключения' : 'Данные для входа';
+        manualBlockLabel.textContent = isSupportDelivery
+          ? (isSteamKeyDelivery ? 'Статус передачи ключей' : 'Статус подключения')
+          : 'Данные для входа';
       }
       if (manualLoginRow) {
         manualLoginRow.style.display = isSupportDelivery ? 'none' : 'flex';
