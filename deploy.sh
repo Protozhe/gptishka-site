@@ -11,7 +11,20 @@ cd "$APP_DIR"
 
 git fetch origin main
 git reset --hard origin/main
-npm install --include=dev
+
+INSTALL_OK=0
+for attempt in 1 2 3; do
+  if npm install --include=dev --prefer-offline; then
+    INSTALL_OK=1
+    break
+  fi
+  echo "WARN: npm install attempt $attempt failed"
+  sleep $((attempt * 5))
+done
+if [ "$INSTALL_OK" -ne 1 ]; then
+  echo "ERROR: npm install failed after 3 attempts"
+  exit 1
+fi
 
 # Always publish latest admin UI first, even if backend deploy is skipped/fails.
 npm run build:admin:ui
