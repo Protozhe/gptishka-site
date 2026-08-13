@@ -8,7 +8,8 @@ const script = fs.readFileSync("assets/js/steam-topup.js", "utf8");
 assert.ok(page.includes("/assets/css/steam-topup.css?v=20260724-lava-mark2"));
 assert.ok(page.includes("/assets/img/payment-lava.svg?v=20260724-lava-mark2"));
 assert.ok(page.includes("/assets/img/payment-enot.svg?v=20260724-enot-mark1"));
-assert.ok(page.includes("/assets/js/steam-topup.js?v=20260723-steam-telegram1"));
+assert.ok(page.includes("/assets/js/steam-topup.js?v=20260813-steam-product1"));
+assert.ok(page.includes('data-product-slug="steam-link"'));
 assert.match(page, /name="telegram"[^>]+placeholder="@username"/);
 assert.match(page, /name="paymentMethod"[^>]+value="lava" checked/);
 assert.doesNotMatch(page, /name="paymentMethod"[^>]+value="enot" checked/);
@@ -39,6 +40,7 @@ for (const preserved of [
 }
 
 assert.ok(script.includes("data-steam-topup-form"));
+assert.ok(script.includes('const PRODUCT_SLUG = "steam-link";'));
 assert.match(css, /linear-gradient\(180deg, #22262d 0%, #1d2127 46%, #181b20 100%\)/);
 assert.match(css, /header\s+:is\(\.nav, \.nav-shell\)\s*\{[^}]*background:\s*transparent !important;/s);
 assert.match(css, /\.steam-topup-directory-back\s*\{[^}]*font-family:\s*"Montserrat", Arial, sans-serif;[^}]*font-weight:\s*700;/s);

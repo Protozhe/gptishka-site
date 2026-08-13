@@ -2,7 +2,7 @@
   "use strict";
 
   const STEAM_UNIT_PRICE = 151;
-  const PRODUCT_SLUG = "steam-mannco-key";
+  const PRODUCT_SLUG = "steam-link";
   const MIN_QTY = 1;
   const MAX_QTY = 100;
   const isEnPage =
