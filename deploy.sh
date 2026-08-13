@@ -22,8 +22,12 @@ for attempt in 1 2 3; do
   sleep $((attempt * 5))
 done
 if [ "$INSTALL_OK" -ne 1 ]; then
-  echo "ERROR: npm install failed after 3 attempts"
-  exit 1
+  if [ -x node_modules/.bin/tsc ] && [ -x node_modules/.bin/vite ]; then
+    echo "WARN: npm install failed after 3 attempts; continuing with existing locked dependencies"
+  else
+    echo "ERROR: npm install failed and required build tools are unavailable"
+    exit 1
+  fi
 fi
 
 # Always publish latest admin UI first, even if backend deploy is skipped/fails.
