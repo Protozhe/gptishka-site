@@ -83,6 +83,10 @@ const WARMUP_MAX_ROUTES = 7;
 const WARMUP_PRODUCTS_DELAY_MS = 4400;
 const METRIKA_COUNTER_ID = 106969126;
 const TOP_MAIL_COUNTER_ID = "3744660";
+const METRIKA_GOAL_BY_EVENT = {
+  checkout_start: "ym-begin-checkout",
+  payment_method_selected: "ym-add-payment-info",
+};
 const prefetchedNavigationKeys = new Set();
 
 function markTransitionNavigationIntent() {
@@ -122,7 +126,8 @@ function trackAnalyticsEvent(eventName, payload = {}) {
 
   if (typeof window.ym === "function") {
     try {
-      window.ym(METRIKA_COUNTER_ID, "reachGoal", safeName, safePayload);
+      const metrikaGoal = METRIKA_GOAL_BY_EVENT[safeName] || safeName;
+      window.ym(METRIKA_COUNTER_ID, "reachGoal", metrikaGoal, safePayload);
     } catch (_) {
       // Ignore analytics transport errors.
     }
@@ -142,6 +147,23 @@ function trackAnalyticsEvent(eventName, payload = {}) {
 }
 
 window.gptishkaTrackEvent = trackAnalyticsEvent;
+
+function getMarketingAttribution() {
+  try {
+    if (typeof window.gptishkaGetAttribution === "function") {
+      const attribution = window.gptishkaGetAttribution();
+      if (!attribution || typeof attribution !== "object") return null;
+      return {
+        version: 1,
+        firstTouch: attribution.firstTouch || null,
+        lastTouch: attribution.lastTouch || attribution.session || null,
+      };
+    }
+  } catch (_) {
+    // Attribution must never block checkout.
+  }
+  return null;
+}
 
 function navigateWithPageTransition(targetHref, delayMs = PAGE_TRANSITION_LEAVE_MS) {
   const href = String(targetHref || "").trim();
@@ -5433,6 +5455,13 @@ function initActivationResumeShortcut() {
           activationVariant: String(checkoutItem.activationVariant || "").trim() || null,
           deliveryMethod: String(checkoutItem.deliveryKey || checkoutItem.deliveryType || "").trim(),
         },
+      };
+    }
+    const attribution = getMarketingAttribution();
+    if (attribution) {
+      orderDetails = {
+        ...orderDetails,
+        attribution,
       };
     }
     if (orderDetails && typeof orderDetails === "object") {

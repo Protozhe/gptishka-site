@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <script src="/assets/js/analytics-init.js?v=20260721-defer-analytics1" defer></script>
+  <script src="/assets/js/analytics-init.js?v=20260813-yandex-attribution1" defer></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Оплата обрабатывается - GPTишка</title>
@@ -470,6 +470,7 @@
     const previewMode = String(params.get("preview") || "").trim().toLowerCase() === "paid";
     const previewServiceKey = normalizeServiceKey(params.get("service"));
     const LAST_PAID_ORDER_KEY = "gptishka_last_paid_order_id";
+    const METRIKA_COUNTER_ID = 106969126;
     const CART_STORAGE_KEYS = [
       "gptishka_cart_v1",
       "gptishka_card_qty_v1",
@@ -549,6 +550,7 @@
         const payload = await response.json();
 
         const status = String(payload?.status || "PENDING").toUpperCase();
+        const paymentStatus = String(payload?.paymentStatus || "").toUpperCase();
         const amount = Number(payload?.finalAmount || 0);
         const currency = String(payload?.currency || "RUB");
         const deliveryMode = String(payload?.deliveryMode || "activation").trim().toLowerCase();
@@ -559,6 +561,7 @@
         amountEl.textContent = `${formatAmount(amount)} ${currency}`;
 
         if (status === "PAID") {
+          if (paymentStatus === "SUCCESS") trackConfirmedPurchase(id, payload);
           trackPurchaseRecord(id, payload);
           handlePaidOrder(id);
           if (deliveryMode === "vpn") {
@@ -824,6 +827,82 @@
       }
       resetCartUiBadge();
       notifyCartCleared();
+    }
+
+    function trackConfirmedPurchase(orderId, payload) {
+      const safeOrderId = String(orderId || "").trim();
+      if (!safeOrderId) return;
+
+      const trackedKey = `gptishka_ym_purchase_tracked:${safeOrderId}`;
+      try {
+        if (localStorage.getItem(trackedKey) === "1") return;
+      } catch (_) {
+        try {
+          if (sessionStorage.getItem(trackedKey) === "1") return;
+        } catch (_) {
+          // Continue without storage-based deduplication.
+        }
+      }
+
+      const revenue = Math.max(0, Number(payload?.finalAmount || 0));
+      const currency = String(payload?.currency || "RUB").trim().toUpperCase() || "RUB";
+      const product = payload?.product && typeof payload.product === "object" ? payload.product : {};
+      const productId = String(product.id || payload?.planId || "").trim() || "unknown-product";
+      const productName = String(product.title || product.slug || productId).trim();
+      const attribution = getPurchaseAttribution();
+      const goalParams = {
+        order_id: safeOrderId,
+        revenue,
+        currency,
+        product_id: productId,
+        product_name: productName,
+        ...attribution,
+      };
+
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        ecommerce: {
+          currencyCode: currency,
+          purchase: {
+            actionField: { id: safeOrderId, revenue },
+            products: [{ id: productId, name: productName, price: revenue, quantity: 1 }],
+          },
+        },
+      });
+
+      window.ym = window.ym || function () {
+        (window.ym.a = window.ym.a || []).push(arguments);
+      };
+      window.ym.l = window.ym.l || Date.now();
+      window.ym(METRIKA_COUNTER_ID, "reachGoal", "ym-purchase", goalParams);
+
+      try {
+        localStorage.setItem(trackedKey, "1");
+      } catch (_) {
+        try {
+          sessionStorage.setItem(trackedKey, "1");
+        } catch (_) {
+          // Ignore storage write errors.
+        }
+      }
+    }
+
+    function getPurchaseAttribution() {
+      try {
+        if (typeof window.gptishkaGetAttribution !== "function") return {};
+        const snapshot = window.gptishkaGetAttribution();
+        const touch = snapshot?.lastTouch || snapshot?.session || {};
+        return {
+          source: String(touch.source || "").slice(0, 120),
+          medium: String(touch.medium || "").slice(0, 120),
+          utm_campaign: String(touch.utm_campaign || "").slice(0, 300),
+          utm_content: String(touch.utm_content || "").slice(0, 300),
+          utm_term: String(touch.utm_term || "").slice(0, 300),
+          yclid: String(touch.yclid || "").slice(0, 200),
+        };
+      } catch (_) {
+        return {};
+      }
     }
 
     function trackPurchaseRecord(orderId, payload) {

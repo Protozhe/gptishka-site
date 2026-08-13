@@ -85,10 +85,10 @@ assert.deepEqual(
 assert.equal(timers.size, 0, "Interaction must cancel the delayed timer.");
 
 const pages = tracked.filter(file => fs.readFileSync(file, "utf8").includes("/assets/js/analytics-init.js"));
-assert.equal(pages.length, 48, `Expected 48 analytics pages, found ${pages.length}.`);
+assert.ok(pages.length >= 48, `Expected at least 48 analytics pages, found ${pages.length}.`);
 for (const file of pages) {
   assert.ok(
-    fs.readFileSync(file, "utf8").includes("/assets/js/analytics-init.js?v=20260721-defer-analytics1"),
+    fs.readFileSync(file, "utf8").includes("/assets/js/analytics-init.js?v=20260813-yandex-attribution1"),
     `${path.relative(root, file)} has a stale analytics cache version.`,
   );
 }

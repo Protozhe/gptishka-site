@@ -70,6 +70,8 @@ function buildCheckoutDetailRows(details: any) {
   const gift = details.gift || {};
   const account = details.account || {};
   const recommendation = details.recommendation || {};
+  const attribution = details.attribution || {};
+  const lastTouch = attribution.lastTouch || attribution.session || {};
   const hasAccountDetails = Boolean(
     stringifyCheckoutValue(account.status) || stringifyCheckoutValue(account.login) || stringifyCheckoutValue(account.password)
   );
@@ -99,7 +101,22 @@ function buildCheckoutDetailRows(details: any) {
   push("Пришёл по рекомендации", recommendation.cameByRecommendation);
   push("Кто пригласил", recommendation.referrerContact);
   push("Комментарий", details.comment);
+  push("Рекламный источник", lastTouch.source);
+  push("Канал", lastTouch.medium);
+  push("UTM campaign", lastTouch.utm_campaign);
+  push("UTM content", lastTouch.utm_content);
+  push("UTM term", lastTouch.utm_term);
+  push("Yandex Click ID", lastTouch.yclid);
+  push("Посадочная", lastTouch.landingPage);
+  push("Реферер", lastTouch.referrer);
   return rows;
+}
+
+function getMarketingTouch(details: any) {
+  const attribution = details?.attribution;
+  if (!attribution || typeof attribution !== "object") return null;
+  const touch = attribution.lastTouch || attribution.session;
+  return touch && typeof touch === "object" ? touch : null;
 }
 
 const ACCOUNT_OPTIONS = [
@@ -315,6 +332,7 @@ export default function OrdersPage() {
                 const paymentMethodSelected = normalizePaymentChannel(o.paymentMethodRequested || o.paymentMethod);
                 const paymentProviderUsed = normalizePaymentChannel(o.paymentProvider || o.paymentProviderRaw);
                 const checkoutDetails = o.checkoutDetails || o.orderDetails;
+                const marketingTouch = getMarketingTouch(checkoutDetails);
                 const checkoutDetailRows = buildCheckoutDetailRows(checkoutDetails);
                 const clientPreviewRows = checkoutDetailRows
                   .filter(([label]) => ["Email", "Telegram", "Логин", "Пароль", "Статус аккаунта"].includes(label))
@@ -337,6 +355,17 @@ export default function OrdersPage() {
                         {sourceCode}
                         {o.botType ? ` / ${o.botType}` : ""}
                       </div>
+                      {marketingTouch ? (
+                        <div className="mt-1 border-t border-slate-200 pt-1 dark:border-slate-700">
+                          <div className="font-semibold text-cyan-700 dark:text-cyan-300">
+                            {[marketingTouch.source, marketingTouch.medium].filter(Boolean).join(" / ") || "Источник не определён"}
+                          </div>
+                          {marketingTouch.utm_campaign ? <div>campaign: {String(marketingTouch.utm_campaign)}</div> : null}
+                          {marketingTouch.utm_content ? <div>content: {String(marketingTouch.utm_content)}</div> : null}
+                          {marketingTouch.utm_term ? <div>term: {String(marketingTouch.utm_term)}</div> : null}
+                          {marketingTouch.yclid ? <div className="break-all">yclid: {String(marketingTouch.yclid)}</div> : null}
+                        </div>
+                      ) : null}
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -505,6 +534,22 @@ export default function OrdersPage() {
                   </div>
                 </div>
               </section>
+
+              {getMarketingTouch(clientInfoDialog.details) ? (
+                <section className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+                  <h3 className="font-semibold">Рекламная атрибуция</h3>
+                  <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+                    {buildCheckoutDetailRows(clientInfoDialog.details)
+                      .filter(([label]) => ["Рекламный источник", "Канал", "UTM campaign", "UTM content", "UTM term", "Yandex Click ID", "Посадочная", "Реферер"].includes(label))
+                      .map(([label, value]) => (
+                        <div className="min-w-0 rounded-xl border border-slate-200 p-3 dark:border-slate-700" key={`${label}:${value}`}>
+                          <dt className="text-xs text-slate-500">{label}</dt>
+                          <dd className="mt-1 break-words font-semibold">{value}</dd>
+                        </div>
+                      ))}
+                  </dl>
+                </section>
+              ) : null}
 
               <section className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                 <h3 className="font-semibold">Сценарий подключения</h3>
