@@ -97,6 +97,8 @@ assert.equal(internalPage.snapshot.session.utm_campaign, "42");
 assert.equal(appSource, appMinSource, "Storefront bundles must stay identical.");
 assert.ok(appSource.includes('checkout_start: "ym-begin-checkout"'));
 assert.ok(appSource.includes('payment_method_selected: "ym-add-payment-info"'));
+assert.ok(appSource.includes('source: "service_order_modal"'));
+assert.ok(appSource.includes('method: normalizeChatGptGoPaymentChoice(target.value)'));
 assert.ok(appSource.includes("attribution,"), "Checkout must attach attribution to order details.");
 assert.ok(successSource.includes('status === "PAID"'));
 assert.ok(successSource.includes('paymentStatus === "SUCCESS"'));
@@ -162,7 +164,7 @@ for (const file of htmlFiles) {
     assert.ok(html.includes("analytics-init.js?v=20260813-yandex-attribution1"), `${file}: stale analytics asset`);
   }
   if (html.includes("app.min.js?v=")) {
-    assert.ok(html.includes("app.min.js?v=20260813-yandex-attribution1"), `${file}: stale storefront asset`);
+    assert.ok(html.includes("app.min.js?v=20260813-yandex-funnel2"), `${file}: stale storefront asset`);
   }
 }
 

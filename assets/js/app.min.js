@@ -5090,6 +5090,12 @@ function initActivationResumeShortcut() {
       product_id: String(modalItem.productId || modalItem.id || "").trim(),
       amount: Math.max(0, toAmount(modalItem.price)),
     });
+    trackAnalyticsEvent("checkout_start", {
+      source: "service_order_modal",
+      service_key: serviceKey,
+      product_id: String(modalItem.productId || modalItem.id || "").trim(),
+      amount: Math.max(0, toAmount(modalItem.price)),
+    });
   }
 
   function renderServiceConstructorPage(allItems, serviceKey) {
@@ -6466,6 +6472,10 @@ function initActivationResumeShortcut() {
 
     if (target.matches('[name="paymentMethod"]')) {
       syncChatGptGoPaymentAria(form);
+      trackAnalyticsEvent("payment_method_selected", {
+        source: "service_order_modal",
+        method: normalizeChatGptGoPaymentChoice(target.value),
+      });
     }
 
     if (target.matches('[name="cameByRecommendation"]')) {
