@@ -119,6 +119,7 @@ const envSchema = z.object({
   TELEGRAM_BOT_TOKEN: z.string().optional().default(""),
   TELEGRAM_BOT_USERNAME: z.string().optional().default(""),
   TELEGRAM_WEBHOOK_SECRET: z.string().optional().default(""),
+  TELEGRAM_ORDERS_SYNC_SECRET: z.string().optional().default(""),
   TELEGRAM_LINK_TOKEN_TTL_MINUTES: z.coerce.number().int().min(5).max(120).default(15),
   TELEGRAM_CHAT_ID: z.string().optional().default(""),
   FX_USD_RUB: z.coerce.number().positive().default(95),
