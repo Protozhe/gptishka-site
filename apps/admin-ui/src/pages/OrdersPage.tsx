@@ -338,6 +338,9 @@ export default function OrdersPage() {
                   .filter(([label]) => ["Email", "Telegram", "Логин", "Пароль", "Статус аккаунта"].includes(label))
                   .slice(0, 4);
                 const isSuccessfullyPaid = String(o.status || "").toUpperCase() === "PAID" && String(o.paymentStatus || "").toUpperCase() === "SUCCESS";
+                const canReturnToPaymentCheck =
+                  String(o.status || "").toUpperCase() === "FAILED" &&
+                  String(o.paymentStatus || "").toUpperCase() === "PROCESSING";
 
                 return (
                 <tr className="border-t border-slate-200 dark:border-slate-800" key={o.id}>
@@ -493,6 +496,11 @@ export default function OrdersPage() {
                       <button className="btn-secondary" onClick={() => patch.mutate({ id: o.id, status: "FAILED" })}>
                         Отметить как ошибка
                       </button>
+                      {canReturnToPaymentCheck ? (
+                        <button className="btn-secondary" onClick={() => patch.mutate({ id: o.id, status: "PENDING" })}>
+                          Вернуть в ожидание
+                        </button>
+                      ) : null}
                       <button className="btn-secondary" onClick={() => refund.mutate(o.id)}>
                         Возврат
                       </button>
