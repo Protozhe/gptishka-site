@@ -1535,6 +1535,7 @@
     const MANUAL_SUPPORT_MESSAGE = 'We process orders daily from 10:00 to 20:00 Moscow time. The average waiting time is from 5 minutes to 2 hours after payment. If the order is placed at night, we will connect you in the morning. Maximum turnaround time is 2 business days.';
     const STEAM_KEY_DELIVERY_MESSAGE = 'We transfer Steam keys daily from 10:00 to 20:00 Moscow time. The average waiting time is 5 minutes to 2 hours after payment. Orders placed at night will be handled in the morning. Maximum turnaround time is 2 business days. The keys will be transferred through the Steam trade link provided with the order.';
     let isCredentialsDelivery = false;
+    let isSteamKeyDeliveryFlow = false;
     let isSupportTokenDelivery = false;
     let supportActivationFlow = SUPPORT_ACTIVATION_FLOW_GROK;
     let vpnOfferDismissed = false;
@@ -1563,6 +1564,17 @@
       stay: '\u041d\u0435\u0442, \u043e\u0441\u0442\u0430\u0442\u044c\u0441\u044f',
     };
 
+    const STEAM_LEAVE_CONFIRM_TEXT = {
+      title: 'Leave the Steam key transfer page?',
+      subtitle: 'Your order has already been paid and assigned to a GPTishka specialist. Closing this page will not interrupt the key transfer. Save the Order ID if you need to check the order status with support.',
+      proceed: 'Leave page',
+      stay: 'Stay',
+    };
+
+    function getLeaveConfirmText() {
+      return isSteamKeyDeliveryFlow ? STEAM_LEAVE_CONFIRM_TEXT : LEAVE_CONFIRM_TEXT;
+    }
+
     const IMAGE_ZOOM_TEXT = {
       close: '\u0417\u0430\u043a\u0440\u044b\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435',
     };
@@ -1580,17 +1592,18 @@
 
     function ensureLeaveConfirmModal() {
       if (leaveConfirmModalEl) return;
+      const confirmText = getLeaveConfirmText();
       const modal = document.createElement('div');
       modal.className = 'redeem-leave-modal';
       modal.hidden = true;
       modal.innerHTML = [
         '<div class="redeem-leave-modal__backdrop" data-redeem-leave-backdrop></div>',
         '<div class="redeem-leave-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="redeemLeaveTitle">',
-        `  <h3 id="redeemLeaveTitle" class="redeem-leave-modal__title">${LEAVE_CONFIRM_TEXT.title}</h3>`,
-        `  <p class="redeem-leave-modal__text">${LEAVE_CONFIRM_TEXT.subtitle}</p>`,
+        `  <h3 id="redeemLeaveTitle" class="redeem-leave-modal__title">${confirmText.title}</h3>`,
+        `  <p class="redeem-leave-modal__text">${confirmText.subtitle}</p>`,
         '  <div class="redeem-leave-modal__actions">',
-        `    <button type="button" class="redeem-btn" data-redeem-leave-proceed>${LEAVE_CONFIRM_TEXT.proceed}</button>`,
-        `    <button type="button" class="redeem-btn redeem-btn-primary" data-redeem-leave-cancel>${LEAVE_CONFIRM_TEXT.stay}</button>`,
+        `    <button type="button" class="redeem-btn" data-redeem-leave-proceed>${confirmText.proceed}</button>`,
+        `    <button type="button" class="redeem-btn redeem-btn-primary" data-redeem-leave-cancel>${confirmText.stay}</button>`,
         '  </div>',
         '</div>',
       ].join('');
@@ -1607,6 +1620,13 @@
     function openLeaveConfirm(nextHref) {
       ensureLeaveConfirmModal();
       if (!leaveConfirmModalEl) return;
+      const confirmText = getLeaveConfirmText();
+      const title = leaveConfirmModalEl.querySelector('.redeem-leave-modal__title');
+      const subtitle = leaveConfirmModalEl.querySelector('.redeem-leave-modal__text');
+      if (title) title.textContent = confirmText.title;
+      if (subtitle) subtitle.textContent = confirmText.subtitle;
+      if (leaveConfirmProceedBtn) leaveConfirmProceedBtn.textContent = confirmText.proceed;
+      if (leaveConfirmCancelBtn) leaveConfirmCancelBtn.textContent = confirmText.stay;
       pendingLeaveHref = String(nextHref || '').trim();
       leaveConfirmModalEl.hidden = false;
       if (leaveConfirmCancelBtn) leaveConfirmCancelBtn.focus();
@@ -1802,6 +1822,7 @@
         .map((value) => String(value || '').trim().toLowerCase())
         .join(' ');
       const isSteamKeyDelivery = productFingerprint.includes('steam') || productFingerprint.includes('mann co');
+      isSteamKeyDeliveryFlow = isSteamKeyDelivery;
       const supportMessage = isSteamKeyDelivery ? STEAM_KEY_DELIVERY_MESSAGE : MANUAL_SUPPORT_MESSAGE;
       const defaultMessage = isSupportDelivery
         ? supportMessage
