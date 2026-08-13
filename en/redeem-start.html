@@ -1798,7 +1798,7 @@
       const credentials = payload?.credentials && typeof payload.credentials === 'object' ? payload.credentials : null;
       const login = String(credentials?.login || '').trim();
       const password = String(credentials?.password || '').trim();
-      const productFingerprint = [payload?.productKey, payload?.productSlug, payload?.productTitle, payload?.serviceKey]
+      const productFingerprint = [payload?.productKey, payload?.productSlug, payload?.productTitle, payload?.serviceKey, payload?.product?.slug, payload?.product?.title]
         .map((value) => String(value || '').trim().toLowerCase())
         .join(' ');
       const isSteamKeyDelivery = productFingerprint.includes('steam') || productFingerprint.includes('mann co');
@@ -2300,7 +2300,8 @@
         applyActivationPayloadMode(payload, deliveryMode);
         if (deliveryMode === 'credentials' || deliveryMode === 'manual_login') {
           handlePaidOrder(orderId);
-          setCredentialsDeliveryMode(payload);
+          const orderContext = await resolveOrderDeliveryContext();
+          setCredentialsDeliveryMode({ ...payload, ...orderContext, deliveryMode });
           return;
         }
         if (deliveryMode === 'vpn') {
@@ -2382,7 +2383,8 @@
     async function resolveOrderDeliveryContext() {
       if (!orderId) return { deliveryMode: '', activationFlow: '' };
       try {
-        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}`);
+        const suffix = orderLinkToken ? `?t=${encodeURIComponent(orderLinkToken)}` : '';
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}${suffix}`);
         if (!response.ok) return { deliveryMode: '', activationFlow: '' };
         const payload = await response.json().catch(() => ({}));
         return {
