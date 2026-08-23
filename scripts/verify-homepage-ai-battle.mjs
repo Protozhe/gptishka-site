@@ -7,6 +7,9 @@ const enIndex = read("en/index.html");
 const slider = read("assets/js/home-promo-slider.js");
 const css = read("assets/css/home-wide-marketplace.css");
 const routes = read("apps/admin-backend/src/modules/homepage/homepage-content.routes.ts");
+const statsService = read("apps/admin-backend/src/modules/homepage/ai-battle-stats.service.ts");
+const ecosystem = read("ecosystem.config.js");
+const deploy = read("deploy.sh");
 const stats = JSON.parse(read("apps/admin-backend/data/ai-battle-stats.json"));
 const content = JSON.parse(read("apps/admin-backend/data/homepage-content.json"));
 const desktopArt = "assets/img/home/ai-battle-logo-bg-v2.webp";
@@ -45,5 +48,14 @@ assert.match(css, /\.home-ai-battle__stats\s*\{[\s\S]*?margin: 0 auto 48px;/);
 assert.match(css, /\.ai-directory-card--perplexity \.ai-directory-card__image--primary\s*\{[\s\S]*?transform: scale\(1\.06\) !important;/);
 assert.match(css, /\.ai-directory-card--perplexity\s*\{[\s\S]*?--directory-button-hover-bg: linear-gradient\(135deg, #ffffff, #dce4e8\);[\s\S]*?--directory-button-hover-color: #111820;/);
 assert.match(routes, /homepageContentPublicRouter\.post\([\s\S]*?\/ai-battle/);
+assert.match(statsService, /process\.env\.AI_BATTLE_STATS_FILE/);
+assert.match(statsService, /dataFile !== legacyDataFile/);
+assert.match(ecosystem, /AI_BATTLE_STATS_FILE:\s*"\/var\/lib\/gptishka-runtime\/ai-battle-stats\.json"/);
+assert.match(deploy, /install -d -m 0755 "\$RUNTIME_DIR"/);
+assert.match(deploy, /install -m 0644 "\$LEGACY_AI_BATTLE_STATS" "\$RUNTIME_AI_BATTLE_STATS"/);
+assert.ok(
+  deploy.indexOf('install -m 0644 "$LEGACY_AI_BATTLE_STATS" "$RUNTIME_AI_BATTLE_STATS"') < deploy.indexOf("git reset --hard origin/main"),
+  "The live counter must be preserved before Git resets tracked files.",
+);
 
 console.log("Homepage AI battle slide and click counter wiring verified.");

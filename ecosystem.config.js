@@ -25,6 +25,7 @@ module.exports = {
         PORT: 4100,
         HOST: "127.0.0.1",
         BIND_HOST: "127.0.0.1",
+        AI_BATTLE_STATS_FILE: "/var/lib/gptishka-runtime/ai-battle-stats.json",
       },
       max_memory_restart: "350M",
       autorestart: true,

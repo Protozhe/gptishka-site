@@ -7,6 +7,16 @@ APP_DIR="/var/www/gptishka-new"
 ADMIN_ENV_FILE="$APP_DIR/apps/admin-backend/.env"
 RUNTIME_DIR="/var/lib/gptishka-runtime"
 
+# Mutable application state must live outside the Git checkout: deployments
+# replace every tracked file with the version from origin/main.
+install -d -m 0755 "$RUNTIME_DIR"
+LEGACY_AI_BATTLE_STATS="$APP_DIR/apps/admin-backend/data/ai-battle-stats.json"
+RUNTIME_AI_BATTLE_STATS="$RUNTIME_DIR/ai-battle-stats.json"
+if [ ! -f "$RUNTIME_AI_BATTLE_STATS" ] && [ -f "$LEGACY_AI_BATTLE_STATS" ]; then
+  # Preserve the live counter before git reset replaces its old tracked file.
+  install -m 0644 "$LEGACY_AI_BATTLE_STATS" "$RUNTIME_AI_BATTLE_STATS"
+fi
+
 cd "$APP_DIR"
 
 git fetch origin main

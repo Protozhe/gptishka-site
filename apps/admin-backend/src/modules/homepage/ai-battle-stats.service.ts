@@ -10,8 +10,10 @@ type StoredAiBattleStats = {
   updatedAt: string;
 };
 
-const dataDir = path.join(process.cwd(), "apps", "admin-backend", "data");
-const dataFile = path.join(dataDir, "ai-battle-stats.json");
+const legacyDataFile = path.join(process.cwd(), "apps", "admin-backend", "data", "ai-battle-stats.json");
+const configuredDataFile = String(process.env.AI_BATTLE_STATS_FILE || "").trim();
+const dataFile = configuredDataFile ? path.resolve(configuredDataFile) : legacyDataFile;
+const dataDir = path.dirname(dataFile);
 const emptyStats: StoredAiBattleStats = {
   chatgpt: 64,
   claude: 78,
@@ -26,7 +28,10 @@ function normalizeCount(value: unknown) {
 function ensureDataFile() {
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
   if (!fs.existsSync(dataFile)) {
-    fs.writeFileSync(dataFile, JSON.stringify(emptyStats, null, 2), "utf-8");
+    const initialStats = dataFile !== legacyDataFile && fs.existsSync(legacyDataFile)
+      ? fs.readFileSync(legacyDataFile, "utf-8")
+      : JSON.stringify(emptyStats, null, 2);
+    fs.writeFileSync(dataFile, initialStats, "utf-8");
   }
 }
 
