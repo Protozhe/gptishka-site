@@ -311,14 +311,6 @@ function isHiddenPublicVpnProduct(item) {
 
 function stripPublicVpnTags(item) {
   if (!item || typeof item !== "object") return item;
-  const sanitizeIdentifier = (value) => {
-    if (typeof value !== "string") return value;
-    return value
-      .replace(/\bvpn\b/gi, "standard")
-      .replace(/\bvless\b|\bxray\b|\breality\b/gi, "standard")
-      .replace(/v\*n/gi, "standard")
-      .replace(/-{2,}/g, "-");
-  };
   const sanitizeText = (value) => {
     if (typeof value !== "string") return value;
     return value
@@ -329,9 +321,6 @@ function stripPublicVpnTags(item) {
       .trim();
   };
   const next = { ...item };
-  for (const key of ["product", "slug", "baseSlug"]) {
-    if (key in next) next[key] = sanitizeIdentifier(next[key]);
-  }
   for (const key of ["title", "titleEn", "badge", "description", "modalDescription"]) {
     if (key in next) next[key] = sanitizeText(next[key]);
   }
