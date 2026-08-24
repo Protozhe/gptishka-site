@@ -2,6 +2,7 @@
   "use strict";
 
   var AUTOPLAY_MS = 6200;
+  var AI_BATTLE_STATS_STORAGE_KEY = "gptishka_ai_battle_stats_v1";
   var REDUCED_MOTION = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function text(value) {
@@ -130,7 +131,53 @@
     return id === "ai-battle" || themeClass.indexOf("home-promo-slide--ai-battle") !== -1;
   }
 
-  function createAiBattleContent(article, slide) {
+  function normalizeAiBattleStats(stats) {
+    var chatgptPercent = Number(stats && stats.chatgptPercent);
+    var claudePercent = Number(stats && stats.claudePercent);
+    var total = Number(stats && stats.total);
+    if (!Number.isFinite(total) || total < 0) return null;
+    if (!Number.isFinite(chatgptPercent)) chatgptPercent = 50;
+    if (!Number.isFinite(claudePercent)) claudePercent = 100 - chatgptPercent;
+    return {
+      chatgptPercent: Math.max(0, Math.min(100, Math.round(chatgptPercent))),
+      claudePercent: Math.max(0, Math.min(100, Math.round(claudePercent))),
+      total: Math.round(total)
+    };
+  }
+
+  function readCachedAiBattleStats() {
+    try {
+      return normalizeAiBattleStats(JSON.parse(window.localStorage.getItem(AI_BATTLE_STATS_STORAGE_KEY) || "null"));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function cacheAiBattleStats(stats) {
+    var normalized = normalizeAiBattleStats(stats);
+    if (!normalized) return;
+    try {
+      window.localStorage.setItem(AI_BATTLE_STATS_STORAGE_KEY, JSON.stringify(normalized));
+    } catch (_) {
+      // The counter still works when storage is unavailable.
+    }
+  }
+
+  function readRenderedAiBattleStats(root) {
+    if (!root) return null;
+    var totalEl = root.querySelector("[data-ai-battle-total]");
+    var chatgptEl = root.querySelector('[data-ai-battle-percent="chatgpt"]');
+    var claudeEl = root.querySelector('[data-ai-battle-percent="claude"]');
+    var totalMatch = text(totalEl && totalEl.textContent).replace(/[^\d]/g, "");
+    if (!totalMatch) return null;
+    return normalizeAiBattleStats({
+      total: Number(totalMatch),
+      chatgptPercent: parseFloat(text(chatgptEl && chatgptEl.textContent)),
+      claudePercent: parseFloat(text(claudeEl && claudeEl.textContent))
+    });
+  }
+
+  function createAiBattleContent(article, slide, initialStats) {
     var english = getLang() === "en";
     var battle = document.createElement("div");
     battle.className = "home-ai-battle";
@@ -190,7 +237,7 @@
       var percent = document.createElement("span");
       percent.className = "home-ai-battle__percent";
       percent.setAttribute("data-ai-battle-percent", side);
-      percent.textContent = "50%";
+      percent.textContent = "—";
 
       button.appendChild(logo);
       button.appendChild(copy);
@@ -210,7 +257,7 @@
     var total = document.createElement("span");
     total.className = "home-ai-battle__total";
     total.setAttribute("data-ai-battle-total", "");
-    total.textContent = english ? "No clicks yet — be the first" : "Пока 0 кликов — выбери первым";
+    total.textContent = english ? "Loading votes…" : "Загружаем голоса…";
     var status = document.createElement("span");
     status.className = "home-ai-battle__status";
     status.setAttribute("data-ai-battle-status", "");
@@ -223,6 +270,7 @@
     battle.appendChild(choices);
     battle.appendChild(stats);
     article.appendChild(battle);
+    if (initialStats) renderAiBattleStats(article, initialStats);
   }
 
   function renderAiBattleStats(article, stats) {
@@ -256,7 +304,11 @@
 
     fetch("/api/public/ai-battle", { cache: "no-store", credentials: "same-origin" })
       .then(function (response) { return response.ok ? response.json() : null; })
-      .then(function (stats) { if (stats) renderAiBattleStats(article, stats); })
+      .then(function (stats) {
+        if (!stats) return;
+        renderAiBattleStats(article, stats);
+        cacheAiBattleStats(stats);
+      })
       .catch(function () {});
 
     buttons.forEach(function (button) {
@@ -286,6 +338,7 @@
           })
           .then(function (stats) {
             renderAiBattleStats(article, stats);
+            cacheAiBattleStats(stats);
             buttons.forEach(function (item) {
               item.setAttribute("aria-pressed", item === button ? "true" : "false");
             });
@@ -306,7 +359,7 @@
     });
   }
 
-  function createSlideElement(slide, active) {
+  function createSlideElement(slide, active, initialAiBattleStats) {
     var article = document.createElement("article");
     article.className = "home-promo-slide " + text(slide.themeClass || "") + (active ? " is-active" : "");
     article.setAttribute("data-home-promo-slide", "");
@@ -317,7 +370,7 @@
     }
 
     if (isAiBattleSlide(slide)) {
-      createAiBattleContent(article, slide);
+      createAiBattleContent(article, slide, initialAiBattleStats);
       return article;
     }
 
@@ -497,9 +550,10 @@
     }
 
     if (Array.isArray(payload.slides) && payload.slides.length) {
+      var initialAiBattleStats = readCachedAiBattleStats() || readRenderedAiBattleStats(track);
       track.innerHTML = "";
       payload.slides.forEach(function (slide, index) {
-        track.appendChild(createSlideElement(slide, index === 0));
+        track.appendChild(createSlideElement(slide, index === 0, initialAiBattleStats));
       });
     }
 

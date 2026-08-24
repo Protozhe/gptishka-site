@@ -33,6 +33,10 @@ assert.match(slider, /\/api\/public\/ai-battle/);
 assert.match(slider, /data-ai-battle-choice/);
 assert.match(slider, /data-ai-battle-href/);
 assert.match(slider, /keepalive: true/);
+assert.match(slider, /gptishka_ai_battle_stats_v1/);
+assert.match(slider, /readRenderedAiBattleStats\(track\)/);
+assert.match(slider, /cacheAiBattleStats\(stats\)/);
+assert.match(slider, /total\.textContent = english \? "Loading votes…" : "Загружаем голоса…"/);
 assert.match(slider, /window\.location\.assign\(targetUrl\)/);
 assert.match(index, /data-ai-battle-choice="chatgpt" data-ai-battle-href="\/chatgpt"/);
 assert.match(index, /data-ai-battle-choice="claude" data-ai-battle-href="\/claude"/);
@@ -57,5 +61,7 @@ assert.ok(
   deploy.indexOf('install -m 0644 "$LEGACY_AI_BATTLE_STATS" "$RUNTIME_AI_BATTLE_STATS"') < deploy.indexOf("git reset --hard origin/main"),
   "The live counter must be preserved before Git resets tracked files.",
 );
+assert.match(index, /home-promo-slider\.js\?v=20260824-ai-battle-persist2/);
+assert.match(enIndex, /home-promo-slider\.js\?v=20260824-ai-battle-persist2/);
 
 console.log("Homepage AI battle slide and click counter wiring verified.");

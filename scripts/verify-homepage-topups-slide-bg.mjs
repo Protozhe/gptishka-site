@@ -39,7 +39,7 @@ assert(
   "index.html must load the cache-busted homepage CSS bundle.",
 );
 assert(
-  index.includes("/assets/js/home-promo-slider.js?v=20260809-ai-battle3"),
+  index.includes("/assets/js/home-promo-slider.js?v=20260824-ai-battle-persist2"),
   "index.html must cache-bust home-promo-slider.js for lazy promo backgrounds.",
 );
 assert(
