@@ -25,15 +25,6 @@
     if (pathname === "/assets/img/home/ai-shortcut.png") {
       return "/assets/img/home/ai-shortcut.webp?v=20260721-shortcuts-webp1";
     }
-    if (pathname === "/assets/img/home/vpn-shortcut-bg.png") {
-      return "/assets/img/home/vpn-shortcut-bg.webp?v=20260721-vpn-bg-webp1";
-    }
-    if (pathname === "/assets/img/services/vpn-card.png") {
-      return "/assets/img/services/vpn-card.webp?v=20260721-cards-webp1";
-    }
-    if (pathname === "/assets/img/services/vpn-card-hover.png") {
-      return "/assets/img/services/vpn-card-hover.webp?v=20260721-cards-webp1";
-    }
     if (pathname === "/assets/img/services/vstar-card.png") {
       return "/assets/img/services/vstar-card.webp?v=20260721-cards-webp1";
     }
@@ -65,9 +56,6 @@
   function optimizedSlideImageUrl(value) {
     var url = safeUrl(value);
     var pathname = url.split(/[?#]/, 1)[0].toLowerCase();
-    if (pathname === "/assets/img/home/vpn-promo-bg.png") {
-      return "/assets/img/home/vpn-promo-bg.webp?v=20260721-vpn-bg-webp1";
-    }
     return url;
   }
 
@@ -76,9 +64,6 @@
     var themeClass = text(slide && (slide.themeClass || slide.className)).toLowerCase();
     if (id === "topups" || themeClass.indexOf("home-promo-slide--topups") !== -1) {
       return "/assets/img/home/topups-promo-bg.webp?v=20260721-promo-webp1";
-    }
-    if (id === "vpn" || themeClass.indexOf("home-promo-slide--vpn") !== -1) {
-      return "/assets/img/home/vpn-promo-bg.webp?v=20260721-vpn-bg-webp1";
     }
     return "";
   }

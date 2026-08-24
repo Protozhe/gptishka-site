@@ -12,6 +12,11 @@ const publicFiles = [
   "claude.html",
   "supergrok.html",
   "service.html",
+  "app/index.html",
+  "site-map.html",
+  "en/site-map.html",
+  "oferta.html",
+  "en/oferta.html",
   "assets/js/home-promo-slider.js",
 ];
 
@@ -47,9 +52,10 @@ const server = fs.readFileSync("server.js", "utf8");
   "sanitizePublicProductsPayload",
   "sanitizePublicShowcasePayload",
   "sanitizePublicHomepageContentPayload",
-  'app.get(["/catalog/vpn", "/catalog/vpn/"], (_req, res) => res.status(404).send("Not found"))',
-  'app.get(["/store/vpn", "/store/vpn/", "/en/store/vpn", "/en/store/vpn/"], (_req, res) => {',
-  'app.get("/store/vpn/activate", sendVpnActivationPage);',
+  "isRetiredPublicAccessPath",
+  'return res.status(410).send("Gone");',
+  "containsPublicVpnMarker(rawSlug)",
+  "[item.text, item.caption, item.title]",
   'app.get("/api/vpn/me"',
 ].forEach((needle) => {
   if (!server.includes(needle)) fail(`server.js missing required VPN visibility guard: ${needle}`);
@@ -70,4 +76,4 @@ if (!homepageContent.includes("isHiddenPublicVpnHomepageItem")) {
   fail("homepage-content.service.ts must filter public VPN homepage items.");
 }
 
-console.log("Public VPN storefront visibility is hidden while activation routes stay wired.");
+console.log("Public VPN promotion and retired storefront pages are hidden while internal legacy data remains intact.");

@@ -289,7 +289,7 @@ function localizeFallbackCategory(category, lang) {
 }
 
 function containsPublicVpnMarker(value) {
-  return /\b(vpn|vless|xray|reality)\b|v\*n|gptishka[-_\s]*vpn|\/catalog\/vpn|\/store\/vpn/i.test(String(value || ""));
+  return /\b(vpn|vless|xray|reality)\b|впн|v\*n|gptishka[-_\s]*vpn|\/catalog\/vpn|\/store\/vpn/i.test(String(value || ""));
 }
 
 function isHiddenPublicVpnProduct(item) {
@@ -310,11 +310,44 @@ function isHiddenPublicVpnProduct(item) {
 }
 
 function stripPublicVpnTags(item) {
-  if (!item || typeof item !== "object" || !Array.isArray(item.tags)) return item;
-  return {
-    ...item,
-    tags: item.tags.filter((tag) => !containsPublicVpnMarker(tag)),
+  if (!item || typeof item !== "object") return item;
+  const sanitizeIdentifier = (value) => {
+    if (typeof value !== "string") return value;
+    return value
+      .replace(/\bvpn\b/gi, "standard")
+      .replace(/\bvless\b|\bxray\b|\breality\b/gi, "standard")
+      .replace(/v\*n/gi, "standard")
+      .replace(/-{2,}/g, "-");
   };
+  const sanitizeText = (value) => {
+    if (typeof value !== "string") return value;
+    return value
+      .split(/\r?\n/)
+      .filter((line) => !containsPublicVpnMarker(line))
+      .join("\n")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+  };
+  const next = { ...item };
+  for (const key of ["product", "slug", "baseSlug"]) {
+    if (key in next) next[key] = sanitizeIdentifier(next[key]);
+  }
+  for (const key of ["title", "titleEn", "badge", "description", "modalDescription"]) {
+    if (key in next) next[key] = sanitizeText(next[key]);
+  }
+  if (Array.isArray(item.tags)) {
+    next.tags = item.tags.filter((tag) => !containsPublicVpnMarker(tag));
+  }
+  if (item.visual && typeof item.visual === "object") {
+    next.visual = { ...item.visual };
+    for (const key of ["cardTitle", "imageAlt", "hoverImageAlt", "cardDescription"]) {
+      if (key in next.visual) next.visual[key] = sanitizeText(next.visual[key]);
+    }
+    for (const key of ["imageUrl", "hoverImageUrl"]) {
+      if (containsPublicVpnMarker(next.visual[key])) next.visual[key] = "";
+    }
+  }
+  return next;
 }
 
 function isHiddenPublicVpnServiceCard(card) {
@@ -354,10 +387,7 @@ function sanitizePublicShowcasePayload(payload) {
 
 function sanitizePublicHomepageContentPayload(payload) {
   if (!payload || typeof payload !== "object") return payload;
-  const keep = (item) =>
-    ![item?.id, item?.themeClass, item?.href, item?.buttonHref, item?.title, item?.badge]
-      .filter(Boolean)
-      .some(containsPublicVpnMarker);
+  const keep = (item) => !containsPublicVpnMarker(JSON.stringify(item || {}));
   return {
     ...payload,
     slides: Array.isArray(payload.slides) ? payload.slides.filter(keep) : payload.slides,
@@ -770,7 +800,12 @@ async function refreshTelegramReviewsCache(deadlineTs = 0) {
 function normalizePublicNewsPayload(payload) {
   const items = Array.isArray(payload?.items)
     ? payload.items
-        .filter(item => item && Number(item.postId) > 0 && typeof item.url === "string")
+        .filter(item => {
+          if (!item || Number(item.postId) <= 0 || typeof item.url !== "string") return false;
+          return !containsPublicVpnMarker(
+            [item.text, item.caption, item.title].filter(Boolean).join(" ")
+          );
+        })
         .slice(0, TELEGRAM_NEWS_MAX_LIMIT)
     : [];
 
@@ -1096,12 +1131,16 @@ function createApp() {
       return res.redirect(301, suffix ? `/en/${suffix}` : "/en/");
     }
 
-    const staticPath = String(req.path || "").toLowerCase();
-    if (
-      staticPath === "/store/vpn/index.html" ||
-      staticPath === "/en/store/vpn/index.html"
-    ) {
-      return res.status(404).send("Not found");
+    const staticPath = String(req.path || "").toLowerCase().replace(/\/+$/, "") || "/";
+    const isRetiredPublicAccessPath =
+      /^\/(?:en\/)?(?:catalog|store)\/vpn(?:\/activate)?(?:\/index\.html)?$/.test(staticPath) ||
+      /^\/(?:en\/)?bundle-activation\.html$/.test(staticPath) ||
+      staticPath === "/account.html" ||
+      staticPath === "/vpn";
+    if (isRetiredPublicAccessPath) {
+      res.setHeader("X-Robots-Tag", "noindex, nofollow");
+      res.setHeader("Cache-Control", "no-store");
+      return res.status(410).send("Gone");
     }
 
     return next();
@@ -1483,8 +1522,11 @@ function createApp() {
 
   app.get("/api/public/service-pages/:slug", async (req, res) => {
     const lang = String(req.query?.lang || "ru").toLowerCase().startsWith("en") ? "en" : "ru";
-    const slug = encodeURIComponent(String(req.params.slug || "").trim());
-    if (!slug) return res.status(404).json({ error: "Service page not found" });
+    const rawSlug = String(req.params.slug || "").trim();
+    if (!rawSlug || containsPublicVpnMarker(rawSlug)) {
+      return res.status(404).json({ error: "Service page not found" });
+    }
+    const slug = encodeURIComponent(rawSlug);
 
     try {
       const { response } = await fetchAdminWithFallback(
