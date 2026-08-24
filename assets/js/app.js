@@ -896,7 +896,7 @@ function initActivationResumeShortcut() {
       displayName: "Suno",
       fallbackTitle: "Suno Premier",
       fallbackPlan: "premier",
-      logo: "/assets/img/services/suno-card.webp?v=20260812-suno5",
+      logo: "/assets/img/services/suno-card-v2.webp?v=20260824-suno-square2",
     },
     vpn: {
       displayName: "GPTishka VPN",
@@ -3568,8 +3568,8 @@ function initActivationResumeShortcut() {
         hoverImageAlt: "Gemini",
       },
       suno: {
-        imageUrl: "/assets/img/services/suno-card.webp?v=20260812-suno5",
-        hoverImageUrl: "/assets/img/services/suno-card-hover.webp?v=20260812-suno5",
+        imageUrl: "/assets/img/services/suno-card-v2.webp?v=20260824-suno-square2",
+        hoverImageUrl: "/assets/img/services/suno-card-hover-v2.webp?v=20260824-suno-square2",
         imageAlt: "Suno Premier",
         hoverImageAlt: "Suno Premier",
       },

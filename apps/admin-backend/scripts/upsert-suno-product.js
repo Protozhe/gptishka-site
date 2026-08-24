@@ -1,8 +1,8 @@
 const { PrismaClient, ProductVisualBackgroundType } = require("@prisma/client");
 
 const prisma = new PrismaClient();
-const asset = "/assets/img/services/suno-card.webp?v=20260812-suno5";
-const hoverAsset = "/assets/img/services/suno-card-hover.webp?v=20260812-suno5";
+const asset = "/assets/img/services/suno-card-v2.webp?v=20260824-suno-square2";
+const hoverAsset = "/assets/img/services/suno-card-hover-v2.webp?v=20260824-suno-square2";
 
 const infoSections = [
   { title: "Что входит в Suno Premier", items: ["10 000 кредитов, которые обновляются ежемесячно.", "Доступ к актуальным музыкальным моделям и Suno Studio.", "Приоритетная очередь и расширенные инструменты создания и редактирования музыки.", "Коммерческие права на новые композиции, созданные во время активной подписки, согласно условиям Suno."] },
