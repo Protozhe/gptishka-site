@@ -58,6 +58,18 @@ function stringifyCheckoutValue(value: unknown) {
   return String(value).trim();
 }
 
+function resolveTelegramContactUrl(value: unknown) {
+  const raw = stringifyCheckoutValue(value);
+  if (!raw) return "";
+  if (/^\d+$/.test(raw)) return `tg://user?id=${raw}`;
+
+  const username = raw
+    .replace(/^https?:\/\/(?:t\.me|telegram\.me)\//i, "")
+    .replace(/^@/, "")
+    .split(/[/?#]/, 1)[0];
+  return /^[a-z0-9_]{5,32}$/i.test(username) ? `https://t.me/${username}` : "";
+}
+
 function buildCheckoutDetailRows(details: any) {
   if (!details || typeof details !== "object") return [];
   const rows: Array<[string, string]> = [];
@@ -396,15 +408,35 @@ export default function OrdersPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    {isSuccessfullyPaid && checkoutDetailRows.length ? (
+                    {checkoutDetailRows.length ? (
                       <div className="min-w-56 text-xs leading-5">
-                        <div className="mb-2 rounded border border-cyan-200 bg-cyan-50 p-2 dark:border-cyan-900/60 dark:bg-cyan-950/30">
-                          <div className="font-semibold text-cyan-800 dark:text-cyan-200">Оплачено · форма сохранена</div>
+                        <div
+                          className={`mb-2 rounded border p-2 ${
+                            isSuccessfullyPaid
+                              ? "border-cyan-200 bg-cyan-50 dark:border-cyan-900/60 dark:bg-cyan-950/30"
+                              : "border-amber-200 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/30"
+                          }`}
+                        >
+                          <div
+                            className={`font-semibold ${
+                              isSuccessfullyPaid ? "text-cyan-800 dark:text-cyan-200" : "text-amber-800 dark:text-amber-200"
+                            }`}
+                          >
+                            {isSuccessfullyPaid ? "Оплачено · форма сохранена" : "Ожидает оплаты · контакты доступны"}
+                          </div>
                           <dl className="mt-1 space-y-1">
                             {clientPreviewRows.map(([label, value]) => (
                               <div className="grid grid-cols-[80px_minmax(0,1fr)] gap-2" key={`${label}:${value}`}>
                                 <dt className="text-slate-500">{label}</dt>
-                                <dd className="break-words font-medium">{label === "Пароль" ? "••••••••" : value}</dd>
+                                <dd className="break-words font-medium">
+                                  {label === "Telegram" && resolveTelegramContactUrl(value) ? (
+                                    <a className="text-cyan-700 underline" href={resolveTelegramContactUrl(value)} target="_blank" rel="noreferrer">
+                                      {value}
+                                    </a>
+                                  ) : label === "Email" ? (
+                                    <a className="text-cyan-700 underline" href={`mailto:${value}`}>{value}</a>
+                                  ) : label === "Пароль" ? "••••••••" : value}
+                                </dd>
                               </div>
                             ))}
                           </dl>
@@ -415,13 +447,13 @@ export default function OrdersPage() {
                             setClientInfoDialog({ orderId: o.id, details: checkoutDetails });
                           }}
                         >
-                          Смотреть данные клиента
+                          Все данные клиента
                         </button>
                       </div>
                     ) : isSuccessfullyPaid ? (
                       <div className="text-xs font-medium text-amber-700 dark:text-amber-300">Оплачено, но данные формы не сохранены</div>
                     ) : (
-                      <div className="text-xs text-slate-500">Доступно после успешной оплаты</div>
+                      <div className="text-xs text-slate-500">Контакты в форме не указаны</div>
                     )}
                   </td>
                   <td className="px-4 py-3">{money(Number(o.totalAmount), o.currency)}</td>
@@ -533,12 +565,25 @@ export default function OrdersPage() {
                   <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
                     <div className="font-medium">Почта</div>
                     <div className="text-xs text-slate-500">Нужна для связи по заказу</div>
-                    <div className="mt-2 break-words font-semibold">{clientInfoDialog.details?.contact?.email || "Не указана"}</div>
+                    {clientInfoDialog.details?.contact?.email ? (
+                      <a className="mt-2 block break-words font-semibold text-cyan-700 underline" href={`mailto:${clientInfoDialog.details.contact.email}`}>
+                        {clientInfoDialog.details.contact.email}
+                      </a>
+                    ) : <div className="mt-2 font-semibold">Не указана</div>}
                   </div>
                   <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
                     <div className="font-medium">Telegram</div>
                     <div className="text-xs text-slate-500">Ник с @</div>
-                    <div className="mt-2 break-words font-semibold">{clientInfoDialog.details?.contact?.telegram || "Не указан"}</div>
+                    {resolveTelegramContactUrl(clientInfoDialog.details?.contact?.telegram) ? (
+                      <a
+                        className="mt-2 block break-words font-semibold text-cyan-700 underline"
+                        href={resolveTelegramContactUrl(clientInfoDialog.details.contact.telegram)}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {clientInfoDialog.details.contact.telegram}
+                      </a>
+                    ) : <div className="mt-2 font-semibold">{clientInfoDialog.details?.contact?.telegram || "Не указан"}</div>}
                   </div>
                 </div>
               </section>
