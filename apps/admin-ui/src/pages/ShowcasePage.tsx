@@ -414,6 +414,14 @@ export default function ShowcasePage() {
     },
   });
 
+  const toggleServiceCard = useMutation({
+    mutationFn: ({ serviceKey, isActive }: { serviceKey: string; isActive: boolean }) =>
+      api.put(`/showcase/service-cards/${serviceKey}`, { isActive }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["showcase-service-cards"] });
+    },
+  });
+
   const uploadServiceCardImage = useMutation({
     mutationFn: async ({ serviceKey, file, kind }: { serviceKey: string; file: File; kind: "image" | "hover" }) => {
       const formData = new FormData();
@@ -845,6 +853,19 @@ export default function ShowcasePage() {
             const editing = editingServiceCardKey === card.serviceKey;
             return (
               <article className="rounded-2xl border border-slate-200 p-3 dark:border-slate-800" key={card.serviceKey}>
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <span className={`badge ${card.isActive !== false ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-800"}`}>
+                    {card.isActive !== false ? "Показывается на витрине" : "Временно скрыта"}
+                  </span>
+                  <button
+                    className="btn-secondary"
+                    type="button"
+                    disabled={toggleServiceCard.isPending}
+                    onClick={() => toggleServiceCard.mutate({ serviceKey: card.serviceKey, isActive: card.isActive === false })}
+                  >
+                    {card.isActive !== false ? "Скрыть" : "Включить"}
+                  </button>
+                </div>
                 <div
                   className="overflow-hidden rounded-xl p-3 shadow-sm"
                   style={{
@@ -931,7 +952,7 @@ export default function ShowcasePage() {
                     <input className="input" placeholder="Цвет кнопки" value={draftCard.buttonTextColor || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { buttonTextColor: e.target.value })} />
                     <label className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-800">
                       <input type="checkbox" checked={draftCard.isActive !== false} onChange={(e) => updateServiceCardDraft(card.serviceKey, { isActive: e.target.checked })} />
-                      Активна
+                      Показывать на витрине
                     </label>
                   </div>
                 )}

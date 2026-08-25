@@ -29,6 +29,7 @@ function buildPublicServiceCardsPayload(serviceCards: any[]) {
     textColor: card.textColor,
     buttonBackground: card.buttonBackground,
     buttonTextColor: card.buttonTextColor,
+    isActive: card.isActive !== false,
     sortOrder: card.sortOrder,
     }));
 }

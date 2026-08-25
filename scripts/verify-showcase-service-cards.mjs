@@ -29,12 +29,15 @@ assert(routes.includes('showcaseAdminRouter.get("/service-cards"'), "admin route
 assert(routes.includes('showcaseAdminRouter.put("/service-cards/:serviceKey"'), "admin route must update service card");
 assert(publicRoutes.includes("const serviceCardPayload = buildPublicServiceCardsPayload(serviceCards);"), "public showcase payload must build service cards");
 assert(publicRoutes.includes("serviceCards: serviceCardPayload"), "public showcase payload must include service cards");
+assert(publicRoutes.includes("isActive: card.isActive !== false"), "public showcase payload must expose service card visibility");
 assert(storefront.includes("function getShowcaseServiceCardConfig(section, serviceKey)"), "storefront must resolve service card config");
+assert(storefront.includes("function isShowcaseServiceEnabled(section, serviceKey)"), "storefront must hide disabled service groups");
 assert(storefront.includes("const serviceCard = getShowcaseServiceCardConfig(section, serviceKey);"), "AI directory card must read service card config");
 assert(storefront.includes("const serviceCard = getShowcaseServiceCardConfig(section, \"vpn\");"), "VPN directory card must read service card config");
 assert(adminUi.includes("type ShowcaseServiceCard"), "admin UI must type service cards");
 assert(adminUi.includes("serviceCardsQuery"), "admin UI must load service cards");
 assert(adminUi.includes("saveServiceCard"), "admin UI must save service cards");
+assert(adminUi.includes("toggleServiceCard"), "admin UI must expose a quick service card visibility toggle");
 
 if (process.exitCode) process.exit(process.exitCode);
 console.log("showcase service cards check passed");

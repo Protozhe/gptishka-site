@@ -2976,6 +2976,14 @@ function initActivationResumeShortcut() {
     return cards.find(card => card?.isActive !== false && normalizeAiServiceKey(card?.serviceKey) === key) || null;
   }
 
+  function isShowcaseServiceEnabled(section, serviceKey) {
+    const key = normalizeAiServiceKey(serviceKey);
+    if (!key) return true;
+    const cards = Array.isArray(section?.serviceCards) ? section.serviceCards : [];
+    const card = cards.find(item => normalizeAiServiceKey(item?.serviceKey) === key);
+    return !card || card.isActive !== false;
+  }
+
   function getServiceCardValue(serviceCard, field, fallback) {
     const value = serviceCard && Object.prototype.hasOwnProperty.call(serviceCard, field) ? serviceCard[field] : "";
     const text = String(value || "").trim();
@@ -3410,7 +3418,11 @@ function initActivationResumeShortcut() {
     const safeSections = (Array.isArray(sections) ? sections : [])
       .map(section => ({
         ...section,
-        products: (Array.isArray(section?.products) ? section.products : []).filter(item => getVisualConfig(item).isVisible),
+        products: (Array.isArray(section?.products) ? section.products : []).filter(item => {
+          if (!getVisualConfig(item).isVisible) return false;
+          const service = getAiServiceConfig(item);
+          return !service || isShowcaseServiceEnabled(section, service.key);
+        }),
       }))
       .filter(section => section.products.length);
     const showAllLabel = isEnPage ? "Show all" : "Показать все";
