@@ -13,7 +13,7 @@ These rules apply to every Codex session and every developer working in this rep
 
 ## Stable recovery point
 
-- The protected baseline created on 2026-08-25 is tagged `production-stable-2026-08-25`.
+- The protected baseline created on 2026-08-25 is tagged `production-stable-2026-08-25-r2`.
 - Do not move, recreate, or force-update this tag.
 - If a new release causes a regression, restore the `production` branch from this tag first, then diagnose the change on `main`.
 
@@ -24,4 +24,3 @@ These rules apply to every Codex session and every developer working in this rep
 3. Review the diff from `production` to the candidate commit.
 4. Fast-forward or merge the approved candidate into `production` and push it.
 5. Confirm the production workflow and live smoke checks succeed.
-

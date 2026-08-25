@@ -17,6 +17,6 @@ assert.ok(verification >= 0 && liveReset > verification, "Candidate checks must 
 assert.match(deploy, /DEPLOY_BRANCH="\$\{DEPLOY_BRANCH:-production\}"/);
 assert.match(deploy, /refs\/heads\/\$DEPLOY_BRANCH:refs\/remotes\/origin\/\$DEPLOY_BRANCH/);
 assert.match(agentRules, /Production is deployed only from the `production` branch/);
-assert.match(agentRules, /production-stable-2026-08-25/);
+assert.match(agentRules, /production-stable-2026-08-25-r2/);
 
 console.log("Production deployment guard verified.");
