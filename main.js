@@ -2684,8 +2684,7 @@ function initActivationResumeShortcut() {
     if (!section || !payload || !payload.page) return;
     const items = Array.isArray(payload.page.infoSections) ? payload.page.infoSections : [];
     if (!items.length) {
-      section.innerHTML = "";
-      section.hidden = true;
+      section.hidden = false;
       return;
     }
     section.hidden = false;
@@ -2712,8 +2711,7 @@ function initActivationResumeShortcut() {
     if (!section || !payload || !payload.page) return;
     const items = Array.isArray(payload.page.faqItems) ? payload.page.faqItems : [];
     if (!items.length) {
-      section.innerHTML = "";
-      section.hidden = true;
+      section.hidden = false;
       return;
     }
     section.hidden = false;

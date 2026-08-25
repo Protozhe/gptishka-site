@@ -2918,8 +2918,10 @@ function initActivationResumeShortcut() {
     if (!section || !payload || !payload.page) return;
     const items = Array.isArray(payload.page.infoSections) ? payload.page.infoSections : [];
     if (!items.length) {
-      section.innerHTML = "";
-      section.hidden = true;
+      // Keep the authored HTML as a fallback when the admin page has no
+      // dynamic sections configured. This prevents a successful API response
+      // with an empty array from removing useful service information.
+      section.hidden = false;
       return;
     }
     section.hidden = false;
@@ -2952,8 +2954,8 @@ function initActivationResumeShortcut() {
     if (!section || !payload || !payload.page) return;
     const items = Array.isArray(payload.page.faqItems) ? payload.page.faqItems : [];
     if (!items.length) {
-      section.innerHTML = "";
-      section.hidden = true;
+      // Keep the static FAQ when the API does not provide an override.
+      section.hidden = false;
       return;
     }
     section.hidden = false;
