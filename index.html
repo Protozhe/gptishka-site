@@ -110,6 +110,19 @@
 <link rel="stylesheet" href="/assets/css/appstore-card-motion.css?v=20260810-appstore-modal1">
 <link rel="stylesheet" href="/assets/css/home-info-sections.css?v=20260811-faq-title1">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20260811-mobile-header1">
+<style id="unified-mobile-visuals">
+  @media (max-width: 900px) {
+    body.home-wide-body.home-gradient-page::before,
+    body.home-wide-body.home-gradient-page::after {
+      display: block !important;
+      animation: none !important;
+      filter: blur(46px) saturate(1.12) !important;
+    }
+
+    body.home-wide-body.home-gradient-page::before { opacity: 0.42 !important; }
+    body.home-wide-body.home-gradient-page::after { opacity: 0.36 !important; }
+  }
+</style>
 
 <!-- GOOGLE FONTS -->
 <link rel="preload" href="/assets/css/support-widget.css?v=20260724-resume-collapse1" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -144,7 +157,7 @@
 
       var mode = "balanced";
       if (forcedLite === true) {
-        mode = "low";
+        mode = "balanced";
       } else if (forcedLite === false) {
         mode = "rich";
       } else {
@@ -177,7 +190,7 @@
           effectiveType.indexOf("2g") !== -1 ||
           effectiveType.indexOf("3g") !== -1
         ) {
-          mode = "low";
+          mode = "balanced";
         } else if (highMemory && highCpu && canHover && highViewport) {
           mode = "rich";
         } else if ((midMemory || midCpu) && laptopViewport) {
@@ -188,16 +201,9 @@
       }
 
       body.dataset.visualBudget = mode;
-      if (mode === "low") body.classList.add("low-visual-budget");
       if (mode === "balanced") body.classList.add("balanced-visual-budget");
 
-      var reduce = mm ? mm("(prefers-reduced-motion: reduce)").matches : false;
-      var fine = mm ? mm("(pointer: fine)").matches : true;
-      var compact = mm ? mm("(max-width: 900px)").matches : window.innerWidth <= 900;
-      var gradientClass = mode === "rich" && !reduce && fine && !compact
-        ? "home-gradient-page"
-        : "home-gradient-page-lite";
-      body.classList.add(gradientClass);
+      body.classList.add("home-gradient-page");
     } catch (_) {}
   })();
 </script>
@@ -616,7 +622,7 @@
   <span class="footer-copy">&copy; 2026 GPTishka. Все права защищены, копирование запрещено.</span>
 </footer>
 <script src="/assets/js/hero-lite.js?v=20260516-fix4" defer></script>
-  <script src="/assets/js/app.min.js?v=20260825-showcase-visibility3" defer></script>
+  <script src="/assets/js/app.min.js?v=20260825-unified-mobile1" defer></script>
 <script src="/assets/js/home-promo-slider.js?v=20260824-ai-battle-persist2" defer></script>
 <script id="home-wide-hash-sync">
   (function () {

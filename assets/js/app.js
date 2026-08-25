@@ -462,11 +462,11 @@ function initHomeGradientBackground() {
     ? window.matchMedia("(max-width: 900px)").matches
     : window.innerWidth <= 900;
 
-  // On mobile/coarse pointer/reduced motion we keep a static premium gradient only.
-  // Keep heavy animated background only for explicitly rich devices.
+  // Keep one visual theme on every device. Mobile and reduced-motion users
+  // receive its static version; only rich desktop devices mount animation.
   if (visualBudget !== "rich" || prefersReducedMotion || !hasFinePointer || isCompactViewport) {
-    body.classList.remove("home-gradient-page");
-    body.classList.add("home-gradient-page-lite");
+    body.classList.remove("home-gradient-page-lite");
+    body.classList.add("home-gradient-page");
     return;
   }
 
