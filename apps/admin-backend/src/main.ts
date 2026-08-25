@@ -1,17 +1,11 @@
 import { createApp } from "./app";
 import { env } from "./config/env";
 import { prisma } from "./config/prisma";
-import { ensureWelcomePromoCode } from "./modules/promocodes/welcome-promo.service";
 import { vpnService } from "./services/vpn.service";
 import { accountNotificationsService } from "./modules/account/account-notifications.service";
 
 async function bootstrap() {
   await prisma.$connect();
-  try {
-    await ensureWelcomePromoCode();
-  } catch (error) {
-    console.error("[promo] failed to ensure welcome promo code", error);
-  }
   if (env.VPN_AUTO_SEED_PRODUCTS) {
     try {
       await vpnService.ensureVpnCatalogProducts();
