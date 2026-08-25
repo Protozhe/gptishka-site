@@ -2492,6 +2492,40 @@ async function callChongzhiJsonApi(
   });
 }
 
+async function recoverCompletedChongzhiJsonTask(
+  cdk: string,
+  base: string,
+  sourceLabel?: string
+) {
+  try {
+    const current = await callChongzhiJsonApi(base, "query_code", {
+      cdk,
+      polling: 1,
+      silent_log: 1,
+    });
+    if (!current.json || !isChongzhiCodeUsed({ json: current.json })) return null;
+    const taskId =
+      String(current.json?.order_id || current.json?.task_id || current.json?.record_id || "").trim() ||
+      `chongzhi-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    return {
+      ok: true as const,
+      taskId,
+      status: current.status || 200,
+      body: current.raw || "",
+      tries: 1,
+      immediateSuccess: true,
+      message: String(current.json?.message || "Activation completed"),
+      providerPayload: {
+        source: String(sourceLabel || base || "chongzhi/api.php"),
+        recoveredAfterSubmit: true,
+        query: current.json,
+      },
+    };
+  } catch {
+    return null;
+  }
+}
+
 async function startChongzhiJsonTask(
   input: { cdk: string; userCandidates: any[] },
   base: string,
@@ -2584,6 +2618,10 @@ async function startChongzhiJsonTask(
       force_overwrite: false,
     });
   } catch (error) {
+    // The provider can complete a recharge but leave the submit request open
+    // until our HTTP timeout. Query the CDK before reporting a false failure.
+    const recovered = await recoverCompletedChongzhiJsonTask(input.cdk, base, sourceLabel);
+    if (recovered) return recovered;
     return {
       ok: false as const,
       taskId: "",
@@ -2619,6 +2657,9 @@ async function startChongzhiJsonTask(
       },
     };
   }
+
+  const recovered = await recoverCompletedChongzhiJsonTask(input.cdk, base, sourceLabel);
+  if (recovered) return recovered;
 
   return {
     ok: false as const,
