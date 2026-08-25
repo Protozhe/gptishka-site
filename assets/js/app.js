@@ -4238,6 +4238,7 @@ function initActivationResumeShortcut() {
   function normalizeChatGptGoPaymentChoice(value) {
     const method = String(value || "").trim().toLowerCase();
     if (method === "lava" || method === "crypto") return "lava";
+    if (method === "enot" || method === "enot.io" || method === "gateway" || method === "card") return "enot";
     return "lava";
   }
 

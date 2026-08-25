@@ -8,10 +8,11 @@ const serverSource = fs.readFileSync("server.js", "utf8");
 const successPage = fs.readFileSync("success.html", "utf8");
 
 const expectedAssetVersion = "20260723-checkout-controls1";
-const expectedJsAssetVersion = "20260724-payment-logos1";
+const expectedJsAssetVersion = "20260825-enot-routing1";
 
 const requiredSourceMarkers = [
   'const DEFAULT_PAYMENT_METHOD = "lava";',
+  'if (method === "enot" || method === "enot.io" || method === "gateway" || method === "card") return "enot";',
   "chatgpt-order-summary-card",
   "chatgpt-order-header",
   "chatgpt-order-main",

@@ -13,7 +13,11 @@ function getClientIp(req: Request) {
 
 export function allowWebhookIp(req: Request, _res: Response, next: NextFunction) {
   const allowRaw = String(env.PAYMENT_WEBHOOK_IP_ALLOWLIST || "").trim();
-  return allowWebhookIpFromList(allowRaw, req, next, env.NODE_ENV === "production");
+  // ENOT authenticates payment hooks with x-api-sha256-signature. Their
+  // documented integration does not require an IP allowlist, so an empty
+  // list must not disable all production webhooks. When configured, the
+  // allowlist remains an additional restriction.
+  return allowWebhookIpFromList(allowRaw, req, next, false);
 }
 
 export function allowLavaWebhookIp(req: Request, _res: Response, next: NextFunction) {

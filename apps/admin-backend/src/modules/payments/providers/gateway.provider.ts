@@ -55,7 +55,7 @@ export class GatewayProvider implements PaymentProvider {
       success_url: successUrl.toString(),
       fail_url: failUrl.toString(),
       hook_url: env.PAYMENT_WEBHOOK_URL,
-      description: input.description,
+      comment: input.description,
     };
 
     const response = await fetch(this.buildUrl(env.PAYMENT_CREATE_PATH), {

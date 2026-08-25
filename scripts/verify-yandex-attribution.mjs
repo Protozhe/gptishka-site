@@ -164,7 +164,7 @@ for (const file of htmlFiles) {
     assert.ok(html.includes("analytics-init.js?v=20260813-yandex-attribution1"), `${file}: stale analytics asset`);
   }
   if (html.includes("app.min.js?v=")) {
-    assert.ok(html.includes("app.min.js?v=20260813-yandex-funnel2"), `${file}: stale storefront asset`);
+    assert.ok(html.includes("app.min.js?v=20260825-enot-routing1"), `${file}: stale storefront asset`);
   }
 }
 
