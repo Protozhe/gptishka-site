@@ -17,6 +17,7 @@ import { manualCredentialsStore } from "../products/manual-credentials.store";
 import { toVpnMePayload, vpnService } from "../../services/vpn.service";
 import crypto from "crypto";
 import fs from "fs";
+import https from "https";
 import path from "path";
 
 const MAX_CLIENT_TOKEN_LENGTH = 500_000;
@@ -2431,30 +2432,48 @@ async function callChongzhiJsonApi(
   data: Record<string, unknown>
 ) {
   const apiUrl = buildActivationSiteEndpointUrl(base, "api.php") || `${base.replace(/\/+$/, "")}/api.php`;
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), CHONGZHI_JSON_API_TIMEOUT_MS);
-  try {
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        Accept: "application/json, text/plain, */*",
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        Pragma: "no-cache",
-        Expires: "0",
+  const body = JSON.stringify({ action, ...data });
+
+  // Node's built-in fetch (undici) can time out while connecting to this
+  // provider even though a regular TLS request from the same host succeeds.
+  // Use the native HTTPS transport so activation does not fail before the
+  // provider has received the request.
+  return new Promise<{ status: number; raw: string; json: any }>((resolve, reject) => {
+    const request = https.request(
+      apiUrl,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(body),
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
       },
-      body: JSON.stringify({ action, ...data }),
-      signal: controller.signal,
+      (response) => {
+        let raw = "";
+        response.setEncoding("utf8");
+        response.on("data", (chunk) => {
+          raw += chunk;
+        });
+        response.on("end", () => {
+          resolve({
+            status: response.statusCode || 0,
+            raw,
+            json: tryParseJson(raw) as any,
+          });
+        });
+      }
+    );
+
+    request.setTimeout(CHONGZHI_JSON_API_TIMEOUT_MS, () => {
+      request.destroy(new Error("Chongzhi API request timed out"));
     });
-    const raw = await response.text().catch(() => "");
-    return {
-      status: response.status,
-      raw,
-      json: tryParseJson(raw) as any,
-    };
-  } finally {
-    clearTimeout(timeout);
-  }
+    request.on("error", reject);
+    request.end(body);
+  });
 }
 
 async function startChongzhiJsonTask(
