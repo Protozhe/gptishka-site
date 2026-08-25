@@ -425,6 +425,7 @@ html body.reviews-hub-body main.reviews-hub {
 
 .reviews-feed {
   padding-top: 0;
+  padding-bottom: clamp(28px, 4vw, 42px);
   border-top: 0;
 }
 
