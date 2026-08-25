@@ -693,12 +693,26 @@
       if (normalized.includes("suno")) return "suno";
       if (normalized.includes("vpn") || normalized.includes("vless")) return "vpn";
       if (normalized.includes("supergrok") || normalized === "grok") return "grok";
+      if (normalized.includes("chatgptgo")) return "chatgptgo";
+      if (normalized.includes("chatgptplus")) return "chatgptplus";
       if (normalized.includes("chatgpt") || normalized === "chatgpt") return "chatgpt";
       return "";
     }
 
     function serviceConfig(serviceKey) {
       const configs = {
+        chatgptgo: {
+          name: "ChatGPT GO",
+          href: "/chatgpt",
+          icon: "/assets/img/services/chatgpt-card.webp?v=20260721-webp1",
+          price: 1290,
+        },
+        chatgptplus: {
+          name: "ChatGPT Plus",
+          href: "/chatgpt",
+          icon: "/assets/img/services/chatgpt-card.webp?v=20260721-webp1",
+          price: 2190,
+        },
         chatgpt: {
           name: "ChatGPT",
           href: "/chatgpt",
