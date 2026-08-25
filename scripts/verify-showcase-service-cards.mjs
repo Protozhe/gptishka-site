@@ -35,6 +35,7 @@ assert(publicRoutes.includes("isActive: card.isActive !== false"), "public showc
 assert(storefront.includes("function getShowcaseServiceCardConfig(section, serviceKey)"), "storefront must resolve service card config");
 assert(storefront.includes("function isShowcaseServiceEnabled(section, serviceKey)"), "storefront must hide disabled service groups");
 assert(storefront.includes("function syncStaticShowcaseServiceVisibility()"), "static catalogs must follow service card visibility");
+assert(storefront.includes('card.style.display = isHidden ? "none" : ""'), "static catalog visibility must override card display styles");
 assert(catalog.includes('data-showcase-service-key="suno"'), "catalog Suno card must be controlled by showcase visibility");
 assert(aiCatalog.includes('data-showcase-service-key="suno"'), "AI catalog Suno card must be controlled by showcase visibility");
 assert(storefront.includes("const serviceCard = getShowcaseServiceCardConfig(section, serviceKey);"), "AI directory card must read service card config");

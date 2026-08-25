@@ -3293,7 +3293,9 @@ function initActivationResumeShortcut() {
       );
       staticCards.forEach(card => {
         const key = normalizeAiServiceKey(card.getAttribute("data-showcase-service-key"));
-        card.hidden = visibility.get(key) === false;
+        const isHidden = visibility.get(key) === false;
+        card.hidden = isHidden;
+        card.style.display = isHidden ? "none" : "";
       });
     } catch (_) {
       // Keep static catalog cards as a fallback when the showcase API is unavailable.
