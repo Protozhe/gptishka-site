@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: production
 
       - uses: actions/setup-node@v4
         with:
@@ -37,4 +37,4 @@ jobs:
           git config user.email "support@gptishka.shop"
           git add data/public-news.json assets/data/public-news.json assets/img/news
           git commit -m "chore: refresh public news cache"
-          git push origin HEAD:main
+          git push origin HEAD:production
