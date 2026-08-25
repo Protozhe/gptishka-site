@@ -242,6 +242,7 @@
     var total = document.createElement("span");
     total.className = "home-ai-battle__total";
     total.setAttribute("data-ai-battle-total", "");
+    total.setAttribute("aria-busy", "true");
     total.textContent = english ? "Loading votes…" : "Загружаем голоса…";
     var status = document.createElement("span");
     status.className = "home-ai-battle__status";
@@ -275,6 +276,7 @@
     if (claudeEl) claudeEl.textContent = claudePercent + "%";
     if (barEl) barEl.style.width = chatgptPercent + "%";
     if (totalEl) {
+      totalEl.removeAttribute("aria-busy");
       totalEl.textContent = total > 0
         ? total.toLocaleString(english ? "en-US" : "ru-RU") + (english ? " total clicks" : " кликов всего")
         : (english ? "No clicks yet — be the first" : "Пока 0 кликов — выбери первым");
@@ -290,11 +292,18 @@
     fetch("/api/public/ai-battle", { cache: "no-store", credentials: "same-origin" })
       .then(function (response) { return response.ok ? response.json() : null; })
       .then(function (stats) {
-        if (!stats) return;
-        renderAiBattleStats(article, stats);
-        cacheAiBattleStats(stats);
+        if (stats) {
+          renderAiBattleStats(article, stats);
+          cacheAiBattleStats(stats);
+          return;
+        }
+        var cachedStats = readCachedAiBattleStats();
+        if (cachedStats) renderAiBattleStats(article, cachedStats);
       })
-      .catch(function () {});
+      .catch(function () {
+        var cachedStats = readCachedAiBattleStats();
+        if (cachedStats) renderAiBattleStats(article, cachedStats);
+      });
 
     buttons.forEach(function (button) {
       button.addEventListener("click", function () {
@@ -535,10 +544,9 @@
     }
 
     if (Array.isArray(payload.slides) && payload.slides.length) {
-      var initialAiBattleStats = readCachedAiBattleStats() || readRenderedAiBattleStats(track);
       track.innerHTML = "";
       payload.slides.forEach(function (slide, index) {
-        track.appendChild(createSlideElement(slide, index === 0, initialAiBattleStats));
+        track.appendChild(createSlideElement(slide, index === 0, null));
       });
     }
 
