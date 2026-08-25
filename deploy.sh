@@ -20,7 +20,7 @@ fi
 
 cd "$APP_DIR"
 
-git fetch origin "$DEPLOY_BRANCH"
+git fetch origin "refs/heads/$DEPLOY_BRANCH:refs/remotes/origin/$DEPLOY_BRANCH"
 
 # Verify the candidate in an isolated tree before it can replace live files.
 VERIFY_DIR="$(mktemp -d /tmp/gptishka-release.XXXXXX)"
