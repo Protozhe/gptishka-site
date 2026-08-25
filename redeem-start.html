@@ -678,6 +678,53 @@
       animation: redeem-spin 0.8s linear infinite;
     }
 
+    .redeem-progress {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .redeem-progress[hidden] {
+      display: none !important;
+    }
+
+    .redeem-progress-step {
+      position: relative;
+      padding-top: 11px;
+      color: rgba(49, 71, 93, 0.58);
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .redeem-progress-step::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 4px;
+      right: 4px;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(49, 71, 93, 0.16);
+    }
+
+    .redeem-progress-step.is-done,
+    .redeem-progress-step.is-current {
+      color: currentColor;
+    }
+
+    .redeem-progress-step.is-done::before {
+      background: currentColor;
+      opacity: 0.58;
+    }
+
+    .redeem-progress-step.is-current::before {
+      background: currentColor;
+      animation: redeem-progress-pulse 1.15s ease-in-out infinite;
+    }
+
     .redeem-faq {
       margin-top: 12px;
       border-radius: 14px;
@@ -903,9 +950,13 @@
     .redeem-review-links {
       margin-top: 14px;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
       align-items: center;
+    }
+
+    #receiptBotBtn {
+      grid-column: 1 / -1;
     }
 
     .redeem-review-links .redeem-btn {
@@ -957,6 +1008,11 @@
       to {
         transform: rotate(360deg);
       }
+    }
+
+    @keyframes redeem-progress-pulse {
+      0%, 100% { opacity: 0.45; transform: scaleX(0.82); }
+      50% { opacity: 1; transform: scaleX(1); }
     }
 
     @keyframes redeem-fade-up {
@@ -1413,34 +1469,41 @@
       <section id="statusBox" class="redeem-status" hidden>
         <span id="statusText">Ожидаю действия.</span>
         <span id="statusSpinner" class="redeem-spinner" aria-hidden="true"></span>
-        <span id="taskWrap" style="display:none">Task: <strong id="taskIdValue"></strong></span>
-        <button id="copyTaskBtn" type="button" class="redeem-btn" style="display:none">Скопировать Task</button>
+        <span id="taskWrap" style="display:none">Номер операции: <strong id="taskIdValue"></strong></span>
+        <button id="copyTaskBtn" type="button" class="redeem-btn" style="display:none">Скопировать номер</button>
+        <div id="activationProgress" class="redeem-progress" hidden aria-label="Ход активации">
+          <span class="redeem-progress-step" data-activation-step="start">Запуск</span>
+          <span class="redeem-progress-step" data-activation-step="process">Подключение</span>
+          <span class="redeem-progress-step" data-activation-step="done">Готово</span>
+        </div>
       </section>
 
       <section id="reviewRewardBox" class="redeem-review-reward" hidden aria-modal="true" role="dialog" aria-live="polite" aria-labelledby="reviewRewardTitle">
         <div class="redeem-review-card">
           <div class="redeem-review-top">
-            <span class="redeem-review-badge">Бонус 5% на следующий заказ</span>
+            <span class="redeem-review-badge">Активация завершена</span>
             <button id="reviewRewardCloseBtn" type="button" class="redeem-review-close" aria-label="Закрыть сообщение" title="Закрыть">&times;</button>
           </div>
           <div class="redeem-review-body">
             <div class="redeem-review-head">
               <span class="redeem-review-mark-wrap" aria-hidden="true">
-                <span class="redeem-review-mark">вњ“</span>
+                <span class="redeem-review-mark">&#10003;</span>
               </span>
               <div class="redeem-review-copy">
                 <h3 id="reviewRewardTitle">Ваш тариф успешно активирован</h3>
-                <p class="redeem-review-lead">Спасибо за покупку. Оставьте короткий отзыв в Telegram и получите персональный промокод 5%.</p>
+                <p class="redeem-review-lead">Подписка активна. Получите электронный чек в Telegram — в нём будут указаны товар, сумма и номер заказа.</p>
               </div>
             </div>
             <ul class="redeem-review-points">
-              <li>Проверим отзыв и отправим вам персональный промокод.</li>
+              <li>Откройте бота и нажмите «Старт», чтобы получать чеки и смотреть историю покупок.</li>
+              <li>После этого можно оставить отзыв и получить персональный промокод 5%.</li>
             </ul>
             <div class="redeem-review-links">
-              <a class="redeem-btn redeem-btn-primary" href="https://t.me/aiiisupport" target="_blank" rel="noopener noreferrer">Оставить отзыв</a>
+              <a id="receiptBotBtn" class="redeem-btn redeem-btn-primary" href="https://t.me/Gptishka_support_bot" target="_blank" rel="noopener noreferrer">Получить чек в Telegram</a>
+              <a class="redeem-btn redeem-btn-soft" href="https://t.me/aiiisupport" target="_blank" rel="noopener noreferrer">Оставить отзыв — бонус 5%</a>
               <button id="reviewRewardDismissBtn" type="button" class="redeem-btn redeem-btn-soft">Позже</button>
             </div>
-            <p class="redeem-review-note">Если окно мешает, нажмите «Позже» или клавишу Esc. Бонус останется доступен.</p>
+            <p class="redeem-review-note">Чек также можно открыть позже командой /receipts в боте.</p>
           </div>
         </div>
       </section>
@@ -1502,6 +1565,7 @@
     const statusBox = document.getElementById('statusBox');
     const statusText = document.getElementById('statusText');
     const statusSpinner = document.getElementById('statusSpinner');
+    const activationProgress = document.getElementById('activationProgress');
     const taskWrap = document.getElementById('taskWrap');
     const taskIdValue = document.getElementById('taskIdValue');
     const copyTaskBtn = document.getElementById('copyTaskBtn');
@@ -2259,7 +2323,7 @@
     });
 
     copyOrderIdBtn.addEventListener('click', () => copyText(orderId, 'Order ID скопирован'));
-    copyTaskBtn.addEventListener('click', () => copyText(currentTaskId, 'Task ID скопирован'));
+    copyTaskBtn.addEventListener('click', () => copyText(currentTaskId, 'Номер операции скопирован'));
     if (copyLoginBtn) {
       copyLoginBtn.addEventListener('click', () => copyText(manualLoginValue ? manualLoginValue.textContent : '', 'Логин скопирован'));
     }
@@ -2294,7 +2358,7 @@
       restartAttempts = 0;
       setButtonLoading(startBtn, true);
       try {
-        setStatus('pending', 'Запрос отправлен...', true);
+        setStatus('pending', 'Запускаем активацию…', true, 'start');
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/start`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2304,25 +2368,15 @@
         if (!response.ok) {
           const resolved = await resolveActivationSuccessFallback();
           if (resolved) return;
-          let details = '';
-          if (payload?.details) {
-            try {
-              details = typeof payload.details === 'string' ? payload.details : JSON.stringify(payload.details);
-            } catch (_) {
-              details = '';
-            }
-          }
-          details = String(details || '').trim();
-          if (details.length > 400) details = details.slice(0, 400) + '...';
-          setStatus('error', (payload?.message || 'Не удалось запустить активацию') + (details ? `: ${details}` : ''), false);
+          setStatus('error', friendlyActivationError(response.status), false);
           return;
         }
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
-        setStatus('pending', `В обработке. Task: ${currentTaskId}`, true);
+        setStatus('pending', 'Подключаем подписку. Обычно это занимает несколько минут…', true, 'process');
         startPolling();
       } catch {
-        setStatus('error', 'Ошибка сети при запуске активации', false);
+        setStatus('error', 'Не удалось связаться с сервисом активации. Проверьте интернет и повторите попытку.', false);
       } finally {
         setButtonLoading(startBtn, false);
       }
@@ -2365,7 +2419,7 @@
       isRetryRunning = true;
       setButtonLoading(retryNewKeyBtn, true);
       try {
-        setStatus('pending', 'Берем новый ключ и перезапускаем...', true);
+        setStatus('pending', 'Подбираем новый ключ и повторно запускаем активацию…', true, 'start');
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/restart-with-new-key`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2373,12 +2427,12 @@
         });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-          setStatus('error', payload?.message || 'Не удалось перезапустить', false);
+          setStatus('error', friendlyActivationError(response.status), false);
           return;
         }
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
-        setStatus('pending', `В обработке. Task: ${currentTaskId}`, true);
+        setStatus('pending', 'Подключаем подписку. Обычно это занимает несколько минут…', true, 'process');
         startPolling();
       } catch {
         setStatus('error', 'Ошибка сети при перезапуске', false);
@@ -2439,7 +2493,7 @@
           currentTaskId = String(payload.taskId || '');
           renderTask(currentTaskId);
           markActivationCompleted();
-          setStatus('success', currentTaskId ? `Успешно. Task: ${currentTaskId}` : 'Подключение успешно завершено.', false);
+          setStatus('success', 'Подписка успешно активирована.', false, 'done');
           clearActivationResumeStorage();
           hideActionButtons();
           showReviewReward();
@@ -2449,9 +2503,9 @@
         renderTask(currentTaskId);
         if (currentTaskId) {
           if (isPollPaused()) {
-            setStatus('pending', `Есть активная проверка. Task: ${currentTaskId}. Автопроверка остановлена.`, false);
+            setStatus('pending', 'Активация ещё выполняется. Нажмите «Проверить статус», чтобы продолжить проверку.', false, 'process');
           } else {
-            setStatus('pending', `В обработке. Task: ${currentTaskId}`, true);
+            setStatus('pending', 'Подключаем подписку. Обычно это занимает несколько минут…', true, 'process');
             startPolling();
           }
           return;
@@ -2532,7 +2586,7 @@
         markActivationCompleted();
         setStatus(
           'success',
-          currentTaskId ? `Успешно. Task: ${currentTaskId}` : 'Подписка успешно активирована.',
+          'Подписка успешно активирована.',
           false
         );
         clearActivationResumeStorage();
@@ -2557,7 +2611,7 @@
           if (!done && timeout) {
             const resolved = await resolveActivationSuccessFallback();
             if (resolved) return;
-            setStatus('pending', `Все еще в обработке. Task: ${currentTaskId}. Нажмите «Проверить статус» позже или «Сменить ключ и повторить».`, false);
+            setStatus('pending', 'Активация занимает больше времени, чем обычно. Проверьте статус немного позже.', false, 'process');
             retryNewKeyBtn.disabled = false;
           }
         }
@@ -2580,7 +2634,7 @@
         if (!response.ok) {
           const resolved = await resolveActivationSuccessFallback();
           if (resolved) return true;
-          setStatus('error', payload?.message || 'Не удалось получить статус', false);
+          setStatus('error', 'Не удалось проверить статус. Повторите попытку через минуту.', false);
           return true;
         }
 
@@ -2589,14 +2643,13 @@
             const resolved = await resolveActivationSuccessFallback();
             if (resolved) return true;
           }
-          const msg = String(payload?.message || '').trim();
-          setStatus('pending', `В обработке. Task: ${currentTaskId}${msg ? `. ${msg}` : ''}`, true);
+          setStatus('pending', 'Подключаем подписку. Пожалуйста, не закрывайте страницу…', true, 'process');
           retryNewKeyBtn.disabled = true;
           return false;
         }
 
         if (payload.success) {
-          setStatus('success', `Успешно. Task: ${currentTaskId}`, false);
+          setStatus('success', 'Подписка успешно активирована.', false, 'done');
           markActivationCompleted();
           clearActivationResumeStorage();
           hideActionButtons();
@@ -2606,7 +2659,7 @@
 
         const resolved = await resolveActivationSuccessFallback();
         if (resolved) return true;
-        setStatus('error', payload?.message || 'Запрос не может обработаться', false);
+        setStatus('error', 'Не удалось завершить активацию автоматически. Повторите попытку или напишите в поддержку.', false);
         retryNewKeyBtn.disabled = false;
         return true;
       } catch {
@@ -2809,17 +2862,39 @@
       return value;
     }
 
-    function setStatus(tone, text, loading) {
+    function friendlyActivationError(status) {
+      const code = Number(status || 0);
+      if (code === 409) return 'Сейчас нет свободного ключа для активации. Напишите в поддержку — мы поможем с заказом.';
+      if (code === 401 || code === 403) return 'Ссылка на заказ недействительна или устарела. Откройте активацию из страницы успешной оплаты.';
+      if (code === 429) return 'Слишком много попыток. Подождите немного и повторите.';
+      return 'Не удалось запустить активацию автоматически. Повторите попытку или напишите в поддержку.';
+    }
+
+    function setActivationProgress(stage) {
+      if (!activationProgress) return;
+      const order = ['start', 'process', 'done'];
+      const activeIndex = order.indexOf(String(stage || ''));
+      activationProgress.hidden = activeIndex < 0;
+      activationProgress.querySelectorAll('[data-activation-step]').forEach((step) => {
+        const index = order.indexOf(String(step.getAttribute('data-activation-step') || ''));
+        step.classList.toggle('is-done', activeIndex >= 0 && index < activeIndex);
+        step.classList.toggle('is-current', activeIndex >= 0 && index === activeIndex);
+      });
+    }
+
+    function setStatus(tone, text, loading, stage) {
       statusBox.hidden = false;
       statusBox.className = `redeem-status ${tone}`;
       statusText.textContent = text;
       statusSpinner.style.display = loading ? 'inline-block' : 'none';
+      setActivationProgress(stage || (tone === 'success' ? 'done' : ''));
     }
 
     function hideStatus() {
       statusBox.hidden = true;
       statusText.textContent = '';
       statusSpinner.style.display = 'none';
+      setActivationProgress('');
       if (taskWrap) taskWrap.style.display = 'none';
       if (copyTaskBtn) copyTaskBtn.style.display = 'none';
     }

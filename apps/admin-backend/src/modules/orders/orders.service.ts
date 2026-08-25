@@ -49,6 +49,21 @@ const DEFAULT_CLAUDE_MAX20X_SUPPORT_URL = "https://quickplus.vip/public/max20x/"
 const DEFAULT_GROK_1M_SUPPORT_URL = "https://vip.sxzfd.com/grok";
 const DEFAULT_SUPPORT_EMAIL = "";
 
+function publicActivationMessage(status: unknown, verificationState?: unknown) {
+  const normalizedStatus = String(status || "").trim().toLowerCase();
+  const normalizedVerification = String(verificationState || "").trim().toLowerCase();
+  if (normalizedStatus === "success" || normalizedVerification === "success") {
+    return "Подписка успешно активирована.";
+  }
+  if (normalizedStatus === "failed" || normalizedStatus === "error" || normalizedVerification === "failed") {
+    return "Не удалось завершить активацию автоматически. Повторите попытку или обратитесь в поддержку.";
+  }
+  if (normalizedStatus === "processing" || normalizedVerification === "pending") {
+    return "Подключаем подписку. Пожалуйста, не закрывайте страницу.";
+  }
+  return "Ожидаем запуска активации.";
+}
+
 function isSupportLikeDeliveryType(value: unknown) {
   const normalized = String(value || "").trim().toLowerCase();
   return normalized === "support" || normalized === "support_claude";
@@ -407,7 +422,9 @@ export const ordersService = {
       activationStatus: activation?.status || null,
       activationVerificationState: activation?.verificationState || null,
       activationTaskId: activation?.taskId || null,
-      activationMessage: activation?.lastProviderMessage || null,
+      activationMessage: activation
+        ? publicActivationMessage(activation.status, activation.verificationState)
+        : null,
       activationUpdatedAt: activation?.updatedAt || null,
     };
   },
@@ -548,7 +565,7 @@ export const ordersService = {
       status: current.status,
       taskId: current.taskId || null,
       verificationState: current.verificationState || "unknown",
-      lastProviderMessage: current.lastProviderMessage || null,
+      lastProviderMessage: publicActivationMessage(current.status, current.verificationState),
       lastProviderCheckedAt: current.lastProviderCheckedAt || null,
       processingHint: isSupportTokenFlow
         ? "Activation usually takes 5-15 minutes after token submission."
@@ -863,7 +880,7 @@ export const ordersService = {
       return {
         pending: Boolean(isPending && !isSuccess),
         success: Boolean(isSuccess),
-        message: String(current?.lastProviderMessage || ""),
+        message: publicActivationMessage(current?.status, current?.verificationState),
         task_id: String(current?.taskId || taskId),
       };
     }
@@ -886,7 +903,7 @@ export const ordersService = {
       return {
         pending: Boolean(isPending && !isSuccess),
         success: Boolean(isSuccess),
-        message: String(current?.lastProviderMessage || ""),
+        message: publicActivationMessage(current?.status, current?.verificationState),
         task_id: String(current?.taskId || taskId),
       };
     }
@@ -914,7 +931,7 @@ export const ordersService = {
     const isSuccess = current?.status === "success";
     const isPending = current?.status === "processing" || current?.verificationState === "pending";
     const responseTaskId = String(current?.taskId || payload.task_id || taskId);
-    const responseMessage = String(current?.lastProviderMessage || payload.message || "");
+    const responseMessage = publicActivationMessage(current?.status, current?.verificationState);
 
     return {
       pending: Boolean(isPending && !isSuccess),
@@ -1834,9 +1851,8 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     }
   }
   if (!createResult.ok) {
-    throw new AppError(String(createResult.message || "Activation start failed"), 502, {
+    throw new AppError("Не удалось запустить активацию автоматически. Повторите попытку или обратитесь в поддержку.", 502, {
       upstreamStatus: createResult.status || 0,
-      upstreamBody: String(createResult.body || "").slice(0, 2000),
       retries: createResult.tries,
     });
   }
