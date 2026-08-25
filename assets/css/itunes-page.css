@@ -51,7 +51,7 @@ html body.itunes-page-body:has(main.service-page[data-service-page="itunes"]) > 
   margin: 8px auto 0 !important;
 }
 
-html body.itunes-page-body:has(main.service-page[data-service-page="itunes"]) > header.is-scrolled :is(.nav, .nav-shell) {
+html body.itunes-page-body:has(main.service-page[data-service-page="itunes"]) > header.gptishka-canonical-header.is-scrolled > .nav.nav-shell {
   border-radius: 22px !important;
   background: rgba(38, 42, 49, 0.82) !important;
   box-shadow: 0 12px 36px rgba(8, 10, 14, 0.22) !important;

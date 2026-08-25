@@ -145,7 +145,7 @@ html body.reviews-hub-body .lang-current .arrow {
   color: rgba(255, 255, 255, 0.86) !important;
 }
 
-html body.reviews-hub-body header.is-scrolled :is(.nav, .nav-shell) {
+html body.reviews-hub-body header.gptishka-canonical-header.is-scrolled > .nav.nav-shell {
   border-radius: 22px !important;
   background: rgba(38, 42, 49, 0.82) !important;
   box-shadow: 0 12px 36px rgba(8, 10, 14, 0.22) !important;

@@ -670,7 +670,7 @@ html body.steam-topup-body:has(main.steam-topup-page) header :is(.nav, .nav-shel
   -webkit-backdrop-filter: none !important;
 }
 
-html body.steam-topup-body:has(main.steam-topup-page) header.is-scrolled :is(.nav, .nav-shell) {
+html body.steam-topup-body:has(main.steam-topup-page) header.gptishka-canonical-header.is-scrolled > .nav.nav-shell {
   border-radius: 22px !important;
   background: rgba(38, 42, 49, 0.82) !important;
   box-shadow: 0 12px 36px rgba(8, 10, 14, 0.22) !important;

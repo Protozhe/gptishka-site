@@ -124,7 +124,7 @@ html body.information-flat-body .lang-current {
   border-color: rgba(255, 255, 255, 0.11) !important;
 }
 
-html body.information-flat-body header.is-scrolled :is(.nav, .nav-shell) {
+html body.information-flat-body header.gptishka-canonical-header.is-scrolled > .nav.nav-shell {
   border-radius: 22px !important;
   background: rgba(38, 42, 49, 0.82) !important;
   box-shadow: 0 12px 36px rgba(8, 10, 14, 0.22) !important;

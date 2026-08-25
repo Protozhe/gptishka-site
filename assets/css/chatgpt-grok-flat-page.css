@@ -75,8 +75,8 @@ html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-
 }
 
 html body:has(main.service-page:is([data-service-page="chatgpt"], [data-service-page="grok"], [data-service-page="perplexity"], [data-service-page="gemini"], [data-service-page="suno"]))
-  header.is-scrolled
-  :is(.nav, .nav-shell) {
+  header.gptishka-canonical-header.is-scrolled
+  > .nav.nav-shell {
   border-radius: 22px !important;
   background: rgba(38, 42, 49, 0.82) !important;
   box-shadow: 0 12px 36px rgba(8, 10, 14, 0.22) !important;
