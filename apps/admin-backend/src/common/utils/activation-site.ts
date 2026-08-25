@@ -1,3 +1,10 @@
+const ACTIVATION_SITE_ALIASES = new Map([
+  // The old ChatGPT Go gateway was retired and now returns 404. Keep orders
+  // created before the provider migration usable by routing them to the
+  // current gateway, which determines Go/Plus from the CDK itself.
+  ["https://9977ai.vip/go.php", "https://vip.sxzfd.com"],
+]);
+
 export function normalizeActivationSiteUrl(value: unknown): string {
   const raw = String(value || "").trim();
   if (!raw) return "";
@@ -15,7 +22,7 @@ export function normalizeActivationSiteUrl(value: unknown): string {
   parsed.search = "";
 
   const normalized = parsed.toString().replace(/\/+$/, "");
-  return normalized || "";
+  return ACTIVATION_SITE_ALIASES.get(normalized) || normalized || "";
 }
 
 export function readActivationSiteUrlFromOrderDetails(orderDetails: unknown): string {

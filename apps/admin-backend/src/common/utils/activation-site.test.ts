@@ -8,7 +8,7 @@ import {
 
 test("normalizeActivationSiteUrl keeps origin and path but removes trailing slash", () => {
   assert.equal(normalizeActivationSiteUrl(" https://vip.sxzfd.com/ "), "https://vip.sxzfd.com");
-  assert.equal(normalizeActivationSiteUrl("https://9977ai.vip/go.php"), "https://9977ai.vip/go.php");
+  assert.equal(normalizeActivationSiteUrl("https://9977ai.vip/go.php"), "https://vip.sxzfd.com");
   assert.equal(normalizeActivationSiteUrl("https://aisub.vip///"), "https://aisub.vip");
 });
 
@@ -37,7 +37,7 @@ test("buildActivationSiteEndpointUrl resolves provider endpoints for roots and p
   );
   assert.equal(
     buildActivationSiteEndpointUrl("https://9977ai.vip/go.php", "api-verify.php"),
-    "https://9977ai.vip/api-verify.php"
+    "https://vip.sxzfd.com/api-verify.php"
   );
   assert.equal(
     buildActivationSiteEndpointUrl("https://example.com/recharge/", "api-verify.php"),

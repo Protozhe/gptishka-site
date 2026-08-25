@@ -2601,7 +2601,7 @@ async function startChongzhiTaskWithRetry(
   input: { cdk: string; deviceId: string; userCandidates: any[] },
   options?: { baseUrl?: string; sourceLabel?: string }
 ) {
-  const base = String(options?.baseUrl || env.ACTIVATION_CHONGZHI_BASE_URL || "https://chongzhi.pro")
+  const base = String(options?.baseUrl || env.ACTIVATION_CHONGZHI_BASE_URL || "https://vip.sxzfd.com")
     .trim()
     .replace(/\/+$/, "");
   const pageUrl = buildActivationSiteEndpointUrl(base, "");
@@ -2799,7 +2799,7 @@ function tryParseJson(raw: string) {
 }
 
 async function fetchChongzhiCodeStatus(cdk: string, activationSiteUrl?: string | null) {
-  const base = String(activationSiteUrl || env.ACTIVATION_CHONGZHI_BASE_URL || "https://chongzhi.pro")
+  const base = String(activationSiteUrl || env.ACTIVATION_CHONGZHI_BASE_URL || "https://vip.sxzfd.com")
     .trim()
     .replace(/\/+$/, "");
   try {

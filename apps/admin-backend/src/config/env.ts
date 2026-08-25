@@ -164,7 +164,7 @@ const envSchema = z.object({
   ACTIVATION_OUTSTOCK_MAX_RETRIES: z.coerce.number().int().min(1).max(120).default(40),
   ACTIVATION_OUTSTOCK_RETRY_DELAY_MS: z.coerce.number().int().min(500).max(10_000).default(2_000),
   ACTIVATION_PROVIDER: z.enum(["nitro", "chongzhi"]).default("nitro"),
-  ACTIVATION_CHONGZHI_BASE_URL: z.string().url().default("https://chongzhi.pro"),
+  ACTIVATION_CHONGZHI_BASE_URL: z.string().url().default("https://vip.sxzfd.com"),
   ACTIVATION_SUPPORT_BASE_URL: z.string().url().default("https://quickplus.vip/public/grok"),
   ACTIVATION_CLAUDE_MAX20X_BASE_URL: z.string().url().default("https://quickplus.vip/public/max20x"),
   ACTIVATION_GROK_1M_BASE_URL: z.string().url().default("https://vip.sxzfd.com/grok"),
