@@ -3282,6 +3282,24 @@ function initActivationResumeShortcut() {
     return !card || card.isActive !== false;
   }
 
+  async function syncStaticShowcaseServiceVisibility() {
+    const staticCards = Array.from(document.querySelectorAll("[data-showcase-service-key]"));
+    if (!staticCards.length) return;
+    try {
+      const payload = await fetchProductsPayload();
+      const serviceCards = Array.isArray(payload?.serviceCards) ? payload.serviceCards : [];
+      const visibility = new Map(
+        serviceCards.map(card => [normalizeAiServiceKey(card?.serviceKey), card?.isActive !== false])
+      );
+      staticCards.forEach(card => {
+        const key = normalizeAiServiceKey(card.getAttribute("data-showcase-service-key"));
+        card.hidden = visibility.get(key) === false;
+      });
+    } catch (_) {
+      // Keep static catalog cards as a fallback when the showcase API is unavailable.
+    }
+  }
+
   function getServiceCardValue(serviceCard, field, fallback) {
     if (
       isEnPage &&
@@ -6557,6 +6575,7 @@ function initActivationResumeShortcut() {
   clearLegacyCartArtifacts();
 
   loadPricingCards();
+  syncStaticShowcaseServiceVisibility();
   setupServicePageFilters();
   loadServicePage();
 

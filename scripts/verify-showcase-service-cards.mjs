@@ -19,6 +19,8 @@ const schemas = read("apps/admin-backend/src/modules/showcase/showcase.schemas.t
 const publicRoutes = read("apps/admin-backend/src/modules/products/public-products.routes.ts");
 const adminUi = read("apps/admin-ui/src/pages/ShowcasePage.tsx");
 const storefront = read("assets/js/app.js");
+const catalog = read("catalog/index.html");
+const aiCatalog = read("catalog/ai/index.html");
 
 assert(schema.includes("model ProductShowcaseServiceCard"), "Prisma must persist homepage service cards");
 assert(schemas.includes("showcaseServiceCardSchema"), "showcase service card API must validate input");
@@ -32,6 +34,9 @@ assert(publicRoutes.includes("serviceCards: serviceCardPayload"), "public showca
 assert(publicRoutes.includes("isActive: card.isActive !== false"), "public showcase payload must expose service card visibility");
 assert(storefront.includes("function getShowcaseServiceCardConfig(section, serviceKey)"), "storefront must resolve service card config");
 assert(storefront.includes("function isShowcaseServiceEnabled(section, serviceKey)"), "storefront must hide disabled service groups");
+assert(storefront.includes("function syncStaticShowcaseServiceVisibility()"), "static catalogs must follow service card visibility");
+assert(catalog.includes('data-showcase-service-key="suno"'), "catalog Suno card must be controlled by showcase visibility");
+assert(aiCatalog.includes('data-showcase-service-key="suno"'), "AI catalog Suno card must be controlled by showcase visibility");
 assert(storefront.includes("const serviceCard = getShowcaseServiceCardConfig(section, serviceKey);"), "AI directory card must read service card config");
 assert(storefront.includes("const serviceCard = getShowcaseServiceCardConfig(section, \"vpn\");"), "VPN directory card must read service card config");
 assert(adminUi.includes("type ShowcaseServiceCard"), "admin UI must type service cards");
