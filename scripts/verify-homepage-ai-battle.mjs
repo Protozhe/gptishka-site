@@ -63,7 +63,7 @@ assert.match(ecosystem, /AI_BATTLE_STATS_FILE:\s*"\/var\/lib\/gptishka-runtime\/
 assert.match(deploy, /install -d -m 0755 "\$RUNTIME_DIR"/);
 assert.match(deploy, /install -m 0644 "\$LEGACY_AI_BATTLE_STATS" "\$RUNTIME_AI_BATTLE_STATS"/);
 assert.ok(
-  deploy.indexOf('install -m 0644 "$LEGACY_AI_BATTLE_STATS" "$RUNTIME_AI_BATTLE_STATS"') < deploy.indexOf("git reset --hard origin/main"),
+  deploy.indexOf('install -m 0644 "$LEGACY_AI_BATTLE_STATS" "$RUNTIME_AI_BATTLE_STATS"') < deploy.indexOf('git reset --hard "origin/$DEPLOY_BRANCH"'),
   "The live counter must be preserved before Git resets tracked files.",
 );
 assert.match(index, /home-promo-slider\.js\?v=20260825-ai-battle-no-flash1/);

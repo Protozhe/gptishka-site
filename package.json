@@ -10,6 +10,7 @@
   "scripts": {
     "start": "node server.js",
     "start:storefront": "node server.js",
+    "verify:production": "node scripts/verify-production-release.mjs",
     "refresh:news": "node scripts/refresh-public-news.js",
     "verify:yandex-analytics": "node scripts/verify-yandex-attribution.mjs",
     "dev:admin:api": "npm run dev --workspace @gptishka/admin-backend",

@@ -6,9 +6,10 @@ trap '' HUP
 APP_DIR="/var/www/gptishka-new"
 ADMIN_ENV_FILE="$APP_DIR/apps/admin-backend/.env"
 RUNTIME_DIR="/var/lib/gptishka-runtime"
+DEPLOY_BRANCH="${DEPLOY_BRANCH:-production}"
 
 # Mutable application state must live outside the Git checkout: deployments
-# replace every tracked file with the version from origin/main.
+# replace every tracked file with the approved production branch.
 install -d -m 0755 "$RUNTIME_DIR"
 LEGACY_AI_BATTLE_STATS="$APP_DIR/apps/admin-backend/data/ai-battle-stats.json"
 RUNTIME_AI_BATTLE_STATS="$RUNTIME_DIR/ai-battle-stats.json"
@@ -19,8 +20,25 @@ fi
 
 cd "$APP_DIR"
 
-git fetch origin main
-git reset --hard origin/main
+git fetch origin "$DEPLOY_BRANCH"
+
+# Verify the candidate in an isolated tree before it can replace live files.
+VERIFY_DIR="$(mktemp -d /tmp/gptishka-release.XXXXXX)"
+cleanup_verify_dir() {
+  if [[ "$VERIFY_DIR" == /tmp/gptishka-release.* && -d "$VERIFY_DIR" ]]; then
+    rm -rf -- "$VERIFY_DIR"
+  fi
+}
+trap cleanup_verify_dir EXIT
+git archive "origin/$DEPLOY_BRANCH" | tar -x -C "$VERIFY_DIR"
+(
+  cd "$VERIFY_DIR"
+  node scripts/verify-production-release.mjs
+)
+cleanup_verify_dir
+trap - EXIT
+
+git reset --hard "origin/$DEPLOY_BRANCH"
 
 if [ -x node_modules/.bin/tsc ] && [ -x node_modules/.bin/vite ]; then
   echo "Using existing dependencies from the current lockfile"

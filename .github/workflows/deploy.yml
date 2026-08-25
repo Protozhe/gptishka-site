@@ -3,7 +3,7 @@ name: Deploy to Production
 on:
   push:
     branches:
-      - main
+      - production
   workflow_dispatch:
 
 concurrency:
@@ -11,7 +11,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out approved production candidate
+        uses: actions/checkout@v4
+        with:
+          ref: production
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run production regression checks
+        run: npm run verify:production
+
   deploy:
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - name: Deploy over SSH
@@ -25,4 +42,4 @@ jobs:
           script: |
             set -e
             cd /var/www/gptishka-new
-            bash ./deploy.sh
+            DEPLOY_BRANCH=production bash ./deploy.sh
