@@ -1458,7 +1458,7 @@
     const params = new URLSearchParams(window.location.search);
     const previewServiceKey = String(params.get('service') || '').trim().toLowerCase().replace(/[\s_-]+/g, '');
     const previewMode = ['1', 'true', 'yes'].includes(String(params.get('preview') || '').trim().toLowerCase())
-      && ['claude', 'grok', 'supergrok', 'perplexity', 'pplx'].includes(previewServiceKey);
+      && ['chatgptgo', 'chatgptplus', 'claude', 'grok', 'supergrok', 'perplexity', 'pplx'].includes(previewServiceKey);
     const orderId = previewMode
       ? `preview-${previewServiceKey}`
       : String(params.get('order_id') || params.get('orderId') || '').trim();
@@ -1842,6 +1842,8 @@
       else if (productFingerprint.includes('gemini') || productFingerprint.includes('google ai')) serviceName = 'Gemini Pro';
       else if (productFingerprint.includes('suno')) serviceName = 'Suno Premier';
       else if (productFingerprint.includes('supergrok') || productFingerprint.includes('grok')) serviceName = 'SuperGrok';
+      else if (productFingerprint.includes('chatgpt-go') || productFingerprint.includes('chatgpt go')) serviceName = 'ChatGPT GO';
+      else if (productFingerprint.includes('chatgpt-plus') || productFingerprint.includes('chatgpt plus')) serviceName = 'ChatGPT Plus';
       else if (productFingerprint.includes('chatgpt')) serviceName = 'ChatGPT';
       else if (productFingerprint.includes('steam') || productFingerprint.includes('mann co')) serviceName = 'пополнения Steam';
 
@@ -1941,6 +1943,18 @@
     function applyActivationPayloadMode(payload, deliveryMode) {
       const activationFlow = resolveSupportActivationFlow(payload);
       const forcedSupportFlow = resolveForcedSupportActivationFlow(payload);
+      const productKey = getActivationProductFingerprint(payload);
+      let chatGptPlanName = '';
+      if (productKey.includes('chatgpt-go') || productKey.includes('chatgpt go') || productKey.includes('chatgpt_go')) {
+        chatGptPlanName = 'ChatGPT GO';
+      } else if (productKey.includes('chatgpt-plus') || productKey.includes('chatgpt plus') || productKey.includes('chatgpt_plus')) {
+        chatGptPlanName = 'ChatGPT Plus';
+      }
+      if (chatGptPlanName) {
+        if (redeemTitleEl) redeemTitleEl.textContent = `Продлить / Активировать ${chatGptPlanName}`;
+        if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата подтверждена. Выполните последний шаг подключения подписки.';
+        document.title = `Продлить / Активировать ${chatGptPlanName} - GPTишка`;
+      }
       applyTokenFlowMode(
         deliveryMode === 'support' || Boolean(forcedSupportFlow),
         forcedSupportFlow || activationFlow
@@ -2023,6 +2037,14 @@
         ? 'grok'
         : (serviceKey === 'pplx' ? 'perplexity' : serviceKey);
       const configs = {
+        chatgptgo: {
+          name: 'ChatGPT GO',
+          tokenFlow: true,
+        },
+        chatgptplus: {
+          name: 'ChatGPT Plus',
+          tokenFlow: true,
+        },
         claude: {
           name: 'Claude',
           flow: SUPPORT_ACTIVATION_FLOW_CLAUDE,
@@ -2056,7 +2078,7 @@
         if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Безопасный предпросмотр страницы после успешной оплаты.';
         document.title = `Продлить / Активировать ${config.name} - GPTишка`;
       } else {
-        applyTokenFlowMode(true, config.flow);
+        applyTokenFlowMode(!config.tokenFlow, config.flow);
         hideVpnOffer(false);
         setStatus('pending', 'Предпросмотр: данные не отправляются, активация не запускается.', false);
       }

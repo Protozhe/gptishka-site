@@ -839,6 +839,10 @@
       statusEl.className = "status paid";
       statusEl.textContent = "Платёж подтверждён. Подготавливаем страницу активации.";
       setNextStep("Открываем активацию", `В реальном заказе переход к подключению ${service.name} произойдёт автоматически.`);
+      if (serviceKey === "chatgptgo" || serviceKey === "chatgptplus") {
+        tariffLinkEl.href = `/redeem-start.html?preview=1&service=${encodeURIComponent(serviceKey)}`;
+        tariffLinkEl.textContent = `Открыть активацию ${service.name}`;
+      }
     }
 
     async function checkBundleVpnAccess(id) {
