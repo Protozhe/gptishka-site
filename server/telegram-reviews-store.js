@@ -39,13 +39,16 @@ function extractTelegramReview(update, options = {}) {
     .replace(/\r/g, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
-  if (!text) return null;
+  if (!text || /^\/[a-z0-9_]+(?:@[a-z0-9_]+)?(?:\s|$)/i.test(text)) return null;
 
   const authorSource = message.from || message.sender_chat || {};
   const firstName = String(authorSource.first_name || authorSource.title || "").trim();
   const lastName = String(authorSource.last_name || "").trim();
   const maskedLastName = lastName ? `${lastName.slice(0, 1).toUpperCase()}.` : "";
-  const author = [firstName, maskedLastName].filter(Boolean).join(" ") || "Покупатель Telegram";
+  const isTechnicalGroupAuthor = !message.from || message.sender_chat || /^group$/i.test(firstName);
+  const author = isTechnicalGroupAuthor
+    ? "Покупатель Telegram"
+    : [firstName, maskedLastName].filter(Boolean).join(" ") || "Покупатель Telegram";
   const messageId = Number(message.message_id);
   const channel = actualUsername || expectedUsername;
   const sourceId = String(options.sourceId || DEFAULT_SOURCE_ID);
@@ -102,7 +105,11 @@ async function writeRuntimeReviews(filePath, payload) {
 
 async function upsertRuntimeReview(filePath, review) {
   const payload = await readRuntimeReviews(filePath);
-  const items = payload.items.filter(item => item.id !== review.id);
+  const comparableText = String(review.text || "").trim().toLowerCase();
+  const items = payload.items.filter(item => {
+    if (item.id === review.id) return false;
+    return String(item.text || "").trim().toLowerCase() !== comparableText;
+  });
   items.unshift(review);
   items.sort((a, b) => Number(b.sortOrder || 0) - Number(a.sortOrder || 0));
   return writeRuntimeReviews(filePath, {
@@ -160,5 +167,4 @@ module.exports = {
   readRuntimeReviews,
   upsertRuntimeReview,
 };
-
 

@@ -26,13 +26,22 @@ async function main() {
   assert.strictEqual(review.author, "Иван И.");
   assert.strictEqual(review.url, "https://t.me/otziviaii/42");
   assert.strictEqual(extractTelegramReview(update, { groupUsername: "another_group" }), null);
+  assert.strictEqual(
+    extractTelegramReview(
+      { message: { ...update.message, text: "/start@gptishkamyadminiibot reviews" } },
+      { groupUsername: "otziviaii" }
+    ),
+    null
+  );
 
   const temporaryDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "gptishka-reviews-"));
   const runtimePath = path.join(temporaryDir, "telegram-reviews.json");
   await upsertRuntimeReview(runtimePath, review);
   await upsertRuntimeReview(runtimePath, { ...review, text: "Обновлённый отзыв" });
+  await upsertRuntimeReview(runtimePath, { ...review, id: "duplicate-id", text: "Обновлённый отзыв" });
   const stored = await readRuntimeReviews(runtimePath);
   assert.strictEqual(stored.items.length, 1);
+  assert.strictEqual(stored.items[0].id, "duplicate-id");
   assert.strictEqual(stored.items[0].text, "Обновлённый отзыв");
 
   const merged = mergeRuntimeReviews(
@@ -56,5 +65,4 @@ main().catch(error => {
   console.error(error);
   process.exitCode = 1;
 });
-
 
