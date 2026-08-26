@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
+const { execFile } = require("child_process");
 const sqlite3 = require("sqlite3").verbose();
 const helmet = require("helmet");
 const compression = require("compression");
@@ -108,6 +109,15 @@ const dataDir = path.join(__dirname, "data");
 const dbPath = path.join(dataDir, "stats.sqlite");
 const PUBLIC_NEWS_CACHE_PATH = path.join(dataDir, "public-news.json");
 const PUBLIC_REVIEWS_CACHE_PATH = path.join(dataDir, "public-reviews.json");
+const PUBLIC_REVIEWS_REFRESH_SCRIPT = path.join(__dirname, "scripts", "refresh-public-reviews.js");
+const PUBLIC_REVIEWS_REFRESH_INTERVAL_MS = Math.max(
+  5 * 60 * 1000,
+  Number(process.env.PUBLIC_REVIEWS_REFRESH_INTERVAL_MS || 8 * 60 * 60 * 1000)
+);
+const PUBLIC_REVIEWS_REFRESH_START_DELAY_MS = Math.max(
+  1000,
+  Number(process.env.PUBLIC_REVIEWS_REFRESH_START_DELAY_MS || 15 * 1000)
+);
 const TELEGRAM_REVIEWS_RUNTIME_PATH = String(
   process.env.TELEGRAM_REVIEWS_RUNTIME_PATH ||
     (IS_PRODUCTION
@@ -133,6 +143,8 @@ let telegramReviewsWritePromise = Promise.resolve();
 let telegramReviewsPoller = null;
 let publicNewsCache = null;
 let publicNewsRefreshPromise = null;
+let publicReviewsRefreshPromise = null;
+let publicReviewsRefreshTimer = null;
 let legacyProductModalBackupMap = new Map();
 let storefrontProductsFallbackBase = null;
 let storefrontProductsFallbackBaseLoadedAt = 0;
@@ -2485,6 +2497,58 @@ function createApp() {
   return app;
 }
 
+function refreshPublicReviewsInBackground() {
+  if (publicReviewsRefreshPromise) return publicReviewsRefreshPromise;
+
+  publicReviewsRefreshPromise = new Promise(resolve => {
+    execFile(
+      process.execPath,
+      [PUBLIC_REVIEWS_REFRESH_SCRIPT],
+      {
+        cwd: __dirname,
+        env: process.env,
+        timeout: 2 * 60 * 1000,
+        windowsHide: true,
+      },
+      (error, stdout, stderr) => {
+        if (error) {
+          logError("Public reviews background refresh failed", error);
+          if (stderr) console.error(String(stderr).trim());
+        } else if (stdout) {
+          console.log(String(stdout).trim());
+        }
+        resolve();
+      }
+    );
+  }).finally(() => {
+    publicReviewsRefreshPromise = null;
+  });
+
+  return publicReviewsRefreshPromise;
+}
+
+function startPublicReviewsRefreshSchedule(server) {
+  const initialTimer = setTimeout(() => {
+    refreshPublicReviewsInBackground().catch(error => {
+      logError("Initial public reviews refresh failed", error);
+    });
+  }, PUBLIC_REVIEWS_REFRESH_START_DELAY_MS);
+  initialTimer.unref?.();
+
+  publicReviewsRefreshTimer = setInterval(() => {
+    refreshPublicReviewsInBackground().catch(error => {
+      logError("Scheduled public reviews refresh failed", error);
+    });
+  }, PUBLIC_REVIEWS_REFRESH_INTERVAL_MS);
+  publicReviewsRefreshTimer.unref?.();
+
+  server.once("close", () => {
+    clearTimeout(initialTimer);
+    clearInterval(publicReviewsRefreshTimer);
+    publicReviewsRefreshTimer = null;
+  });
+}
+
 async function startServer(port = PORT) {
   db = createDb();
   await initDb();
@@ -2496,6 +2560,7 @@ async function startServer(port = PORT) {
 
   return new Promise((resolve, reject) => {
     const server = app.listen(port, HOST, () => {
+      startPublicReviewsRefreshSchedule(server);
       if (TELEGRAM_REVIEWS_BOT_TOKEN) {
         telegramReviewsPoller = createTelegramReviewsPoller({
           token: TELEGRAM_REVIEWS_BOT_TOKEN,
