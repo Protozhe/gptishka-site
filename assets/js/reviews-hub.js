@@ -51,6 +51,7 @@
     if (source.status === "ok") return "Источник доступен";
     if (source.status === "stale") return "Показана сохранённая копия";
     if (source.status === "feed-not-public") return "Ожидает публичную ленту";
+    if (source.status === "awaiting-bot-messages") return "Бот подключён, ожидает новые отзывы";
     return "Источник временно недоступен";
   }
 

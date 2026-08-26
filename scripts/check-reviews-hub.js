@@ -25,6 +25,7 @@ assert.match(css, /grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(280px,\s
 assert.match(css, /@media \(max-width: 760px\)/);
 assert.match(client, /textContent\s*=/);
 assert.match(client, /fetch\("\/api\/public\/reviews/);
+assert.match(client, /Бот подключён, ожидает новые отзывы/);
 assert.doesNotMatch(client, /\.innerHTML\s*=/);
 assert.match(server, /app\.get\("\/api\/public\/reviews"/);
 assert.match(server, /app\.post\("\/api\/reviews\/telegram\/webhook"/);
