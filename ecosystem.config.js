@@ -26,6 +26,7 @@ module.exports = {
         HOST: "127.0.0.1",
         BIND_HOST: "127.0.0.1",
         AI_BATTLE_STATS_FILE: "/var/lib/gptishka-runtime/ai-battle-stats.json",
+        ACTIVATION_CHONGZHI_IP: process.env.ACTIVATION_CHONGZHI_IP || "172.105.209.180",
       },
       max_memory_restart: "350M",
       autorestart: true,

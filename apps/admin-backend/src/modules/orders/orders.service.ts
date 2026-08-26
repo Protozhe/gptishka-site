@@ -2448,6 +2448,9 @@ async function callChongzhiJsonApi(
   data: Record<string, unknown>
 ) {
   const apiUrl = buildActivationSiteEndpointUrl(base, "api.php") || `${base.replace(/\/+$/, "")}/api.php`;
+  const parsedApiUrl = new URL(apiUrl);
+  const configuredIp = String(env.ACTIVATION_CHONGZHI_IP || "").trim();
+  const directIp = configuredIp && parsedApiUrl.hostname === "vip.sxzfd.com" ? configuredIp : "";
   const body = JSON.stringify({ action, ...data });
 
   // Node's built-in fetch (undici) can time out while connecting to this
@@ -2456,10 +2459,15 @@ async function callChongzhiJsonApi(
   // provider has received the request.
   return new Promise<{ status: number; raw: string; json: any }>((resolve, reject) => {
     const request = https.request(
-      apiUrl,
       {
+        protocol: parsedApiUrl.protocol,
+        hostname: directIp || parsedApiUrl.hostname,
+        port: parsedApiUrl.port || 443,
+        path: `${parsedApiUrl.pathname}${parsedApiUrl.search}`,
+        servername: parsedApiUrl.hostname,
         method: "POST",
         headers: {
+          Host: parsedApiUrl.host,
           Accept: "application/json, text/plain, */*",
           "Content-Type": "application/json",
           "Content-Length": Buffer.byteLength(body),
