@@ -41,6 +41,16 @@ assert.ok(data.sources.some(source => source.id === "funpay-19372031" && source.
 assert.ok(data.sources.some(source => source.id === "funpay-162964" && source.status === "ok"));
 assert.ok(data.sources.some(source => source.id === "funpay-162964" && source.hidden === true));
 assert.ok(data.sources.some(source => source.id === "telegram-otziviaii"));
+assert.ok(
+  data.sources.some(
+    source =>
+      source.id === "playerok-vivaseller" &&
+      ["ok", "stale"].includes(source.status) &&
+      source.total === 3 &&
+      source.visibleItems === 2
+  )
+);
+assert.ok(data.items.some(item => item.sourceId === "playerok-vivaseller" && item.text));
 assert.ok(data.items.every(item => item.id && item.text));
 assert.ok(
   !data.items.some(
@@ -56,6 +66,8 @@ assert.ok(
 );
 assert.strictEqual(new Set(data.items.map(item => item.id)).size, data.items.length);
 assert.doesNotMatch(JSON.stringify(data), /Adelka999/);
+assert.doesNotMatch(JSON.stringify(data), /Отзывы GPTishka/);
+assert.doesNotMatch(read(path.join("server", "telegram-reviews-store.js")), /Отзывы GPTishka/);
 
 console.log(
   `[reviews-check] ${data.items.length} visible reviews, ${data.totalReviews} total, ` +

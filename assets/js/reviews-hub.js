@@ -98,7 +98,9 @@
       var iconImage = create("img", "reviews-source__logo");
       iconImage.src = source.type === "telegram"
         ? "/assets/img/telegram.png"
-        : "https://funpay.com/favicon.ico";
+        : source.type === "playerok"
+          ? "https://playerok.com/favicon.ico"
+          : "https://funpay.com/favicon.ico";
       iconImage.alt = "";
       iconImage.loading = "lazy";
       iconImage.decoding = "async";

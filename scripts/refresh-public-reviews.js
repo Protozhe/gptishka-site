@@ -20,6 +20,13 @@ const SOURCES = [
     url: "https://funpay.com/users/19372031/#reviews",
   },
   {
+    id: "playerok-vivaseller",
+    type: "playerok",
+    username: "Vivaseller",
+    label: "Playerok",
+    url: "https://playerok.com/profile/Vivaseller/reviews",
+  },
+  {
     id: "funpay-162964",
     type: "funpay",
     profileId: "162964",
@@ -32,8 +39,71 @@ const SOURCES = [
     id: "telegram-otziviaii",
     type: "telegram",
     channel: "otziviaii",
-    label: "Отзывы GPTishka",
+    label: "Telegram",
     url: "https://t.me/otziviaii",
+  },
+];
+
+const PLAYEROK_USER_QUERY = `
+  query user($username: String) {
+    user(username: $username) {
+      ...RegularUserProfile
+    }
+  }
+  fragment RegularUserProfile on UserProfile {
+    ...RegularUser
+    ...RegularUserFragment
+  }
+  fragment RegularUser on User {
+    id
+    username
+    profile { id username rating testimonialCounter }
+  }
+  fragment RegularUserFragment on UserFragment {
+    id
+    username
+    rating
+    testimonialCounter
+  }
+`;
+
+const PLAYEROK_TESTIMONIALS_QUERY = `
+  query testimonials(
+    $pagination: Pagination,
+    $sort: Sort,
+    $filter: TestimonialFilter!,
+    $hasSupportAccess: Boolean!
+  ) {
+    testimonials(pagination: $pagination, sort: $sort, filter: $filter) {
+      edges {
+        cursor
+        node {
+          id @include(if: $hasSupportAccess)
+          text
+          rating
+          createdAt
+        }
+      }
+      pageInfo { endCursor hasNextPage }
+      totalCount
+    }
+  }
+`;
+
+const PLAYEROK_SEED_REVIEWS = [
+  {
+    author: "Amirka808",
+    text: "Все четко. Качественно. Быстро. Спасибо вам огромное. Лучший",
+    detail: "ChatGPT Plus",
+    date: "2026-08-25T19:52:51.560Z",
+    rating: 5,
+  },
+  {
+    author: "Rivelfox",
+    text: "Все отлично, быстрый ответ. Работает как часы, рекомендую",
+    detail: "ChatGPT Go",
+    date: "2026-08-20T19:20:50.523Z",
+    rating: 5,
   },
 ];
 
@@ -97,6 +167,69 @@ async function fetchText(url) {
       throw new Error(`${url} returned HTTP ${response.status}`);
     }
     return response.text();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function fetchPlayerokSessionCookie(url) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": USER_AGENT,
+        Accept: "text/html,application/xhtml+xml",
+        "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.7",
+      },
+      redirect: "follow",
+      signal: controller.signal,
+    });
+    if (!response.ok) throw new Error(`Playerok profile returned HTTP ${response.status}`);
+    await response.arrayBuffer();
+    const setCookies = typeof response.headers.getSetCookie === "function"
+      ? response.headers.getSetCookie()
+      : [response.headers.get("set-cookie")].filter(Boolean);
+    return setCookies
+      .map(value => String(value).split(";", 1)[0])
+      .filter(Boolean)
+      .join("; ");
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function fetchPlayerokGraphql(query, variables, referer, cookie) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const operationName = String(query).match(/\bquery\s+([A-Za-z0-9_]+)/)?.[1] || "";
+    const response = await fetch("https://playerok.com/graphql", {
+      method: "POST",
+      headers: {
+        "User-Agent": USER_AGENT,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.7",
+        Origin: "https://playerok.com",
+        Referer: referer,
+        ...(operationName ? { "X-Apollo-Operation-Name": operationName } : {}),
+        ...(cookie ? { Cookie: cookie } : {}),
+      },
+      body: JSON.stringify({ operationName, query, variables }),
+      signal: controller.signal,
+    });
+    const responseBody = await response.text();
+    if (!response.ok) {
+      throw new Error(
+        `Playerok GraphQL returned HTTP ${response.status}: ${plainText(responseBody).slice(0, 180)}`
+      );
+    }
+    const payload = JSON.parse(responseBody);
+    if (Array.isArray(payload?.errors) && payload.errors.length) {
+      throw new Error(`Playerok GraphQL: ${payload.errors[0]?.message || "unknown error"}`);
+    }
+    return payload?.data || {};
   } finally {
     clearTimeout(timeout);
   }
@@ -205,6 +338,100 @@ function parseTelegramPublicFeed(html, source) {
   };
 }
 
+async function fetchPlayerokProfile(source) {
+  const cookie = await fetchPlayerokSessionCookie(source.url);
+  const userData = await fetchPlayerokGraphql(
+    PLAYEROK_USER_QUERY,
+    { username: source.username },
+    source.url,
+    cookie
+  );
+  const profile = userData?.user?.profile || userData?.user;
+  if (!profile?.id) throw new Error("Playerok profile was not found");
+
+  const testimonialData = await fetchPlayerokGraphql(
+    PLAYEROK_TESTIMONIALS_QUERY,
+    {
+      pagination: { first: 50 },
+      sort: { direction: "DESC", field: "createdAt" },
+      filter: {
+        userId: profile.id,
+        hasComment: false,
+        status: ["APPROVED"],
+      },
+      hasSupportAccess: false,
+    },
+    source.url,
+    cookie
+  );
+  const testimonials = testimonialData?.testimonials;
+  if (!testimonials || !Array.isArray(testimonials.edges)) {
+    throw new Error("Playerok testimonials were not returned");
+  }
+
+  const items = testimonials.edges.flatMap(edge => {
+    const node = edge?.node || {};
+    const text = plainText(node.text);
+    if (!text) return [];
+    const date = String(node.createdAt || "");
+    return [{
+      id: stableId(source.id, edge?.cursor || "", date, text),
+      sourceId: source.id,
+      sourceType: source.type,
+      sourceLabel: source.label,
+      author: "Покупатель Playerok",
+      text,
+      detail: "Отзыв после покупки на Playerok",
+      date,
+      dateLabel: date ? "" : "Публичный отзыв",
+      rating: Number(node.rating) || 5,
+      url: source.url,
+      sortOrder: date ? Date.parse(date) : 0,
+    }];
+  });
+
+  const total = Number(testimonials.totalCount ?? profile.testimonialCounter ?? items.length) || items.length;
+  return {
+    source: {
+      ...source,
+      total,
+      rating: Number(profile.rating) || (items.length ? 5 : null),
+      available: true,
+      status: "ok",
+      visibleItems: items.length,
+    },
+    items,
+  };
+}
+
+function playerokSeed(source) {
+  const items = PLAYEROK_SEED_REVIEWS.map(review => ({
+    id: stableId(source.id, review.date, review.text),
+    sourceId: source.id,
+    sourceType: source.type,
+    sourceLabel: source.label,
+    author: review.author,
+    text: review.text,
+    detail: review.detail,
+    date: review.date,
+    dateLabel: "",
+    rating: review.rating,
+    url: source.url,
+    sortOrder: Date.parse(review.date),
+  }));
+  return {
+    source: {
+      ...source,
+      total: 3,
+      rating: 5,
+      available: true,
+      status: "stale",
+      visibleItems: items.length,
+    },
+    items,
+  };
+}
+
 function loadPrevious() {
   try {
     return JSON.parse(fs.readFileSync(OUTPUT_PATH, "utf8"));
@@ -234,18 +461,26 @@ async function collectSource(source, previous) {
       const html = await fetchText(`https://t.me/s/${source.channel}`);
       return parseTelegramPublicFeed(html, source);
     }
+    if (source.type === "playerok") {
+      return await fetchPlayerokProfile(source);
+    }
     throw new Error(`Unsupported source type: ${source.type}`);
   } catch (error) {
     const cached = previousForSource(previous, source.id);
+    const fallback = cached.items.length
+      ? cached
+      : source.type === "playerok"
+        ? playerokSeed(source)
+        : cached;
     return {
       source: {
         ...source,
-        ...(cached.source || {}),
-        available: cached.items.length > 0,
-        status: cached.items.length ? "stale" : "unavailable",
+        ...(fallback.source || {}),
+        available: fallback.items.length > 0,
+        status: fallback.items.length ? "stale" : "unavailable",
         error: String(error?.message || error),
       },
-      items: cached.items,
+      items: fallback.items,
     };
   }
 }
@@ -280,7 +515,6 @@ async function main() {
     fetchedAt: new Date().toISOString(),
     refreshIntervalHours: 8,
     totalReviews: sources
-      .filter(source => source.type === "funpay")
       .reduce((sum, source) => sum + Number(source.total || 0), 0),
     sources,
     items,

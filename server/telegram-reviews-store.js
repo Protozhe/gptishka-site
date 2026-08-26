@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 const DEFAULT_SOURCE_ID = "telegram-otziviaii";
-const DEFAULT_SOURCE_LABEL = "Отзывы GPTishka";
+const DEFAULT_SOURCE_LABEL = "Telegram";
 const MAX_STORED_REVIEWS = 500;
 
 function normalizeUsername(value) {
@@ -167,4 +167,3 @@ module.exports = {
   readRuntimeReviews,
   upsertRuntimeReview,
 };
-
