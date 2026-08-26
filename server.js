@@ -9,6 +9,12 @@ const {
   cacheTelegramFeedMedia,
   fetchTelegramPublicFeed,
 } = require("./scripts/telegram-public-feed");
+const {
+  extractTelegramReview,
+  mergeRuntimeReviews,
+  readRuntimeReviews,
+  upsertRuntimeReview,
+} = require("./server/telegram-reviews-store");
 require("dotenv").config();
 
 const PORT = Number(process.env.PORT || 4000);
@@ -52,6 +58,11 @@ const TELEGRAM_REVIEWS_HINT_WINDOW = Number(process.env.TELEGRAM_REVIEWS_HINT_WI
 const TELEGRAM_REVIEWS_TOP_STEP = Number(process.env.TELEGRAM_REVIEWS_TOP_STEP || 20);
 const TELEGRAM_REVIEWS_FETCH_TIMEOUT_MS = Number(process.env.TELEGRAM_REVIEWS_FETCH_TIMEOUT_MS || 2500);
 const TELEGRAM_REVIEWS_REFRESH_TIMEOUT_MS = Number(process.env.TELEGRAM_REVIEWS_REFRESH_TIMEOUT_MS || 9000);
+const TELEGRAM_REVIEWS_GROUP_USERNAME = String(
+  process.env.TELEGRAM_REVIEWS_GROUP_USERNAME || "otziviaii"
+).trim().replace(/^@/, "").toLowerCase();
+const TELEGRAM_REVIEWS_GROUP_CHAT_ID = String(process.env.TELEGRAM_REVIEWS_GROUP_CHAT_ID || "").trim();
+const TELEGRAM_REVIEWS_WEBHOOK_SECRET = String(process.env.TELEGRAM_REVIEWS_WEBHOOK_SECRET || "").trim();
 const TELEGRAM_NEWS_CHANNEL_RAW = String(process.env.TELEGRAM_NEWS_CHANNEL || "aimarket_gpt").trim();
 const TELEGRAM_NEWS_CHANNEL = /^[a-zA-Z0-9_]{5,64}$/.test(TELEGRAM_NEWS_CHANNEL_RAW)
   ? TELEGRAM_NEWS_CHANNEL_RAW
@@ -95,6 +106,12 @@ const dataDir = path.join(__dirname, "data");
 const dbPath = path.join(dataDir, "stats.sqlite");
 const PUBLIC_NEWS_CACHE_PATH = path.join(dataDir, "public-news.json");
 const PUBLIC_REVIEWS_CACHE_PATH = path.join(dataDir, "public-reviews.json");
+const TELEGRAM_REVIEWS_RUNTIME_PATH = String(
+  process.env.TELEGRAM_REVIEWS_RUNTIME_PATH ||
+    (IS_PRODUCTION
+      ? "/var/lib/gptishka-runtime/telegram-reviews.json"
+      : path.join(dataDir, "telegram-reviews.runtime.json"))
+).trim();
 const PUBLIC_NEWS_MEDIA_DIR = path.join(__dirname, "assets", "img", "news");
 const LEGACY_PRODUCT_MODAL_BACKUP_PATH = path.join(__dirname, "_tmp_products_ru.json");
 const STOREFRONT_PRODUCTS_FALLBACK_PATH = path.join(__dirname, "_tmp_products_ru.json");
@@ -110,6 +127,7 @@ let telegramReviewsCache = {
   items: [],
 };
 let telegramReviewsRefreshPromise = null;
+let telegramReviewsWritePromise = Promise.resolve();
 let publicNewsCache = null;
 let publicNewsRefreshPromise = null;
 let legacyProductModalBackupMap = new Map();
@@ -2144,17 +2162,48 @@ function createApp() {
     }
   });
 
+  app.post("/api/reviews/telegram/webhook", async (req, res) => {
+    if (!TELEGRAM_REVIEWS_WEBHOOK_SECRET) {
+      return res.status(503).json({ error: "Telegram reviews webhook is not configured" });
+    }
+    const incomingSecret = String(req.get("X-Telegram-Bot-Api-Secret-Token") || "").trim();
+    if (!incomingSecret || incomingSecret !== TELEGRAM_REVIEWS_WEBHOOK_SECRET) {
+      return res.status(401).json({ error: "Invalid webhook secret" });
+    }
+
+    const review = extractTelegramReview(req.body, {
+      groupUsername: TELEGRAM_REVIEWS_GROUP_USERNAME,
+      groupChatId: TELEGRAM_REVIEWS_GROUP_CHAT_ID,
+    });
+    if (!review) return res.json({ ok: true, saved: false });
+
+    try {
+      telegramReviewsWritePromise = telegramReviewsWritePromise
+        .catch(() => undefined)
+        .then(() => upsertRuntimeReview(TELEGRAM_REVIEWS_RUNTIME_PATH, review));
+      await telegramReviewsWritePromise;
+      return res.json({ ok: true, saved: true });
+    } catch (error) {
+      logError("Telegram review persistence failed", error);
+      return res.status(500).json({ error: "Review was not saved" });
+    }
+  });
+
   app.get("/api/public/reviews", async (_req, res) => {
     try {
       const payload = JSON.parse(await fs.promises.readFile(PUBLIC_REVIEWS_CACHE_PATH, "utf8"));
       if (!Array.isArray(payload?.sources) || !Array.isArray(payload?.items)) {
         throw new Error("Public reviews cache is invalid");
       }
+      const runtimeReviews = await readRuntimeReviews(TELEGRAM_REVIEWS_RUNTIME_PATH);
+      const mergedPayload = mergeRuntimeReviews(payload, runtimeReviews, {
+        groupUsername: TELEGRAM_REVIEWS_GROUP_USERNAME,
+      });
       res.set(
         "Cache-Control",
-        "public, max-age=300, stale-while-revalidate=3600, stale-if-error=86400"
+        "public, max-age=60, stale-while-revalidate=300, stale-if-error=86400"
       );
-      return res.json(payload);
+      return res.json(mergedPayload);
     } catch (error) {
       logError("Public reviews request failed", error);
       return res.status(503).json({
