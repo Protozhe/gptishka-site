@@ -23,7 +23,8 @@ const SOURCES = [
     id: "playerok-vivaseller",
     type: "playerok",
     username: "Vivaseller",
-    label: "Playerok",
+    label: "Публичные отзывы",
+    hidden: true,
     url: "https://playerok.com/profile/Vivaseller/reviews",
   },
   {
@@ -220,6 +221,18 @@ function resolveApolloReference(state, value) {
   return value.__ref ? state[value.__ref] : value;
 }
 
+function playerokProductLabel(value) {
+  const productName = plainText(value).toLowerCase();
+  if (/чатгпт|chatgpt|cgpt/.test(productName) && /плюс|plus/.test(productName)) {
+    return "ChatGPT Plus — 1 месяц";
+  }
+  if (/чатгпт|chatgpt|cgpt/.test(productName) && /(?:^|\s|\\)го(?:\s|$)|\bgo\b/.test(productName)) {
+    return "ChatGPT Go — 1 месяц";
+  }
+  if (/супергрок|supergrok/.test(productName)) return "SuperGrok — 1 месяц";
+  return "Цифровая подписка";
+}
+
 function parsePlayerokRenderedProfile(html, source) {
   const nextDataRaw = String(html || "").match(
     /<script[^>]+id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i
@@ -250,12 +263,12 @@ function parsePlayerokRenderedProfile(html, source) {
     const deal = resolveApolloReference(state, node?.deal);
     const product = resolveApolloReference(state, deal?.item);
     const date = String(node?.createdAt || "");
-    const productName = plainText(product?.name).slice(0, 180);
+    const productName = playerokProductLabel(product?.name);
     return [{
       id: stableId(source.id, node?.id || edge?.cursor || "", date, text),
       sourceId: source.id,
       sourceType: source.type,
-      sourceLabel: source.label,
+      sourceLabel: "Проверенный отзыв",
       author: plainText(creator?.username) || "Покупатель Playerok",
       text,
       detail: productName || "Отзыв после покупки на Playerok",

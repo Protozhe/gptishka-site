@@ -53,6 +53,23 @@ assert.ok(
   )
 );
 assert.ok(data.items.some(item => item.sourceId === "playerok-vivaseller" && item.text));
+assert.ok(
+  data.sources.some(
+    source =>
+      source.id === "playerok-vivaseller" &&
+      source.hidden === true &&
+      source.label === "Публичные отзывы"
+  )
+);
+assert.ok(
+  data.items
+    .filter(item => item.sourceId === "playerok-vivaseller")
+    .every(
+      item =>
+        item.sourceLabel === "Проверенный отзыв" &&
+        !/playerok/i.test(String(item.detail || ""))
+    )
+);
 assert.ok(data.items.every(item => item.id && item.text));
 assert.ok(
   !data.items.some(
