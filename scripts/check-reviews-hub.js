@@ -30,6 +30,7 @@ assert.doesNotMatch(client, /\.innerHTML\s*=/);
 assert.match(server, /app\.get\("\/api\/public\/reviews"/);
 assert.match(server, /app\.post\("\/api\/reviews\/telegram\/webhook"/);
 assert.match(server, /mergeRuntimeReviews/);
+assert.match(server, /createTelegramReviewsPoller/);
 assert.match(server, /app\.get\(\["\/app", "\/app\/"\], sendDirectoryIndex\("app"\)\)/);
 
 assert.strictEqual(data.version, 1);

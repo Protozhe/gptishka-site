@@ -15,6 +15,7 @@ const {
   readRuntimeReviews,
   upsertRuntimeReview,
 } = require("./server/telegram-reviews-store");
+const { createTelegramReviewsPoller } = require("./server/telegram-reviews-poller");
 require("dotenv").config();
 
 const PORT = Number(process.env.PORT || 4000);
@@ -63,6 +64,7 @@ const TELEGRAM_REVIEWS_GROUP_USERNAME = String(
 ).trim().replace(/^@/, "").toLowerCase();
 const TELEGRAM_REVIEWS_GROUP_CHAT_ID = String(process.env.TELEGRAM_REVIEWS_GROUP_CHAT_ID || "").trim();
 const TELEGRAM_REVIEWS_WEBHOOK_SECRET = String(process.env.TELEGRAM_REVIEWS_WEBHOOK_SECRET || "").trim();
+const TELEGRAM_REVIEWS_BOT_TOKEN = String(process.env.TELEGRAM_REVIEWS_BOT_TOKEN || "").trim();
 const TELEGRAM_NEWS_CHANNEL_RAW = String(process.env.TELEGRAM_NEWS_CHANNEL || "aimarket_gpt").trim();
 const TELEGRAM_NEWS_CHANNEL = /^[a-zA-Z0-9_]{5,64}$/.test(TELEGRAM_NEWS_CHANNEL_RAW)
   ? TELEGRAM_NEWS_CHANNEL_RAW
@@ -128,6 +130,7 @@ let telegramReviewsCache = {
 };
 let telegramReviewsRefreshPromise = null;
 let telegramReviewsWritePromise = Promise.resolve();
+let telegramReviewsPoller = null;
 let publicNewsCache = null;
 let publicNewsRefreshPromise = null;
 let legacyProductModalBackupMap = new Map();
@@ -2492,7 +2495,30 @@ async function startServer(port = PORT) {
   const app = createApp();
 
   return new Promise((resolve, reject) => {
-    const server = app.listen(port, HOST, () => resolve(server));
+    const server = app.listen(port, HOST, () => {
+      if (TELEGRAM_REVIEWS_BOT_TOKEN) {
+        telegramReviewsPoller = createTelegramReviewsPoller({
+          token: TELEGRAM_REVIEWS_BOT_TOKEN,
+          logger: console,
+          handleUpdate: async update => {
+            const review = extractTelegramReview(update, {
+              groupUsername: TELEGRAM_REVIEWS_GROUP_USERNAME,
+              groupChatId: TELEGRAM_REVIEWS_GROUP_CHAT_ID,
+            });
+            if (!review) return;
+            telegramReviewsWritePromise = telegramReviewsWritePromise
+              .catch(() => undefined)
+              .then(() => upsertRuntimeReview(TELEGRAM_REVIEWS_RUNTIME_PATH, review));
+            await telegramReviewsWritePromise;
+          },
+        });
+        telegramReviewsPoller.run().catch(error => {
+          logError("Telegram reviews polling stopped", error);
+        });
+        server.once("close", () => telegramReviewsPoller?.stop());
+      }
+      resolve(server);
+    });
     server.once("error", reject);
   });
 }
