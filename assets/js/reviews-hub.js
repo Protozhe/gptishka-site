@@ -119,17 +119,7 @@
 
   function renderFilters(data) {
     elements.filters.replaceChildren();
-    var options = [{ id: "all", label: "Все отзывы" }].concat(
-      data.sources
-        .filter(function (source) {
-          return !source.hidden && String(source.label || "").trim().toLowerCase() !== "reznikshop" && data.items.some(function (item) {
-            return item.sourceId === source.id;
-          });
-        })
-        .map(function (source) {
-          return { id: source.id, label: source.label };
-        })
-    );
+    var options = [{ id: "all", label: "Все отзывы" }];
 
     options.forEach(function (option) {
       var button = create("button", "reviews-filter", option.label);
