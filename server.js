@@ -114,10 +114,6 @@ const PUBLIC_REVIEWS_REFRESH_INTERVAL_MS = Math.max(
   5 * 60 * 1000,
   Number(process.env.PUBLIC_REVIEWS_REFRESH_INTERVAL_MS || 8 * 60 * 60 * 1000)
 );
-const PUBLIC_REVIEWS_REFRESH_START_DELAY_MS = Math.max(
-  1000,
-  Number(process.env.PUBLIC_REVIEWS_REFRESH_START_DELAY_MS || 15 * 1000)
-);
 const TELEGRAM_REVIEWS_RUNTIME_PATH = String(
   process.env.TELEGRAM_REVIEWS_RUNTIME_PATH ||
     (IS_PRODUCTION
@@ -2528,12 +2524,9 @@ function refreshPublicReviewsInBackground() {
 }
 
 function startPublicReviewsRefreshSchedule(server) {
-  const initialTimer = setTimeout(() => {
-    refreshPublicReviewsInBackground().catch(error => {
-      logError("Initial public reviews refresh failed", error);
-    });
-  }, PUBLIC_REVIEWS_REFRESH_START_DELAY_MS);
-  initialTimer.unref?.();
+  refreshPublicReviewsInBackground().catch(error => {
+    logError("Initial public reviews refresh failed", error);
+  });
 
   publicReviewsRefreshTimer = setInterval(() => {
     refreshPublicReviewsInBackground().catch(error => {
@@ -2543,7 +2536,6 @@ function startPublicReviewsRefreshSchedule(server) {
   publicReviewsRefreshTimer.unref?.();
 
   server.once("close", () => {
-    clearTimeout(initialTimer);
     clearInterval(publicReviewsRefreshTimer);
     publicReviewsRefreshTimer = null;
   });
