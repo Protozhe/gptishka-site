@@ -10,6 +10,7 @@ const read = relativePath => fs.readFileSync(path.join(root, relativePath), "utf
 const html = read(path.join("app", "index.html"));
 const css = read(path.join("assets", "css", "reviews-hub.css"));
 const client = read(path.join("assets", "js", "reviews-hub.js"));
+const refresh = read(path.join("scripts", "refresh-public-reviews.js"));
 const server = read("server.js");
 const data = JSON.parse(read(path.join("data", "public-reviews.json")));
 
@@ -33,6 +34,8 @@ assert.match(server, /mergeRuntimeReviews/);
 assert.match(server, /createTelegramReviewsPoller/);
 assert.match(server, /startPublicReviewsRefreshSchedule/);
 assert.match(server, /refresh-public-reviews\.js/);
+assert.match(refresh, /cached\.items\.map/);
+assert.match(refresh, /sourceLabel: "Проверенный отзыв"/);
 assert.match(server, /app\.get\(\["\/app", "\/app\/"\], sendDirectoryIndex\("app"\)\)/);
 
 assert.strictEqual(data.version, 1);

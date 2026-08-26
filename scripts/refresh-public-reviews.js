@@ -331,16 +331,22 @@ async function collectSource(source, previous) {
     throw new Error(`Unsupported source type: ${source.type}`);
   } catch (error) {
     const cached = previousForSource(previous, source.id);
-    const fallback = cached;
+    const fallbackItems = source.type === "playerok"
+      ? cached.items.map(item => ({
+          ...item,
+          sourceLabel: "Проверенный отзыв",
+          detail: playerokProductLabel(item.detail),
+        }))
+      : cached.items;
     return {
       source: {
+        ...(cached.source || {}),
         ...source,
-        ...(fallback.source || {}),
-        available: fallback.items.length > 0,
-        status: fallback.items.length ? "stale" : "unavailable",
+        available: fallbackItems.length > 0,
+        status: fallbackItems.length ? "stale" : "unavailable",
         error: String(error?.message || error),
       },
-      items: fallback.items,
+      items: fallbackItems,
     };
   }
 }
