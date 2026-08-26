@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "fetchedAt": "2026-08-26T16:33:52.407Z",
+  "fetchedAt": "2026-08-26T16:47:01.466Z",
   "refreshIntervalHours": 8,
   "totalReviews": 170,
   "sources": [
@@ -56,6 +56,34 @@
     }
   ],
   "items": [
+    {
+      "id": "3e10cb74c775a0dace",
+      "sourceId": "playerok-vivaseller",
+      "sourceType": "playerok",
+      "sourceLabel": "Playerok",
+      "author": "Amirka808",
+      "text": "Все четко. Качественно. Быстро. Спасибо вам огромное. Лучший",
+      "detail": "⭐СОЗДАНИЕ АККАУНТА ЧАТГПТ ПЛЮС 5.6sol НА 1 МЕСЯЦ🚀НА ЗАКАЗ🔒 БЫСТРО",
+      "date": "2026-08-25T19:52:51.560Z",
+      "dateLabel": "",
+      "rating": 5,
+      "url": "https://playerok.com/products/adeb9d329d93-sozdanie-akkaunta-cgpt-plyus-56sol-na-1-mesyacna-zakaz-bystro",
+      "sortOrder": 1787687571560
+    },
+    {
+      "id": "a45d7e3063178b696d",
+      "sourceId": "playerok-vivaseller",
+      "sourceType": "playerok",
+      "sourceLabel": "Playerok",
+      "author": "Rivelfox",
+      "text": "Все отлично, быстрый ответ. Работает как часы, рекомендую",
+      "detail": "⚡ПРОДЛЕНИЕ\\АКТИВАЦИЯ ЧАТГПТ ГО НА 1 МЕСЯЦ⚡На ваш аккаунт⚡Без пароля",
+      "date": "2026-08-20T19:20:50.523Z",
+      "dateLabel": "",
+      "rating": 5,
+      "url": "https://playerok.com/products/89712e15f1b8-prodlenie-aktivaciya-cgpt-go-na-1-mesyacna-vash-akkauntbez-parolya",
+      "sortOrder": 1787253650523
+    },
     {
       "id": "82ae49a1c41d3095fd",
       "sourceId": "funpay-19372031",
@@ -405,34 +433,6 @@
       "dateLabel": "В этом месяце",
       "rating": 5,
       "url": "https://funpay.com/users/19372031/#reviews"
-    },
-    {
-      "id": "3e10cb74c775a0dace",
-      "sourceId": "playerok-vivaseller",
-      "sourceType": "playerok",
-      "sourceLabel": "Playerok",
-      "author": "Amirka808",
-      "text": "Все четко. Качественно. Быстро. Спасибо вам огромное. Лучший",
-      "detail": "⭐СОЗДАНИЕ АККАУНТА ЧАТГПТ ПЛЮС 5.6sol НА 1 МЕСЯЦ🚀НА ЗАКАЗ🔒 БЫСТРО",
-      "date": "2026-08-25T19:52:51.560Z",
-      "dateLabel": "",
-      "rating": 5,
-      "url": "https://playerok.com/products/adeb9d329d93-sozdanie-akkaunta-cgpt-plyus-56sol-na-1-mesyacna-zakaz-bystro",
-      "sortOrder": 1787687571560
-    },
-    {
-      "id": "a45d7e3063178b696d",
-      "sourceId": "playerok-vivaseller",
-      "sourceType": "playerok",
-      "sourceLabel": "Playerok",
-      "author": "Rivelfox",
-      "text": "Все отлично, быстрый ответ. Работает как часы, рекомендую",
-      "detail": "⚡ПРОДЛЕНИЕ\\АКТИВАЦИЯ ЧАТГПТ ГО НА 1 МЕСЯЦ⚡На ваш аккаунт⚡Без пароля",
-      "date": "2026-08-20T19:20:50.523Z",
-      "dateLabel": "",
-      "rating": 5,
-      "url": "https://playerok.com/products/89712e15f1b8-prodlenie-aktivaciya-cgpt-go-na-1-mesyacna-vash-akkauntbez-parolya",
-      "sortOrder": 1787253650523
     },
     {
       "id": "3fd89871718840ac82",

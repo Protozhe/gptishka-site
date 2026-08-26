@@ -356,6 +356,7 @@ async function main() {
   const sources = results.map(result => result.source);
   const items = deduplicate(results.flatMap(result => result.items))
     .filter(item => !isExcludedReview(item))
+    .sort((a, b) => Number(b.sortOrder || 0) - Number(a.sortOrder || 0))
     .slice(0, 60);
   const payload = {
     version: 1,
