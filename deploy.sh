@@ -88,6 +88,8 @@ if [ "$SKIP_BACKEND_DEPLOY" -eq 0 ]; then
   node scripts/import-cdk-json-to-db.js "$APP_DIR" "$LEGACY_JSON" "$ADMIN_ENV_FILE" "/var/backups/gptishka" || true
   # Keep legacy pooled keys consistent: attach reserved/used keys to the actual product from the order.
   node scripts/backfill-license-keys-by-order.js "$APP_DIR" "$ADMIN_ENV_FILE" || true
+  # Recover Telegram identity for orders created from the Telegram checkout webview.
+  node scripts/backfill-telegram-order-context.js "$APP_DIR" "$ADMIN_ENV_FILE"
 
   npm run build:admin:api
 

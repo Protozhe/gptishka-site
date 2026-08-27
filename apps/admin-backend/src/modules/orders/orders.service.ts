@@ -13,6 +13,7 @@ import { deliverProduct } from "./delivery.service";
 import { buildActivationSiteEndpointUrl, readActivationSiteUrlFromOrderDetails } from "../../common/utils/activation-site";
 import { resolveOrderDeliveryType, resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { canonicalProductKey } from "../../common/utils/product-key";
+import { resolveTelegramOrderContext } from "./telegram-order-context";
 import { manualCredentialsStore } from "../products/manual-credentials.store";
 import { toVpnMePayload, vpnService } from "../../services/vpn.service";
 import crypto from "crypto";
@@ -1317,18 +1318,10 @@ export const ordersService = {
       }
     }
 
-    const telegramMatch = String(input.email || "")
-      .trim()
-      .toLowerCase()
-      .match(/^tg_(claude|chatgpt|grok)_(-?\d+)@telegram\.local$/);
-    const telegramContext = telegramMatch
-      ? {
-          source: "telegram",
-          botType: telegramMatch[1],
-          telegramUserId: telegramMatch[2],
-          telegramChatId: telegramMatch[2],
-        }
-      : {};
+    const telegramContext = resolveTelegramOrderContext({
+      email: input.email,
+      orderDetails: input.orderDetails,
+    });
 
     return paymentsService.createOrderWithPayment({
       email: input.email,
@@ -1342,7 +1335,7 @@ export const ordersService = {
           ? input.orderDetails
           : null,
       ip: meta?.ip,
-      ...telegramContext,
+      ...(telegramContext || {}),
     });
   },
 

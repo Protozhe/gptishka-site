@@ -70,6 +70,23 @@ function resolveTelegramContactUrl(value: unknown) {
   return /^[a-z0-9_]{5,32}$/i.test(username) ? `https://t.me/${username}` : "";
 }
 
+function resolveTelegramClient(order: any) {
+  const details = order?.checkoutDetails || order?.orderDetails || {};
+  const contact = details?.contact && typeof details.contact === "object" ? details.contact : {};
+  const emailMatch = String(order?.email || "")
+    .trim()
+    .toLowerCase()
+    .match(/^tg_(?:claude|chatgpt|grok)_(-?\d+)@(?:gptishka\.)?telegram\.local$/);
+  const id = String(order?.telegramUserId || contact.telegramUserId || contact.telegramId || emailMatch?.[1] || "").trim();
+  const username = String(order?.telegramUsername || contact.telegramUsername || "")
+    .trim()
+    .replace(/^@+/, "");
+  return {
+    id: /^-?\d+$/.test(id) ? id : "",
+    username: /^[a-z0-9_]{5,32}$/i.test(username) ? username : "",
+  };
+}
+
 function buildCheckoutDetailRows(details: any) {
   if (!details || typeof details !== "object") return [];
   const rows: Array<[string, string]> = [];
@@ -93,7 +110,13 @@ function buildCheckoutDetailRows(details: any) {
   push("Длительность", selection.duration);
   push("Способ оплаты", selection.paymentMethod);
   push("Email", contact.email);
-  push("Telegram", contact.telegram);
+  push(
+    "Telegram",
+    contact.telegram ||
+      (contact.telegramUsername ? `@${String(contact.telegramUsername).replace(/^@+/, "")}` : "") ||
+      contact.telegramUserId ||
+      contact.telegramId
+  );
   push("Подарок", gift.isGift);
   if (gift.isGift) {
     push("Отправитель", gift.sender);
@@ -344,6 +367,12 @@ export default function OrdersPage() {
                 const paymentMethodSelected = normalizePaymentChannel(o.paymentMethodRequested || o.paymentMethod);
                 const paymentProviderUsed = normalizePaymentChannel(o.paymentProvider || o.paymentProviderRaw);
                 const checkoutDetails = o.checkoutDetails || o.orderDetails;
+                const telegramClient = resolveTelegramClient(o);
+                const telegramClientUrl = telegramClient.username
+                  ? `https://t.me/${telegramClient.username}`
+                  : telegramClient.id
+                    ? `tg://user?id=${telegramClient.id}`
+                    : "";
                 const marketingTouch = getMarketingTouch(checkoutDetails);
                 const checkoutDetailRows = buildCheckoutDetailRows(checkoutDetails);
                 const clientPreviewRows = checkoutDetailRows
@@ -385,11 +414,13 @@ export default function OrdersPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="text-xs leading-5">
-                      <div>{o.email}</div>
-                      {o.telegramUserId ? <div className="text-slate-500">id: {o.telegramUserId}</div> : null}
-                      {o.telegramUsername ? <div className="text-slate-500">@{o.telegramUsername}</div> : null}
-                      {o.telegramUserId ? (
-                        <a className="text-cyan-700 underline" href={`tg://user?id=${o.telegramUserId}`}>
+                      <div className="font-semibold">
+                        {telegramClient.id ? "Telegram-клиент" : o.email}
+                      </div>
+                      {telegramClient.username ? <div className="text-slate-500">@{telegramClient.username}</div> : null}
+                      {telegramClient.id ? <div className="text-slate-500">Telegram ID: {telegramClient.id}</div> : null}
+                      {telegramClientUrl ? (
+                        <a className="text-cyan-700 underline" href={telegramClientUrl} target="_blank" rel="noreferrer">
                           Открыть чат
                         </a>
                       ) : null}
