@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 
 const checks = [
   "scripts/check-activation-pages-refresh.mjs",
+  "scripts/verify-activation-success-message.mjs",
   "scripts/check-information-flat-pages.mjs",
   "scripts/check-language-coverage.mjs",
   "scripts/check-reviews-hub.js",

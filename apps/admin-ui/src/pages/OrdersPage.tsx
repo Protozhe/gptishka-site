@@ -258,7 +258,11 @@ export default function OrdersPage() {
           ? "Активация не запущена или не подтверждена"
           : "Проверка активации завершена";
       const providerMessage = String(data?.activation?.lastProviderMessage || "").trim();
-      setCheckMessage(providerMessage ? `${certaintyLabel}. ${providerMessage}` : certaintyLabel);
+      setCheckMessage(
+        certaintyCode === "ACTIVATED_CONFIRMED_PROVIDER" || !providerMessage
+          ? certaintyLabel
+          : `${certaintyLabel}. ${providerMessage}`
+      );
     },
     onError: (error: unknown) => {
       setCheckMessage(getCheckErrorMessage(error));

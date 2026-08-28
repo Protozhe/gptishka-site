@@ -184,9 +184,13 @@ async function withActivationOrderLock<T>(orderId: string, job: () => Promise<T>
 function normalizeActivationRecordForRead(record: ActivationRecord | null | undefined) {
   if (!record) return null;
   const cleaned = cleanupExpiredStoredClientToken(record);
-  if (cleaned.changed) {
-    activationStore.upsert(cleaned.record);
-    return cleaned.record;
+  const confirmed = cleaned.record.status === "success" || cleaned.record.verificationState === "success";
+  const normalized = confirmed && cleaned.record.lastProviderMessage !== "Активация подтверждена провайдером."
+    ? { ...cleaned.record, lastProviderMessage: "Активация подтверждена провайдером." }
+    : cleaned.record;
+  if (cleaned.changed || normalized !== cleaned.record) {
+    activationStore.upsert(normalized);
+    return normalized;
   }
   return record;
 }
@@ -1214,8 +1218,48 @@ export const ordersService = {
       activation = normalizeActivationRecordForRead(activationStore.findByOrderId(id));
     }
 
-    if (activation && options?.forceCheck) {
-      if (String(activation.taskId || "").startsWith("chongzhi-") && activation.cdk) {
+    const activationAlreadyConfirmed =
+      activation?.status === "success" || activation?.verificationState === "success";
+    if (activation && options?.forceCheck && !activationAlreadyConfirmed) {
+      if (isSupportLikeDeliveryType(deliveryType)) {
+        const taskId = String(activation.taskId || "").trim();
+        const accountId = String(parseClientTokenInput(decryptStoredClientToken(activation)).extracted || "").trim();
+        let checked = false;
+        let providerError: unknown = null;
+
+        if (taskId || accountId) {
+          try {
+            const payload = await fetchQuickplusSupportTaskPayload({
+              taskId,
+              accountId,
+              cdk: String(activation.cdk || ""),
+              productKey: String(activation.productKey || ""),
+            });
+            updateActivationFromProviderPayload(id, taskId, payload);
+            checked = true;
+          } catch (error) {
+            providerError = error;
+          }
+        }
+
+        if (!checked && activation.cdk) {
+          const productCandidates = deriveActivationProviderProductCandidates({
+            productSlug: String(order.items[0]?.product?.slug || ""),
+            productKey: String(activation.productKey || ""),
+          });
+          try {
+            const result = await fetchActivationCdkCheckPayload(activation.cdk, productCandidates);
+            updateActivationFromProviderCdkPayload(id, result.productId, result.payload);
+            checked = true;
+          } catch (error) {
+            providerError = error;
+          }
+        }
+
+        if (!checked) {
+          updateActivationProviderCheckError(id, providerError || "Не удалось получить статус активации от провайдера");
+        }
+      } else if (String(activation.taskId || "").startsWith("chongzhi-") && activation.cdk) {
         try {
           const checked = await fetchChongzhiCodeStatus(activation.cdk, activation.activationSiteUrl || "");
           updateActivationFromChongzhiCodePayload(id, checked);
@@ -3464,14 +3508,17 @@ function updateActivationProviderCheckError(orderId: string, error: unknown) {
 
   const nowIso = new Date().toISOString();
   const message = summarizeProviderCheckError(error);
+  const alreadyConfirmed = stored.status === "success" || stored.verificationState === "success";
   activationStore.upsert({
     ...stored,
-    lastProviderMessage: message,
+    lastProviderMessage: alreadyConfirmed ? "Активация подтверждена провайдером." : message,
     lastProviderCheckedAt: nowIso,
-    lastProviderPayload: {
-      source: "provider-check-error",
-      message,
-    },
+    lastProviderPayload: alreadyConfirmed
+      ? stored.lastProviderPayload
+      : {
+          source: "provider-check-error",
+          message,
+        },
     updatedAt: nowIso,
   });
 }
@@ -3479,6 +3526,12 @@ function updateActivationProviderCheckError(orderId: string, error: unknown) {
 function summarizeProviderCheckError(error: unknown) {
   if (error instanceof AppError) {
     const details = stringifyErrorDetails(error.details);
+    if (/<!doctype|<html|<body|<head/i.test(details)) {
+      const status = details.match(/\b(4\d\d|5\d\d)\b/)?.[1];
+      return status
+        ? `Не удалось получить обновлённый статус от провайдера (HTTP ${status}). Повторите проверку позже.`
+        : "Не удалось получить обновлённый статус от провайдера. Повторите проверку позже.";
+    }
     return details ? `${error.message}: ${details}` : error.message;
   }
   if (error instanceof Error) return error.message;
