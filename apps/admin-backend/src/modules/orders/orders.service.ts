@@ -195,6 +195,17 @@ function normalizeActivationRecordForRead(record: ActivationRecord | null | unde
   return record;
 }
 
+function isChongzhiActivationRecord(record: ActivationRecord | null | undefined) {
+  if (!record) return false;
+  if (String(record.taskId || "").startsWith("chongzhi-")) return true;
+  const productKey = String(record.productKey || "").trim().toLowerCase();
+  const activationSiteUrl = String(record.activationSiteUrl || "").trim().toLowerCase();
+  return Boolean(
+    activationSiteUrl &&
+      (productKey.includes("chatgpt") || productKey.includes("plus") || productKey.includes("-go"))
+  );
+}
+
 async function acquireActivationOrderFileLock(orderId: string) {
   fs.mkdirSync(activationLockDir, { recursive: true });
   const lockPath = path.join(activationLockDir, `${orderLockFileKey(orderId)}.lock`);
@@ -840,6 +851,35 @@ export const ordersService = {
     const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
     assertTokenActivationDeliveryMode(activationInfo);
     const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
+    const storedIsSuccess = stored?.status === "success" || stored?.verificationState === "success";
+    if (storedIsSuccess) {
+      return {
+        pending: false,
+        success: true,
+        message: publicActivationMessage(stored?.status, stored?.verificationState),
+        task_id: String(stored?.taskId || taskId),
+      };
+    }
+
+    if (isChongzhiActivationRecord(stored) && String(stored?.cdk || "").trim()) {
+      let current = stored;
+      try {
+        const checked = await fetchChongzhiCodeStatus(String(stored?.cdk || ""), stored?.activationSiteUrl || "");
+        updateActivationFromChongzhiCodePayload(orderId, checked);
+      } catch (error) {
+        updateActivationProviderCheckError(orderId, error);
+      }
+      current = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || current;
+      const isSuccess = current?.status === "success" || current?.verificationState === "success";
+      const isPending = current?.status === "processing" || current?.verificationState === "pending";
+      return {
+        pending: Boolean(isPending && !isSuccess),
+        success: Boolean(isSuccess),
+        message: publicActivationMessage(current?.status, current?.verificationState),
+        task_id: String(current?.taskId || taskId),
+      };
+    }
+
     const isSupportFlow = isSupportTokenActivationMode(activationInfo);
 
     if (isSupportFlow) {
@@ -1221,7 +1261,14 @@ export const ordersService = {
     const activationAlreadyConfirmed =
       activation?.status === "success" || activation?.verificationState === "success";
     if (activation && options?.forceCheck && !activationAlreadyConfirmed) {
-      if (isSupportLikeDeliveryType(deliveryType)) {
+      if (isChongzhiActivationRecord(activation) && activation.cdk) {
+        try {
+          const checked = await fetchChongzhiCodeStatus(activation.cdk, activation.activationSiteUrl || "");
+          updateActivationFromChongzhiCodePayload(id, checked);
+        } catch (error) {
+          updateActivationProviderCheckError(id, error);
+        }
+      } else if (isSupportLikeDeliveryType(deliveryType)) {
         const taskId = String(activation.taskId || "").trim();
         const accountId = String(parseClientTokenInput(decryptStoredClientToken(activation)).extracted || "").trim();
         let checked = false;

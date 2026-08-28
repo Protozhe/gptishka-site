@@ -11,6 +11,16 @@ assert.match(
 );
 assert.match(
   service,
+  /if \(storedIsSuccess\)[\s\S]*success: true/,
+  "Client polling must stop immediately after provider success"
+);
+assert.match(
+  service,
+  /isChongzhiActivationRecord\(stored\)[\s\S]*fetchChongzhiCodeStatus/,
+  "ChatGPT activation task polling must use the configured provider status API"
+);
+assert.match(
+  service,
   /if \(isSupportLikeDeliveryType\(deliveryType\)\)[\s\S]*fetchQuickplusSupportTaskPayload/,
   "Support activations must use their provider-specific status endpoint"
 );
