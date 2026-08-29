@@ -21,7 +21,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260723-checkout-controls1";
-const expectedJsAssetVersion = "20260724-payment-logos1";
+const expectedJsAssetVersion = "20260825-enot-routing1";
 
 [
   ["service-page--constructor", "claude.html: constructor page class"],
@@ -33,11 +33,14 @@ const expectedJsAssetVersion = "20260724-payment-logos1";
   ["service-selected-plan", "claude.html: selected plan summary"],
   ['id="servicePlanFilters"', "claude.html: plan filter container"],
   ['id="serviceDurationFilters"', "claude.html: duration filter container"],
-  ["/assets/css/claude-flat-page.css?v=20260724-claude-info1", "claude.html: flat Claude page stylesheet"],
+  ["/assets/css/claude-flat-page.css?v=20260825-rounded-header2", "claude.html: flat Claude page stylesheet"],
   ['class="service-directory-back" href="/catalog/ai/"', "claude.html: AI catalog back link"],
   ['class="service-directory-back__icon"', "claude.html: complete SVG back icon"],
   [`/assets/css/home-stability-hotfix.css?v=${expectedAssetVersion}`, "claude.html: CSS cache-bust"],
   [`/assets/js/app.min.js?v=${expectedJsAssetVersion}`, "claude.html: JS cache-bust"],
+  ["До оформления заказа проверьте аккаунт", "claude.html: pre-purchase FREE account check"],
+  ["Обычно подключение занимает от 5 до 20 минут", "claude.html: expected connection time"],
+  ["KYC/ID Verification", "claude.html: Anthropic verification boundary"],
 ].forEach(([marker, label]) => requireMarker(page, marker, label));
 
 [
@@ -49,12 +52,13 @@ const expectedJsAssetVersion = "20260724-payment-logos1";
   ["payment-method-modal", "claude.html: old static payment modal markup"],
   ["chatgpt-plans-bg", "claude.html: removed obsolete 5 MB hero video asset"],
   ['id="serviceDeliveryFilters"', "claude.html: removed delivery filter container"],
+  ["При выдаче нового аккаунта", "claude.html: removed unrelated new-account mail scenario"],
 ].forEach(([marker, label]) => rejectMarker(page, marker, label));
 
 [
   ["AI_ORDER_MODAL_SERVICE_KEYS", "app.js: shared AI modal service allowlist"],
   ["AI_ORDER_MODAL_SERVICE_CONFIG", "app.js: shared AI modal config"],
-  ['new Set(["chatgpt", "claude", "grok", "vpn"])', "app.js: Claude in modal service allowlist"],
+  ['new Set(["chatgpt", "claude", "grok", "perplexity", "gemini", "suno", "vpn"])', "app.js: Claude in modal service allowlist"],
   ["isAiOrderModalServiceKey", "app.js: generic service check"],
   ["getAiOrderModalServiceConfig", "app.js: service-specific modal config lookup"],
   ["renderChatGptGoOrderCard(item, serviceKey)", "app.js: render receives service key"],
@@ -76,7 +80,7 @@ const expectedJsAssetVersion = "20260724-payment-logos1";
 ].forEach(([marker, label]) => requireMarker(source, marker, label));
 
 [
-  ['new Set(["chatgpt", "claude", "grok", "vpn"])', "app.min.js: shared AI modal allowlist"],
+  ['new Set(["chatgpt", "claude", "grok", "perplexity", "gemini", "suno", "vpn"])', "app.min.js: shared AI modal allowlist"],
   ["claude-card.png?v=20260618-claude-logo2", "app.min.js: Claude modal logo cache-bust"],
   ["claude-card-hover.png?v=20260618-claude-logo2", "app.min.js: Claude hover logo cache-bust"],
 ].forEach(([marker, label]) => requireMarker(minifiedSource, marker, label));
