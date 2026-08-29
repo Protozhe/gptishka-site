@@ -21,7 +21,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260723-checkout-controls1";
-const expectedJsAssetVersion = "20260825-enot-routing1";
+const expectedJsAssetVersion = "20260829-grok-plan-title1";
 
 [
   ["service-page--constructor", "supergrok.html: constructor page class"],
@@ -36,7 +36,7 @@ const expectedJsAssetVersion = "20260825-enot-routing1";
   ["service-faq-question", "supergrok.html: FAQ questions"],
   ['id="servicePlanFilters"', "supergrok.html: plan filter container"],
   ['id="serviceDurationFilters"', "supergrok.html: duration filter container"],
-  ["/assets/css/chatgpt-grok-flat-page.css?v=20260724-grok-info1", "supergrok.html: flat storefront stylesheet"],
+  ["/assets/css/chatgpt-grok-flat-page.css?v=20260825-rounded-header2", "supergrok.html: flat storefront stylesheet"],
   ['class="service-directory-back" href="/catalog/ai/"', "supergrok.html: AI catalog back link"],
   ['class="service-directory-back__icon"', "supergrok.html: complete SVG back icon"],
   ['class="service-product-gallery__viewport"', "supergrok.html: clipped product image viewport"],
@@ -66,7 +66,7 @@ const expectedJsAssetVersion = "20260825-enot-routing1";
   ['if (text.includes("supergrok-heavy") || text.includes("supergrok heavy") || joinedTags.includes("heavy")) return "supergrok-heavy";', "app.js: Heavy product plan routing"],
   ['plan: ["supergrok", "supergrok-heavy"]', "app.js: constructor exposes SuperGrok and Heavy plans"],
   ['if (key === "grok") return isGrokOrderModalPlanKey(planKey);', "app.js: Grok modal plan routing"],
-  ['if (key === "grok") return String(item?.title || planLabel || "").trim();', "app.js: Grok selected plan uses product title"],
+  ['if (key === "grok") return String(planLabel || item?.title || "").trim();', "app.js: Grok selected plan excludes the separately displayed duration"],
 ].forEach(([marker, label]) => requireMarker(source, marker, label));
 
 [

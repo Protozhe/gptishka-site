@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 
 const checks = [
+  "scripts/verify-admin-product-duration-sort.mjs",
   "scripts/check-activation-pages-refresh.mjs",
   "scripts/verify-activation-success-message.mjs",
   "scripts/check-information-flat-pages.mjs",

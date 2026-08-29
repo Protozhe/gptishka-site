@@ -9,6 +9,7 @@ type ProductDeliveryType = "activation" | "code" | "credentials" | "manual_login
 type ProductVisualBackgroundType = "solid" | "gradient" | "image";
 type ActivationVariantKey = "withLogin" | "withoutLogin";
 type AvailabilityFilter = "all" | "active" | "inactive";
+type ProductSortMode = "product-duration" | "title" | "price" | "newest";
 type ActivationVariantConfig = {
   enabled: boolean;
   price: number | string;
@@ -260,6 +261,35 @@ function withDurationLine(description: string, durationLabel: string, lang: "ru"
   if (!cleanedDuration) return withoutDuration;
   const prefix = lang === "en" ? "Duration: " : "Срок: ";
   return withoutDuration ? `${withoutDuration}\n${prefix}${cleanedDuration}` : `${prefix}${cleanedDuration}`;
+}
+
+const PRODUCT_DURATION_RE = /\b\d+\s*(?:д(?:ень|ня|ней)|недел(?:я|и|ь)|мес(?:яц|яца|яцев)?|год(?:а|ов)?|лет|days?|weeks?|months?|years?)(?=$|[\s.,;:()\-–—])/i;
+
+function getProductDurationLabel(item: Product): string {
+  const fromDescription = parseDurationLabel(item.description || "");
+  if (fromDescription) return fromDescription;
+  const fromTitle = String(item.title || "").match(PRODUCT_DURATION_RE)?.[0];
+  return String(fromTitle || "").trim();
+}
+
+function getProductDurationSortScore(item: Product): number {
+  const value = getProductDurationLabel(item).toLowerCase();
+  const amount = Number(value.match(/\d+/)?.[0] || "");
+  if (!Number.isFinite(amount) || amount <= 0) return Number.MAX_SAFE_INTEGER;
+  if (/д(?:ень|ня|ней)|days?/.test(value)) return amount;
+  if (/недел|weeks?/.test(value)) return amount * 7;
+  if (/год|лет|years?/.test(value)) return amount * 365;
+  if (/мес|months?/.test(value)) return amount * 30;
+  return Number.MAX_SAFE_INTEGER;
+}
+
+function getProductFamilySortKey(item: Product): string {
+  return String(item.title || "")
+    .replace(PRODUCT_DURATION_RE, "")
+    .replace(/\s+(?:на|for)\s*$/i, "")
+    .replace(/[\s–—-]+$/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
 }
 
 function resolveDeliveryType(item: Product): ProductDeliveryType {
@@ -595,6 +625,7 @@ export default function ProductsPage() {
   const queryClient = useQueryClient();
   const [q, setQ] = useState("");
   const [availabilityFilter, setAvailabilityFilter] = useState<AvailabilityFilter>("all");
+  const [productSortMode, setProductSortMode] = useState<ProductSortMode>("product-duration");
   const [availabilityMessage, setAvailabilityMessage] = useState<string | null>(null);
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -638,18 +669,35 @@ export default function ProductsPage() {
   const params = useMemo(
     () => ({
       page: 1,
-      limit: 50,
+      limit: 100,
       q,
       isArchived: false,
+      sortBy: productSortMode === "newest" ? "createdAt" : productSortMode === "price" ? "price" : "title",
+      sortDir: productSortMode === "newest" ? "desc" : "asc",
       ...(availabilityFilter === "all" ? {} : { isActive: availabilityFilter === "active" }),
     }),
-    [q, availabilityFilter]
+    [q, availabilityFilter, productSortMode]
   );
 
   const products = useQuery({
     queryKey: ["products", params],
     queryFn: async () => (await api.get("/products", { params })).data,
   });
+
+  const sortedProducts = useMemo(() => {
+    const items = Array.isArray(products.data?.items) ? ([...products.data.items] as Product[]) : [];
+    if (productSortMode !== "product-duration") return items;
+    return items.sort((a, b) => {
+      const byProduct = getProductFamilySortKey(a).localeCompare(getProductFamilySortKey(b), "ru", {
+        sensitivity: "base",
+        numeric: true,
+      });
+      if (byProduct !== 0) return byProduct;
+      const byDuration = getProductDurationSortScore(a) - getProductDurationSortScore(b);
+      if (byDuration !== 0) return byDuration;
+      return String(a.title || "").localeCompare(String(b.title || ""), "ru", { sensitivity: "base", numeric: true });
+    });
+  }, [products.data?.items, productSortMode]);
 
   const categoriesSource = useQuery({
     queryKey: ["products-categories"],
@@ -2230,20 +2278,32 @@ export default function ProductsPage() {
             value={descriptionEn}
             onChange={(e) => setDescriptionEn(e.target.value)}
           />
-          <input
-            className="input md:col-span-2"
-            placeholder="Срок для карточки (RU), например: 1 год"
-            value={durationLabelRu}
-            onChange={(e) => setDurationLabelRu(e.target.value)}
-          />
-          <input
-            className="input md:col-span-2"
-            placeholder="Duration for card (EN), e.g. 1 year"
-            value={durationLabelEn}
-            onChange={(e) => setDurationLabelEn(e.target.value)}
-          />
-          <div className="md:col-span-4 text-xs text-slate-600 dark:text-slate-300">
-            Поле добавляет отдельную строку на карточке: <strong>✓ Срок: ...</strong> (для EN: <strong>✓ Duration: ...</strong>).
+          <div className="md:col-span-4 rounded-xl border border-cyan-200 bg-cyan-50/70 p-3 dark:border-cyan-900 dark:bg-cyan-950/30">
+            <div className="text-sm font-semibold text-slate-900 dark:text-white">Срок товара</div>
+            <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+              Укажите срок отдельно от названия: например, <strong>1 месяц</strong>, <strong>3 месяца</strong> или <strong>1 год</strong>.
+              Он появится в карточке и используется для правильной сортировки тарифов.
+            </div>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <label className="grid gap-1">
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Срок (RU)</span>
+                <input
+                  className="input"
+                  placeholder="Например: 3 месяца"
+                  value={durationLabelRu}
+                  onChange={(e) => setDurationLabelRu(e.target.value)}
+                />
+              </label>
+              <label className="grid gap-1">
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Duration (EN)</span>
+                <input
+                  className="input"
+                  placeholder="For example: 3 months"
+                  value={durationLabelEn}
+                  onChange={(e) => setDurationLabelEn(e.target.value)}
+                />
+              </label>
+            </div>
           </div>
 
           <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
@@ -2396,6 +2456,19 @@ export default function ProductsPage() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <input className="input max-w-sm" placeholder="Поиск товаров" value={q} onChange={(e) => setQ(e.target.value)} />
+            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+              <span className="whitespace-nowrap font-semibold">Сортировка</span>
+              <select
+                className="input min-w-56"
+                value={productSortMode}
+                onChange={(e) => setProductSortMode(e.target.value as ProductSortMode)}
+              >
+                <option value="product-duration">По товару и сроку</option>
+                <option value="title">По названию</option>
+                <option value="price">Сначала дешевле</option>
+                <option value="newest">Сначала новые</option>
+              </select>
+            </label>
             <button className="btn-secondary" onClick={onBulkMinus10} disabled={bulk.isPending}>
               {bulk.isPending ? "Применяем..." : "Массово -10%"}
             </button>
@@ -2421,6 +2494,7 @@ export default function ProductsPage() {
             <thead className="bg-slate-100 text-left dark:bg-slate-800">
               <tr>
                 <th className="px-4 py-3">Название</th>
+                <th className="px-4 py-3">Срок</th>
                 <th className="px-4 py-3">Категория</th>
                 <th className="px-4 py-3">Цена</th>
                 <th className="px-4 py-3">Выдача</th>
@@ -2429,9 +2503,10 @@ export default function ProductsPage() {
               </tr>
             </thead>
             <tbody>
-              {(Array.isArray(products.data?.items) ? products.data.items : []).map((item: Product) => {
+              {sortedProducts.map((item: Product) => {
                 const itemDeliveryType = resolveDeliveryType(item);
                 const itemVpnBundle = parseVpnBundleConfig(item.tags || []);
+                const itemDuration = getProductDurationLabel(item);
                 const isThisTogglePending = toggle.isPending && toggle.variables?.id === item.id;
                 return (
                   <tr
@@ -2443,6 +2518,9 @@ export default function ProductsPage() {
                     <td className="px-4 py-3">
                       <div className="font-semibold">{item.title}</div>
                       <div className="text-xs text-slate-500">{item.slug}</div>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {itemDuration || <span className="text-slate-400">Не указан</span>}
                     </td>
                     <td className="px-4 py-3">{item.category}</td>
                     <td className="px-4 py-3">{money(Number(item.price), item.currency)}</td>

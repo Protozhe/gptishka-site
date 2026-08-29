@@ -3644,7 +3644,7 @@ function initActivationResumeShortcut() {
   function getServiceConstructorPlanTitle(item, serviceKey, planLabel) {
     const key = normalizeAiServiceKey(serviceKey);
     if (key === "claude") return String(item?.title || planLabel || "").trim();
-    if (key === "grok") return String(item?.title || planLabel || "").trim();
+    if (key === "grok") return String(planLabel || item?.title || "").trim();
     if (key === "vpn") return String(item?.title || planLabel || "").trim();
     return String(planLabel || "").trim();
   }
