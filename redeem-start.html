@@ -2200,9 +2200,15 @@
         supergrokActivationIntroEl.hidden = false;
       }
       if (orderIdEl) orderIdEl.textContent = 'ПРЕДПРОСМОТР';
-      if (redeemTitleEl) redeemTitleEl.textContent = `Продлить / Активировать ${config.name}`;
-      if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Безопасный предпросмотр страницы после успешной оплаты.';
-      document.title = `Продлить / Активировать ${config.name} - GPTишка`;
+      if (redeemTitleEl) redeemTitleEl.textContent = dedicatedSuperGrokPage
+        ? 'Активировать SuperGrok'
+        : `Продлить / Активировать ${config.name}`;
+      if (redeemSubtitleEl) redeemSubtitleEl.textContent = dedicatedSuperGrokPage
+        ? 'Оплата подтверждена. Укажите ID аккаунта — остальное система выполнит автоматически.'
+        : 'Безопасный предпросмотр страницы после успешной оплаты.';
+      document.title = dedicatedSuperGrokPage
+        ? 'Активация SuperGrok - GPTишка'
+        : `Продлить / Активировать ${config.name} - GPTишка`;
 
       if (config.deliveryMode === 'manual_login') {
         setCredentialsDeliveryMode({
