@@ -2180,6 +2180,13 @@ function normalizeAichongzhiGrokPayload(response: { status: number; raw: string;
   return { json, status, final, success, failed, pending, message, taskId };
 }
 
+function publicAichongzhiGrokMessage(state: ReturnType<typeof normalizeAichongzhiGrokPayload>) {
+  if (state.success) return "Подписка успешно активирована.";
+  if (state.failed) return "Провайдер не смог завершить активацию. Обратитесь в поддержку.";
+  if (state.pending) return "Подключаем подписку. Пожалуйста, подождите.";
+  return "Проверяем состояние активации.";
+}
+
 async function fetchAichongzhiGrokTaskPayload(cdk?: string | null, fallbackTaskId?: string | null) {
   const code = String(cdk || "").trim();
   if (!code) throw new AppError("Grok activation key is empty", 400);
@@ -2193,7 +2200,7 @@ async function fetchAichongzhiGrokTaskPayload(cdk?: string | null, fallbackTaskI
     pending: state.pending,
     success: state.success,
     status: normalizedStatus,
-    message: state.message,
+    message: publicAichongzhiGrokMessage(state),
     task_id: state.taskId || String(fallbackTaskId || ""),
     error: state.failed ? state.message || "Grok activation failed" : "",
     raw: {
@@ -2248,7 +2255,7 @@ async function startAichongzhiGrokTaskWithRetry(input: {
           body: verify.raw || "",
           tries,
           immediateSuccess: true,
-          message: verifyState.message || "Activation completed",
+          message: publicAichongzhiGrokMessage(verifyState),
           providerPayload: { source: verify.source, verify: verify.json },
         };
       } else {
@@ -2267,7 +2274,7 @@ async function startAichongzhiGrokTaskWithRetry(input: {
             body: activate.raw || "",
             tries,
             immediateSuccess: activateState.success,
-            message: activateState.message || (activateState.success ? "Activation completed" : "Activation request sent"),
+            message: publicAichongzhiGrokMessage(activateState),
             providerPayload: { source: activate.source, verify: verify.json, activate: activate.json },
           };
         }

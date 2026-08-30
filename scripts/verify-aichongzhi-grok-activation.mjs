@@ -30,6 +30,11 @@ assert(
   "activation status must be checked by CDK"
 );
 assert(
+  service.includes("function publicAichongzhiGrokMessage") &&
+    service.includes('return "Подключаем подписку. Пожалуйста, подождите."'),
+  "provider messages shown in the order must be normalized to Russian"
+);
+assert(
   service.includes("if (isAichongzhiGrokSupportProduct(input.productKey))"),
   "SuperGrok support products must route through the new adapter"
 );
