@@ -22,6 +22,10 @@ export const manualConfirmSchema = z.object({
   paymentMethod: z.string().min(2),
 });
 
+export const adminStartActivationSchema = z.object({
+  accountId: z.string().trim().uuid().max(128),
+});
+
 function normalizePublicPaymentMethod(value: unknown) {
   const raw = String(value || "")
     .trim()

@@ -468,8 +468,10 @@ export const ordersService = {
     return this.getPublicStatus(id);
   },
 
-  async getActivation(orderId: string, orderToken?: string) {
-    const order = await assertPaidOrderAccess(orderId, orderToken);
+  async getActivation(orderId: string, orderToken?: string, trustedAdmin = false) {
+    const order = trustedAdmin
+      ? await assertPaidOrderForAdmin(orderId)
+      : await assertPaidOrderAccess(orderId, orderToken);
     const fullOrder = await getOrderWithFirstItem(order.id);
     const firstItem = fullOrder?.items?.[0];
     const deliveryType = resolveOrderDeliveryType(fullOrder?.orderDetails, firstItem?.product?.tags || []);
@@ -595,6 +597,29 @@ export const ordersService = {
     const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
     assertTokenActivationDeliveryMode(activationInfo);
     return withActivationOrderLock(orderId, async () => startActivationUnsafe(orderId, token, orderToken));
+  },
+
+  async startActivationFromAdmin(
+    orderId: string,
+    token: string,
+    actor?: { userId?: string; ip?: string; userAgent?: string }
+  ) {
+    const activationInfo = (await this.getActivation(orderId, undefined, true)) as any;
+    assertTokenActivationDeliveryMode(activationInfo);
+    const result = await withActivationOrderLock(orderId, async () =>
+      startActivationUnsafe(orderId, token, undefined, true)
+    );
+    await writeAuditLog({
+      userId: actor?.userId,
+      entityType: "order",
+      entityId: orderId,
+      action: "activation_admin_start",
+      before: null,
+      after: { taskId: String(result.taskId || ""), reused: Boolean((result as any).reused) },
+      ip: actor?.ip,
+      userAgent: actor?.userAgent,
+    });
+    return result;
   },
 
   async storeActivationClientToken(orderId: string, token: string, orderToken?: string) {
@@ -1530,6 +1555,14 @@ async function assertPaidOrderAccess(orderId: string, orderToken?: string) {
   return order;
 }
 
+async function assertPaidOrderForAdmin(orderId: string) {
+  assertOrderId(orderId);
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  if (!order) throw new AppError("Order not found", 404);
+  if (order.status !== OrderStatus.PAID) throw new AppError("Order is not paid yet", 409);
+  return order;
+}
+
 async function assertOrderTokenAccess(orderId: string, orderToken?: string) {
   assertOrderId(orderId);
   const order = await prisma.order.findUnique({ where: { id: orderId } });
@@ -1751,9 +1784,16 @@ function resolveActivationPoolProductKeyForOrder(orderWithItem: Awaited<ReturnTy
   return baseProductKey;
 }
 
-async function ensureActivationRecordForTokenFlow(orderId: string, orderToken?: string, activationInfo?: any) {
+async function ensureActivationRecordForTokenFlow(
+  orderId: string,
+  orderToken?: string,
+  activationInfo?: any,
+  trustedAdmin = false
+) {
   const existing = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
-  const order = await assertPaidOrderAccess(orderId, orderToken);
+  const order = trustedAdmin
+    ? await assertPaidOrderForAdmin(orderId)
+    : await assertPaidOrderAccess(orderId, orderToken);
   const orderWithItem = await getOrderWithFirstItem(order.id);
   const productKey = resolveActivationPoolProductKeyForOrder(orderWithItem);
   const activationSiteUrl = readActivationSiteUrlFromOrderDetails(orderWithItem?.orderDetails);
@@ -1812,10 +1852,10 @@ async function ensureActivationRecordForTokenFlow(orderId: string, orderToken?: 
   return normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || skeleton;
 }
 
-async function startActivationUnsafe(orderId: string, token: string, orderToken?: string) {
-  const activationInfo = await ordersService.getActivation(orderId, orderToken);
+async function startActivationUnsafe(orderId: string, token: string, orderToken?: string, trustedAdmin = false) {
+  const activationInfo = await ordersService.getActivation(orderId, orderToken, trustedAdmin);
   assertTokenActivationDeliveryMode(activationInfo);
-  let stored = await ensureActivationRecordForTokenFlow(orderId, orderToken, activationInfo);
+  let stored = await ensureActivationRecordForTokenFlow(orderId, orderToken, activationInfo, trustedAdmin);
   const tokenInfo = parseClientTokenInput(token);
   if (!tokenInfo.raw) throw new AppError("Token is required", 400);
   if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
@@ -1846,7 +1886,9 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || latestBeforeStart;
 
   if (!String(stored.cdk || "").trim()) {
-    const paidOrder = await assertPaidOrderAccess(orderId, orderToken);
+    const paidOrder = trustedAdmin
+      ? await assertPaidOrderForAdmin(orderId)
+      : await assertPaidOrderAccess(orderId, orderToken);
     const reserved = await activationStore.reserveCdkRecordForOrder({
       productKey: String(stored.productKey || "chatgpt"),
       activationSiteUrl: stored.activationSiteUrl || "",
@@ -1906,7 +1948,9 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   // For support-flow providers (SuperGrok/Claude), automatically rotate CDK once
   // when upstream reports "key already used"/validation-type errors.
   if (!createResult.ok && isSupportFlow && shouldRotateCdkAfterStartFailure(createResult)) {
-    const paidOrder = await assertPaidOrderAccess(orderId, orderToken);
+    const paidOrder = trustedAdmin
+      ? await assertPaidOrderForAdmin(orderId)
+      : await assertPaidOrderAccess(orderId, orderToken);
     const nextCdk = await activationStore.reserveCdkForOrder({
       productKey: String(stored.productKey || "chatgpt"),
       orderId: paidOrder.id,

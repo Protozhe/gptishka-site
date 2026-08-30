@@ -3,6 +3,8 @@ import fs from "node:fs";
 const service = fs.readFileSync("apps/admin-backend/src/modules/orders/orders.service.ts", "utf8");
 const envSchema = fs.readFileSync("apps/admin-backend/src/config/env.ts", "utf8");
 const ecosystem = fs.readFileSync("ecosystem.config.js", "utf8");
+const routes = fs.readFileSync("apps/admin-backend/src/modules/orders/orders.routes.ts", "utf8");
+const schemas = fs.readFileSync("apps/admin-backend/src/modules/orders/orders.schemas.ts", "utf8");
 
 function assert(condition, message) {
   if (!condition) {
@@ -42,6 +44,20 @@ assert(
 assert(
   ecosystem.includes('ACTIVATION_GROK_IP: process.env.ACTIVATION_GROK_IP || "139.162.68.169"'),
   "production must use the verified provider-IP fallback"
+);
+assert(
+  routes.includes('"/:id/activation/start"') &&
+    routes.includes('allowRoles(["OWNER", "ADMIN", "SUPPORT"])') &&
+    routes.includes("validateBody(adminStartActivationSchema)"),
+  "admin-assisted activation must stay authenticated, role-limited, and validated"
+);
+assert(
+  schemas.includes("accountId: z.string().trim().uuid().max(128)"),
+  "admin-assisted activation must only accept a UUID account ID"
+);
+assert(
+  service.includes('action: "activation_admin_start"'),
+  "admin-assisted activation must write an audit event without storing the account ID in the audit payload"
 );
 
 if (process.exitCode) process.exit(process.exitCode);

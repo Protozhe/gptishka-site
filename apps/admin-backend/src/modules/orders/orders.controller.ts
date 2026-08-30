@@ -110,6 +110,13 @@ export const manuallyCompleteOrderActivation = asyncHandler(async (req: Request,
   res.json(data);
 });
 
+export const startOrderActivationFromAdmin = asyncHandler(async (req: Request, res: Response) => {
+  const orderId = String(req.params.id || "");
+  const accountId = String((req.body as any)?.accountId || "");
+  const data = await ordersService.startActivationFromAdmin(orderId, accountId, actor(req));
+  res.json(data);
+});
+
 export const updateOrderStatus = asyncHandler(async (req: Request, res: Response) => {
   const data = await ordersService.updateStatus(String(req.params.id), req.body.status, actor(req));
   res.json(data);
