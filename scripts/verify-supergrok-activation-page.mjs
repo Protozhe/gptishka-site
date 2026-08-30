@@ -28,10 +28,9 @@ assert(
 assert(
   redeem.includes("const dedicatedSuperGrokPage =") &&
     redeem.includes('id="supergrokActivationIntro"') &&
-    redeem.includes('data-supergrok-month="1"') &&
-    redeem.includes('data-supergrok-month="2"') &&
-    redeem.includes('data-supergrok-month="3"'),
-  "the page must explain and display the 1, 2, and 3 month tariffs"
+    redeem.includes("Подходит для оплаченных тарифов на 1, 2 и 3 месяца") &&
+    !redeem.includes("data-supergrok-month"),
+  "the page must explain the supported terms without duplicate duration chips"
 );
 assert(
   redeem.includes("https://grok.com/api/auth/session") &&

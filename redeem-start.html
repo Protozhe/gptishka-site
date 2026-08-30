@@ -699,28 +699,6 @@
       line-height: 1.55;
     }
 
-    .redeem-supergrok-plans {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 12px;
-    }
-
-    .redeem-supergrok-plan {
-      padding: 7px 11px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .redeem-supergrok-plan.is-current {
-      border-color: rgba(64, 224, 163, 0.68);
-      background: rgba(39, 213, 151, 0.2);
-      color: #eafff7;
-    }
-
     .redeem-progress {
       width: 100%;
       display: grid;
@@ -1436,11 +1414,6 @@
       <section id="supergrokActivationIntro" class="redeem-supergrok-intro" hidden>
         <strong id="supergrokActivationPlan">Автоматическая активация SuperGrok</strong>
         <p>Подходит для оплаченных тарифов на 1, 2 и 3 месяца. Нужен только ID вашего аккаунта Grok — логин, пароль и код подтверждения не требуются.</p>
-        <div class="redeem-supergrok-plans" aria-label="Доступные сроки SuperGrok">
-          <span class="redeem-supergrok-plan" data-supergrok-month="1">1 месяц</span>
-          <span class="redeem-supergrok-plan" data-supergrok-month="2">2 месяца</span>
-          <span class="redeem-supergrok-plan" data-supergrok-month="3">3 месяца</span>
-        </div>
       </section>
 
       <section id="vpnOfferBlock" class="redeem-vpn-offer" hidden>
@@ -2074,9 +2047,6 @@
             ? `Ваш тариф: SuperGrok на ${durationMonths} ${durationMonths === 1 ? 'месяц' : durationMonths === 2 ? 'месяца' : 'месяца'}`
             : 'Автоматическая активация SuperGrok';
         }
-        document.querySelectorAll('[data-supergrok-month]').forEach((item) => {
-          item.classList.toggle('is-current', Number(item.getAttribute('data-supergrok-month')) === durationMonths);
-        });
         document.title = 'Активация SuperGrok - GPTишка';
       }
       let chatGptPlanName = '';
