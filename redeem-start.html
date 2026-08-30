@@ -678,6 +678,49 @@
       animation: redeem-spin 0.8s linear infinite;
     }
 
+    .redeem-supergrok-intro {
+      margin: 18px 0 20px;
+      padding: 16px 18px;
+      border: 1px solid rgba(64, 224, 163, 0.34);
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(39, 213, 151, 0.12), rgba(95, 126, 255, 0.08));
+      color: var(--redeem-text);
+    }
+
+    .redeem-supergrok-intro strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 16px;
+    }
+
+    .redeem-supergrok-intro p {
+      margin: 0;
+      color: var(--redeem-muted);
+      line-height: 1.55;
+    }
+
+    .redeem-supergrok-plans {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .redeem-supergrok-plan {
+      padding: 7px 11px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .redeem-supergrok-plan.is-current {
+      border-color: rgba(64, 224, 163, 0.68);
+      background: rgba(39, 213, 151, 0.2);
+      color: #eafff7;
+    }
+
     .redeem-progress {
       width: 100%;
       display: grid;
@@ -1390,6 +1433,16 @@
       <h1 class="redeem-title" id="redeemTitle">Продлить / Активировать</h1>
       <p class="redeem-subtitle" id="redeemSubtitle">Заказ принят в работу, мы с вами свяжемся, если возникнут вопросы</p>
 
+      <section id="supergrokActivationIntro" class="redeem-supergrok-intro" hidden>
+        <strong id="supergrokActivationPlan">Автоматическая активация SuperGrok</strong>
+        <p>Подходит для оплаченных тарифов на 1, 2 и 3 месяца. Нужен только ID вашего аккаунта Grok — логин, пароль и код подтверждения не требуются.</p>
+        <div class="redeem-supergrok-plans" aria-label="Доступные сроки SuperGrok">
+          <span class="redeem-supergrok-plan" data-supergrok-month="1">1 месяц</span>
+          <span class="redeem-supergrok-plan" data-supergrok-month="2">2 месяца</span>
+          <span class="redeem-supergrok-plan" data-supergrok-month="3">3 месяца</span>
+        </div>
+      </section>
+
       <section id="vpnOfferBlock" class="redeem-vpn-offer" hidden>
         <div class="redeem-vpn-offer-head">
           <p class="redeem-label" style="margin-bottom:0;">VPN в этом заказе</p>
@@ -1519,7 +1572,8 @@
   <script>
     (() => {
     const params = new URLSearchParams(window.location.search);
-    const previewServiceKey = String(params.get('service') || '').trim().toLowerCase().replace(/[\s_-]+/g, '');
+    const dedicatedSuperGrokPage = /\/supergrok-activation(?:\.html)?\/?$/i.test(window.location.pathname);
+    const previewServiceKey = String(params.get('service') || (dedicatedSuperGrokPage ? 'supergrok' : '')).trim().toLowerCase().replace(/[\s_-]+/g, '');
     const previewMode = ['1', 'true', 'yes'].includes(String(params.get('preview') || '').trim().toLowerCase())
       && ['chatgptgo', 'chatgptplus', 'claude', 'grok', 'supergrok', 'perplexity', 'pplx'].includes(previewServiceKey);
     const orderId = previewMode
@@ -1531,6 +1585,8 @@
     const orderIdEl = document.getElementById('orderId');
     const redeemTitleEl = document.getElementById('redeemTitle');
     const redeemSubtitleEl = document.getElementById('redeemSubtitle');
+    const supergrokActivationIntroEl = document.getElementById('supergrokActivationIntro');
+    const supergrokActivationPlanEl = document.getElementById('supergrokActivationPlan');
     const copyOrderIdBtn = document.getElementById('copyOrderIdBtn');
     const tokenBlock = document.getElementById('tokenBlock');
     const tokenLabelEl = document.getElementById('tokenLabel');
@@ -2008,6 +2064,21 @@
       const activationFlow = resolveSupportActivationFlow(payload);
       const forcedSupportFlow = resolveForcedSupportActivationFlow(payload);
       const productKey = getActivationProductFingerprint(payload);
+      if (dedicatedSuperGrokPage) {
+        const durationMonths = Number(payload?.durationMonths || 0);
+        if (redeemTitleEl) redeemTitleEl.textContent = 'Активировать SuperGrok';
+        if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата подтверждена. Укажите ID аккаунта — остальное система выполнит автоматически.';
+        if (supergrokActivationIntroEl) supergrokActivationIntroEl.hidden = false;
+        if (supergrokActivationPlanEl) {
+          supergrokActivationPlanEl.textContent = durationMonths >= 1 && durationMonths <= 3
+            ? `Ваш тариф: SuperGrok на ${durationMonths} ${durationMonths === 1 ? 'месяц' : durationMonths === 2 ? 'месяца' : 'месяца'}`
+            : 'Автоматическая активация SuperGrok';
+        }
+        document.querySelectorAll('[data-supergrok-month]').forEach((item) => {
+          item.classList.toggle('is-current', Number(item.getAttribute('data-supergrok-month')) === durationMonths);
+        });
+        document.title = 'Активация SuperGrok - GPTишка';
+      }
       let chatGptPlanName = '';
       if (productKey.includes('chatgpt-go') || productKey.includes('chatgpt go') || productKey.includes('chatgpt_go')) {
         chatGptPlanName = 'ChatGPT GO';
@@ -2125,6 +2196,9 @@
       const config = configs[normalizedKey] || configs.perplexity;
 
       document.body.classList.add('redeem-preview-mode');
+      if (dedicatedSuperGrokPage && supergrokActivationIntroEl) {
+        supergrokActivationIntroEl.hidden = false;
+      }
       if (orderIdEl) orderIdEl.textContent = 'ПРЕДПРОСМОТР';
       if (redeemTitleEl) redeemTitleEl.textContent = `Продлить / Активировать ${config.name}`;
       if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Безопасный предпросмотр страницы после успешной оплаты.';
@@ -2255,7 +2329,7 @@
       try {
         const { orderId: lastId, token: lastToken } = readStoredActivationResumeContext();
         if (lastId && lastToken) {
-          const url = new URL('/redeem-start.html', window.location.origin);
+          const url = new URL(dedicatedSuperGrokPage ? '/supergrok-activation.html' : '/redeem-start.html', window.location.origin);
           url.searchParams.set('order_id', lastId);
           url.searchParams.set('t', lastToken);
           leaveGuardBypass = true;

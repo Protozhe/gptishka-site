@@ -98,6 +98,8 @@ const NOINDEX_PUBLIC_PATHS = new Set([
   "/success.html",
   "/fail.html",
   "/redeem-start.html",
+  "/supergrok-activation",
+  "/supergrok-activation.html",
   "/en/cart.html",
   "/en/payment.html",
   "/en/success.html",
@@ -2346,6 +2348,10 @@ function createApp() {
 
   app.get(["/supergrok", "/supergrok/"], (_req, res) => {
     sendFreshHtml(res, path.join(__dirname, "supergrok.html"));
+  });
+
+  app.get(["/supergrok-activation", "/supergrok-activation.html"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "redeem-start.html"));
   });
 
   app.get(["/perplexity", "/perplexity/"], (_req, res) => {

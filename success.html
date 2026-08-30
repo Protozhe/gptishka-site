@@ -621,7 +621,7 @@
             statusEl.textContent = "Платёж подтверждён. Подготавливаем страницу активации.";
             setNextStep("Открываем активацию", "Автоматически переходим к статусу подключения…");
             setTimeout(() => {
-              const url = new URL("/redeem-start.html", window.location.origin);
+              const url = new URL(activationPagePath(serviceKey), window.location.origin);
               url.searchParams.set("order_id", id);
               if (linkToken) url.searchParams.set("t", linkToken);
               window.location.href = url.toString();
@@ -650,7 +650,7 @@
           statusEl.textContent = "Платёж подтверждён. Подготавливаем страницу активации.";
           setNextStep("Откроется форма активации", `Через секунду вы автоматически перейдёте к подключению ${service.name}.`);
           setTimeout(() => {
-            const url = new URL("/redeem-start.html", window.location.origin);
+            const url = new URL(activationPagePath(serviceKey), window.location.origin);
             url.searchParams.set("order_id", id);
             if (linkToken) url.searchParams.set("t", linkToken);
             window.location.href = url.toString();
@@ -697,6 +697,10 @@
       if (normalized.includes("chatgptplus")) return "chatgptplus";
       if (normalized.includes("chatgpt") || normalized === "chatgpt") return "chatgpt";
       return "";
+    }
+
+    function activationPagePath(serviceKey) {
+      return serviceKey === "grok" ? "/supergrok-activation.html" : "/redeem-start.html";
     }
 
     function serviceConfig(serviceKey) {
@@ -839,8 +843,8 @@
       statusEl.className = "status paid";
       statusEl.textContent = "Платёж подтверждён. Подготавливаем страницу активации.";
       setNextStep("Открываем активацию", `В реальном заказе переход к подключению ${service.name} произойдёт автоматически.`);
-      if (serviceKey === "chatgptgo" || serviceKey === "chatgptplus") {
-        tariffLinkEl.href = `/redeem-start.html?preview=1&service=${encodeURIComponent(serviceKey)}`;
+      if (serviceKey === "chatgptgo" || serviceKey === "chatgptplus" || serviceKey === "grok") {
+        tariffLinkEl.href = `${activationPagePath(serviceKey)}?preview=1&service=${encodeURIComponent(serviceKey)}`;
         tariffLinkEl.textContent = `Открыть активацию ${service.name}`;
       }
     }

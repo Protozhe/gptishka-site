@@ -110,6 +110,28 @@ function isSupportActivationFlow(value: unknown) {
   return normalized === "claude_token" || normalized === "grok_token";
 }
 
+function resolveSuperGrokDurationMonths(input: {
+  productSlug?: unknown;
+  productTitle?: unknown;
+  productTags?: unknown;
+}) {
+  const tags = Array.isArray(input.productTags) ? input.productTags.map((tag) => String(tag || "")) : [];
+  const fingerprint = [input.productSlug, input.productTitle, ...tags]
+    .filter(Boolean)
+    .join(" ")
+    .trim()
+    .toLowerCase();
+  if (!fingerprint.includes("grok")) return null;
+
+  const tagged = tags
+    .map((tag) => tag.match(/^month:(1|2|3)$/i)?.[1])
+    .find(Boolean);
+  if (tagged) return Number(tagged);
+
+  const textual = fingerprint.match(/(?:^|[-\s])(1|2|3)(?:[-\s]*(?:month|months|месяц|месяца|месяцев)|[-\s]|$)/i)?.[1];
+  return textual ? Number(textual) : null;
+}
+
 function isSxzfdGrokSupportProduct(productKey?: string | null) {
   const key = String(productKey || "").trim().toLowerCase();
   return (
@@ -398,6 +420,11 @@ export const ordersService = {
     const activationSiteUrl = readActivationSiteUrlFromOrderDetails(order.orderDetails);
     const productSlug = String(firstItem?.product?.slug || "").trim().toLowerCase();
     const productTitle = String(firstItem?.product?.title || (firstItem?.product as any)?.name || "").trim();
+    const durationMonths = resolveSuperGrokDurationMonths({
+      productSlug,
+      productTitle,
+      productTags: firstItem?.product?.tags,
+    });
     const activationProductKey =
       canonicalProductKey(productSlug || String(firstItem?.productId || "chatgpt")) || productSlug || "chatgpt";
     const activationFlow = resolveTokenActivationFlowForProduct({
@@ -433,6 +460,7 @@ export const ordersService = {
         id: planId,
         slug: productSlug || null,
         title: productTitle || null,
+        durationMonths,
       },
       emailMasked: maskEmail(order.email),
       finalAmount: Number(order.totalAmount),
@@ -478,6 +506,11 @@ export const ordersService = {
     const activationSiteUrl = readActivationSiteUrlFromOrderDetails(fullOrder?.orderDetails);
     const productSlug = String(firstItem?.product?.slug || "").trim().toLowerCase();
     const productTitle = String(firstItem?.product?.title || (firstItem?.product as any)?.name || "").trim();
+    const durationMonths = resolveSuperGrokDurationMonths({
+      productSlug,
+      productTitle,
+      productTags: firstItem?.product?.tags,
+    });
     const activationProductKey = canonicalProductKey(productSlug || String(firstItem?.productId || "chatgpt")) || productSlug || "chatgpt";
     const tokenActivationFlow = resolveTokenActivationFlowForProduct({
       deliveryType,
@@ -582,6 +615,9 @@ export const ordersService = {
       deliveryMode: isSupportTokenFlow ? "support" : "activation",
       activationFlow: tokenActivationFlow,
       product: current.productKey,
+      productSlug,
+      productTitle,
+      durationMonths,
       status: current.status,
       taskId: current.taskId || null,
       verificationState: current.verificationState || "unknown",
@@ -2099,8 +2135,7 @@ function isAichongzhiGrokSupportProduct(productKey?: string | null) {
   return Boolean(
     (key.includes("grok") || key.includes("supergrok")) &&
       !key.includes("xpremium") &&
-      !key.includes("x-premium") &&
-      !isSxzfdGrokSupportProduct(key)
+      !key.includes("x-premium")
   );
 }
 
@@ -2329,9 +2364,6 @@ async function startQuickplusSupportTaskWithRetry(input: {
   activationFlow?: string;
   productKey?: string;
 }) {
-  if (isSxzfdGrokSupportProduct(input.productKey)) {
-    return startSxzfdGrokTaskWithRetry(input);
-  }
   if (isAichongzhiGrokSupportProduct(input.productKey)) {
     return startAichongzhiGrokTaskWithRetry(input);
   }
@@ -2679,9 +2711,6 @@ async function fetchQuickplusSupportTaskPayload(input: {
   productKey?: string;
   cdk?: string;
 }) {
-  if (isSxzfdGrokSupportProduct(input.productKey)) {
-    return fetchSxzfdGrokTaskPayload({ cdk: input.cdk });
-  }
   if (isAichongzhiGrokSupportProduct(input.productKey)) {
     return fetchAichongzhiGrokTaskPayload(input.cdk, input.taskId);
   }
