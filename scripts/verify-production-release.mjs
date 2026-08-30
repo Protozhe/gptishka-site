@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 
 const checks = [
+  "scripts/verify-admin-cdk-duration-sort.mjs",
   "scripts/verify-admin-product-duration-sort.mjs",
   "scripts/check-activation-pages-refresh.mjs",
   "scripts/verify-activation-success-message.mjs",

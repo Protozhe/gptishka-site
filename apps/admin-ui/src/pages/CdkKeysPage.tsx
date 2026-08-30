@@ -1,6 +1,11 @@
 ﻿import { Fragment, FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
+import {
+  compareProductsByFamilyAndDuration,
+  getProductDurationLabel,
+  ProductDurationEditor,
+} from "../components/ProductDurationEditor";
 
 type ProductDeliveryType = "activation" | "code" | "credentials" | "vpn" | "support" | "support_claude";
 type CdkStatus = "unused" | "used" | "archived";
@@ -10,6 +15,8 @@ type ProductItem = {
   id: string;
   slug: string;
   title: string;
+  description?: string;
+  descriptionEn?: string;
   tags?: string[];
   deliveryType?: ProductDeliveryType;
   deliveryMethod?: 1 | 2 | 3 | 4 | 5 | "1" | "2" | "3" | "4" | "5";
@@ -938,6 +945,7 @@ function ProductsTable({
   activeProductId,
   onSelect,
   renderDetails,
+  showDurationEditor = true,
   title = TEXT.products,
   hint = "Нажмите на товар, чтобы открыть коробку с ключами.",
 }: {
@@ -945,6 +953,7 @@ function ProductsTable({
   activeProductId?: string;
   onSelect: (id: string) => void;
   renderDetails: (product: ProductItem) => React.ReactNode;
+  showDurationEditor?: boolean;
   title?: string;
   hint?: string;
 }) {
@@ -952,13 +961,14 @@ function ProductsTable({
     <section className="card overflow-hidden">
       <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-800">
         <h3 className="text-base font-semibold">{title}</h3>
-        <p className="mt-1 text-xs text-slate-500">{hint}</p>
+        <p className="mt-1 text-xs text-slate-500">{hint} Порядок: товар → срок.</p>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[760px] text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-900/60">
             <tr>
               <th className="px-4 py-3">Название</th>
+              <th className="px-4 py-3">Срок</th>
               <th className="px-4 py-3">{TEXT.method}</th>
               <th className="px-4 py-3">Пул</th>
               <th className="px-4 py-3 text-right">Действие</th>
@@ -983,6 +993,9 @@ function ProductsTable({
                       <div className="font-semibold">{title}</div>
                       <div className="text-xs text-slate-500">{product.slug}</div>
                     </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {getProductDurationLabel(product) || <span className="text-slate-400">Не указан</span>}
+                    </td>
                     <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{productModeLabel(product)}</td>
                     <td className="px-4 py-3 font-mono text-xs text-slate-500">{productPoolHint(product)}</td>
                     <td className="px-4 py-3 text-right">
@@ -1000,7 +1013,8 @@ function ProductsTable({
                   </tr>
                   {isActive ? (
                     <tr className="bg-slate-50/80 dark:bg-slate-950/40">
-                      <td className="px-4 py-4" colSpan={4}>
+                      <td className="px-4 py-4" colSpan={5}>
+                        {showDurationEditor ? <ProductDurationEditor product={product} /> : null}
                         {renderDetails(product)}
                       </td>
                     </tr>
@@ -1099,7 +1113,7 @@ export default function CdkKeysPage() {
             page: 1,
             limit: 100,
             isArchived: false,
-            sortBy: "createdAt",
+            sortBy: "title",
             sortDir: "asc",
           },
         })
@@ -1127,11 +1141,14 @@ export default function CdkKeysPage() {
         id: item.id,
         slug: normalizeProductKey(item.slug),
         title: item.title,
+        description: item.description,
+        descriptionEn: item.descriptionEn,
         tags: Array.isArray(item.tags) ? item.tags : [],
         deliveryType: item.deliveryType,
         deliveryMethod: item.deliveryMethod,
         activationVariants: item.activationVariants,
-      }));
+      }))
+      .sort(compareProductsByFamilyAndDuration);
   }, [productsQuery.data]);
 
   const activeProduct = useMemo(() => {
@@ -1237,6 +1254,7 @@ export default function CdkKeysPage() {
           title={TEXT.legacyPools}
           hint={TEXT.legacyPoolsHint}
           products={legacyPools}
+          showDurationEditor={false}
           activeProductId={activeLegacyPool?.id}
           onSelect={toggleSelectedLegacyPool}
           renderDetails={(pool) => (
