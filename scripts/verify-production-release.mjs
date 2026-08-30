@@ -11,6 +11,7 @@ const checks = [
   "scripts/check-support-resume-refresh.mjs",
   "scripts/verify-activation-video-removed.mjs",
   "scripts/verify-chongzhi-submit-timeout-recovery.mjs",
+  "scripts/verify-aichongzhi-grok-activation.mjs",
   "scripts/verify-deferred-analytics.mjs",
   "scripts/verify-deployment-safety.mjs",
   "scripts/verify-homepage-ai-battle.mjs",

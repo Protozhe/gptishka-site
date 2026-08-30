@@ -168,6 +168,9 @@ const envSchema = z.object({
   // Optional direct IPv4 fallback for providers whose DNS is unreachable from the production host.
   ACTIVATION_CHONGZHI_IP: z.string().optional().default(""),
   ACTIVATION_SUPPORT_BASE_URL: z.string().url().default("https://quickplus.vip/public/grok"),
+  ACTIVATION_GROK_BASE_URL: z.string().url().default("https://aichongzhi.fun/?product=grok"),
+  // Optional direct IPv4 fallback because the provider CDN is not always reachable from the production host.
+  ACTIVATION_GROK_IP: z.string().optional().default(""),
   ACTIVATION_CLAUDE_MAX20X_BASE_URL: z.string().url().default("https://quickplus.vip/public/max20x"),
   ACTIVATION_GROK_1M_BASE_URL: z.string().url().default("https://vip.sxzfd.com/grok"),
   ACTIVATION_TOKEN_ENCRYPTION_KEY: z.string().optional().default(""),

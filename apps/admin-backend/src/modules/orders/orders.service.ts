@@ -33,6 +33,7 @@ const ACTIVATION_OUTSTOCK_RETRY_DELAY_MS = Math.min(
 );
 const SXZFD_GROK_API_TIMEOUT_MS = 25_000;
 const CHONGZHI_JSON_API_TIMEOUT_MS = 30_000;
+const AICHONGZHI_GROK_API_TIMEOUT_MS = 30_000;
 const SXZFD_GROK_MAX_START_ATTEMPTS = Math.min(3, ACTIVATION_OUTSTOCK_MAX_RETRIES);
 const MIN_STORED_CLIENT_TOKEN_TTL_HOURS = 24 * 7;
 const STORED_CLIENT_TOKEN_TTL_HOURS = Math.max(
@@ -48,6 +49,7 @@ const activationLockDir = path.join(resolveRuntimeDir(), "order-locks");
 const DEFAULT_SUPPORT_URL = "https://quickplus.vip/public/grok/";
 const DEFAULT_CLAUDE_MAX20X_SUPPORT_URL = "https://quickplus.vip/public/max20x/";
 const DEFAULT_GROK_1M_SUPPORT_URL = "https://vip.sxzfd.com/grok";
+const DEFAULT_AICHONGZHI_GROK_URL = "https://aichongzhi.fun/?product=grok";
 const DEFAULT_SUPPORT_EMAIL = "";
 
 function publicActivationMessage(status: unknown, verificationState?: unknown) {
@@ -2048,6 +2050,227 @@ async function startOutstockTaskWithRetry(input: {
   };
 }
 
+function isAichongzhiGrokSupportProduct(productKey?: string | null) {
+  const key = String(productKey || "").trim().toLowerCase();
+  return Boolean(
+    (key.includes("grok") || key.includes("supergrok")) &&
+      !key.includes("xpremium") &&
+      !key.includes("x-premium") &&
+      !isSxzfdGrokSupportProduct(key)
+  );
+}
+
+function resolveAichongzhiGrokTarget() {
+  const base = String(env.ACTIVATION_GROK_BASE_URL || DEFAULT_AICHONGZHI_GROK_URL).trim();
+  const parsed = new URL(base);
+  const apiUrl = new URL("/api/redeem.php", parsed.origin);
+  return {
+    apiUrl,
+    source: `${parsed.hostname}/grok`,
+  };
+}
+
+async function callAichongzhiGrokApi(
+  action: "verifyCdk" | "activate" | "status",
+  payload: Record<string, unknown>
+) {
+  const target = resolveAichongzhiGrokTarget();
+  target.apiUrl.searchParams.set("a", action);
+  const configuredIp = String(env.ACTIVATION_GROK_IP || "").trim();
+  const directIp = configuredIp && target.apiUrl.hostname === "aichongzhi.fun" ? configuredIp : "";
+  const body = JSON.stringify(payload);
+
+  return new Promise<{ status: number; raw: string; json: any; source: string }>((resolve, reject) => {
+    const request = https.request(
+      {
+        protocol: target.apiUrl.protocol,
+        hostname: directIp || target.apiUrl.hostname,
+        port: target.apiUrl.port || 443,
+        path: `${target.apiUrl.pathname}${target.apiUrl.search}`,
+        servername: target.apiUrl.hostname,
+        method: "POST",
+        headers: {
+          Host: target.apiUrl.host,
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(body),
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      },
+      (response) => {
+        let raw = "";
+        response.setEncoding("utf8");
+        response.on("data", (chunk) => {
+          raw += chunk;
+        });
+        response.on("end", () => {
+          resolve({
+            status: response.statusCode || 0,
+            raw,
+            json: tryParseJson(raw) as any,
+            source: target.source,
+          });
+        });
+      }
+    );
+
+    request.setTimeout(AICHONGZHI_GROK_API_TIMEOUT_MS, () => {
+      request.destroy(new Error("Aichongzhi Grok API request timed out"));
+    });
+    request.on("error", reject);
+    request.end(body);
+  });
+}
+
+function normalizeAichongzhiGrokPayload(response: { status: number; raw: string; json: any; source: string }) {
+  const json = response.json && typeof response.json === "object" ? response.json : null;
+  const status = String(json?.status || "").trim().toLowerCase();
+  const final = Boolean(json?.final);
+  const success = Boolean(json?.ok) && (status === "done" || (final && json?.success === true));
+  const failed = final && !success;
+  const pending = Boolean(json?.ok) && !success && !failed;
+  const message = String(json?.message || json?.error || "").trim();
+  const taskId = String(json?.job_id || json?.task_id || "").trim();
+  return { json, status, final, success, failed, pending, message, taskId };
+}
+
+async function fetchAichongzhiGrokTaskPayload(cdk?: string | null, fallbackTaskId?: string | null) {
+  const code = String(cdk || "").trim();
+  if (!code) throw new AppError("Grok activation key is empty", 400);
+  const response = await callAichongzhiGrokApi("status", { code });
+  const state = normalizeAichongzhiGrokPayload(response);
+  if (!response.json || response.status >= 500) {
+    throw new AppError("Grok activation provider status is temporarily unavailable", 502);
+  }
+  const normalizedStatus = state.success ? "done" : state.failed ? "failed" : state.status || "processing";
+  return {
+    pending: state.pending,
+    success: state.success,
+    status: normalizedStatus,
+    message: state.message,
+    task_id: state.taskId || String(fallbackTaskId || ""),
+    error: state.failed ? state.message || "Grok activation failed" : "",
+    raw: {
+      httpStatus: response.status,
+      payload: state.json,
+      provider: response.source,
+      productType: "grok",
+    },
+  };
+}
+
+async function startAichongzhiGrokTaskWithRetry(input: {
+  cdk: string;
+  userCandidates: any[];
+}) {
+  const accountId =
+    input.userCandidates.find((candidate) => typeof candidate === "string" && /^[0-9a-f-]{36}$/i.test(String(candidate || "").trim())) ||
+    input.userCandidates.find((candidate) => typeof candidate === "string" && String(candidate || "").trim());
+  const accountIdRaw = String(accountId || "").trim();
+  if (!accountIdRaw) {
+    return {
+      ok: false as const,
+      taskId: "",
+      status: 400,
+      body: "Account ID is empty",
+      tries: 0,
+      immediateSuccess: false,
+      message: "Account ID is empty",
+      providerPayload: null,
+    };
+  }
+
+  let lastStatus = 0;
+  let lastBody = "";
+  let lastMessage = "";
+  let tries = 0;
+
+  for (let attempt = 1; attempt <= ACTIVATION_OUTSTOCK_MAX_RETRIES; attempt += 1) {
+    tries += 1;
+    try {
+      const verify = await callAichongzhiGrokApi("verifyCdk", { code: input.cdk, product: "grok" });
+      const verifyState = normalizeAichongzhiGrokPayload(verify);
+      if (!verify.json || !verify.json?.ok) {
+        lastStatus = verify.status || 502;
+        lastBody = verify.raw || "verifyCdk failed";
+        lastMessage = verifyState.message;
+      } else if (verifyState.success) {
+        return {
+          ok: true as const,
+          taskId: verifyState.taskId || `aichongzhi-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          status: verify.status || 200,
+          body: verify.raw || "",
+          tries,
+          immediateSuccess: true,
+          message: verifyState.message || "Activation completed",
+          providerPayload: { source: verify.source, verify: verify.json },
+        };
+      } else {
+        const activate = await callAichongzhiGrokApi("activate", {
+          code: input.cdk,
+          token: accountIdRaw,
+          cookie: "",
+          product: "grok",
+        });
+        const activateState = normalizeAichongzhiGrokPayload(activate);
+        if (activate.json?.ok && !activateState.failed) {
+          return {
+            ok: true as const,
+            taskId: activateState.taskId || `aichongzhi-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            status: activate.status || 200,
+            body: activate.raw || "",
+            tries,
+            immediateSuccess: activateState.success,
+            message: activateState.message || (activateState.success ? "Activation completed" : "Activation request sent"),
+            providerPayload: { source: activate.source, verify: verify.json, activate: activate.json },
+          };
+        }
+        lastStatus = activate.status || 502;
+        lastBody = activate.raw || "activate failed";
+        lastMessage = activateState.message;
+      }
+    } catch (error) {
+      lastStatus = 0;
+      lastBody = error instanceof Error ? error.message : String(error || "unknown error");
+      lastMessage = "";
+      try {
+        const recovered = await fetchAichongzhiGrokTaskPayload(input.cdk);
+        if (recovered.success || recovered.pending) {
+          return {
+            ok: true as const,
+            taskId: String(recovered.task_id || `aichongzhi-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`),
+            status: 200,
+            body: "",
+            tries,
+            immediateSuccess: Boolean(recovered.success),
+            message: String(recovered.message || "Activation request sent"),
+            providerPayload: recovered.raw,
+          };
+        }
+      } catch {
+        // Retry the original submission below.
+      }
+    }
+
+    if (!shouldRetryOutstockFailure(lastStatus, `${lastBody}\n${lastMessage}`)) break;
+    if (attempt >= ACTIVATION_OUTSTOCK_MAX_RETRIES) break;
+    await sleep(Math.min(12_000, ACTIVATION_OUTSTOCK_RETRY_DELAY_MS + (attempt - 1) * 250));
+  }
+
+  return {
+    ok: false as const,
+    taskId: "",
+    status: lastStatus,
+    body: lastBody,
+    tries,
+    immediateSuccess: false,
+    message: lastMessage,
+    providerPayload: null,
+  };
+}
+
 async function startQuickplusSupportTaskWithRetry(input: {
   cdk: string;
   deviceId: string;
@@ -2057,6 +2280,9 @@ async function startQuickplusSupportTaskWithRetry(input: {
 }) {
   if (isSxzfdGrokSupportProduct(input.productKey)) {
     return startSxzfdGrokTaskWithRetry(input);
+  }
+  if (isAichongzhiGrokSupportProduct(input.productKey)) {
+    return startAichongzhiGrokTaskWithRetry(input);
   }
 
   const accountId =
@@ -2404,6 +2630,9 @@ async function fetchQuickplusSupportTaskPayload(input: {
 }) {
   if (isSxzfdGrokSupportProduct(input.productKey)) {
     return fetchSxzfdGrokTaskPayload({ cdk: input.cdk });
+  }
+  if (isAichongzhiGrokSupportProduct(input.productKey)) {
+    return fetchAichongzhiGrokTaskPayload(input.cdk, input.taskId);
   }
 
   const lowerProductKey = String(input.productKey || "").toLowerCase();

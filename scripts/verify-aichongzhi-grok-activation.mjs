@@ -1,0 +1,48 @@
+import fs from "node:fs";
+
+const service = fs.readFileSync("apps/admin-backend/src/modules/orders/orders.service.ts", "utf8");
+const envSchema = fs.readFileSync("apps/admin-backend/src/config/env.ts", "utf8");
+const ecosystem = fs.readFileSync("ecosystem.config.js", "utf8");
+
+function assert(condition, message) {
+  if (!condition) {
+    console.error(`aichongzhi Grok activation check failed: ${message}`);
+    process.exitCode = 1;
+  }
+}
+
+assert(
+  service.includes('new URL("/api/redeem.php", parsed.origin)'),
+  "Grok activations must use the provider redeem endpoint"
+);
+assert(
+  service.includes('callAichongzhiGrokApi("verifyCdk", { code: input.cdk, product: "grok" })'),
+  "SDK must be verified before activation"
+);
+assert(
+  service.includes('callAichongzhiGrokApi("activate", {'),
+  "verified SDK and account ID must be submitted through the activate action"
+);
+assert(
+  service.includes('callAichongzhiGrokApi("status", { code })'),
+  "activation status must be checked by CDK"
+);
+assert(
+  service.includes("if (isAichongzhiGrokSupportProduct(input.productKey))"),
+  "SuperGrok support products must route through the new adapter"
+);
+assert(
+  service.includes("servername: target.apiUrl.hostname") && service.includes("Host: target.apiUrl.host"),
+  "direct-IP HTTPS must preserve SNI and Host verification"
+);
+assert(
+  envSchema.includes('ACTIVATION_GROK_BASE_URL: z.string().url().default("https://aichongzhi.fun/?product=grok")'),
+  "the provider URL must have a safe production default"
+);
+assert(
+  ecosystem.includes('ACTIVATION_GROK_IP: process.env.ACTIVATION_GROK_IP || "139.162.68.169"'),
+  "production must use the verified provider-IP fallback"
+);
+
+if (process.exitCode) process.exit(process.exitCode);
+console.log("aichongzhi Grok activation adapter verified");

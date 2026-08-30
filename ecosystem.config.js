@@ -27,6 +27,9 @@ module.exports = {
         BIND_HOST: "127.0.0.1",
         AI_BATTLE_STATS_FILE: "/var/lib/gptishka-runtime/ai-battle-stats.json",
         ACTIVATION_CHONGZHI_IP: process.env.ACTIVATION_CHONGZHI_IP || "172.105.209.180",
+        ACTIVATION_GROK_BASE_URL:
+          process.env.ACTIVATION_GROK_BASE_URL || "https://aichongzhi.fun/?product=grok",
+        ACTIVATION_GROK_IP: process.env.ACTIVATION_GROK_IP || "139.162.68.169",
       },
       max_memory_restart: "350M",
       autorestart: true,
