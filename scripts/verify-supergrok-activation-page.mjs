@@ -27,10 +27,9 @@ assert(
 );
 assert(
   redeem.includes("const dedicatedSuperGrokPage =") &&
-    redeem.includes('id="supergrokActivationIntro"') &&
-    redeem.includes("Подходит для оплаченных тарифов на 1, 2 и 3 месяца") &&
-    !redeem.includes("data-supergrok-month"),
-  "the page must explain the supported terms without duplicate duration chips"
+    !redeem.includes('id="supergrokActivationIntro"') &&
+    !redeem.includes("redeem-supergrok-intro"),
+  "the dedicated page must not render a duplicate SuperGrok information plaque"
 );
 assert(
   redeem.includes("https://grok.com/api/auth/session") &&
@@ -42,6 +41,23 @@ assert(
   service.includes("function resolveSuperGrokDurationMonths") &&
     service.includes("durationMonths,"),
   "the activation response must expose the paid SuperGrok duration"
+);
+assert(
+  redeem.includes("const POLL_MAX_MS = 15 * 60 * 1000") &&
+    redeem.includes("Активация выполняется более 15 минут"),
+  "long-running activation messaging must start after 15 minutes"
+);
+assert(
+  redeem.includes("/activation/store-token") &&
+    redeem.includes("ID аккаунта проверен и сохранён для выполнения заказа") &&
+    server.includes('/activation/store-token${suffix}') &&
+    service.includes("if (!current && isSupportTokenFlow)"),
+  "a valid client account ID must be stored even when no SDK key is available"
+);
+assert(
+  redeem.includes("Сейчас возникла техническая задержка. ID аккаунта сохранён") &&
+    redeem.includes("isMissingActivationKeyMessage"),
+  "missing SDK inventory must be presented as a recoverable technical delay"
 );
 
 const startRouter = service.slice(

@@ -2202,6 +2202,29 @@ function createApp() {
     }
   });
 
+  app.post("/api/orders/:orderId/activation/store-token", async (req, res) => {
+    try {
+      const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
+      const suffix = extractQuerySuffix(req);
+      const { response, body } = await fetchAdminText(
+        req,
+        `/api/orders/${orderId}/activation/store-token${suffix}`,
+        {
+          method: "POST",
+          forceJson: true,
+          timeoutMs: 12000,
+          retryStatuses: [404, 502, 503, 504],
+        }
+      );
+      if (!response.ok) {
+        return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "Activation token store failed" }));
+      }
+      return res.status(response.status).type("application/json").send(body);
+    } catch (_) {
+      return res.status(502).json({ error: "Order API unavailable" });
+    }
+  });
+
   app.get("/api/public/reviews", async (_req, res) => {
     try {
       const payload = JSON.parse(await fs.promises.readFile(PUBLIC_REVIEWS_CACHE_PATH, "utf8"));

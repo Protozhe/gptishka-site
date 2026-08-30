@@ -678,27 +678,6 @@
       animation: redeem-spin 0.8s linear infinite;
     }
 
-    .redeem-supergrok-intro {
-      margin: 18px 0 20px;
-      padding: 16px 18px;
-      border: 1px solid rgba(64, 224, 163, 0.34);
-      border-radius: 18px;
-      background: linear-gradient(135deg, rgba(39, 213, 151, 0.12), rgba(95, 126, 255, 0.08));
-      color: var(--redeem-text);
-    }
-
-    .redeem-supergrok-intro strong {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 16px;
-    }
-
-    .redeem-supergrok-intro p {
-      margin: 0;
-      color: var(--redeem-muted);
-      line-height: 1.55;
-    }
-
     .redeem-progress {
       width: 100%;
       display: grid;
@@ -1411,11 +1390,6 @@
       <h1 class="redeem-title" id="redeemTitle">Продлить / Активировать</h1>
       <p class="redeem-subtitle" id="redeemSubtitle">Заказ принят в работу, мы с вами свяжемся, если возникнут вопросы</p>
 
-      <section id="supergrokActivationIntro" class="redeem-supergrok-intro" hidden>
-        <strong id="supergrokActivationPlan">Автоматическая активация SuperGrok</strong>
-        <p>Подходит для оплаченных тарифов на 1, 2 и 3 месяца. Нужен только ID вашего аккаунта Grok — логин, пароль и код подтверждения не требуются.</p>
-      </section>
-
       <section id="vpnOfferBlock" class="redeem-vpn-offer" hidden>
         <div class="redeem-vpn-offer-head">
           <p class="redeem-label" style="margin-bottom:0;">VPN в этом заказе</p>
@@ -1558,8 +1532,6 @@
     const orderIdEl = document.getElementById('orderId');
     const redeemTitleEl = document.getElementById('redeemTitle');
     const redeemSubtitleEl = document.getElementById('redeemSubtitle');
-    const supergrokActivationIntroEl = document.getElementById('supergrokActivationIntro');
-    const supergrokActivationPlanEl = document.getElementById('supergrokActivationPlan');
     const copyOrderIdBtn = document.getElementById('copyOrderIdBtn');
     const tokenBlock = document.getElementById('tokenBlock');
     const tokenLabelEl = document.getElementById('tokenLabel');
@@ -1604,7 +1576,7 @@
 
     const POLL_INTERVAL_MS = 2000;
     // Provider processing may take a few minutes. Don't auto-restart tasks on short timeouts.
-    const POLL_MAX_MS = 5 * 60 * 1000;
+    const POLL_MAX_MS = 15 * 60 * 1000;
     const RETRY_COOLDOWN_MS = 20000;
     const TOKEN_VALIDATE_DEBOUNCE_MS = 600;
     const LAST_PAID_ORDER_KEY = 'gptishka_last_paid_order_id';
@@ -1640,6 +1612,7 @@
     let supportActivationFlow = SUPPORT_ACTIVATION_FLOW_GROK;
     let vpnOfferDismissed = false;
     let activationCompleted = false;
+    let activationWaitingForKey = false;
     let leaveGuardBypass = false;
     let leaveConfirmModalEl = null;
     let leaveConfirmProceedBtn = null;
@@ -2038,15 +2011,8 @@
       const forcedSupportFlow = resolveForcedSupportActivationFlow(payload);
       const productKey = getActivationProductFingerprint(payload);
       if (dedicatedSuperGrokPage) {
-        const durationMonths = Number(payload?.durationMonths || 0);
         if (redeemTitleEl) redeemTitleEl.textContent = 'Активировать SuperGrok';
         if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата подтверждена. Укажите ID аккаунта — остальное система выполнит автоматически.';
-        if (supergrokActivationIntroEl) supergrokActivationIntroEl.hidden = false;
-        if (supergrokActivationPlanEl) {
-          supergrokActivationPlanEl.textContent = durationMonths >= 1 && durationMonths <= 3
-            ? `Ваш тариф: SuperGrok на ${durationMonths} ${durationMonths === 1 ? 'месяц' : durationMonths === 2 ? 'месяца' : 'месяца'}`
-            : 'Автоматическая активация SuperGrok';
-        }
         document.title = 'Активация SuperGrok - GPTишка';
       }
       let chatGptPlanName = '';
@@ -2166,9 +2132,6 @@
       const config = configs[normalizedKey] || configs.perplexity;
 
       document.body.classList.add('redeem-preview-mode');
-      if (dedicatedSuperGrokPage && supergrokActivationIntroEl) {
-        supergrokActivationIntroEl.hidden = false;
-      }
       if (orderIdEl) orderIdEl.textContent = 'ПРЕДПРОСМОТР';
       if (redeemTitleEl) redeemTitleEl.textContent = dedicatedSuperGrokPage
         ? 'Активировать SuperGrok'
@@ -2418,6 +2381,16 @@
         if (!response.ok) {
           const resolved = await resolveActivationSuccessFallback();
           if (resolved) return;
+          if (response.status === 409 && isMissingActivationKeyMessage(payload)) {
+            activationWaitingForKey = true;
+            setStatus(
+              'pending',
+              'Сейчас возникла техническая задержка. ID аккаунта сохранён. Активация будет запущена после поступления ключа; при необходимости менеджер выполнит её вручную.',
+              false,
+              'process'
+            );
+            return;
+          }
           setStatus('error', friendlyActivationError(response.status), false);
           return;
         }
@@ -2661,7 +2634,7 @@
           if (!done && timeout) {
             const resolved = await resolveActivationSuccessFallback();
             if (resolved) return;
-            setStatus('pending', 'Активация занимает больше времени, чем обычно. Проверьте статус немного позже.', false, 'process');
+            setStatus('pending', 'Активация выполняется более 15 минут. ID аккаунта сохранён — проверьте статус позже или напишите в поддержку.', false, 'process');
             retryNewKeyBtn.disabled = false;
           }
         }
@@ -2796,7 +2769,7 @@
         return;
       }
       const hasValue = Boolean(orderId && String(tokenInput.value || '').trim());
-      startBtn.disabled = !hasValue || !tokenValidatedOk;
+      startBtn.disabled = activationWaitingForKey || !hasValue || !tokenValidatedOk;
     }
 
     function scheduleValidateToken() {
@@ -2843,7 +2816,7 @@
       }
 
       try {
-        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/validate-token`, {
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/store-token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token, orderToken: orderLinkToken }),
@@ -2865,8 +2838,8 @@
 
         if (ok) {
           tokenWarn.textContent = isSupportTokenDelivery
-            ? 'ID аккаунта выглядит корректным (без сохранения).'
-            : 'Токен выглядит корректным по формату (без сохранения).';
+            ? 'ID аккаунта проверен и сохранён для выполнения заказа.'
+            : 'Токен проверен и сохранён для выполнения заказа.';
           tokenWarn.className = '';
         } else {
           tokenWarn.textContent = lastValidateReason || 'Токен не подходит';
@@ -2918,6 +2891,11 @@
       if (code === 401 || code === 403) return 'Ссылка на заказ недействительна или устарела. Откройте активацию из страницы успешной оплаты.';
       if (code === 429) return 'Слишком много попыток. Подождите немного и повторите.';
       return 'Не удалось запустить активацию автоматически. Повторите попытку или напишите в поддержку.';
+    }
+
+    function isMissingActivationKeyMessage(payload) {
+      const text = String(payload?.message || payload?.error || '').trim().toLowerCase();
+      return text.includes('activation key is not issued yet') || text.includes('no unused cdk key available');
     }
 
     function setActivationProgress(stage) {

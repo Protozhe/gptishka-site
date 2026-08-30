@@ -593,6 +593,14 @@ export const ordersService = {
       await deliverProduct(order);
       current = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
     }
+    if (!current && isSupportTokenFlow) {
+      current = await ensureActivationRecordForTokenFlow(
+        orderId,
+        orderToken,
+        { deliveryMode: "support" },
+        trustedAdmin
+      );
+    }
     if (!current) {
       throw new AppError("Activation key is not issued yet", 409);
     }
