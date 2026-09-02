@@ -13,6 +13,7 @@ import { deliverProduct } from "./delivery.service";
 import { buildActivationSiteEndpointUrl, readActivationSiteUrlFromOrderDetails } from "../../common/utils/activation-site";
 import { resolveOrderDeliveryType, resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { canonicalProductKey, resolveProductPoolBaseKey } from "../../common/utils/product-key";
+import { resolveAichongzhiProduct, type AichongzhiProduct } from "../../common/utils/aichongzhi-product";
 import { resolveTelegramOrderContext } from "./telegram-order-context";
 import { manualCredentialsStore } from "../products/manual-credentials.store";
 import { toVpnMePayload, vpnService } from "../../services/vpn.service";
@@ -33,7 +34,7 @@ const ACTIVATION_OUTSTOCK_RETRY_DELAY_MS = Math.min(
 );
 const SXZFD_GROK_API_TIMEOUT_MS = 25_000;
 const CHONGZHI_JSON_API_TIMEOUT_MS = 30_000;
-const AICHONGZHI_GROK_API_TIMEOUT_MS = 30_000;
+const AICHONGZHI_API_TIMEOUT_MS = 30_000;
 const SXZFD_GROK_MAX_START_ATTEMPTS = Math.min(3, ACTIVATION_OUTSTOCK_MAX_RETRIES);
 const MIN_STORED_CLIENT_TOKEN_TTL_HOURS = 24 * 7;
 const STORED_CLIENT_TOKEN_TTL_HOURS = Math.max(
@@ -49,7 +50,7 @@ const activationLockDir = path.join(resolveRuntimeDir(), "order-locks");
 const DEFAULT_SUPPORT_URL = "https://quickplus.vip/public/grok/";
 const DEFAULT_CLAUDE_MAX20X_SUPPORT_URL = "https://quickplus.vip/public/max20x/";
 const DEFAULT_GROK_1M_SUPPORT_URL = "https://vip.sxzfd.com/grok";
-const DEFAULT_AICHONGZHI_GROK_URL = "https://aichongzhi.fun/?product=grok";
+const DEFAULT_AICHONGZHI_URL = "https://aichongzhi.fun";
 const DEFAULT_SUPPORT_EMAIL = "";
 
 function publicActivationMessage(status: unknown, verificationState?: unknown) {
@@ -937,6 +938,30 @@ export const ordersService = {
       try {
         const checked = await fetchChongzhiCodeStatus(String(stored?.cdk || ""), stored?.activationSiteUrl || "");
         updateActivationFromChongzhiCodePayload(orderId, checked);
+      } catch (error) {
+        updateActivationProviderCheckError(orderId, error);
+      }
+      current = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || current;
+      const isSuccess = current?.status === "success" || current?.verificationState === "success";
+      const isPending = current?.status === "processing" || current?.verificationState === "pending";
+      return {
+        pending: Boolean(isPending && !isSuccess),
+        success: Boolean(isSuccess),
+        message: publicActivationMessage(current?.status, current?.verificationState),
+        task_id: String(current?.taskId || taskId),
+      };
+    }
+
+    const aichongzhiProduct = resolveAichongzhiProduct(String(stored?.productKey || ""));
+    if (aichongzhiProduct && String(stored?.cdk || "").trim()) {
+      let current = stored;
+      try {
+        const checked = await fetchAichongzhiTaskPayload(
+          String(stored?.cdk || ""),
+          String(stored?.taskId || taskId || ""),
+          aichongzhiProduct
+        );
+        updateActivationFromProviderPayload(orderId, String(stored?.taskId || taskId || ""), checked);
       } catch (error) {
         updateActivationProviderCheckError(orderId, error);
       }
@@ -2070,6 +2095,10 @@ async function startOutstockTaskWithRetry(input: {
   productKey?: string;
   activationSiteUrl?: string;
 }) {
+  const aichongzhiProduct = resolveAichongzhiProduct(input.productKey);
+  if (aichongzhiProduct) {
+    return startAichongzhiTaskWithRetry({ ...input, product: aichongzhiProduct });
+  }
   if (input.supportFlow) {
     return startQuickplusSupportTaskWithRetry(input);
   }
@@ -2142,30 +2171,22 @@ async function startOutstockTaskWithRetry(input: {
   };
 }
 
-function isAichongzhiGrokSupportProduct(productKey?: string | null) {
-  const key = String(productKey || "").trim().toLowerCase();
-  return Boolean(
-    (key.includes("grok") || key.includes("supergrok")) &&
-      !key.includes("xpremium") &&
-      !key.includes("x-premium")
-  );
-}
-
-function resolveAichongzhiGrokTarget() {
-  const base = String(env.ACTIVATION_GROK_BASE_URL || DEFAULT_AICHONGZHI_GROK_URL).trim();
+function resolveAichongzhiTarget(product: AichongzhiProduct) {
+  const base = String(env.ACTIVATION_GROK_BASE_URL || DEFAULT_AICHONGZHI_URL).trim();
   const parsed = new URL(base);
   const apiUrl = new URL("/api/redeem.php", parsed.origin);
   return {
     apiUrl,
-    source: `${parsed.hostname}/grok`,
+    source: `${parsed.hostname}/${product}`,
   };
 }
 
-async function callAichongzhiGrokApi(
+async function callAichongzhiApi(
   action: "verifyCdk" | "activate" | "status",
-  payload: Record<string, unknown>
+  payload: Record<string, unknown>,
+  product: AichongzhiProduct
 ) {
-  const target = resolveAichongzhiGrokTarget();
+  const target = resolveAichongzhiTarget(product);
   target.apiUrl.searchParams.set("a", action);
   const configuredIp = String(env.ACTIVATION_GROK_IP || "").trim();
   const directIp = configuredIp && target.apiUrl.hostname === "aichongzhi.fun" ? configuredIp : "";
@@ -2207,15 +2228,15 @@ async function callAichongzhiGrokApi(
       }
     );
 
-    request.setTimeout(AICHONGZHI_GROK_API_TIMEOUT_MS, () => {
-      request.destroy(new Error("Aichongzhi Grok API request timed out"));
+    request.setTimeout(AICHONGZHI_API_TIMEOUT_MS, () => {
+      request.destroy(new Error("Aichongzhi activation API request timed out"));
     });
     request.on("error", reject);
     request.end(body);
   });
 }
 
-function normalizeAichongzhiGrokPayload(response: { status: number; raw: string; json: any; source: string }) {
+function normalizeAichongzhiPayload(response: { status: number; raw: string; json: any; source: string }) {
   const json = response.json && typeof response.json === "object" ? response.json : null;
   const status = String(json?.status || "").trim().toLowerCase();
   const final = Boolean(json?.final);
@@ -2227,41 +2248,46 @@ function normalizeAichongzhiGrokPayload(response: { status: number; raw: string;
   return { json, status, final, success, failed, pending, message, taskId };
 }
 
-function publicAichongzhiGrokMessage(state: ReturnType<typeof normalizeAichongzhiGrokPayload>) {
+function publicAichongzhiMessage(state: ReturnType<typeof normalizeAichongzhiPayload>) {
   if (state.success) return "Подписка успешно активирована.";
   if (state.failed) return "Провайдер не смог завершить активацию. Обратитесь в поддержку.";
   if (state.pending) return "Подключаем подписку. Пожалуйста, подождите.";
   return "Проверяем состояние активации.";
 }
 
-async function fetchAichongzhiGrokTaskPayload(cdk?: string | null, fallbackTaskId?: string | null) {
+async function fetchAichongzhiTaskPayload(
+  cdk: string | null | undefined,
+  fallbackTaskId: string | null | undefined,
+  product: AichongzhiProduct
+) {
   const code = String(cdk || "").trim();
-  if (!code) throw new AppError("Grok activation key is empty", 400);
-  const response = await callAichongzhiGrokApi("status", { code });
-  const state = normalizeAichongzhiGrokPayload(response);
+  if (!code) throw new AppError("Activation key is empty", 400);
+  const response = await callAichongzhiApi("status", { code }, product);
+  const state = normalizeAichongzhiPayload(response);
   if (!response.json || response.status >= 500) {
-    throw new AppError("Grok activation provider status is temporarily unavailable", 502);
+    throw new AppError("Activation provider status is temporarily unavailable", 502);
   }
   const normalizedStatus = state.success ? "done" : state.failed ? "failed" : state.status || "processing";
   return {
     pending: state.pending,
     success: state.success,
     status: normalizedStatus,
-    message: publicAichongzhiGrokMessage(state),
+    message: publicAichongzhiMessage(state),
     task_id: state.taskId || String(fallbackTaskId || ""),
-    error: state.failed ? state.message || "Grok activation failed" : "",
+    error: state.failed ? state.message || "Activation failed" : "",
     raw: {
       httpStatus: response.status,
       payload: state.json,
       provider: response.source,
-      productType: "grok",
+      productType: product,
     },
   };
 }
 
-async function startAichongzhiGrokTaskWithRetry(input: {
+async function startAichongzhiTaskWithRetry(input: {
   cdk: string;
   userCandidates: any[];
+  product: AichongzhiProduct;
 }) {
   const accountId =
     input.userCandidates.find((candidate) => typeof candidate === "string" && /^[0-9a-f-]{36}$/i.test(String(candidate || "").trim())) ||
@@ -2288,8 +2314,8 @@ async function startAichongzhiGrokTaskWithRetry(input: {
   for (let attempt = 1; attempt <= ACTIVATION_OUTSTOCK_MAX_RETRIES; attempt += 1) {
     tries += 1;
     try {
-      const verify = await callAichongzhiGrokApi("verifyCdk", { code: input.cdk, product: "grok" });
-      const verifyState = normalizeAichongzhiGrokPayload(verify);
+      const verify = await callAichongzhiApi("verifyCdk", { code: input.cdk, product: input.product }, input.product);
+      const verifyState = normalizeAichongzhiPayload(verify);
       if (!verify.json || !verify.json?.ok) {
         lastStatus = verify.status || 502;
         lastBody = verify.raw || "verifyCdk failed";
@@ -2302,17 +2328,17 @@ async function startAichongzhiGrokTaskWithRetry(input: {
           body: verify.raw || "",
           tries,
           immediateSuccess: true,
-          message: publicAichongzhiGrokMessage(verifyState),
+          message: publicAichongzhiMessage(verifyState),
           providerPayload: { source: verify.source, verify: verify.json },
         };
       } else {
-        const activate = await callAichongzhiGrokApi("activate", {
+        const activate = await callAichongzhiApi("activate", {
           code: input.cdk,
           token: accountIdRaw,
           cookie: "",
-          product: "grok",
-        });
-        const activateState = normalizeAichongzhiGrokPayload(activate);
+          product: input.product,
+        }, input.product);
+        const activateState = normalizeAichongzhiPayload(activate);
         if (activate.json?.ok && !activateState.failed) {
           return {
             ok: true as const,
@@ -2321,7 +2347,7 @@ async function startAichongzhiGrokTaskWithRetry(input: {
             body: activate.raw || "",
             tries,
             immediateSuccess: activateState.success,
-            message: publicAichongzhiGrokMessage(activateState),
+            message: publicAichongzhiMessage(activateState),
             providerPayload: { source: activate.source, verify: verify.json, activate: activate.json },
           };
         }
@@ -2334,7 +2360,7 @@ async function startAichongzhiGrokTaskWithRetry(input: {
       lastBody = error instanceof Error ? error.message : String(error || "unknown error");
       lastMessage = "";
       try {
-        const recovered = await fetchAichongzhiGrokTaskPayload(input.cdk);
+        const recovered = await fetchAichongzhiTaskPayload(input.cdk, undefined, input.product);
         if (recovered.success || recovered.pending) {
           return {
             ok: true as const,
@@ -2376,8 +2402,9 @@ async function startQuickplusSupportTaskWithRetry(input: {
   activationFlow?: string;
   productKey?: string;
 }) {
-  if (isAichongzhiGrokSupportProduct(input.productKey)) {
-    return startAichongzhiGrokTaskWithRetry(input);
+  const aichongzhiProduct = resolveAichongzhiProduct(input.productKey);
+  if (aichongzhiProduct) {
+    return startAichongzhiTaskWithRetry({ ...input, product: aichongzhiProduct });
   }
 
   const accountId =
@@ -2723,8 +2750,9 @@ async function fetchQuickplusSupportTaskPayload(input: {
   productKey?: string;
   cdk?: string;
 }) {
-  if (isAichongzhiGrokSupportProduct(input.productKey)) {
-    return fetchAichongzhiGrokTaskPayload(input.cdk, input.taskId);
+  const aichongzhiProduct = resolveAichongzhiProduct(input.productKey);
+  if (aichongzhiProduct) {
+    return fetchAichongzhiTaskPayload(input.cdk, input.taskId, aichongzhiProduct);
   }
 
   const lowerProductKey = String(input.productKey || "").toLowerCase();
