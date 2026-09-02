@@ -120,8 +120,16 @@ function isExcludedFromTelegramCdk(product: ProductItem) {
   return blockedSlugs.includes(slug);
 }
 
-function poolKey(slug: string, type: ProductDeliveryType) {
-  const base = normalizeKey(slug);
+function productPoolBaseKey(product: Pick<ProductItem, "slug" | "tags">) {
+  const explicitPool = (Array.isArray(product.tags) ? product.tags : [])
+    .map((tag) => String(tag || "").trim().toLowerCase())
+    .find((tag) => tag.startsWith("activation-pool:"))
+    ?.slice("activation-pool:".length);
+  return normalizeKey(explicitPool || product.slug);
+}
+
+function poolKey(product: ProductItem, type: ProductDeliveryType) {
+  const base = productPoolBaseKey(product);
   if (type === "support_claude") return normalizeKey(`tgbot-${base}-sdk5`);
   return normalizeKey(`tgbot-${base}-sdk4`);
 }
@@ -236,7 +244,7 @@ function TelegramProductsTable({
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {products.map((product) => {
               const type = resolveDeliveryType(product);
-              const key = poolKey(product.slug, type);
+              const key = poolKey(product, type);
               const isActive = product.id === activeProductId;
               const title = cleanProductTitle(product.title) || product.title;
 
@@ -376,7 +384,7 @@ function ProductKeysCard({ product, poolKeyOverride }: { product: ProductItem; p
   const [showUsed, setShowUsed] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const type = resolveDeliveryType(product);
-  const key = poolKeyOverride || poolKey(product.slug, type);
+  const key = poolKeyOverride || poolKey(product, type);
   const methodLabel = type === "support_claude"
     ? "Метод 5 (Claude)"
     : isChatGptLikeProduct(product)
@@ -608,7 +616,7 @@ export default function TelegramCdkPage() {
   }, [botProducts, selectedProductId]);
 
   const visibleTelegramPoolKeys = useMemo(() => {
-    return new Set(botProducts.map((product) => poolKey(product.slug, resolveDeliveryType(product))));
+    return new Set(botProducts.map((product) => poolKey(product, resolveDeliveryType(product))));
   }, [botProducts]);
 
   const telegramMoveTargets = useMemo<PoolMoveTarget[]>(() => {
@@ -616,7 +624,7 @@ export default function TelegramCdkPage() {
     const siteTargets = siteProducts
       .map((product) => {
         const type = resolveDeliveryType(product);
-        const base = normalizeKey(product.slug);
+        const base = productPoolBaseKey(product);
         if (!base || type === "credentials" || type === "manual_login") return null;
         if (type === "support_claude") {
           return {
@@ -639,7 +647,7 @@ export default function TelegramCdkPage() {
 
     const telegramTargets = botProducts.map((product) => ({
       label: `Telegram: ${cleanProductTitle(product.title) || product.title}`,
-      productKey: poolKey(product.slug, resolveDeliveryType(product)),
+      productKey: poolKey(product, resolveDeliveryType(product)),
     }));
 
     const seen = new Set<string>();

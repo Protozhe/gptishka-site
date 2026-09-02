@@ -3,6 +3,7 @@ import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { resolveOrderDeliveryType, resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { readActivationSiteUrlFromOrderDetails } from "../../common/utils/activation-site";
 import { canonicalProductKey, resolveProductPoolBaseKey } from "../../common/utils/product-key";
+import { isTelegramOrderEmail } from "../../common/utils/telegram-order-email";
 import { prisma } from "../../config/prisma";
 import { resolveVpnProvisionPayload, vpnService } from "../../services/vpn.service";
 import { manualCredentialsStore } from "../products/manual-credentials.store";
@@ -199,11 +200,6 @@ export async function deliverProduct(order: Order) {
     }).catch((error) => console.error(`[delivery] direct-code telegram failed order=${order.id}`, error));
   }
   await ensureBundleVpnAccess();
-}
-
-function isTelegramOrderEmail(email: string | null | undefined) {
-  const normalized = String(email || "").trim().toLowerCase();
-  return normalized.endsWith("@telegram.local");
 }
 
 function resolveActivationKeyPoolProductKey(
