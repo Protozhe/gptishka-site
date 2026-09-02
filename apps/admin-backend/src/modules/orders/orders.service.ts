@@ -12,7 +12,7 @@ import { activationStore, type ActivationRecord } from "./activation.store";
 import { deliverProduct } from "./delivery.service";
 import { buildActivationSiteEndpointUrl, readActivationSiteUrlFromOrderDetails } from "../../common/utils/activation-site";
 import { resolveOrderDeliveryType, resolveProductDeliveryType } from "../../common/utils/product-delivery";
-import { canonicalProductKey } from "../../common/utils/product-key";
+import { canonicalProductKey, resolveProductPoolBaseKey } from "../../common/utils/product-key";
 import { resolveTelegramOrderContext } from "./telegram-order-context";
 import { manualCredentialsStore } from "../products/manual-credentials.store";
 import { toVpnMePayload, vpnService } from "../../services/vpn.service";
@@ -1815,7 +1815,11 @@ function resolveActivationPoolProductKeyForOrder(orderWithItem: Awaited<ReturnTy
   const isTelegramOrder = orderSource === "telegram";
   const productSlug = String(product?.slug || "").trim().toLowerCase();
   const productId = String(product?.id || "").trim().toLowerCase();
-  const baseProductKey = canonicalProductKey(productSlug || productId || "chatgpt");
+  const baseProductKey = resolveProductPoolBaseKey({
+    slug: productSlug,
+    id: productId || "chatgpt",
+    tags: product?.tags || [],
+  });
   if (!baseProductKey) return "chatgpt";
   if (String(deliveryType || "").trim().toLowerCase() === "support_claude") {
     const key = isTelegramOrder ? `tgbot-${baseProductKey}-sdk5` : `${baseProductKey}-sdk5`;

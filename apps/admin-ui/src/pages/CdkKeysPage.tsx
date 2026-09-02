@@ -451,7 +451,7 @@ function KeyProductColumn({
   const qc = useQueryClient();
   const isSupportMode = mode === "support" || mode === "support_claude";
   const isClaudeMode = mode === "support_claude";
-  const baseProductKey = normalizeProductKey(product.slug);
+  const baseProductKey = resolveProductPoolBaseKey(product);
   const productKey = productKeyOverride || resolveKeyPoolProductKey(baseProductKey, mode);
   const keyColumnLabel = isSupportMode ? "SDK" : "CDK";
   const modeLabel = isSupportMode ? (isClaudeMode ? TEXT.modeSupportClaude : TEXT.modeSupport) : TEXT.modeActivation;
@@ -924,7 +924,7 @@ function productModeLabel(product: ProductItem) {
 
 function productPoolHint(product: ProductItem) {
   const deliveryType = resolveDeliveryType(product);
-  const baseProductKey = normalizeProductKey(product.slug);
+  const baseProductKey = resolveProductPoolBaseKey(product);
   if (deliveryType === "credentials") return `productId: ${product.id}`;
   if (deliveryType === "vpn") return `productKey: ${baseProductKey}`;
   if (deliveryType === "support") return `poolKey: ${resolveKeyPoolProductKey(baseProductKey, "support")}`;
@@ -1160,7 +1160,7 @@ export default function CdkKeysPage() {
     const keys = new Set<string>();
     for (const product of products) {
       const deliveryType = resolveDeliveryType(product);
-      const base = normalizeProductKey(product.slug);
+      const base = resolveProductPoolBaseKey(product);
       if (deliveryType === "credentials") continue;
       if (deliveryType === "vpn") {
         keys.add(base);
@@ -1183,7 +1183,7 @@ export default function CdkKeysPage() {
     return products
       .map((product) => {
         const deliveryType = resolveDeliveryType(product);
-        const base = normalizeProductKey(product.slug);
+        const base = resolveProductPoolBaseKey(product);
         if (deliveryType === "credentials") return null;
         if (deliveryType === "vpn") {
           return { label: cleanProductTitle(product.title) || product.title, productKey: base };
@@ -1288,6 +1288,14 @@ function normalizeProductKey(value: string) {
     .replace(/^-+/, "")
     .replace(/-+$/, "");
   return normalized || "chatgpt";
+}
+
+function resolveProductPoolBaseKey(product: Pick<ProductItem, "slug" | "tags">) {
+  const explicitPool = (Array.isArray(product.tags) ? product.tags : [])
+    .map((tag) => String(tag || "").trim().toLowerCase())
+    .find((tag) => tag.startsWith("activation-pool:"))
+    ?.slice("activation-pool:".length);
+  return normalizeProductKey(explicitPool || product.slug);
 }
 
 function resolveKeyPoolProductKey(baseProductKey: string, mode: "activation" | "support" | "support_claude") {

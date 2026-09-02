@@ -137,7 +137,9 @@ function parseStartPayload(text: string) {
 }
 async function notifyAdmin(eventTitle: string, lines: string[]) {
   const text = [eventTitle, ...lines].filter(Boolean).join("\n");
-  await sendTelegramNotification(text).catch(() => undefined);
+  await sendTelegramNotification(text).catch((error) => {
+    console.error(`[telegram-bots] admin notification failed event=${eventTitle}`, error);
+  });
 }
 function detectMessageAction(text: string) {
   const value = String(text || "").trim().toLowerCase();

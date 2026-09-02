@@ -272,18 +272,33 @@ export async function sendTelegramNotification(message: string) {
   if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return;
 
   const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: env.TELEGRAM_CHAT_ID,
-      text: message,
-    }),
+  const body = JSON.stringify({
+    chat_id: env.TELEGRAM_CHAT_ID,
+    text: message,
   });
+  let lastError: unknown = null;
 
-  if (!response.ok) {
-    console.error("Telegram notification failed", await response.text());
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (response.ok) return;
+      const responseBody = await response.text();
+      lastError = new Error(`Telegram API returned ${response.status}: ${responseBody}`);
+    } catch (error) {
+      lastError = error;
+    }
+
+    if (attempt < 3) {
+      await new Promise((resolve) => setTimeout(resolve, attempt * 1_000));
+    }
   }
+
+  throw lastError instanceof Error ? lastError : new Error("Telegram notification failed after 3 attempts");
 }
 
 function resolveSiteOrigin() {

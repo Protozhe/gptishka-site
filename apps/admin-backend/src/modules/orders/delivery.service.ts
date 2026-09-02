@@ -2,7 +2,7 @@
 import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { resolveOrderDeliveryType, resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { readActivationSiteUrlFromOrderDetails } from "../../common/utils/activation-site";
-import { canonicalProductKey } from "../../common/utils/product-key";
+import { canonicalProductKey, resolveProductPoolBaseKey } from "../../common/utils/product-key";
 import { prisma } from "../../config/prisma";
 import { resolveVpnProvisionPayload, vpnService } from "../../services/vpn.service";
 import { manualCredentialsStore } from "../products/manual-credentials.store";
@@ -146,7 +146,11 @@ export async function deliverProduct(order: Order) {
     .trim()
     .toLowerCase();
   const productId = String(product?.id || "").trim().toLowerCase();
-  const baseProductKey = canonicalProductKey(productSlug || productId);
+  const baseProductKey = resolveProductPoolBaseKey({
+    slug: productSlug,
+    id: productId,
+    tags: product?.tags || [],
+  });
   const productKey = resolveActivationKeyPoolProductKey(baseProductKey, deliveryType, order.email);
   const activationSiteUrl = readActivationSiteUrlFromOrderDetails(fullOrder.orderDetails);
 
