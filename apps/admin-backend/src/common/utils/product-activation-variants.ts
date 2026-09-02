@@ -65,9 +65,21 @@ export function resolveActivationVariant(
   }
 
   const explicitKey = String(requestedKey || "").trim();
-  const deliveryMethod = String(requestedDeliveryMethod || "").trim().toLowerCase();
-  const key: ProductActivationVariantKey =
-    explicitKey === "withLogin" || deliveryMethod === "login" ? "withLogin" : "withoutLogin";
+  const deliveryMethod = String(requestedDeliveryMethod || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
+  const requestsWithoutLogin = ["id", "link", "withoutlogin", "nologin", "token", "key", "activation", "1"].includes(
+    deliveryMethod
+  );
+  const requestsWithLogin = ["login", "withlogin", "manuallogin", "customerlogin", "clientlogin"].includes(
+    deliveryMethod
+  );
+  const key: ProductActivationVariantKey = requestsWithoutLogin
+    ? "withoutLogin"
+    : requestsWithLogin || explicitKey === "withLogin"
+      ? "withLogin"
+      : "withoutLogin";
   const selected = variants[key];
   return { key, ...selected };
 }

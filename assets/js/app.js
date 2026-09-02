@@ -3071,8 +3071,11 @@ function initActivationResumeShortcut() {
   function getServiceDeliveryKey(item) {
     const tags = Array.isArray(item?.tags) ? item.tags : [];
     const deliveryType = resolveDeliveryType(item?.deliveryType, item?.deliveryMethod, tags);
+    const activationVariant = String(item?.activationVariant || "").trim().toLowerCase().replace(/[\s_-]+/g, "");
     const text = getProductSearchText(item);
     if (isStandaloneVpnProduct(item)) return "vpn";
+    if (activationVariant === "withoutlogin") return "id";
+    if (activationVariant === "withlogin") return "support";
     if (deliveryType === "manual_login" || deliveryType === "credentials") return "support";
     if (deliveryType === "support" || text.includes("РїРѕ id") || text.includes("account id")) return "id";
     if (text.includes("по ссылке") || text.includes("link")) return "link";

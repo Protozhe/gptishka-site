@@ -21,7 +21,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260723-checkout-controls1";
-const expectedJsAssetVersion = "20260825-enot-routing1";
+const expectedJsAssetVersion = "20260902-claude-auto1";
 
 [
   ["service-page--constructor", "claude.html: constructor page class"],
@@ -61,6 +61,7 @@ const expectedJsAssetVersion = "20260825-enot-routing1";
   ['new Set(["chatgpt", "claude", "grok", "perplexity", "gemini", "suno", "vpn"])', "app.js: Claude in modal service allowlist"],
   ["isAiOrderModalServiceKey", "app.js: generic service check"],
   ["getAiOrderModalServiceConfig", "app.js: service-specific modal config lookup"],
+  ['activationVariant === "withoutlogin"', "app.js: by-ID variant is kept separate from login activation"],
   ["renderChatGptGoOrderCard(item, serviceKey)", "app.js: render receives service key"],
   ['logo: "/assets/img/services/claude-card.png?v=20260618-claude-logo2"', "app.js: Claude modal logo cache-bust"],
   ['displayName: "Claude"', "app.js: Claude display name"],
@@ -81,6 +82,7 @@ const expectedJsAssetVersion = "20260825-enot-routing1";
 
 [
   ['new Set(["chatgpt", "claude", "grok", "perplexity", "gemini", "suno", "vpn"])', "app.min.js: shared AI modal allowlist"],
+  ['activationVariant === "withoutlogin"', "app.min.js: by-ID variant is kept separate from login activation"],
   ["claude-card.png?v=20260618-claude-logo2", "app.min.js: Claude modal logo cache-bust"],
   ["claude-card-hover.png?v=20260618-claude-logo2", "app.min.js: Claude hover logo cache-bust"],
 ].forEach(([marker, label]) => requireMarker(minifiedSource, marker, label));
