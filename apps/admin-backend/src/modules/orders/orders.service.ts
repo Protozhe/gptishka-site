@@ -17,6 +17,7 @@ import { resolveAichongzhiProduct, type AichongzhiProduct } from "../../common/u
 import { resolveTelegramOrderContext } from "./telegram-order-context";
 import { manualCredentialsStore } from "../products/manual-credentials.store";
 import { toVpnMePayload, vpnService } from "../../services/vpn.service";
+import { licenseService } from "../../services/licenseService";
 import crypto from "crypto";
 import fs from "fs";
 import https from "https";
@@ -665,6 +666,72 @@ export const ordersService = {
       userAgent: actor?.userAgent,
     });
     return result;
+  },
+
+  async completeActivationFromAdmin(
+    orderId: string,
+    token: string,
+    keyId: string,
+    actor?: { userId?: string; ip?: string; userAgent?: string }
+  ) {
+    const order = await assertPaidOrderForAdmin(orderId);
+    const orderWithItem = await getOrderWithFirstItem(order.id);
+    const productKey = resolveActivationPoolProductKeyForOrder(orderWithItem);
+    const tokenInfo = parseClientTokenInput(token);
+    const safeToken = tokenInfo.extracted || tokenInfo.raw;
+    if (!safeToken) throw new AppError("Client account ID is required", 400);
+    if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Client account ID is too long", 400);
+
+    const key = await prisma.licenseKey.findUnique({ where: { id: String(keyId || "").trim() } });
+    if (!key) throw new AppError("Activation key not found", 404);
+    if (canonicalProductKey(key.productKey) !== canonicalProductKey(productKey)) {
+      throw new AppError("Activation key belongs to another product pool", 409);
+    }
+    if (key.status !== "available" && !(key.status === "used" && key.orderId === order.id)) {
+      throw new AppError("Activation key is already assigned to another order", 409);
+    }
+
+    if (key.status === "available") {
+      await licenseService.markKeyUsed(key.id, order.id, { userId: actor?.userId });
+      await prisma.licenseKey.update({ where: { id: key.id }, data: { email: order.email } });
+    }
+
+    const nowIso = new Date().toISOString();
+    const existing = normalizeActivationRecordForRead(activationStore.findByOrderId(order.id));
+    activationStore.upsert({
+      orderId: order.id,
+      email: order.email,
+      productKey,
+      activationSiteUrl: key.activationSiteUrl || existing?.activationSiteUrl || "",
+      cdk: key.keyValue,
+      status: "success",
+      taskId: existing?.taskId || `manual-${Date.now()}`,
+      attempts: Math.max(0, Number(existing?.attempts || 0)),
+      tokenValidationAttempts: Math.max(0, Number(existing?.tokenValidationAttempts || 0)) + 1,
+      lastTokenValidatedAt: nowIso,
+      tokenMeta: buildTokenMeta(tokenInfo),
+      deviceId: existing?.deviceId || null,
+      verificationState: "success",
+      lastProviderMessage: "Подписка успешно активирована вручную.",
+      lastProviderCheckedAt: nowIso,
+      lastProviderPayload: { manual: true, source: "admin" },
+      issuedAt: existing?.issuedAt || nowIso,
+      updatedAt: nowIso,
+      ...buildStoredClientTokenPatch(tokenInfo.raw),
+    });
+
+    await writeAuditLog({
+      userId: actor?.userId,
+      entityType: "order",
+      entityId: order.id,
+      action: "activation_admin_complete",
+      before: existing ? { status: existing.status, verificationState: existing.verificationState } : null,
+      after: { status: "success", verificationState: "success", keyId: key.id },
+      ip: actor?.ip,
+      userAgent: actor?.userAgent,
+    });
+
+    return { ok: true, orderId: order.id, status: "success" as const };
   },
 
   async storeActivationClientToken(orderId: string, token: string, orderToken?: string) {
