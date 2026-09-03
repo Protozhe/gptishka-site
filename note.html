@@ -8,48 +8,84 @@
   <title>Чистый блокнот — GPTishka</title>
   <meta name="description" content="Простой онлайн-блокнот без рекламы и регистрации.">
   <link rel="icon" href="/favicon.ico">
-  <link rel="stylesheet" href="/assets/css/note.css?v=20260903-note2">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/note.css?v=20260903-note3">
 </head>
 <body>
   <div class="note-app">
     <header class="note-header">
       <a class="note-brand" href="/note" aria-label="GPTishka Блокнот">
         <img src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka">
-        <span>Блокнот</span>
+        <span class="note-brand__product">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+          Блокнот
+        </span>
       </a>
       <div class="note-actions" aria-label="Действия с заметкой">
-        <button class="note-button note-button--ghost" type="button" data-note-copy hidden>Скопировать ссылку</button>
-        <button class="note-button note-button--primary" type="button" data-note-new>Новая заметка</button>
+        <button class="note-button note-button--ghost" type="button" data-note-copy hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07.07l2-2a5 5 0 0 0-7.07-7.07l-1.15 1.15M14 11a5 5 0 0 0-7.07-.07l-2 2A5 5 0 0 0 12 20l1.15-1.15"/></svg>
+          Скопировать ссылку
+        </button>
+        <button class="note-button note-button--primary" type="button" data-note-new>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Новая заметка
+        </button>
       </div>
     </header>
 
     <main class="note-main">
-      <section class="note-sheet" aria-labelledby="noteTitle">
-        <div class="note-meta">
-          <span class="note-status" data-note-status><i></i> Новая заметка</span>
-          <span class="note-counter" data-note-counter>0 символов</span>
-        </div>
-        <input id="noteTitle" class="note-title" type="text" maxlength="160" placeholder="Название заметки" autocomplete="off">
-        <textarea class="note-editor" data-note-editor maxlength="100000" placeholder="Начните писать здесь…" aria-label="Текст заметки"></textarea>
-        <div class="note-share" data-note-share hidden>
-          <div class="note-share__copy">
-            <span>Ссылки на заметку</span>
-            <strong>Обычная ссылка открывает только чтение. Секретная позволяет менять текст.</strong>
+      <aside class="note-intro" aria-label="О блокноте">
+        <span class="note-eyebrow"><i></i> GPTISHKA NOTES</span>
+        <h1>Текст, которым легко поделиться.</h1>
+        <p>Без регистрации, рекламы и лишних настроек. Просто напишите — ссылка появится автоматически.</p>
+        <div class="note-feature-list">
+          <div class="note-feature">
+            <span>01</span>
+            <p><strong>Автосохранение</strong>Каждое изменение останется в заметке.</p>
           </div>
-          <div class="note-share__actions">
-            <button class="note-button note-button--ghost" type="button" data-note-copy-read>Для чтения</button>
-            <button class="note-button note-button--ghost" type="button" data-note-copy-edit hidden>Для редактирования</button>
+          <div class="note-feature">
+            <span>02</span>
+            <p><strong>Две ссылки</strong>Одна для чтения, другая для редактирования.</p>
+          </div>
+          <div class="note-feature">
+            <span>03</span>
+            <p><strong>Чистый текст</strong>Без рекламы и отвлекающих элементов.</p>
+          </div>
+        </div>
+        <p class="note-privacy">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
+          Не указывайте пароли, платёжные и другие конфиденциальные данные.
+        </p>
+      </aside>
+
+      <section class="note-sheet" aria-labelledby="noteTitle">
+        <div class="note-toolbar">
+          <div class="note-meta">
+            <span class="note-status" data-note-status><i></i> Новая заметка</span>
+            <span class="note-counter" data-note-counter>0 символов</span>
+          </div>
+          <span class="note-toolbar__hint">Сохраняется автоматически</span>
+        </div>
+        <div class="note-paper">
+          <input id="noteTitle" class="note-title" type="text" maxlength="160" placeholder="Название заметки" autocomplete="off">
+          <textarea class="note-editor" data-note-editor maxlength="100000" placeholder="Начните писать здесь…" aria-label="Текст заметки"></textarea>
+          <div class="note-share" data-note-share hidden>
+            <div class="note-share__copy">
+              <span>Заметка готова к отправке</span>
+              <strong>Обычная ссылка — только чтение. Секретная — редактирование.</strong>
+            </div>
+            <div class="note-share__actions">
+              <button class="note-button note-button--ghost" type="button" data-note-copy-read>Для чтения</button>
+              <button class="note-button note-button--ghost" type="button" data-note-copy-edit hidden>Для редактирования</button>
+            </div>
           </div>
         </div>
       </section>
-
-      <aside class="note-help">
-        <p><strong>Без рекламы и регистрации.</strong> Текст сохраняется автоматически.</p>
-        <p>Для каждой заметки создаются две ссылки: обычная — для чтения, секретная — для редактирования. Не публикуйте в заметках пароли и платёжные данные.</p>
-      </aside>
     </main>
   </div>
   <div class="note-toast" data-note-toast role="status" aria-live="polite"></div>
-  <script src="/assets/js/note.js?v=20260903-note2" defer></script>
+  <script src="/assets/js/note.js?v=20260903-note3" defer></script>
 </body>
 </html>
