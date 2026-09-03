@@ -3,6 +3,7 @@ import { env } from "./config/env";
 import { prisma } from "./config/prisma";
 import { vpnService } from "./services/vpn.service";
 import { accountNotificationsService } from "./modules/account/account-notifications.service";
+import { activationStatusScheduler } from "./modules/orders/activation-status.scheduler";
 
 async function bootstrap() {
   await prisma.$connect();
@@ -19,6 +20,7 @@ async function bootstrap() {
     console.error("[vpn] failed to ensure vpn server catalog", error);
   }
   accountNotificationsService.startScheduler();
+  activationStatusScheduler.start();
   const app = createApp();
   const bindHost = String(env.HOST || "127.0.0.1").trim() || "127.0.0.1";
   await new Promise<void>((resolve, reject) => {
