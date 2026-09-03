@@ -141,3 +141,27 @@ export const telegramWebhookRateLimit = rateLimit({
   legacyHeaders: false,
   handler: withScope("telegram-webhook"),
 });
+
+export const noteCreateRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: withScope("note-create"),
+});
+
+export const noteReadRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 180,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: withScope("note-read"),
+});
+
+export const noteWriteRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: withScope("note-write"),
+});

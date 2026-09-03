@@ -733,3 +733,16 @@ model LicenseKeyAuditLog {
   @@index([createdAt])
   @@map("key_audit_log")
 }
+
+model PublicNote {
+  id            String   @id @default(uuid())
+  slug          String   @unique
+  editTokenHash String   @map("edit_token_hash")
+  title         String   @default("")
+  content       String   @default("")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([updatedAt])
+  @@map("public_notes")
+}

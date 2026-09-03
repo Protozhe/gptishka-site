@@ -1211,6 +1211,9 @@ function createApp() {
         req.headers["x-telegram-bot-api-secret-token"]
       );
     }
+    if (req.headers["x-note-edit-token"]) {
+      headers["X-Note-Edit-Token"] = String(req.headers["x-note-edit-token"]);
+    }
 
     const forwardedFor = buildForwardedFor(req);
     if (forwardedFor) {
@@ -1538,6 +1541,13 @@ function createApp() {
 
   app.post("/api/public/ai-battle", async (req, res) => {
     return proxyToAdminBackend(req, res, "/api/public/ai-battle");
+  });
+
+  app.use("/api/public/notes", async (req, res) => {
+    res.setHeader("Cache-Control", "no-store");
+    const query = extractQuerySuffix(req);
+    const suffix = req.path === "/" ? "" : req.path;
+    return proxyToAdminBackend(req, res, `/api/public/notes${suffix}${query}`);
   });
 
   app.get("/api/public/service-pages/:slug", async (req, res) => {
@@ -2337,7 +2347,7 @@ function createApp() {
     const serviceSlug = String(req.params?.serviceSlug || "").trim();
     if (!serviceSlug) return null;
     const normalizedSlug = serviceSlug.toLowerCase();
-    const reserved = new Set(["api", "admin", "assets", "uploads", "data", "en", "store", "payment", "success", "fail", "cart", "redeem-start"]);
+    const reserved = new Set(["api", "admin", "assets", "uploads", "data", "en", "store", "payment", "success", "fail", "cart", "redeem-start", "note", "n"]);
     if (reserved.has(normalizedSlug)) return null;
 
     try {
@@ -2391,6 +2401,10 @@ function createApp() {
 
   app.get(["/itunes", "/itunes/"], (_req, res) => {
     sendFreshHtml(res, path.join(__dirname, "itunes.html"));
+  });
+
+  app.get(["/note", "/note/", "/n/:noteSlug"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "note.html"));
   });
 
   app.get(["/en/perplexity", "/en/perplexity/", "/en/perplexity.html"], (_req, res) => {

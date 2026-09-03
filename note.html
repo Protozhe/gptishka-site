@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07110f">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Чистый блокнот — GPTishka</title>
+  <meta name="description" content="Простой онлайн-блокнот без рекламы и регистрации.">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/assets/css/note.css?v=20260903-note2">
+</head>
+<body>
+  <div class="note-app">
+    <header class="note-header">
+      <a class="note-brand" href="/note" aria-label="GPTishka Блокнот">
+        <img src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka">
+        <span>Блокнот</span>
+      </a>
+      <div class="note-actions" aria-label="Действия с заметкой">
+        <button class="note-button note-button--ghost" type="button" data-note-copy hidden>Скопировать ссылку</button>
+        <button class="note-button note-button--primary" type="button" data-note-new>Новая заметка</button>
+      </div>
+    </header>
+
+    <main class="note-main">
+      <section class="note-sheet" aria-labelledby="noteTitle">
+        <div class="note-meta">
+          <span class="note-status" data-note-status><i></i> Новая заметка</span>
+          <span class="note-counter" data-note-counter>0 символов</span>
+        </div>
+        <input id="noteTitle" class="note-title" type="text" maxlength="160" placeholder="Название заметки" autocomplete="off">
+        <textarea class="note-editor" data-note-editor maxlength="100000" placeholder="Начните писать здесь…" aria-label="Текст заметки"></textarea>
+        <div class="note-share" data-note-share hidden>
+          <div class="note-share__copy">
+            <span>Ссылки на заметку</span>
+            <strong>Обычная ссылка открывает только чтение. Секретная позволяет менять текст.</strong>
+          </div>
+          <div class="note-share__actions">
+            <button class="note-button note-button--ghost" type="button" data-note-copy-read>Для чтения</button>
+            <button class="note-button note-button--ghost" type="button" data-note-copy-edit hidden>Для редактирования</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="note-help">
+        <p><strong>Без рекламы и регистрации.</strong> Текст сохраняется автоматически.</p>
+        <p>Для каждой заметки создаются две ссылки: обычная — для чтения, секретная — для редактирования. Не публикуйте в заметках пароли и платёжные данные.</p>
+      </aside>
+    </main>
+  </div>
+  <div class="note-toast" data-note-toast role="status" aria-live="polite"></div>
+  <script src="/assets/js/note.js?v=20260903-note2" defer></script>
+</body>
+</html>
