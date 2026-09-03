@@ -121,6 +121,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .note-paper { min-height: 620px; padding: clamp(34px, 5vw, 62px) clamp(30px, 6vw, 76px) 30px; display: flex; flex-direction: column; background: linear-gradient(180deg, rgba(9,11,14,.28), rgba(13,16,20,.48)); }
 .note-title { width: 100%; padding: 0 0 24px; color: var(--note-text); background: transparent; border: 0; border-bottom: 1px solid var(--note-line-soft); outline: 0; font-family: "Space Grotesk", sans-serif; font-size: clamp(34px, 5vw, 53px); font-weight: 600; line-height: 1.08; letter-spacing: -.042em; }
 .note-title:focus { border-bottom-color: rgba(49,230,161,.42); }
+.note-title.is-empty-readonly { display: none; }
+.note-title.is-empty-readonly + .note-editor { margin-top: 0; }
 .note-title::placeholder { color: #666e77; opacity: 1; }
 .note-editor { width: 100%; min-height: 390px; flex: 1; margin-top: 28px; padding: 0; resize: vertical; color: #d9dde1; caret-color: var(--note-green); background: transparent; border: 0; outline: 0; font-size: clamp(16px, 1.7vw, 18px); line-height: 1.78; letter-spacing: -.008em; }
 .note-editor::placeholder { color: #555c64; opacity: 1; }

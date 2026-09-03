@@ -86,10 +86,11 @@
     editable = Boolean(value);
     titleInput.readOnly = !editable;
     editor.readOnly = !editable;
+    titleInput.placeholder = editable ? 'Название — необязательно' : '';
     if (!editable) {
-      titleInput.placeholder = 'Без названия';
       editor.placeholder = 'В этой заметке пока нет текста.';
     }
+    titleInput.classList.toggle('is-empty-readonly', !editable && !titleInput.value.trim());
     revealShareControls();
   }
 
@@ -168,7 +169,10 @@
     }
   }
 
-  titleInput.addEventListener('input', scheduleSave);
+  titleInput.addEventListener('input', () => {
+    titleInput.classList.remove('is-empty-readonly');
+    scheduleSave();
+  });
   editor.addEventListener('input', () => {
     updateCounter();
     scheduleSave();
