@@ -5,6 +5,7 @@ const checks = [
   "scripts/verify-admin-product-duration-sort.mjs",
   "scripts/check-activation-pages-refresh.mjs",
   "scripts/verify-activation-success-message.mjs",
+  "scripts/verify-activation-review-flow.mjs",
   "scripts/check-information-flat-pages.mjs",
   "scripts/check-language-coverage.mjs",
   "scripts/check-reviews-hub.js",

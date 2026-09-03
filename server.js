@@ -2235,6 +2235,26 @@ function createApp() {
     }
   });
 
+  app.post("/api/orders/:orderId/activation/review", async (req, res) => {
+    try {
+      const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
+      const suffix = extractQuerySuffix(req);
+      const { response, body } = await fetchAdminText(
+        req,
+        `/api/orders/${orderId}/activation/review${suffix}`,
+        {
+          method: "POST",
+          forceJson: true,
+          timeoutMs: 12000,
+          retryStatuses: [404, 502, 503, 504],
+        }
+      );
+      return res.status(response.status).type("application/json").send(body || JSON.stringify({ error: "Review submission failed" }));
+    } catch (_) {
+      return res.status(502).json({ error: "Order API unavailable" });
+    }
+  });
+
   app.get("/api/public/reviews", async (_req, res) => {
     try {
       const payload = JSON.parse(await fs.promises.readFile(PUBLIC_REVIEWS_CACHE_PATH, "utf8"));
@@ -2242,12 +2262,53 @@ function createApp() {
         throw new Error("Public reviews cache is invalid");
       }
       const runtimeReviews = await readRuntimeReviews(TELEGRAM_REVIEWS_RUNTIME_PATH);
-      const mergedPayload = mergeRuntimeReviews(payload, runtimeReviews, {
+      const telegramMergedPayload = mergeRuntimeReviews(payload, runtimeReviews, {
         groupUsername: TELEGRAM_REVIEWS_GROUP_USERNAME,
       });
+      let activationItems = [];
+      try {
+        const { response } = await fetchAdminWithFallback(
+          "/api/public/activation-reviews",
+          { method: "GET", headers: { Accept: "application/json" } },
+          { timeoutMs: 5000, retryStatuses: [404, 502, 503, 504] }
+        );
+        if (response.ok) {
+          const activationPayload = await response.json();
+          activationItems = Array.isArray(activationPayload?.items) ? activationPayload.items : [];
+        }
+      } catch (_) {
+        activationItems = [];
+      }
+
+      const activationSourceId = "gptishka-activation";
+      const sources = Array.isArray(telegramMergedPayload.sources)
+        ? telegramMergedPayload.sources.filter(source => source?.id !== activationSourceId)
+        : [];
+      if (activationItems.length) {
+        const averageRating = activationItems.reduce((sum, item) => sum + Number(item?.rating || 0), 0) / activationItems.length;
+        sources.push({
+          id: activationSourceId,
+          type: "site",
+          label: "Покупка на сайте",
+          hidden: true,
+          url: "",
+          total: activationItems.length,
+          rating: averageRating,
+          available: true,
+          status: "ok",
+          visibleItems: activationItems.length,
+        });
+      }
+      const mergedPayload = {
+        ...telegramMergedPayload,
+        fetchedAt: activationItems[0]?.date || telegramMergedPayload.fetchedAt,
+        totalReviews: Number(telegramMergedPayload.totalReviews || 0) + activationItems.length,
+        sources,
+        items: [...activationItems, ...(Array.isArray(telegramMergedPayload.items) ? telegramMergedPayload.items : [])],
+      };
       res.set(
         "Cache-Control",
-        "public, max-age=60, stale-while-revalidate=300, stale-if-error=86400"
+        "no-store, no-cache, must-revalidate"
       );
       return res.json(mergedPayload);
     } catch (error) {

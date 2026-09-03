@@ -22,6 +22,7 @@ import crypto from "crypto";
 import fs from "fs";
 import https from "https";
 import path from "path";
+import { activationReviewsStore } from "./activation-reviews.store";
 
 const MAX_CLIENT_TOKEN_LENGTH = 500_000;
 const MAX_ACTIVATION_START_ATTEMPTS = 3;
@@ -1671,6 +1672,39 @@ export const ordersService = {
 
   async refund(id: string, actor?: { userId?: string; ip?: string; userAgent?: string }) {
     return paymentsService.refund(id, actor);
+  },
+
+  async submitActivationReview(orderId: string, input: { rating: unknown; text: unknown }, orderToken?: string) {
+    const order = await assertPaidOrderAccess(orderId, orderToken);
+    const fullOrder = await getOrderWithFirstItem(order.id);
+    const firstItem = fullOrder?.items?.[0];
+    const deliveryType = resolveOrderDeliveryType(fullOrder?.orderDetails, firstItem?.product?.tags || []);
+    if (!["activation", "support", "support_claude"].includes(String(deliveryType || "").trim().toLowerCase())) {
+      throw new AppError("Review is available only after automatic activation", 409);
+    }
+
+    const activation = normalizeActivationRecordForRead(activationStore.findByOrderId(order.id));
+    const activationSucceeded = activation?.status === "success" || activation?.verificationState === "success";
+    if (!activationSucceeded) {
+      throw new AppError("Activation is not confirmed yet", 409);
+    }
+
+    const rating = Number(input.rating);
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      throw new AppError("Rating must be from 1 to 5", 400);
+    }
+    const text = String(input.text || "").replace(/\r/g, "").replace(/\n{3,}/g, "\n\n").trim();
+    if (text.length < 3 || text.length > 1000) {
+      throw new AppError("Review text must contain from 3 to 1000 characters", 400);
+    }
+
+    const productTitle = String(firstItem?.product?.title || (firstItem?.product as any)?.name || "Подписка").trim();
+    const review = await activationReviewsStore.upsert({ orderId: order.id, productTitle, rating, text });
+    return { ok: true, reviewId: review.publicId };
+  },
+
+  async listPublicActivationReviews() {
+    return { items: await activationReviewsStore.listPublic() };
   },
 };
 

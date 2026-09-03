@@ -752,6 +752,7 @@
         radial-gradient(720px 380px at 100% 100%, rgba(230, 132, 75, 0.2), transparent 68%),
         linear-gradient(135deg, rgba(10, 17, 27, 0.76), rgba(11, 22, 35, 0.7));
       backdrop-filter: blur(10px) saturate(138%);
+      overflow-y: auto;
       animation: redeem-review-fade 0.2s ease;
     }
 
@@ -895,13 +896,13 @@
       font-size: clamp(24px, 3.3vw, 34px);
       line-height: 1.05;
       letter-spacing: -0.02em;
-      color: #132b40;
+      color: #132b40 !important;
       text-wrap: balance;
     }
 
     .redeem-review-lead {
       margin: 9px 0 0;
-      color: #37516a;
+      color: #37516a !important;
       font-size: 15px;
       line-height: 1.6;
       max-width: 46ch;
@@ -953,6 +954,103 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
       align-items: center;
+    }
+
+    .redeem-review-form {
+      margin-top: 17px;
+      padding: 15px;
+      border: 1px solid rgba(188, 205, 223, 0.78);
+      border-radius: 16px;
+      background: linear-gradient(156deg, rgba(255, 255, 255, 0.9), rgba(239, 248, 252, 0.76));
+    }
+
+    .redeem-review-form__label {
+      display: block;
+      margin: 0 0 9px;
+      color: #203d55;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .redeem-review-stars {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 12px;
+    }
+
+    .redeem-review-star {
+      appearance: none;
+      border: 0;
+      padding: 0 2px;
+      background: transparent;
+      color: #c8d1dc;
+      font-size: 34px;
+      line-height: 1;
+      cursor: pointer;
+      filter: drop-shadow(0 4px 8px rgba(20, 45, 65, 0.1));
+      transition: color 0.15s ease, transform 0.15s ease;
+    }
+
+    .redeem-review-star:hover,
+    .redeem-review-star:focus-visible {
+      transform: translateY(-2px) scale(1.08);
+      outline: none;
+    }
+
+    .redeem-review-star.is-active {
+      color: #f2b827;
+    }
+
+    .redeem-review-text {
+      width: 100%;
+      min-height: 92px;
+      resize: vertical;
+      box-sizing: border-box;
+      border: 1px solid rgba(157, 177, 198, 0.72);
+      border-radius: 12px;
+      padding: 12px 13px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #20384e;
+      font: inherit;
+      font-size: 14px;
+      line-height: 1.5;
+      box-shadow: inset 0 1px 3px rgba(31, 51, 70, 0.07);
+    }
+
+    .redeem-review-text:focus {
+      outline: none;
+      border-color: rgba(13, 148, 136, 0.72);
+      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.13);
+    }
+
+    .redeem-review-form__footer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .redeem-review-form__status {
+      flex: 1;
+      margin: 0;
+      color: #60758b !important;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .redeem-review-form__status.is-error { color: #a33d39; }
+    .redeem-review-form__status.is-success { color: #0f765c; font-weight: 700; }
+
+    .redeem-review-thanks {
+      margin-top: 17px;
+      padding: 16px;
+      border: 1px solid rgba(13, 148, 136, 0.3);
+      border-radius: 16px;
+      background: rgba(226, 249, 241, 0.74);
+      color: #125c4c;
+      font-weight: 700;
+      line-height: 1.5;
     }
 
     #receiptBotBtn {
@@ -1142,6 +1240,15 @@
       }
 
       .redeem-review-links .redeem-btn {
+        width: 100%;
+      }
+
+      .redeem-review-form__footer {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .redeem-review-form__footer .redeem-btn {
         width: 100%;
       }
 
@@ -1491,16 +1598,28 @@
               </span>
               <div class="redeem-review-copy">
                 <h3 id="reviewRewardTitle">Ваш тариф успешно активирован</h3>
-                <p class="redeem-review-lead">Подписка активна. Получите электронный чек в Telegram — в нём будут указаны товар, сумма и номер заказа.</p>
+                <p class="redeem-review-lead">Подписка активна. Оцените подключение — отзыв сразу появится в общей ленте покупателей.</p>
               </div>
             </div>
-            <ul class="redeem-review-points">
-              <li>Откройте бота и нажмите «Старт», чтобы получать чеки и смотреть историю покупок.</li>
-              <li>После этого можно оставить отзыв и получить персональный промокод 5%.</li>
-            </ul>
+            <form id="activationReviewForm" class="redeem-review-form">
+              <span class="redeem-review-form__label">Ваша оценка</span>
+              <div id="activationReviewStars" class="redeem-review-stars" role="radiogroup" aria-label="Оценка от 1 до 5 звёзд">
+                <button class="redeem-review-star" type="button" data-rating="1" role="radio" aria-checked="false" aria-label="1 звезда">&#9733;</button>
+                <button class="redeem-review-star" type="button" data-rating="2" role="radio" aria-checked="false" aria-label="2 звезды">&#9733;</button>
+                <button class="redeem-review-star" type="button" data-rating="3" role="radio" aria-checked="false" aria-label="3 звезды">&#9733;</button>
+                <button class="redeem-review-star" type="button" data-rating="4" role="radio" aria-checked="false" aria-label="4 звезды">&#9733;</button>
+                <button class="redeem-review-star" type="button" data-rating="5" role="radio" aria-checked="false" aria-label="5 звёзд">&#9733;</button>
+              </div>
+              <label class="redeem-review-form__label" for="activationReviewText">Расскажите, как всё прошло</label>
+              <textarea id="activationReviewText" class="redeem-review-text" minlength="3" maxlength="1000" required placeholder="Например: подписка подключилась быстро, всё работает"></textarea>
+              <div class="redeem-review-form__footer">
+                <p id="activationReviewStatus" class="redeem-review-form__status">Отзыв публикуется без email и данных аккаунта.</p>
+                <button id="activationReviewSubmitBtn" type="submit" class="redeem-btn redeem-btn-primary">Отправить отзыв</button>
+              </div>
+            </form>
+            <div id="activationReviewThanks" class="redeem-review-thanks" hidden>Спасибо! Ваш отзыв опубликован и уже доступен в разделе отзывов.</div>
             <div class="redeem-review-links">
               <a id="receiptBotBtn" class="redeem-btn redeem-btn-primary" href="https://t.me/Gptishka_support_bot" target="_blank" rel="noopener noreferrer">Получить чек в Telegram</a>
-              <a class="redeem-btn redeem-btn-soft" href="https://t.me/aiiisupport" target="_blank" rel="noopener noreferrer">Оставить отзыв — бонус 5%</a>
               <button id="reviewRewardDismissBtn" type="button" class="redeem-btn redeem-btn-soft">Позже</button>
             </div>
             <p class="redeem-review-note">Чек также можно открыть позже командой /receipts в боте.</p>
@@ -1573,6 +1692,15 @@
     const reviewRewardBox = document.getElementById('reviewRewardBox');
     const reviewRewardCloseBtn = document.getElementById('reviewRewardCloseBtn');
     const reviewRewardDismissBtn = document.getElementById('reviewRewardDismissBtn');
+    const activationReviewForm = document.getElementById('activationReviewForm');
+    const activationReviewStars = document.getElementById('activationReviewStars');
+    const activationReviewText = document.getElementById('activationReviewText');
+    const activationReviewStatus = document.getElementById('activationReviewStatus');
+    const activationReviewSubmitBtn = document.getElementById('activationReviewSubmitBtn');
+    const activationReviewThanks = document.getElementById('activationReviewThanks');
+    if (reviewRewardBox && reviewRewardBox.parentElement !== document.body) {
+      document.body.appendChild(reviewRewardBox);
+    }
 
     const POLL_INTERVAL_MS = 2000;
     // Provider processing may take a few minutes. Don't auto-restart tasks on short timeouts.
@@ -1622,12 +1750,15 @@
     let imageZoomImageEl = null;
     let imageZoomCaptionEl = null;
     let imageZoomCloseBtn = null;
+    let activationReviewRating = 0;
+    let activationReviewSubmitting = false;
 
     // By default, allow retry only after explicit failure or pending timeout.
     retryNewKeyBtn.disabled = true;
 
     const pollPauseKey = orderId ? `gptishka_activation_poll_paused:${orderId}` : '';
     const reviewRewardReadyKey = orderId ? `gptishka_review_reward_ready:${orderId}` : '';
+    const activationReviewSentKey = orderId ? `gptishka_activation_review_sent:${orderId}` : '';
     const vpnOfferDismissKey = orderId ? `gptishka_vpn_offer_dismissed:${orderId}` : '';
 
     const LEAVE_CONFIRM_TEXT = {
@@ -1856,6 +1987,11 @@
     }
 
     function showReviewReward() {
+      if (activationReviewSentKey) {
+        try {
+          if (localStorage.getItem(activationReviewSentKey) === '1') return;
+        } catch (_) {}
+      }
       setReviewRewardOpen(true);
       if (!reviewRewardReadyKey) return;
       try { localStorage.setItem(reviewRewardReadyKey, '1'); } catch (_) {}
@@ -1870,10 +2006,81 @@
     function restoreReviewReward() {
       if (!reviewRewardReadyKey) return;
       try {
-        if (localStorage.getItem(reviewRewardReadyKey) === '1') {
+        if (localStorage.getItem(reviewRewardReadyKey) === '1' && localStorage.getItem(activationReviewSentKey) !== '1') {
           showReviewReward();
         }
       } catch (_) {}
+    }
+
+    function setActivationReviewRating(rating) {
+      activationReviewRating = Math.max(1, Math.min(5, Number(rating) || 0));
+      if (!activationReviewStars) return;
+      activationReviewStars.querySelectorAll('[data-rating]').forEach((button) => {
+        const value = Number(button.getAttribute('data-rating') || 0);
+        const active = value <= activationReviewRating;
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-checked', String(value === activationReviewRating));
+      });
+    }
+
+    function setActivationReviewStatus(message, tone) {
+      if (!activationReviewStatus) return;
+      activationReviewStatus.textContent = message;
+      activationReviewStatus.classList.toggle('is-error', tone === 'error');
+      activationReviewStatus.classList.toggle('is-success', tone === 'success');
+    }
+
+    async function submitActivationReview(event) {
+      event.preventDefault();
+      if (activationReviewSubmitting || !orderId || previewMode) return;
+      const text = String(activationReviewText?.value || '').trim();
+      if (!activationReviewRating) {
+        setActivationReviewStatus('Поставьте оценку от 1 до 5 звёзд.', 'error');
+        activationReviewStars?.querySelector('[data-rating="5"]')?.focus();
+        return;
+      }
+      if (text.length < 3) {
+        setActivationReviewStatus('Напишите несколько слов о подключении.', 'error');
+        activationReviewText?.focus();
+        return;
+      }
+
+      activationReviewSubmitting = true;
+      if (activationReviewSubmitBtn) {
+        activationReviewSubmitBtn.disabled = true;
+        activationReviewSubmitBtn.classList.add('loading');
+      }
+      setActivationReviewStatus('Публикуем отзыв…', '');
+      try {
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/review`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            rating: activationReviewRating,
+            text,
+            orderToken: orderLinkToken,
+          }),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(String(payload?.message || payload?.error || 'Review submission failed'));
+        }
+        try {
+          if (activationReviewSentKey) localStorage.setItem(activationReviewSentKey, '1');
+          if (reviewRewardReadyKey) localStorage.setItem(reviewRewardReadyKey, '0');
+        } catch (_) {}
+        if (activationReviewForm) activationReviewForm.hidden = true;
+        if (activationReviewThanks) activationReviewThanks.hidden = false;
+        setActivationReviewStatus('Отзыв опубликован.', 'success');
+      } catch (_) {
+        setActivationReviewStatus('Не удалось отправить отзыв. Проверьте соединение и попробуйте ещё раз.', 'error');
+      } finally {
+        activationReviewSubmitting = false;
+        if (activationReviewSubmitBtn) {
+          activationReviewSubmitBtn.disabled = false;
+          activationReviewSubmitBtn.classList.remove('loading');
+        }
+      }
     }
 
     restoreReviewReward();
@@ -2163,6 +2370,12 @@
       [startBtn, checkBtn, retryNewKeyBtn, stopPollingBtn].forEach((button) => {
         if (button) button.disabled = true;
       });
+      if (String(params.get('review_preview') || '') === '1') {
+        setReviewRewardOpen(true);
+        if (activationReviewSubmitBtn) activationReviewSubmitBtn.disabled = true;
+        setActivationReviewRating(5);
+        setActivationReviewStatus('Предпросмотр: отзыв не будет отправлен.', '');
+      }
     }
 
     function buildVpnActivateUrl() {
@@ -2891,6 +3104,19 @@
       if (code === 401 || code === 403) return 'Ссылка на заказ недействительна или устарела. Откройте активацию из страницы успешной оплаты.';
       if (code === 429) return 'Слишком много попыток. Подождите немного и повторите.';
       return 'Не удалось запустить активацию автоматически. Повторите попытку или напишите в поддержку.';
+    }
+
+    if (activationReviewStars) {
+      activationReviewStars.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-rating]');
+        if (!button) return;
+        setActivationReviewRating(button.getAttribute('data-rating'));
+        setActivationReviewStatus('Добавьте пару слов о подключении.', '');
+      });
+    }
+
+    if (activationReviewForm) {
+      activationReviewForm.addEventListener('submit', submitActivationReview);
     }
 
     function isMissingActivationKeyMessage(payload) {

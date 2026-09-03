@@ -110,6 +110,17 @@ export const manuallyCompleteOrderActivation = asyncHandler(async (req: Request,
   res.json(data);
 });
 
+export const submitOrderActivationReview = asyncHandler(async (req: Request, res: Response) => {
+  const orderId = String(req.params.orderId || "");
+  const orderToken = String((req.body as any)?.orderToken || (req.body as any)?.t || (req.query as any)?.t || "");
+  const data = await ordersService.submitActivationReview(orderId, req.body || {}, orderToken);
+  res.status(201).json(data);
+});
+
+export const listPublicActivationReviews = asyncHandler(async (_req: Request, res: Response) => {
+  res.json(await ordersService.listPublicActivationReviews());
+});
+
 export const startOrderActivationFromAdmin = asyncHandler(async (req: Request, res: Response) => {
   const orderId = String(req.params.id || "");
   const accountId = String((req.body as any)?.accountId || "");

@@ -5,11 +5,13 @@ import {
   createOrder,
   getOrderActivation,
   getOrderActivationTask,
+  listPublicActivationReviews,
   getPublicOrderStatus,
   reconcilePublicOrderStatus,
   restartOrderActivationWithNewKey,
   startOrderActivation,
   storeOrderActivationClientToken,
+  submitOrderActivationReview,
   validateOrderActivationToken,
 } from "./orders.controller";
 import { createPublicOrderSchema } from "./orders.schemas";
@@ -24,6 +26,7 @@ publicOrdersRouter.get(
     res.json(await storefrontTickerService.getPublicStats());
   })
 );
+publicOrdersRouter.get("/activation-reviews", activationReadRateLimit, listPublicActivationReviews);
 
 publicOrdersRouter.post("/create-order", checkoutCreateRateLimit, validateBody(createPublicOrderSchema), createOrder);
 publicOrdersRouter.post("/orders/create", checkoutCreateRateLimit, validateBody(createPublicOrderSchema), createOrder);
@@ -36,3 +39,4 @@ publicOrdersRouter.post("/orders/:orderId/activation/validate-token", activation
 publicOrdersRouter.post("/orders/:orderId/activation/start", activationWriteRateLimit, startOrderActivation);
 publicOrdersRouter.post("/orders/:orderId/activation/restart-with-new-key", activationWriteRateLimit, restartOrderActivationWithNewKey);
 publicOrdersRouter.get("/orders/:orderId/activation/task/:taskId", activationReadRateLimit, getOrderActivationTask);
+publicOrdersRouter.post("/orders/:orderId/activation/review", activationWriteRateLimit, submitOrderActivationReview);
