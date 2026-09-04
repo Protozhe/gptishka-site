@@ -9,6 +9,9 @@ const store = fs.readFileSync("apps/admin-backend/src/modules/orders/activation-
 
 assert.match(page, /id="activationReviewStars"/);
 assert.match(page, /id="activationReviewText"/);
+assert.match(page, /id="updatesChannelBtn"[^>]+href="https:\/\/t\.me\/aimarket_gpt"/);
+assert.match(page, /Новости GPTишка в Telegram/);
+assert.match(page, /отзыв сразу появится на странице «Отзывы»/);
 assert.match(page, /activation\/review/);
 assert.match(page, /document\.body\.appendChild\(reviewRewardBox\)/);
 assert.match(page, /function syncReceiptBotLink\(\)/);

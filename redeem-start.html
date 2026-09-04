@@ -1060,8 +1060,12 @@
       line-height: 1.5;
     }
 
-    #receiptBotBtn {
+    #updatesChannelBtn {
       grid-column: 1 / -1;
+    }
+
+    #receiptBotBtn {
+      grid-column: auto;
     }
 
     .redeem-review-card .redeem-btn-soft {
@@ -1251,11 +1255,16 @@
       }
 
       .redeem-review-links {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
       }
 
       .redeem-review-links .redeem-btn {
         width: 100%;
+        min-height: 58px;
+        min-width: 0;
+        padding-inline: 9px;
+        font-size: 13px;
       }
 
       .redeem-review-form__footer {
@@ -1613,7 +1622,7 @@
               </span>
               <div class="redeem-review-copy">
                 <h3 id="reviewRewardTitle">Ваш тариф успешно активирован</h3>
-                <p class="redeem-review-lead">Подписка активна. Оцените подключение — отзыв сразу появится в общей ленте покупателей.</p>
+                <p class="redeem-review-lead">Подписка активна. Оцените подключение — отзыв сразу появится на странице «Отзывы».</p>
               </div>
             </div>
             <form id="activationReviewForm" class="redeem-review-form">
@@ -1634,7 +1643,8 @@
             </form>
             <div id="activationReviewThanks" class="redeem-review-thanks" hidden>Спасибо! Ваш отзыв опубликован и уже доступен в разделе отзывов.</div>
             <div class="redeem-review-links">
-              <a id="receiptBotBtn" class="redeem-btn redeem-btn-primary" href="https://t.me/Gptishka_support_bot" target="_blank" rel="noopener noreferrer">Получить чек в Telegram</a>
+              <a id="updatesChannelBtn" class="redeem-btn redeem-btn-primary" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener noreferrer">Новости GPTишка в Telegram</a>
+              <a id="receiptBotBtn" class="redeem-btn" href="https://t.me/Gptishka_support_bot" target="_blank" rel="noopener noreferrer">Получить чек в Telegram</a>
               <button id="reviewRewardDismissBtn" type="button" class="redeem-btn redeem-btn-soft">Позже</button>
             </div>
             <p class="redeem-review-note">Чек также можно открыть позже командой /receipts в боте.</p>
