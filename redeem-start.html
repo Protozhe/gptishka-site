@@ -821,7 +821,7 @@
     .redeem-review-top {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       gap: 12px;
     }
 
@@ -858,10 +858,7 @@
     }
 
     .redeem-review-head {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      align-items: start;
-      gap: 14px;
+      display: block;
     }
 
     .redeem-review-mark-wrap {
@@ -958,11 +955,11 @@
 
     .redeem-review-form {
       margin-top: 17px;
-      padding: 15px;
-      border: 1px solid rgba(118, 151, 181, 0.28);
-      border-radius: 16px;
-      background: linear-gradient(156deg, rgba(24, 42, 58, 0.86), rgba(12, 26, 39, 0.9));
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
     }
 
     .redeem-review-form__label {
@@ -1612,14 +1609,10 @@
       <section id="reviewRewardBox" class="redeem-review-reward" hidden aria-modal="true" role="dialog" aria-live="polite" aria-labelledby="reviewRewardTitle">
         <div class="redeem-review-card">
           <div class="redeem-review-top">
-            <span class="redeem-review-badge">Активация завершена</span>
             <button id="reviewRewardCloseBtn" type="button" class="redeem-review-close" aria-label="Закрыть сообщение" title="Закрыть">&times;</button>
           </div>
           <div class="redeem-review-body">
             <div class="redeem-review-head">
-              <span class="redeem-review-mark-wrap" aria-hidden="true">
-                <span class="redeem-review-mark">&#10003;</span>
-              </span>
               <div class="redeem-review-copy">
                 <h3 id="reviewRewardTitle">Ваш тариф успешно активирован</h3>
                 <p class="redeem-review-lead">Подписка активна. Оцените подключение — отзыв сразу появится на странице «Отзывы».</p>
@@ -2409,7 +2402,7 @@
         setReviewRewardOpen(true);
         if (activationReviewSubmitBtn) activationReviewSubmitBtn.disabled = true;
         setActivationReviewRating(5);
-        setActivationReviewStatus('Предпросмотр: отзыв не будет отправлен.', '');
+        setActivationReviewStatus('', '');
       }
     }
 

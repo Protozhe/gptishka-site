@@ -9,6 +9,10 @@ const store = fs.readFileSync("apps/admin-backend/src/modules/orders/activation-
 
 assert.match(page, /id="activationReviewStars"/);
 assert.match(page, /id="activationReviewText"/);
+assert.doesNotMatch(page, />Активация завершена</);
+assert.doesNotMatch(page, /redeem-review-mark">&#10003;/);
+assert.doesNotMatch(page, /Предпросмотр: отзыв не будет отправлен/);
+assert.match(page, /\.redeem-review-form \{[\s\S]*?border: 0;[\s\S]*?background: transparent;/);
 assert.match(page, /id="updatesChannelBtn"[^>]+href="https:\/\/t\.me\/aimarket_gpt"/);
 assert.match(page, />Мы в Telegram<\/a>/);
 assert.match(page, />Получить чек<\/a>/);
