@@ -1713,6 +1713,7 @@
     const activationReviewStatus = document.getElementById('activationReviewStatus');
     const activationReviewSubmitBtn = document.getElementById('activationReviewSubmitBtn');
     const activationReviewThanks = document.getElementById('activationReviewThanks');
+    const receiptBotBtn = document.getElementById('receiptBotBtn');
     if (reviewRewardBox && reviewRewardBox.parentElement !== document.body) {
       document.body.appendChild(reviewRewardBox);
     }
@@ -2001,7 +2002,17 @@
       document.body.style.overflow = open ? 'hidden' : '';
     }
 
+    function syncReceiptBotLink() {
+      if (!receiptBotBtn) return;
+      const baseUrl = 'https://t.me/Gptishka_support_bot';
+      const safeToken = String(orderLinkToken || '').trim();
+      receiptBotBtn.href = /^[A-Za-z0-9_-]{16,56}$/.test(safeToken)
+        ? `${baseUrl}?start=receipt_${encodeURIComponent(safeToken)}`
+        : baseUrl;
+    }
+
     function showReviewReward() {
+      syncReceiptBotLink();
       if (activationReviewSentKey) {
         try {
           if (localStorage.getItem(activationReviewSentKey) === '1') return;
@@ -2519,6 +2530,7 @@
         }
         if (orderLinkToken) localStorage.setItem(`gptishka_activation_order_token:${orderId}`, orderLinkToken);
       } catch (_) {}
+      syncReceiptBotLink();
       try {
         vpnOfferDismissed = vpnOfferDismissKey ? localStorage.getItem(vpnOfferDismissKey) === '1' : false;
       } catch (_) {
