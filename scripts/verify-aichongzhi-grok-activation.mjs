@@ -18,24 +18,26 @@ assert(
   "Grok activations must use the provider redeem endpoint"
 );
 assert(
-  service.includes('callAichongzhiGrokApi("verifyCdk", { code: input.cdk, product: "grok" })'),
+  service.includes('callAichongzhiApi("verifyCdk", { code: input.cdk, product: input.product }, input.product)'),
   "SDK must be verified before activation"
 );
 assert(
-  service.includes('callAichongzhiGrokApi("activate", {'),
+  service.includes('callAichongzhiApi("activate", {'),
   "verified SDK and account ID must be submitted through the activate action"
 );
 assert(
-  service.includes('callAichongzhiGrokApi("status", { code })'),
+  service.includes('callAichongzhiApi("status", { code }, product)'),
   "activation status must be checked by CDK"
 );
 assert(
-  service.includes("function publicAichongzhiGrokMessage") &&
+  service.includes("function publicAichongzhiMessage") &&
     service.includes('return "Подключаем подписку. Пожалуйста, подождите."'),
   "provider messages shown in the order must be normalized to Russian"
 );
 assert(
-  service.includes("if (isAichongzhiGrokSupportProduct(input.productKey))"),
+  service.includes("const aichongzhiProduct = resolveAichongzhiProduct(input.productKey)") &&
+    service.includes("if (aichongzhiProduct)") &&
+    service.includes("startAichongzhiTaskWithRetry({ ...input, product: aichongzhiProduct })"),
   "SuperGrok support products must route through the new adapter"
 );
 assert(
