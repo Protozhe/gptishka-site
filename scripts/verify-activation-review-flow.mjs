@@ -9,8 +9,10 @@ const store = fs.readFileSync("apps/admin-backend/src/modules/orders/activation-
 
 assert.match(page, /id="activationReviewStars"/);
 assert.match(page, /id="activationReviewText"/);
-assert.doesNotMatch(page, />Активация завершена</);
-assert.doesNotMatch(page, /redeem-review-mark">&#10003;/);
+assert.match(page, />Активация завершена</);
+assert.match(page, /redeem-review-mark">&#10003;/);
+assert.match(page, /\.redeem-review-badge \{[\s\S]*?border: 0;[\s\S]*?background: transparent;/);
+assert.match(page, /\.redeem-review-mark \{[\s\S]*?background: transparent;[\s\S]*?box-shadow: none;/);
 assert.doesNotMatch(page, /Предпросмотр: отзыв не будет отправлен/);
 assert.match(page, /\.redeem-review-form \{[\s\S]*?border: 0;[\s\S]*?background: transparent;/);
 assert.match(page, /id="updatesChannelBtn"[^>]+href="https:\/\/t\.me\/aimarket_gpt"/);
