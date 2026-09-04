@@ -61,19 +61,21 @@ assert(
 );
 
 const startRouter = service.slice(
-  service.indexOf("async function startQuickplusSupportTaskWithRetry"),
-  service.indexOf("async function startQuickplusSupportTaskWithRetry") + 700
+  service.indexOf("async function startOutstockTaskWithRetry"),
+  service.indexOf("async function startOutstockTaskWithRetry") + 800
 );
 const statusRouter = service.slice(
   service.indexOf("async function fetchQuickplusSupportTaskPayload"),
-  service.indexOf("async function fetchQuickplusSupportTaskPayload") + 650
+  service.indexOf("async function fetchQuickplusSupportTaskPayload") + 800
 );
 assert(
-  startRouter.includes("isAichongzhiGrokSupportProduct") && !startRouter.includes("startSxzfdGrokTaskWithRetry"),
+  startRouter.includes("resolveAichongzhiProduct(input.productKey)") &&
+    startRouter.includes("startAichongzhiTaskWithRetry({ ...input, product: aichongzhiProduct })"),
   "all new SuperGrok activations must start through aichongzhi.fun"
 );
 assert(
-  statusRouter.includes("fetchAichongzhiGrokTaskPayload") && !statusRouter.includes("fetchSxzfdGrokTaskPayload"),
+  statusRouter.includes("resolveAichongzhiProduct(input.productKey)") &&
+    statusRouter.includes("fetchAichongzhiTaskPayload(input.cdk, input.taskId, aichongzhiProduct)"),
   "all SuperGrok status checks must use aichongzhi.fun"
 );
 
