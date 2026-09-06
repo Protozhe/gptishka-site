@@ -177,9 +177,14 @@
   }
 
   function filteredItems(data) {
-    if (state.filter === "all") return data.items;
     return data.items.filter(function (item) {
-      return item.sourceId === state.filter;
+      return state.filter === "all" || item.sourceId === state.filter;
+    }).sort(function (a, b) {
+      var aDate = Date.parse(a.date || "");
+      var bDate = Date.parse(b.date || "");
+      var aTime = Number.isFinite(aDate) ? aDate : -Infinity;
+      var bTime = Number.isFinite(bDate) ? bDate : -Infinity;
+      return aTime === bTime ? 0 : aTime > bTime ? -1 : 1;
     });
   }
 
