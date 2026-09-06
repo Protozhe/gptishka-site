@@ -275,13 +275,14 @@ function parsePlayerokRenderedProfile(html, source) {
       sourceId: source.id,
       sourceType: source.type,
       sourceLabel: "Проверенный отзыв",
+      sourceHidden: true,
       author: plainText(creator?.username) || "Покупатель Playerok",
       text,
       detail: productName || "Отзыв после покупки на Playerok",
       date,
       dateLabel: date ? "" : "Публичный отзыв",
       rating: Number(node?.rating) || 5,
-      url: product?.slug ? `https://playerok.com/products/${product.slug}` : source.url,
+      url: "",
       sortOrder: date ? Date.parse(date) : 0,
     }];
   });
@@ -341,7 +342,9 @@ async function collectSource(source, previous) {
       ? cached.items.map(item => ({
           ...item,
           sourceLabel: "Проверенный отзыв",
+          sourceHidden: true,
           detail: playerokProductLabel(item.detail),
+          url: "",
         }))
       : cached.items;
     return {

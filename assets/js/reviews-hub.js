@@ -160,7 +160,7 @@
     if (item.detail) meta.append(create("span", "review-card__purchase", item.detail));
     meta.append(create("span", "review-card__date", item.dateLabel || formatUpdated(item.date)));
     footer.append(meta);
-    if (item.url && !item.sourceHidden) {
+    if (item.url && !item.sourceHidden && item.sourceType !== "playerok") {
       var link = create("a", "review-card__link", "Источник ↗");
       link.setAttribute("aria-label", "Открыть исходный отзыв");
       setExternalLink(link, item.url);
