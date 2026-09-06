@@ -2301,7 +2301,7 @@ function createApp() {
       }
       const mergedPayload = {
         ...telegramMergedPayload,
-        fetchedAt: activationItems[0]?.date || telegramMergedPayload.fetchedAt,
+        fetchedAt: telegramMergedPayload.fetchedAt,
         totalReviews: Number(telegramMergedPayload.totalReviews || 0) + activationItems.length,
         sources,
         items: [...activationItems, ...(Array.isArray(telegramMergedPayload.items) ? telegramMergedPayload.items : [])],

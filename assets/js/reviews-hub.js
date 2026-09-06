@@ -70,7 +70,7 @@
   }
 
   function renderStats(data) {
-    elements.total.textContent = formatNumber(data.totalReviews);
+    elements.total.textContent = "2000+";
     var rated = data.sources.filter(function (source) {
       return Number(source.rating) > 0 && Number(source.total || source.visibleItems) > 0;
     });
