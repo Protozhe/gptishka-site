@@ -110,7 +110,12 @@ const NOINDEX_PUBLIC_PATHS = new Set([
 const dataDir = path.join(__dirname, "data");
 const dbPath = path.join(dataDir, "stats.sqlite");
 const PUBLIC_NEWS_CACHE_PATH = path.join(dataDir, "public-news.json");
-const PUBLIC_REVIEWS_CACHE_PATH = path.join(dataDir, "public-reviews.json");
+const PUBLIC_REVIEWS_CACHE_PATH = String(
+  process.env.PUBLIC_REVIEWS_CACHE_PATH ||
+    (IS_PRODUCTION
+      ? "/var/lib/gptishka-runtime/public-reviews.json"
+      : path.join(dataDir, "public-reviews.json"))
+).trim();
 const PUBLIC_REVIEWS_REFRESH_SCRIPT = path.join(__dirname, "scripts", "refresh-public-reviews.js");
 const PUBLIC_REVIEWS_REFRESH_INTERVAL_MS = Math.max(
   5 * 60 * 1000,
@@ -2301,7 +2306,7 @@ function createApp() {
       }
       const mergedPayload = {
         ...telegramMergedPayload,
-        fetchedAt: activationItems[0]?.date || telegramMergedPayload.fetchedAt,
+        fetchedAt: telegramMergedPayload.fetchedAt,
         totalReviews: Number(telegramMergedPayload.totalReviews || 0) + activationItems.length,
         sources,
         items: [...activationItems, ...(Array.isArray(telegramMergedPayload.items) ? telegramMergedPayload.items : [])],

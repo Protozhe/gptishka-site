@@ -19,6 +19,8 @@ const verification = deploy.indexOf("node scripts/verify-production-release.mjs"
 const liveReset = deploy.indexOf('git reset --hard "origin/$DEPLOY_BRANCH"');
 assert.ok(verification >= 0 && liveReset > verification, "Candidate checks must run before live files are replaced.");
 assert.match(deploy, /DEPLOY_BRANCH="\$\{DEPLOY_BRANCH:-production\}"/);
+assert.match(deploy, /RUNTIME_PUBLIC_REVIEWS="\$RUNTIME_DIR\/public-reviews\.json"/);
+assert.match(deploy, /install -m 0644 "\$LEGACY_PUBLIC_REVIEWS" "\$RUNTIME_PUBLIC_REVIEWS"/);
 assert.match(deploy, /refs\/heads\/\$DEPLOY_BRANCH:refs\/remotes\/origin\/\$DEPLOY_BRANCH/);
 assert.match(agentRules, /Production is deployed only from the `production` branch/);
 assert.match(agentRules, /production-stable-2026-08-25-r2/);

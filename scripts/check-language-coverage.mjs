@@ -48,7 +48,10 @@ for (const page of fallbackPages) {
   if (!html.includes("/assets/js/site-header-unify.js?v=20260724-header-layout3")) {
     failures.push(`${page}: unified language switch is missing`);
   }
-  if (!html.includes("/assets/js/client-i18n.js?v=20260724-en-product-routes1")) {
+  const clientI18nVersion = page === "app/index.html"
+    ? "/assets/js/client-i18n.js?v=20260906-reviews-platform-copy1"
+    : "/assets/js/client-i18n.js?v=20260724-en-product-routes1";
+  if (!html.includes(clientI18nVersion)) {
     failures.push(`${page}: English fallback is missing`);
   }
 }

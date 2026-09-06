@@ -18,6 +18,13 @@ if [ ! -f "$RUNTIME_AI_BATTLE_STATS" ] && [ -f "$LEGACY_AI_BATTLE_STATS" ]; then
   install -m 0644 "$LEGACY_AI_BATTLE_STATS" "$RUNTIME_AI_BATTLE_STATS"
 fi
 
+LEGACY_PUBLIC_REVIEWS="$APP_DIR/data/public-reviews.json"
+RUNTIME_PUBLIC_REVIEWS="$RUNTIME_DIR/public-reviews.json"
+if [ -f "$LEGACY_PUBLIC_REVIEWS" ] && { [ ! -f "$RUNTIME_PUBLIC_REVIEWS" ] || [ "$LEGACY_PUBLIC_REVIEWS" -nt "$RUNTIME_PUBLIC_REVIEWS" ]; }; then
+  # Keep the latest review snapshot available while the first post-deploy refresh runs.
+  install -m 0644 "$LEGACY_PUBLIC_REVIEWS" "$RUNTIME_PUBLIC_REVIEWS"
+fi
+
 cd "$APP_DIR"
 
 git fetch origin "refs/heads/$DEPLOY_BRANCH:refs/remotes/origin/$DEPLOY_BRANCH"

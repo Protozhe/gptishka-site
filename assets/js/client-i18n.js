@@ -103,7 +103,7 @@
     ["Отзывы покупателей", "Customer reviews"],
     ["Собираем обратную связь из открытых профилей GPTishka. Каждый отзыв ведёт к исходной площадке, а данные обновляются автоматически.", "We collect feedback from GPTishka’s public profiles. Every review links to its source and the data updates automatically."],
     ["Статистика отзывов", "Review statistics"],
-    ["отзывов в источниках", "reviews in sources"],
+    ["отзывов на всех площадках", "reviews across all platforms"],
     ["средняя оценка", "average rating"],
     ["последняя проверка", "last checked"],
     ["Всё прозрачно", "Full transparency"],

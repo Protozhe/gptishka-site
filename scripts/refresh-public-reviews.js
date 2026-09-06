@@ -5,7 +5,13 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
-const OUTPUT_PATH = path.join(ROOT, "data", "public-reviews.json");
+const IS_PRODUCTION = String(process.env.NODE_ENV || "").toLowerCase() === "production";
+const OUTPUT_PATH = String(
+  process.env.PUBLIC_REVIEWS_CACHE_PATH ||
+    (IS_PRODUCTION
+      ? "/var/lib/gptishka-runtime/public-reviews.json"
+      : path.join(ROOT, "data", "public-reviews.json"))
+).trim();
 const FETCH_TIMEOUT_MS = Math.max(3000, Number(process.env.REVIEWS_FETCH_TIMEOUT_MS || 15000));
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
