@@ -29,6 +29,7 @@ assert.match(routes, /get\("\/activation-reviews"/);
 assert.match(service, /activationSucceeded/);
 assert.match(service, /\["activation", "support", "support_claude"\]/);
 assert.match(store, /activation-reviews\.json/);
+assert.match(store, /sourceLabel: "Отзыв оставлен на сайте"/);
 assert.match(server, /gptishka-activation/);
 
 console.log("Automatic activation review flow verified.");

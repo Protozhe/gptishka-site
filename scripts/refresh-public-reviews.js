@@ -274,7 +274,7 @@ function parsePlayerokRenderedProfile(html, source) {
       id: stableId(source.id, node?.id || edge?.cursor || "", date, text),
       sourceId: source.id,
       sourceType: source.type,
-      sourceLabel: "Проверенный отзыв",
+      sourceLabel: "Отзыв покупателя",
       sourceHidden: true,
       author: plainText(creator?.username) || "Покупатель Playerok",
       text,
@@ -341,7 +341,7 @@ async function collectSource(source, previous) {
     const fallbackItems = source.type === "playerok"
       ? cached.items.map(item => ({
           ...item,
-          sourceLabel: "Проверенный отзыв",
+          sourceLabel: "Отзыв покупателя",
           sourceHidden: true,
           detail: playerokProductLabel(item.detail),
           url: "",

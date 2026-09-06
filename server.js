@@ -2294,7 +2294,7 @@ function createApp() {
         sources.push({
           id: activationSourceId,
           type: "site",
-          label: "Покупка на сайте",
+          label: "Отзывы, оставленные на сайте",
           hidden: true,
           url: "",
           total: activationItems.length,

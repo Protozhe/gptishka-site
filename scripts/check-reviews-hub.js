@@ -21,7 +21,9 @@ assert.match(html, /отзывов на всех площадках/);
 assert.doesNotMatch(html, /отзывов в источниках/);
 assert.match(client, /elements\.total\.textContent = "2000\+"/);
 assert.match(client, /item\.sourceType !== "playerok"/);
-assert.match(refresh, /sourceLabel: "Проверенный отзыв",[\s\S]{0,100}sourceHidden: true/);
+assert.match(client, /item\.sourceType === "site"\) return "Отзыв оставлен на сайте"/);
+assert.match(client, /item\.sourceType === "playerok"\) return "Отзыв покупателя"/);
+assert.match(refresh, /sourceLabel: "Отзыв покупателя",[\s\S]{0,100}sourceHidden: true/);
 assert.match(refresh, /rating: Number\(node\?\.rating\) \|\| 5,[\s\S]{0,100}url: ""/);
 assert.match(server, /fetchedAt: payload\.fetchedAt/);
 assert.doesNotMatch(server, /fetchedAt: activationItems\[0\]\?\.date/);
@@ -46,7 +48,7 @@ assert.match(server, /createTelegramReviewsPoller/);
 assert.match(server, /startPublicReviewsRefreshSchedule/);
 assert.match(server, /refresh-public-reviews\.js/);
 assert.match(refresh, /cached\.items\.map/);
-assert.match(refresh, /sourceLabel: "Проверенный отзыв"/);
+assert.doesNotMatch(refresh, /sourceLabel: "Проверенный отзыв"/);
 assert.match(server, /app\.get\(\["\/app", "\/app\/"\], sendDirectoryIndex\("app"\)\)/);
 
 assert.strictEqual(data.version, 1);
@@ -80,7 +82,7 @@ assert.ok(
     .filter(item => item.sourceId === "playerok-vivaseller")
     .every(
       item =>
-        item.sourceLabel === "Проверенный отзыв" &&
+        ["Проверенный отзыв", "Отзыв покупателя"].includes(item.sourceLabel) &&
         !/playerok/i.test(String(item.detail || ""))
     )
 );

@@ -117,6 +117,8 @@
     ["В этом месяце", "This month"],
     ["Отзывы GPTishka", "GPTishka reviews"],
     ["Покупатель", "Customer"],
+    ["Отзыв покупателя", "Customer review"],
+    ["Отзыв оставлен на сайте", "Review submitted on the website"],
     ["Источник", "Source"],
     ["Открыть исходный отзыв", "Open the original review"],
     ["Источник доступен", "Source available"],

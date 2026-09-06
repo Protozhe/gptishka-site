@@ -91,7 +91,7 @@ export const activationReviewsStore = {
       id: item.publicId,
       sourceId: "gptishka-activation",
       sourceType: "site",
-      sourceLabel: "Покупка на сайте",
+      sourceLabel: "Отзыв оставлен на сайте",
       sourceHidden: true,
       author: "Покупатель GPTishka",
       text: item.text,

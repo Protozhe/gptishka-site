@@ -49,7 +49,7 @@ for (const page of fallbackPages) {
     failures.push(`${page}: unified language switch is missing`);
   }
   const clientI18nVersion = page === "app/index.html"
-    ? "/assets/js/client-i18n.js?v=20260906-reviews-platform-copy1"
+    ? "/assets/js/client-i18n.js?v=20260906-review-origin-labels1"
     : "/assets/js/client-i18n.js?v=20260724-en-product-routes1";
   if (!html.includes(clientI18nVersion)) {
     failures.push(`${page}: English fallback is missing`);

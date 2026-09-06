@@ -145,11 +145,17 @@
     return author || "Покупатель";
   }
 
+  function reviewSourceLabel(item) {
+    if (item.sourceType === "site") return "Отзыв оставлен на сайте";
+    if (item.sourceType === "playerok") return "Отзыв покупателя";
+    return item.sourceLabel || "Открытый источник";
+  }
+
   function renderReview(item) {
     var card = create("article", "review-card");
     var top = create("div", "review-card__top");
     top.append(
-      create("span", "review-card__source", item.sourceLabel || "Открытый источник"),
+      create("span", "review-card__source", reviewSourceLabel(item)),
       create("span", "review-card__rating", "★".repeat(Math.max(1, Math.min(5, Number(item.rating) || 5))))
     );
 
