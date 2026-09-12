@@ -1,5 +1,29 @@
 :root { --codex-green:#35e49a; --codex-cyan:#5ee9ff; --codex-ink:#07111f; --codex-panel:rgba(13,25,42,.82); --codex-line:rgba(255,255,255,.12); }
 .codex-credits-body { margin:0; color:#f5f8ff; background:radial-gradient(circle at 18% 14%,rgba(27,131,125,.22),transparent 30%),radial-gradient(circle at 84% 8%,rgba(38,91,184,.2),transparent 30%),linear-gradient(145deg,#070b12,#0b1422 52%,#081019); font-family:"Manrope",sans-serif; }
+
+/* Use the same graphite product-page shell as ChatGPT and Steam, with a
+   restrained Codex emerald glow. The stronger selector intentionally wins
+   over the generic dark fallback loaded before this page stylesheet. */
+html:has(body.codex-credits-body) {
+  background:#181b20!important;
+}
+
+html body.codex-credits-body.home-gradient-page {
+  background:
+    radial-gradient(circle at 17% 16%,rgba(20,184,139,.12),transparent 30%),
+    radial-gradient(circle at 84% 12%,rgba(94,233,255,.065),transparent 32%),
+    linear-gradient(180deg,#22262d 0%,#1d2127 46%,#181b20 100%)!important;
+  background-attachment:fixed!important;
+}
+
+html body.codex-credits-body.home-gradient-page::before {
+  inset:-10% -8%;
+  background:
+    radial-gradient(circle at 18% 18%,rgba(20,184,139,.11),transparent 29%),
+    radial-gradient(circle at 78% 14%,rgba(94,233,255,.055),transparent 30%)!important;
+  filter:blur(90px) saturate(104%)!important;
+  opacity:.72!important;
+}
 .codex-page { width:min(1240px,calc(100vw - 40px)); margin:clamp(26px,4vw,58px) auto 88px; }
 .codex-back { display:inline-flex; align-items:center; gap:8px; min-height:38px; margin-bottom:20px; padding:0 14px; border:1px solid rgba(255,255,255,.1); border-radius:999px; color:rgba(255,255,255,.72)!important; background:rgba(255,255,255,.035); font-size:13px; font-weight:800; text-decoration:none; }
 .codex-back svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
