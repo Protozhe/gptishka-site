@@ -66,7 +66,7 @@ assert.ok(
   deploy.indexOf('install -m 0644 "$LEGACY_AI_BATTLE_STATS" "$RUNTIME_AI_BATTLE_STATS"') < deploy.indexOf('git reset --hard "origin/$DEPLOY_BRANCH"'),
   "The live counter must be preserved before Git resets tracked files.",
 );
-assert.match(index, /home-promo-slider\.js\?v=20260825-ai-battle-no-flash1/);
-assert.match(enIndex, /home-promo-slider\.js\?v=20260825-ai-battle-no-flash1/);
+assert.match(index, /home-promo-slider\.js\?v=20260912-restored-products1/);
+assert.match(enIndex, /home-promo-slider\.js\?v=20260912-restored-products1/);
 
 console.log("Homepage AI battle slide and click counter wiring verified.");
