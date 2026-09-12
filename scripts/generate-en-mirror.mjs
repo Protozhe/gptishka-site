@@ -19,6 +19,7 @@ const pages = [
   ["chatgpt.html", "en/chatgpt.html"],
   ["claude.html", "en/claude.html"],
   ["supergrok.html", "en/supergrok.html"],
+  ["suno.html", "en/suno.html"],
   ["catalog/index.html", "en/catalog/index.html"],
   ["catalog/ai/index.html", "en/catalog/ai/index.html"],
   ["catalog/vpn/index.html", "en/catalog/vpn/index.html"],
@@ -36,6 +37,11 @@ const pages = [
   ["site-map.html", "en/site-map.html"],
   ["store/vpn/activate/index.html", "en/store/vpn/activate/index.html"],
 ];
+
+const requestedPages = String(process.env.EN_MIRROR_ONLY || "")
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
 
 const translations = [
   ["GPTishka — AI-подписки без входа и V*N в подарок", "GPTishka - AI subscriptions without login and V*N included"],
@@ -61,8 +67,10 @@ const translations = [
   ["всего активаций:", "total activations:"],
   ["всего активаций", "total activations"],
   ["GPTишка", "GPTishka"],
-  ["ChatGPT от 1290 ₽/мес", "ChatGPT from 1290 RUB/mo"],
-  ["от 1290 ₽/мес", "from 1290 RUB/mo"],
+  ["Пополнить кредиты Codex от 1 500 рублей", "Top up Codex Credits from 1,500 RUB"],
+  ["Кредиты Codex от 1 500 ₽", "Codex Credits from 1,500 RUB"],
+  ["ChatGPT от 1290 ₽/мес", "ChatGPT from 1090 RUB/mo"],
+  ["от 1290 ₽/мес", "from 1090 RUB/mo"],
   ["Русский", "Russian"],
   ["Выбрать язык", "Choose language"],
   ["Новости и предложения GPTishka", "GPTishka news and offers"],
@@ -73,6 +81,87 @@ const translations = [
   ["с надёжным VLESS-подключением", "with a reliable VLESS connection"],
   ["Получите VLESS-ключ сразу после оплаты. Подходит для стабильного доступа к сайтам, сервисам и приложениям без сложной настройки.", "Get a VLESS key right after payment. Suitable for stable access to websites, services, and apps without complicated setup."],
   ["Пополнения", "Top-ups"],
+  ["GPTishka — независимый магазин цифровых услуг: помощь с AI-подписками, активацией и Steam-пополнением. Не является официальным сайтом OpenAI, Anthropic или xAI.", "GPTishka is an independent digital services store for AI subscriptions, activation assistance, and Steam top-ups. It is not an official OpenAI, Anthropic, or xAI website."],
+  ["AI-подписки, активация и Steam-пополнение. GPTishka не связан с OpenAI, Anthropic или xAI.", "AI subscriptions, activation assistance, and Steam top-ups. GPTishka is not affiliated with OpenAI, Anthropic, or xAI."],
+  ["Оформляйте ChatGPT, Claude Pro, SuperGrok и Perplexity Pro с помощью в подключении. Быстрая активация, поддержка и гарантия GPTishka.", "Get ChatGPT, Claude Pro, SuperGrok, and Perplexity Pro with activation assistance, fast service, support, and a GPTishka warranty."],
+  ["Каталог GPTishka: подписки на ChatGPT, Claude, SuperGrok и Perplexity, пополнение Steam и другие цифровые услуги.", "GPTishka catalog: ChatGPT, Claude, SuperGrok, and Perplexity subscriptions, Steam top-ups, and other digital services."],
+  ["Каталог GPTishka: ChatGPT, Claude, SuperGrok, Perplexity и другие цифровые услуги.", "GPTishka catalog: ChatGPT, Claude, SuperGrok, Perplexity, and other digital services."],
+  ["Каталог нейросетей GPTishka: ChatGPT, Claude, SuperGrok и Perplexity. Выберите сервис и откройте готовую страницу с тарифами.", "GPTishka AI services catalog: ChatGPT, Claude, SuperGrok, and Perplexity. Choose a service to view its plans."],
+  ["Каталог пополнений GPTishka: Steam, iTunes и App Store. Выберите товар и перейдите к оформлению.", "GPTishka top-up catalog: Steam, iTunes, and App Store. Choose a product to continue to checkout."],
+  ["Пополнение Steam и баланса Apple ID для покупок в iTunes и App Store.", "Steam and Apple ID balance top-ups for purchases in iTunes and the App Store."],
+  ["Каталог пополнений", "Top-up catalog"],
+  ["Заказать пополнение iTunes и App Store", "Order an iTunes and App Store top-up"],
+  ["iTunes и App Store", "iTunes & App Store"],
+  ["Пополнение баланса Apple ID для приложений, игр, музыки и подписок.", "Top up your Apple ID balance for apps, games, music, and subscriptions."],
+  ["Заказать", "Order"],
+  ["от 1 500 RUB", "from 1 500 RUB"],
+  ["Выбери своего фаворита в мире искусственного интеллекта.", "Choose your favorite AI service."],
+  ["Выбрать ChatGPT", "Choose ChatGPT"],
+  ["Выбрать Claude", "Choose Claude"],
+  ["Я на этой стороне", "This is my pick"],
+  ["Обновляем статистику…", "Updating stats…"],
+  ["Новинка", "New"],
+  ["теперь в GPTishka", "now available at GPTishka"],
+  ["AI-поиск с ответами по источникам, глубокие исследования и работа с файлами. Подписка Pro на 1 месяц — 1 999 ₽.", "AI search with cited answers, deep research, and file analysis. One month of Pro costs 1,999 RUB."],
+  ["Открыть тариф", "View plan"],
+  ["GPTishka в VK", "GPTishka on VK"],
+  ["GPTishka в Telegram", "GPTishka on Telegram"],
+  ["Открыть тариф Perplexity Pro", "Open the Perplexity Pro plan"],
+  ["Perplexity Pro для AI-поиска, исследований, файлов и работы с источниками.", "Perplexity Pro for AI search, research, files, and source-based answers."],
+  ["Открыть тарифы Gemini Pro", "Open Gemini Pro plans"],
+  ["Gemini Pro для работы, учёбы, анализа и творчества.", "Gemini Pro for work, study, analysis, and creative tasks."],
+  ["Pro · 12 или 18 месяцев", "Pro · 12 or 18 months"],
+  ["Открыть тариф Suno Premier", "Open the Suno Premier plan"],
+  ["Suno Premier для создания музыки, вокала и редактирования треков с помощью AI.", "Suno Premier for creating music and vocals and editing tracks with AI."],
+  ["Premier · 1 месяц", "Premier · 1 month"],
+  ["Suno Premier на один месяц: 10 000 кредитов, Suno Studio, коммерческое использование музыки, подключение и поддержка GPTishka.", "One month of Suno Premier with 10,000 credits, Suno Studio, commercial use of music, activation assistance, and GPTishka support."],
+  ["Оформите Suno Premier на один месяц за 2 999 ₽ с помощью в подключении и поддержкой GPTishka.", "Get one month of Suno Premier for 2,999 RUB with activation assistance and GPTishka support."],
+  ["Suno Premier — тариф на 1 месяц | GPTishka", "Suno Premier — one-month plan | GPTishka"],
+  ["Создавайте музыку и вокал с помощью AI, работайте в Suno Studio и используйте расширенные инструменты редактирования. Тариф Premier на один месяц — 2 999 ₽.", "Create music and vocals with AI, work in Suno Studio, and use advanced editing tools. One month of Premier costs 2,999 RUB."],
+  ["О Suno Premier перед покупкой", "About Suno Premier before purchase"],
+  ["Возможности тарифа, порядок подключения и сопровождение заказа.", "Plan features, activation steps, and order support."],
+  ["Что входит в Suno Premier", "What Suno Premier includes"],
+  ["10 000 кредитов, которые обновляются ежемесячно.", "10,000 credits refreshed every month."],
+  ["Доступ к актуальным музыкальным моделям и Suno Studio.", "Access to current music models and Suno Studio."],
+  ["Приоритетная очередь и расширенные инструменты создания и редактирования музыки.", "Priority generation and advanced music creation and editing tools."],
+  ["Коммерческие права на новые композиции, созданные во время активной подписки, согласно условиям Suno.", "Commercial rights to new tracks created while the subscription is active, subject to Suno's terms."],
+  ["Для каких задач подходит", "What it is useful for"],
+  ["Создание песен, инструменталов, демо и фоновой музыки по текстовому описанию.", "Creating songs, instrumentals, demos, and background music from a text prompt."],
+  ["Работа с вокалом, аранжировкой, ремиксами и продолжением готовых композиций.", "Working with vocals, arrangements, remixes, and extensions of existing tracks."],
+  ["Разделение трека на вокал и инструменты и подготовка материала для дальнейшего монтажа.", "Separating vocals and instruments and preparing audio for further editing."],
+  ["Музыка для видео, рекламы, подкастов, игр и творческих проектов.", "Music for video, advertising, podcasts, games, and creative projects."],
+  ["Вы оформляете Suno Premier на один месяц и указываете контакт для связи.", "Choose one month of Suno Premier and provide a contact address."],
+  ["После подтверждения оплаты получаете дальнейшую инструкцию.", "After payment is confirmed, you receive the next instructions."],
+  ["Мы помогаем активировать подписку и проверяем появление тарифа Premier.", "We help activate the subscription and confirm that Premier is available."],
+  ["Статус и результат отправляем на указанный контакт.", "We send the status and result to your provided contact."],
+  ["Поддержка и важные условия", "Support and important terms"],
+  ["Тариф действует один месяц с момента успешного подключения.", "The plan is active for one month from successful activation."],
+  ["Функции, модели, кредиты и лимиты могут обновляться на стороне Suno.", "Features, models, credits, and limits may be updated by Suno."],
+  ["GPTishka отвечает за корректное выполнение услуги и остаётся на связи после оплаты.", "GPTishka is responsible for completing the service correctly and remains available after payment."],
+  ["Гарантия и возврат регулируются", "Warranty and refunds are governed by the"],
+  ["условиями гарантии", "warranty terms"],
+  ["условиями возврата", "refund policy"],
+  ["публичной офертой", "public offer"],
+  ["Короткие ответы на частые вопросы по Suno Premier", "Short answers to common questions about Suno Premier"],
+  ["Что я получу после оплаты?", "What will I receive after payment?"],
+  ["Подписку Suno Premier на один месяц на ваш аккаунт и помощь GPTishka с подключением.", "One month of Suno Premier on your account and GPTishka activation assistance."],
+  ["После активации станут доступны 10 000 кредитов, Suno Studio и возможности актуального тарифа Premier.", "After activation, you will receive 10,000 credits, Suno Studio, and the current Premier features."],
+  ["Какие возможности есть в Suno Premier?", "What does Suno Premier include?"],
+  ["Создание музыки и вокала, Suno Studio, приоритетная очередь, расширенное редактирование и разделение треков на составляющие.", "Music and vocal generation, Suno Studio, priority processing, advanced editing, and stem separation."],
+  ["Состав инструментов и лимиты могут обновляться самим сервисом Suno.", "Suno may update the available tools and limits."],
+  ["В среднем от 5 минут до 2 часов после оплаты. Максимальное время ожидания — до 48 часов.", "Usually 5 minutes to 2 hours after payment. The maximum processing time is 48 hours."],
+  ["Заказы обрабатываются ежедневно с 10:00 до 20:00 по МСК.", "Orders are processed daily from 10:00 to 20:00 Moscow time."],
+  ["Доступны СБП и банковские карты через подключённые платёжные шлюзы.", "Available payment methods are shown at checkout."],
+  ["GPTishka не сохраняет данные банковской карты.", "GPTishka does not store bank card details."],
+  ["Что делать, если возник вопрос после оплаты?", "What if I have a question after payment?"],
+  ["Напишите в поддержку и укажите номер заказа. Мы проверим статус подключения и поможем разобраться.", "Contact support and provide your order number. We will check the activation status and help resolve the issue."],
+  ["Кредиты Codex", "Codex credits"],
+  ["Пополнение дополнительного баланса Codex на совместимом аккаунте ChatGPT.", "Top up the additional Codex balance on a compatible ChatGPT account."],
+  ["250 / 500 / 1000 кредитов", "250 / 500 / 1,000 credits"],
+  ["Подарочная карта Apple ID", "Apple ID gift card"],
+  ["Номинал на выбор", "Choose an amount"],
+  ["К тарифу", "View plan"],
+  ["К тарифам", "View plans"],
   ["Пополни баланс Steam", "Top up your Steam balance"],
   ["на +10% ключами Манн Ко.", "with +10% using Mann Co. keys"],
   ["Укажите Steam trade-ссылку, выберите количество ключей и оплатите удобным способом. Подходит, если торговая площадка открыта и баланс нужен срочно.", "Enter your Steam trade URL, choose the number of keys, and pay with a convenient method. Useful when the market is unlocked and you need balance quickly."],
@@ -158,10 +247,6 @@ const translations = [
   ["Закрыть", "Close"],
   ["Выберите способ оплаты", "Choose payment method"],
   ["После выбора вы перейдете к безопасной странице оплаты.", "After choosing, you will go to a secure payment page."],
-  ["СБП и карты РФ/СНГ", "SBP and RU/CIS cards"],
-  ["СБП и банковские карты", "SBP and bank cards"],
-  ["Карты 3.2% и СБП 0%", "Cards 3.2% and SBP 0%"],
-  ["СБП 0% и карты 3.2%", "SBP 0% and cards 3.2%"],
   ["Публичная оферта", "Public offer"],
   ["Политика конфиденциальности", "Privacy policy"],
   ["Условия возврата", "Refund policy"],
@@ -274,7 +359,7 @@ const translations = [
   ["для текста, анализа, сценариев и повседневных задач.", "for text, analysis, scenarios, and everyday tasks."],
   ["Тарифы SuperGrok с быстрым подключением и поддержкой GPTishka.", "SuperGrok plans with fast connection and GPTishka support."],
   ["1 месяц", "1 month"],
-  ["от 1 290 RUB", "from 1,290 RUB"],
+  ["от 1 290 RUB", "from 1,090 RUB"],
   ["от 1 999 RUB", "from 1,999 RUB"],
   ["от 1 490 RUB", "from 1,490 RUB"],
   ["от 199 RUB", "from 199 RUB"],
@@ -368,6 +453,11 @@ const translations = [
 ];
 
 const linkMap = [
+  ["https://gptishka.shop/codex-credits", "https://gptishka.shop/en/codex-credits"],
+  ["https://gptishka.shop/perplexity", "https://gptishka.shop/en/perplexity.html"],
+  ["https://gptishka.shop/gemini", "https://gptishka.shop/en/gemini.html"],
+  ["https://gptishka.shop/suno", "https://gptishka.shop/en/suno.html"],
+  ["https://gptishka.shop/itunes", "https://gptishka.shop/en/itunes.html"],
   ["https://gptishka.shop/news/", "https://gptishka.shop/en/news/"],
   ["https://gptishka.shop/news", "https://gptishka.shop/en/news"],
   ["https://gptishka.shop/store/vpn/activate/", "https://gptishka.shop/en/store/vpn/activate/"],
@@ -404,6 +494,11 @@ const linkMap = [
   ['href="/chatgpt"', 'href="/en/chatgpt.html"'],
   ['href="/claude"', 'href="/en/claude.html"'],
   ['href="/supergrok"', 'href="/en/supergrok.html"'],
+  ['href="/perplexity"', 'href="/en/perplexity.html"'],
+  ['href="/gemini"', 'href="/en/gemini.html"'],
+  ['href="/suno"', 'href="/en/suno.html"'],
+  ['href="/itunes"', 'href="/en/itunes.html"'],
+  ['href="/codex-credits"', 'href="/en/codex-credits"'],
   ['href="/app/"', 'href="/app/?lang=en"'],
   ['href="/#', 'href="/en/#'],
   ['href="/about.html"', 'href="/en/about.html"'],
@@ -487,7 +582,7 @@ function translateHtml(html, targetRel) {
   out = out.replace('<html lang="ru">', '<html lang="en">');
   out = out.replace(/"inLanguage": "ru"/g, '"inLanguage": "en"');
 
-  for (const [from, to] of [...generatedTranslations].sort((a, b) => b[0].length - a[0].length)) {
+  for (const [from, to] of [...translations, ...generatedTranslations].sort((a, b) => b[0].length - a[0].length)) {
     out = replaceTranslation(out, from, to);
   }
   for (const [from, to] of forcedTranslations) {
@@ -503,10 +598,31 @@ function translateHtml(html, targetRel) {
   out = ensureEnglishLanguageSwitch(out);
   out = out.replace(/toLocaleString\("ru-RU"\)/g, 'toLocaleString("en-US")');
   out = out.replace(/toLocaleString\("ru-RU",/g, 'toLocaleString("en-US",');
+  out = out.replace(/ChatGPT from 1290(?: ₽\/month| RUB\/mo)/g, "ChatGPT from 1090 RUB/mo");
+  out = out.replace(/from 1(?:[ ,])290 RUB/g, "from 1,090 RUB");
+
+  const productAndCatalogPages = new Set([
+    "en/chatgpt.html", "en/claude.html", "en/supergrok.html", "en/suno.html",
+    "en/catalog/index.html", "en/catalog/ai/index.html", "en/catalog/vpn/index.html",
+    "en/store/vpn/index.html", "en/store/steam/index.html", "en/store/steam/topup/index.html"
+  ]);
+  if (productAndCatalogPages.has(targetRel)) {
+    out = out.replace(/\s*<a[^>]*class="header-product-pill"[\s\S]*?<\/a>\s*/i, "\n");
+  }
+  if (targetRel === "en/suno.html") {
+    out = out.replace(
+      /<div class="service-product-gallery" aria-hidden="true">\s*<div class="service-product-gallery__viewport">[\s\S]*?<\/div>\s*<\/div>/,
+      '<div class="service-product-gallery service-product-gallery--suno" aria-hidden="true">\n        <span class="service-product-gallery__brand service-product-gallery__brand--suno">\n          <span class="service-product-gallery__suno-mark"></span>\n        </span>\n      </div>',
+    );
+  }
   return stripTrailingWhitespace(out);
 }
 
-for (const [src, dest] of pages) {
+const selectedPages = requestedPages.length
+  ? pages.filter(([src, dest]) => requestedPages.includes(src) || requestedPages.includes(dest))
+  : pages;
+
+for (const [src, dest] of selectedPages) {
   const html = fs.readFileSync(path.join(root, src), "utf8");
   const translated = translateHtml(html, dest);
   const fullDest = path.join(root, dest);
@@ -514,4 +630,4 @@ for (const [src, dest] of pages) {
   fs.writeFileSync(fullDest, translated, "utf8");
 }
 
-console.log(JSON.stringify({ generated: pages.map(([, dest]) => dest) }, null, 2));
+console.log(JSON.stringify({ generated: selectedPages.map(([, dest]) => dest) }, null, 2));
