@@ -17,6 +17,7 @@ expect(app.includes("ai-directory-card--codex"), "Codex Credits is missing from 
 expect(app.includes('const title = isEnPage ? "Steam Top Up" : "Пополнение Steam";'), "Steam title regressed");
 expect(app.includes("const displayTitle = title;"), "stored showcase data can overwrite the final Steam title");
 expect(onboarding.includes('document.body.classList.add("chatgpt-onboarding-ready")'), "compact ChatGPT flow is not activated");
+expect(onboarding.includes('plans.insertAdjacentHTML("afterend"'), "Codex banner is not placed directly after the purchase section");
 expect(onboardingCss.includes("service-info-section--chatgpt"), "legacy ChatGPT information block is not hidden");
 expect(onboardingCss.includes("service-info-section--claude"), "legacy Claude information block is not hidden");
 expect(fs.existsSync("codex-credits.html"), "Russian Codex Credits page is missing");
@@ -39,7 +40,7 @@ for (const file of htmlFiles) {
   for (const match of html.matchAll(sharedAssetPattern)) {
     const expectedVersion = match[1] === "app.min.js"
       ? new Set(["20260912-chat-restoration2", "20260912-card-restoration1"])
-      : new Set(["20260912-chat-restoration2"]);
+      : new Set(["20260912-chat-restoration2", "20260912-restored-products1"]);
     expect(expectedVersion.has(match[2]), `${file}: stale cache version for ${match[1]}`);
   }
 }

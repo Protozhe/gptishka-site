@@ -516,7 +516,7 @@ html body:has(main.service-page) > .chatgpt-onboarding-modal {
   }
 }
 
-+.codex-entry {
+.codex-entry {
   width: min(1180px, calc(100% - 40px));
   margin: 18px auto 0;
 }
@@ -617,7 +617,7 @@ html body:has(main.service-page) > .chatgpt-onboarding-modal {
   transform: translateY(-1px);
 }
 
-+/* Keep the Codex cross-sell inside the viewport at every product-page width. */
+/* Keep the Codex cross-sell inside the viewport at every product-page width. */
 .codex-entry,
 .codex-entry__card,
 .codex-entry__content {

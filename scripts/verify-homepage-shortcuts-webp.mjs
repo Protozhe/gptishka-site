@@ -37,21 +37,21 @@ for (const name of [
 }
 
 assert(
-  index.includes("/assets/img/home/ai-shortcut-384.webp?v=20260721-shortcuts-responsive1") &&
+  index.includes("/assets/img/home/ai-shortcut-384.webp?v=20260912-restored-wide1") &&
     index.includes('srcset="/assets/img/home/ai-shortcut-384.webp'),
   "Static AI shortcut must use the responsive WebP set.",
 );
 assert(
-  index.includes("/assets/js/home-promo-slider.js?v=20260724-en-product-routes1"),
+  index.includes("/assets/js/home-promo-slider.js?v=20260912-restored-products1"),
   "Homepage must load the cache-busted shortcut normalizer.",
 );
 assert(
   /function optimizedShortcutImageUrl\(value\)/.test(slider) &&
-    slider.includes("/assets/img/home/topups-shortcut.webp?v=20260721-shortcuts-webp1") &&
-    slider.includes("/assets/img/home/ai-shortcut.webp?v=20260721-shortcuts-webp1") &&
+    slider.includes("/assets/img/home/topups-shortcut.webp?v=20260912-restored-wide1") &&
+    slider.includes("/assets/img/home/ai-shortcut.webp?v=20260912-restored-wide1") &&
     /var image = shortcutImageVariants\(item\.imageUrl\)/.test(slider) &&
     /img\.srcset = image\.srcset/.test(slider) &&
-    slider.includes("shortcuts-responsive1"),
+    slider.includes("restored-wide1"),
   "Live API shortcut paths must be normalized to responsive WebP sets.",
 );
 for (const source of [service, data]) {

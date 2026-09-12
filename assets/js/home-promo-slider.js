@@ -20,10 +20,10 @@
     var url = safeUrl(value);
     var pathname = url.split(/[?#]/, 1)[0].toLowerCase();
     if (pathname === "/assets/img/home/topups-shortcut.png") {
-      return "/assets/img/home/topups-shortcut.webp?v=20260721-shortcuts-webp1";
+      return "/assets/img/home/topups-shortcut.webp?v=20260912-restored-wide1";
     }
     if (pathname === "/assets/img/home/ai-shortcut.png") {
-      return "/assets/img/home/ai-shortcut.webp?v=20260721-shortcuts-webp1";
+      return "/assets/img/home/ai-shortcut.webp?v=20260912-restored-wide1";
     }
     if (pathname === "/assets/img/services/vstar-card.png") {
       return "/assets/img/services/vstar-card.webp?v=20260721-cards-webp1";
@@ -45,11 +45,11 @@
     }
     if (!basename) return { src: url, srcset: "" };
     return {
-      src: "/assets/img/home/" + basename + "-384.webp?v=20260721-shortcuts-responsive1",
+      src: "/assets/img/home/" + basename + "-384.webp?v=20260912-restored-wide1",
       srcset:
-        "/assets/img/home/" + basename + "-384.webp?v=20260721-shortcuts-responsive1 384w, " +
-        "/assets/img/home/" + basename + "-724.webp?v=20260721-shortcuts-responsive1 724w, " +
-        "/assets/img/home/" + basename + ".webp?v=20260721-shortcuts-responsive1 1448w"
+        "/assets/img/home/" + basename + "-384.webp?v=20260912-restored-wide1 384w, " +
+        "/assets/img/home/" + basename + "-724.webp?v=20260912-restored-wide1 724w, " +
+        "/assets/img/home/" + basename + ".webp?v=20260912-restored-wide1 1448w"
     };
   }
 
@@ -451,7 +451,9 @@
           img.sizes = "(max-width: 760px) calc((100vw - 26px) / 2), min(490px, 50vw)";
         }
         img.alt = "";
-        img.loading = "lazy";
+        var isPriorityShortcut = /^(topups|ai)$/.test(text(item.id).toLowerCase());
+        img.loading = isPriorityShortcut ? "eager" : "lazy";
+        if (isPriorityShortcut) img.fetchPriority = "high";
         img.decoding = "async";
         art.appendChild(img);
         if (hoverImageUrl) {

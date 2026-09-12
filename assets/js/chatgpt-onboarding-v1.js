@@ -80,8 +80,9 @@
 
   function mountCodexEntry() {
     const page = document.querySelector("main.service-page");
-    if (!page || page.querySelector(".codex-entry")) return;
-    page.insertAdjacentHTML("beforeend", `
+    const plans = page && page.querySelector(".service-plans-section");
+    if (!page || !plans || page.querySelector(".codex-entry")) return;
+    plans.insertAdjacentHTML("afterend", `
       <section class="codex-entry" aria-label="${isEnglish ? "Codex credit top-up" : "Пополнение кредитов Codex"}">
         <a class="codex-entry__card" href="${isEnglish ? "/en/codex-credits" : "/codex-credits"}">
           <span class="codex-entry__visual" aria-hidden="true"><span class="codex-entry__brand-mark"></span><i>CODEX</i></span>

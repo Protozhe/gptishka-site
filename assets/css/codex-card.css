@@ -648,13 +648,17 @@ body.home-wide-body .home-wide-page .ai-directory-card--gemini:focus-within .ai-
   mask-size: contain;
 }
 
-.ai-directory-card--suno .ai-directory-card__media {
+.ai-directory-card--suno .ai-directory-card__media,
+html body.home-catalog-body .ai-directory-card--suno .ai-directory-card__media,
+body.home-wide-body .home-wide-page .ai-directory-card--suno .ai-directory-card__media {
   isolation: isolate;
   background:
-    radial-gradient(circle at 28% 20%, rgba(255, 150, 62, 0.34), transparent 36%),
-    radial-gradient(circle at 72% 76%, rgba(240, 48, 116, 0.34), transparent 44%),
-    linear-gradient(145deg, #7e293f 0%, #42152f 54%, #170914 100%) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 193, 130, 0.14);
+    radial-gradient(circle at 22% 18%, rgba(255, 147, 61, 0.72), transparent 38%),
+    radial-gradient(circle at 78% 76%, rgba(239, 45, 116, 0.62), transparent 46%),
+    linear-gradient(145deg, #b53b57 0%, #741e49 52%, #35112f 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 214, 174, 0.24),
+    inset 0 -38px 80px rgba(52, 8, 35, 0.2);
 }
 
 .ai-directory-card--suno .ai-directory-card__media::before {
