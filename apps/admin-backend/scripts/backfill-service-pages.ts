@@ -186,8 +186,8 @@ async function main() {
         colorOverlay: pageConfig.colorOverlay,
         constructorTitle: pageConfig.title,
         constructorDescription: pageConfig.constructorDescription,
-        paymentCaptionLava: "СБП 0% и карты 3.2%",
-        paymentCaptionEnot: "Карты 3.2% и СБП 0%",
+        paymentCaptionLava: "",
+        paymentCaptionEnot: "",
         sortOrder: builtInPages.indexOf(pageConfig) * 10 + 10,
       },
       update: {

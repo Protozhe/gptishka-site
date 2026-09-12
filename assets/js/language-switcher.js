@@ -18,7 +18,9 @@
     ["/suno", "/en/suno.html"],
     ["/suno.html", "/en/suno.html"],
     ["/itunes", "/en/itunes.html"],
-    ["/itunes.html", "/en/itunes.html"]
+    ["/itunes.html", "/en/itunes.html"],
+    ["/codex-credits", "/en/codex-credits"],
+    ["/codex-credits.html", "/en/codex-credits"]
   ]);
   const RUSSIAN_PRODUCT_ROUTES = new Map([
     ["/en/chatgpt", "/chatgpt"],
@@ -34,7 +36,9 @@
     ["/en/suno", "/suno"],
     ["/en/suno.html", "/suno"],
     ["/en/itunes", "/itunes"],
-    ["/en/itunes.html", "/itunes"]
+    ["/en/itunes.html", "/itunes"],
+    ["/en/codex-credits", "/codex-credits"],
+    ["/en/codex-credits.html", "/codex-credits"]
   ]);
   const FALLBACK_ENGLISH_PATHS = new Set([
     "/404.html",
