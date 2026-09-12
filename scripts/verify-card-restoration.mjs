@@ -32,7 +32,9 @@ const masks = [
 ];
 
 for (const page of pages) {
-  expect(read(page).includes("/assets/css/codex-card.css?v=20260912-card-restoration1"), `${page}: card stylesheet is missing`);
+  const html = read(page);
+  expect(html.includes("/assets/css/codex-card.css?v=20260912-card-restoration1"), `${page}: card stylesheet is missing`);
+  expect(html.includes("/assets/js/app.min.js?v=20260912-card-restoration1"), `${page}: card script cache version is stale`);
 }
 for (const mask of masks) {
   expect(fs.existsSync(path.join(root, "assets/img/services", mask)), `missing brand mask: ${mask}`);
