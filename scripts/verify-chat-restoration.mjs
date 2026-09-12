@@ -37,7 +37,10 @@ const sharedAssetPattern = /(site-header-unify\.js|app\.min\.js|chatgpt-onboardi
 for (const file of htmlFiles) {
   const html = read(file);
   for (const match of html.matchAll(sharedAssetPattern)) {
-    expect(match[2] === "20260912-chat-restoration2", `${file}: stale cache version for ${match[1]}`);
+    const expectedVersion = match[1] === "app.min.js"
+      ? new Set(["20260912-chat-restoration2", "20260912-card-restoration1"])
+      : new Set(["20260912-chat-restoration2"]);
+    expect(expectedVersion.has(match[2]), `${file}: stale cache version for ${match[1]}`);
   }
 }
 
