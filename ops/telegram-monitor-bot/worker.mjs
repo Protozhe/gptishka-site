@@ -424,6 +424,7 @@ async function activationNotification(record, result) {
   const product = order ? orderProduct(order) : String(record.productKey || "Товар");
   const client = order ? orderClient(order) : String(record.email || "клиент");
   const message = String(record.lastProviderMessage || "").trim();
+  const activationAt = record.completedAt || record.lastProviderCheckedAt || record.updatedAt;
   return [
     result === "success" ? "✅ <b>Активация успешна</b>" : "❌ <b>Активация завершилась ошибкой</b>",
     "",
@@ -431,7 +432,11 @@ async function activationNotification(record, result) {
     `Пул ключей: <code>${escapeHtml(record.productKey || "—")}</code>`,
     `Клиент: ${escapeHtml(client)}`,
     `Заказ: <code>${escapeHtml(record.orderId)}</code>`,
+    order?.createdAt ? `Заказ создан: ${escapeHtml(formatDate(order.createdAt))} МСК` : "",
+    activationAt ? `Статус активации обновлён: ${escapeHtml(formatDate(activationAt))} МСК` : "",
     message ? `Результат: ${escapeHtml(message).slice(0, 800)}` : "",
+    "",
+    "ℹ️ Это уведомление о выполнении ранее оплаченного заказа. Новая оплата не поступала.",
   ].filter(Boolean).join("\n");
 }
 
