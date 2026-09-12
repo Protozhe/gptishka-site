@@ -190,7 +190,7 @@ newsJs = newsJs.replace(
       media.className = "news-card__media";
 
       const image = document.createElement("img");
-      image.dataset.src = \`/api/public/news/\${encodeURIComponent(item.postId)}/image\`;
+      image.dataset.src = item.imageUrl;
       image.alt = "";
       image.loading = "lazy";
       image.decoding = "async";
@@ -280,7 +280,7 @@ newsPage = newsPage.replace(
 newsPage = newsPage.replace("Открыть Telegram", "Наш Telegram");
 newsPage = newsPage.replace(
   /\/assets\/js\/news-hub\.js(?:\?[^"']*)?/g,
-  "/assets/js/news-hub.js?v=20260912-readable1",
+  "/assets/js/news-hub.js?v=20260912-readable2",
 );
 if (!newsPage.includes("/assets/css/news-readable-v1.css")) {
   newsPage = newsPage.replace(
