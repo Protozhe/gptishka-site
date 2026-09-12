@@ -224,6 +224,21 @@ body .header-product-pill__logo {
   box-shadow: 0 4px 12px rgba(4, 17, 11, 0.16);
 }
 
+/* Codex sales pill: show the clean brand mark without the tiny card caption. */
+body .header-product-pill::before {
+  content: "";
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border-radius: 9px;
+  background: #073b2d url("/assets/img/services/chatgpt-card.webp?v=20260721-webp1") center 27% / 168% auto no-repeat;
+  box-shadow: 0 4px 12px rgba(4, 17, 11, 0.18);
+}
+
+body .header-product-pill > .header-product-pill__logo {
+  display: none !important;
+}
+
 body .lang-current,
 body .home-mobile-menu-toggle {
   height: 44px !important;
@@ -18990,4 +19005,65 @@ body.home-wide-body .home-wide-page #pricingGrid .product-showcase-grid > .ai-di
     min-height: clamp(221px, calc(287px - 3.43vw), 240px);
     gap: 7px;
   }
+}
+/* Codex top-up card: keep it alongside Steam and App Store instead of hiding it inside the aggregate card. */
+.ai-directory-card--codex {
+  --directory-button-hover-bg: linear-gradient(135deg, #eafff6, #78e8bd);
+  --directory-button-hover-border: rgba(198, 255, 232, 0.88);
+  --directory-button-hover-shadow: 0 12px 28px rgba(36, 211, 151, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  --directory-button-hover-color: #06251c;
+  --directory-button-focus: #8ff2c9;
+}
+
+.ai-directory-card__media--codex {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #061b17;
+}
+
+.ai-directory-card__media--codex::after {
+  position: absolute;
+  z-index: 2;
+  inset: 67% 0 0;
+  content: "";
+  background: linear-gradient(180deg, rgba(5, 23, 19, 0), #051713 27%, #051713 100%);
+  pointer-events: none;
+  transition: background 0.22s ease;
+}
+
+.ai-directory-card__codex-label {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: 13%;
+  color: #ffffff;
+  font-family: "Manrope", "Inter", system-ui, sans-serif;
+  font-size: clamp(25px, 2.2vw, 34px);
+  font-weight: 900;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  transform: translateX(-50%);
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+}
+
+.ai-directory-card__codex-label--hover {
+  color: #073a2f;
+  opacity: 0;
+}
+
+.ai-directory-card--codex:hover .ai-directory-card__media--codex::after,
+.ai-directory-card--codex:focus-within .ai-directory-card__media--codex::after {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0), #ffffff 27%, #ffffff 100%);
+}
+
+.ai-directory-card--codex:hover .ai-directory-card__codex-label--primary,
+.ai-directory-card--codex:focus-within .ai-directory-card__codex-label--primary {
+  opacity: 0;
+}
+
+.ai-directory-card--codex:hover .ai-directory-card__codex-label--hover,
+.ai-directory-card--codex:focus-within .ai-directory-card__codex-label--hover {
+  opacity: 1;
 }
