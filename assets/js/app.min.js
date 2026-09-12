@@ -170,28 +170,14 @@ function navigateWithPageTransition(targetHref, delayMs = PAGE_TRANSITION_LEAVE_
   if (!href) return;
   if (pageNavigationInProgress) return;
   pageNavigationInProgress = true;
-  markTransitionNavigationIntent();
-  document.documentElement.classList.add("is-leaving");
-  window.setTimeout(() => {
-    window.location.href = href;
-  }, delayMs);
+  document.documentElement.classList.remove("is-leaving", "is-entering", "is-entering-active");
+  window.location.href = href;
 }
 
 function initPageEnterTransition() {
-  const isTransitionNavigation = consumeTransitionNavigationIntent();
-  if (!isTransitionNavigation) return false;
-  const root = document.documentElement;
-  root.classList.add("is-entering");
-  window.requestAnimationFrame(() => {
-    window.requestAnimationFrame(() => {
-      root.classList.add("is-entering-active");
-      window.setTimeout(() => {
-        root.classList.remove("is-entering");
-        root.classList.remove("is-entering-active");
-      }, PAGE_TRANSITION_CLEANUP_MS);
-    });
-  });
-  return true;
+  consumeTransitionNavigationIntent();
+  document.documentElement.classList.remove("is-leaving", "is-entering", "is-entering-active");
+  return false;
 }
 
 function normalizePathname(pathname) {
