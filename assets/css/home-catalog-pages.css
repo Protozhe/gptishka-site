@@ -43,7 +43,7 @@ body.home-catalog-body {
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  animation: catalogFadeIn 0.42s ease both;
+  animation: none;
 }
 
 .home-catalog-body.catalog-is-leaving .catalog-page {
@@ -196,12 +196,12 @@ body.home-catalog-body {
   min-width: 0;
   width: 100%;
   transform: translateY(0);
-  opacity: 0;
-  animation: catalogCardEnter 0.44s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  opacity: 1;
+  animation: none;
   transition:
     transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1),
     filter 0.26s ease;
-  will-change: transform;
+  will-change: auto;
 }
 
 .catalog-grid--directory .ai-directory-card:nth-child(1) {
