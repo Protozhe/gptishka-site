@@ -4,6 +4,8 @@
   const grid = document.getElementById("servicePlansGrid");
   if (!grid) return;
 
+  document.body.classList.add("chatgpt-onboarding-ready");
+
   const isEnglish = document.documentElement.lang.toLowerCase().startsWith("en") || location.pathname.startsWith("/en/");
   const copy = isEnglish ? {
     briefLabel: "Important information before purchase",

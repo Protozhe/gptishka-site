@@ -21,6 +21,7 @@ const checks = [
   "scripts/verify-showcase-card-mode.mjs",
   "scripts/verify-showcase-product-visual-editor.mjs",
   "scripts/verify-showcase-service-cards.mjs",
+  "scripts/verify-chat-restoration.mjs",
 ];
 
 for (const check of checks) {

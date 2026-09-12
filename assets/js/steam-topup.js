@@ -11,7 +11,7 @@
   const COPY = isEnPage
     ? {
         pay: "Pay",
-        productTitle: "Steam top-up with Mann Co. keys",
+        productTitle: "Steam Top Up",
         planTitle: "Mann Co. keys",
         duration: (quantity) => `${quantity} key${quantity === 1 ? "" : "s"}`,
         productConfigFetchError: "Could not load the current product configuration.",
@@ -24,7 +24,7 @@
       }
     : {
         pay: "Оплатить",
-        productTitle: "Пополнение Steam ключами Манн Ко",
+        productTitle: "Пополнение Steam",
         planTitle: "Ключи Манн Ко",
         duration: (quantity) => `${quantity} ключ(ей)`,
         productConfigFetchError: "Не удалось получить актуальную конфигурацию товара.",
