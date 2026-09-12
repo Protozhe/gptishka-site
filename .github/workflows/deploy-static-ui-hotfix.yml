@@ -3,7 +3,7 @@ name: Deploy static UI hotfix
 on:
   push:
     branches:
-      - codex-static-ui-20260912
+      - codex-claude-onboarding-20260912
 
 permissions:
   contents: read
@@ -45,8 +45,11 @@ jobs:
             export DEPLOY_BACKUP_DIR="/var/backups/gptishka/static-ui-${{ github.run_id }}"
             node /tmp/gptishka-static-ui-20260912/patch-live.mjs
             node --check /var/www/gptishka-new/assets/js/chatgpt-onboarding-v1.js
+            node --check /var/www/gptishka-new/assets/js/claude-onboarding-v1.js
             nginx -t
             curl -fsS "https://www.gptishka.shop/chatgpt?verify=${{ github.run_id }}" | grep -q "chatgpt-onboarding-v1.css"
             curl -fsS "https://www.gptishka.shop/assets/css/gptishka-global-dark.css?v=20260912-glow-all1" | grep -q "gptishka-service-glow-overflow-v1"
             curl -fsS "https://www.gptishka.shop/assets/js/chatgpt-onboarding-v1.js?v=20260912-1" | grep -q "Мы доведём подключение до результата"
+            curl -fsS "https://www.gptishka.shop/claude?verify=${{ github.run_id }}" | grep -q "claude-onboarding-v1.js"
+            curl -fsS "https://www.gptishka.shop/assets/js/claude-onboarding-v1.js?v=20260912-1" | grep -q "Официальная оплата и помощь до результата"
             rm -rf -- /tmp/gptishka-static-ui-20260912

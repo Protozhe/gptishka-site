@@ -1,5 +1,37 @@
-.service-page[data-service-page="chatgpt"] .service-constructor-description {
+.service-page[data-service-page="chatgpt"] .service-constructor-description,
+.service-page[data-service-page="claude"] .service-constructor-description {
   display: none;
+}
+
+body.claude-onboarding-ready .chatgpt-onboarding-brief__mark,
+body.claude-onboarding-ready .chatgpt-onboarding-step__number,
+body.claude-onboarding-ready .chatgpt-onboarding-fit__list li > span,
+body.claude-onboarding-ready .chatgpt-onboarding-modal__note > span {
+  color: #ff9b72;
+  background: rgba(255, 111, 63, 0.09);
+}
+
+body.claude-onboarding-ready .chatgpt-onboarding-step__number {
+  border-color: rgba(255, 123, 75, 0.38);
+}
+
+body.claude-onboarding-ready .chatgpt-onboarding-modal__eyebrow,
+body.claude-onboarding-ready .chatgpt-onboarding-fit__action,
+body.claude-onboarding-ready .chatgpt-onboarding-brief__arrow {
+  color: #ff9b72;
+}
+
+body.claude-onboarding-ready .chatgpt-onboarding-brief__details:hover,
+body.claude-onboarding-ready .chatgpt-onboarding-brief__details:focus-visible {
+  color: #ffc0a5;
+  border-color: rgba(255, 132, 82, 0.34);
+  background: rgba(255, 101, 48, 0.08);
+}
+
+body.claude-onboarding-ready .chatgpt-onboarding-modal__primary {
+  color: #1a0903;
+  background: linear-gradient(135deg, #ffae84, #f06432);
+  box-shadow: 0 12px 26px rgba(240, 100, 50, 0.2);
 }
 
 .chatgpt-onboarding-brief {
@@ -563,4 +595,3 @@ html body:has(main.service-page[data-service-page="chatgpt"])
     min-height: 44px;
   }
 }
-

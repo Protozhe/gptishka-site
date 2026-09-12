@@ -9,12 +9,15 @@ const cacheVersion = "20260912-glow-all1";
 
 const onboardingCssSource = path.join(uploadDir, "chatgpt-onboarding-v1.css");
 const onboardingJsSource = path.join(uploadDir, "chatgpt-onboarding-v1.js");
+const claudeOnboardingJsSource = path.join(uploadDir, "claude-onboarding-v1.js");
 const onboardingCssTarget = path.join(appDir, "assets/css/chatgpt-onboarding-v1.css");
 const onboardingJsTarget = path.join(appDir, "assets/js/chatgpt-onboarding-v1.js");
+const claudeOnboardingJsTarget = path.join(appDir, "assets/js/claude-onboarding-v1.js");
 const globalCssPath = path.join(appDir, "assets/css/gptishka-global-dark.css");
 const chatgptPath = path.join(appDir, "chatgpt.html");
+const claudePath = path.join(appDir, "claude.html");
 
-for (const required of [onboardingCssSource, onboardingJsSource, globalCssPath, chatgptPath]) {
+for (const required of [onboardingCssSource, onboardingJsSource, claudeOnboardingJsSource, globalCssPath, chatgptPath, claudePath]) {
   if (!fs.existsSync(required)) throw new Error(`Required file is missing: ${required}`);
 }
 
@@ -37,10 +40,12 @@ function writeAtomic(filePath, contents) {
 
 backupFile(globalCssPath);
 backupFile(chatgptPath);
+backupFile(claudePath);
 fs.mkdirSync(path.dirname(onboardingCssTarget), { recursive: true });
 fs.mkdirSync(path.dirname(onboardingJsTarget), { recursive: true });
 fs.copyFileSync(onboardingCssSource, onboardingCssTarget);
 fs.copyFileSync(onboardingJsSource, onboardingJsTarget);
+fs.copyFileSync(claudeOnboardingJsSource, claudeOnboardingJsTarget);
 
 let globalCss = fs.readFileSync(globalCssPath, "utf8");
 if (!globalCss.includes(glowMarker)) {
@@ -85,6 +90,16 @@ for (const filePath of htmlFiles) {
       html = html.replace("</body>", `  <script src="/assets/js/chatgpt-onboarding-v1.js?v=20260912-1" defer></script>\n</body>`);
     }
   }
+  if (path.resolve(filePath) === path.resolve(claudePath)) {
+    if (!html.includes("/assets/css/chatgpt-onboarding-v1.css")) {
+      html = html.replace("</head>", `  <link rel="stylesheet" href="/assets/css/chatgpt-onboarding-v1.css?v=20260912-2" />\n</head>`);
+    } else {
+      html = html.replace(/\/assets\/css\/chatgpt-onboarding-v1\.css(?:\?[^"']*)?/g, "/assets/css/chatgpt-onboarding-v1.css?v=20260912-2");
+    }
+    if (!html.includes("/assets/js/claude-onboarding-v1.js")) {
+      html = html.replace("</body>", `  <script src="/assets/js/claude-onboarding-v1.js?v=20260912-1" defer></script>\n</body>`);
+    }
+  }
   if (html === original) continue;
   backupFile(filePath);
   writeAtomic(filePath, html);
@@ -92,6 +107,7 @@ for (const filePath of htmlFiles) {
 }
 
 const finalChatgpt = fs.readFileSync(chatgptPath, "utf8");
+const finalClaude = fs.readFileSync(claudePath, "utf8");
 if (
   !finalChatgpt.includes("/assets/css/chatgpt-onboarding-v1.css") ||
   !finalChatgpt.includes("/assets/js/chatgpt-onboarding-v1.js") ||
@@ -100,4 +116,11 @@ if (
   throw new Error("chatgpt.html is missing part of the static UI release");
 }
 
-console.log(JSON.stringify({ backupDir, changedHtml, assets: [onboardingCssTarget, onboardingJsTarget] }, null, 2));
+if (
+  !finalClaude.includes("/assets/css/chatgpt-onboarding-v1.css?v=20260912-2") ||
+  !finalClaude.includes("/assets/js/claude-onboarding-v1.js?v=20260912-1")
+) {
+  throw new Error("claude.html is missing part of the onboarding release");
+}
+
+console.log(JSON.stringify({ backupDir, changedHtml, assets: [onboardingCssTarget, onboardingJsTarget, claudeOnboardingJsTarget] }, null, 2));
