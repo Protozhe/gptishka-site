@@ -94,22 +94,122 @@ reviewsJs = reviewsJs.replace(
   /elements\.rating\.textContent = totalWeight \? \(weightedRating \/ totalWeight\)\.toFixed\(1\) : "—";/,
   'elements.rating.textContent = totalWeight ? (weightedRating / totalWeight).toFixed(1) + " из 5" : "—";',
 );
+reviewsJs = reviewsJs.replace(
+  /  function reviewQualityScore\(item\) \{[\s\S]*?\n  \}\n\n(?=  function renderReviews)/,
+  "",
+);
+reviewsJs = reviewsJs.replace(
+  /  function renderReviews\(data\) \{[\s\S]*?\n  \}\n\n  function showError/,
+  `  function reviewQualityScore(item) {
+    var text = String(item.text || "").trim().toLowerCase();
+    var score = Math.max(1, Math.min(5, Number(item.rating) || 5)) * 12;
+    var length = text.length;
+
+    if (length >= 55 && length <= 240) score += 28;
+    else if (length >= 35 && length <= 320) score += 16;
+    else if (length < 24) score -= 24;
+    else if (length > 360) score -= 12;
+
+    ["быстро", "оператив", "без входа", "официаль", "безопас", "помог", "понят", "рекоменд", "подписка работает"].forEach(function (word) {
+      if (text.includes(word)) score += 6;
+    });
+    ["не первый раз", "вторая покупка", "снова", "продлеваю", "вернусь", "ещё обращаться"].forEach(function (word) {
+      if (text.includes(word)) score += 12;
+    });
+    ["ужасно", "жуликов", "забан", "ждал долго", "долго отвечал", "невнимательно", "3 часа"].forEach(function (word) {
+      if (text.includes(word)) score -= 30;
+    });
+
+    if (!item.sourceHidden) score += 5;
+    if (item.sourceType === "site" || item.sourceType === "playerok") score += 4;
+    return score;
+  }
+
+  function reviewProduct(item) {
+    return String(item.detail || "Отзыв").split(",")[0].trim().toLowerCase();
+  }
+
+  function selectFeaturedReviews(items) {
+    var ranked = items.slice().sort(function (a, b) {
+      var scoreDifference = reviewQualityScore(b) - reviewQualityScore(a);
+      if (scoreDifference) return scoreDifference;
+      return (Date.parse(b.date || "") || 0) - (Date.parse(a.date || "") || 0);
+    });
+    var selected = [];
+    var productCounts = Object.create(null);
+
+    ranked.forEach(function (item) {
+      if (selected.length >= 6) return;
+      var product = reviewProduct(item);
+      if ((productCounts[product] || 0) >= 2) return;
+      selected.push(item);
+      productCounts[product] = (productCounts[product] || 0) + 1;
+    });
+    ranked.forEach(function (item) {
+      if (selected.length >= 6 || selected.includes(item)) return;
+      selected.push(item);
+    });
+    return selected;
+  }
+
+  function ensureFeaturedLayout() {
+    var featuredGrid = document.getElementById("reviewsFeaturedGrid");
+    if (featuredGrid) return featuredGrid;
+
+    var title = document.getElementById("reviewsFeedTitle");
+    if (title) title.textContent = "Лучшие отзывы";
+    elements.filters.hidden = true;
+
+    featuredGrid = create("div", "reviews-grid reviews-grid--featured");
+    featuredGrid.id = "reviewsFeaturedGrid";
+    featuredGrid.setAttribute("aria-label", "Лучшие отзывы покупателей");
+
+    var allHeading = create("div", "reviews-all-heading");
+    allHeading.append(
+      create("h2", "reviews-all-heading__title", "Все отзывы"),
+      create("span", "reviews-all-heading__hint", "Полная лента отзывов покупателей")
+    );
+    elements.grid.before(featuredGrid, allHeading);
+    return featuredGrid;
+  }
+
+  function renderReviews(data) {
+    var items = filteredItems(data);
+    var featuredGrid = ensureFeaturedLayout();
+    featuredGrid.replaceChildren();
+    selectFeaturedReviews(items).forEach(function (item) {
+      featuredGrid.append(renderReview(item));
+    });
+
+    var visible = items.slice(0, state.visible);
+    elements.grid.replaceChildren();
+    visible.forEach(function (item) {
+      elements.grid.append(renderReview(item));
+    });
+    elements.grid.setAttribute("aria-busy", "false");
+    elements.empty.hidden = items.length > 0;
+    elements.grid.hidden = items.length === 0;
+    elements.more.hidden = visible.length >= items.length;
+  }
+
+  function showError`,
+);
 writeAtomic(reviewsJsPath, reviewsJs);
 
 let reviewsPage = fs.readFileSync(reviewsPagePath, "utf8");
 reviewsPage = reviewsPage.replace(
   /\/assets\/js\/reviews-hub\.js(?:\?[^"']*)?/g,
-  "/assets/js/reviews-hub.js?v=20260912-readable2",
+  "/assets/js/reviews-hub.js?v=20260912-featured1",
 );
 if (!reviewsPage.includes("/assets/css/reviews-readable-v1.css")) {
   reviewsPage = reviewsPage.replace(
     "</head>",
-    '  <link rel="stylesheet" href="/assets/css/reviews-readable-v1.css?v=20260912-4">\n</head>',
+    '  <link rel="stylesheet" href="/assets/css/reviews-readable-v1.css?v=20260912-5">\n</head>',
   );
 } else {
   reviewsPage = reviewsPage.replace(
     /\/assets\/css\/reviews-readable-v1\.css(?:\?[^"']*)?/g,
-    "/assets/css/reviews-readable-v1.css?v=20260912-4",
+    "/assets/css/reviews-readable-v1.css?v=20260912-5",
   );
 }
 writeAtomic(reviewsPagePath, reviewsPage);
