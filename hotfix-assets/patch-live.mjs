@@ -16,8 +16,10 @@ const claudeOnboardingJsTarget = path.join(appDir, "assets/js/claude-onboarding-
 const globalCssPath = path.join(appDir, "assets/css/gptishka-global-dark.css");
 const chatgptPath = path.join(appDir, "chatgpt.html");
 const claudePath = path.join(appDir, "claude.html");
+const reviewsJsPath = path.join(appDir, "assets/js/reviews-hub.js");
+const reviewsPagePath = path.join(appDir, "app/index.html");
 
-for (const required of [onboardingCssSource, onboardingJsSource, claudeOnboardingJsSource, globalCssPath, chatgptPath, claudePath]) {
+for (const required of [onboardingCssSource, onboardingJsSource, claudeOnboardingJsSource, globalCssPath, chatgptPath, claudePath, reviewsJsPath, reviewsPagePath]) {
   if (!fs.existsSync(required)) throw new Error(`Required file is missing: ${required}`);
 }
 
@@ -41,11 +43,29 @@ function writeAtomic(filePath, contents) {
 backupFile(globalCssPath);
 backupFile(chatgptPath);
 backupFile(claudePath);
+backupFile(reviewsJsPath);
+backupFile(reviewsPagePath);
 fs.mkdirSync(path.dirname(onboardingCssTarget), { recursive: true });
 fs.mkdirSync(path.dirname(onboardingJsTarget), { recursive: true });
 fs.copyFileSync(onboardingCssSource, onboardingCssTarget);
 fs.copyFileSync(onboardingJsSource, onboardingJsTarget);
 fs.copyFileSync(claudeOnboardingJsSource, claudeOnboardingJsTarget);
+
+let reviewsJs = fs.readFileSync(reviewsJsPath, "utf8");
+if (!reviewsJs.includes('if (item.sourceType === "site") return "Отзыв на сайте";')) {
+  reviewsJs = reviewsJs.replace(
+    /(function reviewNickname\(item\) \{\s*)/,
+    '$1if (item.sourceType === "site") return "Отзыв на сайте";\n    ',
+  );
+  writeAtomic(reviewsJsPath, reviewsJs);
+}
+
+let reviewsPage = fs.readFileSync(reviewsPagePath, "utf8");
+reviewsPage = reviewsPage.replace(
+  /\/assets\/js\/reviews-hub\.js(?:\?[^"']*)?/g,
+  "/assets/js/reviews-hub.js?v=20260912-site-label1",
+);
+writeAtomic(reviewsPagePath, reviewsPage);
 
 let globalCss = fs.readFileSync(globalCssPath, "utf8");
 if (!globalCss.includes(glowMarker)) {
