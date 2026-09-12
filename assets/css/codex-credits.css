@@ -306,3 +306,14 @@
 .codex-entry__button { display:inline-flex; align-items:center; justify-content:center; transition:transform .18s ease,background-color .18s ease,color .18s ease,box-shadow .18s ease; }
 .codex-entry__card:hover .codex-entry__button { transform:translateY(-3px); background:var(--codex-green); color:#07130e; box-shadow:0 12px 26px rgba(53,228,154,.22); }
 @media (prefers-reduced-motion:reduce) { .codex-entry__button { transition:none!important; }.codex-entry__card:hover .codex-entry__button { transform:none; } }
+
+/* This page has no product promo pill in the header. Keep navigation in the
+   flexible right-hand column so it remains next to the language selector. */
+@media (min-width:1181px) {
+  body.codex-credits-body header .header-quick-links {
+    grid-column:3!important;
+    justify-self:end!important;
+    justify-content:flex-end!important;
+    margin-left:auto!important;
+  }
+}
