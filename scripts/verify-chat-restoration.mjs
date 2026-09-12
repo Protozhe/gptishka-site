@@ -25,8 +25,15 @@ expect(onboardingCss.includes("service-info-section--claude"), "legacy Claude in
 expect(fs.existsSync("codex-credits.html"), "Russian Codex Credits page is missing");
 expect(fs.existsSync("en/codex-credits.html"), "English Codex Credits page is missing");
 expect(fs.existsSync("assets/css/codex-credits.css"), "Codex Credits base stylesheet is missing");
-expect(read("codex-credits.html").includes("/assets/css/codex-credits.css?v=20260912-calm-base-restored1"), "Russian Codex Credits page does not load the restored base stylesheet");
-expect(read("en/codex-credits.html").includes("/assets/css/codex-credits.css?v=20260912-calm-base-restored1"), "English Codex Credits page does not load the restored base stylesheet");
+const codexRu = read("codex-credits.html");
+const codexEn = read("en/codex-credits.html");
+for (const [label, html] of [["Russian", codexRu], ["English", codexEn]]) {
+  expect(html.includes("/assets/css/codex-credits.css?v=20260912-steam-layout1"), `${label} Codex Credits page does not load the Steam-style layout`);
+  expect(html.includes("codex-product-card__media"), `${label} Codex Credits page is missing the product visual card`);
+  expect(html.includes("codex-supporting"), `${label} Codex Credits page is missing compact supporting details`);
+  expect(!html.includes("codex-credits-calm-v1.css"), `${label} Codex Credits page still loads the regressed calm override`);
+}
+expect(!codexRu.includes("codex-credits-calm-v1.js"), "Russian Codex Credits page still loads the regressed DOM rewrite");
 
 const ignoredDirectories = new Set([".git", "node_modules", "backups", "visual-baseline"]);
 const htmlFiles = [];

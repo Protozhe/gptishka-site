@@ -31,10 +31,9 @@
 <link rel="preload" href="/assets/css/support-widget.css?v=20260724-resume-collapse1" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="/assets/css/support-widget.css?v=20260724-resume-collapse1" /></noscript>
 <link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260912-chat-restoration2" />
-<link rel="stylesheet" href="/assets/css/codex-credits.css?v=20260912-calm-base-restored1" />
-<link rel="stylesheet" href="/hotfix-assets/codex-credits-calm-v1.css?v=20260912-calm-restored2" />
+<link rel="stylesheet" href="/assets/css/codex-credits.css?v=20260912-steam-layout1" />
 </head>
-<body class="codex-credits-body balanced-visual-budget">
+<body class="home-gradient-page home-wide-body codex-credits-body balanced-visual-budget">
 <div class="page-overlay"></div>
 <header class="gptishka-canonical-header">
 <div id="siteTicker" class="site-ticker" role="status" aria-live="polite">
@@ -96,16 +95,20 @@
   </a>
 
   <section class="codex-checkout-layout" aria-label="Оформление пополнения Codex">
-    <aside class="codex-details">
-      <span class="codex-eyebrow">Перед оплатой</span>
-      <h2>Проверьте совместимость аккаунта</h2>
-      <p>Услуга подходит только для аккаунтов, на которых доступна покупка дополнительных кредитов Codex. Free-аккаунты к пополнению не принимаются.</p>
-      <div class="codex-security"><span aria-hidden="true">✓</span><div><strong>Безопасное подключение</strong><p>Мы не запрашиваем пароль, 2FA, SMS или доступ к электронной почте.</p></div></div>
-      <div class="codex-security"><span aria-hidden="true">↗</span><div><strong>После оплаты</strong><p>Откроется отдельная страница, где вы введёте временный платёжный токен по инструкции.</p></div></div>
+    <aside class="codex-details codex-product-card">
+      <div class="codex-product-card__media" aria-hidden="true">
+        <span class="codex-product-card__lockup"><i class="codex-product-card__mark"></i><b>CODEX</b></span>
+      </div>
+      <div class="codex-product-card__copy">
+        <span class="codex-eyebrow">Codex Credits</span>
+        <h1>Пополнение кредитов Codex</h1>
+        <p>250, 500 или 1000 дополнительных кредитов на совместимый аккаунт ChatGPT.</p>
+        <div class="codex-product-card__facts"><span>Без входа в аккаунт</span><span>Поможем до результата</span></div>
+      </div>
     </aside>
 
     <form class="codex-order" data-codex-order-form novalidate>
-      <div class="codex-order__head"><div><span>Оформление заказа</span><h2>Выберите количество</h2></div><strong data-codex-total>1 500 ₽</strong></div>
+      <div class="codex-order__head"><div><span>Оформление заказа</span><h2>Выберите количество кредитов</h2></div><strong data-codex-total>1 500 ₽</strong></div>
       <div class="codex-options" role="radiogroup" aria-label="Количество кредитов">
         <label class="codex-option is-selected"><input type="radio" name="credits" value="250" data-price="1500" data-slug="codex-credits-250" checked><span><strong>250</strong><small>кредитов</small></span><b>1 500 ₽</b></label>
         <label class="codex-option"><input type="radio" name="credits" value="500" data-price="2500" data-slug="codex-credits-500"><em>Популярный</em><span><strong>500</strong><small>кредитов</small></span><b>2 500 ₽</b></label>
@@ -115,8 +118,8 @@
       <label class="codex-field"><span>Telegram</span><small>Для статуса заказа и связи, если потребуется помощь</small><input name="telegram" type="text" autocomplete="off" placeholder="@username" required></label>
       <label class="codex-confirm"><input name="compatible" type="checkbox" required><span>Я проверил: моему аккаунту доступна покупка дополнительных кредитов Codex.</span></label>
       <fieldset class="codex-payment"><legend>Способ оплаты</legend>
-        <label><input name="paymentMethod" type="radio" value="lava" checked><span><img src="/assets/img/payment-lava.svg?v=20260724-lava-mark2" alt="" width="34" height="34"><strong>Lava</strong><small>СБП и карты</small></span></label>
-        <label><input name="paymentMethod" type="radio" value="enot"><span><img src="/assets/img/payment-enot.svg?v=20260724-enot-mark1" alt="" width="34" height="34"><strong>Enot.io</strong><small>Карты и СБП</small></span></label>
+        <label><input name="paymentMethod" type="radio" value="lava" checked><span><img src="/assets/img/payment-lava.svg?v=20260724-lava-mark2" alt="" width="34" height="34"><strong>Lava</strong></span></label>
+        <label><input name="paymentMethod" type="radio" value="enot"><span><img src="/assets/img/payment-enot.svg?v=20260724-enot-mark1" alt="" width="34" height="34"><strong>Enot.io</strong></span></label>
       </fieldset>
       <p class="codex-order__legal">Нажимая кнопку, вы соглашаетесь с <a href="/oferta.html" target="_blank" rel="noopener">офертой</a> и <a href="/politika.html" target="_blank" rel="noopener">политикой конфиденциальности</a>.</p>
       <p class="codex-order__status" data-codex-status aria-live="polite"></p>
@@ -124,14 +127,9 @@
     </form>
   </section>
 
-  <section class="codex-info" aria-labelledby="codex-process-title">
-    <div><span class="codex-eyebrow">Как это работает</span><h2 id="codex-process-title">От выбора до зачисления</h2></div>
-    <ol><li><span>01</span><strong>Выберите номинал</strong><p>250, 500 или 1000 кредитов.</p></li><li><span>02</span><strong>Оплатите заказ</strong><p>Через доступную платёжную систему.</p></li><li><span>03</span><strong>Введите токен</strong><p>Страница активации откроется сразу после оплаты.</p></li><li><span>04</span><strong>Проверьте баланс</strong><p>Статус пополнения появится на этой же странице.</p></li></ol>
-  </section>
-
-  <section class="codex-terms">
-    <article><h2>Гарантия</h2><p>Мы отвечаем за зачисление выбранного количества кредитов. Если пополнение невозможно по причине используемого нами способа оплаты, предложим замену или возврат.</p></article>
-    <article><h2>Важные условия</h2><p>Гарантия не распространяется на несовместимый аккаунт, ограничения или блокировку со стороны OpenAI, нарушение правил сервиса, потерю доступа и действия владельца аккаунта.</p></article>
+  <section class="codex-supporting" aria-label="Дополнительная информация">
+    <details><summary>Подойдёт ли мой аккаунт?</summary><div><p>Проверьте раздел Codex в ChatGPT: на аккаунте должна быть доступна покупка дополнительных кредитов. Логин, пароль, 2FA и доступ к почте не требуются.</p></div></details>
+    <details><summary>Что будет после оплаты?</summary><div><p>Откроется защищённая страница с короткой инструкцией. Вы передадите временный платёжный токен, а мы пополним баланс и покажем результат заказа.</p></div></details>
   </section>
 </main>
 
@@ -139,7 +137,6 @@
 <footer><div class="footer-links-primary"><a class="footer-link" href="/oferta.html">Публичная оферта</a> &middot; <a class="footer-link" href="/politika.html">Политика конфиденциальности</a> &middot; <a class="footer-link" href="/refund.html">Условия возврата</a></div><div class="footer-links-secondary"><a class="footer-link" href="/about.html">О сервисе</a> &middot; <a class="footer-link" href="/guarantee.html">Гарантия</a> &middot; <a class="footer-link" href="/contact.html">Связь с нами</a></div><span class="footer-copy">&copy; 2026 GPTishka. Все права защищены.</span></footer>
 <script src="/assets/js/app.min.js?v=20260912-chat-restoration2" defer></script>
 <script src="/assets/js/codex-credits.js?v=20260912-chat-restoration2" defer></script>
-<script src="/hotfix-assets/codex-credits-calm-v1.js?v=20260912-calm-restored2" defer></script>
 <script src="/assets/js/support-widget.js?v=20260724-resume-collapse1" defer></script>
 <script src="/assets/js/language-switcher.js?v=20260912-chat-restoration2" defer></script>
 </body>
