@@ -3,7 +3,7 @@ name: Deploy static UI hotfix
 on:
   push:
     branches:
-      - codex-reviews-trust-feed-20260912
+      - codex-news-readable-20260912
 
 permissions:
   contents: read
@@ -46,6 +46,7 @@ jobs:
             node /tmp/gptishka-static-ui-20260912/patch-live.mjs
             node --check /var/www/gptishka-new/assets/js/chatgpt-onboarding-v1.js
             node --check /var/www/gptishka-new/assets/js/claude-onboarding-v1.js
+            node --check /var/www/gptishka-new/assets/js/news-hub.js
             nginx -t
             curl -fsS "https://www.gptishka.shop/chatgpt?verify=${{ github.run_id }}" | grep -q "chatgpt-onboarding-v1.css"
             curl -fsS "https://www.gptishka.shop/assets/css/gptishka-global-dark.css?v=20260912-glow-all1" | grep -q "gptishka-service-glow-overflow-v1"
@@ -58,4 +59,8 @@ jobs:
             curl -fsS "https://www.gptishka.shop/assets/js/reviews-hub.js?v=20260912-trustfeed1" | grep -q 'rankReviews'
             curl -fsS "https://www.gptishka.shop/assets/js/reviews-hub.js?v=20260912-trustfeed1" | grep -q 'isSitePresentedReview'
             curl -fsS "https://www.gptishka.shop/assets/css/reviews-readable-v1.css?v=20260912-6" | grep -q -- '--reviews-page-width: 1420px'
+            curl -fsS "https://www.gptishka.shop/news/?verify=${{ github.run_id }}" | grep -q "news-hub.js?v=20260912-readable1"
+            curl -fsS "https://www.gptishka.shop/news/?verify=${{ github.run_id }}" | grep -q "news-readable-v1.css?v=20260912-1"
+            curl -fsS "https://www.gptishka.shop/assets/js/news-hub.js?v=20260912-readable1" | grep -q 'Читать полностью'
+            curl -fsS "https://www.gptishka.shop/assets/css/news-readable-v1.css?v=20260912-1" | grep -q 'font: 500 18px/1.75'
             rm -rf -- /tmp/gptishka-static-ui-20260912

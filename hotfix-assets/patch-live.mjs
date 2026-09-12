@@ -20,8 +20,12 @@ const reviewsJsPath = path.join(appDir, "assets/js/reviews-hub.js");
 const reviewsPagePath = path.join(appDir, "app/index.html");
 const reviewsReadableCssSource = path.join(uploadDir, "reviews-readable-v1.css");
 const reviewsReadableCssTarget = path.join(appDir, "assets/css/reviews-readable-v1.css");
+const newsReadableCssSource = path.join(uploadDir, "news-readable-v1.css");
+const newsReadableCssTarget = path.join(appDir, "assets/css/news-readable-v1.css");
+const newsJsPath = path.join(appDir, "assets/js/news-hub.js");
+const newsPagePath = path.join(appDir, "news/index.html");
 
-for (const required of [onboardingCssSource, onboardingJsSource, claudeOnboardingJsSource, reviewsReadableCssSource, globalCssPath, chatgptPath, claudePath, reviewsJsPath, reviewsPagePath]) {
+for (const required of [onboardingCssSource, onboardingJsSource, claudeOnboardingJsSource, reviewsReadableCssSource, newsReadableCssSource, globalCssPath, chatgptPath, claudePath, reviewsJsPath, reviewsPagePath, newsJsPath, newsPagePath]) {
   if (!fs.existsSync(required)) throw new Error(`Required file is missing: ${required}`);
 }
 
@@ -47,12 +51,15 @@ backupFile(chatgptPath);
 backupFile(claudePath);
 backupFile(reviewsJsPath);
 backupFile(reviewsPagePath);
+backupFile(newsJsPath);
+backupFile(newsPagePath);
 fs.mkdirSync(path.dirname(onboardingCssTarget), { recursive: true });
 fs.mkdirSync(path.dirname(onboardingJsTarget), { recursive: true });
 fs.copyFileSync(onboardingCssSource, onboardingCssTarget);
 fs.copyFileSync(onboardingJsSource, onboardingJsTarget);
 fs.copyFileSync(claudeOnboardingJsSource, claudeOnboardingJsTarget);
 fs.copyFileSync(reviewsReadableCssSource, reviewsReadableCssTarget);
+fs.copyFileSync(newsReadableCssSource, newsReadableCssTarget);
 
 let reviewsJs = fs.readFileSync(reviewsJsPath, "utf8");
 reviewsJs = reviewsJs.replace(
@@ -170,6 +177,123 @@ if (!reviewsPage.includes("/assets/css/reviews-readable-v1.css")) {
   );
 }
 writeAtomic(reviewsPagePath, reviewsPage);
+
+let newsJs = fs.readFileSync(newsJsPath, "utf8");
+newsJs = newsJs.replace(
+  /  function renderCard\(item\) \{[\s\S]*?\r?\n  \}\r?\n\r?\n  function render\(/,
+  `  function renderCard(item) {
+    const article = document.createElement("article");
+    article.className = \`news-card \${item.imageUrl ? "news-card--with-media" : "news-card--text-only"}\`;
+
+    if (item.imageUrl) {
+      const media = document.createElement("div");
+      media.className = "news-card__media";
+
+      const image = document.createElement("img");
+      image.dataset.src = \`/api/public/news/\${encodeURIComponent(item.postId)}/image\`;
+      image.alt = "";
+      image.loading = "lazy";
+      image.decoding = "async";
+      image.fetchPriority = "low";
+      image.width = 640;
+      image.height = 480;
+      image.referrerPolicy = "no-referrer";
+      media.appendChild(image);
+      if (mediaObserver) mediaObserver.observe(image);
+      else image.src = item.imageUrl;
+
+      if (item.hasVideo) {
+        const badge = textNode("span", "news-card__video", labels.video);
+        badge.setAttribute("aria-hidden", "true");
+        media.appendChild(badge);
+      }
+      article.appendChild(media);
+    }
+
+    const body = document.createElement("div");
+    body.className = "news-card__body";
+
+    const meta = document.createElement("div");
+    meta.className = "news-card__meta";
+    meta.appendChild(textNode("span", "news-card__source", language === "en" ? "News" : "Новости"));
+    const details = [safeDate(item.date), item.views ? \`◉ \${item.views}\` : ""].filter(Boolean);
+    meta.appendChild(textNode("span", "", details.join(" · ")));
+    body.appendChild(meta);
+
+    const rawText = String(item.text || "").trim();
+    const lines = rawText.split(/\\n+/).map(line => line.trim()).filter(Boolean);
+    const firstLine = lines[0] || "";
+    const hasHeadline = firstLine.length >= 8 && firstLine.length <= 150 && lines.length > 1;
+    if (hasHeadline) body.appendChild(textNode("h2", "news-card__title", firstLine));
+
+    const readableText = hasHeadline ? lines.slice(1).join("\\n\\n") : rawText;
+    const copy = textNode("p", "news-card__text", readableText);
+    copy.id = \`news-copy-\${String(item.postId || Math.random()).replace(/[^a-z0-9_-]/gi, "-")}\`;
+    body.appendChild(copy);
+
+    const actions = document.createElement("div");
+    actions.className = "news-card__actions";
+
+    if (readableText.length > 420) {
+      const expand = textNode("button", "news-card__expand", language === "en" ? "Read full article" : "Читать полностью");
+      expand.type = "button";
+      expand.setAttribute("aria-expanded", "false");
+      expand.setAttribute("aria-controls", copy.id);
+      expand.addEventListener("click", () => {
+        const expanded = article.classList.toggle("is-expanded");
+        expand.setAttribute("aria-expanded", String(expanded));
+        expand.textContent = expanded
+          ? (language === "en" ? "Collapse" : "Свернуть")
+          : (language === "en" ? "Read full article" : "Читать полностью");
+      });
+      actions.appendChild(expand);
+    }
+
+    if (item.url) {
+      const link = document.createElement("a");
+      link.className = "news-card__link";
+      link.href = item.url;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.appendChild(document.createTextNode(language === "en" ? "Original on Telegram" : "Оригинал в Telegram"));
+      const arrow = document.createElement("span");
+      arrow.setAttribute("aria-hidden", "true");
+      arrow.textContent = "↗";
+      link.appendChild(arrow);
+      actions.appendChild(link);
+    }
+    body.appendChild(actions);
+
+    article.appendChild(body);
+    return article;
+  }
+
+  function render(`,
+);
+writeAtomic(newsJsPath, newsJs);
+
+let newsPage = fs.readFileSync(newsPagePath, "utf8");
+newsPage = newsPage.replace(
+  "Обновления сервиса, новые тарифы и важные объявления.",
+  "Главное о сервисе, тарифах и технологиях — полностью и понятным языком прямо на сайте.",
+);
+newsPage = newsPage.replace("Открыть Telegram", "Наш Telegram");
+newsPage = newsPage.replace(
+  /\/assets\/js\/news-hub\.js(?:\?[^"']*)?/g,
+  "/assets/js/news-hub.js?v=20260912-readable1",
+);
+if (!newsPage.includes("/assets/css/news-readable-v1.css")) {
+  newsPage = newsPage.replace(
+    "</head>",
+    '  <link rel="stylesheet" href="/assets/css/news-readable-v1.css?v=20260912-1">\n</head>',
+  );
+} else {
+  newsPage = newsPage.replace(
+    /\/assets\/css\/news-readable-v1\.css(?:\?[^"']*)?/g,
+    "/assets/css/news-readable-v1.css?v=20260912-1",
+  );
+}
+writeAtomic(newsPagePath, newsPage);
 
 let globalCss = fs.readFileSync(globalCssPath, "utf8");
 if (!globalCss.includes(glowMarker)) {
