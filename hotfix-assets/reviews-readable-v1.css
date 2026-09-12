@@ -12,43 +12,6 @@ html body.reviews-hub-body {
   gap: 18px;
 }
 
-.reviews-grid--featured {
-  margin-top: 2px;
-}
-
-.reviews-grid--featured .review-card {
-  border-color: rgba(52, 226, 145, 0.2);
-  background:
-    linear-gradient(145deg, rgba(34, 63, 55, 0.34), rgba(35, 39, 47, 0.96) 54%),
-    var(--reviews-surface);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 18px 42px rgba(0, 0, 0, 0.13);
-}
-
-.reviews-all-heading {
-  display: flex;
-  margin: clamp(44px, 5vw, 72px) 0 20px;
-  align-items: end;
-  justify-content: space-between;
-  gap: 18px;
-}
-
-.reviews-all-heading__title {
-  margin: 0;
-  color: #f7f9fc;
-  font-size: clamp(28px, 3vw, 42px);
-  line-height: 1.05;
-  letter-spacing: -0.035em;
-}
-
-.reviews-all-heading__hint {
-  color: rgba(224, 232, 244, 0.68);
-  font-size: 15px;
-  line-height: 1.5;
-  text-align: right;
-}
-
 .review-card {
   min-height: 270px;
   padding: 25px;
@@ -211,17 +174,6 @@ html body.reviews-hub-body {
     max-width: 100%;
   }
 
-  .reviews-all-heading {
-    margin-top: 40px;
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 7px;
-  }
-
-  .reviews-all-heading__hint {
-    font-size: 14px;
-    text-align: left;
-  }
 }
 
 @media (max-width: 380px) {

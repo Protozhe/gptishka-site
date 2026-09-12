@@ -125,62 +125,19 @@ reviewsJs = reviewsJs.replace(
     return score;
   }
 
-  function reviewProduct(item) {
-    return String(item.detail || "Отзыв").split(",")[0].trim().toLowerCase();
-  }
-
-  function selectFeaturedReviews(items) {
-    var ranked = items.slice().sort(function (a, b) {
+  function rankReviews(items) {
+    return items.slice().sort(function (a, b) {
       var scoreDifference = reviewQualityScore(b) - reviewQualityScore(a);
       if (scoreDifference) return scoreDifference;
       return (Date.parse(b.date || "") || 0) - (Date.parse(a.date || "") || 0);
     });
-    var selected = [];
-    var productCounts = Object.create(null);
-
-    ranked.forEach(function (item) {
-      if (selected.length >= 6) return;
-      var product = reviewProduct(item);
-      if ((productCounts[product] || 0) >= 2) return;
-      selected.push(item);
-      productCounts[product] = (productCounts[product] || 0) + 1;
-    });
-    ranked.forEach(function (item) {
-      if (selected.length >= 6 || selected.includes(item)) return;
-      selected.push(item);
-    });
-    return selected;
-  }
-
-  function ensureFeaturedLayout() {
-    var featuredGrid = document.getElementById("reviewsFeaturedGrid");
-    if (featuredGrid) return featuredGrid;
-
-    var title = document.getElementById("reviewsFeedTitle");
-    if (title) title.textContent = "Лучшие отзывы";
-    elements.filters.hidden = true;
-
-    featuredGrid = create("div", "reviews-grid reviews-grid--featured");
-    featuredGrid.id = "reviewsFeaturedGrid";
-    featuredGrid.setAttribute("aria-label", "Лучшие отзывы покупателей");
-
-    var allHeading = create("div", "reviews-all-heading");
-    allHeading.append(
-      create("h2", "reviews-all-heading__title", "Все отзывы"),
-      create("span", "reviews-all-heading__hint", "Полная лента отзывов покупателей")
-    );
-    elements.grid.before(featuredGrid, allHeading);
-    return featuredGrid;
   }
 
   function renderReviews(data) {
-    var items = filteredItems(data);
-    var featuredGrid = ensureFeaturedLayout();
-    featuredGrid.replaceChildren();
-    selectFeaturedReviews(items).forEach(function (item) {
-      featuredGrid.append(renderReview(item));
-    });
-
+    var items = rankReviews(filteredItems(data));
+    elements.filters.hidden = true;
+    var title = document.getElementById("reviewsFeedTitle");
+    if (title) title.textContent = "Что пишут покупатели";
     var visible = items.slice(0, state.visible);
     elements.grid.replaceChildren();
     visible.forEach(function (item) {
@@ -199,17 +156,17 @@ writeAtomic(reviewsJsPath, reviewsJs);
 let reviewsPage = fs.readFileSync(reviewsPagePath, "utf8");
 reviewsPage = reviewsPage.replace(
   /\/assets\/js\/reviews-hub\.js(?:\?[^"']*)?/g,
-  "/assets/js/reviews-hub.js?v=20260912-featured3",
+  "/assets/js/reviews-hub.js?v=20260912-trustfeed1",
 );
 if (!reviewsPage.includes("/assets/css/reviews-readable-v1.css")) {
   reviewsPage = reviewsPage.replace(
     "</head>",
-    '  <link rel="stylesheet" href="/assets/css/reviews-readable-v1.css?v=20260912-5">\n</head>',
+    '  <link rel="stylesheet" href="/assets/css/reviews-readable-v1.css?v=20260912-6">\n</head>',
   );
 } else {
   reviewsPage = reviewsPage.replace(
     /\/assets\/css\/reviews-readable-v1\.css(?:\?[^"']*)?/g,
-    "/assets/css/reviews-readable-v1.css?v=20260912-5",
+    "/assets/css/reviews-readable-v1.css?v=20260912-6",
   );
 }
 writeAtomic(reviewsPagePath, reviewsPage);
