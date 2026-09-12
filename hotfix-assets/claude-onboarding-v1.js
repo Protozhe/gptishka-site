@@ -20,6 +20,15 @@
     const buyButton = card && card.querySelector(".pay-now-btn");
     if (!card || !buyButton || card.querySelector(".chatgpt-onboarding-brief")) return;
     buyButton.insertAdjacentHTML("beforebegin", markup);
+    const detailsButton = card.querySelector("[data-claude-onboarding-open]");
+    if (detailsButton) {
+      detailsButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        openModal(detailsButton);
+      });
+    }
   }
 
   new MutationObserver(mountBrief).observe(grid, { childList: true, subtree: true });

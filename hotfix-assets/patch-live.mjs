@@ -97,7 +97,9 @@ for (const filePath of htmlFiles) {
       html = html.replace(/\/assets\/css\/chatgpt-onboarding-v1\.css(?:\?[^"']*)?/g, "/assets/css/chatgpt-onboarding-v1.css?v=20260912-2");
     }
     if (!html.includes("/assets/js/claude-onboarding-v1.js")) {
-      html = html.replace("</body>", `  <script src="/assets/js/claude-onboarding-v1.js?v=20260912-1" defer></script>\n</body>`);
+      html = html.replace("</body>", `  <script src="/assets/js/claude-onboarding-v1.js?v=20260912-2" defer></script>\n</body>`);
+    } else {
+      html = html.replace(/\/assets\/js\/claude-onboarding-v1\.js(?:\?[^"']*)?/g, "/assets/js/claude-onboarding-v1.js?v=20260912-2");
     }
   }
   if (html === original) continue;
@@ -118,7 +120,7 @@ if (
 
 if (
   !finalClaude.includes("/assets/css/chatgpt-onboarding-v1.css?v=20260912-2") ||
-  !finalClaude.includes("/assets/js/claude-onboarding-v1.js?v=20260912-1")
+  !finalClaude.includes("/assets/js/claude-onboarding-v1.js?v=20260912-2")
 ) {
   throw new Error("claude.html is missing part of the onboarding release");
 }
