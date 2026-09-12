@@ -56,12 +56,28 @@ fs.copyFileSync(reviewsReadableCssSource, reviewsReadableCssTarget);
 
 let reviewsJs = fs.readFileSync(reviewsJsPath, "utf8");
 reviewsJs = reviewsJs.replace(
-  /if \(item\.sourceType === "site"\) return "Отзыв на сайте";/,
-  'if (item.sourceType === "site" || item.sourceType === "playerok") return "Отзыв на сайте";',
-);
-reviewsJs = reviewsJs.replace(
-  /if \(item\.sourceType === "playerok"\) return "Отзыв покупателя";/,
-  'if (item.sourceType === "playerok") return "Отзыв оставлен на сайте";',
+  /  function reviewNickname\(item\) \{[\s\S]*?\n  \}\n\n  function reviewSourceLabel\(item\) \{[\s\S]*?\n  \}\n\n  function renderReview/,
+  `  function isSitePresentedReview(item) {
+    if (item.sourceType === "site" || item.sourceType === "playerok") return true;
+    var sourceLabel = String(item.sourceLabel || "").trim();
+    var author = String(item.author || "").trim();
+    return Boolean(item.sourceHidden) && sourceLabel === "Покупатель" && author === "Покупатель";
+  }
+
+  function reviewNickname(item) {
+    if (isSitePresentedReview(item)) return "Отзыв на сайте";
+    var explicitNickname = String(item.nickname || "").trim();
+    if (explicitNickname) return explicitNickname;
+    var author = String(item.author || "").trim();
+    return author || "Покупатель";
+  }
+
+  function reviewSourceLabel(item) {
+    if (isSitePresentedReview(item)) return "Отзыв на сайте";
+    return item.sourceLabel || "Открытый источник";
+  }
+
+  function renderReview`,
 );
 reviewsJs = reviewsJs.replace(
   /var top = create\("div", "review-card__top"\);\s*top\.append\(\s*create\("span", "review-card__source", reviewSourceLabel\(item\)\),\s*create\("span", "review-card__rating", "★"\.repeat\(Math\.max\(1, Math\.min\(5, Number\(item\.rating\) \|\| 5\)\)\)\)\s*\);/,
@@ -83,17 +99,17 @@ writeAtomic(reviewsJsPath, reviewsJs);
 let reviewsPage = fs.readFileSync(reviewsPagePath, "utf8");
 reviewsPage = reviewsPage.replace(
   /\/assets\/js\/reviews-hub\.js(?:\?[^"']*)?/g,
-  "/assets/js/reviews-hub.js?v=20260912-readable1",
+  "/assets/js/reviews-hub.js?v=20260912-readable2",
 );
 if (!reviewsPage.includes("/assets/css/reviews-readable-v1.css")) {
   reviewsPage = reviewsPage.replace(
     "</head>",
-    '  <link rel="stylesheet" href="/assets/css/reviews-readable-v1.css?v=20260912-3">\n</head>',
+    '  <link rel="stylesheet" href="/assets/css/reviews-readable-v1.css?v=20260912-4">\n</head>',
   );
 } else {
   reviewsPage = reviewsPage.replace(
     /\/assets\/css\/reviews-readable-v1\.css(?:\?[^"']*)?/g,
-    "/assets/css/reviews-readable-v1.css?v=20260912-3",
+    "/assets/css/reviews-readable-v1.css?v=20260912-4",
   );
 }
 writeAtomic(reviewsPagePath, reviewsPage);

@@ -3,6 +3,11 @@
   font-size: 16px;
 }
 
+html body.reviews-hub-body {
+  --reviews-page-width: 1420px;
+  --reviews-page-gutter: clamp(14px, 2.4vw, 38px);
+}
+
 .reviews-grid {
   gap: 18px;
 }
@@ -19,10 +24,16 @@
 }
 
 .review-card__source {
+  flex: 1 1 auto;
+  min-width: 0;
   padding-top: 5px;
+  overflow: visible;
   color: rgba(255, 255, 255, 0.76);
   font-size: 14px;
   line-height: 1.4;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+  white-space: normal;
 }
 
 .review-card__rating {
@@ -132,7 +143,7 @@
   line-height: 1.7;
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1400px) {
   .reviews-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
