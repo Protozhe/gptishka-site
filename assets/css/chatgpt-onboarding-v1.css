@@ -650,6 +650,18 @@ html body:has(main.service-page[data-service-page="chatgpt"])
   overflow-x: visible !important;
 }
 
+/* The onboarding layout hides the long information block that normally sits
+   before FAQ. Collapse the section spacing that belonged to that hidden block,
+   so the next useful content follows the constructor on every viewport height. */
+body.chatgpt-onboarding-ready
+  main.service-page[data-service-page="chatgpt"]
+  .service-info-section--chatgpt
+  + .service-faq-section {
+  margin-top: clamp(22px, 3vw, 36px);
+  padding-top: 0;
+  border-top: 0 !important;
+}
+
 html body:has(main.service-page[data-service-page="chatgpt"])
   main.service-page[data-service-page="chatgpt"]
   .service-filter-chip.is-active,
@@ -715,5 +727,12 @@ html body:has(main.service-page[data-service-page="chatgpt"])
 
   .codex-entry__button {
     min-height: 44px;
+  }
+
+  body.chatgpt-onboarding-ready
+    main.service-page[data-service-page="chatgpt"]
+    .service-info-section--chatgpt
+    + .service-faq-section {
+    margin-top: 22px;
   }
 }
