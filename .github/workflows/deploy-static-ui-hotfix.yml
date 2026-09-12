@@ -1,0 +1,52 @@
+name: Deploy static UI hotfix
+
+on:
+  push:
+    branches:
+      - codex-static-ui-20260912
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-static-ui-hotfix
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out hotfix assets
+        uses: actions/checkout@v4
+
+      - name: Upload isolated static patch
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "hotfix-assets/*"
+          target: "/tmp/gptishka-static-ui-20260912"
+          strip_components: 1
+          overwrite: true
+
+      - name: Apply and verify static patch
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script_stop: true
+          command_timeout: 10m
+          script: |
+            set -euo pipefail
+            export DEPLOY_BACKUP_DIR="/var/backups/gptishka/static-ui-${{ github.run_id }}"
+            node /tmp/gptishka-static-ui-20260912/patch-live.mjs
+            node --check /var/www/gptishka-new/assets/js/chatgpt-onboarding-v1.js
+            nginx -t
+            curl -fsS "https://www.gptishka.shop/chatgpt?verify=${{ github.run_id }}" | grep -q "chatgpt-onboarding-v1.css"
+            curl -fsS "https://www.gptishka.shop/assets/css/gptishka-global-dark.css?v=20260912-glow-all1" | grep -q "gptishka-service-glow-overflow-v1"
+            curl -fsS "https://www.gptishka.shop/assets/js/chatgpt-onboarding-v1.js?v=20260912-1" | grep -q "Мы доведём подключение до результата"
+            rm -rf -- /tmp/gptishka-static-ui-20260912
