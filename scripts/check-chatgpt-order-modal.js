@@ -87,9 +87,6 @@ const forbiddenMarkers = [
   { file: "app.js", source, marker: "Введите Telegram в формате @username." },
   { file: "app.js", source, marker: "Введите ник с @" },
   { file: "app.js", source, marker: "СБП 0% и банковские карты 3.2%" },
-  { file: "app.js", source, marker: "СБП 0% и карты 3.2%" },
-  { file: "app.js", source, marker: "Карты 3.2% и СБП 0%" },
-  { file: "app.js", source, marker: "chatgpt-payment-caption" },
   { file: "app.js", source, marker: "Дизайн сертификата" },
   { file: "app.js", source, marker: "giftDesigns = [" },
   { file: "app.js", source, marker: "giftCertificateDesign: getChatGptGoCheckedValue" },
@@ -122,9 +119,6 @@ const forbiddenMarkers = [
   { file: "app.min.js", source: minifiedSource, marker: "Введите Telegram в формате @username." },
   { file: "app.min.js", source: minifiedSource, marker: "Введите ник с @" },
   { file: "app.min.js", source: minifiedSource, marker: "СБП 0% и банковские карты 3.2%" },
-  { file: "app.min.js", source: minifiedSource, marker: "СБП 0% и карты 3.2%" },
-  { file: "app.min.js", source: minifiedSource, marker: "Карты 3.2% и СБП 0%" },
-  { file: "app.min.js", source: minifiedSource, marker: "chatgpt-payment-caption" },
   { file: "app.min.js", source: minifiedSource, marker: "Дизайн сертификата" },
   { file: "app.min.js", source: minifiedSource, marker: "логин и пароль указывать не нужно" },
   { file: "app.min.js", source: minifiedSource, marker: "поставьте в каждом поле символ “.”" },
@@ -149,9 +143,6 @@ const forbiddenMarkers = [
   { file: "app.min.js", source: minifiedSource, marker: "Например: вход через Apple ID, пароль не передаю" },
   { file: "chatgpt.html", source: chatgptPage, marker: "По ссылке" },
   { file: "chatgpt.html", source: chatgptPage, marker: "СБП 0% и банковские карты 3.2%" },
-  { file: "chatgpt.html", source: chatgptPage, marker: "СБП 0% и карты 3.2%" },
-  { file: "chatgpt.html", source: chatgptPage, marker: "Карты 3.2% и СБП 0%" },
-  { file: "chatgpt.html", source: chatgptPage, marker: "payment-method-modal__hint" },
 ];
 
 const missing = [

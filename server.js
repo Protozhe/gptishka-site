@@ -2469,14 +2469,6 @@ function createApp() {
     sendFreshHtml(res, path.join(__dirname, "itunes.html"));
   });
 
-  app.get(["/codex-credits", "/codex-credits/", "/codex-credits.html"], (_req, res) => {
-    sendFreshHtml(res, path.join(__dirname, "codex-credits.html"));
-  });
-
-  app.get(["/en/codex-credits", "/en/codex-credits/", "/en/codex-credits.html"], (_req, res) => {
-    sendFreshHtml(res, path.join(__dirname, "en", "codex-credits.html"));
-  });
-
   app.get(["/note", "/note/", "/n/:noteSlug"], (_req, res) => {
     sendFreshHtml(res, path.join(__dirname, "note.html"));
   });

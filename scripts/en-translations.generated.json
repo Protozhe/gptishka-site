@@ -2168,6 +2168,10 @@
     "Select payment method"
   ],
   [
+    "СБП и банковские карты",
+    "SBP and bank cards"
+  ],
+  [
     "Перед покупкой ChatGPT",
     "Before purchasing ChatGPT"
   ],
@@ -2368,6 +2372,14 @@
     "Configuration downloaded"
   ],
   [
+    "Карты 3.2% и СБП 0%",
+    "Cards 3.2% and SBP 0%"
+  ],
+  [
+    "СБП 0% и карты 3.2%",
+    "SBP 0% and cards 3.2%"
+  ],
+  [
     "Что умеет SuperGrok",
     "What SuperGrok can do"
   ],
@@ -2430,6 +2442,10 @@
   [
     "Доступ активирован.",
     "Access activated."
+  ],
+  [
+    "СБП и карты РФ/СНГ",
+    "SBP and maps of the Russian Federation/CIS"
   ],
   [
     "Гарантии и доверие",

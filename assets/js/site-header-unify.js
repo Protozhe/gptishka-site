@@ -3,7 +3,7 @@
   const HEADER_CSS = "/assets/css/gptishka-header-refresh.css?v=20260724-language-slider1";
   const HEADER_NAV_CSS = "/assets/css/header-navigation-state.css?v=20260724-header-layout3";
   const LOGO_SRC = "/assets/img/logo-new-dark.png?v=20260622-header4";
-  const CODEX_LOGO_SRC = "/assets/img/services/chatgpt-card.webp?v=20260721-webp1";
+  const CHATGPT_LOGO_SRC = "/assets/img/services/chatgpt-card.webp?v=20260721-webp1";
   const VK_URL = "https://vk.com/gptishka?from=groups&trackcode=7f99670c_6HjhbFhCJIgWV0ALEpOr-nIlZFrs3X3-3D3-z00f1k7ylk5Mhdl7hxbRgwtUEeZ8MCZjDfHpk0ywZuW";
   const TELEGRAM_URL = "https://t.me/aimarket_gpt";
   const FALLBACK_ENGLISH_PATHS = new Set([
@@ -122,9 +122,9 @@
           <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="${LOGO_SRC}" alt="GPTISHKA" class="logo-img">
         </a>
 
-        <a href="${en ? "/en/codex-credits" : "/codex-credits"}" class="header-product-pill" aria-label="${en ? "Top up Codex Credits from 1,500 RUB" : "Пополнить кредиты Codex от 1 500 рублей"}">
-          <img class="header-product-pill__logo" src="${CODEX_LOGO_SRC}" alt="" loading="lazy" decoding="async">
-          <span>${en ? "Codex Credits from 1,500 RUB" : "Кредиты Codex от 1 500 ₽"}</span>
+        <a href="${en ? "/en/chatgpt.html" : "/chatgpt"}" class="header-product-pill" aria-label="${en ? "ChatGPT from 1290 rubles per month" : "ChatGPT от 1290 рублей в месяц"}">
+          <img class="header-product-pill__logo" src="${CHATGPT_LOGO_SRC}" alt="" loading="lazy" decoding="async">
+          <span>${en ? "ChatGPT from 1290 ₽/mo" : "ChatGPT от 1290 ₽/мес"}</span>
         </a>
 
         <nav class="header-quick-links" aria-label="${en ? "GPTishka quick links" : "Быстрые разделы GPTishka"}">

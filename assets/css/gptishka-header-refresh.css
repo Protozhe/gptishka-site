@@ -220,21 +220,6 @@ body .header-product-pill__logo {
   box-shadow: 0 4px 12px rgba(4, 17, 11, 0.16);
 }
 
-/* Codex sales pill: show the clean brand mark without the tiny card caption. */
-body .header-product-pill::before {
-  content: "";
-  width: 28px;
-  height: 28px;
-  flex: 0 0 28px;
-  border-radius: 9px;
-  background: #073b2d url("/assets/img/services/chatgpt-card.webp?v=20260721-webp1") center 27% / 168% auto no-repeat;
-  box-shadow: 0 4px 12px rgba(4, 17, 11, 0.18);
-}
-
-body .header-product-pill > .header-product-pill__logo {
-  display: none !important;
-}
-
 body .lang-current,
 body .home-mobile-menu-toggle {
   height: 44px !important;
