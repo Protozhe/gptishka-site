@@ -556,8 +556,15 @@ html body:has(main.service-page) > .chatgpt-onboarding-modal {
   display: block;
   width: 43px;
   height: 43px;
-  background: url("/assets/img/services/chatgpt-card.webp?v=20260721-webp1") 50% 28% / 170% no-repeat;
-  border-radius: 50%;
+  background: #ffffff;
+  -webkit-mask-image: url("/assets/img/services/chatgpt-symbol-mask-v2.webp?v=20260909-emerald-codex1");
+  mask-image: url("/assets/img/services/chatgpt-symbol-mask-v2.webp?v=20260909-emerald-codex1");
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
 }
 
 .codex-entry__visual i {
