@@ -1,0 +1,66 @@
+name: Deploy static UI hotfix
+
+on:
+  push:
+    branches:
+      - codex-news-readable-20260912
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-static-ui-hotfix
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out hotfix assets
+        uses: actions/checkout@v4
+
+      - name: Upload isolated static patch
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "hotfix-assets/*"
+          target: "/tmp/gptishka-static-ui-20260912"
+          strip_components: 1
+          overwrite: true
+
+      - name: Apply and verify static patch
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script_stop: true
+          command_timeout: 10m
+          script: |
+            set -euo pipefail
+            export DEPLOY_BACKUP_DIR="/var/backups/gptishka/static-ui-${{ github.run_id }}"
+            node /tmp/gptishka-static-ui-20260912/patch-live.mjs
+            node --check /var/www/gptishka-new/assets/js/chatgpt-onboarding-v1.js
+            node --check /var/www/gptishka-new/assets/js/claude-onboarding-v1.js
+            node --check /var/www/gptishka-new/assets/js/news-hub.js
+            nginx -t
+            curl -fsS "https://www.gptishka.shop/chatgpt?verify=${{ github.run_id }}" | grep -q "chatgpt-onboarding-v1.css"
+            curl -fsS "https://www.gptishka.shop/assets/css/gptishka-global-dark.css?v=20260912-glow-all1" | grep -q "gptishka-service-glow-overflow-v1"
+            curl -fsS "https://www.gptishka.shop/assets/js/chatgpt-onboarding-v1.js?v=20260912-1" | grep -q "Мы доведём подключение до результата"
+            curl -fsS "https://www.gptishka.shop/claude?verify=${{ github.run_id }}" | grep -q "claude-onboarding-v1.js"
+            curl -fsS "https://www.gptishka.shop/assets/js/claude-onboarding-v1.js?v=20260912-2" | grep -q "stopImmediatePropagation"
+            curl -fsS "https://www.gptishka.shop/assets/css/chatgpt-onboarding-v1.css?v=20260912-3" | grep -q "true viewport overlay"
+            curl -fsS "https://www.gptishka.shop/app/?verify=${{ github.run_id }}" | grep -q "reviews-hub.js?v=20260912-trustfeed1"
+            curl -fsS "https://www.gptishka.shop/app/?verify=${{ github.run_id }}" | grep -q "reviews-readable-v1.css?v=20260912-6"
+            curl -fsS "https://www.gptishka.shop/assets/js/reviews-hub.js?v=20260912-trustfeed1" | grep -q 'rankReviews'
+            curl -fsS "https://www.gptishka.shop/assets/js/reviews-hub.js?v=20260912-trustfeed1" | grep -q 'isSitePresentedReview'
+            curl -fsS "https://www.gptishka.shop/assets/css/reviews-readable-v1.css?v=20260912-6" | grep -q -- '--reviews-page-width: 1420px'
+            curl -fsS "https://www.gptishka.shop/news/?verify=${{ github.run_id }}" | grep -q "news-hub.js?v=20260912-readable2"
+            curl -fsS "https://www.gptishka.shop/news/?verify=${{ github.run_id }}" | grep -q "news-readable-v1.css?v=20260912-1"
+            curl -fsS "https://www.gptishka.shop/assets/js/news-hub.js?v=20260912-readable2" | grep -q 'Читать полностью'
+            curl -fsS "https://www.gptishka.shop/assets/css/news-readable-v1.css?v=20260912-1" | grep -q 'font: 500 18px/1.75'
+            rm -rf -- /tmp/gptishka-static-ui-20260912

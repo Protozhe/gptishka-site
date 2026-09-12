@@ -16,6 +16,22 @@
     if (canonical) canonical.href = "https://gptishka.shop/en/itunes.html";
     var description = document.querySelector('meta[name="description"]');
     if (description) description.content = "US Apple ID gift cards for apps, games, music, iCloud and subscriptions. Choose an amount and receive activation instructions.";
+    var ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.content = "iTunes & App Store Gift Cards | GPTishka";
+    var ogDescription = document.querySelector('meta[property="og:description"]');
+    if (ogDescription) ogDescription.content = description.content;
+    var ogUrl = document.querySelector('meta[property="og:url"]');
+    if (ogUrl) ogUrl.content = "https://gptishka.shop/en/itunes.html";
+
+    document.querySelectorAll(".site-ticker__item").forEach(function (item) { item.textContent = "Activation feed is updating…"; });
+    setText(".site-ticker__stat-label", "total activations:");
+    var logo = document.querySelector(".logo-img");
+    if (logo) logo.alt = "GPTishka";
+    var quickLinks = document.querySelectorAll(".header-quick-link");
+    if (quickLinks[0]) quickLinks[0].textContent = "News";
+    if (quickLinks[1]) quickLinks[1].textContent = "Reviews";
+    var productPill = document.querySelector(".header-product-pill");
+    if (productPill) productPill.remove();
 
     setText(".service-directory-back span", "Top-ups");
     setText(".service-constructor-brand span", "Gift cards");
@@ -89,9 +105,6 @@
     }
     setText(".chatgpt-order-section:nth-of-type(3) .chatgpt-order-section-title", "Payment");
     setText(".chatgpt-order-section:nth-of-type(3) .chatgpt-order-section__head p", "Choose a payment gateway");
-    var paymentCaptions = document.querySelectorAll(".chatgpt-payment-caption");
-    if (paymentCaptions[0]) paymentCaptions[0].textContent = "Fast payments and bank cards";
-    if (paymentCaptions[1]) paymentCaptions[1].textContent = "Bank cards and fast payments";
     var deliveryDetails = document.querySelector(".chatgpt-order-processing-details");
     if (deliveryDetails) deliveryDetails.innerHTML = "<summary>How you receive the card</summary><p>After successful payment, the site automatically issues an available code from the admin inventory. The bot also sends it in Telegram when Telegram is linked to the account with this email. The card works only with a US Apple ID.</p>";
     var legal = document.querySelector(".itunes-order-card .chatgpt-order-legal-note");
@@ -105,6 +118,12 @@
     setText("#itunesDeliveryCopy", "Copy code");
     setText(".itunes-delivery-card__guide", "Open the activation guide");
     document.querySelectorAll("[data-itunes-modal-close]").forEach(function (button) { button.setAttribute("aria-label", "Close"); });
+
+    var footerPrimary = document.querySelector(".footer-links-primary");
+    if (footerPrimary) footerPrimary.innerHTML = '<a class="footer-link" href="/en/oferta.html">Public offer</a> · <a class="footer-link" href="/en/politika.html">Privacy policy</a> · <a class="footer-link" href="/en/refund.html">Refund policy</a>';
+    var footerSecondary = document.querySelector(".footer-links-secondary");
+    if (footerSecondary) footerSecondary.innerHTML = '<a class="footer-link" href="/en/about.html">About</a> · <a class="footer-link" href="/en/guarantee.html">Guarantee</a> · <a class="footer-link" href="/en/contact.html">Contact us</a>';
+    setText(".footer-copy", "© 2026 GPTishka. All rights reserved.");
   }
 
   applyEnglishCopy();
