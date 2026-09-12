@@ -11,7 +11,6 @@
   var elements = {
     total: document.getElementById("reviewsTotal"),
     rating: document.getElementById("reviewsRating"),
-    updated: document.getElementById("reviewsUpdated"),
     sources: document.getElementById("reviewsSources"),
     filters: document.getElementById("reviewsFilters"),
     grid: document.getElementById("reviewsGrid"),
@@ -34,17 +33,6 @@
 
   function formatNumber(value) {
     return new Intl.NumberFormat("ru-RU").format(Number(value || 0));
-  }
-
-  function formatUpdated(value) {
-    var date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "недавно";
-    return new Intl.DateTimeFormat("ru-RU", {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date);
   }
 
   function formatReviewDate(value) {
@@ -119,7 +107,6 @@
       return sum + Number(source.rating) * Number(source.total || source.visibleItems || 0);
     }, 0);
     elements.rating.textContent = totalWeight ? (weightedRating / totalWeight).toFixed(1) + " из 5" : "—";
-    elements.updated.textContent = formatUpdated(data.fetchedAt);
   }
 
   function renderSources(data) {
@@ -299,7 +286,6 @@
     elements.more.hidden = true;
     elements.total.textContent = "—";
     elements.rating.textContent = "—";
-    elements.updated.textContent = "нет данных";
   }
 
   elements.more.addEventListener("click", function () {
