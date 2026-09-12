@@ -3393,7 +3393,7 @@ function initActivationResumeShortcut() {
     const currency = String(items.find(item => toAmount(item?.price) === minPrice)?.currency || items[0]?.currency || "RUB").toUpperCase();
     const fromLabel = isEnPage ? "from" : "от";
     const buttonLabel = isEnPage ? "Top up" : "Пополнить";
-    const title = isEnPage ? "Steam Balance +10%" : "Пополнения";
+    const title = isEnPage ? "Steam Top Up" : "Пополнение Steam";
     const description = isEnPage
       ? "Top up your Steam balance with Mann Co. keys."
       : "Пополнение Steam ключами Манн Ко и цифровые товары в каталоге GPTishka.";
@@ -3401,7 +3401,7 @@ function initActivationResumeShortcut() {
     const visualItem = items.find(item => getVisualConfig(item).imageUrl || getVisualConfig(item).hoverImageUrl) || items[0];
     const visual = getVisualConfig(visualItem);
     const serviceCard = getShowcaseServiceCardConfig(section, "topups");
-    const displayTitle = getServiceCardValue(serviceCard, "title", title);
+    const displayTitle = title;
     const displayDescription = getServiceCardValue(serviceCard, "description", description);
     const displayPlanSummary = getServiceCardValue(serviceCard, "planSummary", planSummary);
     const displayPriceText = getServiceCardValue(serviceCard, "priceText", minPrice ? fromLabel + " " + formatPriceByCurrency(minPrice, currency) : "");

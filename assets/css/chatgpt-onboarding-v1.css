@@ -34,6 +34,12 @@ body.claude-onboarding-ready .chatgpt-onboarding-modal__primary {
   box-shadow: 0 12px 26px rgba(240, 100, 50, 0.2);
 }
 
+/* The compact purchase guide replaces the legacy long-form block. */
+body.chatgpt-onboarding-ready .service-info-section--chatgpt,
+body.claude-onboarding-ready .service-info-section--claude {
+  display: none !important;
+}
+
 .chatgpt-onboarding-brief {
   display: flex;
   align-items: center;
