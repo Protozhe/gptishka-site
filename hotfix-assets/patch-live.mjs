@@ -18,8 +18,10 @@ const chatgptPath = path.join(appDir, "chatgpt.html");
 const claudePath = path.join(appDir, "claude.html");
 const reviewsJsPath = path.join(appDir, "assets/js/reviews-hub.js");
 const reviewsPagePath = path.join(appDir, "app/index.html");
+const reviewsReadableCssSource = path.join(uploadDir, "reviews-readable-v1.css");
+const reviewsReadableCssTarget = path.join(appDir, "assets/css/reviews-readable-v1.css");
 
-for (const required of [onboardingCssSource, onboardingJsSource, claudeOnboardingJsSource, globalCssPath, chatgptPath, claudePath, reviewsJsPath, reviewsPagePath]) {
+for (const required of [onboardingCssSource, onboardingJsSource, claudeOnboardingJsSource, reviewsReadableCssSource, globalCssPath, chatgptPath, claudePath, reviewsJsPath, reviewsPagePath]) {
   if (!fs.existsSync(required)) throw new Error(`Required file is missing: ${required}`);
 }
 
@@ -50,6 +52,7 @@ fs.mkdirSync(path.dirname(onboardingJsTarget), { recursive: true });
 fs.copyFileSync(onboardingCssSource, onboardingCssTarget);
 fs.copyFileSync(onboardingJsSource, onboardingJsTarget);
 fs.copyFileSync(claudeOnboardingJsSource, claudeOnboardingJsTarget);
+fs.copyFileSync(reviewsReadableCssSource, reviewsReadableCssTarget);
 
 let reviewsJs = fs.readFileSync(reviewsJsPath, "utf8");
 reviewsJs = reviewsJs.replace(
@@ -60,13 +63,34 @@ reviewsJs = reviewsJs.replace(
   /if \(item\.sourceType === "playerok"\) return "Отзыв покупателя";/,
   'if (item.sourceType === "playerok") return "Отзыв оставлен на сайте";',
 );
+reviewsJs = reviewsJs.replace(
+  /var top = create\("div", "review-card__top"\);\s*top\.append\(\s*create\("span", "review-card__source", reviewSourceLabel\(item\)\),\s*create\("span", "review-card__rating", "★"\.repeat\(Math\.max\(1, Math\.min\(5, Number\(item\.rating\) \|\| 5\)\)\)\)\s*\);/,
+  `var top = create("div", "review-card__top");
+    var ratingValue = Math.max(1, Math.min(5, Math.round(Number(item.rating) || 5)));
+    var rating = create("span", "review-card__rating");
+    rating.setAttribute("aria-label", ratingValue + " из 5");
+    var stars = create("span", "review-card__stars", "★".repeat(ratingValue));
+    stars.setAttribute("aria-hidden", "true");
+    rating.append(stars, create("strong", "review-card__score", ratingValue + " из 5"));
+    top.append(create("span", "review-card__source", reviewSourceLabel(item)), rating);`,
+);
+reviewsJs = reviewsJs.replace(
+  /elements\.rating\.textContent = totalWeight \? \(weightedRating \/ totalWeight\)\.toFixed\(1\) : "—";/,
+  'elements.rating.textContent = totalWeight ? (weightedRating / totalWeight).toFixed(1) + " из 5" : "—";',
+);
 writeAtomic(reviewsJsPath, reviewsJs);
 
 let reviewsPage = fs.readFileSync(reviewsPagePath, "utf8");
 reviewsPage = reviewsPage.replace(
   /\/assets\/js\/reviews-hub\.js(?:\?[^"']*)?/g,
-  "/assets/js/reviews-hub.js?v=20260912-site-label2",
+  "/assets/js/reviews-hub.js?v=20260912-readable1",
 );
+if (!reviewsPage.includes("/assets/css/reviews-readable-v1.css")) {
+  reviewsPage = reviewsPage.replace(
+    "</head>",
+    '  <link rel="stylesheet" href="/assets/css/reviews-readable-v1.css?v=20260912-1">\n</head>',
+  );
+}
 writeAtomic(reviewsPagePath, reviewsPage);
 
 let globalCss = fs.readFileSync(globalCssPath, "utf8");
