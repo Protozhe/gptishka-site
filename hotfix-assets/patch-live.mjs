@@ -92,9 +92,9 @@ for (const filePath of htmlFiles) {
   }
   if (path.resolve(filePath) === path.resolve(claudePath)) {
     if (!html.includes("/assets/css/chatgpt-onboarding-v1.css")) {
-      html = html.replace("</head>", `  <link rel="stylesheet" href="/assets/css/chatgpt-onboarding-v1.css?v=20260912-2" />\n</head>`);
+      html = html.replace("</head>", `  <link rel="stylesheet" href="/assets/css/chatgpt-onboarding-v1.css?v=20260912-3" />\n</head>`);
     } else {
-      html = html.replace(/\/assets\/css\/chatgpt-onboarding-v1\.css(?:\?[^"']*)?/g, "/assets/css/chatgpt-onboarding-v1.css?v=20260912-2");
+      html = html.replace(/\/assets\/css\/chatgpt-onboarding-v1\.css(?:\?[^"']*)?/g, "/assets/css/chatgpt-onboarding-v1.css?v=20260912-3");
     }
     if (!html.includes("/assets/js/claude-onboarding-v1.js")) {
       html = html.replace("</body>", `  <script src="/assets/js/claude-onboarding-v1.js?v=20260912-2" defer></script>\n</body>`);
@@ -119,7 +119,7 @@ if (
 }
 
 if (
-  !finalClaude.includes("/assets/css/chatgpt-onboarding-v1.css?v=20260912-2") ||
+  !finalClaude.includes("/assets/css/chatgpt-onboarding-v1.css?v=20260912-3") ||
   !finalClaude.includes("/assets/js/claude-onboarding-v1.js?v=20260912-2")
 ) {
   throw new Error("claude.html is missing part of the onboarding release");

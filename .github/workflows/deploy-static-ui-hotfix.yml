@@ -3,7 +3,7 @@ name: Deploy static UI hotfix
 on:
   push:
     branches:
-      - codex-claude-modal-fix-20260912
+      - codex-claude-modal-overlay-20260912
 
 permissions:
   contents: read
@@ -52,4 +52,5 @@ jobs:
             curl -fsS "https://www.gptishka.shop/assets/js/chatgpt-onboarding-v1.js?v=20260912-1" | grep -q "Мы доведём подключение до результата"
             curl -fsS "https://www.gptishka.shop/claude?verify=${{ github.run_id }}" | grep -q "claude-onboarding-v1.js"
             curl -fsS "https://www.gptishka.shop/assets/js/claude-onboarding-v1.js?v=20260912-2" | grep -q "stopImmediatePropagation"
+            curl -fsS "https://www.gptishka.shop/assets/css/chatgpt-onboarding-v1.css?v=20260912-3" | grep -q "true viewport overlay"
             rm -rf -- /tmp/gptishka-static-ui-20260912

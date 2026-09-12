@@ -137,6 +137,14 @@ body.chatgpt-onboarding-is-open {
   padding: 22px;
 }
 
+/* Dark service pages assign position:relative to every direct body child with
+   a more specific selector. Keep onboarding as a true viewport overlay. */
+html body:has(main.service-page) > .chatgpt-onboarding-modal {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 3000 !important;
+}
+
 .chatgpt-onboarding-modal__backdrop {
   position: absolute;
   inset: 0;
