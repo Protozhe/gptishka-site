@@ -38,6 +38,233 @@
 @media (max-width:600px) { .codex-page{width:calc(100% - 18px);margin-bottom:58px}.codex-hero{border-radius:25px}.codex-hero__copy{padding:28px 22px 10px}.codex-hero h1{font-size:43px}.codex-hero__visual{min-height:280px}.codex-hero__terminal{width:190px;height:190px;border-radius:34px}.codex-hero__terminal strong{font-size:48px}.codex-checkout-layout{gap:14px;margin-top:14px}.codex-details,.codex-order,.codex-info,.codex-terms article{border-radius:24px}.codex-options{grid-template-columns:1fr}.codex-option{display:flex;align-items:center;justify-content:space-between;padding:15px 16px}.codex-option>span{display:flex;align-items:baseline;gap:7px}.codex-option>span strong{font-size:27px}.codex-option>b{margin:0}.codex-option>em{left:62px;right:auto;top:5px}.codex-payment{grid-template-columns:1fr}.codex-info>ol{grid-template-columns:1fr}.codex-entry{width:calc(100vw - 18px);margin-top:14px}.codex-entry__card{grid-template-columns:1fr;padding:18px;border-radius:23px}.codex-entry__visual{width:62px;height:62px}.codex-entry__button{grid-column:auto}.codex-order__head{display:grid}.codex-order__head>strong{justify-self:start} }
 @media (prefers-reduced-motion:reduce) { .codex-entry__card,.codex-option,.codex-submit{transition:none!important} }
 
+/* Steam-style product checkout: visual card on the left, order form on the right. */
+.codex-page {
+  width:min(1180px,calc(100vw - 40px));
+  margin:clamp(24px,3vw,42px) auto 82px;
+}
+
+.codex-checkout-layout {
+  grid-template-columns:minmax(0,.82fr) minmax(460px,1fr);
+  gap:22px;
+  margin-top:28px;
+}
+
+.codex-details,
+.codex-order {
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:30px;
+  background:linear-gradient(145deg,rgba(18,29,44,.96),rgba(10,18,30,.94));
+  box-shadow:0 24px 64px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.055);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+
+.codex-product-card {
+  position:sticky;
+  top:116px;
+  min-height:560px;
+  padding:0;
+  overflow:hidden;
+}
+
+.codex-product-card__media {
+  position:relative;
+  isolation:isolate;
+  display:grid;
+  place-items:center;
+  height:320px;
+  overflow:hidden;
+  background:linear-gradient(145deg,#19c29a 0%,#13b48b 58%,#0b9c79 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.codex-product-card__media::before,
+.codex-product-card__media::after {
+  position:absolute;
+  content:"";
+  pointer-events:none;
+}
+
+.codex-product-card__media::before {
+  inset:-28%;
+  background:
+    radial-gradient(circle at 28% 26%,rgba(255,255,255,.2),transparent 25%),
+    radial-gradient(circle at 72% 76%,rgba(0,71,55,.25),transparent 32%);
+}
+
+.codex-product-card__media::after {
+  inset:0;
+  opacity:.14;
+  background-image:linear-gradient(rgba(255,255,255,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.18) 1px,transparent 1px);
+  background-size:34px 34px;
+  -webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.7),transparent 94%);
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.7),transparent 94%);
+}
+
+.codex-product-card__lockup {
+  position:relative;
+  z-index:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+  color:#fff;
+}
+
+.codex-product-card__mark {
+  display:block;
+  width:148px;
+  height:148px;
+  background:#fff;
+  -webkit-mask:url("/assets/img/services/chatgpt-symbol-mask-v2.webp?v=20260909-emerald-codex1") center/contain no-repeat;
+  mask:url("/assets/img/services/chatgpt-symbol-mask-v2.webp?v=20260909-emerald-codex1") center/contain no-repeat;
+  filter:drop-shadow(0 18px 32px rgba(1,75,57,.22));
+}
+
+.codex-product-card__lockup b {
+  padding-left:.18em;
+  font:900 26px/1 "Manrope","Inter",sans-serif;
+  letter-spacing:.18em;
+}
+
+.codex-product-card__copy {
+  padding:26px;
+}
+
+.codex-product-card__copy .codex-eyebrow {
+  margin:0 0 10px;
+}
+
+.codex-product-card__copy h1 {
+  margin:0;
+  color:#f7f9fc;
+  font:700 clamp(31px,3vw,42px)/1 "Space Grotesk","Manrope",sans-serif;
+  letter-spacing:-.052em;
+}
+
+.codex-product-card__copy > p {
+  margin:16px 0 0;
+  color:rgba(224,232,242,.68);
+  font-size:15px;
+  line-height:1.55;
+}
+
+.codex-product-card__facts {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:20px;
+}
+
+.codex-product-card__facts span {
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:31px;
+  padding:0 10px;
+  border:1px solid rgba(53,228,154,.2);
+  border-radius:999px;
+  color:rgba(235,244,249,.82);
+  background:rgba(53,228,154,.06);
+  font-size:11px;
+  font-weight:800;
+}
+
+.codex-product-card__facts span::before {
+  content:"✓";
+  color:var(--codex-green);
+}
+
+.codex-order {
+  gap:18px;
+  padding:clamp(24px,3vw,34px);
+}
+
+.codex-order__head h2 {
+  max-width:430px;
+  font-size:clamp(31px,3.2vw,43px);
+}
+
+.codex-order__head > strong {
+  border-radius:18px;
+}
+
+.codex-option {
+  min-height:126px;
+  border-radius:20px;
+}
+
+.codex-field input {
+  border-radius:18px;
+}
+
+.codex-payment label > span {
+  min-height:70px;
+  border-radius:20px;
+}
+
+.codex-submit {
+  min-height:58px;
+  border-radius:20px;
+}
+
+.codex-supporting {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin-top:18px;
+}
+
+.codex-supporting details {
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:20px;
+  background:rgba(15,25,39,.72);
+}
+
+.codex-supporting summary {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  min-height:58px;
+  padding:0 18px;
+  color:#eef4f8;
+  font-size:14px;
+  font-weight:850;
+  cursor:pointer;
+  list-style:none;
+}
+
+.codex-supporting summary::-webkit-details-marker { display:none; }
+.codex-supporting summary::after { content:"+"; color:var(--codex-green); font-size:22px; }
+.codex-supporting details[open] summary::after { content:"−"; }
+.codex-supporting details > div { padding:0 18px 18px; }
+.codex-supporting p { margin:0; color:rgba(224,232,242,.66); font-size:13px; line-height:1.55; }
+
+@media (max-width:900px) {
+  .codex-page { width:min(720px,calc(100vw - 24px)); }
+  .codex-checkout-layout { grid-template-columns:1fr; }
+  .codex-product-card { position:relative; top:auto; min-height:0; }
+  .codex-product-card__media { height:270px; }
+  .codex-product-card__copy { padding:24px; }
+}
+
+@media (max-width:600px) {
+  .codex-page { width:calc(100vw - 18px); }
+  .codex-checkout-layout { gap:14px; margin-top:14px; }
+  .codex-product-card,.codex-order { border-radius:24px; }
+  .codex-product-card__media { height:220px; }
+  .codex-product-card__mark { width:108px; height:108px; }
+  .codex-product-card__lockup b { font-size:21px; }
+  .codex-product-card__copy h1 { font-size:34px; }
+  .codex-order { padding:21px 16px; }
+  .codex-order__head { display:grid; }
+  .codex-order__head > strong { justify-self:start; }
+  .codex-options,.codex-payment,.codex-supporting { grid-template-columns:1fr; }
+  .codex-option { min-height:auto; }
+}
+
 /* Match the Steam/Mann Co page: Manrope for UI, Space Grotesk for display text. */
 .codex-credits-body,
 .codex-credits-body button,
