@@ -227,7 +227,7 @@ body .header-product-pill::before {
   height: 28px;
   flex: 0 0 28px;
   border-radius: 9px;
-  background: #073b2d url("/assets/img/services/chatgpt-card.webp?v=20260721-webp1") center 27% / 168% auto no-repeat;
+  background: #0b9c79 url("/assets/img/services/chatgpt-symbol-mask-v2.webp?v=20260912-header-codex1") center / 72% auto no-repeat;
   box-shadow: 0 4px 12px rgba(4, 17, 11, 0.18);
 }
 
