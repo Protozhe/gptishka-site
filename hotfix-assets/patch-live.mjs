@@ -116,7 +116,7 @@ reviewsJs = reviewsJs.replace(
     ["не первый раз", "вторая покупка", "снова", "продлеваю", "вернусь", "ещё обращаться"].forEach(function (word) {
       if (text.includes(word)) score += 12;
     });
-    ["ужасно", "жуликов", "забан", "ждал долго", "долго отвечал", "невнимательно", "3 часа"].forEach(function (word) {
+    ["ужасно", "жуликов", "забан", "ждал долго", "долго отвечал", "невнимательно", "3 часа", "кот наплакал", "напрягся"].forEach(function (word) {
       if (text.includes(word)) score -= 30;
     });
 
@@ -199,7 +199,7 @@ writeAtomic(reviewsJsPath, reviewsJs);
 let reviewsPage = fs.readFileSync(reviewsPagePath, "utf8");
 reviewsPage = reviewsPage.replace(
   /\/assets\/js\/reviews-hub\.js(?:\?[^"']*)?/g,
-  "/assets/js/reviews-hub.js?v=20260912-featured1",
+  "/assets/js/reviews-hub.js?v=20260912-featured2",
 );
 if (!reviewsPage.includes("/assets/css/reviews-readable-v1.css")) {
   reviewsPage = reviewsPage.replace(
