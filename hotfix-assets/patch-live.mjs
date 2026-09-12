@@ -16,6 +16,8 @@ const claudeOnboardingJsTarget = path.join(appDir, "assets/js/claude-onboarding-
 const globalCssPath = path.join(appDir, "assets/css/gptishka-global-dark.css");
 const chatgptPath = path.join(appDir, "chatgpt.html");
 const claudePath = path.join(appDir, "claude.html");
+const englishChatgptPath = path.join(appDir, "en/chatgpt.html");
+const englishClaudePath = path.join(appDir, "en/claude.html");
 const reviewsJsPath = path.join(appDir, "assets/js/reviews-hub.js");
 const reviewsPagePath = path.join(appDir, "app/index.html");
 const reviewsReadableCssSource = path.join(uploadDir, "reviews-readable-v1.css");
@@ -25,7 +27,7 @@ const newsReadableCssTarget = path.join(appDir, "assets/css/news-readable-v1.css
 const newsJsPath = path.join(appDir, "assets/js/news-hub.js");
 const newsPagePath = path.join(appDir, "news/index.html");
 
-for (const required of [onboardingCssSource, onboardingJsSource, claudeOnboardingJsSource, reviewsReadableCssSource, newsReadableCssSource, globalCssPath, chatgptPath, claudePath, reviewsJsPath, reviewsPagePath, newsJsPath, newsPagePath]) {
+for (const required of [onboardingCssSource, onboardingJsSource, claudeOnboardingJsSource, reviewsReadableCssSource, newsReadableCssSource, globalCssPath, chatgptPath, claudePath, englishChatgptPath, englishClaudePath, reviewsJsPath, reviewsPagePath, newsJsPath, newsPagePath]) {
   if (!fs.existsSync(required)) throw new Error(`Required file is missing: ${required}`);
 }
 
@@ -49,6 +51,8 @@ function writeAtomic(filePath, contents) {
 backupFile(globalCssPath);
 backupFile(chatgptPath);
 backupFile(claudePath);
+backupFile(englishChatgptPath);
+backupFile(englishClaudePath);
 backupFile(reviewsJsPath);
 backupFile(reviewsPagePath);
 backupFile(newsJsPath);
@@ -328,7 +332,7 @@ for (const filePath of htmlFiles) {
     /\/assets\/css\/gptishka-global-dark\.css(?:\?[^"']*)?/g,
     `/assets/css/gptishka-global-dark.css?v=${cacheVersion}`,
   );
-  if (path.resolve(filePath) === path.resolve(chatgptPath)) {
+  if ([chatgptPath, englishChatgptPath].some((candidate) => path.resolve(filePath) === path.resolve(candidate))) {
     html = html.replace(/\s*<link[^>]+href=["']\/__preview\/chatgpt-onboarding-step1\.css[^>]*>\s*/g, "\n");
     html = html.replace(/\s*<script[^>]+src=["']\/__preview\/chatgpt-onboarding-step1\.js[^>]*><\/script>\s*/g, "\n");
     if (!html.includes("/assets/css/chatgpt-onboarding-v1.css")) {
@@ -338,7 +342,7 @@ for (const filePath of htmlFiles) {
       html = html.replace("</body>", `  <script src="/assets/js/chatgpt-onboarding-v1.js?v=20260912-1" defer></script>\n</body>`);
     }
   }
-  if (path.resolve(filePath) === path.resolve(claudePath)) {
+  if ([claudePath, englishClaudePath].some((candidate) => path.resolve(filePath) === path.resolve(candidate))) {
     if (!html.includes("/assets/css/chatgpt-onboarding-v1.css")) {
       html = html.replace("</head>", `  <link rel="stylesheet" href="/assets/css/chatgpt-onboarding-v1.css?v=20260912-3" />\n</head>`);
     } else {
@@ -358,6 +362,8 @@ for (const filePath of htmlFiles) {
 
 const finalChatgpt = fs.readFileSync(chatgptPath, "utf8");
 const finalClaude = fs.readFileSync(claudePath, "utf8");
+const finalEnglishChatgpt = fs.readFileSync(englishChatgptPath, "utf8");
+const finalEnglishClaude = fs.readFileSync(englishClaudePath, "utf8");
 if (
   !finalChatgpt.includes("/assets/css/chatgpt-onboarding-v1.css") ||
   !finalChatgpt.includes("/assets/js/chatgpt-onboarding-v1.js") ||
@@ -371,6 +377,15 @@ if (
   !finalClaude.includes("/assets/js/claude-onboarding-v1.js?v=20260912-2")
 ) {
   throw new Error("claude.html is missing part of the onboarding release");
+}
+
+if (
+  !finalEnglishChatgpt.includes("/assets/css/chatgpt-onboarding-v1.css") ||
+  !finalEnglishChatgpt.includes("/assets/js/chatgpt-onboarding-v1.js") ||
+  !finalEnglishClaude.includes("/assets/css/chatgpt-onboarding-v1.css?v=20260912-3") ||
+  !finalEnglishClaude.includes("/assets/js/claude-onboarding-v1.js?v=20260912-2")
+) {
+  throw new Error("English service pages are missing part of the onboarding release");
 }
 
 console.log(JSON.stringify({ backupDir, changedHtml, assets: [onboardingCssTarget, onboardingJsTarget, claudeOnboardingJsTarget] }, null, 2));

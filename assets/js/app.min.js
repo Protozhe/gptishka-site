@@ -3425,6 +3425,36 @@ function initActivationResumeShortcut() {
     const appStorePriceText = isEnPage ? "Choose an amount" : "Номинал на выбор";
     const appStoreButtonText = isEnPage ? "Order" : "Заказать";
     const appStoreHref = isEnPage ? "/en/itunes.html" : "/itunes";
+    const codexTitle = isEnPage ? "Codex Credits" : "Кредиты Codex";
+    const codexDescription = isEnPage
+      ? "Top up the additional Codex balance on a compatible ChatGPT account."
+      : "Пополнение дополнительного баланса Codex на совместимом аккаунте ChatGPT.";
+    const codexPlanSummary = isEnPage ? "250 / 500 / 1000 credits" : "250 / 500 / 1000 кредитов";
+    const codexPriceText = isEnPage ? "from 1,500 RUB" : "от 1 500 RUB";
+    const codexButtonText = isEnPage ? "Top up" : "Пополнить";
+    const codexHref = isEnPage ? "/en/codex-credits" : "/codex-credits";
+    const codexMarkup =
+      '<article class="ai-directory-card ai-directory-card--integrated ai-directory-card--codex" style="--ai-directory-bg:#063b31">' +
+        '<a class="ai-directory-card__media ai-directory-card__media--codex has-hover" href="' + escapeHtml(codexHref) + '" aria-label="' + escapeHtml(codexTitle) + '">' +
+          '<img class="ai-directory-card__image ai-directory-card__image--primary" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="' + escapeHtml(codexTitle) + '" loading="lazy" decoding="async">' +
+          '<img class="ai-directory-card__image ai-directory-card__image--hover" src="/assets/img/services/chatgpt-card-hover.webp?v=20260721-webp1" alt="' + escapeHtml(codexTitle) + '" loading="lazy" decoding="async">' +
+          '<span class="ai-directory-card__codex-label ai-directory-card__codex-label--primary" aria-hidden="true">CODEX</span>' +
+          '<span class="ai-directory-card__codex-label ai-directory-card__codex-label--hover" aria-hidden="true">CODEX</span>' +
+        "</a>" +
+        '<div class="ai-directory-card__body">' +
+          '<div class="ai-directory-card__top">' +
+            '<span class="ai-directory-card__icon ai-service-card__icon--codex">CODEX</span>' +
+            '<span class="ai-directory-card__count">3</span>' +
+          "</div>" +
+          '<h4 class="ai-directory-card__name">' + escapeHtml(codexTitle) + "</h4>" +
+          '<p class="ai-directory-card__desc">' + escapeHtml(codexDescription) + "</p>" +
+          '<p class="ai-directory-card__plans">' + escapeHtml(codexPlanSummary) + "</p>" +
+          '<div class="ai-directory-card__bottom">' +
+            '<span class="ai-directory-card__price">' + escapeHtml(codexPriceText) + "</span>" +
+            '<a class="ai-directory-card__button" href="' + escapeHtml(codexHref) + '"><span class="ai-directory-card__button-label">' + escapeHtml(codexButtonText) + "</span></a>" +
+          "</div>" +
+        "</div>" +
+      "</article>";
     const appStoreMarkup =
       '<article class="ai-directory-card ai-directory-card--integrated ai-directory-card--appstore" style="--ai-directory-bg:#0a84ff">' +
         '<a class="ai-directory-card__media" href="' + escapeHtml(appStoreHref) + '" aria-label="' + escapeHtml(appStoreTitle) + '">' +
@@ -3463,7 +3493,7 @@ function initActivationResumeShortcut() {
               '<a class="ai-directory-card__button" href="' + escapeHtml(displayHref) + '"><span class="ai-directory-card__button-label">' + escapeHtml(displayButtonLabel) + "</span></a>" +
             "</div>" +
           "</div>" +
-        "</article>" + appStoreMarkup +
+        "</article>" + codexMarkup + appStoreMarkup +
       "</div>"
     );
   }
@@ -4645,13 +4675,13 @@ function initActivationResumeShortcut() {
       : '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M3.2 12s3.2-5.2 8.8-5.2c1.3 0 2.5.28 3.57.72M20.8 12s-3.2 5.2-8.8 5.2c-1.28 0-2.45-.27-3.5-.7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.8 4.8 19.2 19.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10.45 10.45a2.4 2.4 0 0 0 3.1 3.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
   }
 
-  function renderChatGptPaymentOption(provider, name, caption, logoSrc, selectedMethod) {
+  function renderChatGptPaymentOption(provider, name, logoSrc, selectedMethod) {
     const isSelected = normalizeChatGptGoPaymentChoice(selectedMethod) === provider;
     return (
       '<label class="chatgpt-payment-option" role="radio" aria-checked="' + (isSelected ? "true" : "false") + '">' +
         '<input name="paymentMethod" type="radio" value="' + escapeHtml(provider) + '"' + (isSelected ? " checked" : "") + '>' +
         '<span class="chatgpt-payment-logo"><img src="' + escapeHtml(logoSrc) + '" alt="" aria-hidden="true" loading="lazy" decoding="async"></span>' +
-        '<span class="chatgpt-payment-text"><strong class="chatgpt-payment-name">' + escapeHtml(name) + '</strong><small class="chatgpt-payment-caption">' + escapeHtml(caption) + '</small></span>' +
+        '<span class="chatgpt-payment-text"><strong class="chatgpt-payment-name">' + escapeHtml(name) + '</strong></span>' +
         '<span class="chatgpt-payment-check" aria-hidden="true"></span>' +
       '</label>'
     );
@@ -4863,7 +4893,7 @@ function initActivationResumeShortcut() {
             '<label class="chatgpt-order-soft-action"><span><strong>Пришёл по рекомендации</strong><small>Добавим контакт друга для скидки</small></span><input name="cameByRecommendation" type="checkbox"' + boolChecked(savedRecommendation) + '><i></i></label><div class="chatgpt-order-referral-extra"' + (savedRecommendation ? "" : " hidden") + ' data-chatgpt-go-referral-extra><strong>Кто пригласил</strong><p>Пришли от друга? Дайте ему 10% скидки за ваш первый заказ — напишите его контакт ниже.</p><input class="chatgpt-order-field__control" name="referrerContact" type="text" autocomplete="off" placeholder="@telegram" value="' + escapeHtml(String(draft.referrerContact || "")) + '"></div>' +
             '<details class="chatgpt-order-collapsible"' + (String(draft.orderComment || "").trim() ? " open" : "") + '><summary>Комментарий к заказу</summary><label class="chatgpt-order-field"><span>Комментарий</span><textarea class="chatgpt-order-field__control" name="orderComment" rows="3" placeholder="Например: продление аккаунта, пожелания, детали по заказу">' + escapeHtml(String(draft.orderComment || "")) + '</textarea></label></details>' +
             '<details class="chatgpt-order-collapsible" data-chatgpt-go-promo-panel' + (savedPromo ? " open" : "") + '><summary>У меня есть промокод</summary><div class="chatgpt-order-promo"><input class="chatgpt-order-field__control" name="promoCode" type="text" autocomplete="off" placeholder="Введите промокод" value="' + escapeHtml(savedPromo) + '"><button type="button" class="btn secondary" data-chatgpt-go-promo-apply>Применить</button></div><p class="chatgpt-order-promo-msg" data-chatgpt-go-promo-msg></p></details></section>' +
-          '<section class="chatgpt-order-section"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Оплата</h4><p>Выберите платёжный шлюз</p></div><div class="chatgpt-order-payment chatgpt-payment-options" role="radiogroup" aria-label="Способ оплаты">' + renderChatGptPaymentOption("lava", "LAVA", "СБП 0% и карты 3.2%", "/assets/img/payment-lava.svg?v=20260724-lava-mark2", savedPaymentMethod) + renderChatGptPaymentOption("enot", "ENOT", "Карты 3.2% и СБП 0%", "/assets/img/payment-enot.svg?v=20260724-enot-mark1", savedPaymentMethod) + '</div><p class="chatgpt-order-error" data-chatgpt-go-error-for="paymentMethod"></p><details class="chatgpt-order-collapsible chatgpt-order-processing-details"><summary>Сроки выполнения заказа</summary><p>Мы обрабатываем заказы ежедневно с 10:00 до 20:00 по МСК. Среднее время ожидания — от 5 минут до 2 часов после оплаты. Если заказ оформлен ночью — подключим с утра. Максимальное время выполнения — 2 рабочих дня.</p></details></section>' +
+          '<section class="chatgpt-order-section"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Оплата</h4><p>Выберите платёжный шлюз</p></div><div class="chatgpt-order-payment chatgpt-payment-options" role="radiogroup" aria-label="Способ оплаты">' + renderChatGptPaymentOption("lava", "LAVA", "/assets/img/payment-lava.svg?v=20260724-lava-mark2", savedPaymentMethod) + renderChatGptPaymentOption("enot", "ENOT", "/assets/img/payment-enot.svg?v=20260724-enot-mark1", savedPaymentMethod) + '</div><p class="chatgpt-order-error" data-chatgpt-go-error-for="paymentMethod"></p><details class="chatgpt-order-collapsible chatgpt-order-processing-details"><summary>Сроки выполнения заказа</summary><p>Мы обрабатываем заказы ежедневно с 10:00 до 20:00 по МСК. Среднее время ожидания — от 5 минут до 2 часов после оплаты. Если заказ оформлен ночью — подключим с утра. Максимальное время выполнения — 2 рабочих дня.</p></details></section>' +
           '<p class="chatgpt-order-legal-note">Нажимая кнопку, вы соглашаетесь с <a href="/oferta.html" target="_blank" rel="noopener">офертой</a> и <a href="/politika.html" target="_blank" rel="noopener">политикой конфиденциальности</a>.</p><p class="chatgpt-order-status" data-chatgpt-go-status></p>' +
         '</div><div class="chatgpt-order-footer"><div class="chatgpt-order-footer__total"><span>Итого к оплате</span><strong data-chatgpt-go-total>' + escapeHtml(format(total)) + '</strong></div><button type="submit" class="btn chatgpt-order-submit" data-chatgpt-go-submit>Оформить заказ</button></div>' +
       '</form>'
@@ -6890,8 +6920,13 @@ function initActivationResumeShortcut() {
 
   function repairHeaderText() {
     const en = isEnglishPage();
-    const pill = document.querySelector(".header-product-pill span");
-    if (pill) pill.textContent = en ? "ChatGPT from 1290 ₽/mo" : "ChatGPT от 1290 ₽/мес";
+    const pillLink = document.querySelector(".header-product-pill");
+    const pill = pillLink && pillLink.querySelector("span");
+    if (pillLink) {
+      pillLink.href = en ? "/en/codex-credits" : "/codex-credits";
+      pillLink.setAttribute("aria-label", en ? "Top up Codex Credits from 1,500 RUB" : "Пополнить кредиты Codex от 1 500 рублей");
+    }
+    if (pill) pill.textContent = en ? "Codex Credits from 1,500 RUB" : "Кредиты Codex от 1 500 ₽";
 
     const links = Array.from(document.querySelectorAll(".header-quick-link"));
     const labels = en ? ["News", "Reviews", "VK", "Telegram"] : ["Новости", "Отзывы", "VK", "Telegram"];
