@@ -18841,10 +18841,9 @@ body.home-wide-body main.page::after {
   transform: scale(1.09) !important;
 }
 
-/* The dark Perplexity artwork includes a thin teal source edge.
-   Crop that edge in the resting state so the card reads as fully black. */
+/* Keep the homepage Perplexity tile identical to the AI catalog card. */
 .home-wide-page .ai-directory-card--perplexity .ai-directory-card__media {
-  background: #020706 !important;
+  background: radial-gradient(circle at 50% 40%, #176771 0%, #0d3035 46%, #061012 100%) !important;
 }
 
 .home-wide-page .ai-directory-card--perplexity .ai-directory-card__image--primary {
