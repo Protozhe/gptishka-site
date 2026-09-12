@@ -22,6 +22,9 @@ expect(onboardingCss.includes("service-info-section--chatgpt"), "legacy ChatGPT 
 expect(onboardingCss.includes("service-info-section--claude"), "legacy Claude information block is not hidden");
 expect(fs.existsSync("codex-credits.html"), "Russian Codex Credits page is missing");
 expect(fs.existsSync("en/codex-credits.html"), "English Codex Credits page is missing");
+expect(fs.existsSync("assets/css/codex-credits.css"), "Codex Credits base stylesheet is missing");
+expect(read("codex-credits.html").includes("/assets/css/codex-credits.css?v=20260912-calm-base-restored1"), "Russian Codex Credits page does not load the restored base stylesheet");
+expect(read("en/codex-credits.html").includes("/assets/css/codex-credits.css?v=20260912-calm-base-restored1"), "English Codex Credits page does not load the restored base stylesheet");
 
 const ignoredDirectories = new Set([".git", "node_modules", "backups", "visual-baseline"]);
 const htmlFiles = [];
