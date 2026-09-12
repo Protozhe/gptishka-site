@@ -1,0 +1,987 @@
+.ai-directory-card--codex .ai-directory-card__button,
+.ai-directory-card--chatgpt .ai-directory-card__button {
+  border-color: rgba(47, 226, 178, 0.62);
+  background: linear-gradient(135deg, #08775f 0%, #13b48b 100%);
+  color: #fff;
+  box-shadow: 0 13px 28px rgba(8, 139, 106, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ai-directory-card__brand-mark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  width: 58%;
+  height: 58%;
+  background: #fff;
+  transform: translate(-50%, -50%);
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  transition: background 0.22s ease;
+  pointer-events: none;
+}
+
+.ai-directory-card--chatgpt .ai-directory-card__media {
+  isolation: isolate;
+  background: linear-gradient(145deg, #19c29a 0%, #13b48b 58%, #0b9c79 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.ai-directory-card--chatgpt .ai-directory-card__media::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: "";
+  background: linear-gradient(145deg, #ffffff 0%, #e9f8f3 100%);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+}
+
+.ai-directory-card__brand-mark--chatgpt {
+  width: 61%;
+  height: 61%;
+  -webkit-mask-image: url("/assets/img/services/chatgpt-symbol-mask-v2.webp?v=20260909-brand-swap1");
+  mask-image: url("/assets/img/services/chatgpt-symbol-mask-v2.webp?v=20260909-brand-swap1");
+}
+
+.ai-directory-card--chatgpt:hover .ai-directory-card__media::before,
+.ai-directory-card--chatgpt:focus-within .ai-directory-card__media::before {
+  opacity: 1;
+}
+
+.ai-directory-card--chatgpt:hover .ai-directory-card__brand-mark--chatgpt,
+.ai-directory-card--chatgpt:focus-within .ai-directory-card__brand-mark--chatgpt {
+  background: #13b48b;
+}
+
+html body.home-catalog-body .ai-directory-card--chatgpt .ai-directory-card__media {
+  background: linear-gradient(145deg, #19c29a 0%, #13b48b 58%, #0b9c79 100%) !important;
+}
+
+html body.home-catalog-body .ai-directory-card--chatgpt .ai-directory-card__media::before {
+  z-index: 0 !important;
+  background: linear-gradient(145deg, #ffffff 0%, #e9f8f3 100%) !important;
+  opacity: 0 !important;
+}
+
+html body.home-catalog-body .ai-directory-card--chatgpt:hover .ai-directory-card__media,
+html body.home-catalog-body .ai-directory-card--chatgpt:focus-within .ai-directory-card__media {
+  transform: none !important;
+  filter: none !important;
+}
+
+html body.home-catalog-body .ai-directory-card--chatgpt:hover .ai-directory-card__media::before,
+html body.home-catalog-body .ai-directory-card--chatgpt:focus-within .ai-directory-card__media::before {
+  opacity: 1 !important;
+}
+
+.ai-directory-card--codex .ai-directory-card__media {
+  isolation: isolate;
+  background: linear-gradient(145deg, #19c29a 0%, #13b48b 58%, #0b9c79 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.ai-directory-card--codex .ai-directory-card__media::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: "";
+  background: linear-gradient(145deg, #ffffff 0%, #e9f8f3 100%);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+}
+
+.ai-directory-card__codex-lockup {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.38rem;
+  padding-top: 0.3rem;
+  pointer-events: none;
+}
+
+.ai-directory-card__brand-mark--codex {
+  position: relative;
+  top: auto;
+  left: auto;
+  width: 54%;
+  height: 54%;
+  flex: 0 0 54%;
+  transform: none;
+  -webkit-mask-image: url("/assets/img/services/chatgpt-symbol-mask-v2.webp?v=20260909-emerald-codex1");
+  mask-image: url("/assets/img/services/chatgpt-symbol-mask-v2.webp?v=20260909-emerald-codex1");
+}
+
+.ai-directory-card__codex-word {
+  color: #fff;
+  font-family: "Manrope", "Inter", system-ui, sans-serif;
+  font-size: clamp(1.02rem, 1.45vw, 1.38rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.17em;
+  padding-left: 0.17em;
+  transition: color 0.22s ease;
+}
+
+.ai-directory-card--codex:hover .ai-directory-card__media::before,
+.ai-directory-card--codex:focus-within .ai-directory-card__media::before {
+  opacity: 1;
+}
+
+.ai-directory-card--codex:hover .ai-directory-card__media,
+.ai-directory-card--codex:focus-within .ai-directory-card__media {
+  transform: none !important;
+  filter: none !important;
+}
+
+.ai-directory-card--codex:hover .ai-directory-card__brand-mark--codex,
+.ai-directory-card--codex:focus-within .ai-directory-card__brand-mark--codex {
+  background: #13b48b;
+}
+
+.ai-directory-card--codex:hover .ai-directory-card__codex-word,
+.ai-directory-card--codex:focus-within .ai-directory-card__codex-word {
+  color: #13b48b;
+}
+
+html body.home-catalog-body .ai-directory-card--codex .ai-directory-card__media {
+  background: linear-gradient(145deg, #19c29a 0%, #13b48b 58%, #0b9c79 100%) !important;
+}
+
+html body.home-catalog-body .ai-directory-card--codex .ai-directory-card__media::before {
+  z-index: 0 !important;
+  background: linear-gradient(145deg, #ffffff 0%, #e9f8f3 100%) !important;
+  opacity: 0 !important;
+}
+
+html body.home-catalog-body .ai-directory-card--codex:hover .ai-directory-card__media,
+html body.home-catalog-body .ai-directory-card--codex:focus-within .ai-directory-card__media {
+  transform: none !important;
+  filter: none !important;
+}
+
+html body.home-catalog-body .ai-directory-card--codex:hover .ai-directory-card__media::before,
+html body.home-catalog-body .ai-directory-card--codex:focus-within .ai-directory-card__media::before {
+  opacity: 1 !important;
+}
+
+.ai-directory-card--steam .ai-directory-card__media {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 52% 43%, #1e5279 0%, #102c46 54%, #071521 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(130, 205, 255, 0.12);
+}
+
+.ai-directory-card--steam .ai-directory-card__media::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: "";
+  background:
+    radial-gradient(circle at 52% 43%, #e7f8ff 0%, #9dcceb 58%, #4d8fbb 100%);
+  opacity: 0;
+  transition: opacity 0.24s ease;
+  pointer-events: none;
+}
+
+.ai-directory-card__brand-mark--steam {
+  width: 62%;
+  height: 62%;
+  -webkit-mask-image: url("/assets/img/services/steam-symbol-mask-v1.webp?v=20260909-brand-cards1");
+  mask-image: url("/assets/img/services/steam-symbol-mask-v1.webp?v=20260909-brand-cards1");
+}
+
+.ai-directory-card--steam .ai-directory-card__image {
+  z-index: 1;
+  object-fit: contain !important;
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+  transition: none !important;
+  will-change: auto !important;
+}
+
+.ai-directory-card--steam:hover .ai-directory-card__media::before,
+.ai-directory-card--steam:focus-within .ai-directory-card__media::before {
+  opacity: 1;
+}
+
+.ai-directory-card--steam:hover .ai-directory-card__image,
+.ai-directory-card--steam:focus-within .ai-directory-card__image {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+.ai-directory-card--steam:hover .ai-directory-card__brand-mark--steam,
+.ai-directory-card--steam:focus-within .ai-directory-card__brand-mark--steam {
+  background: #175f8f;
+}
+
+html body.home-catalog-body .ai-directory-card--steam .ai-directory-card__media {
+  background: radial-gradient(circle at 52% 43%, #1e5279 0%, #102c46 54%, #071521 100%) !important;
+}
+
+html body.home-catalog-body .ai-directory-card--steam .ai-directory-card__media::before {
+  z-index: 0 !important;
+  background: radial-gradient(circle at 52% 43%, #e7f8ff 0%, #9dcceb 58%, #4d8fbb 100%) !important;
+  opacity: 0 !important;
+}
+
+html body.home-catalog-body .ai-directory-card--steam:hover .ai-directory-card__media,
+html body.home-catalog-body .ai-directory-card--steam:focus-within .ai-directory-card__media {
+  transform: none !important;
+  filter: none !important;
+}
+
+html body.home-catalog-body .ai-directory-card--steam:hover .ai-directory-card__media::before,
+html body.home-catalog-body .ai-directory-card--steam:focus-within .ai-directory-card__media::before {
+  opacity: 1 !important;
+}
+
+.ai-directory-card--claude .ai-directory-card__media {
+  isolation: isolate;
+  background: linear-gradient(145deg, #e18a68 0%, #d97757 58%, #c86445 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.ai-directory-card--claude .ai-directory-card__media::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: "";
+  background: linear-gradient(145deg, #fffaf5 0%, #f4e8dd 100%);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+}
+
+.ai-directory-card__brand-mark--claude {
+  width: 62%;
+  height: 62%;
+  -webkit-mask-image: url("/assets/img/services/claude-symbol-mask-v1.webp?v=20260909-brand-cards1");
+  mask-image: url("/assets/img/services/claude-symbol-mask-v1.webp?v=20260909-brand-cards1");
+}
+
+.ai-directory-card--claude:hover .ai-directory-card__media::before,
+.ai-directory-card--claude:focus-within .ai-directory-card__media::before {
+  opacity: 1;
+}
+
+.ai-directory-card--claude:hover .ai-directory-card__media,
+.ai-directory-card--claude:focus-within .ai-directory-card__media {
+  transform: none !important;
+  filter: none !important;
+}
+
+.ai-directory-card--claude:hover .ai-directory-card__brand-mark--claude,
+.ai-directory-card--claude:focus-within .ai-directory-card__brand-mark--claude {
+  background: #d97757;
+}
+
+html body.home-catalog-body .ai-directory-card--claude .ai-directory-card__media {
+  background: linear-gradient(145deg, #e18a68 0%, #d97757 58%, #c86445 100%) !important;
+}
+
+html body.home-catalog-body .ai-directory-card--claude .ai-directory-card__media::before {
+  z-index: 0 !important;
+  background: linear-gradient(145deg, #fffaf5 0%, #f4e8dd 100%) !important;
+  opacity: 0 !important;
+}
+
+html body.home-catalog-body .ai-directory-card--claude:hover .ai-directory-card__media,
+html body.home-catalog-body .ai-directory-card--claude:focus-within .ai-directory-card__media {
+  transform: none !important;
+  filter: none !important;
+}
+
+html body.home-catalog-body .ai-directory-card--claude:hover .ai-directory-card__media::before,
+html body.home-catalog-body .ai-directory-card--claude:focus-within .ai-directory-card__media::before {
+  opacity: 1 !important;
+}
+
+.ai-directory-card--grok .ai-directory-card__media {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 52% 42%, #353941 0%, #181a1f 52%, #07080a 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.ai-directory-card--grok .ai-directory-card__media::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: "";
+  background: linear-gradient(145deg, #ffffff 0%, #e7e9ed 100%);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+}
+
+.ai-directory-card__brand-mark--grok {
+  width: 62%;
+  height: 62%;
+  -webkit-mask-image: url("/assets/img/services/grok-symbol-mask-v1.webp?v=20260909-grok-brand1");
+  mask-image: url("/assets/img/services/grok-symbol-mask-v1.webp?v=20260909-grok-brand1");
+}
+
+.ai-directory-card--grok:hover .ai-directory-card__media::before,
+.ai-directory-card--grok:focus-within .ai-directory-card__media::before {
+  opacity: 1;
+}
+
+.ai-directory-card--grok:hover .ai-directory-card__media,
+.ai-directory-card--grok:focus-within .ai-directory-card__media {
+  background: linear-gradient(145deg, #ffffff 0%, #e7e9ed 100%) !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+.ai-directory-card--grok:hover .ai-directory-card__brand-mark--grok,
+.ai-directory-card--grok:focus-within .ai-directory-card__brand-mark--grok,
+html body.home-catalog-body .ai-directory-card--grok:hover .ai-directory-card__brand-mark--grok,
+html body.home-catalog-body .ai-directory-card--grok:focus-within .ai-directory-card__brand-mark--grok,
+body.home-wide-body .home-wide-page .ai-directory-card--grok:hover .ai-directory-card__brand-mark--grok,
+body.home-wide-body .home-wide-page .ai-directory-card--grok:focus-within .ai-directory-card__brand-mark--grok {
+  background: #111318 !important;
+}
+
+html body.home-catalog-body .ai-directory-card--grok .ai-directory-card__media {
+  background: radial-gradient(circle at 52% 42%, #353941 0%, #181a1f 52%, #07080a 100%) !important;
+}
+
+html body.home-catalog-body .ai-directory-card--grok .ai-directory-card__media::before {
+  z-index: 0 !important;
+  background: linear-gradient(145deg, #ffffff 0%, #e7e9ed 100%) !important;
+  opacity: 0 !important;
+}
+
+html body.home-catalog-body .ai-directory-card--grok:hover .ai-directory-card__media,
+html body.home-catalog-body .ai-directory-card--grok:focus-within .ai-directory-card__media,
+body.home-wide-body .home-wide-page .ai-directory-card--grok:hover .ai-directory-card__media,
+body.home-wide-body .home-wide-page .ai-directory-card--grok:focus-within .ai-directory-card__media {
+  background: linear-gradient(145deg, #ffffff 0%, #e7e9ed 100%) !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+html body.home-catalog-body .ai-directory-card--grok:hover .ai-directory-card__media::before,
+html body.home-catalog-body .ai-directory-card--grok:focus-within .ai-directory-card__media::before {
+  opacity: 1 !important;
+}
+
+.ai-directory-card--grok:hover .ai-directory-card__button,
+.ai-directory-card--grok:focus-within .ai-directory-card__button,
+.home-wide-page .ai-directory-card--grok:hover .ai-directory-card__button,
+.home-wide-page .ai-directory-card--grok:focus-within .ai-directory-card__button,
+html body.home-catalog-body .ai-directory-card--grok:hover .ai-directory-card__button,
+html body.home-catalog-body .ai-directory-card--grok:focus-within .ai-directory-card__button,
+body.home-wide-body .home-wide-page .ai-directory-card--grok:hover .ai-directory-card__button,
+body.home-wide-body .home-wide-page .ai-directory-card--grok:focus-within .ai-directory-card__button {
+  border-color: rgba(106, 111, 121, 0.9) !important;
+  background: linear-gradient(135deg, #08090b 0%, #292c32 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.13) !important;
+}
+
+.ai-directory-card--grok:hover .ai-directory-card__button::before,
+.ai-directory-card--grok:focus-within .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--grok:hover .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--grok:focus-within .ai-directory-card__button::before,
+html body.home-catalog-body .ai-directory-card--grok:hover .ai-directory-card__button::before,
+html body.home-catalog-body .ai-directory-card--grok:focus-within .ai-directory-card__button::before,
+body.home-wide-body .home-wide-page .ai-directory-card--grok:hover .ai-directory-card__button::before,
+body.home-wide-body .home-wide-page .ai-directory-card--grok:focus-within .ai-directory-card__button::before {
+  opacity: 0 !important;
+}
+
+.service-product-gallery--grok .service-product-gallery__brand--grok {
+  display: grid;
+  place-items: center;
+  width: min(100%, 440px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: clamp(28px, 3vw, 38px);
+  background: radial-gradient(circle at 52% 42%, #353941 0%, #181a1f 52%, #07080a 100%);
+  box-shadow: 0 24px 68px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.service-product-gallery__grok-mark {
+  display: block;
+  width: 64%;
+  height: 64%;
+  background: #fff;
+  -webkit-mask-image: url("/assets/img/services/grok-symbol-mask-v1.webp?v=20260909-grok-brand1");
+  mask-image: url("/assets/img/services/grok-symbol-mask-v1.webp?v=20260909-grok-brand1");
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.ai-directory-card--perplexity .ai-directory-card__media {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 50% 40%, #176771 0%, #0d3035 46%, #061012 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(118, 232, 236, 0.13);
+}
+
+.ai-directory-card--perplexity .ai-directory-card__media::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: "";
+  background: linear-gradient(145deg, #f5ffff 0%, #ccecee 100%);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+}
+
+.ai-directory-card__brand-mark--perplexity {
+  width: 58%;
+  height: 58%;
+  -webkit-mask-image: url("/assets/img/services/perplexity-symbol-mask-v1.svg?v=20260909-perplexity-brand1");
+  mask-image: url("/assets/img/services/perplexity-symbol-mask-v1.svg?v=20260909-perplexity-brand1");
+}
+
+.ai-directory-card--perplexity:hover .ai-directory-card__media::before,
+.ai-directory-card--perplexity:focus-within .ai-directory-card__media::before {
+  opacity: 1;
+}
+
+.ai-directory-card--perplexity:hover .ai-directory-card__media,
+.ai-directory-card--perplexity:focus-within .ai-directory-card__media {
+  background: linear-gradient(145deg, #f5ffff 0%, #ccecee 100%) !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+.ai-directory-card--perplexity:hover .ai-directory-card__brand-mark--perplexity,
+.ai-directory-card--perplexity:focus-within .ai-directory-card__brand-mark--perplexity,
+html body.home-catalog-body .ai-directory-card--perplexity:hover .ai-directory-card__brand-mark--perplexity,
+html body.home-catalog-body .ai-directory-card--perplexity:focus-within .ai-directory-card__brand-mark--perplexity,
+body.home-wide-body .home-wide-page .ai-directory-card--perplexity:hover .ai-directory-card__brand-mark--perplexity,
+body.home-wide-body .home-wide-page .ai-directory-card--perplexity:focus-within .ai-directory-card__brand-mark--perplexity {
+  background: #146b74 !important;
+}
+
+html body.home-catalog-body .ai-directory-card--perplexity .ai-directory-card__media {
+  background: radial-gradient(circle at 50% 40%, #176771 0%, #0d3035 46%, #061012 100%) !important;
+}
+
+html body.home-catalog-body .ai-directory-card--perplexity .ai-directory-card__media::before {
+  z-index: 0 !important;
+  background: linear-gradient(145deg, #f5ffff 0%, #ccecee 100%) !important;
+  opacity: 0 !important;
+}
+
+html body.home-catalog-body .ai-directory-card--perplexity:hover .ai-directory-card__media,
+html body.home-catalog-body .ai-directory-card--perplexity:focus-within .ai-directory-card__media,
+body.home-wide-body .home-wide-page .ai-directory-card--perplexity:hover .ai-directory-card__media,
+body.home-wide-body .home-wide-page .ai-directory-card--perplexity:focus-within .ai-directory-card__media {
+  background: linear-gradient(145deg, #f5ffff 0%, #ccecee 100%) !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+html body.home-catalog-body .ai-directory-card--perplexity:hover .ai-directory-card__media::before,
+html body.home-catalog-body .ai-directory-card--perplexity:focus-within .ai-directory-card__media::before {
+  opacity: 1 !important;
+}
+
+.ai-directory-card--perplexity:hover .ai-directory-card__button,
+.ai-directory-card--perplexity:focus-within .ai-directory-card__button,
+.home-wide-page .ai-directory-card--perplexity:hover .ai-directory-card__button,
+.home-wide-page .ai-directory-card--perplexity:focus-within .ai-directory-card__button,
+html body.home-catalog-body .ai-directory-card--perplexity:hover .ai-directory-card__button,
+html body.home-catalog-body .ai-directory-card--perplexity:focus-within .ai-directory-card__button,
+body.home-wide-body .home-wide-page .ai-directory-card--perplexity:hover .ai-directory-card__button,
+body.home-wide-body .home-wide-page .ai-directory-card--perplexity:focus-within .ai-directory-card__button {
+  border-color: rgba(52, 150, 158, 0.9) !important;
+  background: linear-gradient(135deg, #07191b 0%, #135861 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 16px 34px rgba(4, 39, 43, 0.34), inset 0 1px 0 rgba(167, 246, 248, 0.15) !important;
+}
+
+.ai-directory-card--perplexity:hover .ai-directory-card__button::before,
+.ai-directory-card--perplexity:focus-within .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--perplexity:hover .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--perplexity:focus-within .ai-directory-card__button::before,
+html body.home-catalog-body .ai-directory-card--perplexity:hover .ai-directory-card__button::before,
+html body.home-catalog-body .ai-directory-card--perplexity:focus-within .ai-directory-card__button::before,
+body.home-wide-body .home-wide-page .ai-directory-card--perplexity:hover .ai-directory-card__button::before,
+body.home-wide-body .home-wide-page .ai-directory-card--perplexity:focus-within .ai-directory-card__button::before {
+  opacity: 0 !important;
+}
+
+.service-product-gallery--perplexity .service-product-gallery__brand--perplexity {
+  display: grid;
+  place-items: center;
+  width: min(100%, 440px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: clamp(28px, 3vw, 38px);
+  background: radial-gradient(circle at 50% 40%, #176771 0%, #0d3035 46%, #061012 100%);
+  box-shadow: 0 24px 68px rgba(2, 30, 33, 0.34), inset 0 1px 0 rgba(118, 232, 236, 0.13);
+}
+
+.service-product-gallery__perplexity-mark {
+  display: block;
+  width: 60%;
+  height: 60%;
+  background: #f5ffff;
+  -webkit-mask-image: url("/assets/img/services/perplexity-symbol-mask-v1.svg?v=20260909-perplexity-brand1");
+  mask-image: url("/assets/img/services/perplexity-symbol-mask-v1.svg?v=20260909-perplexity-brand1");
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.ai-directory-card--gemini .ai-directory-card__media {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 50% 42%, #263a78 0%, #111c45 48%, #070b1b 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(152, 183, 255, 0.14);
+}
+
+.ai-directory-card--gemini .ai-directory-card__media::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: "";
+  background: linear-gradient(145deg, #fbfcff 0%, #dfe7ff 100%);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+}
+
+.ai-directory-card__brand-mark--gemini {
+  width: 50%;
+  height: 50%;
+  background: linear-gradient(135deg, #ffcc39 5%, #f04f64 29%, #9b64ed 51%, #4285f4 72%, #2ccf77 100%);
+  -webkit-mask-image: url("/assets/img/services/gemini-symbol-mask-v1.svg?v=20260909-gemini-suno-brand1");
+  mask-image: url("/assets/img/services/gemini-symbol-mask-v1.svg?v=20260909-gemini-suno-brand1");
+}
+
+.ai-directory-card--gemini:hover .ai-directory-card__media,
+.ai-directory-card--gemini:focus-within .ai-directory-card__media,
+html body.home-catalog-body .ai-directory-card--gemini:hover .ai-directory-card__media,
+html body.home-catalog-body .ai-directory-card--gemini:focus-within .ai-directory-card__media,
+body.home-wide-body .home-wide-page .ai-directory-card--gemini:hover .ai-directory-card__media,
+body.home-wide-body .home-wide-page .ai-directory-card--gemini:focus-within .ai-directory-card__media {
+  background: linear-gradient(145deg, #fbfcff 0%, #dfe7ff 100%) !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+.ai-directory-card--gemini:hover .ai-directory-card__media::before,
+.ai-directory-card--gemini:focus-within .ai-directory-card__media::before,
+html body.home-catalog-body .ai-directory-card--gemini:hover .ai-directory-card__media::before,
+html body.home-catalog-body .ai-directory-card--gemini:focus-within .ai-directory-card__media::before {
+  opacity: 1 !important;
+}
+
+.ai-directory-card--gemini:hover .ai-directory-card__button,
+.ai-directory-card--gemini:focus-within .ai-directory-card__button,
+.home-wide-page .ai-directory-card--gemini:hover .ai-directory-card__button,
+.home-wide-page .ai-directory-card--gemini:focus-within .ai-directory-card__button,
+html body.home-catalog-body .ai-directory-card--gemini:hover .ai-directory-card__button,
+html body.home-catalog-body .ai-directory-card--gemini:focus-within .ai-directory-card__button,
+body.home-wide-body .home-wide-page .ai-directory-card--gemini:hover .ai-directory-card__button,
+body.home-wide-body .home-wide-page .ai-directory-card--gemini:focus-within .ai-directory-card__button {
+  border-color: rgba(95, 126, 225, 0.92) !important;
+  background: linear-gradient(135deg, #18245b 0%, #3d55b5 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 16px 34px rgba(20, 35, 101, 0.34), inset 0 1px 0 rgba(203, 214, 255, 0.2) !important;
+}
+
+.ai-directory-card--gemini:hover .ai-directory-card__button::before,
+.ai-directory-card--gemini:focus-within .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--gemini:hover .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--gemini:focus-within .ai-directory-card__button::before,
+html body.home-catalog-body .ai-directory-card--gemini:hover .ai-directory-card__button::before,
+html body.home-catalog-body .ai-directory-card--gemini:focus-within .ai-directory-card__button::before,
+body.home-wide-body .home-wide-page .ai-directory-card--gemini:hover .ai-directory-card__button::before,
+body.home-wide-body .home-wide-page .ai-directory-card--gemini:focus-within .ai-directory-card__button::before {
+  opacity: 0 !important;
+}
+
+.service-product-gallery--gemini .service-product-gallery__brand--gemini {
+  display: grid;
+  place-items: center;
+  width: min(100%, 440px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: clamp(28px, 3vw, 38px);
+  background: radial-gradient(circle at 50% 42%, #263a78 0%, #111c45 48%, #070b1b 100%);
+  box-shadow: 0 24px 68px rgba(5, 13, 48, 0.36), inset 0 1px 0 rgba(152, 183, 255, 0.14);
+}
+
+.service-product-gallery__gemini-mark {
+  display: block;
+  width: 52%;
+  height: 52%;
+  background: linear-gradient(135deg, #ffcc39 5%, #f04f64 29%, #9b64ed 51%, #4285f4 72%, #2ccf77 100%);
+  -webkit-mask-image: url("/assets/img/services/gemini-symbol-mask-v1.svg?v=20260909-gemini-suno-brand1");
+  mask-image: url("/assets/img/services/gemini-symbol-mask-v1.svg?v=20260909-gemini-suno-brand1");
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.ai-directory-card--suno .ai-directory-card__media {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 28% 20%, rgba(255, 150, 62, 0.34), transparent 36%),
+    radial-gradient(circle at 72% 76%, rgba(240, 48, 116, 0.34), transparent 44%),
+    linear-gradient(145deg, #7e293f 0%, #42152f 54%, #170914 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 193, 130, 0.14);
+}
+
+.ai-directory-card--suno .ai-directory-card__media::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: "";
+  background: linear-gradient(145deg, #fff8ec 0%, #ffd4bd 52%, #ffc3d8 100%);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+}
+
+.ai-directory-card__brand-mark--suno {
+  width: 68%;
+  height: 28%;
+  -webkit-mask-image: url("/assets/img/services/suno-wordmark-mask-v1.webp?v=20260909-gemini-suno-brand1");
+  mask-image: url("/assets/img/services/suno-wordmark-mask-v1.webp?v=20260909-gemini-suno-brand1");
+}
+
+.ai-directory-card--suno:hover .ai-directory-card__media,
+.ai-directory-card--suno:focus-within .ai-directory-card__media,
+html body.home-catalog-body .ai-directory-card--suno:hover .ai-directory-card__media,
+html body.home-catalog-body .ai-directory-card--suno:focus-within .ai-directory-card__media,
+body.home-wide-body .home-wide-page .ai-directory-card--suno:hover .ai-directory-card__media,
+body.home-wide-body .home-wide-page .ai-directory-card--suno:focus-within .ai-directory-card__media {
+  background: linear-gradient(145deg, #fff8ec 0%, #ffd4bd 52%, #ffc3d8 100%) !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+.ai-directory-card--suno:hover .ai-directory-card__media::before,
+.ai-directory-card--suno:focus-within .ai-directory-card__media::before,
+html body.home-catalog-body .ai-directory-card--suno:hover .ai-directory-card__media::before,
+html body.home-catalog-body .ai-directory-card--suno:focus-within .ai-directory-card__media::before {
+  opacity: 1 !important;
+}
+
+.ai-directory-card--suno:hover .ai-directory-card__brand-mark--suno,
+.ai-directory-card--suno:focus-within .ai-directory-card__brand-mark--suno,
+html body.home-catalog-body .ai-directory-card--suno:hover .ai-directory-card__brand-mark--suno,
+html body.home-catalog-body .ai-directory-card--suno:focus-within .ai-directory-card__brand-mark--suno,
+body.home-wide-body .home-wide-page .ai-directory-card--suno:hover .ai-directory-card__brand-mark--suno,
+body.home-wide-body .home-wide-page .ai-directory-card--suno:focus-within .ai-directory-card__brand-mark--suno {
+  background: linear-gradient(90deg, #ed2d76 0%, #ff633f 54%, #f5a721 100%) !important;
+}
+
+.ai-directory-card--suno:hover .ai-directory-card__button,
+.ai-directory-card--suno:focus-within .ai-directory-card__button,
+.home-wide-page .ai-directory-card--suno:hover .ai-directory-card__button,
+.home-wide-page .ai-directory-card--suno:focus-within .ai-directory-card__button,
+html body.home-catalog-body .ai-directory-card--suno:hover .ai-directory-card__button,
+html body.home-catalog-body .ai-directory-card--suno:focus-within .ai-directory-card__button,
+body.home-wide-body .home-wide-page .ai-directory-card--suno:hover .ai-directory-card__button,
+body.home-wide-body .home-wide-page .ai-directory-card--suno:focus-within .ai-directory-card__button {
+  border-color: rgba(244, 89, 94, 0.92) !important;
+  background: linear-gradient(135deg, #6f1d3c 0%, #b62e4b 54%, #e15d37 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 16px 34px rgba(93, 18, 48, 0.34), inset 0 1px 0 rgba(255, 204, 169, 0.2) !important;
+}
+
+.ai-directory-card--suno:hover .ai-directory-card__button::before,
+.ai-directory-card--suno:focus-within .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--suno:hover .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--suno:focus-within .ai-directory-card__button::before,
+html body.home-catalog-body .ai-directory-card--suno:hover .ai-directory-card__button::before,
+html body.home-catalog-body .ai-directory-card--suno:focus-within .ai-directory-card__button::before,
+body.home-wide-body .home-wide-page .ai-directory-card--suno:hover .ai-directory-card__button::before,
+body.home-wide-body .home-wide-page .ai-directory-card--suno:focus-within .ai-directory-card__button::before {
+  opacity: 0 !important;
+}
+
+.service-product-gallery--suno .service-product-gallery__brand--suno {
+  display: grid;
+  place-items: center;
+  width: min(100%, 440px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: clamp(28px, 3vw, 38px);
+  background:
+    radial-gradient(circle at 28% 20%, rgba(255, 150, 62, 0.34), transparent 36%),
+    radial-gradient(circle at 72% 76%, rgba(240, 48, 116, 0.34), transparent 44%),
+    linear-gradient(145deg, #7e293f 0%, #42152f 54%, #170914 100%);
+  box-shadow: 0 24px 68px rgba(59, 8, 31, 0.34), inset 0 1px 0 rgba(255, 193, 130, 0.14);
+}
+
+.service-product-gallery__suno-mark {
+  display: block;
+  width: 70%;
+  height: 29%;
+  background: #fff;
+  -webkit-mask-image: url("/assets/img/services/suno-wordmark-mask-v1.webp?v=20260909-gemini-suno-brand1");
+  mask-image: url("/assets/img/services/suno-wordmark-mask-v1.webp?v=20260909-gemini-suno-brand1");
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.ai-directory-card--claude .ai-directory-card__button {
+  border-color: rgba(225, 138, 104, 0.62);
+  background: linear-gradient(135deg, #b95338 0%, #d97757 100%);
+  color: #fff;
+  box-shadow: 0 13px 28px rgba(170, 70, 43, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.ai-directory-card--claude:hover .ai-directory-card__button,
+.ai-directory-card--claude:focus-within .ai-directory-card__button,
+.home-wide-page .ai-directory-card--claude:hover .ai-directory-card__button,
+.home-wide-page .ai-directory-card--claude:focus-within .ai-directory-card__button {
+  border-color: rgba(247, 226, 213, 0.98) !important;
+  background: linear-gradient(135deg, #fffaf5 0%, #efd8c9 100%) !important;
+  color: #9f442e !important;
+  box-shadow: 0 16px 34px rgba(217, 119, 87, 0.24), inset 0 1px 0 #fff !important;
+}
+
+.ai-directory-card--claude:hover .ai-directory-card__button::before,
+.ai-directory-card--claude:focus-within .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--claude:hover .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--claude:focus-within .ai-directory-card__button::before {
+  opacity: 0 !important;
+}
+
+.service-product-gallery--claude .service-product-gallery__brand--claude {
+  display: grid;
+  place-items: center;
+  width: min(100%, 440px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: clamp(28px, 3vw, 38px);
+  background: linear-gradient(145deg, #e18a68 0%, #d97757 58%, #c86445 100%);
+  box-shadow: 0 24px 68px rgba(87, 34, 21, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.service-product-gallery__claude-mark {
+  display: block;
+  width: 64%;
+  height: 64%;
+  background: #fff;
+  -webkit-mask-image: url("/assets/img/services/claude-symbol-mask-v1.webp?v=20260909-brand-cards1");
+  mask-image: url("/assets/img/services/claude-symbol-mask-v1.webp?v=20260909-brand-cards1");
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.ai-directory-card--steam .ai-directory-card__button {
+  border-color: rgba(80, 169, 222, 0.68);
+  background: linear-gradient(135deg, #174f78 0%, #258ac1 100%);
+  color: #f4fbff;
+  box-shadow: 0 13px 28px rgba(23, 92, 137, 0.26), inset 0 1px 0 rgba(200, 236, 255, 0.22);
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ai-directory-card--steam .ai-directory-card__name {
+  font-size: 1.2rem !important;
+  line-height: 1.12 !important;
+  letter-spacing: -0.025em !important;
+}
+
+.ai-directory-card--codex:hover .ai-directory-card__button,
+.ai-directory-card--codex:focus-within .ai-directory-card__button,
+.home-wide-page .ai-directory-card--codex:hover .ai-directory-card__button,
+.home-wide-page .ai-directory-card--codex:focus-within .ai-directory-card__button,
+.ai-directory-card--chatgpt:hover .ai-directory-card__button,
+.ai-directory-card--chatgpt:focus-within .ai-directory-card__button,
+.home-wide-page .ai-directory-card--chatgpt:hover .ai-directory-card__button,
+.home-wide-page .ai-directory-card--chatgpt:focus-within .ai-directory-card__button {
+  border-color: rgba(211, 245, 234, 0.98) !important;
+  background: linear-gradient(135deg, #ffffff 0%, #d7f3ea 100%) !important;
+  color: #08775f !important;
+  box-shadow: 0 16px 34px rgba(19, 180, 139, 0.24), inset 0 1px 0 #fff !important;
+}
+
+.ai-directory-card--steam:hover .ai-directory-card__button,
+.ai-directory-card--steam:focus-within .ai-directory-card__button,
+.home-wide-page .ai-directory-card--steam:hover .ai-directory-card__button,
+.home-wide-page .ai-directory-card--steam:focus-within .ai-directory-card__button {
+  border-color: rgba(205, 239, 255, 0.96) !important;
+  background: linear-gradient(135deg, #eefaff 0%, #8bc4e8 100%) !important;
+  color: #071b2b !important;
+  box-shadow: 0 16px 34px rgba(64, 145, 194, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+.ai-directory-card--codex:hover .ai-directory-card__button::before,
+.ai-directory-card--codex:focus-within .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--codex:hover .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--codex:focus-within .ai-directory-card__button::before,
+.ai-directory-card--chatgpt:hover .ai-directory-card__button::before,
+.ai-directory-card--chatgpt:focus-within .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--chatgpt:hover .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--chatgpt:focus-within .ai-directory-card__button::before,
+.ai-directory-card--steam:hover .ai-directory-card__button::before,
+.ai-directory-card--steam:focus-within .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--steam:hover .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--steam:focus-within .ai-directory-card__button::before {
+  opacity: 0 !important;
+}
+
+.ai-directory-card--codex:hover .ai-directory-card__button:hover,
+.ai-directory-card--codex:focus-within .ai-directory-card__button:hover,
+.ai-directory-card--chatgpt:hover .ai-directory-card__button:hover,
+.ai-directory-card--chatgpt:focus-within .ai-directory-card__button:hover {
+  color: #08775f !important;
+}
+
+.ai-directory-card--steam:hover .ai-directory-card__button:hover,
+.ai-directory-card--steam:focus-within .ai-directory-card__button:hover {
+  color: #071b2b !important;
+}
+
+.ai-directory-card--appstore .ai-directory-card__media {
+  isolation: isolate;
+  background: linear-gradient(145deg, #25bfe7 0%, #168ff1 54%, #2868f5 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.ai-directory-card--appstore .ai-directory-card__media::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: "";
+  background: linear-gradient(145deg, #ffffff 0%, #edf5ff 100%);
+  opacity: 0;
+  transition: opacity 0.24s ease;
+  pointer-events: none;
+}
+
+.ai-directory-card__brand-mark--appstore {
+  width: 58%;
+  height: 58%;
+  -webkit-mask-image: url("/assets/img/services/appstore-symbol-mask-v6.webp?v=20260909-brand-swap1");
+  mask-image: url("/assets/img/services/appstore-symbol-mask-v6.webp?v=20260909-brand-swap1");
+}
+
+.ai-directory-card--appstore:hover .ai-directory-card__media::before,
+.ai-directory-card--appstore:focus-within .ai-directory-card__media::before {
+  opacity: 1;
+}
+
+.ai-directory-card--appstore:hover .ai-directory-card__media,
+.ai-directory-card--appstore:focus-within .ai-directory-card__media {
+  transform: none !important;
+  filter: none !important;
+}
+
+.ai-directory-card--appstore:hover .ai-directory-card__brand-mark--appstore,
+.ai-directory-card--appstore:focus-within .ai-directory-card__brand-mark--appstore {
+  background: linear-gradient(145deg, #25bfe7 0%, #168ff1 54%, #2868f5 100%);
+}
+
+html body.home-catalog-body .ai-directory-card--appstore .ai-directory-card__media {
+  background: linear-gradient(145deg, #25bfe7 0%, #168ff1 54%, #2868f5 100%) !important;
+}
+
+html body.home-catalog-body .ai-directory-card--appstore .ai-directory-card__media::before {
+  z-index: 0 !important;
+  background: linear-gradient(145deg, #ffffff 0%, #edf5ff 100%) !important;
+  opacity: 0 !important;
+}
+
+html body.home-catalog-body .ai-directory-card--appstore:hover .ai-directory-card__media,
+html body.home-catalog-body .ai-directory-card--appstore:focus-within .ai-directory-card__media {
+  transform: none !important;
+  filter: none !important;
+}
+
+html body.home-catalog-body .ai-directory-card--appstore:hover .ai-directory-card__media::before,
+html body.home-catalog-body .ai-directory-card--appstore:focus-within .ai-directory-card__media::before {
+  opacity: 1 !important;
+}
+
+.ai-directory-card--appstore .ai-directory-card__button {
+  border-color: rgba(91, 124, 220, 0.6);
+  background: linear-gradient(135deg, #2857b8 0%, #604fc1 100%);
+  color: #fff;
+  box-shadow: 0 13px 28px rgba(55, 74, 160, 0.22), inset 0 1px 0 rgba(227, 232, 255, 0.22);
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ai-directory-card--appstore:hover .ai-directory-card__button,
+.ai-directory-card--appstore:focus-within .ai-directory-card__button,
+.home-wide-page .ai-directory-card--appstore:hover .ai-directory-card__button,
+.home-wide-page .ai-directory-card--appstore:focus-within .ai-directory-card__button {
+  border-color: rgba(227, 232, 255, 0.98) !important;
+  background: linear-gradient(135deg, #f6fbff 0%, #c9c3ff 100%) !important;
+  color: #111c4a !important;
+  box-shadow: 0 16px 34px rgba(100, 92, 202, 0.3), inset 0 1px 0 #fff !important;
+}
+
+.ai-directory-card--appstore:hover .ai-directory-card__button::before,
+.ai-directory-card--appstore:focus-within .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--appstore:hover .ai-directory-card__button::before,
+.home-wide-page .ai-directory-card--appstore:focus-within .ai-directory-card__button::before {
+  opacity: 0 !important;
+}
+
+.ai-directory-card--appstore:hover .ai-directory-card__button:hover,
+.ai-directory-card--appstore:focus-within .ai-directory-card__button:hover {
+  color: #111c4a !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-directory-card--codex .ai-directory-card__button,
+  .ai-directory-card--steam .ai-directory-card__button,
+  .ai-directory-card--steam .ai-directory-card__media::before,
+  .ai-directory-card__brand-mark,
+  .ai-directory-card--chatgpt .ai-directory-card__media::before,
+  .ai-directory-card--codex .ai-directory-card__media::before,
+  .ai-directory-card__codex-word,
+  .ai-directory-card--appstore .ai-directory-card__button,
+  .ai-directory-card--appstore .ai-directory-card__media::before,
+  .ai-directory-card--grok .ai-directory-card__media::before,
+  .ai-directory-card--perplexity .ai-directory-card__media::before,
+  .ai-directory-card--gemini .ai-directory-card__media::before,
+  .ai-directory-card--suno .ai-directory-card__media::before {
+    transition: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .ai-directory-card--steam .ai-directory-card__name {
+    font-size: 1.12rem !important;
+  }
+}

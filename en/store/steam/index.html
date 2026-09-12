@@ -34,6 +34,7 @@
 <link rel="stylesheet" href="/assets/css/gptishka-dark-pages.css?v=20260707-no-ticker-dark1" />
 <link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260912-chat-restoration2" />
 <link rel="stylesheet" href="/assets/css/catalog-flat-page.css?v=20260809-catalog-spacing8" />
+<link rel="stylesheet" href="/assets/css/codex-card.css?v=20260912-card-restoration1" />
 </head>
 <body class="home-gradient-page home-catalog-body">
 <div class="page-overlay"></div>
@@ -107,10 +108,9 @@
   </section>
 
   <section class="catalog-grid catalog-grid--directory" aria-label="Top-ups">
-    <article class="ai-directory-card ai-directory-card--topup" style="--ai-directory-bg:linear-gradient(135deg,#111111,#243)">
-      <a class="ai-directory-card__media has-hover" href="/en/store/steam/topup/" aria-label="Top-ups">
-        <img class="ai-directory-card__image ai-directory-card__image--primary" src="/assets/img/steam/steam-topup-card.webp?v=20260721-heavy-cards-webp1" alt="Steam top-ups" loading="eager" decoding="async">
-        <img class="ai-directory-card__image ai-directory-card__image--hover" src="/assets/img/steam/steam-topup-card-hover.webp?v=20260721-heavy-cards-webp1" alt="Steam top-ups" loading="eager" decoding="async">
+    <article class="ai-directory-card ai-directory-card--topup ai-directory-card--steam" style="--ai-directory-bg:linear-gradient(135deg,#111111,#243)">
+      <a class="ai-directory-card__media" href="/en/store/steam/topup/" aria-label="Top-ups">
+        <span class="ai-directory-card__brand-mark ai-directory-card__brand-mark--steam" aria-hidden="true"></span>
       </a>
       <div class="ai-directory-card__body">
         <div class="ai-directory-card__top">
@@ -128,11 +128,11 @@
     </article>
 
     <article class="ai-directory-card ai-directory-card--codex" style="--ai-directory-bg:#063b31">
-      <a class="ai-directory-card__media ai-directory-card__media--codex has-hover" href="/en/codex-credits" aria-label="Top up Codex Credits">
-        <img class="ai-directory-card__image ai-directory-card__image--primary" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="Codex Credits" loading="eager" decoding="async">
-        <img class="ai-directory-card__image ai-directory-card__image--hover" src="/assets/img/services/chatgpt-card-hover.webp?v=20260721-webp1" alt="Codex Credits" loading="eager" decoding="async">
-        <span class="ai-directory-card__codex-label ai-directory-card__codex-label--primary" aria-hidden="true">CODEX</span>
-        <span class="ai-directory-card__codex-label ai-directory-card__codex-label--hover" aria-hidden="true">CODEX</span>
+      <a class="ai-directory-card__media" href="/en/codex-credits" aria-label="Top up Codex Credits">
+        <span class="ai-directory-card__codex-lockup" aria-hidden="true">
+          <span class="ai-directory-card__brand-mark ai-directory-card__brand-mark--codex"></span>
+          <span class="ai-directory-card__codex-word">CODEX</span>
+        </span>
       </a>
       <div class="ai-directory-card__body">
         <div class="ai-directory-card__top">
@@ -149,9 +149,9 @@
       </div>
     </article>
 
-    <article class="ai-directory-card ai-directory-card--appstore" style="--ai-directory-bg:#0a84ff">
+    <article class="ai-directory-card ai-directory-card--appstore" style="--ai-directory-bg:#0a1831">
       <a class="ai-directory-card__media" href="/en/itunes.html" aria-label="Order an iTunes and App Store top-up">
-        <img class="ai-directory-card__image ai-directory-card__image--primary ai-directory-card__image--appstore" src="/assets/img/services/appstore-card-v3.webp?v=20260810-appstore-photo1" alt="iTunes & App Store" loading="lazy" decoding="async">
+        <span class="ai-directory-card__brand-mark ai-directory-card__brand-mark--appstore" aria-hidden="true"></span>
       </a>
       <div class="ai-directory-card__body">
         <div class="ai-directory-card__top">

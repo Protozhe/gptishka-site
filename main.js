@@ -3102,17 +3102,12 @@ function initActivationResumeShortcut() {
     const displayHref = getServiceCardValue(serviceCard, "href", "/store/steam/topup/");
     const displayIconText = getServiceCardValue(serviceCard, "iconText", "STEAM");
     const displayTheme = getServiceCardValue(serviceCard, "theme", "topups");
-    const displayImageUrl = getServiceCardValue(serviceCard, "imageUrl", visual.imageUrl || visual.hoverImageUrl || "");
-    const displayHoverImageUrl = getServiceCardValue(serviceCard, "hoverImageUrl", visual.hoverImageUrl || "");
-    const displayHasHoverImage = Boolean(displayImageUrl && displayHoverImageUrl && displayImageUrl !== displayHoverImageUrl);
+    const displayHasHoverImage = false;
     const displayBackground = getServiceCardBackground(serviceCard, visual || { backgroundColor: "#111111", backgroundType: "solid" });
-    const imageMarkup = displayImageUrl
-      ? '<img class="ai-directory-card__image ai-directory-card__image--primary" src="' + escapeHtml(displayImageUrl) + '" alt="' + escapeHtml(getServiceCardValue(serviceCard, "imageAlt", displayTitle)) + '" loading="lazy" decoding="async">' +
-        (displayHasHoverImage ? '<img class="ai-directory-card__image ai-directory-card__image--hover" src="' + escapeHtml(displayHoverImageUrl) + '" alt="' + escapeHtml(getServiceCardValue(serviceCard, "hoverImageAlt", displayTitle)) + '" loading="lazy" decoding="async">' : "")
-      : '<div class="ai-directory-card__image-placeholder">' + escapeHtml(displayIconText) + "</div>";
+    const imageMarkup = '<span class="ai-directory-card__brand-mark ai-directory-card__brand-mark--steam" aria-hidden="true"></span>';
     return (
       '<div class="ai-directory-grid ai-directory-grid--topups">' +
-        '<article class="ai-directory-card ai-directory-card--integrated ai-directory-card--' + escapeHtml(displayTheme) + '" style="--ai-directory-bg:' + escapeHtml(displayBackground) + '">' +
+        '<article class="ai-directory-card ai-directory-card--integrated ai-directory-card--steam ai-directory-card--' + escapeHtml(displayTheme) + '" style="--ai-directory-bg:' + escapeHtml(displayBackground) + '">' +
           '<a class="ai-directory-card__media' + (displayHasHoverImage ? " has-hover" : "") + '" href="' + escapeHtml(displayHref) + '" aria-label="' + escapeHtml(displayTitle) + '">' +
             imageMarkup +
           "</a>" +
@@ -3272,8 +3267,14 @@ function initActivationResumeShortcut() {
     const displayTheme = getServiceCardValue(serviceCard, "theme", group.service.theme);
     const primaryImageUrl = getServiceCardValue(serviceCard, "imageUrl", visual.imageUrl || visual.hoverImageUrl || fallbackImages.imageUrl || "");
     const hoverImageUrl = getServiceCardValue(serviceCard, "hoverImageUrl", visual.hoverImageUrl || fallbackImages.hoverImageUrl || "");
-    const hasHoverImage = Boolean(primaryImageUrl && hoverImageUrl && primaryImageUrl !== hoverImageUrl);
-    const imageMarkup = primaryImageUrl
+    const brandSwapKind = ["chatgpt", "claude", "grok", "perplexity", "gemini", "suno"].includes(serviceKey)
+      ? serviceKey
+      : "";
+    const usesBrandSwapMark = Boolean(brandSwapKind);
+    const hasHoverImage = !usesBrandSwapMark && Boolean(primaryImageUrl && hoverImageUrl && primaryImageUrl !== hoverImageUrl);
+    const imageMarkup = usesBrandSwapMark
+      ? '<span class="ai-directory-card__brand-mark ai-directory-card__brand-mark--' + escapeHtml(brandSwapKind) + '" aria-hidden="true"></span>'
+      : primaryImageUrl
       ? '<img class="ai-directory-card__image ai-directory-card__image--primary" src="' + escapeHtml(primaryImageUrl) + '" alt="' + escapeHtml(getServiceCardValue(serviceCard, "imageAlt", visual.imageAlt || fallbackImages.imageAlt || displayTitle)) + '" loading="lazy" decoding="async">' +
         (hasHoverImage ? '<img class="ai-directory-card__image ai-directory-card__image--hover" src="' + escapeHtml(hoverImageUrl) + '" alt="' + escapeHtml(getServiceCardValue(serviceCard, "hoverImageAlt", visual.hoverImageAlt || visual.imageAlt || fallbackImages.hoverImageAlt || displayTitle)) + '" loading="lazy" decoding="async">' : "")
       : '<div class="ai-directory-card__image-placeholder">' + escapeHtml(displayIconText) + "</div>";
