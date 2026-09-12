@@ -144,8 +144,8 @@ const DEFAULT_SERVICE_PAGE_DRAFT: Partial<ServicePage> = {
   heroLogoUrl: "",
   constructorTitle: "",
   constructorDescription: "",
-  paymentCaptionLava: "",
-  paymentCaptionEnot: "",
+  paymentCaptionLava: "СБП 0% и карты 3.2%",
+  paymentCaptionEnot: "Карты 3.2% и СБП 0%",
   isActive: true,
   isIndexed: true,
   sortOrder: 100,
@@ -613,8 +613,8 @@ function servicePageToDraft(page?: ServicePage | null): Partial<ServicePage> {
     constructorDescription: page.constructorDescription || "",
     infoSections: Array.isArray(page.infoSections) ? page.infoSections : [],
     faqItems: Array.isArray(page.faqItems) ? page.faqItems : [],
-    paymentCaptionLava: "",
-    paymentCaptionEnot: "",
+    paymentCaptionLava: page.paymentCaptionLava || "СБП 0% и карты 3.2%",
+    paymentCaptionEnot: page.paymentCaptionEnot || "Карты 3.2% и СБП 0%",
     isActive: page.isActive !== false,
     isIndexed: page.isIndexed !== false,
     sortOrder: Number(page.sortOrder || 100),
@@ -2084,6 +2084,18 @@ export default function ProductsPage() {
                   placeholder="URL логотипа/картинки hero"
                   value={servicePageDraft.heroImageUrl || ""}
                   onChange={(e) => updateServicePageDraft({ heroImageUrl: e.target.value, heroLogoUrl: e.target.value })}
+                />
+                <input
+                  className="input"
+                  placeholder="LAVA: СБП 0% и карты 3.2%"
+                  value={servicePageDraft.paymentCaptionLava || ""}
+                  onChange={(e) => updateServicePageDraft({ paymentCaptionLava: e.target.value })}
+                />
+                <input
+                  className="input"
+                  placeholder="ENOT: Карты 3.2% и СБП 0%"
+                  value={servicePageDraft.paymentCaptionEnot || ""}
+                  onChange={(e) => updateServicePageDraft({ paymentCaptionEnot: e.target.value })}
                 />
                 <textarea
                   className="input min-h-20 md:col-span-2"
