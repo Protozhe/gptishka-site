@@ -1884,8 +1884,3 @@ html body #gptishka-support-widget .support-widget__cta {
   box-shadow: 0 10px 22px rgba(80, 135, 255, 0.24) !important;
 }
 
-
-
-/* gptishka-service-glow-overflow-v1: let branded button shadows fade into the page gutter. */
-html body:has(main.service-page) main.service-page { overflow-x: visible !important; }
-html body:has(main.service-page) main.service-page .service-constructor-shell { overflow: visible !important; }
