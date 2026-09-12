@@ -80,7 +80,7 @@
     var weightedRating = rated.reduce(function (sum, source) {
       return sum + Number(source.rating) * Number(source.total || source.visibleItems || 0);
     }, 0);
-    elements.rating.textContent = totalWeight ? (weightedRating / totalWeight).toFixed(1) + " из 5" : "—";
+    elements.rating.textContent = totalWeight ? (weightedRating / totalWeight).toFixed(1) : "—";
     elements.updated.textContent = formatUpdated(data.fetchedAt);
   }
 
@@ -154,13 +154,10 @@
   function renderReview(item) {
     var card = create("article", "review-card");
     var top = create("div", "review-card__top");
-    var ratingValue = Math.max(1, Math.min(5, Math.round(Number(item.rating) || 5)));
-    var rating = create("span", "review-card__rating");
-    rating.setAttribute("aria-label", ratingValue + " из 5");
-    var stars = create("span", "review-card__stars", "★".repeat(ratingValue));
-    stars.setAttribute("aria-hidden", "true");
-    rating.append(stars, create("strong", "review-card__score", ratingValue + " из 5"));
-    top.append(create("span", "review-card__source", reviewSourceLabel(item)), rating);
+    top.append(
+      create("span", "review-card__source", reviewSourceLabel(item)),
+      create("span", "review-card__rating", "★".repeat(Math.max(1, Math.min(5, Number(item.rating) || 5))))
+    );
 
     var text = create("p", "review-card__text", item.text);
     var footer = create("div", "review-card__footer");
