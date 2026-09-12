@@ -56,12 +56,8 @@
     article.className = `news-card ${item.imageUrl ? "news-card--with-media" : "news-card--text-only"}`;
 
     if (item.imageUrl) {
-      const mediaLink = document.createElement("a");
-      mediaLink.className = "news-card__media";
-      mediaLink.href = item.url;
-      mediaLink.target = "_blank";
-      mediaLink.rel = "noopener";
-      mediaLink.setAttribute("aria-label", labels.read);
+      const media = document.createElement("div");
+      media.className = "news-card__media";
 
       const image = document.createElement("img");
       image.dataset.src = item.imageUrl;
@@ -69,22 +65,19 @@
       image.loading = "lazy";
       image.decoding = "async";
       image.fetchPriority = "low";
-      image.width = 320;
-      image.height = 180;
+      image.width = 640;
+      image.height = 480;
       image.referrerPolicy = "no-referrer";
-      mediaLink.appendChild(image);
-      if (mediaObserver) {
-        mediaObserver.observe(image);
-      } else {
-        image.src = item.imageUrl;
-      }
+      media.appendChild(image);
+      if (mediaObserver) mediaObserver.observe(image);
+      else image.src = item.imageUrl;
 
       if (item.hasVideo) {
         const badge = textNode("span", "news-card__video", labels.video);
         badge.setAttribute("aria-hidden", "true");
-        mediaLink.appendChild(badge);
+        media.appendChild(badge);
       }
-      article.appendChild(mediaLink);
+      article.appendChild(media);
     }
 
     const body = document.createElement("div");
@@ -92,25 +85,54 @@
 
     const meta = document.createElement("div");
     meta.className = "news-card__meta";
-    meta.appendChild(textNode("span", "news-card__source", labels.source));
+    meta.appendChild(textNode("span", "news-card__source", language === "en" ? "News" : "Новости"));
     const details = [safeDate(item.date), item.views ? `◉ ${item.views}` : ""].filter(Boolean);
     meta.appendChild(textNode("span", "", details.join(" · ")));
     body.appendChild(meta);
 
-    const copy = textNode("p", "news-card__text", item.text || "");
+    const rawText = String(item.text || "").trim();
+    const lines = rawText.split(/\n+/).map(line => line.trim()).filter(Boolean);
+    const firstLine = lines[0] || "";
+    const hasHeadline = firstLine.length >= 8 && firstLine.length <= 150 && lines.length > 1;
+    if (hasHeadline) body.appendChild(textNode("h2", "news-card__title", firstLine));
+
+    const readableText = hasHeadline ? lines.slice(1).join("\n\n") : rawText;
+    const copy = textNode("p", "news-card__text", readableText);
+    copy.id = `news-copy-${String(item.postId || Math.random()).replace(/[^a-z0-9_-]/gi, "-")}`;
     body.appendChild(copy);
 
-    const link = document.createElement("a");
-    link.className = "news-card__link";
-    link.href = item.url;
-    link.target = "_blank";
-    link.rel = "noopener";
-    link.appendChild(document.createTextNode(labels.read));
-    const arrow = document.createElement("span");
-    arrow.setAttribute("aria-hidden", "true");
-    arrow.textContent = "↗";
-    link.appendChild(arrow);
-    body.appendChild(link);
+    const actions = document.createElement("div");
+    actions.className = "news-card__actions";
+
+    if (readableText.length > 420) {
+      const expand = textNode("button", "news-card__expand", language === "en" ? "Read full article" : "Читать полностью");
+      expand.type = "button";
+      expand.setAttribute("aria-expanded", "false");
+      expand.setAttribute("aria-controls", copy.id);
+      expand.addEventListener("click", () => {
+        const expanded = article.classList.toggle("is-expanded");
+        expand.setAttribute("aria-expanded", String(expanded));
+        expand.textContent = expanded
+          ? (language === "en" ? "Collapse" : "Свернуть")
+          : (language === "en" ? "Read full article" : "Читать полностью");
+      });
+      actions.appendChild(expand);
+    }
+
+    if (item.url) {
+      const link = document.createElement("a");
+      link.className = "news-card__link";
+      link.href = item.url;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.appendChild(document.createTextNode(language === "en" ? "Original on Telegram" : "Оригинал в Telegram"));
+      const arrow = document.createElement("span");
+      arrow.setAttribute("aria-hidden", "true");
+      arrow.textContent = "↗";
+      link.appendChild(arrow);
+      actions.appendChild(link);
+    }
+    body.appendChild(actions);
 
     article.appendChild(body);
     return article;

@@ -3425,6 +3425,36 @@ function initActivationResumeShortcut() {
     const appStorePriceText = isEnPage ? "Choose an amount" : "Номинал на выбор";
     const appStoreButtonText = isEnPage ? "Order" : "Заказать";
     const appStoreHref = isEnPage ? "/en/itunes.html" : "/itunes";
+    const codexTitle = isEnPage ? "Codex Credits" : "Кредиты Codex";
+    const codexDescription = isEnPage
+      ? "Top up the additional Codex balance on a compatible ChatGPT account."
+      : "Пополнение дополнительного баланса Codex на совместимом аккаунте ChatGPT.";
+    const codexPlanSummary = isEnPage ? "250 / 500 / 1000 credits" : "250 / 500 / 1000 кредитов";
+    const codexPriceText = isEnPage ? "from 1,500 RUB" : "от 1 500 RUB";
+    const codexButtonText = isEnPage ? "Top up" : "Пополнить";
+    const codexHref = isEnPage ? "/en/codex-credits" : "/codex-credits";
+    const codexMarkup =
+      '<article class="ai-directory-card ai-directory-card--integrated ai-directory-card--codex" style="--ai-directory-bg:#063b31">' +
+        '<a class="ai-directory-card__media ai-directory-card__media--codex has-hover" href="' + escapeHtml(codexHref) + '" aria-label="' + escapeHtml(codexTitle) + '">' +
+          '<img class="ai-directory-card__image ai-directory-card__image--primary" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="' + escapeHtml(codexTitle) + '" loading="lazy" decoding="async">' +
+          '<img class="ai-directory-card__image ai-directory-card__image--hover" src="/assets/img/services/chatgpt-card-hover.webp?v=20260721-webp1" alt="' + escapeHtml(codexTitle) + '" loading="lazy" decoding="async">' +
+          '<span class="ai-directory-card__codex-label ai-directory-card__codex-label--primary" aria-hidden="true">CODEX</span>' +
+          '<span class="ai-directory-card__codex-label ai-directory-card__codex-label--hover" aria-hidden="true">CODEX</span>' +
+        "</a>" +
+        '<div class="ai-directory-card__body">' +
+          '<div class="ai-directory-card__top">' +
+            '<span class="ai-directory-card__icon ai-service-card__icon--codex">CODEX</span>' +
+            '<span class="ai-directory-card__count">3</span>' +
+          "</div>" +
+          '<h4 class="ai-directory-card__name">' + escapeHtml(codexTitle) + "</h4>" +
+          '<p class="ai-directory-card__desc">' + escapeHtml(codexDescription) + "</p>" +
+          '<p class="ai-directory-card__plans">' + escapeHtml(codexPlanSummary) + "</p>" +
+          '<div class="ai-directory-card__bottom">' +
+            '<span class="ai-directory-card__price">' + escapeHtml(codexPriceText) + "</span>" +
+            '<a class="ai-directory-card__button" href="' + escapeHtml(codexHref) + '"><span class="ai-directory-card__button-label">' + escapeHtml(codexButtonText) + "</span></a>" +
+          "</div>" +
+        "</div>" +
+      "</article>";
     const appStoreMarkup =
       '<article class="ai-directory-card ai-directory-card--integrated ai-directory-card--appstore" style="--ai-directory-bg:#0a84ff">' +
         '<a class="ai-directory-card__media" href="' + escapeHtml(appStoreHref) + '" aria-label="' + escapeHtml(appStoreTitle) + '">' +
@@ -3463,7 +3493,7 @@ function initActivationResumeShortcut() {
               '<a class="ai-directory-card__button" href="' + escapeHtml(displayHref) + '"><span class="ai-directory-card__button-label">' + escapeHtml(displayButtonLabel) + "</span></a>" +
             "</div>" +
           "</div>" +
-        "</article>" + appStoreMarkup +
+        "</article>" + codexMarkup + appStoreMarkup +
       "</div>"
     );
   }
