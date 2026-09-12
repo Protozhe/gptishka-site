@@ -88,12 +88,12 @@ reviewsPage = reviewsPage.replace(
 if (!reviewsPage.includes("/assets/css/reviews-readable-v1.css")) {
   reviewsPage = reviewsPage.replace(
     "</head>",
-    '  <link rel="stylesheet" href="/assets/css/reviews-readable-v1.css?v=20260912-2">\n</head>',
+    '  <link rel="stylesheet" href="/assets/css/reviews-readable-v1.css?v=20260912-3">\n</head>',
   );
 } else {
   reviewsPage = reviewsPage.replace(
     /\/assets\/css\/reviews-readable-v1\.css(?:\?[^"']*)?/g,
-    "/assets/css/reviews-readable-v1.css?v=20260912-2",
+    "/assets/css/reviews-readable-v1.css?v=20260912-3",
   );
 }
 writeAtomic(reviewsPagePath, reviewsPage);

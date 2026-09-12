@@ -54,7 +54,7 @@
 
 .review-card__text {
   margin: 24px 0;
-  color: rgba(245, 248, 252, 0.92);
+  color: rgba(245, 248, 252, 0.92) !important;
   font-size: 17px;
   line-height: 1.68;
 }
@@ -127,7 +127,7 @@
 .reviews-hero__copy > p,
 .reviews-trust p,
 .reviews-empty p {
-  color: rgba(224, 232, 244, 0.78);
+  color: rgba(224, 232, 244, 0.78) !important;
   font-size: 16px;
   line-height: 1.7;
 }

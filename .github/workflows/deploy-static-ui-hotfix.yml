@@ -54,7 +54,7 @@ jobs:
             curl -fsS "https://www.gptishka.shop/assets/js/claude-onboarding-v1.js?v=20260912-2" | grep -q "stopImmediatePropagation"
             curl -fsS "https://www.gptishka.shop/assets/css/chatgpt-onboarding-v1.css?v=20260912-3" | grep -q "true viewport overlay"
             curl -fsS "https://www.gptishka.shop/app/?verify=${{ github.run_id }}" | grep -q "reviews-hub.js?v=20260912-readable1"
-            curl -fsS "https://www.gptishka.shop/app/?verify=${{ github.run_id }}" | grep -q "reviews-readable-v1.css?v=20260912-2"
+            curl -fsS "https://www.gptishka.shop/app/?verify=${{ github.run_id }}" | grep -q "reviews-readable-v1.css?v=20260912-3"
             curl -fsS "https://www.gptishka.shop/assets/js/reviews-hub.js?v=20260912-readable1" | grep -q 'review-card__score'
-            curl -fsS "https://www.gptishka.shop/assets/css/reviews-readable-v1.css?v=20260912-2" | grep -q 'rgba(245, 248, 252, 0.92)'
+            curl -fsS "https://www.gptishka.shop/assets/css/reviews-readable-v1.css?v=20260912-3" | grep -q 'rgba(245, 248, 252, 0.92) !important'
             rm -rf -- /tmp/gptishka-static-ui-20260912
