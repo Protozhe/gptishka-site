@@ -52,18 +52,20 @@ fs.copyFileSync(onboardingJsSource, onboardingJsTarget);
 fs.copyFileSync(claudeOnboardingJsSource, claudeOnboardingJsTarget);
 
 let reviewsJs = fs.readFileSync(reviewsJsPath, "utf8");
-if (!reviewsJs.includes('if (item.sourceType === "site") return "Отзыв на сайте";')) {
-  reviewsJs = reviewsJs.replace(
-    /(function reviewNickname\(item\) \{\s*)/,
-    '$1if (item.sourceType === "site") return "Отзыв на сайте";\n    ',
-  );
-  writeAtomic(reviewsJsPath, reviewsJs);
-}
+reviewsJs = reviewsJs.replace(
+  /if \(item\.sourceType === "site"\) return "Отзыв на сайте";/,
+  'if (item.sourceType === "site" || item.sourceType === "playerok") return "Отзыв на сайте";',
+);
+reviewsJs = reviewsJs.replace(
+  /if \(item\.sourceType === "playerok"\) return "Отзыв покупателя";/,
+  'if (item.sourceType === "playerok") return "Отзыв оставлен на сайте";',
+);
+writeAtomic(reviewsJsPath, reviewsJs);
 
 let reviewsPage = fs.readFileSync(reviewsPagePath, "utf8");
 reviewsPage = reviewsPage.replace(
   /\/assets\/js\/reviews-hub\.js(?:\?[^"']*)?/g,
-  "/assets/js/reviews-hub.js?v=20260912-site-label1",
+  "/assets/js/reviews-hub.js?v=20260912-site-label2",
 );
 writeAtomic(reviewsPagePath, reviewsPage);
 
