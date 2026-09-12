@@ -22,6 +22,7 @@ expect(onboardingCss.includes('chatgpt-symbol-mask-v2.webp?v=20260909-emerald-co
 expect(!onboardingCss.includes('background: url("/assets/img/services/chatgpt-card.webp?v=20260721-webp1")'), "Codex banner still uses the retired ChatGPT card image");
 expect(onboardingCss.includes("service-info-section--chatgpt"), "legacy ChatGPT information block is not hidden");
 expect(onboardingCss.includes("service-info-section--claude"), "legacy Claude information block is not hidden");
+expect(onboardingCss.includes("+ .service-faq-section"), "ChatGPT FAQ spacing can regress after the hidden information block");
 expect(fs.existsSync("codex-credits.html"), "Russian Codex Credits page is missing");
 expect(fs.existsSync("en/codex-credits.html"), "English Codex Credits page is missing");
 expect(fs.existsSync("assets/css/codex-credits.css"), "Codex Credits base stylesheet is missing");
@@ -52,7 +53,7 @@ for (const file of htmlFiles) {
   for (const match of html.matchAll(sharedAssetPattern)) {
     const expectedVersion = match[1] === "app.min.js"
       ? new Set(["20260912-native-navigation1"])
-      : new Set(["20260912-chat-restoration2", "20260912-restored-products1", "20260912-codex-entry-visual1"]);
+      : new Set(["20260912-chat-restoration2", "20260912-restored-products1", "20260912-codex-entry-visual1", "20260913-viewport-fill1"]);
     expect(expectedVersion.has(match[2]), `${file}: stale cache version for ${match[1]}`);
   }
 }
