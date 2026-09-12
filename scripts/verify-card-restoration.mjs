@@ -33,7 +33,7 @@ const masks = [
 
 for (const page of pages) {
   const html = read(page);
-  expect(html.includes("/assets/css/codex-card.css?v=20260912-card-restoration1"), `${page}: card stylesheet is missing`);
+  expect(html.includes("/assets/css/codex-card.css?v=20260912-restored-products1"), `${page}: card stylesheet is missing`);
   expect(html.includes("/assets/js/app.min.js?v=20260912-card-restoration1"), `${page}: card script cache version is stale`);
 }
 for (const mask of masks) {
@@ -54,6 +54,7 @@ for (const brand of ["steam", "codex", "appstore"]) {
 }
 
 expect(read("catalog/index.html").includes("от 1 090 RUB"), "current ChatGPT minimum price was lost");
+expect(css.includes("html body.home-catalog-body .ai-directory-card--suno"), "Suno catalog override is missing");
 expect(!read("catalog/index.html").includes("+    <article"), "patch marker leaked into Russian catalog");
 expect(!read("en/catalog/index.html").includes("+    <article"), "patch marker leaked into English catalog");
 
