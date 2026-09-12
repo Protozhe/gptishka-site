@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { execFileSync } from "node:child_process";
+import path from "node:path";
 
 const read = (file) => fs.readFileSync(file, "utf8");
 const failures = [];
@@ -22,9 +22,17 @@ expect(onboardingCss.includes("service-info-section--claude"), "legacy Claude in
 expect(fs.existsSync("codex-credits.html"), "Russian Codex Credits page is missing");
 expect(fs.existsSync("en/codex-credits.html"), "English Codex Credits page is missing");
 
-const htmlFiles = execFileSync("git", ["ls-files", "*.html"], { encoding: "utf8" })
-  .split(/\r?\n/)
-  .filter(Boolean);
+const ignoredDirectories = new Set([".git", "node_modules", "backups", "visual-baseline"]);
+const htmlFiles = [];
+const walk = (directory) => {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    if (entry.isDirectory() && ignoredDirectories.has(entry.name)) continue;
+    const candidate = path.join(directory, entry.name);
+    if (entry.isDirectory()) walk(candidate);
+    else if (entry.isFile() && entry.name.endsWith(".html")) htmlFiles.push(candidate);
+  }
+};
+walk(".");
 const sharedAssetPattern = /(site-header-unify\.js|app\.min\.js|chatgpt-onboarding-v1\.(?:css|js))\?v=([^"'\s>]+)/g;
 for (const file of htmlFiles) {
   const html = read(file);
