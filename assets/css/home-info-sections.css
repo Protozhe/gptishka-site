@@ -1,8 +1,12 @@
 /* Homepage information flow: keep long-form help content on the shared dark canvas. */
+body.home-wide-body .home-wide-page {
+  --home-info-inset: clamp(20px, 3vw, 36px);
+}
+
 body.home-wide-body .home-wide-page > .how,
 body.home-wide-body .home-wide-page > .faq {
-  width: min(1320px, calc(100vw - clamp(24px, 7vw, 136px))) !important;
-  max-width: 1320px !important;
+  width: calc(var(--home-wide-shell) - 2 * var(--home-info-inset)) !important;
+  max-width: calc(var(--home-wide-shell) - 2 * var(--home-info-inset)) !important;
   margin-right: auto !important;
   margin-left: auto !important;
   border: 0 !important;
@@ -375,11 +379,16 @@ body.home-wide-body .home-wide-page > .home-final-cta .btn.secondary {
   }
 }
 
+@media (max-width: 820px) {
+  body.home-wide-body .home-wide-page {
+    --home-info-inset: 16px;
+  }
+}
+
 @media (max-width: 640px) {
   body.home-wide-body .home-wide-page > .how,
-  body.home-wide-body .home-wide-page > .faq,
-  body.home-wide-body .home-wide-page > .home-final-cta {
-    width: calc(100vw - 24px) !important;
+  body.home-wide-body .home-wide-page > .faq {
+    width: calc(var(--home-wide-shell) - 2 * var(--home-info-inset)) !important;
   }
 
   body.home-wide-body .home-wide-page > .how {
