@@ -51,7 +51,7 @@ for (const file of htmlFiles) {
   const html = read(file);
   for (const match of html.matchAll(sharedAssetPattern)) {
     const expectedVersion = match[1] === "app.min.js"
-      ? new Set(["20260912-native-navigation1"])
+      ? new Set(["20260912-native-navigation1", "20260914-centered-copy1"])
       : new Set(["20260912-chat-restoration2", "20260912-restored-products1", "20260912-codex-entry-visual1"]);
     expect(expectedVersion.has(match[2]), `${file}: stale cache version for ${match[1]}`);
   }

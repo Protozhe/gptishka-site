@@ -3088,8 +3088,8 @@ function initActivationResumeShortcut() {
     const buttonLabel = isEnPage ? "Top up" : "Пополнить";
     const title = isEnPage ? "Steam Top Up" : "Пополнение Steam";
     const description = isEnPage
-      ? "Steam top-ups and digital goods inside the GPTishka catalog."
-      : "Пополнение Steam ключами Манн Ко и цифровые товары в каталоге GPTishka.";
+      ? "Steam top-up with Mann Co. keys."
+      : "Пополнение Steam ключами";
     const planSummary = isEnPage ? "Steam / digital goods" : "Steam / цифровые товары";
     const visualItem = items.find(item => getVisualConfig(item).imageUrl || getVisualConfig(item).hoverImageUrl) || items[0];
     const visual = getVisualConfig(visualItem);
@@ -3258,7 +3258,24 @@ function initActivationResumeShortcut() {
     };
     const fallbackImages = fallbackImagesByService[serviceKey] || {};
     const displayTitle = getServiceCardValue(serviceCard, "title", group.service.name);
-    const displayDescription = getServiceCardValue(serviceCard, "description", group.service.description);
+    const compactDescriptions = isEnPage
+      ? {
+          chatgpt: "ChatGPT for everyday tasks.",
+          claude: "Claude for text and code.",
+          grok: "Fast SuperGrok activation.",
+          perplexity: "Search with trusted sources.",
+          gemini: "Gemini for work and study.",
+          suno: "Suno for music creation.",
+        }
+      : {
+          chatgpt: "ChatGPT для любых задач",
+          claude: "Claude для текста и кода",
+          grok: "SuperGrok — быстрая активация",
+          perplexity: "Поиск с надёжными источниками",
+          gemini: "Gemini для работы и учёбы",
+          suno: "Suno для создания музыки",
+        };
+    const displayDescription = compactDescriptions[serviceKey] || getServiceCardValue(serviceCard, "description", group.service.description);
     const displayPlanSummary = getServiceCardValue(serviceCard, "planSummary", planSummary);
     const displayPriceText = getServiceCardValue(serviceCard, "priceText", minPrice ? fromLabel + " " + formatPriceByCurrency(minPrice, currency) : "");
     const displayButtonLabel = getServiceCardValue(serviceCard, "buttonText", buttonLabel);

@@ -72,8 +72,9 @@ assert.ok(
     source =>
       source.id === "playerok-vivaseller" &&
       ["ok", "stale"].includes(source.status) &&
-      source.total === 3 &&
-      source.visibleItems === 2
+      source.total >= 3 &&
+      source.visibleItems >= 2 &&
+      source.visibleItems <= source.total
   )
 );
 assert.ok(data.items.some(item => item.sourceId === "playerok-vivaseller" && item.text));

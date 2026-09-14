@@ -321,6 +321,9 @@ html body header .header-social-icon.header-social-icon--telegram {
   }
 
   html body header.gptishka-canonical-header .logo-link.logo-link {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    order: 0 !important;
     width: auto !important;
     height: 50px !important;
     min-width: 0 !important;
@@ -336,6 +339,9 @@ html body header .header-social-icon.header-social-icon--telegram {
   }
 
   html body header.gptishka-canonical-header .header-product-pill {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    order: 0 !important;
     min-width: 0 !important;
     max-width: 220px !important;
     min-height: 38px !important;
@@ -359,12 +365,18 @@ html body header .header-social-icon.header-social-icon--telegram {
   }
 
   html body header.gptishka-canonical-header .header-quick-links {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+    order: 0 !important;
     display: flex !important;
     justify-self: end !important;
     justify-content: flex-end !important;
     gap: 2px !important;
     min-width: 0 !important;
+    width: auto !important;
     margin: 0 !important;
+    padding-top: 0 !important;
+    border-top: 0 !important;
   }
 
   html body header.gptishka-canonical-header .header-quick-link:not(.header-social-link) {
@@ -400,6 +412,8 @@ html body header .header-social-icon.header-social-icon--telegram {
   html body header.gptishka-canonical-header .header-tools,
   html body header.gptishka-canonical-header .header-actions {
     grid-column: 4 !important;
+    grid-row: 1 !important;
+    order: 0 !important;
     justify-self: end !important;
     min-width: 0 !important;
     gap: 6px !important;
@@ -454,6 +468,7 @@ html body header .header-social-icon.header-social-icon--telegram {
   html body header.gptishka-canonical-header .logo-link.logo-link {
     grid-column: 1 !important;
     grid-row: 1 !important;
+    order: 0 !important;
     justify-self: start !important;
     width: auto !important;
     min-width: 0 !important;
@@ -475,6 +490,7 @@ html body header .header-social-icon.header-social-icon--telegram {
   html body header.gptishka-canonical-header .header-actions {
     grid-column: 2 !important;
     grid-row: 1 !important;
+    order: 0 !important;
     justify-self: end !important;
     min-width: 0 !important;
     gap: 6px !important;
@@ -494,6 +510,7 @@ html body header .header-social-icon.header-social-icon--telegram {
   html body header.gptishka-canonical-header .header-product-pill {
     grid-column: 1 !important;
     grid-row: 2 !important;
+    order: 0 !important;
     justify-self: start !important;
     min-width: 0 !important;
     max-width: 190px !important;
@@ -520,14 +537,17 @@ html body header .header-social-icon.header-social-icon--telegram {
   html body header.gptishka-canonical-header .header-quick-links {
     grid-column: 2 !important;
     grid-row: 2 !important;
+    order: 0 !important;
     justify-self: end !important;
     display: flex !important;
     align-items: center !important;
     justify-content: flex-end !important;
     gap: 2px !important;
     min-width: 0 !important;
+    width: auto !important;
     margin: 0 !important;
     padding: 0 !important;
+    border-top: 0 !important;
   }
 
   html body header.gptishka-canonical-header .header-quick-link:not(.header-social-link) {
