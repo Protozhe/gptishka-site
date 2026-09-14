@@ -21,6 +21,15 @@ const adminUi = read("apps/admin-ui/src/pages/ShowcasePage.tsx");
 const storefront = read("assets/js/app.js");
 const catalog = read("catalog/index.html");
 const aiCatalog = read("catalog/ai/index.html");
+const brandCss = read("assets/css/codex-card.css");
+const detailBrandPages = {
+  claude: read("claude.html"),
+  grok: read("supergrok.html"),
+  perplexity: read("perplexity.html"),
+  gemini: read("gemini.html"),
+  suno: read("suno.html"),
+  appstore: read("itunes.html"),
+};
 
 assert(schema.includes("model ProductShowcaseServiceCard"), "Prisma must persist homepage service cards");
 assert(schemas.includes("showcaseServiceCardSchema"), "showcase service card API must validate input");
@@ -44,6 +53,12 @@ assert(adminUi.includes("type ShowcaseServiceCard"), "admin UI must type service
 assert(adminUi.includes("serviceCardsQuery"), "admin UI must load service cards");
 assert(adminUi.includes("saveServiceCard"), "admin UI must save service cards");
 assert(adminUi.includes("toggleServiceCard"), "admin UI must expose a quick service card visibility toggle");
+for (const [serviceKey, page] of Object.entries(detailBrandPages)) {
+  assert(page.includes(`/assets/css/codex-card.css?v=20260914-detail-brand1`), `${serviceKey} detail page must load shared brand visuals`);
+  assert(page.includes(`service-product-gallery--${serviceKey}`), `${serviceKey} detail page must use its homepage brand palette`);
+  assert(page.includes(`service-product-gallery__${serviceKey}-mark`), `${serviceKey} detail page must use its homepage brand mark`);
+}
+assert(brandCss.includes(".service-product-gallery__appstore-mark"), "shared brand visuals must include the App Store mark");
 
 if (process.exitCode) process.exit(process.exitCode);
 console.log("showcase service cards check passed");

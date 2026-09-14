@@ -915,6 +915,32 @@ body.home-wide-body .home-wide-page .ai-directory-card--suno:focus-within .ai-di
   background: linear-gradient(145deg, #25bfe7 0%, #168ff1 54%, #2868f5 100%);
 }
 
+.service-product-gallery--appstore .service-product-gallery__brand--appstore {
+  display: grid;
+  place-items: center;
+  width: min(100%, 440px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: clamp(28px, 3vw, 38px);
+  background: linear-gradient(145deg, #25bfe7 0%, #168ff1 54%, #2868f5 100%);
+  box-shadow: 0 24px 68px rgba(8, 76, 154, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.service-product-gallery__appstore-mark {
+  display: block;
+  width: 60%;
+  height: 60%;
+  background: #fff;
+  -webkit-mask-image: url("/assets/img/services/appstore-symbol-mask-v6.webp?v=20260909-brand-swap1");
+  mask-image: url("/assets/img/services/appstore-symbol-mask-v6.webp?v=20260909-brand-swap1");
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
 html body.home-catalog-body .ai-directory-card--appstore .ai-directory-card__media {
   background: linear-gradient(145deg, #25bfe7 0%, #168ff1 54%, #2868f5 100%) !important;
 }
