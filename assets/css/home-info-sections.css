@@ -163,6 +163,8 @@ body.home-wide-body .home-testimonial-card__avatar--amber { background: linear-g
 body.home-wide-body .home-testimonial-card__avatar--coral { background: linear-gradient(145deg, #ff7d73, #a63654); }
 body.home-wide-body .home-testimonial-card__avatar--cyan { background: linear-gradient(145deg, #43d7db, #197c96); }
 body.home-wide-body .home-testimonial-card__avatar--green { background: linear-gradient(145deg, #66de8d, #198358); }
+body.home-wide-body .home-testimonial-card__avatar--claude { background: linear-gradient(145deg, #f29b6d, #a84f32); }
+body.home-wide-body .home-testimonial-card__avatar--claude-soft { background: linear-gradient(145deg, #d99a79, #7f4938); }
 
 body.home-wide-body .home-testimonial-card__rating {
   gap: 8px;

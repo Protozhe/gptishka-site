@@ -9,13 +9,14 @@ const englishHtml = fs.readFileSync(path.join(root, "en/index.html"), "utf8");
 const css = fs.readFileSync(path.join(root, "assets/css/home-info-sections.css"), "utf8");
 const testimonialsJs = fs.readFileSync(path.join(root, "assets/js/home-testimonials.js"), "utf8");
 
-assert.ok(html.includes("/assets/css/home-info-sections.css?v=20260914-home-reviews1"));
-assert.ok(englishHtml.includes("/assets/css/home-info-sections.css?v=20260914-home-reviews1"));
+assert.ok(html.includes("/assets/css/home-info-sections.css?v=20260914-home-reviews2"));
+assert.ok(englishHtml.includes("/assets/css/home-info-sections.css?v=20260914-home-reviews2"));
 assert.ok(css.includes("width: calc(var(--home-wide-shell) - 2 * var(--home-info-inset)) !important"));
 assert.ok(css.includes("--home-info-inset: 16px"));
 assert.ok(html.includes('class="home-testimonials"'));
 assert.ok(html.includes('/assets/js/home-testimonials.js?v=20260914-home-reviews1'));
 assert.equal((html.match(/class="home-testimonial-card"/g) || []).length, 7);
+assert.equal((html.match(/<strong>Клиент Claude<\/strong>/g) || []).length, 2);
 assert.ok(testimonialsJs.includes("function goTo(index, behavior)"));
 assert.ok(testimonialsJs.includes("prefers-reduced-motion: reduce"));
 assert.ok(css.includes("grid-template-columns: repeat(4, minmax(0, 1fr))"));
