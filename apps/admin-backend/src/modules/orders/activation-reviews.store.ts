@@ -8,6 +8,9 @@ export type ActivationReviewRecord = {
   productTitle: string;
   rating: number;
   text: string;
+  moderationStatus: "pending" | "approved" | "rejected";
+  moderatedAt: string | null;
+  moderatedBy: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -31,7 +34,17 @@ let writeQueue = Promise.resolve();
 
 function normalizeData(value: unknown): ActivationReviewsData {
   const items = Array.isArray((value as any)?.items)
-    ? (value as any).items.filter((item: any) => item && item.orderId && item.publicId && item.text)
+    ? (value as any).items
+        .filter((item: any) => item && item.orderId && item.publicId && item.text)
+        .map((item: any) => ({
+          ...item,
+          // Reviews created before moderation existed were already public.
+          moderationStatus: ["pending", "approved", "rejected"].includes(String(item.moderationStatus || ""))
+            ? item.moderationStatus
+            : "approved",
+          moderatedAt: item.moderatedAt ? String(item.moderatedAt) : null,
+          moderatedBy: item.moderatedBy ? String(item.moderatedBy) : null,
+        }))
     : [];
   return { items: items.slice(0, 5000) };
 }
@@ -72,6 +85,9 @@ export const activationReviewsStore = {
         productTitle: input.productTitle,
         rating: input.rating,
         text: input.text,
+        moderationStatus: existing?.moderationStatus || "pending",
+        moderatedAt: existing?.moderatedAt || null,
+        moderatedBy: existing?.moderatedBy || null,
         createdAt: existing?.createdAt || now,
         updatedAt: now,
       };
@@ -79,7 +95,7 @@ export const activationReviewsStore = {
       else data.items.unshift(saved);
       data.items.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
       await writeData(data);
-      return saved;
+      return { ...saved, isNew: !existing };
     });
     writeQueue = savePromise.then(() => undefined, () => undefined);
     return savePromise;
@@ -87,7 +103,7 @@ export const activationReviewsStore = {
 
   async listPublic() {
     const data = await readData();
-    return data.items.map((item) => ({
+    return data.items.filter((item) => item.moderationStatus === "approved").map((item) => ({
       id: item.publicId,
       sourceId: "gptishka-activation",
       sourceType: "site",
@@ -102,5 +118,36 @@ export const activationReviewsStore = {
       url: "",
       sortOrder: Date.parse(item.createdAt) || 0,
     }));
+  },
+
+  async moderate(
+    publicId: string,
+    decision: "approved" | "rejected",
+    moderatedBy?: string | null
+  ) {
+    const savePromise = writeQueue.then(async () => {
+      const data = await readData();
+      const index = data.items.findIndex((item) => item.publicId === publicId);
+      if (index < 0) return null;
+
+      const existing = data.items[index];
+      if (existing.moderationStatus !== "pending") {
+        return { review: existing, changed: false };
+      }
+
+      const now = new Date().toISOString();
+      const review: ActivationReviewRecord = {
+        ...existing,
+        moderationStatus: decision,
+        moderatedAt: now,
+        moderatedBy: String(moderatedBy || "").trim() || null,
+        updatedAt: now,
+      };
+      data.items[index] = review;
+      await writeData(data);
+      return { review, changed: true };
+    });
+    writeQueue = savePromise.then(() => undefined, () => undefined);
+    return savePromise;
   },
 };

@@ -1622,7 +1622,7 @@
               </span>
               <div class="redeem-review-copy">
                 <h3 id="reviewRewardTitle">Ваш тариф успешно активирован</h3>
-                <p class="redeem-review-lead">Подписка активна. Оцените подключение — отзыв сразу появится на странице «Отзывы».</p>
+                <p class="redeem-review-lead">Подписка активна. Оцените подключение — после проверки отзыв появится на странице «Отзывы».</p>
               </div>
             </div>
             <form id="activationReviewForm" class="redeem-review-form">
@@ -1641,7 +1641,7 @@
                 <button id="activationReviewSubmitBtn" type="submit" class="redeem-btn redeem-btn-primary">Отправить отзыв</button>
               </div>
             </form>
-            <div id="activationReviewThanks" class="redeem-review-thanks" hidden>Спасибо! Ваш отзыв опубликован и уже доступен в разделе отзывов.</div>
+            <div id="activationReviewThanks" class="redeem-review-thanks" hidden>Спасибо! Отзыв отправлен на проверку.</div>
             <div class="redeem-review-links">
               <a id="updatesChannelBtn" class="redeem-btn redeem-btn-primary" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener noreferrer">Мы в Telegram</a>
               <a id="receiptBotBtn" class="redeem-btn" href="https://t.me/Gptishka_support_bot" target="_blank" rel="noopener noreferrer">Получить чек</a>
@@ -1665,7 +1665,7 @@
     const dedicatedSuperGrokPage = /\/supergrok-activation(?:\.html)?\/?$/i.test(window.location.pathname);
     const previewServiceKey = String(params.get('service') || (dedicatedSuperGrokPage ? 'supergrok' : '')).trim().toLowerCase().replace(/[\s_-]+/g, '');
     const previewMode = ['1', 'true', 'yes'].includes(String(params.get('preview') || '').trim().toLowerCase())
-      && ['chatgptgo', 'chatgptplus', 'claude', 'grok', 'supergrok', 'perplexity', 'pplx'].includes(previewServiceKey);
+      && ['chatgptgo', 'chatgptplus', 'chatgptpro5x', 'chatgptpro20x', 'codex250', 'codex500', 'codex1000', 'claude', 'grok', 'supergrok', 'perplexity', 'pplx'].includes(previewServiceKey);
     const orderId = previewMode
       ? `preview-${previewServiceKey}`
       : String(params.get('order_id') || params.get('orderId') || '').trim();
@@ -2252,18 +2252,30 @@
       const activationFlow = resolveSupportActivationFlow(payload);
       const forcedSupportFlow = resolveForcedSupportActivationFlow(payload);
       const productKey = getActivationProductFingerprint(payload);
+      const codexCreditsMatch = productKey.includes('codex')
+        ? productKey.match(/\b(250|500|1000)\b/)
+        : null;
       if (dedicatedSuperGrokPage) {
         if (redeemTitleEl) redeemTitleEl.textContent = 'Активировать SuperGrok';
         if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата подтверждена. Укажите ID аккаунта — остальное система выполнит автоматически.';
         document.title = 'Активация SuperGrok - GPTишка';
       }
       let chatGptPlanName = '';
-      if (productKey.includes('chatgpt-go') || productKey.includes('chatgpt go') || productKey.includes('chatgpt_go')) {
+      if (productKey.includes('chatgpt') && (productKey.includes('pro-20x') || productKey.includes('pro 20x') || productKey.includes('pro20x'))) {
+        chatGptPlanName = 'ChatGPT Pro 20x';
+      } else if (productKey.includes('chatgpt') && (productKey.includes('pro-5x') || productKey.includes('pro 5x') || productKey.includes('pro5x'))) {
+        chatGptPlanName = 'ChatGPT Pro 5x';
+      } else if (productKey.includes('chatgpt-go') || productKey.includes('chatgpt go') || productKey.includes('chatgpt_go')) {
         chatGptPlanName = 'ChatGPT GO';
       } else if (productKey.includes('chatgpt-plus') || productKey.includes('chatgpt plus') || productKey.includes('chatgpt_plus')) {
         chatGptPlanName = 'ChatGPT Plus';
       }
-      if (chatGptPlanName) {
+      if (codexCreditsMatch) {
+        const credits = codexCreditsMatch[1];
+        if (redeemTitleEl) redeemTitleEl.textContent = `Пополнение ${credits} кредитов Codex`;
+        if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата подтверждена. Выполните последний шаг пополнения.';
+        document.title = `Пополнение ${credits} кредитов Codex - GPTишка`;
+      } else if (chatGptPlanName) {
         if (redeemTitleEl) redeemTitleEl.textContent = `Продлить / Активировать ${chatGptPlanName}`;
         if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата подтверждена. Выполните последний шаг подключения подписки.';
         document.title = `Продлить / Активировать ${chatGptPlanName} - GPTишка`;
@@ -2293,7 +2305,7 @@
       if (tokenLabelEl) {
         tokenLabelEl.textContent = claudeSupportFlow
           ? 'ID аккаунта Claude для активации Claude Pro'
-          : (isSupportTokenDelivery ? 'ID аккаунта Grok для активации SUPERGROK' : 'Токен аккаунта');
+          : (isSupportTokenDelivery ? 'ID аккаунта Grok для активации SuperGrok' : 'Токен аккаунта ChatGPT');
       }
       if (tokenGuideSummaryEl) {
         tokenGuideSummaryEl.textContent = claudeSupportFlow
@@ -2326,8 +2338,8 @@
           tokenGuideListEl.innerHTML = [
             '<li>Войдите через браузер в аккаунт ChatGPT (если ещё не вошли — просто авторизуйтесь).</li>',
             '<li>Откройте ссылку <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>',
-            '<li>Скопируйте все содержимое и вставьте его в поле «Токен аккаунта».</li>',
-            '<li>Как это работает / видео инструкция — <a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">смотреть</a></li>',
+            '<li>Скопируйте всё содержимое страницы и вставьте его в поле «Токен аккаунта ChatGPT».</li>',
+            '<li><a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">Открыть видеоинструкцию</a>.</li>',
           ].join('');
         }
       }
@@ -2335,7 +2347,7 @@
       if (tokenInput) {
         tokenInput.placeholder = claudeSupportFlow
           ? 'ID аккаунта Claude (UUID)'
-          : (isSupportTokenDelivery ? 'ID аккаунта Grok (UUID)' : 'Токен аккаунта');
+          : (isSupportTokenDelivery ? 'ID аккаунта Grok (UUID)' : 'Вставьте токен аккаунта ChatGPT');
       }
       if (toggleMaskBtn) {
         toggleMaskBtn.style.display = isSupportTokenDelivery ? 'none' : '';
@@ -2358,6 +2370,29 @@
           name: 'ChatGPT Plus',
           tokenFlow: true,
         },
+        chatgptpro5x: {
+          name: 'ChatGPT Pro 5x',
+          tokenFlow: true,
+        },
+        chatgptpro20x: {
+          name: 'ChatGPT Pro 20x',
+          tokenFlow: true,
+        },
+        codex250: {
+          name: '250 кредитов Codex',
+          tokenFlow: true,
+          codexCredits: 250,
+        },
+        codex500: {
+          name: '500 кредитов Codex',
+          tokenFlow: true,
+          codexCredits: 500,
+        },
+        codex1000: {
+          name: '1000 кредитов Codex',
+          tokenFlow: true,
+          codexCredits: 1000,
+        },
         claude: {
           name: 'Claude',
           flow: SUPPORT_ACTIVATION_FLOW_CLAUDE,
@@ -2377,13 +2412,13 @@
       if (orderIdEl) orderIdEl.textContent = 'ПРЕДПРОСМОТР';
       if (redeemTitleEl) redeemTitleEl.textContent = dedicatedSuperGrokPage
         ? 'Активировать SuperGrok'
-        : `Продлить / Активировать ${config.name}`;
+        : (config.codexCredits ? `Пополнение ${config.codexCredits} кредитов Codex` : `Продлить / Активировать ${config.name}`);
       if (redeemSubtitleEl) redeemSubtitleEl.textContent = dedicatedSuperGrokPage
         ? 'Оплата подтверждена. Укажите ID аккаунта — остальное система выполнит автоматически.'
         : 'Безопасный предпросмотр страницы после успешной оплаты.';
       document.title = dedicatedSuperGrokPage
         ? 'Активация SuperGrok - GPTишка'
-        : `Продлить / Активировать ${config.name} - GPTишка`;
+        : (config.codexCredits ? `Пополнение ${config.codexCredits} кредитов Codex - GPTишка` : `Продлить / Активировать ${config.name} - GPTишка`);
 
       if (config.deliveryMode === 'manual_login') {
         setCredentialsDeliveryMode({

@@ -268,14 +268,11 @@ export async function sendCustomerSubscriptionReminderEmail(
   return true;
 }
 
-export async function sendTelegramNotification(message: string) {
-  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return;
+async function callAdminTelegramApi(method: string, payload: Record<string, unknown>) {
+  if (!env.TELEGRAM_BOT_TOKEN) return null;
 
-  const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`;
-  const body = JSON.stringify({
-    chat_id: env.TELEGRAM_CHAT_ID,
-    text: message,
-  });
+  const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/${method}`;
+  const body = JSON.stringify(payload);
   let lastError: unknown = null;
 
   for (let attempt = 1; attempt <= 3; attempt += 1) {
@@ -286,9 +283,19 @@ export async function sendTelegramNotification(message: string) {
         body,
         signal: AbortSignal.timeout(10_000),
       });
-      if (response.ok) return;
       const responseBody = await response.text();
-      lastError = new Error(`Telegram API returned ${response.status}: ${responseBody}`);
+      let responsePayload: any = null;
+      try {
+        responsePayload = JSON.parse(responseBody);
+      } catch {
+        // The Telegram API normally responds with JSON. Keep the raw body in the error below.
+      }
+      if (response.ok && responsePayload?.ok === true) {
+        return responsePayload.result ?? null;
+      }
+      lastError = new Error(
+        `Telegram API returned ${response.status}: ${responseBody || "invalid response"}`
+      );
     } catch (error) {
       lastError = error;
     }
@@ -299,6 +306,43 @@ export async function sendTelegramNotification(message: string) {
   }
 
   throw lastError instanceof Error ? lastError : new Error("Telegram notification failed after 3 attempts");
+}
+
+export async function sendTelegramNotification(
+  message: string,
+  replyMarkup?: Record<string, unknown>
+) {
+  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return null;
+  const result = await callAdminTelegramApi("sendMessage", {
+    chat_id: env.TELEGRAM_CHAT_ID,
+    text: message,
+    disable_web_page_preview: true,
+    ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
+  });
+  return Number((result as any)?.message_id) || null;
+}
+
+export async function answerTelegramCallbackQuery(callbackQueryId: string, text: string) {
+  if (!callbackQueryId) return;
+  await callAdminTelegramApi("answerCallbackQuery", {
+    callback_query_id: callbackQueryId,
+    text,
+  });
+}
+
+export async function editTelegramNotification(input: {
+  chatId: string;
+  messageId: number;
+  text: string;
+}) {
+  if (!input.chatId || !input.messageId) return;
+  await callAdminTelegramApi("editMessageText", {
+    chat_id: input.chatId,
+    message_id: input.messageId,
+    text: input.text,
+    disable_web_page_preview: true,
+    reply_markup: { inline_keyboard: [] },
+  });
 }
 
 function resolveSiteOrigin() {

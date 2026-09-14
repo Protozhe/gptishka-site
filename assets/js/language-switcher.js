@@ -1,8 +1,8 @@
 (() => {
-  const VERSION = "20260811-mobile-header1";
+  const VERSION = "20260913-header-grid1";
   const LANGUAGE_STORAGE_KEY = "gptishka-language";
   const STYLESHEET = "/assets/css/language-slider.css?v=20260811-mobile-header1";
-  const HEADER_NAV_STYLESHEET = "/assets/css/header-navigation-state.css?v=20260811-mobile-header1";
+  const HEADER_NAV_STYLESHEET = "/assets/css/header-navigation-state.css?v=20260913-header-grid1";
   const FOOTER_STYLESHEET = "/assets/css/site-footer-unified.css?v=20260724-unified-footer1";
   const ENGLISH_PRODUCT_ROUTES = new Map([
     ["/chatgpt", "/en/chatgpt.html"],

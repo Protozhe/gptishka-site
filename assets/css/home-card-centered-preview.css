@@ -1,0 +1,171 @@
+/* Local review: calmer, centered product-card copy without CTA buttons. */
+body.home-wide-body .home-wide-page #pricing > .pricing-header {
+  display: none;
+}
+
+body.home-wide-body .home-wide-page #pricingGrid .product-showcase-section__description {
+  display: none;
+}
+
+body.home-wide-body .home-wide-page #pricingGrid .product-showcase-section__lead {
+  margin-bottom: clamp(22px, 2.4vw, 34px);
+}
+
+body.home-wide-body .home-wide-page #pricingGrid .product-showcase-section__title {
+  margin: 0;
+  font-size: clamp(2rem, 3.2vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+body.home-wide-body .home-wide-page #pricingGrid .ai-directory-card--integrated .ai-directory-card__body {
+  align-items: center;
+  text-align: center;
+}
+
+body.home-wide-body .home-wide-page #pricingGrid .ai-directory-card--integrated .ai-directory-card__top,
+body.home-wide-body .home-wide-page #pricingGrid .ai-directory-card--integrated .ai-directory-card__bottom {
+  width: 100%;
+  justify-content: center;
+}
+
+body.home-wide-body .home-wide-page #pricingGrid .ai-directory-card--integrated :is(
+  .ai-directory-card__name,
+  .ai-directory-card__desc,
+  .ai-directory-card__plans,
+  .ai-directory-card__price
+) {
+  width: 100%;
+  text-align: center;
+}
+
+body.home-wide-body .home-wide-page #pricingGrid .ai-directory-card--integrated .ai-directory-card__desc {
+  max-width: 100%;
+  margin-inline: auto;
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.home-wide-body .home-wide-page #pricingGrid .ai-directory-card--integrated .ai-directory-card__bottom {
+  margin-top: auto;
+}
+
+body.home-wide-body .home-wide-page #pricingGrid .ai-directory-grid--topups .ai-directory-card__bottom {
+  margin-top: 2px;
+}
+
+body.home-wide-body .home-wide-page #pricingGrid .ai-directory-card--integrated .ai-directory-card__button {
+  display: none !important;
+}
+
+body.home-wide-body .home-wide-page .how-grid {
+  align-items: stretch;
+}
+
+body.home-wide-body .home-wide-page .how-card {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 !important;
+  border-radius: 26px !important;
+}
+
+body.home-wide-body .home-wide-page .how-card__visual {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1.32 / 1;
+  background: #07110f;
+}
+
+body.home-wide-body .home-wide-page .how-card__visual::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 38%;
+  content: "";
+  background: linear-gradient(180deg, transparent, rgba(5, 10, 9, 0.72));
+  pointer-events: none;
+}
+
+body.home-wide-body .home-wide-page .how-card__visual img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 240ms ease, filter 240ms ease;
+}
+
+body.home-wide-body .home-wide-page .how-card:hover .how-card__visual img {
+  filter: brightness(1.06) saturate(1.08);
+  transform: scale(1.025);
+}
+
+body.home-wide-body .home-wide-page .how-number {
+  position: absolute !important;
+  z-index: 2 !important;
+  top: 16px !important;
+  left: 16px !important;
+  display: grid !important;
+  place-items: center;
+  width: 38px !important;
+  height: 38px !important;
+  margin: 0 !important;
+  border: 1px solid rgba(142, 255, 215, 0.32);
+  border-radius: 12px;
+  color: #eafff7;
+  background: rgba(5, 17, 14, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 10px 24px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+body.home-wide-body .home-wide-page .how-card__content {
+  padding: 20px 22px 24px;
+}
+
+body.home-wide-body .home-wide-page .how-card__content h3 {
+  margin: 0 !important;
+  color: rgba(255, 255, 255, 0.96);
+  font-size: clamp(1.12rem, 1.55vw, 1.38rem);
+  font-weight: 850;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+}
+
+body.home-wide-body .home-wide-page .how-card__content p {
+  margin: 10px 0 0 !important;
+  color: rgba(226, 235, 255, 0.66);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+@media (max-width: 760px) {
+  body.home-wide-body .home-wide-page #pricingGrid .product-showcase-section__lead {
+    margin-bottom: 20px;
+  }
+
+  body.home-wide-body .home-wide-page #pricingGrid .product-showcase-section__title {
+    font-size: clamp(1.9rem, 9vw, 2.5rem);
+  }
+
+  body.home-wide-body .home-wide-page #pricingGrid .ai-directory-card--integrated .ai-directory-card__desc {
+    max-width: 100%;
+    font-size: 14px;
+  }
+
+  body.home-wide-body .home-wide-page .how-card {
+    border-radius: 22px !important;
+  }
+
+  body.home-wide-body .home-wide-page .how-card__visual {
+    aspect-ratio: 1.55 / 1;
+  }
+
+  body.home-wide-body .home-wide-page .how-card__content {
+    padding: 18px 19px 21px;
+  }
+}

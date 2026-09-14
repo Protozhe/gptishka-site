@@ -1923,6 +1923,30 @@
     function applyActivationPayloadMode(payload, deliveryMode) {
       const activationFlow = resolveSupportActivationFlow(payload);
       const forcedSupportFlow = resolveForcedSupportActivationFlow(payload);
+      const productKey = getActivationProductFingerprint(payload);
+      const codexCreditsMatch = productKey.includes('codex')
+        ? productKey.match(/\b(250|500|1000)\b/)
+        : null;
+      let chatGptPlanName = '';
+      if (productKey.includes('chatgpt') && (productKey.includes('pro-20x') || productKey.includes('pro 20x') || productKey.includes('pro20x'))) {
+        chatGptPlanName = 'ChatGPT Pro 20x';
+      } else if (productKey.includes('chatgpt') && (productKey.includes('pro-5x') || productKey.includes('pro 5x') || productKey.includes('pro5x'))) {
+        chatGptPlanName = 'ChatGPT Pro 5x';
+      } else if (productKey.includes('chatgpt-go') || productKey.includes('chatgpt go') || productKey.includes('chatgpt_go')) {
+        chatGptPlanName = 'ChatGPT Go';
+      } else if (productKey.includes('chatgpt-plus') || productKey.includes('chatgpt plus') || productKey.includes('chatgpt_plus')) {
+        chatGptPlanName = 'ChatGPT Plus';
+      }
+      if (codexCreditsMatch) {
+        const credits = codexCreditsMatch[1];
+        if (redeemTitleEl) redeemTitleEl.textContent = `Top up ${credits} Codex credits`;
+        if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Payment confirmed. Complete the final top-up step.';
+        document.title = `Top up ${credits} Codex credits - GPTishka`;
+      } else if (chatGptPlanName) {
+        if (redeemTitleEl) redeemTitleEl.textContent = `Renew / Activate ${chatGptPlanName}`;
+        if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Payment confirmed. Complete the final step to connect your subscription.';
+        document.title = `Renew / Activate ${chatGptPlanName} - GPTishka`;
+      }
       applyTokenFlowMode(
         deliveryMode === 'support' || Boolean(forcedSupportFlow),
         forcedSupportFlow || activationFlow
@@ -1948,7 +1972,7 @@
       if (tokenLabelEl) {
         tokenLabelEl.textContent = claudeSupportFlow
           ? 'Account activation to activate Claude Pro'
-          : (isSupportTokenDelivery ? 'Account ID Grok for activation SUPERGROK' : 'Account token');
+          : (isSupportTokenDelivery ? 'Grok account ID for SuperGrok activation' : 'ChatGPT account token');
       }
       if (tokenGuideSummaryEl) {
         tokenGuideSummaryEl.textContent = claudeSupportFlow
@@ -1981,8 +2005,8 @@
           tokenGuideListEl.innerHTML = [
             '<li>Login through your browser to your ChatGPT account (if you haven’t logged in yet, just log in).</li>',
             '<li>Open the link <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>',
-            '<li>Copy all contents and paste it into the Account Token field.</li>',
-            '<li>How it works / video instructions - <a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">watch</a></li>',
+            '<li>Copy the entire page contents and paste them into the “ChatGPT account token” field.</li>',
+            '<li><a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">Open the video guide</a>.</li>',
           ].join('');
         }
       }
@@ -1990,7 +2014,7 @@
       if (tokenInput) {
         tokenInput.placeholder = claudeSupportFlow
           ? 'Account ID Claude (UUID)'
-          : (isSupportTokenDelivery ? 'Account ID Grok (UUID)' : 'Account token');
+          : (isSupportTokenDelivery ? 'Grok account ID (UUID)' : 'Paste your ChatGPT account token');
       }
       if (toggleMaskBtn) {
         toggleMaskBtn.style.display = isSupportTokenDelivery ? 'none' : '';

@@ -23,6 +23,7 @@ import fs from "fs";
 import https from "https";
 import path from "path";
 import { activationReviewsStore } from "./activation-reviews.store";
+import { buildActivationReviewModerationCallback } from "./activation-review-moderation";
 
 const MAX_CLIENT_TOKEN_LENGTH = 500_000;
 const MAX_ACTIVATION_START_ATTEMPTS = 3;
@@ -1700,7 +1701,29 @@ export const ordersService = {
 
     const productTitle = String(firstItem?.product?.title || (firstItem?.product as any)?.name || "Подписка").trim();
     const review = await activationReviewsStore.upsert({ orderId: order.id, productTitle, rating, text });
-    return { ok: true, reviewId: review.publicId };
+    if (review.isNew) {
+      const stars = "★".repeat(review.rating) + "☆".repeat(5 - review.rating);
+      await sendTelegramNotification(
+        [
+          "⭐ Новый отзыв ожидает модерации",
+          "",
+          `${stars} · ${review.rating} из 5`,
+          `Товар: ${review.productTitle}`,
+          `Заказ: ${review.orderId}`,
+          "",
+          review.text,
+        ].join("\n"),
+        {
+          inline_keyboard: [[
+            { text: "✅ Одобрить", callback_data: buildActivationReviewModerationCallback(review.publicId, "approved") },
+            { text: "❌ Отклонить", callback_data: buildActivationReviewModerationCallback(review.publicId, "rejected") },
+          ]],
+        }
+      ).catch((error) => {
+        console.error(`[activation-review] moderation notification failed review=${review.publicId}`, error);
+      });
+    }
+    return { ok: true, reviewId: review.publicId, moderationStatus: review.moderationStatus };
   },
 
   async listPublicActivationReviews() {

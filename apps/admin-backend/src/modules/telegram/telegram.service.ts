@@ -1,6 +1,12 @@
 ﻿import { AppError } from "../../common/errors/app-error";
 import { env } from "../../config/env";
 import { accountService } from "../account/account.service";
+import { activationReviewsStore } from "../orders/activation-reviews.store";
+import { parseActivationReviewModerationCallback } from "../orders/activation-review-moderation";
+import {
+  answerTelegramCallbackQuery,
+  editTelegramNotification,
+} from "../notifications/notifications.service";
 import { telegramSender } from "./telegram.sender";
 
 function extractTextMessage(update: any) {
@@ -45,6 +51,59 @@ function buildStartHintText() {
 
 export const telegramService = {
   async handleWebhookUpdate(update: any) {
+    const callbackQuery = update?.callback_query;
+    if (callbackQuery && typeof callbackQuery === "object") {
+      const callbackId = String(callbackQuery.id || "").trim();
+      const callbackData = String(callbackQuery.data || "").trim();
+      const moderation = parseActivationReviewModerationCallback(callbackData);
+      if (!moderation) return { handled: false, reason: "unsupported_callback" };
+
+      const callbackChatId = String(callbackQuery.message?.chat?.id || "").trim();
+      const adminChatId = String(env.TELEGRAM_CHAT_ID || "").trim();
+      if (!adminChatId || callbackChatId !== adminChatId) {
+        await answerTelegramCallbackQuery(callbackId, "Эта кнопка доступна только администратору").catch(() => undefined);
+        return { handled: true, action: "activation_review_moderation_denied" };
+      }
+
+      const { decision, publicId } = moderation;
+      const moderator = String(
+        callbackQuery.from?.username || callbackQuery.from?.id || callbackChatId
+      ).trim();
+      const result = await activationReviewsStore.moderate(publicId, decision, moderator);
+      if (!result) {
+        await answerTelegramCallbackQuery(callbackId, "Отзыв не найден").catch(() => undefined);
+        return { handled: true, action: "activation_review_not_found", reviewId: publicId };
+      }
+
+      const approved = result.review.moderationStatus === "approved";
+      const statusText = approved ? "✅ ОДОБРЕН И ОПУБЛИКОВАН" : "❌ ОТКЛОНЁН";
+      const originalText = String(callbackQuery.message?.text || "⭐ Отзыв").trim();
+      const cleanText = originalText.replace(/\n\n(?:✅ ОДОБРЕН И ОПУБЛИКОВАН|❌ ОТКЛОНЁН).*$/s, "");
+      const messageId = Number(callbackQuery.message?.message_id || 0);
+      await Promise.all([
+        answerTelegramCallbackQuery(
+          callbackId,
+          result.changed
+            ? (approved ? "Отзыв опубликован" : "Отзыв отклонён")
+            : "Отзыв уже обработан"
+        ).catch(() => undefined),
+        editTelegramNotification({
+          chatId: callbackChatId,
+          messageId,
+          text: `${cleanText}\n\n${statusText}`,
+        }).catch((error) => {
+          console.error(`[activation-review] failed to update moderation message review=${publicId}`, error);
+        }),
+      ]);
+
+      return {
+        handled: true,
+        action: approved ? "activation_review_approved" : "activation_review_rejected",
+        reviewId: publicId,
+        changed: result.changed,
+      };
+    }
+
     const message = extractTextMessage(update);
     if (!message) return { handled: false, reason: "no_text_message" };
 
