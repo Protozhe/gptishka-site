@@ -23,6 +23,7 @@ const checks = [
   "scripts/verify-showcase-service-cards.mjs",
   "scripts/verify-chat-restoration.mjs",
   "scripts/verify-native-page-navigation.mjs",
+  "scripts/verify-round-favicon.mjs",
 ];
 
 for (const check of checks) {
