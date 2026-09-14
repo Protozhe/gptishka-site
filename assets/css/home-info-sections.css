@@ -14,9 +14,13 @@ body.home-wide-body .home-wide-page > .faq {
 }
 
 body.home-wide-body .home-wide-page > .how {
-  margin-top: clamp(72px, 8vw, 124px) !important;
-  margin-bottom: clamp(82px, 9vw, 138px) !important;
+  margin-top: clamp(44px, 5vw, 72px) !important;
+  margin-bottom: clamp(44px, 5vw, 72px) !important;
   padding: 0 !important;
+}
+
+body.home-wide-body .home-wide-page > .pricing {
+  margin-bottom: clamp(36px, 4vw, 56px) !important;
 }
 
 body.home-wide-body .home-wide-page .how-header {
@@ -114,7 +118,7 @@ body.home-wide-body .home-wide-page > .faq {
   position: relative !important;
   isolation: isolate !important;
   overflow: visible !important;
-  margin-bottom: clamp(72px, 8vw, 124px) !important;
+  margin-bottom: clamp(36px, 4vw, 56px) !important;
   padding: 0 !important;
 }
 
@@ -379,8 +383,12 @@ body.home-wide-body .home-wide-page > .home-final-cta .btn.secondary {
   }
 
   body.home-wide-body .home-wide-page > .how {
-    margin-top: 64px !important;
-    margin-bottom: 82px !important;
+    margin-top: 40px !important;
+    margin-bottom: 44px !important;
+  }
+
+  body.home-wide-body .home-wide-page > .faq {
+    margin-bottom: 32px !important;
   }
 
   body.home-wide-body .home-wide-page .how-title,

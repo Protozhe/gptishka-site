@@ -18,7 +18,7 @@ assert(html.includes('class="page home-wide-page"'), "main must opt into homepag
 assert(html.includes("/assets/css/home-wide-marketplace.css?v="), "homepage wide CSS must be linked with cache bust");
 assert(html.includes('class="hero home-hero-wide"'), "hero must use wide homepage class");
 assert(html.includes('class="home-hero-wide__panel"'), "hero must include right-side service panel");
-assert(html.includes('class="home-final-cta"'), "homepage must include final CTA section");
+assert(!html.includes('class="home-final-cta"'), "homepage must not repeat the final subscription CTA");
 assert(!html.includes("средства замораживаются"), "homepage copy must not use alarming frozen-funds wording");
 assert(html.includes("ChatGPT Plus, Claude PRO и Grok в России за 2–5 минут"), "homepage hero must use the broad marketplace offer");
 assert(html.includes("Оформляйте подписки на AI-сервисы и VPN: выбирайте тариф, оплачивайте удобным способом, а GPTishka помогает довести подключение до результата."), "homepage hero must use the approved marketplace subtitle");
