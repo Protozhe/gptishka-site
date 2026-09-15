@@ -23,8 +23,6 @@
     var ogUrl = document.querySelector('meta[property="og:url"]');
     if (ogUrl) ogUrl.content = "https://gptishka.shop/en/itunes.html";
 
-    document.querySelectorAll(".site-ticker__item").forEach(function (item) { item.textContent = "Activation feed is updating…"; });
-    setText(".site-ticker__stat-label", "total activations:");
     var logo = document.querySelector(".logo-img");
     if (logo) logo.alt = "GPTishka";
     var quickLinks = document.querySelectorAll(".header-quick-link");

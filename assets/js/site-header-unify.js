@@ -172,24 +172,10 @@
     });
   }
 
-  function removeLegacyTicker() {
-    document.querySelectorAll("#siteTicker, .site-ticker").forEach((el) => {
-      el.remove();
-    });
-  }
-
-  function observeLegacyTicker() {
-    removeLegacyTicker();
-    const observer = new MutationObserver(() => removeLegacyTicker());
-    observer.observe(document.documentElement, { childList: true, subtree: true });
-    window.setTimeout(() => observer.disconnect(), 15000);
-  }
-
   function unifyHeader() {
     if (/^\/admin(?:\/|$)/.test(window.location.pathname || "")) return;
     ensureHeaderCss();
     ensureLanguageAlternates();
-    removeLegacyTicker();
     const oldHeader = document.querySelector("body > header") || document.querySelector("header");
     const nextHeader = buildHeader();
     if (oldHeader) {
@@ -198,7 +184,6 @@
       document.body.insertBefore(nextHeader, document.body.firstChild);
     }
     bindLanguageMenu(nextHeader);
-    observeLegacyTicker();
     document.body.classList.add("gptishka-unified-header-ready");
   }
 

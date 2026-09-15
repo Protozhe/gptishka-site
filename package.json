@@ -2,7 +2,7 @@
   "name": "gptishka-site",
   "version": "1.0.0",
   "private": true,
-  "description": "GPTishka site with live sales and online ticker",
+  "description": "GPTishka digital services storefront",
   "main": "server.js",
   "workspaces": [
     "apps/*"
