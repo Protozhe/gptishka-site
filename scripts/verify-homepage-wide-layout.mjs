@@ -11,7 +11,7 @@ function assert(condition, message) {
   }
 }
 
-assert(html.includes('id="siteTicker"'), "activation ticker must remain in index.html");
+assert(!html.includes('id="siteTicker"'), "retired activation ticker must not return to index.html");
 assert(html.includes('id="pricing"'), "pricing anchor #pricing must remain");
 assert(html.includes('id="pricingGrid"'), "pricing grid #pricingGrid must remain");
 assert(html.includes('class="page home-wide-page"'), "main must opt into homepage wide layout");

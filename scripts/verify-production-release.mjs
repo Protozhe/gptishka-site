@@ -24,6 +24,7 @@ const checks = [
   "scripts/verify-chat-restoration.mjs",
   "scripts/verify-native-page-navigation.mjs",
   "scripts/verify-round-favicon.mjs",
+  "scripts/verify-storefront-ticker-removed.mjs",
 ];
 
 for (const check of checks) {
