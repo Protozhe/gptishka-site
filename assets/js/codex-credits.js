@@ -9,7 +9,6 @@
     pay: "Pay",
     invalidEmail: "Enter a valid email address.",
     invalidTelegram: "Enter your Telegram username in the @username format.",
-    incompatible: "Confirm that additional Codex credits are available for your account.",
     loading: "Creating a secure payment…",
     slow: "The payment provider is taking longer than usual. Trying an available route…",
     unavailable: "This package is temporarily unavailable. Please contact support.",
@@ -23,7 +22,6 @@
     pay: "Оплатить",
     invalidEmail: "Укажите корректный email.",
     invalidTelegram: "Укажите Telegram в формате @username.",
-    incompatible: "Подтвердите, что аккаунту доступна покупка дополнительных кредитов.",
     loading: "Создаём безопасную оплату…",
     slow: "Платёжная система отвечает дольше обычного. Подключаем доступный маршрут…",
     unavailable: "Этот номинал пока недоступен. Напишите в поддержку.",
@@ -85,8 +83,6 @@
       option.dataset.price = String(product.price);
       option.dataset.slug = product.slug;
       option.dataset.productId = product.id;
-      const priceLabel = option.closest(".codex-option")?.querySelector("b");
-      if (priceLabel) priceLabel.textContent = formatRub(product.price);
     });
     syncSelection();
   }
@@ -139,7 +135,6 @@
     event.preventDefault();
     const emailInput = form.elements.email;
     const telegramInput = form.elements.telegram;
-    const compatibleInput = form.elements.compatible;
     const email = String(emailInput.value || "").trim().toLowerCase();
     const telegram = normalizeTelegram(telegramInput.value);
     const option = selectedOption();
@@ -152,9 +147,6 @@
     }
     if (!/^@[a-z0-9_]{5,32}$/i.test(telegram)) {
       setStatus(text.invalidTelegram, "error"); telegramInput.focus(); return;
-    }
-    if (!compatibleInput.checked) {
-      setStatus(text.incompatible, "error"); compatibleInput.focus(); return;
     }
 
     submitEl.disabled = true;
@@ -172,7 +164,7 @@
         product: { id: productId, slug, title: `${text.productTitle} — ${creditLabel}`, price, currency: "RUB" },
         selection: { product: "Codex", plan: creditLabel, duration: creditLabel, quantity: 1, paymentMethod, activationVariant: "withoutLogin", deliveryMethod: "link", deliveryKey: "link", serverDeliveryType: "activation" },
         contact: { email, telegram },
-        account: { status: "compatible_confirmed", note: "Customer confirmed that Codex credit top-ups are available. No login or password requested." }
+        account: { status: "eligibility_review_pending", note: "GPTishka verifies account eligibility after payment. No login or password requested." }
       };
       try {
         localStorage.setItem("checkout_email", email);
