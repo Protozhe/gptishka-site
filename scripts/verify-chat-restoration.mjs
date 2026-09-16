@@ -29,7 +29,7 @@ expect(fs.existsSync("assets/css/codex-credits.css"), "Codex Credits base styles
 const codexRu = read("codex-credits.html");
 const codexEn = read("en/codex-credits.html");
 for (const [label, html] of [["Russian", codexRu], ["English", codexEn]]) {
-  expect(html.includes("/assets/css/codex-credits.css?v=20260912-product-background1"), `${label} Codex Credits page does not load the Steam-style layout`);
+  expect(html.includes("/assets/css/codex-credits.css?v=20260916-centered-options2"), `${label} Codex Credits page does not load the Steam-style layout`);
   expect(html.includes("codex-product-card__media"), `${label} Codex Credits page is missing the product visual card`);
   expect(html.includes("codex-supporting"), `${label} Codex Credits page is missing compact supporting details`);
   expect(!html.includes("codex-credits-calm-v1.css"), `${label} Codex Credits page still loads the regressed calm override`);
