@@ -1,5 +1,5 @@
 (() => {
-  const SCRIPT_VERSION = "20260913-header-grid1";
+  const SCRIPT_VERSION = "20260916-codex-price1";
   const HEADER_CSS = "/assets/css/gptishka-header-refresh.css?v=20260724-language-slider1";
   const HEADER_NAV_CSS = "/assets/css/header-navigation-state.css?v=20260913-header-grid1";
   const LOGO_SRC = "/assets/img/logo-new-dark.png?v=20260622-header4";
@@ -108,6 +108,29 @@
     upsert("x-default", langHref("ru"));
   }
 
+  function refreshCodexPillPrice(header) {
+    const pillLink = header && header.querySelector(".header-product-pill");
+    const pill = pillLink && pillLink.querySelector("span");
+    if (!pillLink || !pill) return;
+    const en = isEnglishPage();
+    fetch(`/api/public/products?lang=${en ? "en" : "ru"}`, { credentials: "same-origin", cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((payload) => {
+        const products = Array.isArray(payload && payload.items) ? payload.items :
+          Array.isArray(payload && payload.products) ? payload.products : [];
+        const prices = products
+          .filter((item) => /codex/i.test([item && item.slug, item && item.product, item && item.baseSlug, item && item.title, ...(Array.isArray(item && item.tags) ? item.tags : [])].join(" ")))
+          .map((item) => Number(item && item.price))
+          .filter((price) => Number.isFinite(price) && price > 0);
+        if (!prices.length) return;
+        const price = Math.min(...prices);
+        const formatted = price.toLocaleString(en ? "en-US" : "ru-RU", { maximumFractionDigits: 0 });
+        pill.textContent = en ? `Codex Credits from ${formatted} RUB` : `Кредиты Codex от ${formatted} ₽`;
+        pillLink.setAttribute("aria-label", en ? `Top up Codex Credits from ${formatted} RUB` : `Пополнить кредиты Codex от ${formatted} рублей`);
+      })
+      .catch(() => {});
+  }
+
   function buildHeader() {
     const en = isEnglishPage();
     const activeSection = activeHeaderSection();
@@ -122,9 +145,9 @@
           <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="${LOGO_SRC}" alt="GPTISHKA" class="logo-img">
         </a>
 
-        <a href="${en ? "/en/codex-credits" : "/codex-credits"}" class="header-product-pill" aria-label="${en ? "Top up Codex Credits from 1,500 RUB" : "Пополнить кредиты Codex от 1 500 рублей"}">
+        <a href="${en ? "/en/codex-credits" : "/codex-credits"}" class="header-product-pill" aria-label="${en ? "Top up Codex Credits from 1,850 RUB" : "Пополнить кредиты Codex от 1 850 рублей"}">
           <img class="header-product-pill__logo" src="${CODEX_LOGO_SRC}" alt="" loading="lazy" decoding="async">
-          <span>${en ? "Codex Credits from 1,500 RUB" : "Кредиты Codex от 1 500 ₽"}</span>
+          <span>${en ? "Codex Credits from 1,850 RUB" : "Кредиты Codex от 1 850 ₽"}</span>
         </a>
 
         <nav class="header-quick-links" aria-label="${en ? "GPTishka quick links" : "Быстрые разделы GPTishka"}">
@@ -184,6 +207,7 @@
       document.body.insertBefore(nextHeader, document.body.firstChild);
     }
     bindLanguageMenu(nextHeader);
+    refreshCodexPillPrice(nextHeader);
     document.body.classList.add("gptishka-unified-header-ready");
   }
 

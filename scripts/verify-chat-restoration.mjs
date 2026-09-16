@@ -12,7 +12,7 @@ const header = read("assets/js/site-header-unify.js");
 const onboarding = read("assets/js/chatgpt-onboarding-v1.js");
 const onboardingCss = read("assets/css/chatgpt-onboarding-v1.css");
 
-expect(header.includes("Кредиты Codex от 1 500 ₽"), "shared header does not sell Codex Credits");
+expect(header.includes("Кредиты Codex от 1 850 ₽"), "shared header does not sell Codex Credits");
 expect(app.includes("ai-directory-card--codex"), "Codex Credits is missing from top-ups");
 expect(app.includes('const title = isEnPage ? "Steam Top Up" : "Пополнение Steam";'), "Steam title regressed");
 expect(app.includes("const displayTitle = title;"), "stored showcase data can overwrite the final Steam title");
@@ -52,8 +52,8 @@ for (const file of htmlFiles) {
   const html = read(file);
   for (const match of html.matchAll(sharedAssetPattern)) {
     const expectedVersion = match[1] === "app.min.js"
-      ? new Set(["20260912-native-navigation1", "20260914-centered-copy1", "20260915-no-ticker1"])
-      : new Set(["20260912-chat-restoration2", "20260912-restored-products1", "20260912-codex-entry-visual1", "20260913-viewport-fill1"]);
+      ? new Set(["20260912-native-navigation1", "20260914-centered-copy1", "20260915-no-ticker1", "20260916-codex-header-price1"])
+      : new Set(["20260912-chat-restoration2", "20260912-restored-products1", "20260912-codex-entry-visual1", "20260913-viewport-fill1", "20260916-codex-header-price1"]);
     expect(expectedVersion.has(match[2]), `${file}: stale cache version for ${match[1]}`);
   }
 }
