@@ -286,6 +286,38 @@ html body.codex-credits-body.home-gradient-page::before {
   .codex-payment label > span { min-height:64px; }
 }
 
+/* Wider reading column for desktop: text and controls remain the focus rather
+   than leaving unused space on both sides of the checkout. */
+@media (min-width:901px) {
+  .codex-page { width:min(1440px,calc(100vw - 56px)); }
+  .codex-checkout-layout { grid-template-columns:minmax(390px,.88fr) minmax(680px,1.26fr); gap:30px; }
+  .codex-product-card { min-height:640px; }
+  .codex-product-card__media { height:370px; }
+  .codex-product-card__copy { padding:34px; }
+  .codex-product-card__copy h1 { font-size:clamp(42px,3.45vw,54px); }
+  .codex-product-card__copy > p { font-size:18px; line-height:1.65; }
+  .codex-product-card__facts span { min-height:40px; padding:0 15px; font-size:14px; }
+  .codex-order { gap:25px; padding:clamp(36px,3.8vw,52px); }
+  .codex-order__head > div > span { font-size:14px; }
+  .codex-order__head h2 { max-width:600px; font-size:clamp(43px,3.8vw,56px); }
+  .codex-order__head > strong { font-size:25px; }
+  .codex-options { gap:16px; }
+  .codex-option { min-height:170px; padding:22px 18px; }
+  .codex-option > span strong { font-size:clamp(42px,3.9vw,54px); }
+  .codex-option > span small { font-size:16px; }
+  .codex-option > em { font-size:11px; }
+  .codex-field > span { font-size:18px; }
+  .codex-field > small { font-size:15px; }
+  .codex-field input { min-height:66px; font-size:17px; }
+  .codex-payment legend { font-size:17px; }
+  .codex-payment label > span { min-height:82px; font-size:18px; }
+  .codex-payment strong { font-size:18px; }
+  .codex-order__legal { font-size:13px; }
+  .codex-submit { min-height:68px; font-size:19px; }
+  .codex-supporting summary { min-height:70px; font-size:17px; }
+  .codex-supporting p { font-size:15px; }
+}
+
 .codex-submit {
   min-height:58px;
   border-radius:20px;
