@@ -210,9 +210,7 @@ html body.codex-credits-body.home-gradient-page::before {
   font-size:clamp(31px,3.2vw,43px);
 }
 
-.codex-order__head > strong {
-  border-radius:18px;
-}
+.codex-order__head > strong { padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
 
 .codex-option {
   min-height:126px;
@@ -223,10 +221,10 @@ html body.codex-credits-body.home-gradient-page::before {
   border-radius:18px;
 }
 
-.codex-payment label > span {
-  min-height:70px;
-  border-radius:20px;
-}
+.codex-payment { grid-template-columns:repeat(2,minmax(160px,220px)); justify-content:center; }
+.codex-payment legend { width:100%; text-align:center; }
+.codex-payment label > span { display:flex; align-items:center; justify-content:center; gap:10px; min-height:70px; border-radius:20px; }
+.codex-payment img { grid-row:auto; }
 
 .codex-submit {
   min-height:58px;
