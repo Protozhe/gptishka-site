@@ -69,6 +69,28 @@
     return raw ? `@${raw.replace(/^@+/, "")}` : "";
   }
 
+  function getCreditAmount(item) {
+    const tags = Array.isArray(item && item.tags) ? item.tags : [];
+    const tag = tags.find((value) => /^credits:(250|500|1000)$/i.test(String(value || "")));
+    const source = tag || (item && (item.baseSlug || item.slug || item.product || item.title)) || "";
+    const match = String(source).match(/(?:credits:|codex[-\s]?)(250|500|1000)/i);
+    return match ? match[1] : "";
+  }
+
+  function updateAvailablePackages(products) {
+    options.forEach((option) => {
+      const product = products.byCredits.get(String(option.value));
+      if (!product || !Number.isFinite(product.price) || product.price <= 0 || !product.id || !product.slug) return;
+
+      option.dataset.price = String(product.price);
+      option.dataset.slug = product.slug;
+      option.dataset.productId = product.id;
+      const priceLabel = option.closest(".codex-option")?.querySelector("b");
+      if (priceLabel) priceLabel.textContent = formatRub(product.price);
+    });
+    syncSelection();
+  }
+
   function loadProductMap() {
     if (!productMapPromise) {
       productMapPromise = fetch(`/api/public/products?lang=${english ? "en" : "ru"}`, { credentials: "same-origin", cache: "no-store" })
@@ -79,7 +101,19 @@
         .then((payload) => {
           const products = Array.isArray(payload.items) ? payload.items : Array.isArray(payload.products) ? payload.products :
             Array.isArray(payload.sections) ? payload.sections.flatMap((section) => Array.isArray(section.products) ? section.products : []) : [];
-          return new Map(products.map((item) => [String(item && (item.slug || item.product || item.baseSlug) || "").toLowerCase(), String(item && item.id || "")]));
+          const bySlug = new Map();
+          const byCredits = new Map();
+          products.forEach((item) => {
+            const slug = String(item && (item.slug || item.product || item.baseSlug) || "").toLowerCase();
+            const id = String(item && item.id || "");
+            const price = Number(item && item.price);
+            if (slug && id) bySlug.set(slug, id);
+            const credits = getCreditAmount(item);
+            if (credits && slug && id) byCredits.set(credits, { id, slug, price });
+          });
+          const result = { bySlug, byCredits };
+          updateAvailablePackages(result);
+          return result;
         })
         .catch((error) => {
           productMapPromise = null;
@@ -89,8 +123,11 @@
     return productMapPromise;
   }
 
-  async function resolveProductId(slug) {
-    const productId = (await loadProductMap()).get(slug.toLowerCase());
+  async function resolveProductId(option) {
+    if (option.dataset.productId) return option.dataset.productId;
+    const products = await loadProductMap();
+    const productId = products.bySlug.get(String(option.dataset.slug || "").toLowerCase()) ||
+      products.byCredits.get(String(option.value || ""))?.id;
     if (!productId) throw new Error(text.unavailable);
     return productId;
   }
@@ -107,8 +144,7 @@
     const telegram = normalizeTelegram(telegramInput.value);
     const option = selectedOption();
     const credits = Number(option.dataset.slug && option.value || 0);
-    const price = Number(option.dataset.price || 0);
-    const slug = String(option.dataset.slug || "");
+      const slug = String(option.dataset.slug || "");
     const paymentMethod = String(form.elements.paymentMethod.value || "lava").toLowerCase();
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -127,7 +163,8 @@
     const slowStatusTimer = window.setTimeout(() => setStatus(text.slow, "loading"), 3500);
 
     try {
-      const productId = await resolveProductId(slug);
+      const productId = await resolveProductId(option);
+      const price = Number(option.dataset.price || 0);
       const creditLabel = `${credits} ${text.credits}`;
       const orderDetails = {
         source: "codex_credits_page",
