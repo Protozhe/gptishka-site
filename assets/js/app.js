@@ -6911,9 +6911,9 @@ function initActivationResumeShortcut() {
     const pill = pillLink && pillLink.querySelector("span");
     if (pillLink) {
       pillLink.href = en ? "/en/codex-credits" : "/codex-credits";
-      pillLink.setAttribute("aria-label", en ? "Top up Codex Credits from 1,500 RUB" : "Пополнить кредиты Codex от 1 500 рублей");
+      pillLink.setAttribute("aria-label", en ? "Top up Codex Credits from 1,850 RUB" : "Пополнить кредиты Codex от 1 850 рублей");
     }
-    if (pill) pill.textContent = en ? "Codex Credits from 1,500 RUB" : "Кредиты Codex от 1 500 ₽";
+    if (pill) pill.textContent = en ? "Codex Credits from 1,850 RUB" : "Кредиты Codex от 1 850 ₽";
 
     const links = Array.from(document.querySelectorAll(".header-quick-link"));
     const labels = en ? ["News", "Reviews", "VK", "Telegram"] : ["Новости", "Отзывы", "VK", "Telegram"];
@@ -6934,10 +6934,34 @@ function initActivationResumeShortcut() {
     if (logo) logo.alt = "GPTISHKA";
   }
 
+  function refreshCodexPillPrice() {
+    const en = isEnglishPage();
+    const pillLink = document.querySelector(".header-product-pill");
+    const pill = pillLink && pillLink.querySelector("span");
+    if (!pillLink || !pill) return;
+    fetch(`/api/public/products?lang=${en ? "en" : "ru"}`, { credentials: "same-origin", cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((payload) => {
+        const products = Array.isArray(payload && payload.items) ? payload.items :
+          Array.isArray(payload && payload.products) ? payload.products : [];
+        const prices = products
+          .filter((item) => /codex/i.test([item && item.slug, item && item.product, item && item.baseSlug, item && item.title, ...(Array.isArray(item && item.tags) ? item.tags : [])].join(" ")))
+          .map((item) => Number(item && item.price))
+          .filter((price) => Number.isFinite(price) && price > 0);
+        if (!prices.length) return;
+        const price = Math.min(...prices);
+        const formatted = price.toLocaleString(en ? "en-US" : "ru-RU", { maximumFractionDigits: 0 });
+        pill.textContent = en ? `Codex Credits from ${formatted} RUB` : `Кредиты Codex от ${formatted} ₽`;
+        pillLink.setAttribute("aria-label", en ? `Top up Codex Credits from ${formatted} RUB` : `Пополнить кредиты Codex от ${formatted} рублей`);
+      })
+      .catch(() => {});
+  }
+
   function initComplianceLayer() {
     if (!isPublicPage()) return;
     ensureStyles();
     repairHeaderText();
+    refreshCodexPillPrice();
     updatePublicMeta();
     insertComplianceNote();
   }
