@@ -243,7 +243,8 @@ html body.codex-credits-body.home-gradient-page::before {
 .codex-order__head > strong { font-size:22px; font-weight:900; }
 .codex-options { gap:14px; }
 .codex-option { display:grid; place-items:center; min-height:150px; padding:19px 16px; text-align:center; }
-.codex-option > span { justify-items:center; gap:6px; }
+.codex-option > span { width:100%; justify-items:center; align-self:center; gap:6px; text-align:center; }
+.codex-option > span > strong,.codex-option > span > small { width:100%; text-align:center; }
 .codex-option > span strong { font-size:clamp(36px,3.7vw,48px); }
 .codex-option > span small { margin:0; font-size:14px; font-weight:800; }
 .codex-option > em { left:50%; right:auto; top:11px; padding:5px 9px; font-size:10px; transform:translateX(-50%); }
@@ -277,7 +278,7 @@ html body.codex-credits-body.home-gradient-page::before {
   .codex-order__head h2 { font-size:36px; }
   .codex-options { gap:11px; }
   .codex-option { display:grid; min-height:118px; padding:18px 15px 14px; }
-  .codex-option > span { display:grid; justify-items:center; gap:5px; }
+  .codex-option > span { display:grid; width:100%; justify-items:center; gap:5px; text-align:center; }
   .codex-option > span strong { font-size:39px; }
   .codex-option > span small { font-size:14px; }
   .codex-option > em { top:8px; }
