@@ -642,32 +642,37 @@ main.service-page[data-service-page="chatgpt"] .service-faq-section .service-sec
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+main.service-page[data-service-page="chatgpt"] .service-faq-list {
+  overflow: hidden;
+  margin-top: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 18px;
+  background: rgba(3, 7, 12, 0.22);
+}
+
+main.service-page[data-service-page="chatgpt"] .service-faq-item {
+  margin: 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: transparent !important;
+}
+
+main.service-page[data-service-page="chatgpt"] .service-faq-item:last-child {
+  border-bottom: 0 !important;
+}
+
 main.service-page[data-service-page="chatgpt"] .service-faq-question {
   display: grid;
-  grid-template-columns: max-content minmax(0, 1fr) 24px;
+  grid-template-columns: minmax(0, 1fr) 24px;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   min-height: 82px;
-  padding: 16px 0 !important;
+  padding: 19px 22px !important;
   text-align: left;
 }
 
 main.service-page[data-service-page="chatgpt"] .service-faq-question__topic {
-  display: inline-flex !important;
-  width: auto !important;
-  min-height: 28px;
-  height: auto !important;
-  padding: 0 10px;
-  align-items: center;
-  border: 1px solid rgba(76, 235, 159, 0.24) !important;
-  border-radius: 999px;
-  color: #8af2bf;
-  background: rgba(53, 242, 143, 0.09);
-  font-size: 11px !important;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  transform: none !important;
+  display: none !important;
 }
 
 main.service-page[data-service-page="chatgpt"] .service-faq-question__text {
@@ -715,7 +720,7 @@ main.service-page[data-service-page="chatgpt"] .service-faq-item.active .service
 }
 
 main.service-page[data-service-page="chatgpt"] .service-faq-answer {
-  padding: 0 46px 22px !important;
+  padding: 0 58px 22px 22px !important;
 }
 
 main.service-page[data-service-page="chatgpt"] .service-faq-answer p {
@@ -741,13 +746,9 @@ main.service-page[data-service-page="chatgpt"] .service-faq-answer p {
 
   main.service-page[data-service-page="chatgpt"] .service-faq-question {
     grid-template-columns: 1fr 22px;
-    gap: 8px 10px;
+    gap: 10px;
     min-height: 0;
-  }
-
-  main.service-page[data-service-page="chatgpt"] .service-faq-question__topic {
-    grid-column: 1 / -1;
-    justify-self: start;
+    padding: 18px 16px !important;
   }
 
   main.service-page[data-service-page="chatgpt"] .service-faq-question__text {
@@ -755,7 +756,7 @@ main.service-page[data-service-page="chatgpt"] .service-faq-answer p {
   }
 
   main.service-page[data-service-page="chatgpt"] .service-faq-answer {
-    padding: 0 0 20px !important;
+    padding: 0 16px 20px !important;
   }
 }
 
