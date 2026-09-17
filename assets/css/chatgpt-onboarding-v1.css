@@ -567,6 +567,189 @@ html body:has(main.service-page) > .chatgpt-onboarding-modal {
   mask-size: contain;
 }
 
+/* ChatGPT: the purchase guide is intentionally prominent and readable. */
+body.chatgpt-onboarding-ready .chatgpt-onboarding-brief {
+  gap: 24px;
+  margin-bottom: 18px;
+  padding: 18px 0;
+}
+
+body.chatgpt-onboarding-ready .chatgpt-onboarding-brief__copy {
+  gap: 14px;
+}
+
+body.chatgpt-onboarding-ready .chatgpt-onboarding-brief__mark {
+  width: 38px;
+  height: 38px;
+  flex-basis: 38px;
+  font-size: 16px;
+}
+
+body.chatgpt-onboarding-ready .chatgpt-onboarding-brief__text {
+  gap: 4px;
+}
+
+body.chatgpt-onboarding-ready .chatgpt-onboarding-brief__text strong {
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+body.chatgpt-onboarding-ready .chatgpt-onboarding-brief__text small {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+body.chatgpt-onboarding-ready .chatgpt-onboarding-brief__details {
+  min-height: 42px;
+  padding-inline: 16px;
+  font-size: 13px;
+}
+
+body.chatgpt-onboarding-ready .chatgpt-onboarding-modal__eyebrow {
+  font-size: 13px;
+}
+
+body.chatgpt-onboarding-ready .chatgpt-onboarding-modal__dialog h2 {
+  font-size: clamp(26px, 3vw, 34px);
+}
+
+body.chatgpt-onboarding-ready .chatgpt-onboarding-modal__lead,
+body.chatgpt-onboarding-ready .chatgpt-onboarding-step__copy small,
+body.chatgpt-onboarding-ready .chatgpt-onboarding-fit__summary small,
+body.chatgpt-onboarding-ready .chatgpt-onboarding-fit__list small,
+body.chatgpt-onboarding-ready .chatgpt-onboarding-modal__note small {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+body.chatgpt-onboarding-ready .chatgpt-onboarding-step__copy strong,
+body.chatgpt-onboarding-ready .chatgpt-onboarding-fit__summary strong,
+body.chatgpt-onboarding-ready .chatgpt-onboarding-fit__list strong,
+body.chatgpt-onboarding-ready .chatgpt-onboarding-modal__note strong {
+  font-size: 16px;
+}
+
+/* The FAQ gets clear topics and roomy click targets for fast scanning. */
+main.service-page[data-service-page="chatgpt"] .service-faq-section {
+  padding: clamp(30px, 4vw, 48px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 28px;
+  background: radial-gradient(circle at 9% 0%, rgba(53, 242, 143, 0.1), transparent 35%), rgba(12, 16, 23, 0.55);
+}
+
+main.service-page[data-service-page="chatgpt"] .service-faq-section .service-section-title {
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+main.service-page[data-service-page="chatgpt"] .service-faq-question {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 12px;
+  min-height: 82px;
+  padding: 16px 0 !important;
+  text-align: left;
+}
+
+main.service-page[data-service-page="chatgpt"] .service-faq-question__topic {
+  display: inline-flex !important;
+  min-height: 28px;
+  padding: 0 10px;
+  align-items: center;
+  border: 1px solid rgba(76, 235, 159, 0.24);
+  border-radius: 999px;
+  color: #8af2bf;
+  background: rgba(53, 242, 143, 0.09);
+  font-size: 11px !important;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+main.service-page[data-service-page="chatgpt"] .service-faq-question__text {
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+main.service-page[data-service-page="chatgpt"] .service-faq-question__toggle {
+  position: relative;
+  display: block !important;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+}
+
+main.service-page[data-service-page="chatgpt"] .service-faq-question__toggle::before,
+main.service-page[data-service-page="chatgpt"] .service-faq-question__toggle::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 9px;
+  height: 1.5px;
+  content: "";
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.8);
+  transform: translate(-50%, -50%);
+  transition: transform 180ms ease;
+}
+
+main.service-page[data-service-page="chatgpt"] .service-faq-question__toggle::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+main.service-page[data-service-page="chatgpt"] .service-faq-item.active .service-faq-question__toggle::after {
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+main.service-page[data-service-page="chatgpt"] .service-faq-answer {
+  padding: 0 46px 22px !important;
+}
+
+main.service-page[data-service-page="chatgpt"] .service-faq-answer p {
+  font-size: 14px;
+  line-height: 1.58;
+}
+
+@media (max-width: 760px) {
+  body.chatgpt-onboarding-ready .chatgpt-onboarding-brief {
+    gap: 14px;
+    padding-block: 17px;
+  }
+
+  body.chatgpt-onboarding-ready .chatgpt-onboarding-brief__details {
+    min-height: 40px;
+    margin-left: 52px;
+  }
+
+  main.service-page[data-service-page="chatgpt"] .service-faq-section {
+    padding: 24px 18px;
+    border-radius: 23px;
+  }
+
+  main.service-page[data-service-page="chatgpt"] .service-faq-question {
+    grid-template-columns: 1fr 22px;
+    gap: 8px 10px;
+    min-height: 0;
+  }
+
+  main.service-page[data-service-page="chatgpt"] .service-faq-question__topic {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  main.service-page[data-service-page="chatgpt"] .service-faq-question__text {
+    font-size: 15px;
+  }
+
+  main.service-page[data-service-page="chatgpt"] .service-faq-answer {
+    padding: 0 0 20px !important;
+  }
+}
+
 .codex-entry__visual i {
   font-size: 8px;
   font-style: normal;
