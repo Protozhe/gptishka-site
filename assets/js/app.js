@@ -832,6 +832,7 @@ function initActivationResumeShortcut() {
   const serviceMinPriceEl = document.getElementById("serviceMinPrice");
   const servicePlansCountEl = document.getElementById("servicePlansCount");
   const serviceConstructorPriceEl = document.getElementById("serviceConstructorPrice");
+  const serviceConstructorTitleEl = document.getElementById("serviceConstructorTitle");
   let servicePageItems = [];
   let dynamicServicePagePayload = null;
   const requestedServicePlan = (() => {
@@ -2974,6 +2975,10 @@ function initActivationResumeShortcut() {
       return;
     }
     section.hidden = false;
+    const isChatGptFaq = getServicePageKey() === "chatgpt";
+    const faqTopics = isEnPage
+      ? ["Security", "Payment", "Timing", "Guarantees"]
+      : ["Безопасность", "Оплата", "Сроки", "Гарантии"];
     section.innerHTML =
       '<div class="service-section-title"><h2>' +
       escapeHtml(isEnPage ? "FAQ" : "Часто задаваемые вопросы") +
@@ -2985,12 +2990,14 @@ function initActivationResumeShortcut() {
         .map(
           (item, index) => {
             const answers = Array.isArray(item?.answer) ? item.answer.filter(Boolean) : [item?.answer].filter(Boolean);
+            const topic = isChatGptFaq ? faqTopics[index] || (isEnPage ? "Details" : "Подробнее") : "";
             return (
             '<article class="service-faq-item' +
             (index === 0 ? " active" : "") +
             '"><button class="service-faq-question" type="button">' +
-            escapeHtml(String(item?.question || "")) +
-            '<span></span></button><div class="service-faq-answer">' +
+            (topic ? '<span class="service-faq-question__topic">' + escapeHtml(topic) + '</span>' : "") +
+            '<span class="service-faq-question__text">' + escapeHtml(String(item?.question || "")) + '</span>' +
+            '<span class="service-faq-question__toggle"></span></button><div class="service-faq-answer">' +
             answers.map(value => "<p>" + escapeHtml(String(value)) + "</p>").join("") +
             "</div></article>"
             );
@@ -5190,6 +5197,10 @@ function initActivationResumeShortcut() {
 
     if (serviceConstructorPriceEl) {
       serviceConstructorPriceEl.textContent = selectedPrice ? formatPriceByCurrency(selectedPrice, selectedCurrency) : "—";
+    }
+    if (serviceConstructorTitleEl && serviceKey === "chatgpt") {
+      const selectedPlan = servicePageState.plan === "all" ? "" : getServicePlanLabel(serviceKey, servicePageState.plan);
+      serviceConstructorTitleEl.textContent = selectedPlan ? "ChatGPT — " + selectedPlan : "ChatGPT";
     }
 
     servicePlansGridEl.innerHTML = selectedItem
