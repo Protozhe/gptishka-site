@@ -2901,7 +2901,7 @@ function initActivationResumeShortcut() {
     if (description) description.textContent = page.heroDescription || "";
     if (constructorBrand) {
       constructorBrand.textContent = key === "chatgpt" && !isEnPage
-        ? "ChatGPT Plus в России — покупайте у нас!"
+        ? "ChatGPT"
         : page.constructorTitle || page.title || "GPTishka";
     }
     if (constructorBrandLabel) constructorBrandLabel.textContent = page.heroEyebrow || (isEnPage ? "Plans" : "Тарифные планы");
