@@ -986,7 +986,7 @@ html body:has(main.service-page) .service-filter-group__label {
   color: rgba(226, 235, 255, 0.66) !important;
 }
 
-html body:has(main.service-page) .service-constructor-brand h2,
+html body:has(main.service-page) .service-constructor-brand :is(h1, h2),
 html body:has(main.service-page) .service-constructor-price strong,
 html body:has(main.service-page) .service-checkout-card__summary strong,
 html body:has(main.service-page) .service-filter-stack--constructor .service-filter-group__label {
