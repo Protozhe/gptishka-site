@@ -264,7 +264,6 @@ function parsePlayerokRenderedProfile(html, source) {
   const items = testimonials.edges.flatMap(edge => {
     const node = resolveApolloReference(state, edge?.node);
     const text = plainText(node?.text);
-    if (!text) return [];
     const creator = resolveApolloReference(state, node?.creator);
     const deal = resolveApolloReference(state, node?.deal);
     const product = resolveApolloReference(state, deal?.item);
@@ -363,10 +362,55 @@ async function collectSource(source, previous) {
 function deduplicate(items) {
   const seen = new Set();
   return items.filter(item => {
-    const key = plainText(item?.text).toLowerCase();
-    if (!key || seen.has(key)) return false;
+    const textKey = plainText(item?.text).toLowerCase();
+    const key = textKey || `empty:${String(item?.sourceId || "")}:${String(item?.id || "")}`;
+    if (seen.has(key)) return false;
     seen.add(key);
     return true;
+  });
+}
+
+function genericDateOffsetDays(dateLabel) {
+  const label = plainText(dateLabel).toLowerCase();
+  const months = label.match(/(\d+)\s+месяц/);
+  if (months) return Math.max(0, Number.parseInt(months[1], 10) || 0) * 30;
+  if (label.includes("месяц назад")) return 30;
+  return 0;
+}
+
+function isRelativeReviewDate(item) {
+  return !Number.isFinite(Date.parse(String(item?.date || ""))) && Boolean(plainText(item?.dateLabel));
+}
+
+function assignStableDisplayDates(items, previousItems, now = new Date()) {
+  const previousDates = new Map(
+    (Array.isArray(previousItems) ? previousItems : [])
+      .filter(item => item?.id && Number.isFinite(Date.parse(String(item?.displayDate || ""))))
+      .map(item => [String(item.id), String(item.displayDate)])
+  );
+  const unresolvedByOffset = new Map();
+
+  items.forEach(item => {
+    if (!isRelativeReviewDate(item) || previousDates.has(String(item.id))) return;
+    const offset = genericDateOffsetDays(item.dateLabel);
+    if (!unresolvedByOffset.has(offset)) unresolvedByOffset.set(offset, []);
+    unresolvedByOffset.get(offset).push(item);
+  });
+
+  const assigned = new Map(previousDates);
+  unresolvedByOffset.forEach((group, offset) => {
+    const spanDays = Math.max(0, Math.min(120, (group.length - 1) * 3));
+    group.forEach((item, index) => {
+      const date = new Date(now);
+      date.setUTCHours(12, 0, 0, 0);
+      date.setUTCDate(date.getUTCDate() - offset - Math.min(spanDays, index * 3));
+      assigned.set(String(item.id), date.toISOString());
+    });
+  });
+
+  return items.map(item => {
+    const displayDate = assigned.get(String(item.id));
+    return displayDate ? { ...item, displayDate } : item;
   });
 }
 
@@ -382,10 +426,11 @@ async function main() {
   }
 
   const sources = results.map(result => result.source);
-  const items = deduplicate(results.flatMap(result => result.items))
+  const rawItems = deduplicate(results.flatMap(result => result.items))
     .filter(item => !isExcludedReview(item))
     .sort((a, b) => Number(b.sortOrder || 0) - Number(a.sortOrder || 0))
     .slice(0, 60);
+  const items = assignStableDisplayDates(rawItems, previous.items, new Date());
   const payload = {
     version: 1,
     fetchedAt: new Date().toISOString(),
