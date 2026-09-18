@@ -383,9 +383,14 @@ function isRelativeReviewDate(item) {
 }
 
 function assignStableDisplayDates(items, previousItems, now = new Date()) {
+  const displayDateVersion = 1;
   const previousDates = new Map(
     (Array.isArray(previousItems) ? previousItems : [])
-      .filter(item => item?.id && Number.isFinite(Date.parse(String(item?.displayDate || ""))))
+      .filter(item =>
+        item?.id &&
+        Number(item?.displayDateVersion) === displayDateVersion &&
+        Number.isFinite(Date.parse(String(item?.displayDate || "")))
+      )
       .map(item => [String(item.id), String(item.displayDate)])
   );
   const unresolvedByOffset = new Map();
@@ -399,18 +404,19 @@ function assignStableDisplayDates(items, previousItems, now = new Date()) {
 
   const assigned = new Map(previousDates);
   unresolvedByOffset.forEach((group, offset) => {
-    const spanDays = Math.max(0, Math.min(120, (group.length - 1) * 3));
+    const spanDays = Math.max(0, Math.min(105, (group.length - 1) * 3));
     group.forEach((item, index) => {
       const date = new Date(now);
       date.setUTCHours(12, 0, 0, 0);
-      date.setUTCDate(date.getUTCDate() - offset - Math.min(spanDays, index * 3));
+      const progress = group.length > 1 ? index / (group.length - 1) : 0;
+      date.setUTCDate(date.getUTCDate() - offset - Math.round(spanDays * progress));
       assigned.set(String(item.id), date.toISOString());
     });
   });
 
   return items.map(item => {
     const displayDate = assigned.get(String(item.id));
-    return displayDate ? { ...item, displayDate } : item;
+    return displayDate ? { ...item, displayDate, displayDateVersion } : item;
   });
 }
 
