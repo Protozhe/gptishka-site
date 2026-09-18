@@ -29,7 +29,7 @@ assert.match(client, /function rankReviews/);
 assert.match(client, /item\.sourceType === "site" \|\| item\.sourceType === "playerok"/);
 assert.match(client, /if \(isSitePresentedReview\(item\)\) return "Отзыв на сайте"/);
 assert.doesNotMatch(client, /return "Отзыв оставлен на сайте"/);
-assert.match(html, /reviews-hub\.js\?v=20260912-stable-reviews1/);
+assert.match(html, /reviews-hub\.js\?v=20260918-source-dates1/);
 assert.match(refresh, /sourceLabel: "Отзыв покупателя",[\s\S]{0,100}sourceHidden: true/);
 assert.match(refresh, /rating: Number\(node\?\.rating\) \|\| 5,[\s\S]{0,100}url: ""/);
 assert.match(server, /fetchedAt: payload\.fetchedAt/);
