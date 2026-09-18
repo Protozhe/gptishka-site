@@ -1623,8 +1623,8 @@
                 <button class="redeem-review-star" type="button" data-rating="4" role="radio" aria-checked="false" aria-label="4 звезды">&#9733;</button>
                 <button class="redeem-review-star" type="button" data-rating="5" role="radio" aria-checked="false" aria-label="5 звёзд">&#9733;</button>
               </div>
-              <label class="redeem-review-form__label" for="activationReviewText">Расскажите, как всё прошло</label>
-              <textarea id="activationReviewText" class="redeem-review-text" minlength="3" maxlength="1000" required placeholder="Например: подписка подключилась быстро, всё работает"></textarea>
+              <label class="redeem-review-form__label" for="activationReviewText">Комментарий <span>необязательно</span></label>
+              <textarea id="activationReviewText" class="redeem-review-text" maxlength="1000" placeholder="Например: подписка подключилась быстро, всё работает"></textarea>
               <div class="redeem-review-form__footer">
                 <p id="activationReviewStatus" class="redeem-review-form__status">Отзыв публикуется без email и данных аккаунта.</p>
                 <button id="activationReviewSubmitBtn" type="submit" class="redeem-btn redeem-btn-primary">Отправить отзыв</button>
@@ -2061,11 +2061,6 @@
       if (!activationReviewRating) {
         setActivationReviewStatus('Поставьте оценку от 1 до 5 звёзд.', 'error');
         activationReviewStars?.querySelector('[data-rating="5"]')?.focus();
-        return;
-      }
-      if (text.length < 3) {
-        setActivationReviewStatus('Напишите несколько слов о подключении.', 'error');
-        activationReviewText?.focus();
         return;
       }
 
@@ -3171,7 +3166,7 @@
         const button = event.target.closest('[data-rating]');
         if (!button) return;
         setActivationReviewRating(button.getAttribute('data-rating'));
-        setActivationReviewStatus('Добавьте пару слов о подключении.', '');
+        setActivationReviewStatus('Комментарий можно добавить, но он необязателен.', '');
       });
     }
 

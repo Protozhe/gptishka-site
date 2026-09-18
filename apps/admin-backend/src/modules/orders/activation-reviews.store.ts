@@ -35,7 +35,7 @@ let writeQueue = Promise.resolve();
 function normalizeData(value: unknown): ActivationReviewsData {
   const items = Array.isArray((value as any)?.items)
     ? (value as any).items
-        .filter((item: any) => item && item.orderId && item.publicId && item.text)
+        .filter((item: any) => item && item.orderId && item.publicId && typeof item.text === "string")
         .map((item: any) => ({
           ...item,
           // Reviews created before moderation existed were already public.
@@ -110,7 +110,7 @@ export const activationReviewsStore = {
       sourceLabel: "Отзыв оставлен на сайте",
       sourceHidden: true,
       author: "Покупатель GPTishka",
-      text: item.text,
+      text: item.text || "Оценка без комментария",
       detail: item.productTitle || "Автоматическая активация",
       date: item.createdAt,
       dateLabel: "",
