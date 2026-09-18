@@ -57,7 +57,8 @@ assert.match(server, /refresh-public-reviews\.js/);
 assert.match(refresh, /cached\.items\.map/);
 assert.match(refresh, /function assignStableDisplayDates/);
 assert.match(refresh, /empty:\$\{String\(item\?\.sourceId/);
-assert.match(refresh, /return displayDate \? \{ \.\.\.item, displayDate \} : item/);
+assert.match(refresh, /displayDateVersion/);
+assert.match(refresh, /Math\.round\(spanDays \* progress\)/);
 assert.doesNotMatch(refresh, /sourceLabel: "Проверенный отзыв"/);
 assert.match(server, /app\.get\(\["\/app", "\/app\/"\], sendDirectoryIndex\("app"\)\)/);
 
