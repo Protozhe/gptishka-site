@@ -86,8 +86,7 @@
     const meta = document.createElement("div");
     meta.className = "news-card__meta";
     meta.appendChild(textNode("span", "news-card__source", language === "en" ? "News" : "Новости"));
-    const details = [safeDate(item.date), item.views ? `◉ ${item.views}` : ""].filter(Boolean);
-    meta.appendChild(textNode("span", "", details.join(" · ")));
+    meta.appendChild(textNode("span", "", safeDate(item.date)));
     body.appendChild(meta);
 
     const rawText = String(item.text || "").trim();
