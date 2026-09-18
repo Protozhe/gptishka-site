@@ -1695,8 +1695,8 @@ export const ordersService = {
       throw new AppError("Rating must be from 1 to 5", 400);
     }
     const text = String(input.text || "").replace(/\r/g, "").replace(/\n{3,}/g, "\n\n").trim();
-    if (text.length < 3 || text.length > 1000) {
-      throw new AppError("Review text must contain from 3 to 1000 characters", 400);
+    if (text.length > 1000) {
+      throw new AppError("Review text must not exceed 1000 characters", 400);
     }
 
     const productTitle = String(firstItem?.product?.title || (firstItem?.product as any)?.name || "Подписка").trim();
@@ -1711,7 +1711,7 @@ export const ordersService = {
           `Товар: ${review.productTitle}`,
           `Заказ: ${review.orderId}`,
           "",
-          review.text,
+          review.text || "Без комментария",
         ].join("\n"),
         {
           inline_keyboard: [[

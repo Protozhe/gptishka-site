@@ -43,36 +43,6 @@
     return new Intl.DateTimeFormat("ru-RU", options).format(date);
   }
 
-  function isGenericMonthLabel(value) {
-    return String(value || "").trim().toLowerCase() === "в этом месяце";
-  }
-
-  function stableReviewNumber(value) {
-    return Array.from(String(value || "")).reduce(function (hash, character) {
-      return (hash * 31 + character.charCodeAt(0)) >>> 0;
-    }, 0);
-  }
-
-  function prepareReviewDates(items, fetchedAt) {
-    var datedTimes = items.map(function (item) {
-      return Date.parse(item.date || "");
-    }).filter(Number.isFinite);
-    var fallbackTime = Date.parse(fetchedAt || "");
-    var anchor = new Date(datedTimes.length ? Math.max.apply(Math, datedTimes) : (Number.isFinite(fallbackTime) ? fallbackTime : Date.now()));
-    anchor.setUTCHours(18, 0, 0, 0);
-    var genericIndex = 0;
-
-    return items.map(function (item) {
-      if (Number.isFinite(Date.parse(item.date || "")) || !isGenericMonthLabel(item.dateLabel)) return item;
-      var assigned = new Date(anchor);
-      assigned.setUTCDate(anchor.getUTCDate() - Math.floor(genericIndex / 4));
-      var seed = stableReviewNumber(item.id || item.text);
-      assigned.setUTCHours(9 + (seed % 11), seed % 60, 0, 0);
-      genericIndex += 1;
-      return Object.assign({}, item, { displayDate: assigned.toISOString() });
-    });
-  }
-
   function sourceStatus(source) {
     if (source.status === "ok") return "Источник доступен";
     if (source.status === "stale") return "Показана сохранённая копия";
@@ -186,7 +156,7 @@
   function reviewDateLabel(item) {
     var effectiveDate = item.displayDate || item.date;
     if (Number.isFinite(Date.parse(effectiveDate || ""))) return formatReviewDate(effectiveDate);
-    return isGenericMonthLabel(item.dateLabel) ? "недавно" : (item.dateLabel || "недавно");
+    return item.dateLabel || "Дата не указана площадкой";
   }
 
   function renderReview(item) {
@@ -200,7 +170,7 @@
     rating.append(stars, create("strong", "review-card__score", ratingValue + " из 5"));
     top.append(create("span", "review-card__source", reviewSourceLabel(item)), rating);
 
-    var text = create("p", "review-card__text", item.text);
+    var text = create("p", "review-card__text", item.text || "Оценка без комментария");
     var footer = create("div", "review-card__footer");
     var meta = create("span", "review-card__meta");
     meta.append(create("strong", "review-card__nickname", reviewNickname(item)));
@@ -307,7 +277,6 @@
       if (!data || !Array.isArray(data.sources) || !Array.isArray(data.items)) {
         throw new Error("Invalid reviews payload");
       }
-      data.items = prepareReviewDates(data.items, data.fetchedAt);
       state.data = data;
       renderStats(data);
       renderSources(data);
