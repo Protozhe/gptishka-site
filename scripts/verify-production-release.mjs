@@ -25,6 +25,7 @@ const checks = [
   "scripts/verify-native-page-navigation.mjs",
   "scripts/verify-round-favicon.mjs",
   "scripts/verify-storefront-ticker-removed.mjs",
+  "scripts/verify-software-rendering-safe.mjs",
 ];
 
 for (const check of checks) {
