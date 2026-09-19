@@ -1899,13 +1899,8 @@ html body:is(#gptishka-render-safety, *) {
 
 html body:is(#gptishka-render-safety, *)::before,
 html body:is(#gptishka-render-safety, *)::after {
-  position: absolute !important;
-  inset: 0 !important;
-  filter: none !important;
-  -webkit-filter: none !important;
-  mix-blend-mode: normal !important;
-  animation: none !important;
-  transform: none !important;
+  content: none !important;
+  display: none !important;
 }
 
 html body :is(#gptishka-render-safety, *) {
