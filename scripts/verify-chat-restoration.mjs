@@ -25,6 +25,10 @@ expect(onboardingCss.includes("service-info-section--claude"), "legacy Claude in
 expect(onboardingCss.includes("+ .service-faq-section"), "ChatGPT FAQ spacing can regress after the hidden information block");
 expect(app.includes('const selectedTitle = getServiceConstructorPlanTitle(selectedItem, serviceKey, selectedPlan);'), "ChatGPT constructor title does not use the selected product");
 expect(app.includes('serviceConstructorTitleEl.textContent = selectedTitle || "ChatGPT";'), "ChatGPT constructor title falls back incorrectly");
+expect(app.includes("function isChatGptPro20RenewalItem(item)"), "Pro 20x renewal confirmation is missing");
+expect(app.includes('data-pro20-renewal-confirm-continue'), "Pro 20x renewal confirmation cannot be accepted");
+expect(app.includes('form.dataset.pro20RenewalConfirmed !== "1"'), "Pro 20x payment is not gated by confirmation");
+expect(onboardingCss.includes(".pro20-renewal-confirm"), "Pro 20x renewal confirmation styling is missing");
 expect(fs.existsSync("codex-credits.html"), "Russian Codex Credits page is missing");
 expect(fs.existsSync("en/codex-credits.html"), "English Codex Credits page is missing");
 expect(fs.existsSync("assets/css/codex-credits.css"), "Codex Credits base stylesheet is missing");
@@ -54,8 +58,8 @@ for (const file of htmlFiles) {
   const html = read(file);
   for (const match of html.matchAll(sharedAssetPattern)) {
     const expectedVersion = match[1] === "app.min.js"
-      ? new Set(["20260912-native-navigation1", "20260914-centered-copy1", "20260915-no-ticker1", "20260916-codex-header-price1", "20260917-chatgpt-seo1", "20260917-chatgpt-seo2", "20260917-chatgpt-guide2", "20260919-admin-plan-titles1"])
-      : new Set(["20260912-chat-restoration2", "20260912-restored-products1", "20260912-codex-entry-visual1", "20260913-viewport-fill1", "20260916-codex-header-price1", "20260917-readable-guide1", "20260917-faq-topic-fix1", "20260917-faq-dividers1"]);
+      ? new Set(["20260912-native-navigation1", "20260914-centered-copy1", "20260915-no-ticker1", "20260916-codex-header-price1", "20260917-chatgpt-seo1", "20260917-chatgpt-seo2", "20260917-chatgpt-guide2", "20260919-admin-plan-titles1", "20260919-pro20-renewal-confirm1"])
+      : new Set(["20260912-chat-restoration2", "20260912-restored-products1", "20260912-codex-entry-visual1", "20260913-viewport-fill1", "20260916-codex-header-price1", "20260917-readable-guide1", "20260917-faq-topic-fix1", "20260917-faq-dividers1", "20260919-pro20-renewal-confirm1"]);
     expect(expectedVersion.has(match[2]), `${file}: stale cache version for ${match[1]}`);
   }
 }
