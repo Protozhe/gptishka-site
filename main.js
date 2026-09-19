@@ -3660,11 +3660,9 @@ function initActivationResumeShortcut() {
   }
 
   function getServiceConstructorPlanTitle(item, serviceKey, planLabel) {
-    const key = normalizeAiServiceKey(serviceKey);
-    if (key === "claude") return String(item?.title || planLabel || "").trim();
-    if (key === "grok") return String(planLabel || item?.title || "").trim();
-    if (key === "vpn") return String(item?.title || planLabel || "").trim();
-    return String(planLabel || "").trim();
+    // Product titles are managed in the admin panel. Keep filter chips compact,
+    // but show the selected product's actual title in the order constructor.
+    return String(item?.title || planLabel || "").trim();
   }
 
   function filterServicePageItems(items, serviceKey) {
