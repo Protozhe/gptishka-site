@@ -6,19 +6,27 @@ body.home-wide-body .home-wide-page {
 /* 20260919: identical high-quality composition with and without GPU acceleration.
    Static gradients replace full-screen blur layers; glass surfaces retain their
    borders, fills and shadows without live backdrop sampling. */
-html body:is(#gptishka-render-safety, *) {
+html body.home-wide-body:is(#gptishka-render-safety, *) {
+  background:
+    linear-gradient(180deg, transparent 0, transparent 52vh, rgba(2, 4, 8, 0.25) 100vh, rgba(2, 4, 8, 0.25) 100%),
+    radial-gradient(ellipse 50vw 66vh at 50vw 0, rgba(57, 51, 69, 0.44) 0%, rgba(39, 36, 53, 0.2) 48%, transparent 82%),
+    radial-gradient(ellipse 78vw 82vh at -8vw 40vh, rgba(78, 42, 73, 0.62) 0%, rgba(55, 31, 53, 0.4) 48%, transparent 76%),
+    radial-gradient(ellipse 76vw 82vh at 108vw 36vh, rgba(8, 65, 76, 0.57) 0%, rgba(7, 43, 53, 0.36) 48%, transparent 76%),
+    linear-gradient(180deg, #181820 0%, #11131b 54%, #0b0e13 100%) !important;
   background-attachment: scroll !important;
+  background-size: 100% 100% !important;
 }
 
-html body:is(#gptishka-render-safety, *)::before,
-html body:is(#gptishka-render-safety, *)::after {
-  position: absolute !important;
-  inset: 0 !important;
-  filter: none !important;
-  -webkit-filter: none !important;
-  mix-blend-mode: normal !important;
-  animation: none !important;
-  transform: none !important;
+/* The former blurred ambient layers become a grey/orange veil when a browser
+   renders filters in software. The body gradient above carries the same colour
+   direction without a full-page compositing layer. */
+html body.home-wide-body:is(#gptishka-render-safety, *)::before,
+html body.home-wide-body:is(#gptishka-render-safety, *)::after,
+html body.home-wide-body main.page::before,
+html body.home-wide-body main.page::after,
+html body.home-wide-body .home-gradient-bg {
+  content: none !important;
+  display: none !important;
 }
 
 html body :is(#gptishka-render-safety, *) {
