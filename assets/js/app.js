@@ -1082,6 +1082,9 @@ function initActivationResumeShortcut() {
   let chatGptGoOrderModalEl = null;
   let chatGptGoOrderContentEl = null;
   let chatGptGoOrderLastFocusedElement = null;
+  let pro20RenewalConfirmModalEl = null;
+  let pro20RenewalConfirmLastFocusedElement = null;
+  let pro20RenewalPendingForm = null;
 
   function normalizePromoCodeInput(value) {
     const raw = String(value || "").trim().toUpperCase();
@@ -4666,6 +4669,7 @@ function initActivationResumeShortcut() {
       deliveryMethod: deliveryKey === "id" ? "id" : deliveryKey === "vpn" ? "vpn" : deliveryKey === "support" ? "support" : "link",
       duration: getServiceDurationLabel(durationKey),
       quantity: 1,
+      pro20RenewalConfirmed: form.dataset.pro20RenewalConfirmed === "1",
       basePrice,
       discount,
       totalPrice,
@@ -4746,6 +4750,7 @@ function initActivationResumeShortcut() {
         totalPrice: Math.max(0, toAmount(safeOrder.totalPrice)),
         paymentMethod: normalizeChatGptGoPaymentChoice(safeOrder.paymentMethod || "lava"),
         promoCode: normalizePromoCodeInput(safeOrder.promoCode || "") || null,
+        pro20RenewalConfirmed: Boolean(safeOrder.pro20RenewalConfirmed),
       },
       contact: {
         email: String(safeOrder.contactEmail || "").trim().toLowerCase(),
@@ -4782,6 +4787,11 @@ function initActivationResumeShortcut() {
     const item = getCardItem(form);
     if (!item || !item.productId) {
       setChatGptGoStatus(form, TEXT.checkoutProductMissing, "error");
+      return;
+    }
+
+    if (isChatGptPro20RenewalItem(item) && form.dataset.pro20RenewalConfirmed !== "1") {
+      openPro20RenewalConfirm(form);
       return;
     }
 
@@ -4972,6 +4982,79 @@ function initActivationResumeShortcut() {
     requestAnimationFrame(() => {
       restoreChatGptGoOrderFocus();
     });
+  }
+
+  function isChatGptPro20RenewalItem(item) {
+    if (!item) return false;
+    const serviceKey = normalizeAiServiceKey(item.serviceKey || getServicePageKey() || "");
+    return serviceKey === "chatgpt" && getServicePlanKey(item, serviceKey) === "pro-20x";
+  }
+
+  function isPro20RenewalConfirmOpen() {
+    return Boolean(pro20RenewalConfirmModalEl && !pro20RenewalConfirmModalEl.hidden);
+  }
+
+  function getPro20RenewalConfirmFocusableElements() {
+    if (!pro20RenewalConfirmModalEl) return [];
+    const selector = ["a[href]", "button:not([disabled])", "input:not([disabled]):not([type='hidden'])", "[tabindex]:not([tabindex='-1'])"].join(", ");
+    return Array.from(pro20RenewalConfirmModalEl.querySelectorAll(selector)).filter(isChatGptGoFocusableElementVisible);
+  }
+
+  function trapPro20RenewalConfirmFocus(event) {
+    if (!isPro20RenewalConfirmOpen()) return;
+    const focusable = getPro20RenewalConfirmFocusableElements();
+    if (!focusable.length) { event.preventDefault(); return; }
+    const currentIndex = focusable.indexOf(document.activeElement);
+    const nextIndex = event.shiftKey ? (currentIndex <= 0 ? focusable.length - 1 : currentIndex - 1) : (currentIndex >= focusable.length - 1 ? 0 : currentIndex + 1);
+    event.preventDefault();
+    focusable[nextIndex].focus({ preventScroll: true });
+  }
+
+  function closePro20RenewalConfirm(options = {}) {
+    if (!isPro20RenewalConfirmOpen()) return;
+    pro20RenewalConfirmModalEl.hidden = true;
+    pro20RenewalConfirmModalEl.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("is-pro20-renewal-confirm-open");
+    pro20RenewalPendingForm = null;
+    if (options.restoreFocus === false) return;
+    const target = pro20RenewalConfirmLastFocusedElement;
+    pro20RenewalConfirmLastFocusedElement = null;
+    requestAnimationFrame(() => { if (target && typeof target.focus === "function" && document.contains(target)) target.focus({ preventScroll: true }); });
+  }
+
+  function ensurePro20RenewalConfirmModal() {
+    if (pro20RenewalConfirmModalEl) return;
+    const isEnglish = String(document.documentElement.lang || "").toLowerCase().startsWith("en");
+    const copy = isEnglish ? { eyebrow: "Before payment", title: "Pro 20x is renewal only", lead: "This plan can only be renewed on an account with an active ChatGPT Pro 20x subscription.", noteTitle: "Please check before paying", note: "Open ChatGPT settings and make sure that Pro 20x is active on this account.", agree: "I confirm that I am renewing an account with an active ChatGPT Pro 20x subscription.", back: "Back to order", continue: "I understand, continue", close: "Close" } : { eyebrow: "Перед оплатой", title: "Pro 20x — только продление", lead: "Этот тариф подключается только на аккаунт, где уже действует подписка ChatGPT Pro 20x.", noteTitle: "Проверьте перед оплатой", note: "Откройте настройки ChatGPT и убедитесь, что на этом аккаунте уже активен Pro 20x.", agree: "Я подтверждаю, что продлеваю аккаунт с действующей подпиской ChatGPT Pro 20x.", back: "Вернуться к заказу", continue: "Понимаю, продолжить", close: "Закрыть" };
+    const modal = document.createElement("section");
+    modal.id = "pro20RenewalConfirmModal";
+    modal.className = "pro20-renewal-confirm";
+    modal.hidden = true;
+    modal.setAttribute("aria-hidden", "true");
+    modal.innerHTML = ['<button type="button" class="pro20-renewal-confirm__backdrop" aria-label="' + escapeHtml(copy.close) + '" data-pro20-renewal-confirm-close></button>', '<div class="pro20-renewal-confirm__dialog" role="dialog" aria-modal="true" aria-labelledby="pro20RenewalConfirmTitle">', '  <button type="button" class="pro20-renewal-confirm__close" aria-label="' + escapeHtml(copy.close) + '" data-pro20-renewal-confirm-close>&times;</button>', '  <div class="pro20-renewal-confirm__eyebrow">' + escapeHtml(copy.eyebrow) + '</div>', '  <div class="pro20-renewal-confirm__mark" aria-hidden="true">!</div>', '  <h2 id="pro20RenewalConfirmTitle">' + escapeHtml(copy.title) + '</h2>', '  <p class="pro20-renewal-confirm__lead">' + escapeHtml(copy.lead) + '</p>', '  <div class="pro20-renewal-confirm__note"><strong>' + escapeHtml(copy.noteTitle) + '</strong><span>' + escapeHtml(copy.note) + '</span></div>', '  <label class="pro20-renewal-confirm__check"><input type="checkbox" data-pro20-renewal-confirm-check><span>' + escapeHtml(copy.agree) + '</span></label>', '  <div class="pro20-renewal-confirm__actions"><button type="button" class="pro20-renewal-confirm__back" data-pro20-renewal-confirm-close>' + escapeHtml(copy.back) + '</button><button type="button" class="pro20-renewal-confirm__continue" data-pro20-renewal-confirm-continue disabled>' + escapeHtml(copy.continue) + '</button></div>', '</div>'].join("");
+    document.body.appendChild(modal);
+    pro20RenewalConfirmModalEl = modal;
+    modal.querySelectorAll("[data-pro20-renewal-confirm-close]").forEach(button => button.addEventListener("click", () => closePro20RenewalConfirm()));
+    const checkbox = modal.querySelector("[data-pro20-renewal-confirm-check]");
+    const continueButton = modal.querySelector("[data-pro20-renewal-confirm-continue]");
+    checkbox?.addEventListener("change", () => { if (continueButton) continueButton.disabled = !checkbox.checked; });
+    continueButton?.addEventListener("click", () => { if (!checkbox?.checked || !pro20RenewalPendingForm) return; const form = pro20RenewalPendingForm; form.dataset.pro20RenewalConfirmed = "1"; closePro20RenewalConfirm({ restoreFocus: false }); void submitChatGptGoOrder(form); });
+  }
+
+  function openPro20RenewalConfirm(form) {
+    if (!form) return;
+    ensurePro20RenewalConfirmModal();
+    if (!pro20RenewalConfirmModalEl) return;
+    pro20RenewalPendingForm = form;
+    pro20RenewalConfirmLastFocusedElement = document.activeElement;
+    const checkbox = pro20RenewalConfirmModalEl.querySelector("[data-pro20-renewal-confirm-check]");
+    const continueButton = pro20RenewalConfirmModalEl.querySelector("[data-pro20-renewal-confirm-continue]");
+    if (checkbox) checkbox.checked = false;
+    if (continueButton) continueButton.disabled = true;
+    pro20RenewalConfirmModalEl.hidden = false;
+    pro20RenewalConfirmModalEl.setAttribute("aria-hidden", "false");
+    document.body.classList.add("is-pro20-renewal-confirm-open");
+    requestAnimationFrame(() => checkbox?.focus({ preventScroll: true }));
   }
 
   function applyChatGptGoOrderLayoutGuard(form) {
@@ -6743,11 +6826,19 @@ function initActivationResumeShortcut() {
   });
 
   document.addEventListener("keydown", (e) => {
+    if (e.key === "Tab" && isPro20RenewalConfirmOpen()) {
+      trapPro20RenewalConfirmFocus(e);
+      return;
+    }
     if (e.key === "Tab" && isChatGptGoOrderModalOpen()) {
       trapChatGptGoOrderFocus(e);
       return;
     }
     if (e.key !== "Escape") return;
+    if (isPro20RenewalConfirmOpen()) {
+      closePro20RenewalConfirm();
+      return;
+    }
     closeHeaderCartPanel();
     resetPendingCheckout();
     closePaymentMethodModal();

@@ -910,3 +910,200 @@ html body:has(main.service-page[data-service-page="chatgpt"])
     min-height: 44px;
   }
 }
+
+/* Pro 20x confirmation: visually shares the quiet dark treatment of the
+   post-activation review card, but protects the customer before checkout. */
+.pro20-renewal-confirm[hidden] {
+  display: none !important;
+}
+
+.pro20-renewal-confirm {
+  position: fixed;
+  z-index: 12000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  box-sizing: border-box;
+}
+
+.pro20-renewal-confirm__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(4, 12, 17, 0.78);
+  backdrop-filter: blur(11px);
+  cursor: default;
+}
+
+.pro20-renewal-confirm__dialog {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 570px);
+  padding: 31px;
+  overflow: hidden;
+  border: 1px solid rgba(77, 241, 165, 0.28);
+  border-radius: 28px;
+  color: #f6fffb;
+  background:
+    radial-gradient(circle at 87% 5%, rgba(31, 222, 139, 0.16), transparent 38%),
+    linear-gradient(145deg, rgba(21, 39, 46, 0.98), rgba(9, 23, 28, 0.99));
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.46), 0 0 0 1px rgba(255, 255, 255, 0.035) inset;
+}
+
+.pro20-renewal-confirm__close {
+  position: absolute;
+  top: 15px;
+  right: 17px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pro20-renewal-confirm__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  min-height: 29px;
+  padding: 0 11px;
+  border: 1px solid rgba(70, 238, 158, 0.3);
+  border-radius: 999px;
+  color: #68f1b0;
+  background: rgba(36, 205, 127, 0.1);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pro20-renewal-confirm__mark {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-top: 19px;
+  border: 1px solid rgba(85, 245, 173, 0.45);
+  border-radius: 18px;
+  color: #8affc5;
+  background: linear-gradient(145deg, rgba(42, 221, 137, 0.26), rgba(11, 125, 85, 0.2));
+  box-shadow: 0 12px 30px rgba(19, 219, 128, 0.16);
+  font-size: 29px;
+  font-weight: 900;
+}
+
+.pro20-renewal-confirm h2 {
+  max-width: 440px;
+  margin: 17px 0 8px;
+  color: #fff;
+  font-size: clamp(25px, 4vw, 34px);
+  font-weight: 900;
+  letter-spacing: -0.045em;
+  line-height: 1.06;
+}
+
+.pro20-renewal-confirm__lead {
+  margin: 0;
+  color: rgba(237, 249, 245, 0.78);
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.48;
+}
+
+.pro20-renewal-confirm__note {
+  display: grid;
+  gap: 4px;
+  margin-top: 20px;
+  padding: 15px 17px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.pro20-renewal-confirm__note strong {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.pro20-renewal-confirm__note span {
+  color: rgba(233, 245, 241, 0.66);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.pro20-renewal-confirm__check {
+  display: grid;
+  grid-template-columns: 21px minmax(0, 1fr);
+  gap: 11px;
+  align-items: start;
+  margin: 20px 1px;
+  color: #f3fffa;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.42;
+  cursor: pointer;
+}
+
+.pro20-renewal-confirm__check input {
+  width: 19px;
+  height: 19px;
+  margin: 1px 0 0;
+  accent-color: #27d78b;
+  cursor: pointer;
+}
+
+.pro20-renewal-confirm__actions {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 10px;
+}
+
+.pro20-renewal-confirm__actions button {
+  min-height: 51px;
+  padding: 10px 15px;
+  border-radius: 15px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 850;
+  cursor: pointer;
+  transition: transform 0.18s ease, opacity 0.18s ease, background 0.18s ease;
+}
+
+.pro20-renewal-confirm__back {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(250, 255, 253, 0.9);
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.pro20-renewal-confirm__continue {
+  border: 1px solid rgba(88, 255, 177, 0.48);
+  color: #062317;
+  background: linear-gradient(135deg, #55f0a7, #16b776);
+  box-shadow: 0 10px 27px rgba(21, 211, 126, 0.2);
+}
+
+.pro20-renewal-confirm__actions button:hover:not(:disabled),
+.pro20-renewal-confirm__close:hover {
+  transform: translateY(-1px);
+}
+
+.pro20-renewal-confirm__continue:disabled {
+  opacity: 0.43;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+@media (max-width: 560px) {
+  .pro20-renewal-confirm { padding: 14px; }
+  .pro20-renewal-confirm__dialog { padding: 25px 20px 20px; border-radius: 24px; }
+  .pro20-renewal-confirm h2 { max-width: 300px; font-size: 27px; }
+  .pro20-renewal-confirm__lead { font-size: 15px; }
+  .pro20-renewal-confirm__actions { grid-template-columns: 1fr; }
+  .pro20-renewal-confirm__continue { order: -1; }
+}
