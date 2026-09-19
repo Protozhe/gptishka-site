@@ -22,6 +22,8 @@ expect(onboardingCss.includes('chatgpt-symbol-mask-v2.webp?v=20260909-emerald-co
 expect(!onboardingCss.includes('background: url("/assets/img/services/chatgpt-card.webp?v=20260721-webp1")'), "Codex banner still uses the retired ChatGPT card image");
 expect(onboardingCss.includes("service-info-section--chatgpt"), "legacy ChatGPT information block is not hidden");
 expect(onboardingCss.includes("service-info-section--claude"), "legacy Claude information block is not hidden");
+expect(app.includes('const selectedTitle = getServiceConstructorPlanTitle(selectedItem, serviceKey, selectedPlan);'), "ChatGPT constructor title does not use the selected product");
+expect(app.includes('serviceConstructorTitleEl.textContent = selectedTitle || "ChatGPT";'), "ChatGPT constructor title falls back incorrectly");
 expect(fs.existsSync("codex-credits.html"), "Russian Codex Credits page is missing");
 expect(fs.existsSync("en/codex-credits.html"), "English Codex Credits page is missing");
 expect(fs.existsSync("assets/css/codex-credits.css"), "Codex Credits base stylesheet is missing");
@@ -51,7 +53,7 @@ for (const file of htmlFiles) {
   const html = read(file);
   for (const match of html.matchAll(sharedAssetPattern)) {
     const expectedVersion = match[1] === "app.min.js"
-      ? new Set(["20260912-native-navigation1", "20260914-centered-copy1", "20260915-no-ticker1", "20260916-codex-header-price1", "20260917-chatgpt-seo1", "20260917-chatgpt-seo2", "20260917-chatgpt-guide2"])
+      ? new Set(["20260912-native-navigation1", "20260914-centered-copy1", "20260915-no-ticker1", "20260916-codex-header-price1", "20260917-chatgpt-seo1", "20260917-chatgpt-seo2", "20260917-chatgpt-guide2", "20260919-admin-plan-titles1"])
       : new Set(["20260912-chat-restoration2", "20260912-restored-products1", "20260912-codex-entry-visual1", "20260916-codex-header-price1", "20260917-readable-guide1", "20260917-faq-topic-fix1", "20260917-faq-dividers1"]);
     expect(expectedVersion.has(match[2]), `${file}: stale cache version for ${match[1]}`);
   }

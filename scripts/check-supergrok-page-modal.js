@@ -66,7 +66,7 @@ const expectedJsAssetVersion = "20260829-grok-plan-title1";
   ['if (text.includes("supergrok-heavy") || text.includes("supergrok heavy") || joinedTags.includes("heavy")) return "supergrok-heavy";', "app.js: Heavy product plan routing"],
   ['plan: ["supergrok", "supergrok-heavy"]', "app.js: constructor exposes SuperGrok and Heavy plans"],
   ['if (key === "grok") return isGrokOrderModalPlanKey(planKey);', "app.js: Grok modal plan routing"],
-  ['if (key === "grok") return String(planLabel || item?.title || "").trim();', "app.js: Grok selected plan excludes the separately displayed duration"],
+  ['return String(item?.title || planLabel || "").trim();', "app.js: selected plan uses the admin-managed product title"],
 ].forEach(([marker, label]) => requireMarker(source, marker, label));
 
 [
