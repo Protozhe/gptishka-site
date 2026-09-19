@@ -3,6 +3,78 @@ body.home-wide-body .home-wide-page {
   --home-info-inset: clamp(20px, 3vw, 36px);
 }
 
+/* 20260919: identical high-quality composition with and without GPU acceleration.
+   Static gradients replace full-screen blur layers; glass surfaces retain their
+   borders, fills and shadows without live backdrop sampling. */
+html body:is(#gptishka-render-safety, *) {
+  background-attachment: scroll !important;
+}
+
+html body:is(#gptishka-render-safety, *)::before,
+html body:is(#gptishka-render-safety, *)::after {
+  position: absolute !important;
+  inset: 0 !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  mix-blend-mode: normal !important;
+  animation: none !important;
+  transform: none !important;
+}
+
+html body :is(#gptishka-render-safety, *) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  will-change: auto !important;
+}
+
+html body :is(#gptishka-render-safety, *)::before,
+html body :is(#gptishka-render-safety, *)::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body :is(
+  #gptishka-render-safety,
+  .home-gradient-bg,
+  .home-gradient-bg__layer,
+  .home-gradient-bg__pointer
+) {
+  filter: none !important;
+  -webkit-filter: none !important;
+  animation: none !important;
+  mix-blend-mode: normal !important;
+}
+
+html body :is(
+  #gptishka-render-safety,
+  .hero,
+  .pricing,
+  .how,
+  .faq,
+  .service-hero,
+  .hero-promo-inline,
+  .home-hero-wide__panel
+)::before,
+html body :is(
+  #gptishka-render-safety,
+  .hero,
+  .pricing,
+  .how,
+  .faq,
+  .service-hero,
+  .hero-promo-inline,
+  .home-hero-wide__panel
+)::after {
+  filter: none !important;
+  -webkit-filter: none !important;
+  animation: none !important;
+  mix-blend-mode: normal !important;
+}
+
+html body .page-overlay {
+  display: none !important;
+}
+
 body.home-wide-body .home-wide-page > .how,
 body.home-wide-body .home-wide-page > .faq,
 body.home-wide-body .home-wide-page > .home-testimonials {
