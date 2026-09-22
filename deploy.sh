@@ -68,6 +68,9 @@ fi
 # Always publish latest admin UI first, even if backend deploy is skipped/fails.
 npm run build:admin:ui
 rsync -a --delete apps/admin-ui/dist/ admin/
+if [ -f "$VERIFY_DIR/admin/.htaccess" ]; then
+  install -m 0644 "$VERIFY_DIR/admin/.htaccess" admin/.htaccess
+fi
 
 SKIP_BACKEND_DEPLOY=0
 if [ ! -f "$ADMIN_ENV_FILE" ]; then
