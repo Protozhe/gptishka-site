@@ -1038,8 +1038,8 @@ html body.home-catalog-body .ai-directory-card--appstore:focus-within .ai-direct
 .ai-directory-card__brand-mark--devin {
   width: 58%;
   height: 58%;
-  -webkit-mask-image: url("/assets/img/services/devin-symbol-mask-v1.svg?v=20260922-devin-brand2");
-  mask-image: url("/assets/img/services/devin-symbol-mask-v1.svg?v=20260922-devin-brand2");
+  -webkit-mask-image: url("/assets/img/services/devin-symbol-mask-v1.svg?v=20260922-devin-image1");
+  mask-image: url("/assets/img/services/devin-symbol-mask-v1.svg?v=20260922-devin-image1");
 }
 
 .ai-directory-card--devin:hover .ai-directory-card__media,
@@ -1085,6 +1085,9 @@ html body.home-catalog-body .ai-directory-card--devin:focus-within .ai-directory
   position: relative;
   display: grid;
   place-items: center;
+  width: min(100%, 440px);
+  aspect-ratio: 1;
+  justify-self: center;
   overflow: hidden;
   border-radius: clamp(28px, 3vw, 38px);
   background: radial-gradient(circle at 50% 42%, #2968d7 0%, #102c69 48%, #061227 100%);
@@ -1096,8 +1099,8 @@ html body.home-catalog-body .ai-directory-card--devin:focus-within .ai-directory
   width: 58%;
   height: 58%;
   background: #fff;
-  -webkit-mask-image: url("/assets/img/services/devin-symbol-mask-v1.svg?v=20260922-devin-brand2");
-  mask-image: url("/assets/img/services/devin-symbol-mask-v1.svg?v=20260922-devin-brand2");
+  -webkit-mask-image: url("/assets/img/services/devin-symbol-mask-v1.svg?v=20260922-devin-image1");
+  mask-image: url("/assets/img/services/devin-symbol-mask-v1.svg?v=20260922-devin-image1");
   -webkit-mask-position: center;
   mask-position: center;
   -webkit-mask-repeat: no-repeat;
