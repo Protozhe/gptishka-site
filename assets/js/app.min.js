@@ -911,7 +911,7 @@ function initActivationResumeShortcut() {
       displayName: "Devin",
       fallbackTitle: "Devin Pro",
       fallbackPlan: "pro",
-      logo: "/assets/img/services/devin-symbol-mask-v1.svg?v=20260922-devin-brand2",
+      logo: "/assets/img/services/devin-symbol-mask-v1.svg?v=20260922-devin-image1",
     },
     vpn: {
       displayName: "GPTishka VPN",
