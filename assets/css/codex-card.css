@@ -1276,6 +1276,34 @@ html body.home-catalog-body .ai-directory-card--devin:focus-within .ai-directory
   overflow: hidden;
 }
 
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-payment-check {
+  position: relative;
+  border-radius: 999px;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-payment-check::after {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 9px;
+  content: "";
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  opacity: 0;
+  transform: translate(-50%, -58%) rotate(45deg);
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check::after,
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check::after {
+  opacity: 1;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-submit {
+  min-height: 48px;
+  border-radius: 999px;
+}
+
 @media (max-width: 640px) {
   .service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
     grid-template-columns: minmax(0, 1fr);
