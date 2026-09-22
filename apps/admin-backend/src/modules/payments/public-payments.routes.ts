@@ -75,6 +75,22 @@ function scrubPublicOrderDetails(value: unknown): Prisma.InputJsonValue {
   return result;
 }
 
+function extractManualLoginCredentials(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const details = value as Record<string, any>;
+  const account = details.account && typeof details.account === "object" && !Array.isArray(details.account)
+    ? details.account as Record<string, unknown>
+    : undefined;
+  if (!account) return undefined;
+  const login = String(account.login || "").trim();
+  const password = String(account.password || "");
+  if (!login && !password) return undefined;
+  if (!login || !password || login.length > 254 || password.length > 512) {
+    throw new AppError("Invalid account credentials", 422);
+  }
+  return { login, password };
+}
+
 function stringField(body: Record<string, unknown>, key: string) {
   return String(body[key] || "").trim();
 }
@@ -209,8 +225,10 @@ publicPaymentsRouter.post(
       }
     }
     const paymentMethod = provider;
+    const rawOrderDetails = body.order_details ?? body.orderDetails;
+    const manualLoginCredentials = extractManualLoginCredentials(rawOrderDetails);
     const orderDetails =
-      sanitizePublicOrderDetails(body.order_details ?? body.orderDetails) ||
+      sanitizePublicOrderDetails(rawOrderDetails) ||
       buildOrderDetailsFromFlatBody(body as Record<string, unknown>, productId);
 
     const created = await paymentsService.createOrderWithPayment({
@@ -220,6 +238,7 @@ publicPaymentsRouter.post(
       paymentMethod,
       promoCode,
       orderDetails,
+      manualLoginCredentials,
       ip: req.ip,
     });
 

@@ -818,8 +818,9 @@ function initActivationResumeShortcut() {
   const CHATGPT_ORDER_MODAL_PLAN_KEYS = new Set(["go", "plus", "pro-5x", "pro-20x"]);
   const CLAUDE_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max-5x", "max-20x"]);
   const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["supergrok"]);
+  const DEVIN_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max", "teams"]);
   const VPN_ORDER_MODAL_PLAN_KEYS = new Set(["1m", "2m", "6m", "12m"]);
-  const AI_ORDER_MODAL_SERVICE_KEYS = new Set(["chatgpt", "claude", "grok", "vpn"]);
+  const AI_ORDER_MODAL_SERVICE_KEYS = new Set(["chatgpt", "claude", "grok", "devin", "vpn"]);
   const AI_ORDER_MODAL_SERVICE_CONFIG = {
     chatgpt: {
       displayName: "ChatGPT",
@@ -838,6 +839,12 @@ function initActivationResumeShortcut() {
       fallbackTitle: "SuperGrok",
       fallbackPlan: "1m",
       logo: "/assets/img/services/grok-card.webp?v=20260721-heavy-cards-webp1",
+    },
+    devin: {
+      displayName: "Devin",
+      fallbackTitle: "Devin Pro",
+      fallbackPlan: "pro",
+      logo: "/assets/img/services/devin-symbol-mask-v1.svg?v=20260922-devin-brand2",
     },
     vpn: {
       displayName: "GPTishka VPN",
@@ -2436,6 +2443,13 @@ function initActivationResumeShortcut() {
         backgroundGradient: "linear-gradient(135deg, #020617 0%, #1e3a8a 52%, #2563eb 100%)",
       };
     }
+    if (text.includes("devin") || text.includes("cognition ai")) {
+      return {
+        backgroundType: "gradient",
+        backgroundColor: "#061426",
+        backgroundGradient: "linear-gradient(135deg, #030712 0%, #0b2c5f 52%, #1388d4 100%)",
+      };
+    }
     if (text.includes("claude")) {
       return {
         backgroundType: "gradient",
@@ -2496,6 +2510,18 @@ function initActivationResumeShortcut() {
         sort: 30,
       };
     }
+    if (text.includes("devin") || text.includes("cognition ai")) {
+      return {
+        key: "devin",
+        name: "Devin",
+        icon: "DV",
+        description: isEnPage
+          ? "An AI software engineer for code, repositories and development tasks."
+          : "AI-инженер для кода, репозиториев и задач разработки.",
+        theme: "devin",
+        sort: 40,
+      };
+    }
     if (isStandaloneVpnProduct(item)) {
       return {
         key: "vpn",
@@ -2505,7 +2531,7 @@ function initActivationResumeShortcut() {
           ? "VLESS Reality VPN access with automatic key delivery after payment."
           : "VPN-доступ VLESS Reality с автоматической выдачей ключа после оплаты.",
         theme: "vpn",
-        sort: 40,
+        sort: 50,
       };
     }
     return null;
@@ -2523,6 +2549,11 @@ function initActivationResumeShortcut() {
     if (serviceKey === "grok") {
       if (text.includes("1-month") || text.includes("1 month") || text.includes("1 мес")) return 10;
       if (text.includes("2-month") || text.includes("2 month") || text.includes("2 мес")) return 20;
+    }
+    if (serviceKey === "devin") {
+      if (text.includes("pro")) return 10;
+      if (text.includes("max")) return 20;
+      if (text.includes("team")) return 30;
     }
     if (serviceKey === "vpn") {
       return getServiceDurationSortScore(getServiceDurationKey(item));
@@ -2548,6 +2579,9 @@ function initActivationResumeShortcut() {
     }
     if (text.includes("claude")) {
       return 300 + (text.includes("pro") ? 10 : 20);
+    }
+    if (text.includes("devin")) {
+      return 400 + getAiPlanSortScore(item, "devin");
     }
     if (text.includes("vpn")) {
       if (text.includes("1 месяц") || text.includes("1 month") || text.includes("30")) return 500;
@@ -2590,6 +2624,7 @@ function initActivationResumeShortcut() {
     if (normalized.includes("chatgpt") || normalized.includes("openai")) return "chatgpt";
     if (normalized.includes("claude")) return "claude";
     if (normalized.includes("grok")) return "grok";
+    if (normalized.includes("devin") || normalized.includes("cognition")) return "devin";
     if (normalized.includes("vpn") || normalized.includes("vless")) return "vpn";
     return normalized;
   }
@@ -2609,7 +2644,8 @@ function initActivationResumeShortcut() {
     const key = String(serviceKey || "").trim() || String(location.pathname || "").replace(/^\/+|\/+$/g, "");
     if (!key) return null;
     try {
-      const response = await fetch("/api/public/service-pages/" + encodeURIComponent(key) + "?lang=" + lang, { cache: "no-store" });
+      const requestLang = isEnPage ? "en" : "ru";
+      const response = await fetch("/api/public/service-pages/" + encodeURIComponent(key) + "?lang=" + requestLang, { cache: "no-store" });
       if (!response.ok) return null;
       return await response.json();
     } catch (_) {
@@ -2622,6 +2658,7 @@ function initActivationResumeShortcut() {
     if (key === "chatgpt") return "/chatgpt";
     if (key === "claude") return "/claude";
     if (key === "grok") return "/supergrok";
+    if (key === "devin") return "/devin";
     if (key === "vpn") return "/store/vpn";
     return isEnPage ? "/en/#pricing" : "/#pricing";
   }
@@ -2769,6 +2806,13 @@ function initActivationResumeShortcut() {
       return "claude";
     }
 
+    if (key === "devin") {
+      if (text.includes("team") || joinedTags.includes("teams")) return "teams";
+      if (text.includes("max") || joinedTags.includes("max")) return "max";
+      if (text.includes("pro") || joinedTags.includes("pro")) return "pro";
+      return "devin";
+    }
+
     return "plan";
   }
 
@@ -2798,9 +2842,13 @@ function initActivationResumeShortcut() {
 
   function getServiceDeliveryKey(item) {
     const tags = Array.isArray(item?.tags) ? item.tags : [];
+    const normalizedTags = tags.map(tag => String(tag || "").trim().toLowerCase());
     const deliveryType = resolveDeliveryType(item?.deliveryType, item?.deliveryMethod, tags);
     const text = getProductSearchText(item);
+    const activationVariant = String(item?.activationVariant || "").trim().toLowerCase();
     if (isStandaloneVpnProduct(item)) return "vpn";
+    if (text.includes("devin") && (normalizedTags.includes("delivery:manual_login") || activationVariant === "withlogin" || activationVariant === "with_login")) return "login";
+    if ((deliveryType === "manual_login" || deliveryType === "credentials") && text.includes("devin")) return "login";
     if (deliveryType === "manual_login" || deliveryType === "credentials") return "support";
     if (deliveryType === "support" || text.includes("РїРѕ id") || text.includes("account id")) return "id";
     if (text.includes("по ссылке") || text.includes("link")) return "link";
@@ -2813,12 +2861,14 @@ function initActivationResumeShortcut() {
       chatgpt: new Set(["1m"]),
       claude: new Set(["1m"]),
       grok: new Set(["1m", "2m"]),
+      devin: new Set(["1m"]),
     };
     return (Array.isArray(items) ? items : []).filter(item => {
       const deliveryKey = getServiceDeliveryKey(item);
       if ((key === "claude" || key === "grok") && deliveryKey !== "id") return false;
+      if (key === "devin" && deliveryKey !== "login") return false;
       if (allowedDurations[key] && !allowedDurations[key].has(getServiceDurationKey(item))) return false;
-      if (key === "claude" || key === "grok") return true;
+      if (key === "claude" || key === "grok" || key === "devin") return true;
 
       const tags = Array.isArray(item?.tags) ? item.tags : [];
       const deliveryType = resolveDeliveryType(item?.deliveryType, item?.deliveryMethod, tags);
@@ -2852,6 +2902,12 @@ function initActivationResumeShortcut() {
         all: isEnPage ? "All plans" : "Все тарифы",
         supergrok: "SuperGrok",
       },
+      devin: {
+        all: isEnPage ? "All plans" : "Все тарифы",
+        pro: "Pro",
+        max: "Max",
+        teams: "Teams",
+      },
       vpn: {
         all: isEnPage ? "All durations" : "Все сроки",
         "1m": isEnPage ? "1 month" : "1 месяц",
@@ -2865,8 +2921,8 @@ function initActivationResumeShortcut() {
 
   function getServiceDeliveryLabel(deliveryKey) {
     const labels = isEnPage
-      ? { link: "Activation", id: "By ID", vpn: "VLESS", support: "Support" }
-      : { link: "Активация", id: "По ID", vpn: "VLESS", support: "Поддержка" };
+      ? { link: "Activation", id: "By ID", login: "Account login", vpn: "VLESS", support: "Support" }
+      : { link: "Активация", id: "По ID", login: "Со входом в аккаунт", vpn: "VLESS", support: "Поддержка" };
     return labels[deliveryKey] || deliveryKey;
   }
 
@@ -2874,6 +2930,7 @@ function initActivationResumeShortcut() {
     const key = normalizeAiServiceKey(serviceKey);
     const value = String(deliveryKey || "").trim();
     if ((key === "claude" || key === "grok") && value === "id") return isEnPage ? "By ID" : "По ID";
+    if (key === "devin" && value === "login") return isEnPage ? "Account login" : "Со входом в аккаунт";
     if (key === "vpn" && value === "vpn") return isEnPage ? "VLESS key" : "VLESS-ключ";
     return getServiceDeliveryLabel(value);
   }
@@ -2882,6 +2939,7 @@ function initActivationResumeShortcut() {
     const key = normalizeAiServiceKey(serviceKey);
     const deliveryKey = getServiceDeliveryKey(item);
     if (key === "vpn") return "vpn";
+    if (key === "devin" && deliveryKey === "login") return "login";
     if ((key === "claude" || key === "grok") && deliveryKey === "id") return "link";
     return deliveryKey;
   }
@@ -3249,6 +3307,12 @@ function initActivationResumeShortcut() {
         imageAlt: "SuperGrok",
         hoverImageAlt: "SuperGrok",
       },
+      devin: {
+        imageUrl: "/assets/img/services/devin-card-v2.webp?v=20260922-devin2",
+        hoverImageUrl: "",
+        imageAlt: "Devin",
+        hoverImageAlt: "Devin",
+      },
       vpn: {
         imageUrl: "/assets/img/services/vpn-card.webp?v=20260721-cards-webp1",
         hoverImageUrl: "/assets/img/services/vpn-card-hover.webp?v=20260721-cards-webp1",
@@ -3263,6 +3327,7 @@ function initActivationResumeShortcut() {
           chatgpt: "ChatGPT for everyday tasks.",
           claude: "Claude for text and code.",
           grok: "Fast SuperGrok activation.",
+          devin: "AI software engineer for development.",
           perplexity: "Search with trusted sources.",
           gemini: "Gemini for work and study.",
           suno: "Suno for music creation.",
@@ -3271,6 +3336,7 @@ function initActivationResumeShortcut() {
           chatgpt: "ChatGPT для любых задач",
           claude: "Claude для текста и кода",
           grok: "SuperGrok — быстрая активация",
+          devin: "AI-инженер для задач разработки",
           perplexity: "Поиск с надёжными источниками",
           gemini: "Gemini для работы и учёбы",
           suno: "Suno для создания музыки",
@@ -3284,7 +3350,7 @@ function initActivationResumeShortcut() {
     const displayTheme = getServiceCardValue(serviceCard, "theme", group.service.theme);
     const primaryImageUrl = getServiceCardValue(serviceCard, "imageUrl", visual.imageUrl || visual.hoverImageUrl || fallbackImages.imageUrl || "");
     const hoverImageUrl = getServiceCardValue(serviceCard, "hoverImageUrl", visual.hoverImageUrl || fallbackImages.hoverImageUrl || "");
-    const brandSwapKind = ["chatgpt", "claude", "grok", "perplexity", "gemini", "suno"].includes(serviceKey)
+    const brandSwapKind = ["chatgpt", "claude", "grok", "perplexity", "gemini", "suno", "devin"].includes(serviceKey)
       ? serviceKey
       : "";
     const usesBrandSwapMark = Boolean(brandSwapKind);
@@ -3569,6 +3635,10 @@ function initActivationResumeShortcut() {
         plan: ["supergrok"],
         duration: ["1m", "2m"],
       },
+      devin: {
+        plan: ["pro", "max", "teams"],
+        duration: ["1m"],
+      },
       vpn: {
         plan: ["1m", "2m", "6m", "12m"],
         delivery: ["vpn"],
@@ -3775,6 +3845,10 @@ function initActivationResumeShortcut() {
     return /^\d+m$/i.test(key);
   }
 
+  function isDevinOrderModalPlanKey(planKey) {
+    return DEVIN_ORDER_MODAL_PLAN_KEYS.has(String(planKey || "").trim());
+  }
+
   function isVpnOrderModalPlanKey(planKey) {
     const key = String(planKey || "").trim();
     if (VPN_ORDER_MODAL_PLAN_KEYS.has(key)) return true;
@@ -3790,6 +3864,7 @@ function initActivationResumeShortcut() {
     if (key === "chatgpt") return isChatGptOrderModalPlanKey(planKey);
     if (key === "claude") return isClaudeOrderModalPlanKey(planKey);
     if (key === "grok") return isGrokOrderModalPlanKey(planKey);
+    if (key === "devin") return isDevinOrderModalPlanKey(planKey);
     if (key === "vpn") return isVpnOrderModalPlanKey(planKey);
     return false;
   }
@@ -4248,7 +4323,7 @@ function initActivationResumeShortcut() {
       plan: getServicePlanLabel(serviceKey, planKey),
       serviceKey,
       planKey,
-      deliveryMethod: deliveryKey === "id" ? "id" : deliveryKey === "vpn" ? "vpn" : deliveryKey === "support" ? "support" : "link",
+      deliveryMethod: deliveryKey === "id" ? "id" : deliveryKey === "vpn" ? "vpn" : deliveryKey === "support" ? "support" : deliveryKey === "login" ? "login" : "link",
       duration: getServiceDurationLabel(durationKey),
       quantity: 1,
       basePrice,
@@ -4264,9 +4339,9 @@ function initActivationResumeShortcut() {
       giftSendDate: String(getChatGptGoOrderField(form, "giftSendDate")?.value || "").trim(),
       giftSendTime: String(getChatGptGoOrderField(form, "giftSendTime")?.value || "").trim(),
       giftMessage: String(getChatGptGoOrderField(form, "giftMessage")?.value || "").trim(),
-      accountStatus: "",
-      serviceLogin: "",
-      servicePassword: "",
+      accountStatus: deliveryKey === "login" ? (getChatGptGoCheckedValue(form, "accountStatus") || "has_account") : "",
+      serviceLogin: deliveryKey === "login" ? String(getChatGptGoOrderField(form, "serviceLogin")?.value || "").trim() : "",
+      servicePassword: deliveryKey === "login" ? String(getChatGptGoOrderField(form, "servicePassword")?.value || "") : "",
       cameByRecommendation: Boolean(getChatGptGoOrderField(form, "cameByRecommendation")?.checked),
       referrerContact: String(getChatGptGoOrderField(form, "referrerContact")?.value || "").trim(),
       orderComment: String(getChatGptGoOrderField(form, "orderComment")?.value || "").trim(),
@@ -4390,7 +4465,11 @@ function initActivationResumeShortcut() {
 
     const order = collectChatGptGoOrder(form, item);
     saveChatGptGoOrderDraft(order);
-    window.gptishkaLastChatGptGoOrder = order;
+    window.gptishkaLastChatGptGoOrder = {
+      ...order,
+      serviceLogin: "",
+      servicePassword: "",
+    };
     const orderServiceKey = normalizeAiServiceKey(order.serviceKey || item.serviceKey || form.getAttribute("data-service-key") || getServicePageKey() || "chatgpt");
 
     try {
@@ -4466,6 +4545,9 @@ function initActivationResumeShortcut() {
     const selected = (value, current) => value === current ? " selected" : "";
     const boolChecked = value => value ? " checked" : "";
     const serviceLogo = serviceConfig.logo || "/assets/img/services/chatgpt-card.webp?v=20260721-webp1";
+    const accountSectionMarkup = deliveryKey === "login"
+      ? '<section class="chatgpt-order-section" data-chatgpt-go-account-section><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Данные аккаунта Devin</h4><p>Нужны только для подключения выбранного тарифа</p></div><input name="accountStatus" type="radio" value="has_account" checked hidden><div class="chatgpt-order-account-fields" data-chatgpt-go-account-fields><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Логин Devin</span><small>Почта, на которую зарегистрирован аккаунт</small><input class="chatgpt-order-field__control" name="serviceLogin" type="text" autocomplete="username" placeholder="name@email.com" required></label><label class="chatgpt-order-field" data-chatgpt-go-password-field><span>Пароль Devin</span><small>После подключения рекомендуем сменить пароль</small><span class="chatgpt-order-password-wrap"><input class="chatgpt-order-field__control" name="servicePassword" type="password" autocomplete="current-password" placeholder="Введите пароль" required><button type="button" class="chatgpt-order-password-toggle" data-chatgpt-go-password-toggle aria-label="Показать пароль" title="Показать пароль" aria-pressed="false"><span data-chatgpt-go-password-icon>' + getChatGptGoPasswordIcon(false) + '</span></button></span></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="serviceLogin"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="servicePassword"></p></div></div><p class="chatgpt-order-security-note"><strong>Безопасная передача</strong> Данные шифруются на сервере, доступны только сотруднику, который выполняет заказ, и не передаются платёжной системе. Никому не сообщайте коды 2FA или резервные коды.</p></section>'
+      : '';
     return (
       '<form class="price-card service-checkout-card chatgpt-order-card" data-chatgpt-go-order' +
       ' data-product="' + escapeHtml(product) + '"' +
@@ -4493,7 +4575,7 @@ function initActivationResumeShortcut() {
             '<div class="chatgpt-order-summary-card__price chatgpt-order-total"><span>Итого</span><strong data-chatgpt-go-total>' + escapeHtml(format(total)) + '</strong></div>' +
             '<div class="chatgpt-order-summary-lines"><div data-chatgpt-go-summary-discount' + (discount > 0 ? "" : " hidden") + '><span>Скидка:</span><strong>−' + escapeHtml(format(discount)) + '</strong></div></div>' +
           '</section>' +
-          '<section class="chatgpt-order-section"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Контакты</h4><p>Для статуса заказа и связи</p></div><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Почта</span><small>Нужна для связи по заказу</small><input class="chatgpt-order-field__control" name="contactEmail" type="email" autocomplete="email" placeholder="name@email.com" value="' + escapeHtml(savedEmail) + '" required></label><label class="chatgpt-order-field"><span>Telegram</span><small>Сюда придет вся информация по заказу</small><input class="chatgpt-order-field__control" name="telegram" type="text" autocomplete="off" placeholder="@username" value="' + escapeHtml(savedTelegram) + '" required></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="contactEmail"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="telegram"></p></div></section>' +
+          '<section class="chatgpt-order-section"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Контакты</h4><p>Для статуса заказа и связи</p></div><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Почта</span><small>Нужна для связи по заказу</small><input class="chatgpt-order-field__control" name="contactEmail" type="email" autocomplete="email" placeholder="name@email.com" value="' + escapeHtml(savedEmail) + '" required></label><label class="chatgpt-order-field"><span>Telegram</span><small>Сюда придет вся информация по заказу</small><input class="chatgpt-order-field__control" name="telegram" type="text" autocomplete="off" placeholder="@username" value="' + escapeHtml(savedTelegram) + '" required></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="contactEmail"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="telegram"></p></div></section>' + accountSectionMarkup +
           '<section class="chatgpt-order-section chatgpt-order-soft-actions"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Дополнительно</h4></div>' +
             '<label class="chatgpt-order-soft-action"><span><strong>Оформить в подарок</strong><small>Покажем поля получателя после включения</small></span><input name="isGift" type="checkbox"' + boolChecked(savedGift) + '><i></i></label><div class="chatgpt-order-gift-extra"' + (savedGift ? "" : " hidden") + ' data-chatgpt-go-gift-extra><div class="chatgpt-order-gift-note"><strong>🎁 Хотите устроить сюрприз?</strong><p>Вы выбираете подписку и указываете получателя. Мы сами свяжемся с ним, уточним данные и подключим подписку без передачи логинов и паролей.</p></div><div class="chatgpt-order-gift-panel"><h4 class="chatgpt-order-section-title">Данные подарка</h4><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Отправитель</span><small>Укажем в подарке</small><input class="chatgpt-order-field__control" name="giftSender" type="text" autocomplete="name" placeholder="Никита" value="' + escapeHtml(String(draft.giftSender || "")) + '"></label><label class="chatgpt-order-field"><span>Получатель</span><small>Укажем в подарке</small><input class="chatgpt-order-field__control" name="giftRecipient" type="text" autocomplete="off" placeholder="Артём" value="' + escapeHtml(String(draft.giftRecipient || "")) + '"></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftSender"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftRecipient"></p></div><label class="chatgpt-order-field chatgpt-order-field--full"><span>Где прислать подарок</span><select class="chatgpt-order-field__control" name="giftDeliveryMethod"><option value=""' + selected("", savedGiftDeliveryMethod) + '>Выберите способ</option><option value="telegram"' + selected("telegram", savedGiftDeliveryMethod) + '>Telegram</option><option value="vk"' + selected("vk", savedGiftDeliveryMethod) + '>VK</option><option value="whatsapp"' + selected("whatsapp", savedGiftDeliveryMethod) + '>WhatsApp</option><option value="email"' + selected("email", savedGiftDeliveryMethod) + '>Электронная почта</option></select></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftDeliveryMethod"></p><label class="chatgpt-order-field chatgpt-order-field--full"><span>Контакт получателя</span><input class="chatgpt-order-field__control" name="giftRecipientContact" type="text" autocomplete="off" placeholder="@telegram / vk.com/name / WhatsApp / name@mail.ru" value="' + escapeHtml(String(draft.giftRecipientContact || "")) + '"></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftRecipientContact"></p><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Дата отправки</span><input class="chatgpt-order-field__control" name="giftSendDate" type="date" min="' + escapeHtml(todayIso) + '" value="' + escapeHtml(String(draft.giftSendDate || "")) + '"></label><label class="chatgpt-order-field"><span>Время отправки (МСК)</span><input class="chatgpt-order-field__control" name="giftSendTime" type="time" value="' + escapeHtml(String(draft.giftSendTime || "")) + '"></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftSendDate"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftSendTime"></p></div><p class="chatgpt-order-gift-time-note"><strong>Подарки отправляем с 10:00 до 20:00 МСК.</strong><br>Ставьте время минимум +4 часа от оформления. Если заказ ночью, доставка должна быть не раньше 14:00.</p><label class="chatgpt-order-field chatgpt-order-field--full"><span>Сообщение получателю</span><small>Пришлём вместе с подарком</small><textarea class="chatgpt-order-field__control" name="giftMessage" rows="4" placeholder="Напишите поздравление или пожелание">' + escapeHtml(String(draft.giftMessage || "")) + '</textarea></label></div></div>' +
             '<label class="chatgpt-order-soft-action"><span><strong>Пришёл по рекомендации</strong><small>Добавим контакт друга для скидки</small></span><input name="cameByRecommendation" type="checkbox"' + boolChecked(savedRecommendation) + '><i></i></label><div class="chatgpt-order-referral-extra"' + (savedRecommendation ? "" : " hidden") + ' data-chatgpt-go-referral-extra><strong>Кто пригласил</strong><p>Пришли от друга? Дайте ему 10% скидки за ваш первый заказ — напишите его контакт ниже.</p><input class="chatgpt-order-field__control" name="referrerContact" type="text" autocomplete="off" placeholder="@telegram" value="' + escapeHtml(String(draft.referrerContact || "")) + '"></div>' +
