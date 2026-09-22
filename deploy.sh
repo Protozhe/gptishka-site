@@ -42,9 +42,6 @@ git archive "origin/$DEPLOY_BRANCH" | tar -x -C "$VERIFY_DIR"
   cd "$VERIFY_DIR"
   node scripts/verify-production-release.mjs
 )
-cleanup_verify_dir
-trap - EXIT
-
 git reset --hard "origin/$DEPLOY_BRANCH"
 
 if [ -x node_modules/.bin/tsc ] && [ -x node_modules/.bin/vite ]; then
@@ -71,6 +68,8 @@ rsync -a --delete apps/admin-ui/dist/ admin/
 if [ -f "$VERIFY_DIR/admin/.htaccess" ]; then
   install -m 0644 "$VERIFY_DIR/admin/.htaccess" admin/.htaccess
 fi
+cleanup_verify_dir
+trap - EXIT
 
 SKIP_BACKEND_DEPLOY=0
 if [ ! -f "$ADMIN_ENV_FILE" ]; then
