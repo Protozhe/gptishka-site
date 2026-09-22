@@ -336,7 +336,7 @@ function isHiddenPublicVpnProduct(item) {
 
   const normalizedTags = tags.map((tag) => String(tag || "").trim().toLowerCase());
   const isAiSubscription = normalizedTags.some((tag) =>
-    ["chatgpt", "claude", "supergrok", "grok", "perplexity", "pplx", "gemini", "google-ai", "suno"].includes(tag)
+    ["chatgpt", "claude", "supergrok", "grok", "perplexity", "pplx", "gemini", "google-ai", "suno", "devin", "cognition-ai"].includes(tag)
   );
   if (isAiSubscription) return false;
 
@@ -2455,6 +2455,10 @@ function createApp() {
 
   app.get(["/perplexity", "/perplexity/"], (_req, res) => {
     sendFreshHtml(res, path.join(__dirname, "perplexity.html"));
+  });
+
+  app.get(["/devin", "/devin/", "/devin.html"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "devin.html"));
   });
 
   app.get(["/gemini", "/gemini/"], (_req, res) => {

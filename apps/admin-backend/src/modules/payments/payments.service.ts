@@ -13,6 +13,7 @@ import crypto from "crypto";
 import { resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { resolveActivationVariant } from "../../common/utils/product-activation-variants";
 import { canonicalProductKey } from "../../common/utils/product-key";
+import { encryptManualLoginCredentials, ManualLoginCredentials } from "../../common/security/manual-login-credentials";
 
 const ORDER_SOURCE_SITE = "site";
 const ORDER_SOURCE_TELEGRAM = "telegram";
@@ -175,6 +176,7 @@ export const paymentsService = {
     telegramChatId?: string | null;
     issueRedeemToken?: boolean;
     orderDetails?: Prisma.InputJsonValue | null;
+    manualLoginCredentials?: ManualLoginCredentials;
   }) {
     const product = await prisma.product.findUnique({ where: { id: input.productId } });
     if (!product || !product.isActive || product.isArchived) {
@@ -207,8 +209,22 @@ export const paymentsService = {
         throw new AppError("Digital codes are temporarily out of stock", 409);
       }
     }
+    const isDevinManualLogin =
+      selectedVariant.deliveryType === "manual_login" &&
+      (Array.isArray(product.tags) ? product.tags : []).some((tag) => String(tag || "").trim().toLowerCase() === "devin");
+    if (isDevinManualLogin && (!input.manualLoginCredentials?.login || !input.manualLoginCredentials?.password)) {
+      throw new AppError("Devin account login and password are required", 422);
+    }
+    const protectedAccount = isDevinManualLogin
+      ? {
+          ...(rawOrderDetails?.account && typeof rawOrderDetails.account === "object" ? rawOrderDetails.account : {}),
+          status: "has_account",
+          credentialsEncrypted: encryptManualLoginCredentials(input.manualLoginCredentials as ManualLoginCredentials),
+        }
+      : rawOrderDetails?.account;
     const effectiveOrderDetails = {
       ...(rawOrderDetails || {}),
+      ...(protectedAccount ? { account: protectedAccount } : {}),
       selection: {
         ...(rawOrderDetails?.selection && typeof rawOrderDetails.selection === "object" ? rawOrderDetails.selection : {}),
         activationVariant: selectedVariant.key,

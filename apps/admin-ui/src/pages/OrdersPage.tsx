@@ -185,6 +185,7 @@ export default function OrdersPage() {
   const [tokenDialog, setTokenDialog] = useState<null | { orderId: string; token: string; storedAt: string | null; expiresAt: string | null }>(
     null
   );
+  const [credentialsDialog, setCredentialsDialog] = useState<null | { orderId: string; login: string; password: string }>(null);
 
   const params = useMemo(
     () => ({
@@ -287,6 +288,16 @@ export default function OrdersPage() {
     onError: (error: unknown) => {
       setCheckMessage(getCheckErrorMessage(error));
     },
+  });
+
+  const readManualLoginCredentials = useMutation({
+    mutationFn: async (id: string) => (await api.get(`/orders/${id}/manual-login-credentials`)).data,
+    onMutate: (id: string) => setCheckMessage(`Открываем защищённые данные заказа ${id}...`),
+    onSuccess: (data: any, orderId: string) => {
+      setCredentialsDialog({ orderId, login: String(data?.login || ""), password: String(data?.password || "") });
+      setCheckMessage("Данные аккаунта открыты; просмотр записан в журнал аудита");
+    },
+    onError: (error: unknown) => setCheckMessage(getCheckErrorMessage(error)),
   });
 
   async function copyTokenFromDialog() {
@@ -550,6 +561,17 @@ export default function OrdersPage() {
                       >
                         {readActivationToken.isPending && readActivationToken.variables === o.id ? "Загружаем..." : "Токен клиента"}
                       </button>
+                      {checkoutDetails?.account?.credentialsEncrypted ? (
+                        <button
+                          className="btn-secondary"
+                          onClick={() => readManualLoginCredentials.mutate(o.id)}
+                          disabled={readManualLoginCredentials.isPending}
+                        >
+                          {readManualLoginCredentials.isPending && readManualLoginCredentials.variables === o.id
+                            ? "Открываем..."
+                            : "Логин и пароль Devin"}
+                        </button>
+                      ) : null}
                       <button
                         className="btn-secondary"
                         onClick={() => completeActivation.mutate(o.id)}
@@ -738,7 +760,24 @@ export default function OrdersPage() {
           </div>
         </div>
       ) : null}
+      {credentialsDialog ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-xl rounded-2xl bg-white p-5 shadow-2xl dark:bg-slate-900">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-semibold">Данные аккаунта Devin</div>
+                <div className="text-xs text-slate-500">Заказ {credentialsDialog.orderId} · просмотр записан в аудит</div>
+              </div>
+              <button className="btn-secondary" onClick={() => setCredentialsDialog(null)}>Закрыть</button>
+            </div>
+            <div className="space-y-3">
+              <label className="block text-sm font-medium">Логин<input className="input mt-1 w-full" value={credentialsDialog.login} readOnly /></label>
+              <label className="block text-sm font-medium">Пароль<input className="input mt-1 w-full font-mono" value={credentialsDialog.password} readOnly /></label>
+              <p className="text-xs text-amber-700 dark:text-amber-300">Не пересылайте эти данные и не запрашивайте у клиента коды 2FA или резервные коды.</p>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
-

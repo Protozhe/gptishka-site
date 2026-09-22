@@ -1015,3 +1015,277 @@ html body.home-catalog-body .ai-directory-card--appstore:focus-within .ai-direct
     font-size: 1.12rem !important;
   }
 }
+
+/* Devin uses the same gradient-and-mask brand system as the other AI cards. */
+.ai-directory-card--devin .ai-directory-card__media {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 50% 42%, #2968d7 0%, #102c69 48%, #061227 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(128, 202, 255, .18);
+}
+
+.ai-directory-card--devin .ai-directory-card__media::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: "";
+  background: linear-gradient(145deg, #f7fbff 0%, #dbeaff 100%);
+  opacity: 0;
+  transition: opacity .22s ease;
+  pointer-events: none;
+}
+
+.ai-directory-card__brand-mark--devin {
+  width: 58%;
+  height: 58%;
+  -webkit-mask-image: url("/assets/img/services/devin-symbol-mask-v1.svg?v=20260922-devin-brand2");
+  mask-image: url("/assets/img/services/devin-symbol-mask-v1.svg?v=20260922-devin-brand2");
+}
+
+.ai-directory-card--devin:hover .ai-directory-card__media,
+.ai-directory-card--devin:focus-within .ai-directory-card__media {
+  background: linear-gradient(145deg, #f7fbff 0%, #dbeaff 100%) !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+.ai-directory-card--devin:hover .ai-directory-card__media::before,
+.ai-directory-card--devin:focus-within .ai-directory-card__media::before {
+  opacity: 1;
+}
+
+.ai-directory-card--devin:hover .ai-directory-card__brand-mark--devin,
+.ai-directory-card--devin:focus-within .ai-directory-card__brand-mark--devin {
+  background: #1d56bd;
+}
+
+html body.home-catalog-body .ai-directory-card--devin .ai-directory-card__media {
+  background: radial-gradient(circle at 50% 42%, #2968d7 0%, #102c69 48%, #061227 100%) !important;
+}
+
+html body.home-catalog-body .ai-directory-card--devin .ai-directory-card__media::before {
+  z-index: 0 !important;
+  background: linear-gradient(145deg, #f7fbff 0%, #dbeaff 100%) !important;
+  opacity: 0 !important;
+}
+
+html body.home-catalog-body .ai-directory-card--devin:hover .ai-directory-card__media,
+html body.home-catalog-body .ai-directory-card--devin:focus-within .ai-directory-card__media {
+  background: linear-gradient(145deg, #f7fbff 0%, #dbeaff 100%) !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+html body.home-catalog-body .ai-directory-card--devin:hover .ai-directory-card__media::before,
+html body.home-catalog-body .ai-directory-card--devin:focus-within .ai-directory-card__media::before {
+  opacity: 1 !important;
+}
+
+.service-product-gallery--devin {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: clamp(28px, 3vw, 38px);
+  background: radial-gradient(circle at 50% 42%, #2968d7 0%, #102c69 48%, #061227 100%);
+  box-shadow: 0 24px 68px rgba(1, 10, 25, 0.38), inset 0 1px 0 rgba(128, 202, 255, 0.18);
+}
+
+.service-product-gallery__devin-mark {
+  display: block;
+  width: 58%;
+  height: 58%;
+  background: #fff;
+  -webkit-mask-image: url("/assets/img/services/devin-symbol-mask-v1.svg?v=20260922-devin-brand2");
+  mask-image: url("/assets/img/services/devin-symbol-mask-v1.svg?v=20260922-devin-brand2");
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
+  padding: 10px;
+  object-fit: contain;
+  background: radial-gradient(circle at 50% 42%, #2968d7 0%, #102c69 58%, #061227 100%);
+}
+
+.chatgpt-order-security-note {
+  margin: 14px 0 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(68, 186, 255, .22);
+  border-radius: 16px;
+  background: rgba(20, 123, 189, .09);
+  color: rgba(236, 247, 255, .82);
+  font-size: .86rem;
+  line-height: 1.55;
+}
+
+.chatgpt-order-security-note strong {
+  color: #73d2ff;
+}
+
+/* Keep the Devin checkout structurally aligned with the established AI checkout. */
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px 18px;
+  align-items: center;
+  padding: 18px 58px 18px 18px;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::before,
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::after,
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::before,
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::after {
+  content: none;
+  display: none;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal :is(.chatgpt-order-summary-card__top, .chatgpt-order-main) {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: #07111f;
+  box-shadow: 0 14px 30px rgba(45, 151, 255, 0.2);
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal :is(.chatgpt-order-summary-card__body, .chatgpt-order-info) {
+  min-width: 0;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__body .chatgpt-order-title {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal :is(.chatgpt-order-summary-card__meta, .chatgpt-order-meta) {
+  margin: 4px 0 0;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal :is(.chatgpt-order-summary-card__price, .chatgpt-order-total) {
+  align-self: center;
+  justify-self: end;
+  min-width: 132px;
+  max-width: 180px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  text-align: right;
+  box-shadow: none;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price::before {
+  content: none;
+  display: none;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-total span,
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-total strong {
+  display: block;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-total span {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-total strong {
+  margin-top: 5px;
+  font-size: clamp(23px, 3vw, 28px);
+  line-height: 1;
+  font-weight: 850;
+  letter-spacing: -.055em;
+  white-space: nowrap;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal :is(.chatgpt-order-summary-card__chips, .chatgpt-order-chips) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 10px 0 0;
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
+  grid-column: 1 / -1;
+  margin: 0 0 0 74px;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option {
+  position: relative;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-payment-logo {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 16px;
+  }
+
+  .service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal :is(.chatgpt-order-summary-card__price, .chatgpt-order-total) {
+    justify-self: start;
+    max-width: none;
+    text-align: left;
+  }
+
+  .service-page[data-service-page="devin"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
+    margin-left: 0;
+  }
+}

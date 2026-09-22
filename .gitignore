@@ -41,6 +41,9 @@ apps/admin-ui/dist.prev-*/
 # Temporary maintenance and migration helpers
 _tmp_*
 tmp_*
+.codex-deploy-*
+_prod_*
+node_modules.partial-*
 apps/admin-backend/tmp-*.js
 apps/admin-backend/data/*-backup-*.json
 _head_*

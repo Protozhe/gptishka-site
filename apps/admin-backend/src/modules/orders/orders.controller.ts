@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../../common/http/async-handler";
 import { ordersService } from "./orders.service";
 import { storefrontTickerService } from "./storefront-ticker.service";
+import { decryptManualLoginCredentials } from "../../common/security/manual-login-credentials";
+import { writeAuditLog } from "../audit/audit.service";
+import { AppError } from "../../common/errors/app-error";
 
 function actor(req: Request) {
   return {
@@ -26,6 +29,25 @@ export const listOrders = asyncHandler(async (req: Request, res: Response) => {
 export const getOrder = asyncHandler(async (req: Request, res: Response) => {
   const data = await ordersService.getById(String(req.params.id));
   res.json(data);
+});
+
+export const getOrderManualLoginCredentials = asyncHandler(async (req: Request, res: Response) => {
+  const orderId = String(req.params.id || "");
+  const order = await ordersService.getById(orderId) as any;
+  const details = order?.orderDetails && typeof order.orderDetails === "object" ? order.orderDetails : {};
+  const account = details.account && typeof details.account === "object" ? details.account : {};
+  if (!account.credentialsEncrypted) throw new AppError("Credentials are not available", 404);
+  const credentials = decryptManualLoginCredentials(account.credentialsEncrypted);
+  await writeAuditLog({
+    ...actor(req),
+    entityType: "Order",
+    entityId: orderId,
+    action: "manual_login_credentials.reveal",
+    before: null,
+    after: { revealed: true },
+  });
+  res.setHeader("Cache-Control", "no-store");
+  res.json(credentials);
 });
 
 export const createOrder = asyncHandler(async (req: Request, res: Response) => {
