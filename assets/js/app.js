@@ -3226,7 +3226,12 @@ function initActivationResumeShortcut() {
     };
     return (Array.isArray(items) ? items : []).filter(item => {
       const deliveryKey = getServiceDeliveryKey(item);
-      if ((key === "claude" || key === "grok") && deliveryKey !== "id") return false;
+      if (key === "claude") {
+        const planKey = getServicePlanKey(item, key);
+        if (planKey === "pro" && deliveryKey !== "id") return false;
+        if (["max-5x", "max-20x"].includes(planKey) && deliveryKey !== "support") return false;
+      }
+      if (key === "grok" && deliveryKey !== "id") return false;
       if (key === "devin" && deliveryKey !== "login") return false;
       if (allowedDurations[key] && !allowedDurations[key].has(getServiceDurationKey(item))) return false;
       if (key === "claude" || key === "grok" || key === "devin") return true;
@@ -3310,6 +3315,7 @@ function initActivationResumeShortcut() {
     const key = normalizeAiServiceKey(serviceKey);
     const value = String(deliveryKey || "").trim();
     if ((key === "claude" || key === "grok") && value === "id") return isEnPage ? "By ID" : "По ID";
+    if (key === "claude" && value === "support") return isEnPage ? "Account sign-in" : "Со входом в аккаунт";
     if (key === "devin" && value === "login") return isEnPage ? "Account login" : "Со входом в аккаунт";
     if (key === "midjourney" && value === "link") return isEnPage ? "Payment link" : "По ссылке на оплату";
     if (key === "vpn" && value === "vpn") return isEnPage ? "VLESS key" : "VLESS-ключ";
@@ -5027,8 +5033,13 @@ function initActivationResumeShortcut() {
       ? String(title || getAiOrderModalSummaryTitle(serviceDisplayName, summaryPlanLabel || planLabel)).trim()
       : getAiOrderModalSummaryTitle(serviceDisplayName, summaryPlanLabel || planLabel);
     const showIdDelivery = (resolvedServiceKey === "claude" || resolvedServiceKey === "grok") && deliveryKey === "id";
-    const summaryDescription = [durationLabel, showIdDelivery ? deliveryLabel : ""].filter(Boolean).join(" · ");
-    const deliveryChip = showIdDelivery ? '<span>' + escapeHtml(deliveryLabel) + '</span>' : '';
+    const isClaudeMaxManual = resolvedServiceKey === "claude" && ["max-5x", "max-20x"].includes(planKey) && deliveryKey === "support";
+    const showDeliveryLabel = showIdDelivery || isClaudeMaxManual;
+    const summaryDescription = [durationLabel, showDeliveryLabel ? deliveryLabel : ""].filter(Boolean).join(" · ");
+    const deliveryChip = showDeliveryLabel ? '<span>' + escapeHtml(deliveryLabel) + '</span>' : '';
+    const manualClaudeMaxNote = isClaudeMaxManual
+      ? '<p class="chatgpt-order-security-note">После оплаты менеджер свяжется с вами и запросит данные аккаунта Claude для подключения. В форме заказа логин и пароль не нужны.</p>'
+      : '';
     const draft = readChatGptGoOrderDraft();
     const savedEmail = String(draft.contactEmail || localStorage.getItem("checkout_email") || "").trim().toLowerCase();
     const savedTelegram = String(draft.telegram || "").trim();
@@ -5073,7 +5084,7 @@ function initActivationResumeShortcut() {
             '</div>' +
             '<div class="chatgpt-order-summary-card__price chatgpt-order-total"><span>Итого</span><strong data-chatgpt-go-total>' + escapeHtml(format(total)) + '</strong></div>' +
             '<div class="chatgpt-order-summary-lines"><div data-chatgpt-go-summary-discount' + (discount > 0 ? "" : " hidden") + '><span>Скидка:</span><strong>−' + escapeHtml(format(discount)) + '</strong></div></div>' +
-          '</section>' +
+          '</section>' + manualClaudeMaxNote +
           '<section class="chatgpt-order-section"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Контакты</h4><p>Для статуса заказа и связи</p></div><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Почта</span><small>Нужна для связи по заказу</small><input class="chatgpt-order-field__control" name="contactEmail" type="email" autocomplete="email" placeholder="name@email.com" value="' + escapeHtml(savedEmail) + '" required></label><label class="chatgpt-order-field"><span>Telegram</span><small>Сюда придет вся информация по заказу</small><input class="chatgpt-order-field__control" name="telegram" type="text" autocomplete="off" placeholder="@username" value="' + escapeHtml(savedTelegram) + '" required></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="contactEmail"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="telegram"></p></div></section>' + accountSectionMarkup +
           '<section class="chatgpt-order-section chatgpt-order-soft-actions"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Дополнительно</h4></div>' +
             '<label class="chatgpt-order-soft-action"><span><strong>Оформить в подарок</strong><small>Покажем поля получателя после включения</small></span><input name="isGift" type="checkbox"' + boolChecked(savedGift) + '><i></i></label><div class="chatgpt-order-gift-extra"' + (savedGift ? "" : " hidden") + ' data-chatgpt-go-gift-extra><div class="chatgpt-order-gift-note"><strong>🎁 Хотите устроить сюрприз?</strong><p>Вы выбираете подписку и указываете получателя. Мы сами свяжемся с ним, уточним данные и подключим подписку без передачи логинов и паролей.</p></div><div class="chatgpt-order-gift-panel"><h4 class="chatgpt-order-section-title">Данные подарка</h4><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Отправитель</span><small>Укажем в подарке</small><input class="chatgpt-order-field__control" name="giftSender" type="text" autocomplete="name" placeholder="Никита" value="' + escapeHtml(String(draft.giftSender || "")) + '"></label><label class="chatgpt-order-field"><span>Получатель</span><small>Укажем в подарке</small><input class="chatgpt-order-field__control" name="giftRecipient" type="text" autocomplete="off" placeholder="Артём" value="' + escapeHtml(String(draft.giftRecipient || "")) + '"></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftSender"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftRecipient"></p></div><label class="chatgpt-order-field chatgpt-order-field--full"><span>Где прислать подарок</span><select class="chatgpt-order-field__control" name="giftDeliveryMethod"><option value=""' + selected("", savedGiftDeliveryMethod) + '>Выберите способ</option><option value="telegram"' + selected("telegram", savedGiftDeliveryMethod) + '>Telegram</option><option value="vk"' + selected("vk", savedGiftDeliveryMethod) + '>VK</option><option value="whatsapp"' + selected("whatsapp", savedGiftDeliveryMethod) + '>WhatsApp</option><option value="email"' + selected("email", savedGiftDeliveryMethod) + '>Электронная почта</option></select></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftDeliveryMethod"></p><label class="chatgpt-order-field chatgpt-order-field--full"><span>Контакт получателя</span><input class="chatgpt-order-field__control" name="giftRecipientContact" type="text" autocomplete="off" placeholder="@telegram / vk.com/name / WhatsApp / name@mail.ru" value="' + escapeHtml(String(draft.giftRecipientContact || "")) + '"></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftRecipientContact"></p><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Дата отправки</span><input class="chatgpt-order-field__control" name="giftSendDate" type="date" min="' + escapeHtml(todayIso) + '" value="' + escapeHtml(String(draft.giftSendDate || "")) + '"></label><label class="chatgpt-order-field"><span>Время отправки (МСК)</span><input class="chatgpt-order-field__control" name="giftSendTime" type="time" value="' + escapeHtml(String(draft.giftSendTime || "")) + '"></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftSendDate"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftSendTime"></p></div><p class="chatgpt-order-gift-time-note"><strong>Подарки отправляем с 10:00 до 20:00 МСК.</strong><br>Ставьте время минимум +4 часа от оформления. Если заказ ночью, доставка должна быть не раньше 14:00.</p><label class="chatgpt-order-field chatgpt-order-field--full"><span>Сообщение получателю</span><small>Пришлём вместе с подарком</small><textarea class="chatgpt-order-field__control" name="giftMessage" rows="4" placeholder="Напишите поздравление или пожелание">' + escapeHtml(String(draft.giftMessage || "")) + '</textarea></label></div></div>' +

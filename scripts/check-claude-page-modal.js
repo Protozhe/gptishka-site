@@ -21,7 +21,7 @@ function requireCssRegex(pattern, label) {
 }
 
 const expectedAssetVersion = "20260723-checkout-controls1";
-const expectedJsAssetVersion = "20260902-claude-auto1";
+const expectedJsAssetVersion = "20260923-claude-max-login1";
 
 [
   ["service-page--constructor", "claude.html: constructor page class"],
@@ -29,7 +29,6 @@ const expectedJsAssetVersion = "20260902-claude-auto1";
   ['data-service-layout="constructor"', "claude.html: constructor layout marker"],
   ["service-constructor-shell", "claude.html: constructor shell"],
   ["service-product-gallery", "claude.html: product gallery"],
-  ["/assets/img/services/claude-card.png?v=20260618-claude-logo2", "claude.html: Claude product image cache-bust"],
   ["service-selected-plan", "claude.html: selected plan summary"],
   ['id="servicePlanFilters"', "claude.html: plan filter container"],
   ['id="serviceDurationFilters"', "claude.html: duration filter container"],
@@ -58,7 +57,7 @@ const expectedJsAssetVersion = "20260902-claude-auto1";
 [
   ["AI_ORDER_MODAL_SERVICE_KEYS", "app.js: shared AI modal service allowlist"],
   ["AI_ORDER_MODAL_SERVICE_CONFIG", "app.js: shared AI modal config"],
-  ['new Set(["chatgpt", "claude", "grok", "perplexity", "gemini", "suno", "vpn"])', "app.js: Claude in modal service allowlist"],
+  ['new Set(["chatgpt", "claude", "grok", "perplexity", "gemini", "suno", "devin", "midjourney", "vpn"])', "app.js: Claude in modal service allowlist"],
   ["isAiOrderModalServiceKey", "app.js: generic service check"],
   ["getAiOrderModalServiceConfig", "app.js: service-specific modal config lookup"],
   ['activationVariant === "withoutlogin"', "app.js: by-ID variant is kept separate from login activation"],
@@ -71,7 +70,9 @@ const expectedJsAssetVersion = "20260902-claude-auto1";
   ["function getServiceDeliveryDisplayLabel(serviceKey, deliveryKey)", "app.js: service-specific delivery display labels"],
   ['if ((key === "claude" || key === "grok") && value === "id") return isEnPage ? "By ID" : "По ID";', "app.js: Claude/Grok delivery displays as ID"],
   ["function getServiceDeliveryFilterKey(item, serviceKey)", "app.js: service-specific delivery filter key"],
-  ['if ((key === "claude" || key === "grok") && deliveryKey !== "id") return false;', "app.js: Claude/Grok expose ID products only"],
+  ['if (planKey === "pro" && deliveryKey !== "id") return false;', "app.js: Claude Pro keeps by-ID activation"],
+  ['if (["max-5x", "max-20x"].includes(planKey) && deliveryKey !== "support") return false;', "app.js: Claude Max offers manual connection only"],
+  ["После оплаты менеджер свяжется с вами", "app.js: Max checkout explains manager follow-up"],
   ["function getServiceConstructorPlanTitle(item, serviceKey, planLabel)", "app.js: constructor selected plan title helper"],
   ['return String(item?.title || planLabel || "").trim();', "app.js: selected plan uses the admin-managed product title"],
   ['const CLAUDE_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max-5x", "max-20x"]);', "app.js: Claude modal supports all three plans"],
@@ -81,7 +82,8 @@ const expectedJsAssetVersion = "20260902-claude-auto1";
 ].forEach(([marker, label]) => requireMarker(source, marker, label));
 
 [
-  ['new Set(["chatgpt", "claude", "grok", "perplexity", "gemini", "suno", "vpn"])', "app.min.js: shared AI modal allowlist"],
+  ['new Set(["chatgpt", "claude", "grok", "perplexity", "gemini", "suno", "devin", "midjourney", "vpn"])', "app.min.js: shared AI modal allowlist"],
+  ['if (["max-5x", "max-20x"].includes(planKey) && deliveryKey !== "support") return false;', "app.min.js: Claude Max offers manual connection only"],
   ['activationVariant === "withoutlogin"', "app.min.js: by-ID variant is kept separate from login activation"],
   ["claude-card.png?v=20260618-claude-logo2", "app.min.js: Claude modal logo cache-bust"],
   ["claude-card-hover.png?v=20260618-claude-logo2", "app.min.js: Claude hover logo cache-bust"],

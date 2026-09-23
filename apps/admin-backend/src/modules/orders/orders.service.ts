@@ -578,10 +578,13 @@ export const ordersService = {
         orderId: order.id,
         deliveryMode: "manual_login",
         status: "pending_manual",
+        productSlug,
+        productTitle,
         supportUrl: DEFAULT_SUPPORT_URL,
         supportEmail,
-        message:
-          "Заказ со входом принят. Менеджер обработает заявку вручную и подключит подписку на аккаунт, данные которого вы указали при оформлении.",
+        message: ["claude-5x-max", "claude-20x-max"].includes(productSlug)
+          ? "Оплата подтверждена. Менеджер свяжется с вами и запросит данные аккаунта Claude для подключения тарифа Max."
+          : "Заказ со входом принят. Менеджер обработает заявку вручную и подключит подписку на аккаунт, данные которого вы указали при оформлении.",
       };
     }
 

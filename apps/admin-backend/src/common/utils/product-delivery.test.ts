@@ -32,6 +32,21 @@ test("resolveOrderDeliveryType keeps with-login order details as manual login", 
   );
 });
 
+test("Claude Max support checkout remains a manual sign-in order", () => {
+  assert.equal(
+    resolveOrderDeliveryType(
+      {
+        selection: {
+          activationVariant: "withLogin",
+          deliveryMethod: "support",
+        },
+      },
+      ["claude", "delivery:manual_login"]
+    ),
+    "manual_login"
+  );
+});
+
 test("resolveOrderDeliveryType keeps direct gift-card code delivery isolated from activation", () => {
   assert.equal(
     resolveOrderDeliveryType(

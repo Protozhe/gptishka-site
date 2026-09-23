@@ -34,3 +34,19 @@ test("login choice still selects the manual variant", () => {
   assert.equal(selected.key, "withLogin");
   assert.equal(selected.deliveryType, "manual_login");
 });
+
+test("Claude Max support checkout selects the only enabled manual variant", () => {
+  const selected = resolveActivationVariant(
+    {
+      withLogin: { enabled: true, price: 13450, deliveryType: "manual_login" },
+      withoutLogin: { enabled: false, price: 13450, deliveryType: "support_claude" },
+    },
+    { price: 13450, deliveryType: "manual_login" },
+    "withLogin",
+    "support"
+  );
+  assert.equal(selected.key, "withLogin");
+  assert.equal(selected.enabled, true);
+  assert.equal(selected.price, 13450);
+  assert.equal(selected.deliveryType, "manual_login");
+});

@@ -1811,8 +1811,14 @@
         .map((value) => String(value || '').trim().toLowerCase())
         .join(' ');
       const isSteamKeyDelivery = productFingerprint.includes('steam') || productFingerprint.includes('mann co');
+      const isClaudeMaxDelivery = deliveryMode === 'manual_login' &&
+        (productFingerprint.includes('claude-5x-max') || productFingerprint.includes('claude-20x-max'));
       isSteamKeyDeliveryFlow = isSteamKeyDelivery;
-      const supportMessage = isSteamKeyDelivery ? STEAM_KEY_DELIVERY_MESSAGE : MANUAL_SUPPORT_MESSAGE;
+      const supportMessage = isSteamKeyDelivery
+        ? STEAM_KEY_DELIVERY_MESSAGE
+        : isClaudeMaxDelivery
+          ? 'A manager will contact you using the details in your order and ask for your Claude account details to activate Max. ' + MANUAL_SUPPORT_MESSAGE
+          : MANUAL_SUPPORT_MESSAGE;
       const defaultMessage = isSupportDelivery
         ? supportMessage
         : 'Login and password are not assigned yet. Please contact support or wait for manual assignment.';

@@ -64,7 +64,9 @@ for (const file of htmlFiles) {
       ["index.html", "catalog/index.html", "catalog/ai/index.html", "midjourney.html", "en/midjourney.html"].includes(file.replaceAll("\\", "/"));
     const isMidjourneyHoverUpdate = match[1] === "app.min.js" && match[2] === "20260923-midjourney-hover1" &&
       ["index.html", "catalog/index.html", "catalog/ai/index.html", "en/index.html", "en/catalog/ai/index.html"].includes(file.replaceAll("\\", "/"));
-    expect(expectedVersion.has(match[2]) || isMidjourneyUpdate || isMidjourneyHoverUpdate, `${file}: stale cache version for ${match[1]}`);
+    const isClaudeMaxUpdate = match[1] === "app.min.js" && match[2] === "20260923-claude-max-login1" &&
+      ["claude.html", "en/claude.html"].includes(file.replaceAll("\\", "/"));
+    expect(expectedVersion.has(match[2]) || isMidjourneyUpdate || isMidjourneyHoverUpdate || isClaudeMaxUpdate, `${file}: stale cache version for ${match[1]}`);
   }
 }
 

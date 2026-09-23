@@ -15,7 +15,7 @@
     title: "How we activate Claude",
     lead: "We pay for the subscription through the official checkout and guide you through every step.",
     step1: "Choose and pay for a plan",
-    step1Text: "Choose PRO, MAX 5x, or MAX 20x.",
+    step1Text: "Choose Claude Pro.",
     step2: "Follow the short guide",
     step2Text: "A secure form with clear prompts opens after payment.",
     step3: "Get your subscription",
@@ -40,7 +40,7 @@
     title: "Как подключим Claude",
     lead: "Оформим подписку официальным способом, а на каждом этапе покажем, что делать дальше.",
     step1: "Выберите и оплатите тариф",
-    step1Text: "Подойдёт PRO, MAX 5x или MAX 20x.",
+    step1Text: "Выберите Claude Pro.",
     step2: "Следуйте короткой инструкции",
     step2Text: "После оплаты откроется защищённая форма с понятными подсказками.",
     step3: "Получите подписку",
@@ -57,13 +57,35 @@
     understood: "Всё понятно"
   };
 
+  const maxCopy = isEnglish ? {
+    briefTitle: "Account sign-in with manager support",
+    briefText: "After payment, a manager will contact you and request the account details needed for activation.",
+    title: "How we connect Claude Max",
+    lead: "Max 5x and Max 20x are connected manually with sign-in to your account. No login or password is needed in the order form.",
+    step1Text: "Choose Max 5x or Max 20x and pay for your order.",
+    step2: "Wait for the manager",
+    step2Text: "We will contact you using the email or Telegram in your order and request the account details needed for activation.",
+    step3Text: "We will connect the selected Max plan and notify you when it is ready.",
+    resultText: "A specialist will handle your order after payment and stay in touch until activation is complete."
+  } : {
+    briefTitle: "Подключение со входом в аккаунт",
+    briefText: "После оплаты менеджер свяжется с вами и запросит данные аккаунта для подключения.",
+    title: "Как подключим Claude Max",
+    lead: "Max 5x и Max 20x подключаются вручную со входом в ваш аккаунт. В форме заказа логин и пароль не нужны.",
+    step1Text: "Выберите Max 5x или Max 20x и оплатите заказ.",
+    step2: "Дождитесь менеджера",
+    step2Text: "Мы свяжемся с вами по почте или в Telegram из заказа и запросим данные аккаунта для подключения.",
+    step3Text: "Подключим выбранный тариф Max и сообщим, когда всё будет готово.",
+    resultText: "После оплаты заказ обработает специалист и останется на связи до завершения подключения."
+  };
+
   document.body.classList.add("claude-onboarding-ready");
 
-  const markup = `
+  const markupFor = (planCopy) => `
     <section class="chatgpt-onboarding-brief" aria-label="${copy.briefLabel}">
       <div class="chatgpt-onboarding-brief__copy">
         <span class="chatgpt-onboarding-brief__mark" aria-hidden="true">✓</span>
-        <span class="chatgpt-onboarding-brief__text"><strong>${copy.briefTitle}</strong><small>${copy.briefText}</small></span>
+        <span class="chatgpt-onboarding-brief__text"><strong>${planCopy.briefTitle}</strong><small>${planCopy.briefText}</small></span>
       </div>
       <button class="chatgpt-onboarding-brief__details" type="button" data-claude-onboarding-open><span>${copy.how}</span><span class="chatgpt-onboarding-brief__arrow" aria-hidden="true">→</span></button>
     </section>`;
@@ -72,7 +94,8 @@
     const card = grid.querySelector(".price-card");
     const buyButton = card && card.querySelector(".pay-now-btn");
     if (!card || !buyButton || card.querySelector(".chatgpt-onboarding-brief")) return;
-    buyButton.insertAdjacentHTML("beforebegin", markup);
+    const planCopy = String(card.dataset.planKey || "").startsWith("max-") ? { ...copy, ...maxCopy } : copy;
+    buyButton.insertAdjacentHTML("beforebegin", markupFor(planCopy));
     const detailsButton = card.querySelector("[data-claude-onboarding-open]");
     if (detailsButton) {
       detailsButton.addEventListener("click", (event) => {
@@ -124,8 +147,24 @@
   const modal = document.querySelector("[data-claude-onboarding-modal]");
   let opener = null;
 
+  function setModalCopy(planCopy) {
+    const setText = (selector, value) => {
+      const element = modal.querySelector(selector);
+      if (element) element.textContent = value;
+    };
+    setText("#claudeOnboardingTitle", planCopy.title);
+    setText(".chatgpt-onboarding-modal__lead", planCopy.lead);
+    setText(".chatgpt-onboarding-step:nth-child(1) small", planCopy.step1Text);
+    setText(".chatgpt-onboarding-step:nth-child(2) strong", planCopy.step2);
+    setText(".chatgpt-onboarding-step:nth-child(2) small", planCopy.step2Text);
+    setText(".chatgpt-onboarding-step:nth-child(3) small", planCopy.step3Text);
+    setText(".chatgpt-onboarding-modal__note small", planCopy.resultText);
+  }
+
   function openModal(button) {
     opener = button;
+    const isMax = String(button.closest(".price-card")?.dataset.planKey || "").startsWith("max-");
+    setModalCopy(isMax ? { ...copy, ...maxCopy } : copy);
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("chatgpt-onboarding-is-open");
