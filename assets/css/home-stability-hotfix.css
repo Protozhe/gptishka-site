@@ -3643,9 +3643,9 @@ textarea.chatgpt-order-field__control {
 }
 
 /* ChatGPT page scoped emerald controls */
-[data-service-page="chatgpt"],
-.service-page[data-service-page="chatgpt"] ~ .payment-method-modal,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal {
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]),
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .payment-method-modal,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal {
   --gpt-green: #35f28f;
   --gpt-green-2: #18c878;
   --gpt-green-3: #0f8f5c;
@@ -3658,9 +3658,9 @@ textarea.chatgpt-order-field__control {
   --gpt-button-text-dark: #03130b;
 }
 
-[data-service-page="chatgpt"] .buy-btn,
-[data-service-page="chatgpt"] .pay-now-btn,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-submit {
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .buy-btn,
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .pay-now-btn,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-submit {
   position: relative;
   min-height: 48px;
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -3681,9 +3681,9 @@ textarea.chatgpt-order-field__control {
     filter 180ms ease;
 }
 
-[data-service-page="chatgpt"] .buy-btn:hover:not(:disabled),
-[data-service-page="chatgpt"] .pay-now-btn:hover:not(:disabled),
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-submit:hover:not(:disabled) {
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .buy-btn:hover:not(:disabled),
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .pay-now-btn:hover:not(:disabled),
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-submit:hover:not(:disabled) {
   transform: translateY(-1px);
   filter: saturate(1.08) brightness(1.03);
   box-shadow:
@@ -3692,16 +3692,16 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.44) !important;
 }
 
-[data-service-page="chatgpt"] .buy-btn:active:not(:disabled),
-[data-service-page="chatgpt"] .pay-now-btn:active:not(:disabled),
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-submit:active:not(:disabled) {
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .buy-btn:active:not(:disabled),
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .pay-now-btn:active:not(:disabled),
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-submit:active:not(:disabled) {
   transform: translateY(0) scale(0.985);
   box-shadow:
     0 8px 24px rgba(24, 200, 120, 0.24),
     inset 0 1px 0 rgba(255, 255, 255, 0.32) !important;
 }
 
-[data-service-page="chatgpt"] .service-filter-chip {
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .service-filter-chip {
   min-height: 44px;
   border-color: rgba(15, 143, 92, 0.22);
   border-radius: 999px;
@@ -3720,9 +3720,9 @@ textarea.chatgpt-order-field__control {
     filter 180ms ease;
 }
 
-[data-service-page="chatgpt"] .service-filter-chip:hover:not(.is-disabled),
-[data-service-page="chatgpt"] .service-filter-chip.is-active,
-[data-service-page="chatgpt"] .service-filter-chip[aria-pressed="true"] {
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .service-filter-chip:hover:not(.is-disabled),
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .service-filter-chip.is-active,
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .service-filter-chip[aria-pressed="true"] {
   transform: translateY(-1px);
   border-color: rgba(53, 242, 143, 0.54);
   background: linear-gradient(135deg, var(--gpt-green) 0%, var(--gpt-green-2) 52%, var(--gpt-green-3) 100%);
@@ -3733,7 +3733,7 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.38);
 }
 
-[data-service-page="chatgpt"] .service-filter-chip.is-disabled {
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .service-filter-chip.is-disabled {
   opacity: 0.42;
   cursor: not-allowed;
   transform: none;
@@ -3741,10 +3741,10 @@ textarea.chatgpt-order-field__control {
   box-shadow: none;
 }
 
-[data-service-page="chatgpt"] .service-back-link,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle,
-.service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__close {
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .service-back-link,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .payment-method-modal .payment-method-modal__close {
   border: 1px solid var(--gpt-button-border);
   border-color: var(--gpt-button-border) !important;
   border-radius: 999px;
@@ -3765,10 +3765,10 @@ textarea.chatgpt-order-field__control {
     box-shadow 180ms ease;
 }
 
-[data-service-page="chatgpt"] .service-back-link:hover,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn:hover:not(:disabled),
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle:hover:not(:disabled),
-.service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__close:hover {
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .service-back-link:hover,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn:hover:not(:disabled),
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle:hover:not(:disabled),
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .payment-method-modal .payment-method-modal__close:hover {
   transform: translateY(-1px);
   border-color: var(--gpt-green-border);
   background:
@@ -3780,15 +3780,15 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-promo .btn {
   background:
     linear-gradient(180deg, rgba(15, 23, 42, 0.84), rgba(15, 23, 42, 0.7)) !important;
   border-color: var(--gpt-button-border) !important;
   color: rgba(255, 255, 255, 0.9) !important;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__option,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .payment-method-modal .payment-method-modal__option,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label {
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   border-radius: 18px !important;
   background:
@@ -3804,8 +3804,8 @@ textarea.chatgpt-order-field__control {
     box-shadow 180ms ease;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__option:hover,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label:hover {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .payment-method-modal .payment-method-modal__option:hover,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label:hover {
   transform: translateY(-1px);
   border-color: rgba(53, 242, 143, 0.36) !important;
   background:
@@ -3816,9 +3816,9 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__option.is-active,
-.service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__option[aria-pressed="true"],
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label:has(input:checked) {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .payment-method-modal .payment-method-modal__option.is-active,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .payment-method-modal .payment-method-modal__option[aria-pressed="true"],
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label:has(input:checked) {
   border-color: rgba(53, 242, 143, 0.58) !important;
   background:
     linear-gradient(180deg, rgba(53, 242, 143, 0.16), rgba(15, 23, 42, 0.82)) !important;
@@ -3828,50 +3828,50 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__name,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label strong {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .payment-method-modal .payment-method-modal__name,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label strong {
   color: #ffffff !important;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__hint,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label small {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .payment-method-modal .payment-method-modal__hint,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label small {
   color: rgba(255, 255, 255, 0.68) !important;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment input {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment input {
   accent-color: var(--gpt-green-2);
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-extra {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-extra {
   display: grid;
   gap: 12px;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-extra[hidden] {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-extra[hidden] {
   display: none;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-note {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-note {
   padding: 12px 14px;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-note p {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-note p {
   margin-bottom: 0;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-panel {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-panel {
   display: grid;
   gap: 12px;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-details {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 18px;
   background: rgba(15, 23, 42, 0.52);
   overflow: hidden;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -3883,29 +3883,29 @@ textarea.chatgpt-order-field__control {
   letter-spacing: -0.01em;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary::after {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary::after {
   content: "＋";
   color: rgba(53, 242, 143, 0.82);
   font-size: 18px;
   line-height: 1;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details[open] > summary::after {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-details[open] > summary::after {
   content: "−";
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details__body {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-details__body {
   display: grid;
   gap: 12px;
   padding: 0 14px 14px;
 }
 
 /* ChatGPT order modal compact premium visual refresh */
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal {
   font-family: "Manrope", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__dialog {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__dialog {
   position: relative;
   background:
     radial-gradient(circle at 14% 0%, rgba(53, 242, 143, 0.11), transparent 34%),
@@ -3916,7 +3916,7 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close {
   top: 14px;
   right: 14px;
   width: 38px;
@@ -3933,18 +3933,18 @@ textarea.chatgpt-order-field__control {
   transform: none !important;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close:hover,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close:active {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close:hover,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close:active {
   background: rgba(245, 251, 248, 0.96) !important;
   color: #101827 !important;
   transform: none !important;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-card {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-card {
   color: #101827;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-section {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-section {
   border-color: rgba(142, 160, 190, 0.2);
   background: rgba(255, 255, 255, 0.72);
   box-shadow:
@@ -3952,19 +3952,19 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-section__head h4,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-section-title {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-section__head h4,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-section-title {
   color: #101827;
   font-weight: 850;
   letter-spacing: -0.025em;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-section__head p,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-field small {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-section__head p,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-field small {
   color: rgba(21, 32, 51, 0.58);
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -3981,15 +3981,15 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::before,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::after,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::before,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::after {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::before,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card::after,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::before,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline::after {
   content: none;
   display: none;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__top {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__top {
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr);
   gap: 28px;
@@ -3997,7 +3997,7 @@ textarea.chatgpt-order-field__control {
   min-width: 0;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-main {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-main {
   min-width: 0;
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr);
@@ -4005,7 +4005,7 @@ textarea.chatgpt-order-field__control {
   gap: 28px;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
   width: 56px;
   height: 56px;
   border-radius: 16px;
@@ -4013,11 +4013,11 @@ textarea.chatgpt-order-field__control {
   box-shadow: 0 14px 30px rgba(24, 200, 120, 0.18);
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__body {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__body {
   min-width: 0;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-info {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-info {
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -4027,14 +4027,14 @@ textarea.chatgpt-order-field__control {
   transform: none;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   gap: 12px;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__body .chatgpt-order-title {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__body .chatgpt-order-title {
   margin: 0;
   padding: 0;
   border: 0;
@@ -4051,8 +4051,8 @@ textarea.chatgpt-order-field__control {
   transform: none;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__meta,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-meta {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__meta,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-meta {
   margin: 4px 0 0;
   color: rgba(21, 32, 51, 0.62);
   font-size: 13px;
@@ -4063,8 +4063,8 @@ textarea.chatgpt-order-field__control {
   transform: none;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-total {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-total {
   align-self: center;
   justify-self: end;
   min-width: 132px;
@@ -4082,12 +4082,12 @@ textarea.chatgpt-order-field__control {
   transform: none;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price::before {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price::before {
   content: none;
   display: none;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-total span {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-total span {
   display: block;
   margin: 0;
   color: rgba(21, 32, 51, 0.5);
@@ -4098,7 +4098,7 @@ textarea.chatgpt-order-field__control {
   text-transform: uppercase;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-total strong {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-total strong {
   display: block;
   margin-top: 5px;
   color: #101827;
@@ -4109,8 +4109,8 @@ textarea.chatgpt-order-field__control {
   white-space: nowrap;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-chips {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
@@ -4120,7 +4120,7 @@ textarea.chatgpt-order-field__control {
   transform: none;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips span {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips span {
   min-height: 25px;
   padding: 6px 9px;
   border-radius: 999px;
@@ -4132,18 +4132,18 @@ textarea.chatgpt-order-field__control {
   font-weight: 760;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
   grid-column: 1 / -1;
   margin: 0 0 0 63px;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option {
   position: relative;
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr) 22px;
@@ -4164,7 +4164,7 @@ textarea.chatgpt-order-field__control {
   cursor: pointer;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option:hover {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option:hover {
   transform: translateY(-1px);
   border-color: rgba(24, 200, 120, 0.42) !important;
   background:
@@ -4174,8 +4174,8 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option:has(input:checked),
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option[aria-checked="true"] {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option:has(input:checked),
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option[aria-checked="true"] {
   border-color: rgba(24, 200, 120, 0.62) !important;
   background:
     linear-gradient(180deg, rgba(248, 255, 251, 1), rgba(230, 255, 242, 0.94)) !important;
@@ -4185,7 +4185,7 @@ textarea.chatgpt-order-field__control {
     inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option input {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option input {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -4196,7 +4196,7 @@ textarea.chatgpt-order-field__control {
   pointer-events: none;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-logo {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-payment-logo {
   width: 30px;
   height: 30px;
   border-radius: 10px;
@@ -4206,20 +4206,20 @@ textarea.chatgpt-order-field__control {
   overflow: hidden;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-logo img {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-payment-logo img {
   width: 22px;
   height: 22px;
   display: block;
   object-fit: contain;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-text {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-payment-text {
   display: grid;
   gap: 3px;
   min-width: 0;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-name {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-payment-name {
   display: block;
   color: #111827 !important;
   font-size: 14px;
@@ -4228,7 +4228,7 @@ textarea.chatgpt-order-field__control {
   letter-spacing: -0.01em;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-caption {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-payment-caption {
   display: block;
   color: rgba(21, 32, 51, 0.72) !important;
   font-size: 12px;
@@ -4238,15 +4238,15 @@ textarea.chatgpt-order-field__control {
   overflow-wrap: anywhere;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-name {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-name {
   color: #111827 !important;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-caption {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-caption {
   color: rgba(21, 32, 51, 0.72) !important;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-check {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-payment-check {
   position: relative;
   width: 20px;
   height: 20px;
@@ -4255,13 +4255,13 @@ textarea.chatgpt-order-field__control {
   background: rgba(255, 255, 255, 0.7);
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check {
   border-color: rgba(24, 200, 120, 0.85);
   background: #18c878;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-check::after {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-payment-check::after {
   content: "";
   position: absolute;
   left: 6px;
@@ -4274,21 +4274,21 @@ textarea.chatgpt-order-field__control {
   transform: rotate(45deg);
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check::after,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check::after {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check::after,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check::after {
   opacity: 1;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-password-wrap {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-password-wrap {
   position: relative;
   display: block;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-password-wrap .chatgpt-order-field__control {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-password-wrap .chatgpt-order-field__control {
   padding-right: 48px;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle {
   position: absolute;
   right: 8px;
   top: 50%;
@@ -4308,33 +4308,33 @@ textarea.chatgpt-order-field__control {
   transition: background 160ms ease, color 160ms ease;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:hover:not(:disabled),
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:active:not(:disabled),
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:focus-visible {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:hover:not(:disabled),
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:active:not(:disabled),
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal button.chatgpt-order-password-toggle:focus-visible {
   background: rgba(21, 32, 51, 0.06) !important;
   color: #101827 !important;
   box-shadow: none !important;
   transform: translateY(-50%) !important;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle svg {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-password-toggle svg {
   width: 18px;
   height: 18px;
   display: block;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-note {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-note {
   border: 1px solid rgba(142, 160, 190, 0.22);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.74);
   box-shadow: none;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-panel {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-panel {
   gap: 10px;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-details {
   border: 1px solid rgba(142, 160, 190, 0.28);
   border-radius: 18px;
   background:
@@ -4345,7 +4345,7 @@ textarea.chatgpt-order-field__control {
   overflow: hidden;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary {
   min-height: 52px;
   padding: 14px 16px;
   color: #1b2a41;
@@ -4354,11 +4354,11 @@ textarea.chatgpt-order-field__control {
   list-style: none;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary::-webkit-details-marker {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary::-webkit-details-marker {
   display: none;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary::after {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-details > summary::after {
   width: 22px;
   height: 22px;
   border-radius: 999px;
@@ -4370,17 +4370,17 @@ textarea.chatgpt-order-field__control {
   font-weight: 900;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details__body {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-details__body {
   gap: 12px;
   padding: 0 16px 16px;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details__body .chatgpt-order-grid {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-details__body .chatgpt-order-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-time-note {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-time-note {
   margin: 0;
   padding: 10px 12px;
   border: 1px solid rgba(142, 160, 190, 0.2);
@@ -4391,13 +4391,13 @@ textarea.chatgpt-order-field__control {
   line-height: 1.35;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-design-grid {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-design-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
   gap: 8px;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-design-option {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-design-option {
   min-height: 66px;
   padding: 8px;
   border: 1px solid rgba(142, 160, 190, 0.3);
@@ -4409,45 +4409,45 @@ textarea.chatgpt-order-field__control {
   font-weight: 760;
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-design-option:has(input:checked) {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-design-option:has(input:checked) {
   border-color: rgba(24, 200, 120, 0.7);
   box-shadow: 0 0 0 3px rgba(53, 242, 143, 0.1);
 }
 
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-design-option__thumb {
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-design-option__thumb {
   width: 30px;
   height: 30px;
   font-size: 18px;
 }
 
 @media (max-width: 640px) {
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card {
     grid-template-columns: 1fr;
     padding: 16px 54px 16px 14px;
   }
 
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__top {
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__top {
     grid-template-columns: 48px minmax(0, 1fr);
     gap: 16px;
   }
 
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-main {
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-main {
     grid-template-columns: 48px minmax(0, 1fr);
     gap: 16px;
   }
 
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__logo {
     width: 48px;
     height: 48px;
     border-radius: 14px;
   }
 
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline {
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__headline {
     grid-template-columns: 1fr;
   }
 
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price,
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-total {
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__price,
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-total {
     width: 100%;
     max-width: none;
     min-width: 0;
@@ -4455,21 +4455,21 @@ textarea.chatgpt-order-field__control {
     text-align: left;
   }
 
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips,
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-chips,
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-card__chips,
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-chips,
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-summary-lines {
     margin-left: 0;
   }
 
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment {
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment {
     grid-template-columns: 1fr;
   }
 
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-gift-details__body .chatgpt-order-grid {
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-gift-details__body .chatgpt-order-grid {
     grid-template-columns: 1fr;
   }
 
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-design-grid {
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-design-grid {
     display: flex;
     gap: 8px;
     overflow-x: auto;
@@ -4477,29 +4477,29 @@ textarea.chatgpt-order-field__control {
     scroll-snap-type: x proximity;
   }
 
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-design-option {
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-design-option {
     flex: 0 0 76px;
     scroll-snap-align: start;
   }
 }
 
-[data-service-page="chatgpt"] button:focus-visible,
-[data-service-page="chatgpt"] .buy-btn:focus-visible,
-[data-service-page="chatgpt"] a:focus-visible,
-.service-page[data-service-page="chatgpt"] ~ .payment-method-modal button:focus-visible,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button:focus-visible {
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) button:focus-visible,
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .buy-btn:focus-visible,
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) a:focus-visible,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .payment-method-modal button:focus-visible,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal button:focus-visible {
   outline: none;
   box-shadow:
     0 0 0 3px rgba(5, 5, 5, 0.9),
     0 0 0 6px rgba(53, 242, 143, 0.72) !important;
 }
 
-[data-service-page="chatgpt"] button:disabled,
-[data-service-page="chatgpt"] .buy-btn:disabled,
-[data-service-page="chatgpt"] .pay-now-btn:disabled,
-.service-page[data-service-page="chatgpt"] ~ .payment-method-modal button:disabled,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button:disabled,
-.service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal [aria-busy="true"] {
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) button:disabled,
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .buy-btn:disabled,
+:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .pay-now-btn:disabled,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .payment-method-modal button:disabled,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal button:disabled,
+.service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal [aria-busy="true"] {
   opacity: 0.52;
   cursor: not-allowed;
   transform: none;
@@ -4508,50 +4508,50 @@ textarea.chatgpt-order-field__control {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-service-page="chatgpt"] button,
-  [data-service-page="chatgpt"] .buy-btn,
-  [data-service-page="chatgpt"] .pay-now-btn,
-  [data-service-page="chatgpt"] .service-filter-chip,
-  [data-service-page="chatgpt"] .service-back-link,
-  .service-page[data-service-page="chatgpt"] ~ .payment-method-modal button,
-  .service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__option,
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button,
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label {
+  :is([data-service-page="chatgpt"], [data-service-page="midjourney"]) button,
+  :is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .buy-btn,
+  :is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .pay-now-btn,
+  :is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .service-filter-chip,
+  :is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .service-back-link,
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .payment-method-modal button,
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .payment-method-modal .payment-method-modal__option,
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal button,
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label {
     transition: none;
   }
 
-  [data-service-page="chatgpt"] button:hover,
-  [data-service-page="chatgpt"] .buy-btn:hover,
-  [data-service-page="chatgpt"] .pay-now-btn:hover,
-  [data-service-page="chatgpt"] .service-filter-chip:hover,
-  [data-service-page="chatgpt"] .service-back-link:hover,
-  .service-page[data-service-page="chatgpt"] ~ .payment-method-modal button:hover,
-  .service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__option:hover,
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button:hover,
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label:hover {
+  :is([data-service-page="chatgpt"], [data-service-page="midjourney"]) button:hover,
+  :is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .buy-btn:hover,
+  :is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .pay-now-btn:hover,
+  :is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .service-filter-chip:hover,
+  :is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .service-back-link:hover,
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .payment-method-modal button:hover,
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .payment-method-modal .payment-method-modal__option:hover,
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal button:hover,
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label:hover {
     transform: none;
   }
 }
 
 @media (max-width: 640px) {
-  [data-service-page="chatgpt"] button,
-  [data-service-page="chatgpt"] .buy-btn,
-  [data-service-page="chatgpt"] .pay-now-btn,
-  [data-service-page="chatgpt"] .service-filter-chip,
-  [data-service-page="chatgpt"] .service-back-link,
-  .service-page[data-service-page="chatgpt"] ~ .payment-method-modal button,
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal button {
+  :is([data-service-page="chatgpt"], [data-service-page="midjourney"]) button,
+  :is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .buy-btn,
+  :is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .pay-now-btn,
+  :is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .service-filter-chip,
+  :is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .service-back-link,
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .payment-method-modal button,
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal button {
     min-height: 48px;
     font-size: 15px;
   }
 
-  [data-service-page="chatgpt"] .service-checkout-card .buy-btn,
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-submit {
+  :is([data-service-page="chatgpt"], [data-service-page="midjourney"]) .service-checkout-card .buy-btn,
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-submit {
     width: 100%;
   }
 
-  .service-page[data-service-page="chatgpt"] ~ .payment-method-modal .payment-method-modal__option,
-  .service-page[data-service-page="chatgpt"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label {
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .payment-method-modal .payment-method-modal__option,
+  .service-page:is([data-service-page="chatgpt"], [data-service-page="midjourney"]) ~ .chatgpt-go-order-modal .chatgpt-order-payment label {
     min-height: 58px;
   }
 }

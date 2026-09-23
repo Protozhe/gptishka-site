@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Отправить ссылку Midjourney — GPTishka</title>
+  <link rel="icon" href="/favicon.png?v=20260920-white-cat-round1" sizes="any">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/logo.min.css">
+  <style>
+    :root{color-scheme:dark;font-family:Manrope,system-ui,sans-serif;background:#10171f;color:#f3f7fb}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 20% 0%,#203d53 0,transparent 36%),linear-gradient(150deg,#101822,#192434 65%,#111922);font-family:Manrope,system-ui,sans-serif}
+    .mj-header{max-width:1120px;margin:auto;padding:22px 24px}.mj-header a{display:inline-flex;align-items:center;gap:12px;color:#f5faff;text-decoration:none;font-weight:800}.mj-header img{width:120px;height:auto;filter:brightness(0) invert(1)}
+    .mj-shell{max-width:1080px;margin:22px auto 72px;padding:0 24px}.mj-back{display:inline-flex;align-items:center;gap:8px;color:#b9d5e6;text-decoration:none;font-size:16px;font-weight:700;margin-bottom:20px}.mj-back:hover{color:white}
+    .mj-card{border:1px solid #3b5367;border-radius:26px;background:linear-gradient(160deg,#203142,#1b2735);box-shadow:0 26px 72px #080e1888;padding:clamp(24px,4vw,48px)}
+    .mj-kicker{display:inline-flex;align-items:center;gap:9px;color:#90def2;font-size:14px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}.mj-kicker:before{content:"";width:9px;height:9px;border-radius:50%;background:#50e0a1;box-shadow:0 0 15px #50e0a1}
+    h1{font-size:clamp(34px,5vw,52px);line-height:1.13;letter-spacing:-.04em;margin:16px 0 16px}p{line-height:1.65;color:#b9c7d5}.mj-lead{font-size:18px;max-width:900px;margin:0 0 28px}.mj-order{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 28px}.mj-order span{padding:10px 14px;border:1px solid #426078;border-radius:12px;background:#1b2e3e;color:#d4e8f1;font-size:15px;font-weight:700;overflow-wrap:anywhere}
+    .mj-steps{margin:0 0 28px;padding:26px 30px;border:1px solid #41566a;border-radius:18px;background:#1a2b3a}.mj-steps h2{font-size:20px;margin:0 0 12px}.mj-steps ol{margin:0;padding-left:24px;color:#c4d0dc;line-height:1.7;font-size:16px}.mj-steps li+li{margin-top:7px}.mj-steps a{color:#8adcf4}
+    .mj-form label{display:block;font-size:16px;font-weight:800;margin-bottom:12px}.mj-form small{display:block;color:#a9b9c9;font-size:14px;font-weight:500;margin-top:6px}.mj-form input{display:block;width:100%;min-height:58px;padding:16px 18px;border:1px solid #557085;border-radius:14px;background:#111e2b;color:#f6fbff;font:inherit;font-size:16px;outline:none}.mj-form input:focus{border-color:#84dcf0;box-shadow:0 0 0 3px #65cde433}.mj-form input::placeholder{color:#72869a}.mj-note{font-size:14px;margin:12px 0 20px;color:#a9bbcb}.mj-submit,.mj-retry{min-height:54px;border:0;border-radius:14px;padding:0 26px;background:linear-gradient(110deg,#72e4dd,#52c9ae);color:#0c2527;font:800 16px Manrope,system-ui,sans-serif;cursor:pointer}.mj-submit:disabled{opacity:.58;cursor:wait}.mj-retry{background:#2f5368;color:white;margin-top:12px}.mj-status{margin:0 0 20px;padding:16px 18px;border:1px solid #425e73;border-radius:14px;background:#1b3244;color:#d9ecf4;font-size:16px;line-height:1.55}.mj-status[hidden],.mj-form[hidden]{display:none}.mj-status.success{border-color:#3f957b;background:#173d39;color:#c9f7de}.mj-status.error{border-color:#b07171;background:#472a31;color:#ffd6d6}.mj-footer{margin-top:26px;color:#a9bac9;font-size:14px;text-align:center;line-height:1.6}.mj-footer a{color:#a6cfe0}
+    @media(max-width:540px){.mj-header{padding:18px 20px}.mj-shell{margin-top:8px;padding:0 16px}.mj-card{border-radius:20px}.mj-steps{padding:20px}}
+  </style>
+</head>
+<body>
+  <header class="mj-header"><a href="/"><img src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka"></a></header>
+  <main class="mj-shell">
+    <a class="mj-back" href="/midjourney">← К тарифам Midjourney</a>
+    <section class="mj-card" aria-labelledby="pageTitle">
+      <span class="mj-kicker">Последний шаг после оплаты</span>
+      <h1 id="pageTitle">Отправьте ссылку Midjourney</h1>
+      <p class="mj-lead">После подтверждения оплаты заказа GPTishka откройте оплату выбранного тарифа в своём аккаунте Midjourney и отправьте нам ссылку Stripe Checkout. Логин, пароль и данные банковской карты передавать не нужно.</p>
+      <div class="mj-order"><span id="orderNumber">Заказ: —</span><span id="orderPlan">Тариф: —</span></div>
+      <div class="mj-steps">
+        <h2>Как получить ссылку</h2>
+        <ol>
+          <li>Войдите в свой аккаунт на <a href="https://www.midjourney.com/account" target="_blank" rel="noopener noreferrer">midjourney.com</a> и откройте управление подпиской.</li>
+          <li>Выберите месячную оплату и тот же тариф, который заказали у GPTishka.</li>
+          <li>На странице оплаты Stripe скопируйте полную ссылку из адресной строки. Не оплачивайте её самостоятельно.</li>
+          <li>Вставьте ссылку ниже и нажмите «Отправить ссылку».</li>
+        </ol>
+      </div>
+      <div class="mj-status" id="status" role="status" aria-live="polite">Проверяем оплату заказа…</div>
+      <form class="mj-form" id="linkForm" hidden>
+        <label for="paymentLink">Ссылка на оплату Midjourney<small>Она должна начинаться с https://checkout.stripe.com/c/pay/cs_live_</small></label>
+        <input id="paymentLink" name="paymentLink" type="url" inputmode="url" autocomplete="off" spellcheck="false" maxlength="4096" placeholder="https://checkout.stripe.com/c/pay/cs_live_…" required>
+        <p class="mj-note">Форма проверяет формат ссылки. Менеджер отдельно проверит тариф и доступность страницы оплаты.</p>
+        <button class="mj-submit" type="submit" id="submitButton">Отправить ссылку</button>
+      </form>
+      <button class="mj-retry" type="button" id="retryButton" hidden>Проверить оплату ещё раз</button>
+    </section>
+    <p class="mj-footer">Если возникнут сложности, менеджер свяжется с вами по контакту из заказа. <a href="/oferta.html">Публичная оферта</a> · <a href="/politika.html">Политика конфиденциальности</a></p>
+  </main>
+  <script src="/assets/js/midjourney-link.js?v=20260923-mj1" defer></script>
+</body>
+</html>

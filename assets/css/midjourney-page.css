@@ -1,0 +1,39 @@
+html:has(main.service-page[data-service-page="midjourney"]){background:#181b20}
+html body:has(main.service-page[data-service-page="midjourney"]){--service-flat-accent:86,181,216;--service-flat-width:1180px;--service-flat-gutter:clamp(14px,3.5vw,46px);background:radial-gradient(circle at 17% 16%,rgba(86,181,216,.1),transparent 30%),linear-gradient(180deg,#22262d,#1d2127 46%,#181b20 100%)!important;background-attachment:fixed!important}
+html body:has(main.service-page[data-service-page="midjourney"]) :is(header,main.service-page,.gptishka-compliance-note){width:min(var(--service-flat-width),calc(100% - var(--service-flat-gutter)*2))!important;max-width:var(--service-flat-width)!important;margin-inline:auto!important}
+html body:has(main.service-page[data-service-page="midjourney"]) header{margin-top:8px!important;margin-bottom:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+.service-page[data-service-page="midjourney"] .service-product-gallery__brand-card--midjourney{display:block;width:100%;height:100%;border-radius:inherit;overflow:hidden;background:#142335}
+.service-page[data-service-page="midjourney"] .service-product-gallery__brand-card--midjourney img{display:block;width:100%;height:100%;object-fit:cover}
+.service-page[data-service-page="midjourney"] .service-product-gallery__viewport{overflow:hidden;border-radius:32px}
+.ai-directory-card--midjourney .ai-directory-card__media{background:#142335!important;overflow:hidden}
+.ai-directory-card--midjourney .ai-directory-card__media img{width:100%;height:100%;object-fit:cover;display:block}
+@media(max-width:720px){.service-page[data-service-page="midjourney"] .service-product-gallery__viewport{border-radius:24px}}
+
+/* Keep Midjourney checkout controls as responsive as ChatGPT Plus. */
+.service-page[data-service-page="midjourney"] .buy-btn,
+.service-page[data-service-page="midjourney"] .pay-now-btn,
+.service-page[data-service-page="midjourney"] ~ .chatgpt-go-order-modal .chatgpt-order-submit {
+  transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+
+@media (hover: hover) {
+  .service-page[data-service-page="midjourney"] .buy-btn:hover:not(:disabled),
+  .service-page[data-service-page="midjourney"] .pay-now-btn:hover:not(:disabled),
+  .service-page[data-service-page="midjourney"] ~ .chatgpt-go-order-modal .chatgpt-order-submit:hover:not(:disabled) {
+    background: linear-gradient(135deg, #75ffb0 0%, #32db90 52%, #15a86a 100%) !important;
+    color: #03130b !important;
+  }
+
+  .service-page[data-service-page="midjourney"] ~ .chatgpt-go-order-modal .chatgpt-order-payment label.chatgpt-payment-option:hover {
+    border-color: rgba(53, 242, 143, 0.65) !important;
+    background: linear-gradient(145deg, #334f50, #253c42) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-page[data-service-page="midjourney"] .buy-btn,
+  .service-page[data-service-page="midjourney"] .pay-now-btn,
+  .service-page[data-service-page="midjourney"] ~ .chatgpt-go-order-modal .chatgpt-order-submit {
+    transition: none;
+  }
+}

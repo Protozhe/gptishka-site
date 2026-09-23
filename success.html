@@ -605,6 +605,20 @@
             return true;
           }
 
+          if (serviceKey === "midjourney") {
+            setPaidReceipt(service, "Оплата заказа подтверждена. Осталось отправить ссылку Midjourney.");
+            statusEl.className = "status paid";
+            statusEl.textContent = "Платёж подтверждён. Открываем форму для ссылки на оплату Midjourney.";
+            setNextStep("Отправьте ссылку Midjourney", "Откройте оплату выбранного тарифа в своём аккаунте Midjourney и вставьте ссылку на следующей странице.");
+            setTimeout(() => {
+              const url = new URL("/midjourney-link.html", window.location.origin);
+              url.searchParams.set("order_id", id);
+              if (linkToken) url.searchParams.set("t", linkToken);
+              window.location.href = url.toString();
+            }, 1200);
+            return true;
+          }
+
           if (deliveryMode === "manual_login") {
             if (serviceKey === "steam") {
               setPaidReceipt(service, "Оплата подтверждена. Заказ Steam передан менеджеру.");
@@ -691,6 +705,7 @@
       if (normalized.includes("claude")) return "claude";
       if (normalized.includes("gemini") || normalized.includes("googleai")) return "gemini";
       if (normalized.includes("suno")) return "suno";
+      if (normalized.includes("midjourney")) return "midjourney";
       if (normalized.includes("vpn") || normalized.includes("vless")) return "vpn";
       if (normalized.includes("supergrok") || normalized === "grok") return "grok";
       if (normalized.includes("chatgptgo")) return "chatgptgo";
@@ -700,6 +715,7 @@
     }
 
     function activationPagePath(serviceKey) {
+      if (serviceKey === "midjourney") return "/midjourney-link.html";
       return serviceKey === "grok" ? "/supergrok-activation.html" : "/redeem-start.html";
     }
 
@@ -746,6 +762,12 @@
           href: "/suno",
           icon: "/assets/img/services/suno-card-v2.webp?v=20260824-suno-square2",
           price: 2999,
+        },
+        midjourney: {
+          name: "Midjourney",
+          href: "/midjourney",
+          icon: "/assets/img/services/midjourney-card-v1.svg",
+          price: 0,
         },
         grok: {
           name: "SuperGrok",

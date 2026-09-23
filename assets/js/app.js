@@ -868,8 +868,9 @@ function initActivationResumeShortcut() {
   const GEMINI_ORDER_MODAL_PLAN_KEYS = new Set(["pro"]);
   const SUNO_ORDER_MODAL_PLAN_KEYS = new Set(["premier"]);
   const DEVIN_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max", "teams"]);
+  const MIDJOURNEY_ORDER_MODAL_PLAN_KEYS = new Set(["basic", "standard", "pro"]);
   const VPN_ORDER_MODAL_PLAN_KEYS = new Set(["1m", "2m", "6m", "12m"]);
-  const AI_ORDER_MODAL_SERVICE_KEYS = new Set(["chatgpt", "claude", "grok", "perplexity", "gemini", "suno", "devin", "vpn"]);
+  const AI_ORDER_MODAL_SERVICE_KEYS = new Set(["chatgpt", "claude", "grok", "perplexity", "gemini", "suno", "devin", "midjourney", "vpn"]);
   const AI_ORDER_MODAL_SERVICE_CONFIG = {
     chatgpt: {
       displayName: "ChatGPT",
@@ -912,6 +913,12 @@ function initActivationResumeShortcut() {
       fallbackTitle: "Devin Pro",
       fallbackPlan: "pro",
       logo: "/assets/img/services/devin-symbol-mask-v1.svg?v=20260922-devin-image1",
+    },
+    midjourney: {
+      displayName: "Midjourney",
+      fallbackTitle: "Midjourney Basic",
+      fallbackPlan: "basic",
+      logo: "/assets/img/services/midjourney-card-v1.svg",
     },
     vpn: {
       displayName: "GPTishka VPN",
@@ -2649,6 +2656,18 @@ function initActivationResumeShortcut() {
         sort: 55,
       };
     }
+    if (text.includes("midjourney")) {
+      return {
+        key: "midjourney",
+        name: "Midjourney",
+        icon: "MJ",
+        description: isEnPage
+          ? "AI image and video generation on your account."
+          : "Генерация изображений и видео на вашем аккаунте.",
+        theme: "midjourney",
+        sort: 58,
+      };
+    }
     if (isStandaloneVpnProduct(item)) {
       return {
         key: "vpn",
@@ -2681,6 +2700,11 @@ function initActivationResumeShortcut() {
       if (text.includes("pro")) return 10;
       if (text.includes("max")) return 20;
       if (text.includes("team")) return 30;
+    }
+    if (serviceKey === "midjourney") {
+      if (text.includes("basic")) return 10;
+      if (text.includes("standard")) return 20;
+      if (text.includes("pro")) return 30;
     }
     if (serviceKey === "vpn") {
       return getServiceDurationSortScore(getServiceDurationKey(item));
@@ -2718,6 +2742,9 @@ function initActivationResumeShortcut() {
     }
     if (text.includes("devin")) {
       return 540 + getAiPlanSortScore(item, "devin");
+    }
+    if (text.includes("midjourney")) {
+      return 545 + getAiPlanSortScore(item, "midjourney");
     }
     if (text.includes("vpn")) {
       if (text.includes("1 месяц") || text.includes("1 month") || text.includes("30")) return 600;
@@ -2760,6 +2787,7 @@ function initActivationResumeShortcut() {
     if (normalized.includes("gemini") || normalized.includes("google ai")) return "gemini";
     if (normalized.includes("suno")) return "suno";
     if (normalized.includes("devin") || normalized.includes("cognition")) return "devin";
+    if (normalized.includes("midjourney")) return "midjourney";
     if (normalized === "vpn" || normalized === "vless" || normalized === "xray" || normalized === "reality" || normalized.includes("gptishka vpn")) return "vpn";
     if (normalized.includes("chatgpt") || normalized.includes("openai")) return "chatgpt";
     if (normalized.includes("claude")) return "claude";
@@ -2781,6 +2809,28 @@ function initActivationResumeShortcut() {
 
   function getEnglishServicePageContent(serviceKey) {
     const key = normalizeAiServiceKey(serviceKey);
+    if (key === "midjourney") {
+      return {
+        metaTitle: "Midjourney Basic, Standard and Pro — 1 month | GPTishka",
+        heroEyebrow: "Subscription plans",
+        heroTitle: "Midjourney",
+        heroDescription: "AI image and video generation on your own account.",
+        constructorTitle: "Midjourney",
+        constructorDescription: "Choose Basic, Standard or Pro for one month. After paying GPTishka, submit the Stripe Checkout link for the same plan on your Midjourney account.",
+        infoSections: [
+          { title: "What you receive", items: ["One month of your selected Midjourney Basic, Standard or Pro plan.", "Plan access on your account.", "GPTishka assistance with subscription payment and setup."] },
+          { title: "Account security", items: ["We do not need your login, password or verification codes.", "Submit only the Stripe Checkout link from Midjourney after paying GPTishka.", "Do not share bank card details in the form."] },
+          { title: "How it works", ordered: true, items: ["Choose a monthly plan and pay GPTishka in rubles.", "Open checkout for the same plan on your Midjourney account.", "Submit the full Stripe Checkout URL without paying Midjourney yourself.", "A manager reviews the link and completes the payment."] },
+          { title: "Important details", items: ["The form checks URL format only; a manager verifies the plan and checkout session.", "Checkout sessions can expire, so submit the link soon after ordering.", "Midjourney may change plan features and limits."] }
+        ],
+        faqItems: [
+          { question: "What happens after paying GPTishka?", answer: "Submit the Stripe Checkout link for the same monthly Midjourney plan on the next page. A manager will review it and pay for the subscription." },
+          { question: "Do you need my login or password?", answer: "No. Sign in to Midjourney yourself and send only the checkout link." },
+          { question: "Why might my link not work?", answer: "The session may have expired or the wrong plan may have been selected. A manager will ask for a new link if needed." },
+          { question: "How can I pay GPTishka?", answer: "Available payment methods appear at checkout. GPTishka does not store bank card details." }
+        ]
+      };
+    }
     if (key === "perplexity") {
       return {
         metaTitle: "Perplexity Pro — 1 month plan | GPTishka",
@@ -2897,6 +2947,7 @@ function initActivationResumeShortcut() {
     if (key === "gemini") return isEnPage ? "/en/gemini.html" : "/gemini";
     if (key === "suno") return isEnPage ? "/en/suno.html" : "/suno";
     if (key === "devin") return "/devin";
+    if (key === "midjourney") return isEnPage ? "/en/midjourney.html" : "/midjourney";
     if (key === "vpn") return isEnPage ? "/en/store/vpn/" : "/store/vpn";
     return isEnPage ? "/en/#pricing" : "/#pricing";
   }
@@ -3087,6 +3138,13 @@ function initActivationResumeShortcut() {
       return "devin";
     }
 
+    if (key === "midjourney") {
+      if (text.includes("standard") || joinedTags.includes("standard")) return "standard";
+      if (text.includes("basic") || joinedTags.includes("basic")) return "basic";
+      if (text.includes("pro") || joinedTags.includes("pro")) return "pro";
+      return "midjourney";
+    }
+
     if (key === "vpn") {
       return getServiceDurationKey(item);
     }
@@ -3143,6 +3201,7 @@ function initActivationResumeShortcut() {
     const activationVariant = String(item?.activationVariant || "").trim().toLowerCase().replace(/[\s_-]+/g, "");
     const text = getProductSearchText(item);
     if (isStandaloneVpnProduct(item)) return "vpn";
+    if (text.includes("midjourney")) return "link";
     if (activationVariant === "withoutlogin") return "id";
     if (text.includes("devin") && (normalizedTags.includes("delivery:manual_login") || activationVariant === "withlogin")) return "login";
     if ((deliveryType === "manual_login" || deliveryType === "credentials") && text.includes("devin")) return "login";
@@ -3163,6 +3222,7 @@ function initActivationResumeShortcut() {
       gemini: new Set(["12m", "18m"]),
       suno: new Set(["1m"]),
       devin: new Set(["1m"]),
+      midjourney: new Set(["1m"]),
     };
     return (Array.isArray(items) ? items : []).filter(item => {
       const deliveryKey = getServiceDeliveryKey(item);
@@ -3222,6 +3282,12 @@ function initActivationResumeShortcut() {
         max: "Max",
         teams: "Teams",
       },
+      midjourney: {
+        all: isEnPage ? "All plans" : "Все тарифы",
+        basic: "Basic",
+        standard: "Standard",
+        pro: "Pro",
+      },
       vpn: {
         all: isEnPage ? "All durations" : "Все сроки",
         "1m": isEnPage ? "1 month" : "1 месяц",
@@ -3245,6 +3311,7 @@ function initActivationResumeShortcut() {
     const value = String(deliveryKey || "").trim();
     if ((key === "claude" || key === "grok") && value === "id") return isEnPage ? "By ID" : "По ID";
     if (key === "devin" && value === "login") return isEnPage ? "Account login" : "Со входом в аккаунт";
+    if (key === "midjourney" && value === "link") return isEnPage ? "Payment link" : "По ссылке на оплату";
     if (key === "vpn" && value === "vpn") return isEnPage ? "VLESS key" : "VLESS-ключ";
     return getServiceDeliveryLabel(value);
   }
@@ -3377,7 +3444,7 @@ function initActivationResumeShortcut() {
       );
       staticCards.forEach(card => {
         const key = normalizeAiServiceKey(card.getAttribute("data-showcase-service-key"));
-        const isHidden = visibility.get(key) === false;
+        const isHidden = key === "midjourney" ? visibility.get(key) !== true : visibility.get(key) === false;
         card.hidden = isHidden;
         card.style.display = isHidden ? "none" : "";
       });
@@ -3717,6 +3784,12 @@ function initActivationResumeShortcut() {
         hoverImageUrl: "",
         imageAlt: "Devin",
         hoverImageAlt: "Devin",
+      },
+      midjourney: {
+        imageUrl: "/assets/img/services/midjourney-card-v1.svg",
+        hoverImageUrl: "",
+        imageAlt: "Midjourney",
+        hoverImageAlt: "Midjourney",
       },
       vpn: {
         imageUrl: "/assets/img/services/vpn-card.webp?v=20260721-cards-webp1",
@@ -4266,6 +4339,10 @@ function initActivationResumeShortcut() {
     return DEVIN_ORDER_MODAL_PLAN_KEYS.has(String(planKey || "").trim());
   }
 
+  function isMidjourneyOrderModalPlanKey(planKey) {
+    return MIDJOURNEY_ORDER_MODAL_PLAN_KEYS.has(String(planKey || "").trim());
+  }
+
   function isAiOrderModalServiceKey(serviceKey) {
     return AI_ORDER_MODAL_SERVICE_KEYS.has(normalizeAiServiceKey(serviceKey));
   }
@@ -4279,6 +4356,7 @@ function initActivationResumeShortcut() {
     if (key === "gemini") return isGeminiOrderModalPlanKey(planKey);
     if (key === "suno") return isSunoOrderModalPlanKey(planKey);
     if (key === "devin") return isDevinOrderModalPlanKey(planKey);
+    if (key === "midjourney") return isMidjourneyOrderModalPlanKey(planKey);
     if (key === "vpn") return isVpnOrderModalPlanKey(planKey);
     return false;
   }

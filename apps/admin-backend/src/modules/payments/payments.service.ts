@@ -469,6 +469,7 @@ export const paymentsService = {
       partnerId: promo?.partnerId || null,
       paymentProvider: payment.provider,
       deliveryType: selectedVariant.deliveryType,
+      productSlug: product.slug,
       checkoutUrl: paymentResponse.checkoutUrl,
       status: nextStatus,
     };

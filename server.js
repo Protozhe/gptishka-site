@@ -2461,6 +2461,18 @@ function createApp() {
     sendFreshHtml(res, path.join(__dirname, "devin.html"));
   });
 
+  app.get(["/midjourney", "/midjourney/", "/midjourney.html"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "midjourney.html"));
+  });
+
+  app.get(["/en/midjourney", "/en/midjourney/", "/en/midjourney.html"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "en", "midjourney.html"));
+  });
+
+  app.get(["/midjourney-link", "/midjourney-link.html"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "midjourney-link.html"));
+  });
+
   app.get(["/gemini", "/gemini/"], (_req, res) => {
     sendFreshHtml(res, path.join(__dirname, "gemini.html"));
   });

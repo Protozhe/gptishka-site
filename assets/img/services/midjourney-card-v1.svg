@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 425 425" role="img" aria-label="Midjourney">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#14334a"/><stop offset=".55" stop-color="#14253c"/><stop offset="1" stop-color="#0d172a"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="#79ddf4" stop-opacity=".21"/><stop offset="1" stop-color="#79ddf4" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="425" height="425" rx="42" fill="url(#bg)"/>
+  <circle cx="213" cy="202" r="181" fill="url(#glow)"/>
+  <g fill="#f8fcff">
+    <path d="M204 84v197h-10V84z"/>
+    <path d="M185 99c-17 35-42 70-82 103l82 1z"/>
+    <path d="M213 99c24 40 59 76 108 103H213z"/>
+    <path d="M85 230c47 8 94 13 141 13 39 0 76-4 114-12l-31 42c-20 28-51 43-84 43h-32c-33 0-64-15-83-42z"/>
+  </g>
+  <path d="M83 333c36-9 58-9 94 0s58 9 94 0 57-9 93 0" fill="none" stroke="#83dff2" stroke-width="9" stroke-linecap="round" opacity=".88"/>
+</svg>

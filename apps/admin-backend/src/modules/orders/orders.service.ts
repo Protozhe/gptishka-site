@@ -24,6 +24,7 @@ import https from "https";
 import path from "path";
 import { activationReviewsStore } from "./activation-reviews.store";
 import { buildActivationReviewModerationCallback } from "./activation-review-moderation";
+import { isMidjourneyProductSlug, validateMidjourneyPaymentLink } from "./midjourney-payment-link";
 
 const MAX_CLIENT_TOKEN_LENGTH = 500_000;
 const MAX_ACTIVATION_START_ATTEMPTS = 3;
@@ -525,6 +526,21 @@ export const ordersService = {
     });
     const isSupportTokenFlow = isSupportLikeDeliveryType(deliveryType) || isSupportActivationFlow(tokenActivationFlow);
 
+    if (isMidjourneyProductSlug(productSlug)) {
+      const submitted = hasStoredClientToken(normalizeActivationRecordForRead(activationStore.findByOrderId(order.id)));
+      return {
+        orderId: order.id,
+        deliveryMode: "payment_link",
+        product: activationProductKey,
+        productSlug,
+        productTitle,
+        status: submitted ? "submitted" : "awaiting_link",
+        message: submitted
+          ? "Ссылка получена. Мы оплатим подписку в ближайшее время. Если возникнут сложности, менеджер свяжется с вами."
+          : "Оплата заказа подтверждена. Отправьте ссылку на оплату выбранного тарифа Midjourney.",
+      };
+    }
+
     if (deliveryType === "credentials") {
       await deliverProduct(order);
       const assigned = manualCredentialsStore.findByOrderId(order.id);
@@ -743,6 +759,8 @@ export const ordersService = {
     const deliveryType = resolveOrderDeliveryType(orderWithItem?.orderDetails, firstItem?.product?.tags || []);
     const activationSiteUrl = readActivationSiteUrlFromOrderDetails(orderWithItem?.orderDetails);
     const productSlug = String(firstItem?.product?.slug || "").trim().toLowerCase();
+    const isMidjourneyLink = isMidjourneyProductSlug(productSlug);
+    if (isMidjourneyLink) await assertPaidOrderAccess(orderId, orderToken);
     const productTitle = String(firstItem?.product?.title || (firstItem?.product as any)?.name || "").trim();
     const productKeyForFlow = canonicalProductKey(productSlug || String(firstItem?.productId || "chatgpt")) || productSlug || "chatgpt";
     const tokenActivationFlow = resolveTokenActivationFlowForProduct({
@@ -760,7 +778,10 @@ export const ordersService = {
     if (!tokenInfo.raw) reasons.push("Token is required");
     if (tokenInfo.raw && tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) reasons.push("Token is too long");
 
-    if (tokenInfo.raw.startsWith("{")) {
+    if (isMidjourneyLink) {
+      const linkError = validateMidjourneyPaymentLink(tokenInfo.raw);
+      if (linkError) reasons.push(linkError);
+    } else if (tokenInfo.raw.startsWith("{")) {
       if (!tokenInfo.json) {
         reasons.push("Token JSON is invalid");
       } else if (tokenInfo.extracted === tokenInfo.raw) {
@@ -768,7 +789,7 @@ export const ordersService = {
       }
     }
 
-    if (isSupportFlow) {
+    if (isSupportFlow && !isMidjourneyLink) {
       const supportValidation = validateSupportSessionJwtToken(tokenInfo.extracted || tokenInfo.raw);
       reasons.push(...supportValidation.reasons);
     }
@@ -805,7 +826,11 @@ export const ordersService = {
       verificationState: existing?.verificationState || "unknown",
       lastProviderMessage:
         existing?.lastProviderMessage ||
-        (order.status === OrderStatus.PAID ? "Client token stored" : "Client token stored before payment confirmation"),
+        (isMidjourneyLink
+          ? "Midjourney checkout link submitted for manual payment"
+          : order.status === OrderStatus.PAID
+            ? "Client token stored"
+            : "Client token stored before payment confirmation"),
       lastProviderCheckedAt: existing?.lastProviderCheckedAt || nowIso,
       lastProviderPayload: existing?.lastProviderPayload || null,
       issuedAt: existing?.issuedAt || nowIso,

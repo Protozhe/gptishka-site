@@ -50,7 +50,12 @@ publicEnotRouter.post(
     }
 
     const publicOrigin = resolvePublicOrigin(req) || `${req.protocol}://${req.get("host")}`;
-    const activationUrl = new URL(created.deliveryType === "vpn" ? "/store/vpn/activate" : "/redeem-start.html", publicOrigin);
+    const activationPath = created.deliveryType === "vpn"
+      ? "/store/vpn/activate"
+      : /^midjourney-(basic|standard|pro)-1$/.test(String(created.productSlug || ""))
+        ? "/midjourney-link.html"
+        : "/redeem-start.html";
+    const activationUrl = new URL(activationPath, publicOrigin);
     activationUrl.searchParams.set("order_id", created.orderId);
     if (created.redeemToken) {
       activationUrl.searchParams.set("t", created.redeemToken);

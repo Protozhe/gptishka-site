@@ -9,6 +9,7 @@ import { resolveVpnProvisionPayload, vpnService } from "../../services/vpn.servi
 import { manualCredentialsStore } from "../products/manual-credentials.store";
 import { activationStore } from "./activation.store";
 import { sendDirectCodeTelegram } from "./direct-code-notifications.service";
+import { isMidjourneyProductSlug } from "./midjourney-payment-link";
 
 export function hasTrustedPaidPayment(order: any) {
   if (!order || order.status !== OrderStatus.PAID) return false;
@@ -129,7 +130,8 @@ export async function deliverProduct(order: Order) {
   activationStore.ensure();
 
   const existing = activationStore.findByOrderId(order.id);
-  if (existing) {
+  const isMidjourney = isMidjourneyProductSlug(product?.slug);
+  if (existing && (!isMidjourney || existing.cdk)) {
     console.info(`[delivery] activation already exists order=${order.id} cdk=${existing.cdk}`);
     if (deliveryType === "code") {
       await sendDirectCodeTelegram({
@@ -174,6 +176,7 @@ export async function deliverProduct(order: Order) {
 
   const nowIso = new Date().toISOString();
   activationStore.upsert({
+    ...(existing || {}),
     orderId: order.id,
     email: order.email,
     productKey,
@@ -183,9 +186,9 @@ export async function deliverProduct(order: Order) {
     taskId: null,
     attempts: 0,
     verificationState: "unknown",
-    lastProviderMessage: null,
-    lastProviderCheckedAt: null,
-    lastProviderPayload: null,
+    lastProviderMessage: existing?.lastProviderMessage || null,
+    lastProviderCheckedAt: existing?.lastProviderCheckedAt || null,
+    lastProviderPayload: existing?.lastProviderPayload || null,
     issuedAt: nowIso,
     updatedAt: nowIso,
   });
