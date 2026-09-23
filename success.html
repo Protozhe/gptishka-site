@@ -1035,12 +1035,6 @@
         }
         img.remove();
       });
-
-      document.querySelectorAll('a[href*="t.me/aiiisupport"]').forEach((link) => {
-        const host = link.closest("aside, section, article, div");
-        if (!host || host.classList.contains("status-card")) return;
-        host.remove();
-      });
     }
 
     function formatAmount(value) {

@@ -75,12 +75,6 @@
         }
         img.remove();
       });
-
-      document.querySelectorAll('a[href*="t.me/aiiisupport"]').forEach((link) => {
-        const host = link.closest("aside, section, article, div");
-        if (!host || host.classList.contains("status-card")) return;
-        host.remove();
-      });
     }
   </script>
   <script src="/assets/js/site-header-unify.js?v=20260916-codex-header-price1" defer></script>

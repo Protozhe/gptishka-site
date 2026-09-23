@@ -8,7 +8,7 @@ const css = fs.readFileSync(path.join(root, "assets/css/support-widget.css"), "u
 const widgetScript = fs.readFileSync(path.join(root, "assets/js/support-widget.js"), "utf8");
 const oldVersion = "support-widget.css?v=20260707-support-unify3";
 const newVersion = "support-widget.css?v=20260724-resume-collapse1";
-const newScriptVersion = "support-widget.js?v=20260724-resume-faq-clear2";
+const newScriptVersion = "support-widget.js?v=20260923-support-channel1";
 
 function collectHtml(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {

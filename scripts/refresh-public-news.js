@@ -18,7 +18,12 @@ async function main() {
     publicBasePath: "/assets/img/news",
     timeoutMs: Number(process.env.TELEGRAM_NEWS_FETCH_TIMEOUT_MS || 12000),
   });
-  payload.items = payload.items.slice(0, LIMIT);
+  payload.items = payload.items.slice(0, LIMIT).map((item) => ({
+    ...item,
+    text: String(item.text || "")
+      .replace(/t\.me\/(?:aiiisupport|gptishkasupport)/gi, "t.me/aimarket_gpt")
+      .replace(/@(?:aiiisupport|gptishkasupport)\b/gi, "@aimarket_gpt"),
+  }));
 
   const serialized = `${JSON.stringify(payload, null, 2)}\n`;
   for (const destination of [OUTPUT_PATH, PUBLIC_OUTPUT_PATH]) {
