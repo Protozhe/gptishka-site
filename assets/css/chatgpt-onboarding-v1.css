@@ -569,9 +569,12 @@ html body:has(main.service-page) > .chatgpt-onboarding-modal {
 
 /* ChatGPT: the purchase guide is intentionally prominent and readable. */
 body.chatgpt-onboarding-ready .chatgpt-onboarding-brief {
-  gap: 24px;
-  margin-bottom: 18px;
-  padding: 18px 0;
+  gap: 16px;
+  margin-bottom: 0;
+  padding: 16px 18px;
+  border: 1px solid rgba(79, 229, 157, 0.26);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(48, 181, 123, 0.12), rgba(31, 42, 48, 0.78));
 }
 
 body.chatgpt-onboarding-ready .chatgpt-onboarding-brief__copy {
@@ -590,11 +593,13 @@ body.chatgpt-onboarding-ready .chatgpt-onboarding-brief__text {
 }
 
 body.chatgpt-onboarding-ready .chatgpt-onboarding-brief__text strong {
+  color: #eafff4;
   font-size: 16px;
   line-height: 1.25;
 }
 
 body.chatgpt-onboarding-ready .chatgpt-onboarding-brief__text small {
+  color: rgba(232, 250, 239, 0.74);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -731,7 +736,7 @@ main.service-page[data-service-page="chatgpt"] .service-faq-answer p {
 @media (max-width: 760px) {
   body.chatgpt-onboarding-ready .chatgpt-onboarding-brief {
     gap: 14px;
-    padding-block: 17px;
+    padding: 15px;
   }
 
   body.chatgpt-onboarding-ready .chatgpt-onboarding-brief__details {
