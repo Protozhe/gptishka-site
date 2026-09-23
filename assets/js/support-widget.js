@@ -1,6 +1,6 @@
 (function () {
   var WIDGET_ID = "gptishka-support-widget";
-  var SUPPORT_URL = "https://t.me/aimarket_gpt";
+  var SUPPORT_URL = "https://t.me/aimarket_gpt?direct";
   var FORCE_SHOW_QUERY_KEY = "supportWidget";
   var HIDE_PATHS = [
     "/404.html",

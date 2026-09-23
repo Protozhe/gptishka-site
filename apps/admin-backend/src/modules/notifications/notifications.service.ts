@@ -93,7 +93,7 @@ export async function sendOrderPaidEmail(
   // If SMTP is enabled, this URL will still work for legacy orders without a secret.
   const activationUrl = `${siteOrigin}/redeem-start.html?order_id=${encodeURIComponent(payload.orderId)}`;
   const successUrl = `${siteOrigin}/success.html?order_id=${encodeURIComponent(payload.orderId)}`;
-  const supportContact = "https://t.me/aimarket_gpt";
+  const supportContact = "https://t.me/aimarket_gpt?direct";
   const fromAddress = resolveFromAddress();
   const amountLabel = `${Number(payload.amount).toLocaleString("ru-RU", {
     minimumFractionDigits: 2,
@@ -148,7 +148,7 @@ export async function sendCustomerMagicLinkEmail(
 
   const fromAddress = resolveFromAddress();
   const expiresAtLabel = new Date(payload.expiresAt).toLocaleString("ru-RU");
-  const supportContact = "https://t.me/aimarket_gpt";
+  const supportContact = "https://t.me/aimarket_gpt?direct";
   const safeMagicUrl = String(payload.magicUrl || "").trim();
   const safeNextPath = String(payload.nextPath || "").trim() || "/account.html";
 
@@ -207,7 +207,7 @@ export async function sendCustomerSubscriptionReminderEmail(
   }
 
   const fromAddress = resolveFromAddress();
-  const supportContact = "https://t.me/aimarket_gpt";
+  const supportContact = "https://t.me/aimarket_gpt?direct";
   const expiresAtLabel = new Date(payload.expiresAt).toLocaleString("ru-RU");
   const planLabel = String(payload.plan || "VPN").trim() || "VPN";
   const accountUrl = String(payload.accountUrl || "").trim() || `${resolveSiteOrigin()}/account.html`;

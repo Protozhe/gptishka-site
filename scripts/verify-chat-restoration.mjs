@@ -23,7 +23,7 @@ for (const file of ["catalog/index.html", "catalog/ai/index.html", "en/catalog/i
   expect(html.includes('ai-directory-card__desc">Grok 4.7</p>'), `${file}: SuperGrok fallback model is stale`);
 }
 for (const file of ["index.html", "en/index.html", "catalog/index.html", "catalog/ai/index.html", "en/catalog/index.html", "en/catalog/ai/index.html", "suno.html", "en/suno.html"]) {
-  expect(read(file).includes('/assets/js/app.min.js?v=20260923-support-channel1'), `${file}: cached app script can restore stale model labels`);
+  expect(read(file).includes('/assets/js/app.min.js?v=20260923-support-channel2'), `${file}: cached app script can restore stale model labels`);
 }
 expect(/const displayPlanSummary = serviceKey === "claude"\s*\? planSummary/.test(app), "Claude card ignores the available Max plans");
 expect(app.includes('new Set(group.items.map(item => getServicePlanKey(item, serviceKey))).size'), "Claude plan count includes delivery variants");
@@ -79,7 +79,7 @@ for (const file of htmlFiles) {
   const html = read(file);
   for (const match of html.matchAll(sharedAssetPattern)) {
     const expectedVersion = match[1] === "app.min.js"
-      ? new Set(["20260912-native-navigation1", "20260914-centered-copy1", "20260915-no-ticker1", "20260916-codex-header-price1", "20260917-chatgpt-seo1", "20260917-chatgpt-seo2", "20260917-chatgpt-guide2", "20260919-admin-plan-titles1", "20260919-pro20-renewal-confirm1", "20260922-devin-clean2", "20260922-devin-modal1", "20260923-support-channel1"])
+      ? new Set(["20260912-native-navigation1", "20260914-centered-copy1", "20260915-no-ticker1", "20260916-codex-header-price1", "20260917-chatgpt-seo1", "20260917-chatgpt-seo2", "20260917-chatgpt-guide2", "20260919-admin-plan-titles1", "20260919-pro20-renewal-confirm1", "20260922-devin-clean2", "20260922-devin-modal1", "20260923-support-channel2"])
       : new Set(["20260912-chat-restoration2", "20260912-restored-products1", "20260912-codex-entry-visual1", "20260913-viewport-fill1", "20260916-codex-header-price1", "20260917-readable-guide1", "20260917-faq-topic-fix1", "20260917-faq-dividers1", "20260919-pro20-renewal-confirm1"]);
     const isMidjourneyUpdate = match[1] === "app.min.js" && match[2] === "20260923-midjourney1" &&
       ["index.html", "catalog/index.html", "catalog/ai/index.html", "midjourney.html", "en/midjourney.html"].includes(file.replaceAll("\\", "/"));
