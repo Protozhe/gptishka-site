@@ -3808,7 +3808,7 @@ function initActivationResumeShortcut() {
     };
     const fallbackImages = fallbackImagesByService[serviceKey] || {};
     const displayTitle = getServiceCardValue(serviceCard, "title", group.service.name);
-    const modelDescriptions = { chatgpt: "GPT-5.5", claude: "Claude Opus 5.5", grok: "Grok 4.6" };
+    const modelDescriptions = { chatgpt: "GPT-6", claude: "Claude Opus 5.5", grok: "Grok 4.7" };
     const displayDescription = modelDescriptions[serviceKey] || getServiceCardValue(serviceCard, "description", group.service.description);
     const displayPlanSummary = serviceKey === "claude"
       ? planSummary

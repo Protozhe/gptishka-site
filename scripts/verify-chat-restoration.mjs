@@ -15,12 +15,12 @@ const onboardingCss = read("assets/css/chatgpt-onboarding-v1.css");
 expect(header.includes("Кредиты Codex от 1 850 ₽"), "shared header does not sell Codex Credits");
 expect(app.includes("ai-directory-card--codex"), "Codex Credits is missing from top-ups");
 expect(app.includes('claude: "Claude Opus 5.5"'), "Claude card does not show the current model");
-expect(app.includes('chatgpt: "GPT-5.5"'), "ChatGPT card does not show its current model");
-expect(app.includes('grok: "Grok 4.6"'), "SuperGrok card does not show the model in its plan");
+expect(app.includes('chatgpt: "GPT-6"'), "ChatGPT card does not show its current model");
+expect(app.includes('grok: "Grok 4.7"'), "SuperGrok card does not show the model in its plan");
 for (const file of ["catalog/index.html", "catalog/ai/index.html", "en/catalog/index.html", "en/catalog/ai/index.html"]) {
   const html = read(file);
-  expect(html.includes('ai-directory-card__desc">GPT-5.5</p>'), `${file}: ChatGPT fallback model is stale`);
-  expect(html.includes('ai-directory-card__desc">Grok 4.6</p>'), `${file}: SuperGrok fallback model is stale`);
+  expect(html.includes('ai-directory-card__desc">GPT-6</p>'), `${file}: ChatGPT fallback model is stale`);
+  expect(html.includes('ai-directory-card__desc">Grok 4.7</p>'), `${file}: SuperGrok fallback model is stale`);
 }
 expect(/const displayPlanSummary = serviceKey === "claude"\s*\? planSummary/.test(app), "Claude card ignores the available Max plans");
 expect(app.includes('new Set(group.items.map(item => getServicePlanKey(item, serviceKey))).size'), "Claude plan count includes delivery variants");
