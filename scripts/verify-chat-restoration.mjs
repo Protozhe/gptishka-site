@@ -62,7 +62,9 @@ for (const file of htmlFiles) {
       : new Set(["20260912-chat-restoration2", "20260912-restored-products1", "20260912-codex-entry-visual1", "20260913-viewport-fill1", "20260916-codex-header-price1", "20260917-readable-guide1", "20260917-faq-topic-fix1", "20260917-faq-dividers1", "20260919-pro20-renewal-confirm1"]);
     const isMidjourneyUpdate = match[1] === "app.min.js" && match[2] === "20260923-midjourney1" &&
       ["index.html", "catalog/index.html", "catalog/ai/index.html", "midjourney.html", "en/midjourney.html"].includes(file.replaceAll("\\", "/"));
-    expect(expectedVersion.has(match[2]) || isMidjourneyUpdate, `${file}: stale cache version for ${match[1]}`);
+    const isMidjourneyHoverUpdate = match[1] === "app.min.js" && match[2] === "20260923-midjourney-hover1" &&
+      ["index.html", "catalog/index.html", "catalog/ai/index.html", "en/index.html", "en/catalog/ai/index.html"].includes(file.replaceAll("\\", "/"));
+    expect(expectedVersion.has(match[2]) || isMidjourneyUpdate || isMidjourneyHoverUpdate, `${file}: stale cache version for ${match[1]}`);
   }
 }
 

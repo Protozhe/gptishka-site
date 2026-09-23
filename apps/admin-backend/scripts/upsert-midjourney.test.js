@@ -1,6 +1,6 @@
 const assert = require("node:assert/strict");
 const test = require("node:test");
-const { apply, plans } = require("./upsert-midjourney");
+const { apply, applyHoverOnly, plans } = require("./upsert-midjourney");
 
 test("Midjourney upsert touches only three plans and their own AI placements", async () => {
   const calls = { products: [], visuals: [], pages: [], pagePlacements: [], showcasePlacements: [], cards: [] };
@@ -46,10 +46,39 @@ test("Midjourney upsert touches only three plans and their own AI placements", a
     assert.equal(call.create.tags.some((tag) => tag.startsWith("badge:")), false);
   }
   assert.equal(calls.visuals.length, 3);
+  assert.ok(calls.visuals.every((call) => call.create.hoverImageUrl === "/assets/img/services/midjourney-card-hover-v1.svg"));
   assert.equal(calls.pages.length, 1);
   assert.equal(calls.pages[0].where.slug, "midjourney");
   assert.equal(calls.pagePlacements.length, 3);
   assert.equal(calls.showcasePlacements.length, 3);
   assert.ok(calls.showcasePlacements.every((call) => call.create.sectionId === "section-ai"));
   assert.deepEqual(calls.cards.map((call) => call.where.serviceKey), ["midjourney"]);
+  assert.equal(calls.cards[0].create.hoverImageUrl, "/assets/img/services/midjourney-card-hover-v1.svg");
+});
+
+test("Midjourney hover repair updates only artwork fields", async () => {
+  const updates = [];
+  const db = {
+    product: {
+      async findMany() {
+        return plans.map((plan) => ({
+          slug: plan.slug,
+          visualConfig: { id: `visual-${plan.slug}`, imageUrl: "/assets/img/services/midjourney-card-v1.svg", hoverImageUrl: "" },
+        }));
+      },
+    },
+    productShowcaseServiceCard: {
+      async findUnique() {
+        return { id: "card-midjourney", imageUrl: "/assets/img/services/midjourney-card-v1.svg", hoverImageUrl: "" };
+      },
+      async update(input) { updates.push(input); },
+    },
+    productVisualConfig: { async update(input) { updates.push(input); } },
+  };
+
+  await applyHoverOnly(db);
+
+  assert.equal(updates.length, 4);
+  assert.ok(updates.every((update) => Object.keys(update.data).sort().join(",") === "hoverImageAlt,hoverImageUrl"));
+  assert.ok(updates.every((update) => update.data.hoverImageUrl === "/assets/img/services/midjourney-card-hover-v1.svg"));
 });

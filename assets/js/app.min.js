@@ -3787,7 +3787,7 @@ function initActivationResumeShortcut() {
       },
       midjourney: {
         imageUrl: "/assets/img/services/midjourney-card-v1.svg",
-        hoverImageUrl: "",
+        hoverImageUrl: "/assets/img/services/midjourney-card-hover-v1.svg",
         imageAlt: "Midjourney",
         hoverImageAlt: "Midjourney",
       },

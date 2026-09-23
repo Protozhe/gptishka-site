@@ -9,6 +9,127 @@ html body:has(main.service-page[data-service-page="midjourney"]) header{margin-t
 .ai-directory-card--midjourney .ai-directory-card__media img{width:100%;height:100%;object-fit:cover;display:block}
 @media(max-width:720px){.service-page[data-service-page="midjourney"] .service-product-gallery__viewport{border-radius:24px}}
 
+/* The legacy FAQ arrow rule targets every span; restore the ChatGPT layout for this page. */
+main.service-page[data-service-page="midjourney"] .service-faq-section {
+  padding: clamp(30px, 4vw, 48px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 28px;
+  background: radial-gradient(circle at 9% 0%, rgba(86, 181, 216, 0.12), transparent 35%), rgba(12, 16, 23, 0.55);
+}
+
+main.service-page[data-service-page="midjourney"] .service-faq-section .service-section-title {
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+main.service-page[data-service-page="midjourney"] .service-faq-list {
+  overflow: hidden;
+  margin-top: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 18px;
+  background: rgba(3, 7, 12, 0.22);
+}
+
+main.service-page[data-service-page="midjourney"] .service-faq-item {
+  margin: 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: transparent !important;
+}
+
+main.service-page[data-service-page="midjourney"] .service-faq-item:last-child {
+  border-bottom: 0 !important;
+}
+
+main.service-page[data-service-page="midjourney"] .service-faq-question {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 14px;
+  min-height: 82px;
+  padding: 19px 22px !important;
+  text-align: left;
+}
+
+main.service-page[data-service-page="midjourney"] .service-faq-question__topic {
+  display: none !important;
+}
+
+main.service-page[data-service-page="midjourney"] .service-faq-question__text {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  border: 0 !important;
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.35;
+  transform: none !important;
+}
+
+main.service-page[data-service-page="midjourney"] .service-faq-question__toggle {
+  position: relative;
+  display: block !important;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: none !important;
+}
+
+main.service-page[data-service-page="midjourney"] .service-faq-question__toggle::before,
+main.service-page[data-service-page="midjourney"] .service-faq-question__toggle::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 9px;
+  height: 1.5px;
+  content: "";
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.8);
+  transform: translate(-50%, -50%);
+  transition: transform 180ms ease;
+}
+
+main.service-page[data-service-page="midjourney"] .service-faq-question__toggle::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+main.service-page[data-service-page="midjourney"] .service-faq-item.active .service-faq-question__toggle::after {
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+main.service-page[data-service-page="midjourney"] .service-faq-answer {
+  padding: 0 58px 22px 22px !important;
+}
+
+main.service-page[data-service-page="midjourney"] .service-faq-answer p {
+  font-size: 14px;
+  line-height: 1.58;
+}
+
+@media (max-width: 760px) {
+  main.service-page[data-service-page="midjourney"] .service-faq-section {
+    padding: 24px 18px;
+    border-radius: 23px;
+  }
+
+  main.service-page[data-service-page="midjourney"] .service-faq-question {
+    grid-template-columns: minmax(0, 1fr) 22px;
+    gap: 10px;
+    min-height: 0;
+    padding: 18px 16px !important;
+  }
+
+  main.service-page[data-service-page="midjourney"] .service-faq-question__text {
+    font-size: 15px;
+  }
+
+  main.service-page[data-service-page="midjourney"] .service-faq-answer {
+    padding: 0 16px 20px !important;
+  }
+}
+
 /* Keep Midjourney checkout controls as responsive as ChatGPT Plus. */
 .service-page[data-service-page="midjourney"] .buy-btn,
 .service-page[data-service-page="midjourney"] .pay-now-btn,

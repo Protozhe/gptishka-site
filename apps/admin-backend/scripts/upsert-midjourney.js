@@ -9,7 +9,8 @@ const plans = [
 ];
 const slugs = plans.map((plan) => plan.slug);
 const imageUrl = "/assets/img/services/midjourney-card-v1.svg";
-const mode = process.argv.includes("--apply") ? "apply" : process.argv.includes("--rollback") ? "rollback" : "plan";
+const hoverImageUrl = "/assets/img/services/midjourney-card-hover-v1.svg";
+const mode = process.argv.includes("--hover-only") ? "hover-only" : process.argv.includes("--apply") ? "apply" : process.argv.includes("--rollback") ? "rollback" : "plan";
 
 async function printPlan() {
   const [products, page, card, aiSection, activeSections] = await Promise.all([
@@ -73,7 +74,9 @@ async function apply(db) {
       cardTitle: title,
       cardDescription: description,
       imageUrl,
+      hoverImageUrl,
       imageAlt: "Midjourney",
+      hoverImageAlt: "Midjourney",
       backgroundType: "solid",
       backgroundColor: "#142335",
       buttonText: "Выбрать тариф",
@@ -154,7 +157,9 @@ async function apply(db) {
     iconText: "MJ",
     theme: SERVICE_KEY,
     imageUrl,
+    hoverImageUrl,
     imageAlt: "Midjourney",
+    hoverImageAlt: "Midjourney",
     backgroundType: "solid",
     backgroundColor: "#142335",
     isActive: true,
@@ -187,9 +192,40 @@ async function rollback() {
   console.log("[midjourney] rolled back exact Midjourney rows");
 }
 
+async function applyHoverOnly(db) {
+  const products = await db.product.findMany({
+    where: { slug: { in: slugs } },
+    select: { slug: true, visualConfig: { select: { id: true, imageUrl: true, hoverImageUrl: true } } },
+  });
+  const card = await db.productShowcaseServiceCard.findUnique({
+    where: { serviceKey: SERVICE_KEY },
+    select: { id: true, imageUrl: true, hoverImageUrl: true },
+  });
+  if (products.length !== slugs.length || !card || card.imageUrl !== imageUrl ||
+      products.some((product) => !product.visualConfig || product.visualConfig.imageUrl !== imageUrl)) {
+    throw new Error("Midjourney artwork differs from the expected original; hover update refused.");
+  }
+  if (!["", hoverImageUrl].includes(card.hoverImageUrl) ||
+      products.some((product) => !["", hoverImageUrl].includes(product.visualConfig.hoverImageUrl))) {
+    throw new Error("A Midjourney hover image was already customized; update refused.");
+  }
+  await db.productShowcaseServiceCard.update({
+    where: { id: card.id },
+    data: { hoverImageUrl, hoverImageAlt: "Midjourney" },
+  });
+  for (const product of products) {
+    await db.productVisualConfig.update({
+      where: { id: product.visualConfig.id },
+      data: { hoverImageUrl, hoverImageAlt: "Midjourney" },
+    });
+  }
+  console.log("[midjourney] hover artwork updated for service card and three plans");
+}
+
 async function main() {
   if (mode === "plan") return printPlan();
   if (mode === "rollback") return rollback();
+  if (mode === "hover-only") return prisma.$transaction((db) => applyHoverOnly(db));
   return prisma.$transaction((db) => apply(db));
 }
 
@@ -197,4 +233,4 @@ if (require.main === module) {
   main().catch((error) => { console.error(error); process.exitCode = 1; }).finally(() => prisma.$disconnect());
 }
 
-module.exports = { apply, plans };
+module.exports = { apply, applyHoverOnly, plans };
