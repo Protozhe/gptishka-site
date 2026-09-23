@@ -17,6 +17,14 @@ expect(app.includes("ai-directory-card--codex"), "Codex Credits is missing from 
 expect(app.includes('const title = isEnPage ? "Steam Top Up" : "Пополнение Steam";'), "Steam title regressed");
 expect(app.includes("const displayTitle = title;"), "stored showcase data can overwrite the final Steam title");
 expect(onboarding.includes('document.body.classList.add("chatgpt-onboarding-ready")'), "compact ChatGPT flow is not activated");
+expect(onboarding.includes('briefTitle: "Автоматическое подключение"'), "ChatGPT product page does not identify automatic activation");
+expect(onboarding.includes('new Set(["go", "plus"])'), "ChatGPT automatic activation note must apply only to Go and Plus");
+expect(onboarding.includes('if (!automaticPlanKeys.has(card.dataset.planKey || "")) return;'), "ChatGPT automatic activation note is not restricted to eligible plans");
+for (const file of ["chatgpt.html", "en/chatgpt.html"]) {
+  const html = read(file);
+  expect(html.includes('chatgpt-onboarding-v1.css?v=20260923-chatgpt-auto-label1'), `${file}: ChatGPT activation note styles may be cached`);
+  expect(html.includes('chatgpt-onboarding-v1.js?v=20260923-chatgpt-auto-label2'), `${file}: ChatGPT activation note copy may be cached`);
+}
 expect(onboarding.includes('plans.insertAdjacentHTML("afterend"'), "Codex banner is not placed directly after the purchase section");
 expect(onboardingCss.includes('chatgpt-symbol-mask-v2.webp?v=20260909-emerald-codex1'), "Codex banner does not use the current storefront mark");
 expect(!onboardingCss.includes('background: url("/assets/img/services/chatgpt-card.webp?v=20260721-webp1")'), "Codex banner still uses the retired ChatGPT card image");
@@ -59,7 +67,10 @@ for (const file of htmlFiles) {
     const expectedVersion = match[1] === "app.min.js"
       ? new Set(["20260912-native-navigation1", "20260914-centered-copy1", "20260915-no-ticker1", "20260916-codex-header-price1", "20260917-chatgpt-seo1", "20260917-chatgpt-seo2", "20260917-chatgpt-guide2", "20260919-admin-plan-titles1", "20260919-pro20-renewal-confirm1", "20260922-devin-clean2", "20260922-devin-modal1"])
       : new Set(["20260912-chat-restoration2", "20260912-restored-products1", "20260912-codex-entry-visual1", "20260916-codex-header-price1", "20260917-readable-guide1", "20260917-faq-topic-fix1", "20260917-faq-dividers1", "20260919-pro20-renewal-confirm1"]);
-    expect(expectedVersion.has(match[2]), `${file}: stale cache version for ${match[1]}`);
+    const isChatGptAutoLabelUpdate = ["20260923-chatgpt-auto-label1", "20260923-chatgpt-auto-label2"].includes(match[2]) &&
+      ["chatgpt.html", "en/chatgpt.html"].includes(file.replaceAll("\\", "/")) &&
+      ["chatgpt-onboarding-v1.css", "chatgpt-onboarding-v1.js"].includes(match[1]);
+    expect(expectedVersion.has(match[2]) || isChatGptAutoLabelUpdate, `${file}: stale cache version for ${match[1]}`);
   }
 }
 

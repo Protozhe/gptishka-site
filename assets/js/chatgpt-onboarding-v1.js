@@ -8,9 +8,9 @@
 
   const isEnglish = document.documentElement.lang.toLowerCase().startsWith("en") || location.pathname.startsWith("/en/");
   const copy = isEnglish ? {
-    briefLabel: "Important information before purchase",
-    briefTitle: "No account login required",
-    briefText: "A short guide will open after payment. Your chat history stays intact.",
+    briefLabel: "Activation method for the selected plan",
+    briefTitle: "Automatic activation",
+    briefText: "After payment, enter your account token in the secure form. The page will show the activation status.",
     how: "How it works",
     close: "Close",
     eyebrow: "3 short steps",
@@ -33,9 +33,9 @@
     resultText: "If assistance is needed, a support specialist will automatically continue the order at no extra cost.",
     understood: "Got it"
   } : {
-    briefLabel: "Главное перед покупкой",
-    briefTitle: "Подключение без входа в аккаунт",
-    briefText: "После оплаты откроется короткая инструкция. История чатов сохранится.",
+    briefLabel: "Способ подключения выбранного тарифа",
+    briefTitle: "Автоматическое подключение",
+    briefText: "После оплаты вставьте токен аккаунта в защищённую форму. Страница покажет ход подключения.",
     how: "Как это работает",
     close: "Закрыть",
     eyebrow: "3 коротких шага",
@@ -59,6 +59,7 @@
     understood: "Всё понятно"
   };
 
+  const automaticPlanKeys = new Set(["go", "plus"]);
   const markup = `
     <section class="chatgpt-onboarding-brief" aria-label="${copy.briefLabel}">
       <div class="chatgpt-onboarding-brief__copy">
@@ -72,6 +73,7 @@
     const card = grid.querySelector(".price-card");
     const buyButton = card && card.querySelector(".pay-now-btn");
     if (!card || !buyButton || card.querySelector(".chatgpt-onboarding-brief")) return;
+    if (!automaticPlanKeys.has(card.dataset.planKey || "")) return;
     buyButton.insertAdjacentHTML("beforebegin", markup);
   }
 
