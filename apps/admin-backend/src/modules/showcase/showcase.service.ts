@@ -39,7 +39,7 @@ const SERVICE_CARD_DEFAULTS: Record<string, Record<string, any>> = {
   chatgpt: {
     serviceKey: "chatgpt",
     title: "ChatGPT",
-    description: "Тарифы Plus, GO и Pro для работы, учебы и любых задач.",
+    description: "GPT-5.5",
     planSummary: "Go / Plus / Pro 5x / Pro 20x",
     buttonText: "К тарифам",
     href: "/chatgpt",
@@ -83,7 +83,7 @@ const SERVICE_CARD_DEFAULTS: Record<string, Record<string, any>> = {
   grok: {
     serviceKey: "grok",
     title: "SuperGrok",
-    description: "Тарифы SuperGrok с быстрой активацией на ваш аккаунт.",
+    description: "Grok 4.6",
     planSummary: "1 месяц",
     buttonText: "К тарифам",
     href: "/supergrok",

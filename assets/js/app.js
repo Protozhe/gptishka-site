@@ -3737,7 +3737,7 @@ function initActivationResumeShortcut() {
     const prices = group.items.map(item => toAmount(item?.price)).filter(price => Number.isFinite(price) && price > 0);
     const minPrice = prices.length ? Math.min(...prices) : 0;
     const currency = String(group.items.find(item => toAmount(item?.price) === minPrice)?.currency || group.items[0]?.currency || "RUB").toUpperCase();
-    const planCount = serviceKey === "claude"
+    const planCount = ["chatgpt", "claude", "grok"].includes(serviceKey)
       ? new Set(group.items.map(item => getServicePlanKey(item, serviceKey))).size
       : group.items.length;
     const planCountText = isEnPage
@@ -3807,9 +3807,8 @@ function initActivationResumeShortcut() {
     };
     const fallbackImages = fallbackImagesByService[serviceKey] || {};
     const displayTitle = getServiceCardValue(serviceCard, "title", group.service.name);
-    const displayDescription = serviceKey === "claude"
-      ? "Claude Opus 5.5"
-      : getServiceCardValue(serviceCard, "description", group.service.description);
+    const modelDescriptions = { chatgpt: "GPT-5.5", claude: "Claude Opus 5.5", grok: "Grok 4.6" };
+    const displayDescription = modelDescriptions[serviceKey] || getServiceCardValue(serviceCard, "description", group.service.description);
     const displayPlanSummary = serviceKey === "claude"
       ? planSummary
       : getServiceCardValue(serviceCard, "planSummary", planSummary);
