@@ -105,6 +105,16 @@ type CredentialListResponse = {
   };
 };
 
+const CHATGPT_PLUS_PRODUCT_KEY = "chatgpt-plus-1";
+const CHATGPT_PLUS_IOS_SITE_URL = "https://vip.sxzfd.com";
+const CHATGPT_PLUS_FREE_SITE_URL = "https://aiee.fun";
+
+function chatGptPlusPoolLabel(siteUrl: string) {
+  if (siteUrl === CHATGPT_PLUS_IOS_SITE_URL) return "iOS · Go / Plus / Pro Light / Pro";
+  if (siteUrl === CHATGPT_PLUS_FREE_SITE_URL) return "Free · AIEE";
+  return "Другой сайт активации";
+}
+
 const TEXT = {
   title: "CDK / SDK ключи по товарам",
   subtitle:
@@ -318,6 +328,11 @@ function ActivationTable({
                 <div className="sm:col-span-2">
                   <span className="text-slate-500">Сайт активации: </span>
                   <span className="break-all font-mono text-xs">{item.activationSiteUrl || "-"}</span>
+                  {item.productKey === CHATGPT_PLUS_PRODUCT_KEY ? (
+                    <span className="ml-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                      {chatGptPlusPoolLabel(item.activationSiteUrl || "")}
+                    </span>
+                  ) : null}
                 </div>
                 <div>
                   <span className="text-slate-500">{TEXT.assigned}: </span>
@@ -453,6 +468,7 @@ function KeyProductColumn({
   const isClaudeMode = mode === "support_claude";
   const baseProductKey = resolveProductPoolBaseKey(product);
   const productKey = productKeyOverride || resolveKeyPoolProductKey(baseProductKey, mode);
+  const isChatGptPlusDualPool = !isSupportMode && productKey === CHATGPT_PLUS_PRODUCT_KEY;
   const keyColumnLabel = isSupportMode ? "SDK" : "CDK";
   const modeLabel = isSupportMode ? (isClaudeMode ? TEXT.modeSupportClaude : TEXT.modeSupport) : TEXT.modeActivation;
   const placeholder = isSupportMode ? TEXT.sdkTextareaPlaceholder : TEXT.textareaPlaceholder;
@@ -460,6 +476,9 @@ function KeyProductColumn({
   const defaultActivationSiteUrl = String(product.activationVariants?.withoutLogin?.activationSiteUrl || "").trim();
   const [text, setText] = useState("");
   const [activationSiteUrl, setActivationSiteUrl] = useState(defaultActivationSiteUrl);
+  const selectedActivationSiteUrl = isChatGptPlusDualPool
+    ? (activationSiteUrl === CHATGPT_PLUS_FREE_SITE_URL ? CHATGPT_PLUS_FREE_SITE_URL : CHATGPT_PLUS_IOS_SITE_URL)
+    : activationSiteUrl;
   const [error, setError] = useState("");
   const [returningId, setReturningId] = useState("");
   const [deletingId, setDeletingId] = useState("");
@@ -522,7 +541,7 @@ function KeyProductColumn({
       (
         await api.post("/cdks/import", {
           productKey,
-          activationSiteUrl: isSupportMode ? "" : activationSiteUrl,
+          activationSiteUrl: isSupportMode ? "" : selectedActivationSiteUrl,
           text,
         })
       ).data as CdkImportResult,
@@ -594,7 +613,7 @@ function KeyProductColumn({
       setError(fillErrorMessage);
       return;
     }
-    if (!isSupportMode && !activationSiteUrl.trim()) {
+    if (!isSupportMode && !selectedActivationSiteUrl.trim()) {
       setError(TEXT.fillActivationSite);
       return;
     }
@@ -648,7 +667,23 @@ function KeyProductColumn({
       </div>
 
       <form onSubmit={onImport} className="space-y-2">
-        {!isSupportMode ? (
+        {isChatGptPlusDualPool ? (
+          <fieldset className="space-y-2 rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+            <legend className="px-1 text-sm font-semibold">Пул ключей ChatGPT Plus</legend>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {[
+                { url: CHATGPT_PLUS_IOS_SITE_URL, title: "iOS · действующая подписка", hint: "Plan Type: Go / Plus / Pro Light / Pro · ключи начинаются с IOS-" },
+                { url: CHATGPT_PLUS_FREE_SITE_URL, title: "Free · AIEE", hint: "Plan Type: Free · ключи начинаются с GPLUS-" },
+              ].map((pool) => (
+                <label key={pool.url} className={`flex cursor-pointer gap-2 rounded-lg border p-3 text-sm ${selectedActivationSiteUrl === pool.url ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30" : "border-slate-200 dark:border-slate-700"}`}>
+                  <input type="radio" name={`pool-${productKey}`} checked={selectedActivationSiteUrl === pool.url} onChange={() => setActivationSiteUrl(pool.url)} />
+                  <span><span className="block font-semibold">{pool.title}</span><span className="block text-xs text-slate-500">{pool.hint}</span></span>
+                </label>
+              ))}
+            </div>
+            <p className="text-xs text-slate-500">Выберите пул перед загрузкой. Смешанная партия или неверный префикс отклоняются целиком.</p>
+          </fieldset>
+        ) : !isSupportMode ? (
           <label className="grid gap-1">
             <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
               Сайт активации для этой партии CDK
@@ -668,7 +703,7 @@ function KeyProductColumn({
           className="input min-h-[120px]"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder={placeholder}
+          placeholder={isChatGptPlusDualPool ? "Вставьте ключи выбранного пула — по одному в строке" : placeholder}
         />
         <div className="flex flex-wrap items-center gap-2">
           <button className="btn-primary" disabled={importMutation.isPending}>

@@ -1,6 +1,8 @@
 import { prisma } from "../config/prisma";
 import { normalizeActivationSiteUrl } from "../common/utils/activation-site";
 import { canonicalProductKey } from "../common/utils/product-key";
+import { AppError } from "../common/errors/app-error";
+import { validateChatGptPlusKeyImport } from "../modules/cdks/chatgpt-plus-pool-validation";
 
 export type LicenseKeyStatus = "available" | "reserved" | "used" | "revoked";
 
@@ -43,6 +45,8 @@ export const licenseService = {
     const activationSiteUrl = normalizeActivationSiteUrl(meta?.activationSiteUrl);
     if (!pk) throw new Error("productKey is required");
     if (!kv) throw new Error("keyValue is required");
+    const poolError = validateChatGptPlusKeyImport(pk, activationSiteUrl, [kv]);
+    if (poolError) throw new AppError(poolError, 400);
 
     const row = await prisma.licenseKey.create({
       data: {
@@ -80,6 +84,8 @@ export const licenseService = {
     const unique = Array.from(new Set(normalized));
 
     if (!pk) throw new Error("productKey is required");
+    const poolError = validateChatGptPlusKeyImport(pk, activationSiteUrl, unique);
+    if (poolError) throw new AppError(poolError, 400);
     if (unique.length === 0) {
       return {
         inserted: 0,
