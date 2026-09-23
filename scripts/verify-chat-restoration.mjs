@@ -22,6 +22,9 @@ for (const file of ["catalog/index.html", "catalog/ai/index.html", "en/catalog/i
   expect(html.includes('ai-directory-card__desc">GPT-6</p>'), `${file}: ChatGPT fallback model is stale`);
   expect(html.includes('ai-directory-card__desc">Grok 4.7</p>'), `${file}: SuperGrok fallback model is stale`);
 }
+for (const file of ["index.html", "en/index.html", "catalog/index.html", "catalog/ai/index.html", "en/catalog/index.html", "en/catalog/ai/index.html", "suno.html", "en/suno.html"]) {
+  expect(read(file).includes('/assets/js/app.min.js?v=20260923-model-cards2'), `${file}: cached app script can restore stale model labels`);
+}
 expect(/const displayPlanSummary = serviceKey === "claude"\s*\? planSummary/.test(app), "Claude card ignores the available Max plans");
 expect(app.includes('new Set(group.items.map(item => getServicePlanKey(item, serviceKey))).size'), "Claude plan count includes delivery variants");
 expect(app.includes('const title = isEnPage ? "Steam Top Up" : "Пополнение Steam";'), "Steam title regressed");
@@ -82,7 +85,9 @@ for (const file of htmlFiles) {
       ["index.html", "catalog/index.html", "catalog/ai/index.html", "en/index.html", "en/catalog/index.html", "en/catalog/ai/index.html"].includes(file.replaceAll("\\", "/"));
     const isSunoPlansUpdate = match[1] === "app.min.js" && match[2] === "20260923-suno-plans1" &&
       ["index.html", "catalog/index.html", "catalog/ai/index.html", "en/index.html", "en/catalog/index.html", "en/catalog/ai/index.html", "suno.html", "en/suno.html"].includes(file.replaceAll("\\", "/"));
-    expect(expectedVersion.has(match[2]) || isMidjourneyUpdate || isMidjourneyHoverUpdate || isClaudeMaxUpdate || isClaudePlansUpdate || isModelCardsUpdate || isSunoPlansUpdate, `${file}: stale cache version for ${match[1]}`);
+    const isModelCardsRefresh = match[1] === "app.min.js" && match[2] === "20260923-model-cards2" &&
+      ["index.html", "catalog/index.html", "catalog/ai/index.html", "en/index.html", "en/catalog/index.html", "en/catalog/ai/index.html", "suno.html", "en/suno.html"].includes(file.replaceAll("\\", "/"));
+    expect(expectedVersion.has(match[2]) || isMidjourneyUpdate || isMidjourneyHoverUpdate || isClaudeMaxUpdate || isClaudePlansUpdate || isModelCardsUpdate || isSunoPlansUpdate || isModelCardsRefresh, `${file}: stale cache version for ${match[1]}`);
   }
 }
 
