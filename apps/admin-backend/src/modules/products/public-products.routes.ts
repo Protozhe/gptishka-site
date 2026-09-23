@@ -3,8 +3,21 @@ import { asyncHandler } from "../../common/http/async-handler";
 import { prisma } from "../../config/prisma";
 import { buildPublicProducts, fallbackSectionsFromProducts, isHiddenPublicVpnProduct } from "./public-product-presenter";
 import { showcaseService } from "../showcase/showcase.service";
+import { buildPublicItunesProducts } from "./public-itunes-products";
 
 export const publicProductsRouter = Router();
+
+publicProductsRouter.get(
+  "/itunes-products",
+  asyncHandler(async (_req, res) => {
+    const products = await prisma.product.findMany({
+      where: { isActive: true, isArchived: false, tags: { has: "itunes" } },
+      select: { slug: true, price: true, currency: true, tags: true, activationVariants: true },
+    });
+    res.setHeader("Cache-Control", "no-store");
+    res.json({ items: buildPublicItunesProducts(products) });
+  })
+);
 
 function buildPublicServiceCardsPayload(serviceCards: any[]) {
   return (Array.isArray(serviceCards) ? serviceCards : [])

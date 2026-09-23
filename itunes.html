@@ -63,7 +63,7 @@
       <div class="service-constructor-card">
         <div class="service-constructor-head">
           <div class="service-constructor-brand"><span>Подарочные карты</span><h2>iTunes и App Store</h2></div>
-          <div class="service-constructor-price"><strong id="itunesConstructorPrice">300 ₽</strong></div>
+          <div class="service-constructor-price"><strong id="itunesConstructorPrice">—</strong></div>
         </div>
         <div class="service-filter-stack service-filter-stack--constructor" aria-label="Параметры подарочной карты">
           <div class="service-filter-group">
@@ -73,13 +73,14 @@
           <div class="service-filter-group">
             <div class="service-filter-group__label">Номинал</div>
             <div class="service-filter-group__chips" data-itunes-denominations>
-              <button type="button" class="service-filter-chip is-active" aria-pressed="true" data-itunes-denomination="2"><span>2 $</span><small>300 ₽</small></button>
-              <button type="button" class="service-filter-chip" aria-pressed="false" data-itunes-denomination="5"><span>5 $</span><small>750 ₽</small></button>
-              <button type="button" class="service-filter-chip" aria-pressed="false" data-itunes-denomination="10"><span>10 $</span><small>1 500 ₽</small></button>
-              <button type="button" class="service-filter-chip" aria-pressed="false" data-itunes-denomination="15"><span>15 $</span><small>2 000 ₽</small></button>
-              <button type="button" class="service-filter-chip" aria-pressed="false" data-itunes-denomination="30"><span>30 $</span><small>3 800 ₽</small></button>
-              <button type="button" class="service-filter-chip" aria-pressed="false" data-itunes-denomination="50"><span>50 $</span><small>5 500 ₽</small></button>
+              <button type="button" class="service-filter-chip is-active" aria-pressed="true" data-itunes-denomination="2" disabled><span>2 $</span><small>—</small></button>
+              <button type="button" class="service-filter-chip" aria-pressed="false" data-itunes-denomination="5" disabled><span>5 $</span><small>—</small></button>
+              <button type="button" class="service-filter-chip" aria-pressed="false" data-itunes-denomination="10" disabled><span>10 $</span><small>—</small></button>
+              <button type="button" class="service-filter-chip" aria-pressed="false" data-itunes-denomination="15" disabled><span>15 $</span><small>—</small></button>
+              <button type="button" class="service-filter-chip" aria-pressed="false" data-itunes-denomination="30" disabled><span>30 $</span><small>—</small></button>
+              <button type="button" class="service-filter-chip" aria-pressed="false" data-itunes-denomination="50" disabled><span>50 $</span><small>—</small></button>
             </div>
+            <p id="itunesPriceStatus" role="status" aria-live="polite">Загружаем актуальные цены…</p>
           </div>
         </div>
         <div class="service-selected-plan" aria-live="polite">
@@ -87,9 +88,9 @@
             <div class="service-checkout-card__summary">
               <div><span class="service-checkout-card__label">Регион</span><strong>США</strong></div>
               <div><span class="service-checkout-card__label">Номинал</span><strong id="itunesSelectedDenomination">2 $</strong></div>
-              <div><span class="service-checkout-card__label">Стоимость</span><strong id="itunesSelectedPrice">300 ₽</strong></div>
+              <div><span class="service-checkout-card__label">Стоимость</span><strong id="itunesSelectedPrice">—</strong></div>
             </div>
-            <button type="button" class="buy-btn itunes-order-button" data-itunes-order>Оформить заказ</button>
+            <button type="button" class="buy-btn itunes-order-button" data-itunes-order disabled>Оформить заказ</button>
           </div>
         </div>
         <div class="service-constructor-description">
@@ -175,9 +176,9 @@
     <div class="service-section-title"><h2>Часто задаваемые вопросы</h2><p>Главное о подарочных картах iTunes и App Store.</p></div>
     <div class="service-faq-list">
       <article class="service-faq-item active"><button class="service-faq-question" type="button">Для какого региона подходит карта?<span></span></button><div class="service-faq-answer"><p>Для Apple ID с регионом США. Перед заказом обязательно проверьте регион аккаунта.</p></div></article>
-      <article class="service-faq-item"><button class="service-faq-question" type="button">Какие номиналы доступны?<span></span></button><div class="service-faq-answer"><p>2, 5, 10, 15, 30 и 50 долларов США.</p></div></article>
+      <article class="service-faq-item"><button class="service-faq-question" type="button">Какие номиналы доступны?<span></span></button><div class="service-faq-answer"><p>Доступные номиналы показаны выше, в форме заказа.</p></div></article>
       <article class="service-faq-item"><button class="service-faq-question" type="button">Что придёт после оформления?<span></span></button><div class="service-faq-answer"><p>Код подарочной карты выбранного номинала и короткая инструкция по активации.</p></div></article>
-      <article class="service-faq-item"><button class="service-faq-question" type="button">Сколько стоит подарочная карта?<span></span></button><div class="service-faq-answer"><p>2 $ — 300 ₽, 5 $ — 750 ₽, 10 $ — 1 500 ₽, 15 $ — 2 000 ₽, 30 $ — 3 800 ₽, 50 $ — 5 500 ₽.</p></div></article>
+      <article class="service-faq-item"><button class="service-faq-question" type="button">Сколько стоит подарочная карта?<span></span></button><div class="service-faq-answer"><p>Актуальная цена указана рядом с каждым доступным номиналом выше.</p></div></article>
     </div>
   </section>
 </main>
@@ -198,7 +199,7 @@
                 <div class="chatgpt-order-summary-card__chips chatgpt-order-chips"><span>Регион: США</span><span>Номинал: <b id="itunesModalDenomination">2 $</b></span></div>
               </div>
             </div>
-            <div class="chatgpt-order-summary-card__price chatgpt-order-total"><span>Стоимость</span><strong id="itunesModalPrice">300 ₽</strong></div>
+            <div class="chatgpt-order-summary-card__price chatgpt-order-total"><span>Стоимость</span><strong id="itunesModalPrice">—</strong></div>
           </section>
 
           <section class="chatgpt-order-section">
@@ -221,7 +222,7 @@
           <p class="chatgpt-order-legal-note">Нажимая кнопку, вы соглашаетесь с <a href="/oferta.html" target="_blank" rel="noopener">офертой</a> и <a href="/politika.html" target="_blank" rel="noopener">политикой конфиденциальности</a>.</p>
           <p class="chatgpt-order-status" id="itunesOrderStatus" aria-live="polite"></p>
         </div>
-        <div class="chatgpt-order-footer"><div class="chatgpt-order-footer__total"><span>Итого к оплате</span><strong id="itunesModalFooterPrice">300 ₽</strong></div><button type="submit" class="btn chatgpt-order-submit">Перейти к оплате</button></div>
+        <div class="chatgpt-order-footer"><div class="chatgpt-order-footer__total"><span>Итого к оплате</span><strong id="itunesModalFooterPrice">—</strong></div><button type="submit" class="btn chatgpt-order-submit" disabled>Перейти к оплате</button></div>
       </form>
       <section class="itunes-delivery-card" id="itunesDeliveryResult" hidden aria-live="polite">
         <div class="itunes-delivery-card__icon" aria-hidden="true">✓</div>
@@ -242,7 +243,7 @@
   <span class="footer-copy">&copy; 2026 GPTishka. Все права защищены, копирование запрещено.</span>
 </footer>
 <script src="/assets/js/app.min.js?v=20260916-codex-header-price1" defer></script>
-<script src="/assets/js/itunes-page.js?v=20260912-chat-restoration2" defer></script>
+<script src="/assets/js/itunes-page.js?v=20260923-admin-price-sync1" defer></script>
 <script src="/assets/js/support-widget.js?v=20260724-resume-faq-clear2" defer></script>
 <script src="/assets/js/language-switcher.js?v=20260912-chat-restoration2" defer></script>
 </body>

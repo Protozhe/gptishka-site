@@ -70,9 +70,9 @@
     if (faqSection) faqSection.innerHTML =
       '<div class="service-section-title"><h2>Frequently asked questions</h2><p>Key details about iTunes and App Store gift cards.</p></div><div class="service-faq-list">' +
       '<article class="service-faq-item active"><button class="service-faq-question" type="button">Which region is the card for?<span></span></button><div class="service-faq-answer"><p>It is for an Apple ID with the United States region. Check your account region before ordering.</p></div></article>' +
-      '<article class="service-faq-item"><button class="service-faq-question" type="button">Which amounts are available?<span></span></button><div class="service-faq-answer"><p>2, 5, 10, 15, 30 and 50 US dollars.</p></div></article>' +
+      '<article class="service-faq-item"><button class="service-faq-question" type="button">Which amounts are available?<span></span></button><div class="service-faq-answer"><p>Available amounts are shown above in the order form.</p></div></article>' +
       '<article class="service-faq-item"><button class="service-faq-question" type="button">What will I receive?<span></span></button><div class="service-faq-answer"><p>A gift-card code for the selected amount and a short activation guide.</p></div></article>' +
-      '<article class="service-faq-item"><button class="service-faq-question" type="button">How much does it cost?<span></span></button><div class="service-faq-answer"><p>$2 — 300 ₽, $5 — 750 ₽, $10 — 1,500 ₽, $15 — 2,000 ₽, $30 — 3,800 ₽, $50 — 5,500 ₽.</p></div></article>' +
+      '<article class="service-faq-item"><button class="service-faq-question" type="button">How much does it cost?<span></span></button><div class="service-faq-answer"><p>Current prices are shown next to the available amounts above.</p></div></article>' +
       '</div>';
 
     setText("#itunesOrderModalTitle", "iTunes & App Store");
@@ -127,15 +127,11 @@
   applyEnglishCopy();
 
   var denomination = "2";
-  var prices = {
-    "2": 300,
-    "5": 750,
-    "10": 1500,
-    "15": 2000,
-    "30": 3800,
-    "50": 5500
-  };
+  var prices = {};
+  var productSlugs = {};
+  var productsReady = false;
   var denominationButtons = Array.prototype.slice.call(document.querySelectorAll("[data-itunes-denomination]"));
+  var priceStatus = document.getElementById("itunesPriceStatus");
   var constructorPrice = document.getElementById("itunesConstructorPrice");
   var selectedDenomination = document.getElementById("itunesSelectedDenomination");
   var selectedPrice = document.getElementById("itunesSelectedPrice");
@@ -157,25 +153,18 @@
   var closeButtons = Array.prototype.slice.call(document.querySelectorAll("[data-itunes-modal-close]"));
   var lastFocusedElement = null;
   var closeTimer = 0;
-  var productSlugs = {
-    "2": "itunes-us-2",
-    "5": "itunes-us-5",
-    "10": "itunes-us-10",
-    "15": "itunes-us-15",
-    "30": "itunes-us-30",
-    "50": "itunes-us-50"
-  };
-
   function denominationLabel(value) {
     return String(value || "2") + " $";
   }
 
   function priceLabel(value) {
-    var price = prices[String(value || "2")] || prices["2"];
+    var price = prices[String(value || "2")];
+    if (!Number.isFinite(price) || price <= 0) return "—";
     return new Intl.NumberFormat(isEnglishPage ? "en-US" : "ru-RU").format(price) + " ₽";
   }
 
   function updateDenomination(nextValue) {
+    if (productsReady && !productSlugs[String(nextValue)]) return;
     denomination = String(nextValue || "2");
     var label = denominationLabel(denomination);
     var price = priceLabel(denomination);
@@ -192,8 +181,57 @@
     if (modalFooterPrice) modalFooterPrice.textContent = price;
   }
 
+  async function loadCurrentProducts() {
+    try {
+      var response = await fetch("/api/public/itunes-products", { cache: "no-store", credentials: "same-origin" });
+      if (!response.ok) throw new Error("Price API unavailable");
+      var payload = await response.json();
+      var items = Array.isArray(payload && payload.items) ? payload.items : [];
+      prices = {};
+      productSlugs = {};
+      items.forEach(function (item) {
+        var value = String(item && item.denomination || "");
+        var amount = Number(item && item.price);
+        var slug = String(item && item.slug || "").trim();
+        if (!/^(2|5|10|15|30|50)$/.test(value) || !Number.isFinite(amount) || amount <= 0 || !slug) return;
+        prices[value] = amount;
+        productSlugs[value] = slug;
+      });
+      var available = denominationButtons.filter(function (button) {
+        var value = button.getAttribute("data-itunes-denomination");
+        var enabled = Boolean(productSlugs[value]);
+        button.hidden = !enabled;
+        button.style.display = enabled ? "" : "none";
+        button.disabled = !enabled;
+        if (enabled) {
+          var small = button.querySelector("small");
+          if (small) small.textContent = priceLabel(value);
+        }
+        return enabled;
+      });
+      if (!available.length) throw new Error("No available iTunes products");
+      productsReady = true;
+      if (!productSlugs[denomination]) denomination = available[0].getAttribute("data-itunes-denomination");
+      updateDenomination(denomination);
+      if (openButton) openButton.disabled = false;
+      if (submitButton) submitButton.disabled = false;
+      if (priceStatus) priceStatus.textContent = "";
+    } catch (_) {
+      productsReady = false;
+      prices = {};
+      productSlugs = {};
+      denominationButtons.forEach(function (button) { button.disabled = true; });
+      updateDenomination(denomination);
+      if (openButton) openButton.disabled = true;
+      if (submitButton) submitButton.disabled = true;
+      if (priceStatus) priceStatus.textContent = isEnglishPage
+        ? "Prices are temporarily unavailable. Please try again later."
+        : "Не удалось загрузить актуальные цены. Попробуйте позже.";
+    }
+  }
+
   function openModal() {
-    if (!modal) return;
+    if (!modal || !productsReady) return;
     window.clearTimeout(closeTimer);
     updateDenomination(denomination);
     lastFocusedElement = document.activeElement;
@@ -280,7 +318,7 @@
 
   function setCheckoutLoading(isLoading) {
     if (!submitButton) return;
-    submitButton.disabled = Boolean(isLoading);
+    submitButton.disabled = Boolean(isLoading) || !productsReady;
     submitButton.setAttribute("aria-busy", isLoading ? "true" : "false");
     submitButton.textContent = isLoading
       ? (isEnglishPage ? "Creating secure payment…" : "Создаём безопасную оплату…")
@@ -312,11 +350,26 @@
     }
     saveOrderDraft(contact, comment);
     var paymentMethod = selectedPaymentMethod();
-    var productSlug = productSlugs[denomination] || productSlugs["2"];
+    var productSlug = productSlugs[denomination];
+    if (!productsReady || !productSlug) return;
     setCheckoutLoading(true);
     if (orderStatus) orderStatus.textContent = isEnglishPage ? "Creating a secure payment…" : "Создаём безопасную оплату…";
 
     try {
+      var currentResponse = await fetch("/api/public/itunes-products", { cache: "no-store", credentials: "same-origin" });
+      if (!currentResponse.ok) throw new Error("ITUNES_PRICE_UNAVAILABLE");
+      var currentPayload = await currentResponse.json();
+      var currentItem = (Array.isArray(currentPayload && currentPayload.items) ? currentPayload.items : []).find(function (item) {
+        return String(item && item.denomination) === denomination;
+      });
+      if (!currentItem || !currentItem.slug) {
+        await loadCurrentProducts();
+        throw new Error("ITUNES_PRODUCT_UNAVAILABLE");
+      }
+      if (Number(currentItem.price) !== prices[denomination] || String(currentItem.slug) !== productSlug) {
+        await loadCurrentProducts();
+        throw new Error("ITUNES_PRICE_CHANGED");
+      }
       var response = await fetch("/api/payments/" + encodeURIComponent(paymentMethod) + "/create", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
@@ -363,7 +416,16 @@
       setCheckoutLoading(false);
       if (orderStatus) {
         var outOfStock = String(error && error.message || error).indexOf("ITUNES_OUT_OF_STOCK") >= 0;
-        orderStatus.textContent = outOfStock
+        var priceChanged = String(error && error.message || error).indexOf("ITUNES_PRICE_CHANGED") >= 0;
+        var productUnavailable = String(error && error.message || error).indexOf("ITUNES_PRODUCT_UNAVAILABLE") >= 0;
+        var priceUnavailable = String(error && error.message || error).indexOf("ITUNES_PRICE_UNAVAILABLE") >= 0;
+        orderStatus.textContent = priceChanged
+          ? (isEnglishPage ? "The price has changed. Review the new amount and click again to continue." : "Цена изменилась. Проверьте новую сумму и нажмите кнопку ещё раз.")
+          : productUnavailable
+          ? (isEnglishPage ? "This amount is no longer available. Choose another one." : "Этот номинал больше недоступен. Выберите другой.")
+          : priceUnavailable
+          ? (isEnglishPage ? "Could not verify the current price. Please try again later." : "Не удалось проверить актуальную цену. Попробуйте позже.")
+          : outOfStock
           ? (isEnglishPage ? "This amount is temporarily out of stock. Choose another amount or try again later." : "Коды этого номинала временно закончились. Выберите другой номинал или попробуйте позже.")
           : (isEnglishPage ? "Could not create the payment. Please try another gateway or try again." : "Не удалось создать оплату. Выберите другой шлюз или попробуйте ещё раз.");
       }
@@ -488,6 +550,7 @@
 
   restoreOrderDraft();
   updateDenomination(denomination);
+  loadCurrentProducts();
   syncPaymentAria();
 
   var returnParams = new URLSearchParams(window.location.search);

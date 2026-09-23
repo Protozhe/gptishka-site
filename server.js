@@ -1473,6 +1473,11 @@ function createApp() {
     }
   });
 
+  app.get("/api/public/itunes-products", async (req, res) => {
+    res.set("Cache-Control", "no-store");
+    return proxyToAdminBackend(req, res, "/api/public/itunes-products");
+  });
+
   app.get("/api/public/showcase", async (req, res) => {
     const lang = String(req.query?.lang || "ru").toLowerCase().startsWith("en") ? "en" : "ru";
     const target = String(req.query?.target || "homepage").toLowerCase() === "catalog" ? "catalog" : "homepage";
@@ -1781,6 +1786,7 @@ function createApp() {
       planId,
       product_id: planId,
       productId: planId,
+      product_slug: pickFirstString([source.product_slug, source.productSlug], "") || undefined,
       qty: Math.max(1, qty),
       quantity: Math.max(1, qty),
       promo_code: promoCode || undefined,

@@ -1,6 +1,6 @@
 ﻿import { FormEvent, useMemo, useState } from "react";
+import { Fragment, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
 import axios from "axios";
 import { api } from "../lib/api";
 import { money } from "../lib/format";
@@ -629,6 +629,7 @@ export default function ProductsPage() {
   const [availabilityMessage, setAvailabilityMessage] = useState<string | null>(null);
 
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [titleEn, setTitleEn] = useState("");
   const [activationVariantTab, setActivationVariantTab] = useState<ActivationVariantKey>("withLogin");
@@ -1005,6 +1006,7 @@ export default function ProductsPage() {
 
   function resetForm() {
     setEditingId(null);
+    setIsCreateOpen(false);
     setTitle("");
     setTitleEn("");
     setActivationVariantTab("withLogin");
@@ -1058,6 +1060,11 @@ export default function ProductsPage() {
   }
 
   function onEdit(item: Product) {
+    if (editingId === item.id) {
+      resetForm();
+      return;
+    }
+    setIsCreateOpen(false);
     const parsedRu = parseDescriptionWithMedia(item.description || "");
     const parsedEn = parseDescriptionWithMedia(item.descriptionEn || "");
     const parsedDurationRu = parseDurationLabel(item.description || "");
@@ -1070,7 +1077,7 @@ export default function ProductsPage() {
     setTitleEn(item.titleEn || "");
     const legacyDeliveryType = resolveDeliveryType(item);
     const savedVariants = item.activationVariants;
-    setActivationVariantTab("withLogin");
+    setActivationVariantTab(savedVariants?.withLogin?.enabled === false && savedVariants?.withoutLogin?.enabled !== false ? "withoutLogin" : "withLogin");
     setWithLoginEnabled(savedVariants ? savedVariants.withLogin?.enabled !== false : legacyDeliveryType === "manual_login");
     setWithLoginPrice(String(savedVariants?.withLogin?.price ?? item.price ?? ""));
     setWithLoginDeliveryType(savedVariants?.withLogin?.deliveryType || "manual_login");
@@ -1864,10 +1871,25 @@ export default function ProductsPage() {
     ? getRequestErrorMessage(saveError, "Не удалось сохранить товар. Проверьте данные и соединение с API.")
     : null;
 
-  return (
-    <div className="space-y-4">
-      <section className="card p-4">
-        <form className="grid gap-2 md:grid-cols-4" onSubmit={onSubmitProductForm}>
+  const productEditor = (
+      <section className="card border border-cyan-200 p-4 shadow-lg dark:border-cyan-900/60">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-4 dark:border-slate-800">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-[0.14em] text-cyan-700 dark:text-cyan-300">
+              {editingId ? "Редактирование товара" : "Новый товар"}
+            </div>
+            <h2 className="mt-1 text-xl font-bold">{editingId ? title : "Добавить товар"}</h2>
+            <p className="mt-1 text-sm text-slate-500">Цены и параметры сохраняются для выбранного товара.</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button className="btn-primary" type="submit" form="productEditorForm" disabled={isSaving}>
+              {isSaving ? "Сохраняем..." : editingId ? "Сохранить изменения" : "Добавить товар"}
+            </button>
+            <button className="btn-secondary" type="button" onClick={resetForm}>Закрыть</button>
+          </div>
+        </div>
+        {formError && <div className="mb-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700" role="alert">{formError}</div>}
+        <form id="productEditorForm" className="grid gap-2 md:grid-cols-4" onSubmit={onSubmitProductForm}>
           <textarea
             className="input min-h-12 resize-y md:col-span-2"
             placeholder="Название товара (RU). Shift+Enter — перенос строки."
@@ -2402,6 +2424,22 @@ export default function ProductsPage() {
         </form>
       </section>
 
+  );
+
+  return (
+    <div className="space-y-4">
+      <section className="card flex flex-wrap items-center justify-between gap-3 p-4">
+        <div>
+          <h1 className="text-xl font-bold">Товары и цены</h1>
+          <p className="text-sm text-slate-500">Найдите товар и нажмите «Редактировать» — настройки откроются сразу под ним.</p>
+        </div>
+        <button className="btn-primary" type="button" onClick={() => { resetForm(); setIsCreateOpen(true); }}>
+          Добавить товар
+        </button>
+      </section>
+
+      {isCreateOpen && !editingId ? productEditor : null}
+
       <section className="card p-4">
         <div className="flex flex-col gap-4">
           <div>
@@ -2457,12 +2495,17 @@ export default function ProductsPage() {
                 <option value="newest">Сначала новые</option>
               </select>
             </label>
-            <button className="btn-secondary" onClick={onBulkMinus10} disabled={bulk.isPending}>
-              {bulk.isPending ? "Применяем..." : "Массово -10%"}
-            </button>
-            <button className="btn-secondary" type="button" onClick={() => onDeleteDisabledProducts()} disabled={isDangerActionPending}>
-              {isDangerActionPending ? "Удаляем..." : "Удалить отключенные"}
-            </button>
+            <details className="rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700">
+              <summary className="cursor-pointer text-sm font-semibold">Массовые действия</summary>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button className="btn-secondary" onClick={onBulkMinus10} disabled={bulk.isPending}>
+                  {bulk.isPending ? "Применяем..." : "Массово -10%"}
+                </button>
+                <button className="btn-secondary" type="button" onClick={() => onDeleteDisabledProducts()} disabled={isDangerActionPending}>
+                  {isDangerActionPending ? "Удаляем..." : "Удалить отключенные"}
+                </button>
+              </div>
+            </details>
           </div>
         </div>
         {(toggle.error || archive.error || bulk.error) && (
@@ -2497,11 +2540,11 @@ export default function ProductsPage() {
                 const itemDuration = getProductDurationLabel(item);
                 const isThisTogglePending = toggle.isPending && toggle.variables?.id === item.id;
                 return (
+                  <Fragment key={item.id}>
                   <tr
                     className={`border-t border-slate-200 dark:border-slate-800 ${
-                      item.isActive ? "" : "bg-slate-50/80 dark:bg-slate-950/40"
+                      editingId === item.id ? "bg-cyan-50 dark:bg-cyan-950/30" : item.isActive ? "" : "bg-slate-50/80 dark:bg-slate-950/40"
                     }`}
-                    key={item.id}
                   >
                     <td className="px-4 py-3">
                       <div className="font-semibold">{item.title}</div>
@@ -2511,7 +2554,12 @@ export default function ProductsPage() {
                       {itemDuration || <span className="text-slate-400">Не указан</span>}
                     </td>
                     <td className="px-4 py-3">{item.category}</td>
-                    <td className="px-4 py-3">{money(Number(item.price), item.currency)}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="font-semibold">{money(Number(item.price), item.currency)}</div>
+                      {item.activationVariants?.withLogin?.enabled === false && item.activationVariants?.withoutLogin?.enabled !== false ? (
+                        <div className="text-xs text-slate-500">Без входа</div>
+                      ) : null}
+                    </td>
                     <td className="px-4 py-3">
                       <div>{deliveryMethodLabel(itemDeliveryType)}</div>
                       {itemDeliveryType === "vpn" && (
@@ -2557,8 +2605,8 @@ export default function ProductsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
-                        <button className="btn-secondary" onClick={() => onEdit(item)} disabled={isSaving || toggle.isPending || archive.isPending}>
-                          Редактировать
+                        <button className="btn-secondary" type="button" aria-expanded={editingId === item.id} onClick={() => onEdit(item)} disabled={isSaving || toggle.isPending || archive.isPending}>
+                          {editingId === item.id ? "Свернуть" : "Редактировать"}
                         </button>
                         <button className="btn-secondary" onClick={() => archive.mutate(item.id)} disabled={toggle.isPending || archive.isPending}>
                           {archive.isPending ? "Архивируем..." : "В архив"}
@@ -2576,6 +2624,12 @@ export default function ProductsPage() {
                       </div>
                     </td>
                   </tr>
+                  {editingId === item.id ? (
+                    <tr className="bg-slate-50 dark:bg-slate-950/50">
+                      <td colSpan={7} className="p-3 md:p-5">{productEditor}</td>
+                    </tr>
+                  ) : null}
+                  </Fragment>
                 );
               })}
             </tbody>
