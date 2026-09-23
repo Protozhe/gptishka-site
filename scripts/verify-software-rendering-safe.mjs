@@ -2,8 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
-const darkReleaseMarker = "20260919-software-render2";
-const homeReleaseMarker = "20260919-software-render2";
+const darkReleaseMarker = "20260923-scroll-render1";
+const homeReleaseMarker = "20260923-scroll-render1";
 const sharedStyles = [
   "assets/css/gptishka-global-dark.css",
   "assets/css/home-info-sections.css",
@@ -18,11 +18,15 @@ const requiredRules = [
 ];
 
 const homepageClarityRules = [
+  "html:has(> body.home-wide-body)",
+  "background: #0b0e13 !important",
+  "overscroll-behavior-y: none",
   "body.home-wide-body:is(#gptishka-render-safety, *)",
   "body.home-wide-body main.page::before",
   "body.home-wide-body .home-gradient-bg",
   "content: none !important",
   "display: none !important",
+  "animation: none !important",
 ];
 
 for (const relativePath of sharedStyles) {
@@ -41,6 +45,22 @@ const homepageStyles = fs.readFileSync(
 for (const rule of homepageClarityRules) {
   if (!homepageStyles.includes(rule)) {
     throw new Error(`Homepage is missing the clarity guard: ${rule}`);
+  }
+}
+
+const darkStyles = fs.readFileSync(
+  path.join(root, "assets/css/gptishka-global-dark.css"),
+  "utf8",
+);
+if (!darkStyles.includes("overscroll-behavior-y: none")) {
+  throw new Error("Dark pages must suppress the browser's edge overscroll flash");
+}
+for (const [fileName, styles] of [
+  ["global dark", darkStyles],
+  ["homepage", homepageStyles],
+]) {
+  if (/backdrop-filter: none !important;\s*-webkit-backdrop-filter: none !important;\s*will-change: auto !important/.test(styles)) {
+    throw new Error(`${fileName} must not disable will-change for every descendant`);
   }
 }
 

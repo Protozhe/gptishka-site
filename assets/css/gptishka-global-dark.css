@@ -21,6 +21,7 @@
 
 html {
   background: var(--gptd-bg-0) !important;
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -1906,7 +1907,6 @@ html body:is(#gptishka-render-safety, *)::after {
 html body :is(#gptishka-render-safety, *) {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  will-change: auto !important;
 }
 
 html body :is(#gptishka-render-safety, *)::before,
@@ -1925,6 +1925,7 @@ html body :is(
   -webkit-filter: none !important;
   animation: none !important;
   mix-blend-mode: normal !important;
+  will-change: auto !important;
 }
 
 html body :is(

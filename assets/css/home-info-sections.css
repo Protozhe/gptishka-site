@@ -6,6 +6,12 @@ body.home-wide-body .home-wide-page {
 /* 20260919: identical high-quality composition with and without GPU acceleration.
    Static gradients replace full-screen blur layers; glass surfaces retain their
    borders, fills and shadows without live backdrop sampling. */
+html:has(> body.home-wide-body) {
+  /* The bundle's pale root canvas otherwise flashes through at scroll boundaries. */
+  background: #0b0e13 !important;
+  overscroll-behavior-y: none;
+}
+
 html body.home-wide-body:is(#gptishka-render-safety, *) {
   background:
     linear-gradient(180deg, transparent 0, transparent 52vh, rgba(2, 4, 8, 0.25) 100vh, rgba(2, 4, 8, 0.25) 100%),
@@ -15,6 +21,8 @@ html body.home-wide-body:is(#gptishka-render-safety, *) {
     linear-gradient(180deg, #181820 0%, #11131b 54%, #0b0e13 100%) !important;
   background-attachment: scroll !important;
   background-size: 100% 100% !important;
+  /* The old full-page gradient animation repaints during every scroll frame. */
+  animation: none !important;
 }
 
 /* The former blurred ambient layers become a grey/orange veil when a browser
@@ -32,7 +40,6 @@ html body.home-wide-body .home-gradient-bg {
 html body :is(#gptishka-render-safety, *) {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  will-change: auto !important;
 }
 
 html body :is(#gptishka-render-safety, *)::before,
@@ -51,6 +58,7 @@ html body :is(
   -webkit-filter: none !important;
   animation: none !important;
   mix-blend-mode: normal !important;
+  will-change: auto !important;
 }
 
 html body :is(
