@@ -80,7 +80,9 @@ for (const file of htmlFiles) {
       ["index.html", "catalog/index.html", "catalog/ai/index.html", "en/index.html", "en/catalog/index.html", "en/catalog/ai/index.html"].includes(file.replaceAll("\\", "/"));
     const isModelCardsUpdate = match[1] === "app.min.js" && match[2] === "20260923-model-cards1" &&
       ["index.html", "catalog/index.html", "catalog/ai/index.html", "en/index.html", "en/catalog/index.html", "en/catalog/ai/index.html"].includes(file.replaceAll("\\", "/"));
-    expect(expectedVersion.has(match[2]) || isMidjourneyUpdate || isMidjourneyHoverUpdate || isClaudeMaxUpdate || isClaudePlansUpdate || isModelCardsUpdate, `${file}: stale cache version for ${match[1]}`);
+    const isSunoPlansUpdate = match[1] === "app.min.js" && match[2] === "20260923-suno-plans1" &&
+      ["index.html", "catalog/index.html", "catalog/ai/index.html", "en/index.html", "en/catalog/index.html", "en/catalog/ai/index.html", "suno.html", "en/suno.html"].includes(file.replaceAll("\\", "/"));
+    expect(expectedVersion.has(match[2]) || isMidjourneyUpdate || isMidjourneyHoverUpdate || isClaudeMaxUpdate || isClaudePlansUpdate || isModelCardsUpdate || isSunoPlansUpdate, `${file}: stale cache version for ${match[1]}`);
   }
 }
 

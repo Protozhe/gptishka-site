@@ -18,7 +18,7 @@
     "backfill:service-pages": "tsx scripts/backfill-service-pages.ts",
     "catalog:upsert-claude-max": "tsx scripts/configure-claude-max-login.ts",
     "catalog:upsert-perplexity": "tsx scripts/upsert-perplexity-product.ts",
-    "catalog:upsert-suno": "node -r dotenv/config scripts/upsert-suno-product.js",
+    "catalog:upsert-suno": "node -r dotenv/config scripts/upsert-suno-product.js --apply",
     "catalog:upsert-supergrok-heavy": "node -r dotenv/config scripts/upsert-supergrok-heavy-product.js",
     "catalog:upsert-itunes": "node -r dotenv/config scripts/upsert-itunes-products.js"
   },

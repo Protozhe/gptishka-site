@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Отправить ссылку Suno — GPTishka</title>
+  <link rel="icon" href="/favicon.png?v=20260920-white-cat-round1" sizes="any">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/suno-link.css?v=20260923-suno-link1">
+</head>
+<body>
+  <header class="suno-header">
+    <div class="suno-header__inner">
+      <a class="suno-header__logo" href="/" aria-label="GPTishka — главная">
+        <img src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka" width="300" height="127">
+      </a>
+      <a class="suno-header__pill" href="/codex-credits" aria-label="Кредиты Codex от 1 850 рублей">
+        <img src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" width="28" height="28">
+        <span>Кредиты Codex от 1 850 ₽</span>
+      </a>
+      <nav class="suno-header__nav" aria-label="Быстрые разделы GPTishka">
+        <a href="/news/">Новости</a>
+        <a href="/app/">Отзывы</a>
+        <a href="https://vk.com/gptishka" target="_blank" rel="noopener noreferrer">VK</a>
+        <a href="https://t.me/aimarket_gpt" target="_blank" rel="noopener noreferrer">Telegram</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="suno-shell">
+    <a class="suno-back" href="/suno">
+      <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M17 10H3M3 10l5-5M3 10l5 5"></path></svg>
+      <span>К тарифам Suno</span>
+    </a>
+
+    <div class="suno-layout">
+      <aside class="suno-brand" aria-label="Suno">
+        <div class="suno-brand__art" aria-hidden="true"><span class="suno-brand__mark"></span></div>
+        <p>Подключение Suno по ссылке на оплату</p>
+      </aside>
+
+      <section class="suno-content" aria-labelledby="pageTitle">
+        <div class="suno-content__eyebrow">После оплаты GPTishka</div>
+        <h1 id="pageTitle">Отправьте ссылку Suno</h1>
+        <p class="suno-lead">Откройте оплату выбранного тарифа в своём аккаунте Suno и отправьте нам ссылку Stripe Checkout. Логин, пароль и данные банковской карты передавать не нужно.</p>
+        <div class="suno-order" aria-label="Данные заказа">
+          <span id="orderNumber">Заказ: —</span>
+          <span id="orderPlan">Тариф: —</span>
+        </div>
+
+        <div class="mj-status" id="status" role="status" aria-live="polite">Проверяем оплату заказа…</div>
+        <form class="suno-form" id="linkForm" hidden>
+          <label for="paymentLink">Ссылка на оплату Suno</label>
+          <p class="suno-form__hint">Скопируйте полную ссылку со страницы оплаты Stripe.</p>
+          <input id="paymentLink" name="paymentLink" type="url" inputmode="url" autocomplete="off" spellcheck="false" maxlength="4096" placeholder="https://checkout.stripe.com/g/pay/cs_live_…" aria-describedby="linkFormat linkNote" required>
+          <small id="linkFormat">Ссылка должна начинаться с https://checkout.stripe.com/g/pay/cs_live_</small>
+          <p class="suno-form__note" id="linkNote">Форма проверяет формат ссылки. Менеджер отдельно проверит тариф и доступность страницы оплаты.</p>
+          <button class="suno-button" type="submit" id="submitButton">Отправить ссылку</button>
+        </form>
+        <button class="suno-retry" type="button" id="retryButton" hidden>Проверить оплату ещё раз</button>
+
+        <div class="suno-steps">
+          <h2>Как получить ссылку</h2>
+          <ol>
+            <li>Войдите в свой аккаунт на <a href="https://suno.com/account" target="_blank" rel="noopener noreferrer">suno.com</a> и откройте управление подпиской.</li>
+            <li>Выберите оплату на один месяц и тот же тариф, который заказали у GPTishka.</li>
+            <li>На странице оплаты Stripe скопируйте полную ссылку из адресной строки. Не оплачивайте её самостоятельно.</li>
+            <li>Вставьте ссылку выше и нажмите «Отправить ссылку».</li>
+          </ol>
+        </div>
+      </section>
+    </div>
+
+    <p class="suno-footer">Если возникнут сложности, менеджер свяжется с вами по контакту из заказа. <a href="/oferta.html">Публичная оферта</a> · <a href="/politika.html">Политика конфиденциальности</a></p>
+  </main>
+  <script src="/assets/js/suno-link.js?v=20260923-suno1" defer></script>
+</body>
+</html>

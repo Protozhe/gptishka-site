@@ -10,6 +10,7 @@ import { manualCredentialsStore } from "../products/manual-credentials.store";
 import { activationStore } from "./activation.store";
 import { sendDirectCodeTelegram } from "./direct-code-notifications.service";
 import { isMidjourneyProductSlug } from "./midjourney-payment-link";
+import { isSunoPaymentLinkOrder } from "./suno-payment-link";
 
 export function hasTrustedPaidPayment(order: any) {
   if (!order || order.status !== OrderStatus.PAID) return false;
@@ -130,8 +131,8 @@ export async function deliverProduct(order: Order) {
   activationStore.ensure();
 
   const existing = activationStore.findByOrderId(order.id);
-  const isMidjourney = isMidjourneyProductSlug(product?.slug);
-  if (existing && (!isMidjourney || existing.cdk)) {
+  const isPaymentLinkProduct = isMidjourneyProductSlug(product?.slug) || isSunoPaymentLinkOrder(product?.slug, fullOrder.orderDetails);
+  if (existing && (!isPaymentLinkProduct || existing.cdk)) {
     console.info(`[delivery] activation already exists order=${order.id} cdk=${existing.cdk}`);
     if (deliveryType === "code") {
       await sendDirectCodeTelegram({
