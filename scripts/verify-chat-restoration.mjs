@@ -14,6 +14,9 @@ const onboardingCss = read("assets/css/chatgpt-onboarding-v1.css");
 
 expect(header.includes("Кредиты Codex от 1 850 ₽"), "shared header does not sell Codex Credits");
 expect(app.includes("ai-directory-card--codex"), "Codex Credits is missing from top-ups");
+expect(app.includes('claude: "Claude Opus 5.5"'), "Claude card does not show the current model");
+expect(/const displayPlanSummary = serviceKey === "claude"\s*\? planSummary/.test(app), "Claude card ignores the available Max plans");
+expect(app.includes('new Set(group.items.map(item => getServicePlanKey(item, serviceKey))).size'), "Claude plan count includes delivery variants");
 expect(app.includes('const title = isEnPage ? "Steam Top Up" : "Пополнение Steam";'), "Steam title regressed");
 expect(app.includes("const displayTitle = title;"), "stored showcase data can overwrite the final Steam title");
 expect(onboarding.includes('document.body.classList.add("chatgpt-onboarding-ready")'), "compact ChatGPT flow is not activated");
@@ -66,7 +69,9 @@ for (const file of htmlFiles) {
       ["index.html", "catalog/index.html", "catalog/ai/index.html", "en/index.html", "en/catalog/ai/index.html"].includes(file.replaceAll("\\", "/"));
     const isClaudeMaxUpdate = match[1] === "app.min.js" && match[2] === "20260923-claude-max-login1" &&
       ["claude.html", "en/claude.html"].includes(file.replaceAll("\\", "/"));
-    expect(expectedVersion.has(match[2]) || isMidjourneyUpdate || isMidjourneyHoverUpdate || isClaudeMaxUpdate, `${file}: stale cache version for ${match[1]}`);
+    const isClaudePlansUpdate = match[1] === "app.min.js" && match[2] === "20260923-claude-plans1" &&
+      ["index.html", "catalog/index.html", "catalog/ai/index.html", "en/index.html", "en/catalog/index.html", "en/catalog/ai/index.html"].includes(file.replaceAll("\\", "/"));
+    expect(expectedVersion.has(match[2]) || isMidjourneyUpdate || isMidjourneyHoverUpdate || isClaudeMaxUpdate || isClaudePlansUpdate, `${file}: stale cache version for ${match[1]}`);
   }
 }
 

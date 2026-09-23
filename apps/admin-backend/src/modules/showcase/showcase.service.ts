@@ -61,8 +61,8 @@ const SERVICE_CARD_DEFAULTS: Record<string, Record<string, any>> = {
   claude: {
     serviceKey: "claude",
     title: "Claude",
-    description: "Claude Pro для текста, анализа и кода.",
-    planSummary: "Pro",
+    description: "Claude Opus 5.5",
+    planSummary: "Pro / 5x Max / 20x Max",
     buttonText: "К тарифам",
     href: "/claude",
     iconText: "CL",

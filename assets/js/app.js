@@ -2589,9 +2589,7 @@ function initActivationResumeShortcut() {
         key: "claude",
         name: "Claude",
         icon: "CL",
-        description: isEnPage
-          ? "Claude Pro activation for text, analysis and code."
-          : "Claude Pro для текста, анализа и кода.",
+        description: "Claude Opus 5.5",
         theme: "claude",
         sort: 20,
       };
@@ -3739,9 +3737,12 @@ function initActivationResumeShortcut() {
     const prices = group.items.map(item => toAmount(item?.price)).filter(price => Number.isFinite(price) && price > 0);
     const minPrice = prices.length ? Math.min(...prices) : 0;
     const currency = String(group.items.find(item => toAmount(item?.price) === minPrice)?.currency || group.items[0]?.currency || "RUB").toUpperCase();
+    const planCount = serviceKey === "claude"
+      ? new Set(group.items.map(item => getServicePlanKey(item, serviceKey))).size
+      : group.items.length;
     const planCountText = isEnPage
-      ? `${group.items.length} plan${group.items.length === 1 ? "" : "s"}`
-      : `${group.items.length} тариф${group.items.length === 1 ? "" : group.items.length < 5 ? "а" : "ов"}`;
+      ? `${planCount} plan${planCount === 1 ? "" : "s"}`
+      : `${planCount} тариф${planCount === 1 ? "" : planCount < 5 ? "а" : "ов"}`;
     const fromLabel = isEnPage ? "from" : "от";
     const buttonLabel = isEnPage ? "To plans" : "К тарифам";
     const planSummary = formatServicePlanSummary(group);
@@ -3806,8 +3807,12 @@ function initActivationResumeShortcut() {
     };
     const fallbackImages = fallbackImagesByService[serviceKey] || {};
     const displayTitle = getServiceCardValue(serviceCard, "title", group.service.name);
-    const displayDescription = getServiceCardValue(serviceCard, "description", group.service.description);
-    const displayPlanSummary = getServiceCardValue(serviceCard, "planSummary", planSummary);
+    const displayDescription = serviceKey === "claude"
+      ? "Claude Opus 5.5"
+      : getServiceCardValue(serviceCard, "description", group.service.description);
+    const displayPlanSummary = serviceKey === "claude"
+      ? planSummary
+      : getServiceCardValue(serviceCard, "planSummary", planSummary);
     const displayPriceText = getServiceCardValue(serviceCard, "priceText", minPrice ? fromLabel + " " + formatPriceByCurrency(minPrice, currency) : "");
     const displayButtonLabel = getServiceCardValue(serviceCard, "buttonText", buttonLabel);
     const configuredHref = getServiceCardValue(serviceCard, "href", getServicePagePath(serviceKey));
