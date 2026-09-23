@@ -1,0 +1,18 @@
+/* Dynamic Gemini FAQ uses a text span and an arrow span. Legacy FAQ rules
+   target every span, so keep the arrow styling off the question text. */
+html body:has(main.service-page[data-service-page="gemini"])
+  main.service-page[data-service-page="gemini"] .service-faq-question__text {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto !important;
+  height: auto !important;
+  border: 0 !important;
+  line-height: 1.4;
+  transform: none !important;
+}
+
+html body:has(main.service-page[data-service-page="gemini"])
+  main.service-page[data-service-page="gemini"] .service-faq-question__toggle {
+  flex: 0 0 12px;
+}
