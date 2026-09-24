@@ -1,0 +1,396 @@
+/* Shared service checkout layout: preserve each product's fields and accent. */
+.service-page[data-service-page] ~ .chatgpt-go-order-modal {
+  --checkout-flat-surface: #202a38;
+  --checkout-flat-divider: rgba(214, 228, 240, 0.16);
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__dialog,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-footer {
+  background: var(--checkout-flat-surface) !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__dialog {
+  position: relative;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-go-order-modal__close {
+  position: absolute !important;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  top: 14px;
+  right: 14px;
+  left: auto !important;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  padding: 0;
+  border-radius: 50%;
+  transform: none !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card {
+  --checkout-payment-bg: #192431;
+  --checkout-payment-bg-hover: #223243;
+  --checkout-payment-bg-selected: color-mix(in srgb, var(--product-accent, #38bdf8) 14%, #192431);
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-footer {
+  position: relative;
+  border-top: 0 !important;
+  box-shadow: none !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-footer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 34px;
+  height: 1px;
+  background: var(--checkout-flat-divider);
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-scroll {
+  gap: 0;
+  padding: 18px 24px 10px;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-scroll > .chatgpt-order-section {
+  margin: 0 !important;
+  padding: 24px 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--checkout-flat-divider) !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-scroll > .chatgpt-order-summary-card {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 0 !important;
+  padding: 6px 54px 22px 0 !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-summary-card__top {
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-summary-card__logo {
+  width: 52px !important;
+  height: 52px !important;
+  border-radius: 14px !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-summary-card__body .chatgpt-order-title {
+  padding: 0 !important;
+  border: 0 !important;
+  font-size: 24px;
+  line-height: 1.12;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-summary-card__meta {
+  margin-top: 5px;
+  font-size: 14px;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-summary-card__price {
+  display: none !important;
+}
+
+/* Gift-card value and VPN plan are not implied by the title, so keep their chips. */
+.service-page:is(
+  [data-service-page="chatgpt"],
+  [data-service-page="claude"],
+  [data-service-page="grok"],
+  [data-service-page="perplexity"],
+  [data-service-page="gemini"],
+  [data-service-page="devin"],
+  [data-service-page="midjourney"],
+  [data-service-page="suno"]
+) ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-summary-card__chips {
+  display: none !important;
+}
+
+.service-page[data-service-page="itunes"] ~ .itunes-order-modal .chatgpt-order-card .chatgpt-order-summary-card__chips,
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-summary-card__chips {
+  margin: 8px 0 0;
+  gap: 6px;
+}
+
+/* The VPN duration is already shown beneath the title. */
+.service-page[data-service-page="vpn"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-summary-card__chips span:nth-child(2) {
+  display: none;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-section__head {
+  margin-bottom: 16px;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-scroll > .chatgpt-order-security-note {
+  margin: 16px 0 0;
+  padding: 0 0 0 12px;
+  border: 0;
+  border-left: 2px solid var(--product-accent, #38bdf8);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.service-page[data-service-page="itunes"] ~ .itunes-order-modal .itunes-order-telegram-note {
+  margin: 14px 0 4px !important;
+  padding: 0 0 0 12px;
+  border: 0;
+  border-left: 2px solid #65cfff;
+  border-radius: 0;
+  background: none;
+  color: #cbd5e1 !important;
+  font-size: 14px;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-section__head p {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-section-title,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-section:has(.chatgpt-order-payment) .chatgpt-order-section-title {
+  font-size: 19px;
+  line-height: 1.25;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-field span,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-soft-action strong,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-question,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-note > strong {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-field small,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-soft-action small,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-note p,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-referral-extra p {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-field__control {
+  font-size: 15px;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-summary-card__meta,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-summary-card__chips span {
+  font-size: 13px;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-soft-actions {
+  gap: 0;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-soft-action {
+  padding: 13px 0;
+  border-top-color: var(--checkout-flat-divider) !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-soft-action:first-of-type {
+  padding-top: 0;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card :is(.chatgpt-order-gift-extra, .chatgpt-order-referral-extra) {
+  margin: 0;
+  padding: 8px 0 14px;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-note {
+  margin: 0;
+  padding: 0 0 2px;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-panel {
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-details {
+  padding: 0;
+  border: 0 !important;
+  border-top: 1px solid var(--checkout-flat-divider) !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-time-note {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-details__body {
+  padding: 8px 0 0 !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-details > summary,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-collapsible summary {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-collapsible {
+  border-top-color: var(--checkout-flat-divider) !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-soft-actions > .chatgpt-order-collapsible {
+  margin: 0;
+  padding: 14px 0;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-processing-details {
+  border-top-color: var(--checkout-flat-divider) !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-collapsible p {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-section:has(.chatgpt-order-payment) {
+  padding: 24px 0 !important;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-section:has(.chatgpt-order-payment) .chatgpt-order-section__head {
+  display: block;
+  margin-bottom: 16px;
+  padding: 0;
+  border: 0;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-section:has(.chatgpt-order-payment) .chatgpt-order-section__head::before {
+  content: none;
+  display: none;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-section:has(.chatgpt-order-payment) .chatgpt-order-section__head p {
+  font-size: 14px;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment {
+  gap: 10px;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment label.chatgpt-payment-option {
+  grid-template-columns: 30px minmax(0, 1fr) 20px;
+  gap: 10px;
+  min-height: 64px;
+  padding: 10px;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment label.chatgpt-payment-option:hover,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment label.chatgpt-payment-option:has(input:checked) {
+  box-shadow: none !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-payment-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-payment-logo img {
+  width: 22px;
+  height: 22px;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-payment-check {
+  width: 20px;
+  height: 20px;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment label.chatgpt-payment-option .chatgpt-payment-name {
+  font-size: 15px;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-legal-note {
+  margin: 0;
+  padding: 14px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-footer__total span {
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-scroll {
+    padding: 14px 16px 8px;
+  }
+
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-scroll > .chatgpt-order-section {
+    padding: 20px 0 !important;
+  }
+
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-scroll > .chatgpt-order-summary-card {
+    padding: 4px 44px 18px 0 !important;
+  }
+
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-summary-card__top {
+    grid-template-columns: 46px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-summary-card__logo {
+    width: 46px !important;
+    height: 46px !important;
+  }
+
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-summary-card__body .chatgpt-order-title {
+    font-size: 21px;
+  }
+
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-footer::before {
+    left: 16px;
+    right: 26px;
+  }
+
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-payment label.chatgpt-payment-option {
+    grid-template-columns: 28px minmax(0, 1fr) 18px;
+    gap: 7px;
+    min-height: 60px;
+    padding: 8px;
+  }
+
+  .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-payment-logo {
+    width: 28px;
+    height: 28px;
+  }
+}

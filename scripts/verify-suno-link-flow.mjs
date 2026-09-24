@@ -26,7 +26,7 @@ assert.match(page, /suno-onboarding\.js/);
 assert.ok(modalCss.includes(`${sunoModalScope} .chatgpt-order-summary-card {`), "Suno modal summary must use the ChatGPT layout");
 assert.ok(modalCss.includes(`${sunoModalScope} .chatgpt-order-payment label {`), "Suno payment methods must use the ChatGPT layout");
 for (const html of [page, enPage]) {
-  assert.match(html, /home-stability-hotfix\.css\?v=20260923-suno-modal1/);
+  assert.match(html, /home-stability-hotfix\.css\?v=20260924-toggle-align1/);
 }
 assert.ok(fs.existsSync("suno-link.html"));
 assert.ok(fs.existsSync("apps/admin-backend/src/modules/orders/suno-payment-link.test.ts"));

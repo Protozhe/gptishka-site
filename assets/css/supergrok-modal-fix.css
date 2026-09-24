@@ -1,0 +1,207 @@
+/* SuperGrok checkout: keep the gift flow and primary action legible on the dark modal. */
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-extra,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-panel {
+  min-width: 0;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-soft-action i {
+  border: 1px solid #74889a !important;
+  background: #344454 !important;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-soft-action i::after {
+  background: #edf5f8 !important;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-soft-action input:checked + i {
+  border-color: #8de8d8 !important;
+  background: #087c70 !important;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-soft-action:has(input:focus-visible) i {
+  outline: 2px solid #9ee9dc !important;
+  outline-offset: 3px;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-extra {
+  gap: 8px;
+  margin-top: 2px;
+  padding: 10px 0 0;
+  border: 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 0;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-note {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  gap: 3px;
+  color: #f4f7fb !important;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-note p {
+  color: #cbd5e1 !important;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-panel {
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 12px;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-panel .chatgpt-order-grid {
+  gap: 8px;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-panel .chatgpt-order-field {
+  gap: 4px;
+  margin: 0;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-panel .chatgpt-order-field__control {
+  min-height: 44px;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-error:empty {
+  display: none !important;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-referral-extra {
+  gap: 8px;
+  margin-top: 2px;
+  padding: 10px 0 0;
+  border: 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 0;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-referral-extra > strong {
+  color: #f4f7fb !important;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-payment-option:has(input:checked) .chatgpt-payment-check,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-payment-option[aria-checked="true"] .chatgpt-payment-check {
+  border-color: #8de8d8 !important;
+  background: #087c70 !important;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-details {
+  min-width: 0;
+  border: 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-details > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 12px 0;
+  cursor: pointer;
+  color: #f4f7fb !important;
+  background: none !important;
+  font-size: 14px;
+  line-height: 1.35;
+  list-style: none;
+  transition: color 160ms ease;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-details > summary:hover {
+  color: #9ee9dc !important;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-details > summary:focus-visible {
+  outline: 2px solid #9ee9dc;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-details > summary::after {
+  content: "+";
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(158, 233, 220, 0.12) !important;
+  color: #9ee9dc !important;
+  font-size: 19px;
+  line-height: 1;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-details[open] > summary::after {
+  content: "−";
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-details__body {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 8px 0 0;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-details__body .chatgpt-order-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  min-width: 0;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-details__body .chatgpt-order-field,
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-details__body .chatgpt-order-field__control {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-time-note {
+  margin: 0;
+  padding: 11px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(9, 16, 27, 0.42);
+  color: #cbd5e1 !important;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-time-note strong {
+  color: #f4f7fb !important;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-submit {
+  border: 1px solid rgba(158, 233, 220, 0.48) !important;
+  background: linear-gradient(135deg, #07312f, #0e4540) !important;
+  color: #f4fffd !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+.service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-submit:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0b4540, #11625a) !important;
+  color: #ffffff !important;
+}
+
+@media (max-width: 640px) {
+  .service-page[data-service-page="grok"] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-gift-details__body .chatgpt-order-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

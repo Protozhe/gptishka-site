@@ -15,6 +15,7 @@ const checks = [
   "scripts/verify-aiee-codex-activation.mjs",
   "scripts/verify-aichongzhi-grok-activation.mjs",
   "scripts/verify-supergrok-activation-page.mjs",
+  "scripts/verify-service-modal-harmony.mjs",
   "scripts/verify-deferred-analytics.mjs",
   "scripts/verify-deployment-safety.mjs",
   "scripts/verify-homepage-ai-battle.mjs",
