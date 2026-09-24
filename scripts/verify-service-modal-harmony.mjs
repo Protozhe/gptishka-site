@@ -40,9 +40,12 @@ for (const selector of [
   assert.ok(css.includes(selector), `shared modal styles must cover ${selector}`);
 }
 
-const flatStyle = "service-checkout-flat.css?v=20260924-service-flat2";
+const flatStyle = "service-checkout-flat.css?v=20260924-brand-promo1";
+const modalScript = "app.min.js?v=20260924-brand-promo1";
 for (const page of pages) {
-  assert.ok(fs.readFileSync(page, "utf8").includes(flatStyle), `${page} must load the shared checkout layout`);
+  const html = fs.readFileSync(page, "utf8");
+  assert.ok(html.includes(flatStyle), `${page} must load the shared checkout layout`);
+  assert.ok(html.includes(modalScript), `${page} must load the current checkout artwork`);
 }
 const flatCss = fs.readFileSync("assets/css/service-checkout-flat.css", "utf8");
 assert.ok(flatCss.includes('.service-page[data-service-page] ~ .chatgpt-go-order-modal'));
@@ -54,6 +57,15 @@ assert.ok(flatCss.includes("min-height: 64px"));
 assert.ok(flatCss.includes(".chatgpt-order-summary-card__chips"));
 assert.ok(flatCss.includes(".chatgpt-order-summary-card__price"));
 assert.ok(flatCss.includes(".chatgpt-order-soft-actions > .chatgpt-order-collapsible"));
+for (const service of ["chatgpt", "claude", "grok", "perplexity", "gemini", "suno", "devin", "itunes"]) {
+  assert.ok(flatCss.includes(`.checkout-brand-icon--${service}`), `current ${service} modal artwork must be styled`);
+}
+assert.ok(flatCss.includes("[data-chatgpt-go-promo-apply]"), "promo button must use shared checkout styling");
+for (const script of ["assets/js/app.js", "assets/js/app.min.js"]) {
+  const source = fs.readFileSync(script, "utf8");
+  assert.ok(source.includes("checkout-brand-icon--"), `${script} must render the current brand artwork`);
+}
+assert.ok(fs.readFileSync("itunes.html", "utf8").includes("checkout-brand-icon--itunes"));
 assert.ok(!flatCss.includes('content: "Добавить +"'));
 assert.ok(!flatCss.includes('content: "Ввести код +"'));
 console.log(`Shared checkout styling verified on ${pages.length} product pages.`);

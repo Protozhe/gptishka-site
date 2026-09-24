@@ -86,6 +86,79 @@
   border-radius: 14px !important;
 }
 
+/* Reuse the current product-page artwork, rather than the legacy square thumbnails. */
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .checkout-brand-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  overflow: hidden;
+  padding: 0 !important;
+  background: var(--checkout-brand-bg) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .checkout-brand-icon::before {
+  display: block;
+  width: var(--checkout-brand-mark-width, 62%);
+  height: var(--checkout-brand-mark-height, 62%);
+  content: "";
+  background: var(--checkout-brand-mark-color, #fff);
+  -webkit-mask: var(--checkout-brand-mask) center / contain no-repeat;
+  mask: var(--checkout-brand-mask) center / contain no-repeat;
+}
+
+.checkout-brand-icon--chatgpt {
+  --checkout-brand-bg: linear-gradient(145deg, #19c29a 0%, #13b48b 58%, #0b9c79 100%);
+  --checkout-brand-mask: url("/assets/img/services/chatgpt-symbol-mask-v2.webp");
+}
+
+.checkout-brand-icon--claude {
+  --checkout-brand-bg: linear-gradient(145deg, #e18a68 0%, #d97757 58%, #c86445 100%);
+  --checkout-brand-mask: url("/assets/img/services/claude-symbol-mask-v1.webp");
+}
+
+.checkout-brand-icon--grok {
+  --checkout-brand-bg: radial-gradient(circle at 52% 42%, #353941 0%, #181a1f 52%, #07080a 100%);
+  --checkout-brand-mask: url("/assets/img/services/grok-symbol-mask-v1.webp");
+}
+
+.checkout-brand-icon--perplexity {
+  --checkout-brand-bg: radial-gradient(circle at 50% 40%, #176771 0%, #0d3035 46%, #061012 100%);
+  --checkout-brand-mask: url("/assets/img/services/perplexity-symbol-mask-v1.svg");
+  --checkout-brand-mark-width: 60%;
+  --checkout-brand-mark-height: 60%;
+  --checkout-brand-mark-color: #f5ffff;
+}
+
+.checkout-brand-icon--gemini {
+  --checkout-brand-bg: radial-gradient(circle at 50% 42%, #263a78 0%, #111c45 48%, #070b1b 100%);
+  --checkout-brand-mask: url("/assets/img/services/gemini-symbol-mask-v1.svg");
+  --checkout-brand-mark-width: 52%;
+  --checkout-brand-mark-height: 52%;
+  --checkout-brand-mark-color: linear-gradient(135deg, #ffcc39 5%, #f04f64 29%, #9b64ed 51%, #4285f4 72%, #2ccf77 100%);
+}
+
+.checkout-brand-icon--suno {
+  --checkout-brand-bg: radial-gradient(circle at 28% 20%, rgba(255, 150, 62, 0.34), transparent 36%), radial-gradient(circle at 72% 76%, rgba(240, 48, 116, 0.34), transparent 44%), linear-gradient(145deg, #7e293f 0%, #42152f 54%, #170914 100%);
+  --checkout-brand-mask: url("/assets/img/services/suno-wordmark-mask-v1.webp");
+  --checkout-brand-mark-width: 74%;
+  --checkout-brand-mark-height: 31%;
+}
+
+.checkout-brand-icon--devin {
+  --checkout-brand-bg: radial-gradient(circle at 50% 42%, #2968d7 0%, #102c69 48%, #061227 100%);
+  --checkout-brand-mask: url("/assets/img/services/devin-symbol-mask-v1.svg");
+  --checkout-brand-mark-width: 58%;
+  --checkout-brand-mark-height: 58%;
+}
+
+.checkout-brand-icon--itunes {
+  --checkout-brand-bg: linear-gradient(145deg, #25bfe7 0%, #168ff1 54%, #2868f5 100%);
+  --checkout-brand-mask: url("/assets/img/services/appstore-symbol-mask-v6.webp");
+  --checkout-brand-mark-width: 60%;
+  --checkout-brand-mark-height: 60%;
+}
+
 .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-summary-card__body .chatgpt-order-title {
   padding: 0 !important;
   border: 0 !important;
@@ -271,6 +344,59 @@
 .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-collapsible p {
   font-size: 14px;
   line-height: 1.5;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-promo {
+  align-items: stretch;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-promo .chatgpt-order-field__control {
+  min-width: 0;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-promo [data-chatgpt-go-promo-apply] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 112px;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px solid color-mix(in srgb, var(--product-accent, #35e58d) 42%, #526174) !important;
+  border-radius: 12px !important;
+  background: color-mix(in srgb, var(--product-accent, #35e58d) 13%, #192431) !important;
+  color: #f4fff9 !important;
+  box-shadow: none !important;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-promo [data-chatgpt-go-promo-apply]::before,
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-promo [data-chatgpt-go-promo-apply]::after {
+  display: none !important;
+  content: none !important;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-promo [data-chatgpt-go-promo-apply]:hover:not(:disabled) {
+  border-color: var(--product-accent, #35e58d) !important;
+  background: color-mix(in srgb, var(--product-accent, #35e58d) 23%, #192431) !important;
+  transform: translateY(-1px);
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-promo [data-chatgpt-go-promo-apply]:focus-visible {
+  outline: 2px solid var(--product-accent, #35e58d);
+  outline-offset: 2px;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-promo [data-chatgpt-go-promo-apply]:disabled {
+  opacity: 0.65;
+  cursor: wait;
+  transform: none;
 }
 
 .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-section:has(.chatgpt-order-payment) {

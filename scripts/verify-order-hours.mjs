@@ -30,7 +30,10 @@ for (const file of [
   "itunes.html", "service.html", "store/vpn/index.html", "en/chatgpt.html", "en/claude.html", "en/supergrok.html",
   "en/midjourney.html", "en/suno.html", "en/store/vpn/index.html",
 ]) {
-  assert.ok(read(file).includes("app.min.js?v=20260924-order-hours2"), `${file}: shared checkout script cache is stale`);
+  const version = read(file).includes("service-checkout-flat.css?v=20260924-brand-promo1")
+    ? "20260924-brand-promo1"
+    : "20260924-order-hours2";
+  assert.ok(read(file).includes(`app.min.js?v=${version}`), `${file}: shared checkout script cache is stale`);
 }
 
 console.log("Checkout timing and cache refresh verified.");
