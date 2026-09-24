@@ -467,6 +467,19 @@
       font-weight: 700;
     }
 
+    .redeem-perplexity-next {
+      margin-top: 18px;
+      padding: 18px;
+      border: 1px solid rgba(16, 141, 101, 0.34);
+      border-radius: 16px;
+      background: rgba(233, 252, 244, 0.86);
+      color: #164e3d;
+      line-height: 1.55;
+    }
+
+    .redeem-perplexity-next p { margin: 0 0 12px; }
+    .redeem-perplexity-next__actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
     .redeem-manual-hint {
       margin: 12px 0 0;
       border-radius: 14px;
@@ -1555,6 +1568,13 @@
             <span id="tokenInfo">Символов: 0</span>
             <span id="tokenWarn">Мы не сохраняем токен и используем его только для активации.</span>
           </div>
+          <div id="perplexityNextStep" class="redeem-perplexity-next" hidden>
+            <p>Данные сессии получены. Скопируйте ссылку на эту страницу и отправьте её только в личный чат поддержки — так мы быстрее найдём ваш заказ. Не публикуйте ссылку и данные сессии.</p>
+            <div class="redeem-perplexity-next__actions">
+              <button id="copyPerplexityPageBtn" type="button" class="redeem-btn">Скопировать ссылку</button>
+              <a class="redeem-btn redeem-btn-primary" href="https://t.me/gptishkasupport" target="_blank" rel="noopener noreferrer">Написать в поддержку</a>
+            </div>
+          </div>
         </section>
 
         <section class="redeem-block" id="manualCredentialsBlock" style="display:none">
@@ -1672,6 +1692,8 @@
     const tokenInput = document.getElementById('tokenInput');
     const tokenInfo = document.getElementById('tokenInfo');
     const tokenWarn = document.getElementById('tokenWarn');
+    const perplexityNextStep = document.getElementById('perplexityNextStep');
+    const copyPerplexityPageBtn = document.getElementById('copyPerplexityPageBtn');
     const toggleMaskBtn = document.getElementById('toggleMaskBtn');
     const pasteBtn = document.getElementById('pasteBtn');
     const clearBtn = document.getElementById('clearBtn');
@@ -1749,6 +1771,8 @@
     const MANUAL_SUPPORT_MESSAGE = 'Мы обрабатываем заказы ежедневно с 10:00 до 20:00 по МСК. Среднее время ожидания — от 5 минут до 2 часов после оплаты. Если заказ оформлен ночью — подключим с утра. Максимальное время выполнения — 2 рабочих дня.';
     const STEAM_KEY_DELIVERY_MESSAGE = 'Мы передаём ключи ежедневно с 10:00 до 20:00 по МСК. Среднее время ожидания — от 5 минут до 2 часов после оплаты. Если заказ оформлен ночью — передадим ключи утром. Максимальное время выполнения — 2 рабочих дня. Ключи будут переданы по указанной Steam trade-ссылке.';
     let isCredentialsDelivery = false;
+    let isPerplexityManualFlow = false;
+    let perplexitySessionSubmitted = false;
     let isSteamKeyDeliveryFlow = false;
     let isSupportTokenDelivery = false;
     let supportActivationFlow = SUPPORT_ACTIVATION_FLOW_GROK;
@@ -1806,6 +1830,7 @@
       if (previewMode) return false;
       if (!orderId) return false;
       if (activationCompleted) return false;
+      if (isPerplexityManualFlow && perplexitySessionSubmitted) return false;
       return true;
     }
 
@@ -2105,6 +2130,7 @@
     restoreReviewReward();
 
     function setCredentialsDeliveryMode(payload) {
+      isPerplexityManualFlow = false;
       isCredentialsDelivery = true;
       stopPolling();
       hideVpnOffer(false);
@@ -2232,10 +2258,54 @@
       return '';
     }
 
+    function applyPerplexityManualFlow(payload) {
+      isPerplexityManualFlow = true;
+      isCredentialsDelivery = false;
+      isSupportTokenDelivery = false;
+      perplexitySessionSubmitted = Boolean(payload?.tokenStored || payload?.status === 'details_submitted');
+      if (redeemTitleEl) redeemTitleEl.textContent = 'Продлить / Активировать Perplexity Pro';
+      if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата подтверждена. Передайте данные сессии через защищённую форму — подключение завершит специалист.';
+      document.title = 'Продлить / Активировать Perplexity Pro - GPTишка';
+      if (tokenBlock) tokenBlock.style.display = 'block';
+      if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'none';
+      if (actionsRow) actionsRow.style.display = '';
+      if (tokenLabelEl) tokenLabelEl.textContent = 'Данные сессии Perplexity';
+      if (tokenGuideSummaryEl) tokenGuideSummaryEl.textContent = 'Как получить данные сессии Perplexity';
+      if (tokenGuideSummaryEl) tokenGuideSummaryEl.closest('details').open = true;
+      if (tokenGuideListEl) tokenGuideListEl.innerHTML = [
+        '<li>Войдите через браузер в свой аккаунт на <a href="https://www.perplexity.ai/" target="_blank" rel="noreferrer noopener">официальном сайте Perplexity</a> (если ещё не вошли — авторизуйтесь).</li>',
+        '<li>Откройте <a href="https://www.perplexity.ai/api/auth/session" target="_blank" rel="noreferrer noopener">perplexity.ai/api/auth/session</a> в том же браузере.</li>',
+        '<li>Скопируйте всё содержимое страницы (JSON).</li>',
+        '<li>Вставьте скопированный текст в поле ниже и нажмите «Отправить данные».</li>',
+        '<li>После подтверждения скопируйте ссылку на эту страницу и отправьте её только в личный чат поддержки.</li>',
+      ].join('');
+      if (tokenInput) {
+        tokenInput.placeholder = 'Вставьте полный JSON со страницы Perplexity';
+        tokenInput.disabled = perplexitySessionSubmitted;
+      }
+      isMasked = true;
+      if (tokenInput) tokenInput.classList.add('masked');
+      if (toggleMaskBtn) toggleMaskBtn.textContent = 'Показать';
+      if (startBtn) startBtn.textContent = 'Отправить данные';
+      if (checkBtn) checkBtn.style.display = 'none';
+      if (retryNewKeyBtn) retryNewKeyBtn.style.display = 'none';
+      if (stopPollingBtn) stopPollingBtn.style.display = 'none';
+      if (perplexityNextStep) perplexityNextStep.hidden = !perplexitySessionSubmitted;
+      if (tokenWarn) tokenWarn.textContent = 'Данные сессии конфиденциальны. Вставляйте их только в это защищённое поле.';
+      if (!previewMode && perplexitySessionSubmitted) {
+        setStatus('pending', 'Данные получены. Специалист завершит подключение Perplexity Pro.', false);
+      }
+      updateStartButtonState();
+    }
+
     function applyActivationPayloadMode(payload, deliveryMode) {
       const activationFlow = resolveSupportActivationFlow(payload);
       const forcedSupportFlow = resolveForcedSupportActivationFlow(payload);
       const productKey = getActivationProductFingerprint(payload);
+      if ((productKey.includes('perplexity') || productKey.includes('pplx')) && deliveryMode === 'manual_login') {
+        applyPerplexityManualFlow(payload);
+        return;
+      }
       const codexCreditsMatch = productKey.includes('codex')
         ? productKey.match(/\b(250|500|1000)\b/)
         : null;
@@ -2275,6 +2345,7 @@
     }
 
     function applyTokenFlowMode(isSupportMode, flow) {
+      isPerplexityManualFlow = false;
       isSupportTokenDelivery = Boolean(isSupportMode);
       supportActivationFlow = isSupportTokenDelivery
         ? normalizeSupportActivationFlow(flow || supportActivationFlow)
@@ -2283,6 +2354,10 @@
       const claudeSupportFlow = isClaudeSupportFlow();
 
       if (tokenBlock) tokenBlock.style.display = 'block';
+      if (perplexityNextStep) perplexityNextStep.hidden = true;
+      if (startBtn) startBtn.textContent = 'Активировать';
+      if (checkBtn) checkBtn.style.display = '';
+      if (retryNewKeyBtn) retryNewKeyBtn.style.display = '';
       if (actionsRow) actionsRow.style.display = '';
       if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'none';
 
@@ -2405,16 +2480,15 @@
         : (config.codexCredits ? `Пополнение ${config.codexCredits} кредитов Codex - GPTишка` : `Продлить / Активировать ${config.name} - GPTишка`);
 
       if (config.deliveryMode === 'manual_login') {
-        setCredentialsDeliveryMode({
+        applyPerplexityManualFlow({
           deliveryMode: 'manual_login',
           status: 'pending_manual',
           productKey: normalizedKey,
           productTitle: config.name,
           serviceKey: normalizedKey,
         });
-        if (redeemTitleEl) redeemTitleEl.textContent = `Продлить / Активировать ${config.name}`;
         if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Безопасный предпросмотр страницы после успешной оплаты.';
-        document.title = `Продлить / Активировать ${config.name} - GPTишка`;
+        setStatus('pending', 'Предпросмотр: данные не отправляются, подключение не запускается.', false);
       } else {
         applyTokenFlowMode(!config.tokenFlow, config.flow);
         hideVpnOffer(false);
@@ -2603,6 +2677,14 @@
       setStatus('pending', 'Поле очищено', false);
     });
 
+    if (copyPerplexityPageBtn) {
+      copyPerplexityPageBtn.addEventListener('click', () => {
+        const url = new URL(window.location.href);
+        if (orderLinkToken) url.searchParams.set('t', orderLinkToken);
+        copyText(url.toString(), 'Ссылка скопирована. Отправьте её только в личный чат поддержки.');
+      });
+    }
+
     copyOrderIdBtn.addEventListener('click', () => copyText(orderId, 'Order ID скопирован'));
     copyTaskBtn.addEventListener('click', () => copyText(currentTaskId, 'Номер операции скопирован'));
     if (copyLoginBtn) {
@@ -2627,6 +2709,35 @@
 
     startBtn.addEventListener('click', async () => {
       if (isCredentialsDelivery) return;
+      if (isPerplexityManualFlow) {
+        if (perplexitySessionSubmitted || !(await validateTokenNow())) return;
+        const token = getTokenForSubmit();
+        setButtonLoading(startBtn, true);
+        try {
+          setStatus('pending', 'Передаём данные сессии…', true);
+          const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/store-token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, orderToken: orderLinkToken }),
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok || !payload.ok) {
+            setStatus('error', payload?.message || 'Не удалось передать данные. Повторите попытку.', false);
+            return;
+          }
+          perplexitySessionSubmitted = true;
+          tokenInput.value = '';
+          tokenInput.disabled = true;
+          if (perplexityNextStep) perplexityNextStep.hidden = false;
+          updateTokenMeta();
+          setStatus('pending', 'Данные получены. Специалист завершит подключение Perplexity Pro.', false);
+        } catch {
+          setStatus('error', 'Не удалось связаться с сервером. Проверьте интернет и повторите попытку.', false);
+        } finally {
+          setButtonLoading(startBtn, false);
+        }
+        return;
+      }
       const token = getTokenForSubmit();
       if (!token) return;
 
@@ -2754,6 +2865,10 @@
         }
         const deliveryMode = String(payload?.deliveryMode || '').toLowerCase();
         applyActivationPayloadMode(payload, deliveryMode);
+        if (isPerplexityManualFlow) {
+          handlePaidOrder(orderId);
+          return;
+        }
         if (deliveryMode === 'credentials' || deliveryMode === 'manual_login') {
           handlePaidOrder(orderId);
           const orderContext = await resolveOrderDeliveryContext();
@@ -2863,6 +2978,7 @@
 
         const deliveryMode = String(payload?.deliveryMode || '').trim().toLowerCase();
         applyActivationPayloadMode(payload, deliveryMode);
+        if (isPerplexityManualFlow) return true;
         if (deliveryMode === 'credentials' || deliveryMode === 'manual_login') {
           setCredentialsDeliveryMode(payload);
           return true;
@@ -3016,6 +3132,12 @@
 
     function updateTokenMeta() {
       const raw = String(tokenInput.value || '').trim();
+      if (isPerplexityManualFlow) {
+        tokenInfo.textContent = `Символов: ${raw.length}`;
+        tokenWarn.textContent = 'Данные сессии конфиденциальны. Вставляйте их только в это защищённое поле.';
+        tokenWarn.className = '';
+        return;
+      }
       const token = extractTokenFromInput(raw);
       const length = token.length;
       tokenInfo.textContent = `Символов: ${length}`;
@@ -3036,8 +3158,37 @@
         startBtn.disabled = true;
         return;
       }
+      if (isPerplexityManualFlow) {
+        startBtn.disabled = perplexitySessionSubmitted || !orderId || !tokenValidatedOk;
+        return;
+      }
       const hasValue = Boolean(orderId && String(tokenInput.value || '').trim());
       startBtn.disabled = activationWaitingForKey || !hasValue || !tokenValidatedOk;
+    }
+
+    function validatePerplexitySessionInput() {
+      const raw = getTokenForSubmit();
+      let reason = '';
+      if (!raw) {
+        reason = 'Вставьте данные сессии Perplexity.';
+      } else {
+        try {
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !Object.keys(parsed).length) {
+            reason = 'Вставьте полный JSON со страницы Perplexity.';
+          }
+        } catch (_) {
+          reason = 'Текст не похож на полный JSON. Скопируйте всё содержимое страницы.';
+        }
+      }
+      tokenValidatedOk = !reason;
+      lastValidateReason = reason;
+      if (tokenWarn) {
+        tokenWarn.textContent = reason || 'JSON готов к отправке. Данные будут доступны только для выполнения заказа.';
+        tokenWarn.className = reason ? 'warn' : '';
+      }
+      updateStartButtonState();
+      return tokenValidatedOk;
     }
 
     function scheduleValidateToken() {
@@ -3050,6 +3201,10 @@
         tokenValidatedOk = true;
         if (tokenWarn) tokenWarn.textContent = '';
         updateStartButtonState();
+        return;
+      }
+      if (isPerplexityManualFlow) {
+        validatePerplexitySessionInput();
         return;
       }
       tokenValidatedOk = false;
@@ -3073,6 +3228,7 @@
         updateStartButtonState();
         return true;
       }
+      if (isPerplexityManualFlow) return validatePerplexitySessionInput();
       const token = getTokenForSubmit();
       if (!orderId || !token) {
         tokenValidatedOk = false;
