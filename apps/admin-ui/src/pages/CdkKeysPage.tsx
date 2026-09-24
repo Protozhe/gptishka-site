@@ -10,6 +10,8 @@ import {
 type ProductDeliveryType = "activation" | "code" | "credentials" | "vpn" | "support" | "support_claude";
 type CdkStatus = "unused" | "used" | "archived";
 type CredentialStatus = "available" | "assigned";
+type CdkSortMode = "product-duration" | "unused-desc" | "unused-asc";
+type PoolStats = Record<string, { unused: number; used: number; total: number }>;
 
 type ProductItem = {
   id: string;
@@ -108,6 +110,17 @@ type CredentialListResponse = {
 const CHATGPT_PLUS_PRODUCT_KEY = "chatgpt-plus-1";
 const CHATGPT_PLUS_IOS_SITE_URL = "https://vip.sxzfd.com";
 const CHATGPT_PLUS_FREE_SITE_URL = "https://aiee.fun";
+const CDK_SORT_STORAGE_KEY = "gptishka-admin-cdk-sort-v1";
+
+function readCdkSortMode(): CdkSortMode {
+  try {
+    const saved = window.localStorage.getItem(CDK_SORT_STORAGE_KEY);
+    if (saved === "unused-desc" || saved === "unused-asc") return saved;
+  } catch {
+    // Sorting still works when browser storage is unavailable.
+  }
+  return "product-duration";
+}
 
 function chatGptPlusPoolLabel(siteUrl: string) {
   if (siteUrl === CHATGPT_PLUS_IOS_SITE_URL) return "iOS · Go / Plus / Pro Light / Pro";
@@ -548,7 +561,7 @@ function KeyProductColumn({
     onSuccess: () => {
       setText("");
       setError("");
-      qc.invalidateQueries({ queryKey: ["cdks", productKey] });
+      qc.invalidateQueries({ queryKey: ["cdks"] });
     },
     onError: (err: any) => {
       setError(err?.response?.data?.message || TEXT.importFailed);
@@ -560,7 +573,7 @@ function KeyProductColumn({
     onSuccess: () => {
       setReturningId("");
       setError("");
-      qc.invalidateQueries({ queryKey: ["cdks", productKey] });
+      qc.invalidateQueries({ queryKey: ["cdks"] });
     },
     onError: (err: any) => {
       setReturningId("");
@@ -573,7 +586,7 @@ function KeyProductColumn({
     onSuccess: () => {
       setDeletingId("");
       setError("");
-      qc.invalidateQueries({ queryKey: ["cdks", productKey] });
+      qc.invalidateQueries({ queryKey: ["cdks"] });
     },
     onError: (err: any) => {
       setDeletingId("");
@@ -586,7 +599,7 @@ function KeyProductColumn({
     onSuccess: () => {
       setRestoringId("");
       setError("");
-      qc.invalidateQueries({ queryKey: ["cdks", productKey] });
+      qc.invalidateQueries({ queryKey: ["cdks"] });
     },
     onError: (err: any) => {
       setRestoringId("");
@@ -599,7 +612,7 @@ function KeyProductColumn({
     onSuccess: () => {
       setPermanentDeletingId("");
       setError("");
-      qc.invalidateQueries({ queryKey: ["cdks", productKey] });
+      qc.invalidateQueries({ queryKey: ["cdks"] });
     },
     onError: (err: any) => {
       setPermanentDeletingId("");
@@ -967,6 +980,30 @@ function productPoolHint(product: ProductItem) {
   return `poolKey: ${baseProductKey}`;
 }
 
+function inventoryPoolKey(product: ProductItem): string | null {
+  const deliveryType = resolveDeliveryType(product);
+  if (deliveryType === "credentials" || deliveryType === "vpn") return null;
+  return resolveKeyPoolProductKey(resolveProductPoolBaseKey(product), deliveryType === "support_claude" ? "support_claude" : deliveryType === "support" ? "support" : "activation");
+}
+
+function sortProductsByStock(
+  products: ProductItem[],
+  sortMode: CdkSortMode,
+  stats?: PoolStats,
+  resolvePoolKey: (product: ProductItem) => string | null = inventoryPoolKey
+): ProductItem[] {
+  if (sortMode === "product-duration" || !stats) return products;
+  return [...products].sort((a, b) => {
+    const aKey = resolvePoolKey(a);
+    const bKey = resolvePoolKey(b);
+    if (!aKey || !bKey) return aKey ? -1 : bKey ? 1 : compareProductsByFamilyAndDuration(a, b);
+    const aUnused = stats[aKey]?.unused ?? 0;
+    const bUnused = stats[bKey]?.unused ?? 0;
+    const difference = sortMode === "unused-desc" ? bUnused - aUnused : aUnused - bUnused;
+    return difference || compareProductsByFamilyAndDuration(a, b);
+  });
+}
+
 function cleanProductTitle(title: string) {
   return String(title || "")
     .replace(/\s+впн\s+в\s+подарок/gi, "")
@@ -980,6 +1017,8 @@ function ProductsTable({
   activeProductId,
   onSelect,
   renderDetails,
+  unusedByPool,
+  resolvePoolKey = inventoryPoolKey,
   showDurationEditor = true,
   title = TEXT.products,
   hint = "Нажмите на товар, чтобы открыть коробку с ключами.",
@@ -988,6 +1027,8 @@ function ProductsTable({
   activeProductId?: string;
   onSelect: (id: string) => void;
   renderDetails: (product: ProductItem) => React.ReactNode;
+  unusedByPool?: PoolStats;
+  resolvePoolKey?: (product: ProductItem) => string | null;
   showDurationEditor?: boolean;
   title?: string;
   hint?: string;
@@ -996,15 +1037,16 @@ function ProductsTable({
     <section className="card overflow-hidden">
       <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-800">
         <h3 className="text-base font-semibold">{title}</h3>
-        <p className="mt-1 text-xs text-slate-500">{hint} Порядок: товар → срок.</p>
+        <p className="mt-1 text-xs text-slate-500">{hint}</p>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[760px] text-left text-sm">
+        <table className="w-full min-w-[860px] text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-900/60">
             <tr>
               <th className="px-4 py-3">Название</th>
               <th className="px-4 py-3">Срок</th>
               <th className="px-4 py-3">{TEXT.method}</th>
+              <th className="px-4 py-3 text-right">Свободные ключи</th>
               <th className="px-4 py-3">Пул</th>
               <th className="px-4 py-3 text-right">Действие</th>
             </tr>
@@ -1013,6 +1055,8 @@ function ProductsTable({
             {products.map((product) => {
               const isActive = product.id === activeProductId;
               const title = cleanProductTitle(product.title) || product.title;
+              const poolKey = resolvePoolKey(product);
+              const unusedCount = poolKey && unusedByPool ? unusedByPool[poolKey]?.unused ?? 0 : null;
 
               return (
                 <Fragment key={product.id}>
@@ -1032,6 +1076,9 @@ function ProductsTable({
                       {getProductDurationLabel(product) || <span className="text-slate-400">Не указан</span>}
                     </td>
                     <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{productModeLabel(product)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums font-semibold" title={poolKey ? `Свободные ключи: ${poolKey}` : "Ключи не используются"}>
+                      {unusedCount === null ? "—" : unusedCount}
+                    </td>
                     <td className="px-4 py-3 font-mono text-xs text-slate-500">{productPoolHint(product)}</td>
                     <td className="px-4 py-3 text-right">
                       <button
@@ -1048,7 +1095,7 @@ function ProductsTable({
                   </tr>
                   {isActive ? (
                     <tr className="bg-slate-50/80 dark:bg-slate-950/40">
-                      <td className="px-4 py-4" colSpan={5}>
+                      <td className="px-4 py-4" colSpan={6}>
                         {showDurationEditor ? <ProductDurationEditor product={product} /> : null}
                         {renderDetails(product)}
                       </td>
@@ -1136,6 +1183,7 @@ function LegacyPoolMovePanel({
 
 export default function CdkKeysPage() {
   const [q, setQ] = useState("");
+  const [sortMode, setSortMode] = useState<CdkSortMode>(readCdkSortMode);
   const [selectedProductId, setSelectedProductId] = useState("");
   const [selectedLegacyPoolId, setSelectedLegacyPoolId] = useState("");
 
@@ -1157,6 +1205,7 @@ export default function CdkKeysPage() {
 
   const poolStatsQuery = useQuery<CdkListResponse>({
     queryKey: ["cdks", "all-pool-stats"],
+    refetchInterval: 30_000,
     queryFn: async () =>
       (
         await api.get("/cdks", {
@@ -1185,6 +1234,12 @@ export default function CdkKeysPage() {
       }))
       .sort(compareProductsByFamilyAndDuration);
   }, [productsQuery.data]);
+
+  const unusedByPool = poolStatsQuery.data?.stats?.byProduct;
+  const sortedProducts = useMemo(
+    () => sortProductsByStock(products, sortMode, unusedByPool),
+    [products, sortMode, unusedByPool]
+  );
 
   const activeProduct = useMemo(() => {
     if (!products.length || !selectedProductId) return null;
@@ -1248,6 +1303,11 @@ export default function CdkKeysPage() {
       .sort((a, b) => a.slug.localeCompare(b.slug));
   }, [poolStatsQuery.data?.stats?.byProduct, visiblePoolKeys]);
 
+  const sortedLegacyPools = useMemo(
+    () => sortProductsByStock(legacyPools, sortMode, unusedByPool, (pool) => pool.slug),
+    [legacyPools, sortMode, unusedByPool]
+  );
+
   const activeLegacyPool = useMemo(() => {
     if (!legacyPools.length || !selectedLegacyPoolId) return null;
     return legacyPools.find((pool) => pool.id === selectedLegacyPoolId) || null;
@@ -1266,7 +1326,29 @@ export default function CdkKeysPage() {
       <section className="card p-4 space-y-2">
         <h2 className="text-lg font-semibold">{TEXT.title}</h2>
         <p className="text-sm text-slate-500">{TEXT.subtitle}</p>
-        <input className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder={TEXT.searchPlaceholder} />
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_260px]">
+          <input className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder={TEXT.searchPlaceholder} />
+          <label className="grid gap-1 text-xs font-semibold text-slate-600 dark:text-slate-300">
+            Сортировка товаров
+            <select
+              className="input"
+              value={sortMode}
+              onChange={(event) => {
+                const next = event.target.value as CdkSortMode;
+                setSortMode(next);
+                try {
+                  window.localStorage.setItem(CDK_SORT_STORAGE_KEY, next);
+                } catch {
+                  // Keep the selected sort for this visit even if storage is unavailable.
+                }
+              }}
+            >
+              <option value="product-duration">По товару и сроку</option>
+              <option value="unused-desc">Свободных: больше сначала</option>
+              <option value="unused-asc">Свободных: меньше сначала</option>
+            </select>
+          </label>
+        </div>
       </section>
 
       {productsQuery.isLoading ? <div className="card p-4 text-sm text-slate-500">{TEXT.loading}</div> : null}
@@ -1275,9 +1357,10 @@ export default function CdkKeysPage() {
 
       {products.length ? (
         <ProductsTable
-          products={products}
+          products={sortedProducts}
           activeProductId={activeProduct?.id}
           onSelect={toggleSelectedProduct}
+          unusedByPool={unusedByPool}
           renderDetails={(product) => <ProductColumn key={product.id} product={product} search={q} />}
         />
       ) : null}
@@ -1288,10 +1371,12 @@ export default function CdkKeysPage() {
         <ProductsTable
           title={TEXT.legacyPools}
           hint={TEXT.legacyPoolsHint}
-          products={legacyPools}
+          products={sortedLegacyPools}
           showDurationEditor={false}
           activeProductId={activeLegacyPool?.id}
           onSelect={toggleSelectedLegacyPool}
+          unusedByPool={unusedByPool}
+          resolvePoolKey={(pool) => pool.slug}
           renderDetails={(pool) => (
             <>
               <LegacyPoolMovePanel

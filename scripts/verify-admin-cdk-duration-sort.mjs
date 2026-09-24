@@ -23,4 +23,14 @@ for (const [name, source] of [
 
 assert.ok(telegramPage.includes('limit: 100, isArchived: false, sortBy: "title", sortDir: "asc"'));
 
+assert.ok(cdkPage.includes('const CDK_SORT_STORAGE_KEY = "gptishka-admin-cdk-sort-v1"'));
+assert.ok(cdkPage.includes("window.localStorage.getItem(CDK_SORT_STORAGE_KEY)"));
+assert.ok(cdkPage.includes("window.localStorage.setItem(CDK_SORT_STORAGE_KEY, next)"));
+assert.ok(cdkPage.includes('value="unused-desc"') && cdkPage.includes('value="unused-asc"'));
+assert.ok(cdkPage.includes('Свободные ключи'));
+assert.ok(cdkPage.includes("sortProductsByStock(products, sortMode, unusedByPool)"));
+assert.ok(cdkPage.includes("sortProductsByStock(legacyPools, sortMode, unusedByPool, (pool) => pool.slug)"));
+assert.ok(cdkPage.includes("refetchInterval: 30_000"));
+assert.equal((cdkPage.match(/qc\.invalidateQueries\(\{ queryKey: \["cdks"\] \}\)/g) || []).length >= 5, true);
+
 console.log("Admin CDK / SDK product duration sorting and editor verified.");
