@@ -14,7 +14,7 @@ type TelegramUserSession = { pendingPromoInput?: boolean; promoCode?: string | n
 
 const BOT_POLL_TIMEOUT_SECONDS = 25;
 const BOT_RETRY_DELAY_MS = 2500;
-const SUPPORT_LINK = String(env.ACTIVATION_SUPPORT_BASE_URL || "https://gptishka.shop/contact.html").trim();
+const SUPPORT_LINK = "https://t.me/gptishkasupport";
 const REVIEW_LINK = "https://t.me/askarsupport";
 const APP_BASE_URL = String(env.APP_BASE_URL || "https://gptishka.shop").trim().replace(/\/+$/, "");
 const CLAUDE_ID_HELP_IMAGE_URL = `${APP_BASE_URL}/assets/img/claude-org-id-example.png`;
@@ -388,7 +388,7 @@ async function sendOrders(client: TelegramApiClient, ctx: OrderUserContext) {
 }
 async function sendSupport(client: TelegramApiClient, ctx: OrderUserContext) {
   await logEvent("support", ctx);
-  return client.sendMessage(ctx.chatId, `Поддержка GPTishka:\n1) https://gptishka.shop/contact.html\n2) ${SUPPORT_LINK}`, keyboardMain());
+  return client.sendMessage(ctx.chatId, `Поддержка GPTishka:\n${SUPPORT_LINK}`, keyboardMain());
 }
 async function sendReviews(client: TelegramApiClient, ctx: OrderUserContext) {
   await logEvent("reviews", ctx);

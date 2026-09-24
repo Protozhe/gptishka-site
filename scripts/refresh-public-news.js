@@ -21,8 +21,8 @@ async function main() {
   payload.items = payload.items.slice(0, LIMIT).map((item) => ({
     ...item,
     text: String(item.text || "")
-      .replace(/t\.me\/(?:aiiisupport|gptishkasupport)/gi, "t.me/aimarket_gpt")
-      .replace(/@(?:aiiisupport|gptishkasupport)\b/gi, "@aimarket_gpt"),
+      .replace(/(Поддержка:\s*)t\.me\/(?:aiiisupport|aimarket_gpt(?:\?direct)?)/gi, "$1t.me/gptishkasupport")
+      .replace(/(в поиске\s*)@(?:aiiisupport|aimarket_gpt)\b/gi, "$1@gptishkasupport"),
   }));
 
   const serialized = `${JSON.stringify(payload, null, 2)}\n`;

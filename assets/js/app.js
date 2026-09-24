@@ -7080,7 +7080,7 @@ function initActivationResumeShortcut() {
 // =========================
 (() => {
   const VERSION = "20260708-compliance1";
-  const SUPPORT_URL = "https://t.me/aimarket_gpt?direct";
+  const SUPPORT_URL = "https://t.me/gptishkasupport";
   const PRODUCT_OWNERS = "OpenAI, Anthropic, xAI";
 
   function isEnglishPage() {
