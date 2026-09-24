@@ -293,6 +293,7 @@ const translations = [
   ["Даём гарантию на весь срок подписки", "Warranty for the full subscription period"],
   ["Помогаем с подключением и продлением", "Help with connection and renewal"],
   ["Часто задаваемые вопросы", "FAQ"],
+  ["Мы обрабатываем заказы ежедневно с 08:00 до 20:00 по МСК. Заказы с автоматическим подключением выполняются 24/7. Среднее время ожидания — от 5 минут до 2 часов после оплаты.", "We process orders daily from 08:00 to 20:00 Moscow time. Orders with automatic activation are handled 24/7. The average wait after payment is 5 minutes to 2 hours."],
   ["Какие способы оплаты доступны?", "Which payment methods are available?"],
   ["На gptishka.shop доступны банковские карты Мир, Visa, MasterCard, СБП, криптовалюта и иностранные карты через обращение в поддержку.", "gptishka.shop supports Mir, Visa, MasterCard, SBP, crypto, and foreign cards through support request."],
   ["Платежи проходят безопасно. Мы не сохраняем платёжные данные — обработка оплаты осуществляется через платёжные системы Enot и Lava.", "Payments are secure. We do not store payment details — payment processing is handled by Enot and Lava."],
