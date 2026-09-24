@@ -2,6 +2,8 @@
   "use strict";
   const params = new URLSearchParams(location.search);
   const orderId = String(params.get("order_id") || "").trim();
+  const previewMode = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) &&
+    orderId === "demo" && params.get("t") === "preview";
   let storedOrderToken = "";
   try {
     if (orderId) storedOrderToken = String(localStorage.getItem(`gptishka_activation_order_token:${orderId}`) || "");
@@ -35,6 +37,14 @@
   }
 
   async function loadOrder() {
+    if (previewMode) {
+      number.textContent = "Демонстрация страницы";
+      plan.textContent = "Тариф: Devin Pro — 1 месяц";
+      retry.hidden = true;
+      form.hidden = false;
+      setStatus("Пример страницы после оплаты GPTishka. Здесь клиент отправит ссылку Devin.", "success");
+      return;
+    }
     if (!orderId || !orderToken) {
       setStatus("Не найдена защищённая ссылка на заказ. Вернитесь к странице подтверждения оплаты или обратитесь в поддержку.", "error");
       return;
@@ -71,6 +81,10 @@
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (previewMode) {
+      setStatus("Это демонстрация. Ссылка не отправлена и заказ не изменён.");
+      return;
+    }
     const link = String(input.value || "").trim();
     if (!validLink(link)) {
       setStatus("Нужна полная HTTPS-ссылка Stripe Checkout вида checkout.stripe.com/g/pay/cs_live_…", "error");

@@ -51,12 +51,16 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .devin-button:disabled { opacity: .6; cursor: wait; transform: none; }
 .devin-retry { margin: 0 0 26px; }
 
-.devin-steps { padding: 25px 26px 26px; border: 1px solid rgba(255,255,255,.13); border-radius: 19px; background: rgba(255,255,255,.045); }
+.devin-steps { margin-bottom: 30px; padding: 25px 26px 26px; border: 1px solid rgba(255,255,255,.13); border-radius: 19px; background: rgba(255,255,255,.045); }
 .devin-steps h2 { margin: 0 0 14px; font-size: 20px; font-weight: 800; }
 .devin-steps ol { margin: 0; padding-left: 22px; color: #c6c8d0; font-size: 15px; font-weight: 600; line-height: 1.65; }
 .devin-steps li { padding-left: 4px; }
 .devin-steps li + li { margin-top: 8px; }
 .devin-steps li::marker { color: #54dfa0; font-weight: 800; }
+.devin-steps strong { color: #f4f6fa; font-weight: 800; }
+.devin-steps__example { width: fit-content; max-width: 100%; margin: 14px 0 2px; padding: 8px; border: 1px solid rgba(255,255,255,.15); border-radius: 13px; background: #f7f7f8; }
+.devin-steps__example img { display: block; width: min(328px,100%); height: auto; border-radius: 6px; }
+.devin-steps__example figcaption { margin: 8px 3px 1px; color: #343943; font-size: 12px; font-weight: 800; }
 .devin-steps a { color: #6be6ac; text-underline-offset: 3px; }
 .devin-steps a:hover { color: #b0ffd4; }
 .devin-footer { max-width: 760px; margin: 48px 0 0 auto; color: #adafba; font-size: 13px; line-height: 1.6; }

@@ -8,7 +8,7 @@
   <title>Отправить ссылку Devin — GPTishka</title>
   <link rel="icon" href="/favicon.png?v=20260920-white-cat-round1" sizes="any">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/devin-link.css?v=20260924-devin-link1">
+  <link rel="stylesheet" href="/assets/css/devin-link.css?v=20260924-guide1">
 </head>
 <body>
   <header class="devin-header">
@@ -51,6 +51,19 @@
         </div>
 
         <div class="mj-status" id="status" role="status" aria-live="polite">Проверяем оплату заказа…</div>
+        <div class="devin-steps">
+          <h2>Как получить ссылку на оплату</h2>
+          <ol>
+            <li>Войдите в Devin. В левом верхнем углу откройте меню <strong>My Team</strong> и нажмите <strong>Upgrade</strong>.
+              <figure class="devin-steps__example"><img src="/assets/img/services/devin-upgrade-guide.png?v=20260924-guide1" alt="Меню My Team в Devin с кнопкой Upgrade" width="328" height="187" loading="lazy"><figcaption>Пример расположения кнопки Upgrade</figcaption></figure>
+            </li>
+            <li>Выберите тот же тариф, что указан в вашем заказе GPTishka — например, <strong>Pro</strong>.</li>
+            <li>Нажмите <strong>Purchase</strong>.</li>
+            <li>Дождитесь открытия страницы оплаты Stripe.</li>
+            <li>Скопируйте полную ссылку из адресной строки браузера. <strong>Не оплачивайте подписку самостоятельно.</strong></li>
+            <li>Вставьте скопированную ссылку в поле ниже и нажмите <strong>«Отправить ссылку»</strong>.</li>
+          </ol>
+        </div>
         <form class="devin-form" id="linkForm" hidden>
           <label for="paymentLink">Ссылка на оплату Devin</label>
           <p class="devin-form__hint">Скопируйте полную ссылку со страницы оплаты Stripe.</p>
@@ -61,15 +74,6 @@
         </form>
         <button class="devin-retry" type="button" id="retryButton" hidden>Проверить оплату ещё раз</button>
 
-        <div class="devin-steps">
-          <h2>Как получить ссылку</h2>
-          <ol>
-            <li>Войдите в свой аккаунт Devin и откройте выбор подписки.</li>
-            <li>Выберите оплату на один месяц и тот же тариф, который заказали у GPTishka.</li>
-            <li>На странице оплаты Stripe скопируйте полную ссылку из адресной строки. Не оплачивайте её самостоятельно.</li>
-            <li>Вставьте ссылку выше и нажмите «Отправить ссылку».</li>
-          </ol>
-        </div>
       </section>
     </div>
 
