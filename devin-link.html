@@ -8,7 +8,7 @@
   <title>Отправить ссылку Devin — GPTishka</title>
   <link rel="icon" href="/favicon.png?v=20260920-white-cat-round1" sizes="any">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/devin-link.css?v=20260924-guide1">
+  <link rel="stylesheet" href="/assets/css/devin-link.css?v=20260924-midjourney-layout1">
 </head>
 <body>
   <header class="devin-header">
@@ -42,7 +42,7 @@
       </aside>
 
       <section class="devin-content" aria-labelledby="pageTitle">
-        <div class="devin-content__eyebrow">После оплаты GPTishka</div>
+        <div class="devin-content__eyebrow">Последний шаг после оплаты</div>
         <h1 id="pageTitle">Отправьте ссылку Devin</h1>
         <p class="devin-lead">Откройте оплату выбранного тарифа в своём аккаунте Devin и отправьте нам ссылку Stripe Checkout. Логин, пароль и данные банковской карты передавать не нужно.</p>
         <div class="devin-order" aria-label="Данные заказа">
@@ -50,7 +50,6 @@
           <span id="orderPlan">Тариф: —</span>
         </div>
 
-        <div class="mj-status" id="status" role="status" aria-live="polite">Проверяем оплату заказа…</div>
         <div class="devin-steps">
           <h2>Как получить ссылку на оплату</h2>
           <ol>
@@ -64,6 +63,7 @@
             <li>Вставьте скопированную ссылку в поле ниже и нажмите <strong>«Отправить ссылку»</strong>.</li>
           </ol>
         </div>
+        <div class="mj-status" id="status" role="status" aria-live="polite">Проверяем оплату заказа…</div>
         <form class="devin-form" id="linkForm" hidden>
           <label for="paymentLink">Ссылка на оплату Devin</label>
           <p class="devin-form__hint">Скопируйте полную ссылку со страницы оплаты Stripe.</p>
