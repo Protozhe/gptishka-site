@@ -587,10 +587,13 @@ export const ordersService = {
     if (deliveryType === "manual_login") {
       await deliverProduct(order);
       const supportEmail = resolveSupportEmail();
+      const perplexityTokenStored = productSlug === "perplexity-pro" &&
+        hasStoredClientToken(normalizeActivationRecordForRead(activationStore.findByOrderId(order.id)));
       return {
         orderId: order.id,
         deliveryMode: "manual_login",
-        status: "pending_manual",
+        status: perplexityTokenStored ? "details_submitted" : "pending_manual",
+        tokenStored: perplexityTokenStored,
         productSlug,
         productTitle,
         supportUrl: DEFAULT_SUPPORT_URL,
@@ -775,9 +778,10 @@ export const ordersService = {
     const deliveryType = resolveOrderDeliveryType(orderWithItem?.orderDetails, firstItem?.product?.tags || []);
     const activationSiteUrl = readActivationSiteUrlFromOrderDetails(orderWithItem?.orderDetails);
     const productSlug = String(firstItem?.product?.slug || "").trim().toLowerCase();
+    const isPerplexityManual = productSlug === "perplexity-pro" && deliveryType === "manual_login";
     const isMidjourneyLink = isMidjourneyProductSlug(productSlug);
     const isSunoLink = isSunoPaymentLinkOrder(productSlug, orderWithItem?.orderDetails);
-    if (isMidjourneyLink || isSunoLink) await assertPaidOrderAccess(orderId, orderToken);
+    if (isMidjourneyLink || isSunoLink || isPerplexityManual) await assertPaidOrderAccess(orderId, orderToken);
     const productTitle = String(firstItem?.product?.title || (firstItem?.product as any)?.name || "").trim();
     const productKeyForFlow = canonicalProductKey(productSlug || String(firstItem?.productId || "chatgpt")) || productSlug || "chatgpt";
     const tokenActivationFlow = resolveTokenActivationFlowForProduct({
@@ -798,6 +802,10 @@ export const ordersService = {
     if (isMidjourneyLink || isSunoLink) {
       const linkError = isSunoLink ? validateSunoPaymentLink(tokenInfo.raw) : validateMidjourneyPaymentLink(tokenInfo.raw);
       if (linkError) reasons.push(linkError);
+    } else if (isPerplexityManual) {
+      if (!tokenInfo.json || typeof tokenInfo.json !== "object" || Array.isArray(tokenInfo.json) || !Object.keys(tokenInfo.json).length) {
+        reasons.push("Paste the complete Perplexity session JSON");
+      }
     } else if (tokenInfo.raw.startsWith("{")) {
       if (!tokenInfo.json) {
         reasons.push("Token JSON is invalid");
