@@ -7599,6 +7599,18 @@ textarea.chatgpt-order-field__control {
   line-height: 1.55;
 }
 
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-processing-copy {
+  display: grid;
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-processing-copy p {
+  margin: 0;
+  color: var(--modal-text-secondary) !important;
+  line-height: 1.55;
+}
+
 .service-page[data-service-page] ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-legal-note {
   width: auto;
   margin: 2px 8px 8px;
