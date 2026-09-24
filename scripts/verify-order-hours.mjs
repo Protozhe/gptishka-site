@@ -3,11 +3,19 @@ import fs from "node:fs";
 
 const read = (file) => fs.readFileSync(file, "utf8");
 const ru = "Мы обрабатываем заказы ежедневно с 08:00 до 20:00 по МСК. Заказы с автоматическим подключением выполняются 24/7. Среднее время ожидания — от 5 минут до 2 часов после оплаты.";
+const ruLines = [
+  "Мы обрабатываем заказы ежедневно с 08:00 до 20:00 по МСК.",
+  "Заказы с автоматическим подключением выполняются 24/7.",
+  "Среднее время ожидания — от 5 минут до 2 часов после оплаты.",
+];
 const en = "We process orders daily from 08:00 to 20:00 Moscow time. Orders with automatic activation are handled 24/7. The average wait after payment is 5 minutes to 2 hours.";
 
 for (const file of ["assets/js/app.js", "assets/js/app.min.js", "main.js"]) {
   const source = read(file);
-  assert.ok(source.includes(ru), `${file}: checkout timing copy is stale`);
+  assert.ok(source.includes('class="chatgpt-order-processing-copy"'), `${file}: checkout timing is not split into readable lines`);
+  for (const line of ruLines) assert.ok(source.includes(`<p>${line}</p>`), `${file}: checkout timing copy is stale`);
+  assert.ok(source.includes("Дайте ему 5% скидки за ваш первый заказ — напишите его контакт ниже."), `${file}: referral copy is stale`);
+  assert.ok(!source.includes("Дайте ему 10% скидки за ваш первый заказ"), `${file}: retired referral percentage remains`);
   assert.ok(!source.includes("Если заказ оформлен ночью — подключим с утра."), `${file}: old checkout timing copy remains`);
 }
 
@@ -30,8 +38,8 @@ for (const file of [
   "itunes.html", "service.html", "store/vpn/index.html", "en/chatgpt.html", "en/claude.html", "en/supergrok.html",
   "en/midjourney.html", "en/suno.html", "en/store/vpn/index.html",
 ]) {
-  const version = read(file).includes("service-checkout-flat.css?v=20260924-brand-promo1")
-    ? "20260924-brand-promo1"
+  const version = read(file).includes("service-checkout-flat.css?v=20260924-referral-hours1")
+    ? "20260924-referral-hours1"
     : "20260924-order-hours2";
   assert.ok(read(file).includes(`app.min.js?v=${version}`), `${file}: shared checkout script cache is stale`);
 }

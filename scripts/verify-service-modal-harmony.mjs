@@ -40,8 +40,8 @@ for (const selector of [
   assert.ok(css.includes(selector), `shared modal styles must cover ${selector}`);
 }
 
-const flatStyle = "service-checkout-flat.css?v=20260924-brand-promo1";
-const modalScript = "app.min.js?v=20260924-brand-promo1";
+const flatStyle = "service-checkout-flat.css?v=20260924-referral-hours1";
+const modalScript = "app.min.js?v=20260924-referral-hours1";
 for (const page of pages) {
   const html = fs.readFileSync(page, "utf8");
   assert.ok(html.includes(flatStyle), `${page} must load the shared checkout layout`);
@@ -57,6 +57,7 @@ assert.ok(flatCss.includes("min-height: 64px"));
 assert.ok(flatCss.includes(".chatgpt-order-summary-card__chips"));
 assert.ok(flatCss.includes(".chatgpt-order-summary-card__price"));
 assert.ok(flatCss.includes(".chatgpt-order-soft-actions > .chatgpt-order-collapsible"));
+assert.ok(flatCss.includes(".chatgpt-order-processing-copy"));
 for (const service of ["chatgpt", "claude", "grok", "perplexity", "gemini", "suno", "devin", "itunes"]) {
   assert.ok(flatCss.includes(`.checkout-brand-icon--${service}`), `current ${service} modal artwork must be styled`);
 }
