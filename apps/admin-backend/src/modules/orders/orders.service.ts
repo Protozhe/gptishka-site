@@ -56,6 +56,15 @@ const DEFAULT_GROK_1M_SUPPORT_URL = "https://vip.sxzfd.com/grok";
 const DEFAULT_AICHONGZHI_URL = "https://aichongzhi.fun";
 const DEFAULT_SUPPORT_EMAIL = "";
 
+function isAieeProviderBase(value: unknown) {
+  try {
+    const hostname = new URL(String(value || "").trim()).hostname.toLowerCase();
+    return hostname === "aiee.fun" || hostname.endsWith(".aiee.fun");
+  } catch {
+    return false;
+  }
+}
+
 function publicActivationMessage(status: unknown, verificationState?: unknown) {
   const normalizedStatus = String(status || "").trim().toLowerCase();
   const normalizedVerification = String(verificationState || "").trim().toLowerCase();
@@ -225,6 +234,7 @@ function normalizeActivationRecordForRead(record: ActivationRecord | null | unde
 
 function isChongzhiActivationRecord(record: ActivationRecord | null | undefined) {
   if (!record) return false;
+  if (isAieeProviderBase(record.activationSiteUrl || "")) return true;
   if (String(record.taskId || "").startsWith("chongzhi-")) return true;
   const productKey = String(record.productKey || "").trim().toLowerCase();
   const activationSiteUrl = String(record.activationSiteUrl || "").trim().toLowerCase();
@@ -3012,10 +3022,11 @@ function shouldRetryOutstockFailure(status: number, body: string) {
 
 async function callChongzhiJsonApi(
   base: string,
-  action: "verify_code" | "submit_recharge" | "query_code",
+  action: "verify_code" | "validate_token" | "submit_recharge" | "query_code",
   data: Record<string, unknown>
 ) {
-  const apiUrl = buildActivationSiteEndpointUrl(base, "api.php") || `${base.replace(/\/+$/, "")}/api.php`;
+  const endpoint = isAieeProviderBase(base) ? "api/auth.php" : "api.php";
+  const apiUrl = buildActivationSiteEndpointUrl(base, endpoint) || `${base.replace(/\/+$/, "")}/${endpoint}`;
   const parsedApiUrl = new URL(apiUrl);
   const configuredIp = String(env.ACTIVATION_CHONGZHI_IP || "").trim();
   const directIp = configuredIp && parsedApiUrl.hostname === "vip.sxzfd.com" ? configuredIp : "";
@@ -3079,7 +3090,7 @@ async function recoverCompletedChongzhiJsonTask(
       polling: 1,
       silent_log: 1,
     });
-    if (!current.json || !isChongzhiCodeUsed({ json: current.json })) return null;
+    if (!current.json || !isChongzhiCodeUsed({ json: current.json }, { requireRechargeSuccess: isAieeProviderBase(base) })) return null;
     const taskId =
       String(current.json?.order_id || current.json?.task_id || current.json?.record_id || "").trim() ||
       `chongzhi-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -3132,7 +3143,10 @@ async function startChongzhiJsonTask(
   const verifyStatus = String(verify.json?.status || "").trim().toLowerCase();
   const rechargeStatus = String(verify.json?.recharge_status || "").trim().toLowerCase();
   const alreadyCompleted =
-    Boolean(verify.json?.success) && (verifyStatus === "used" || rechargeStatus === "success");
+    Boolean(verify.json?.success) &&
+    (isAieeProviderBase(base)
+      ? ["success", "completed"].includes(rechargeStatus)
+      : verifyStatus === "used" || ["success", "completed"].includes(rechargeStatus));
   if (alreadyCompleted) {
     const taskId =
       String(verify.json?.order_id || verify.json?.task_id || "").trim() ||
@@ -3185,12 +3199,61 @@ async function startChongzhiJsonTask(
     };
   }
 
+  if (isAieeProviderBase(base)) {
+    if (Number(verify.json?.require_cookie || 0) === 1) {
+      return {
+        ok: false as const,
+        taskId: "",
+        status: 409,
+        body: "AIEE plan requires ChatGPT session cookie",
+        tries: 1,
+        immediateSuccess: false,
+        message: "Этот ключ требует дополнительный Cookie ChatGPT.",
+        providerPayload: null,
+      };
+    }
+    let validation;
+    try {
+      validation = await callChongzhiJsonApi(base, "validate_token", {
+        cdk: input.cdk,
+        sid,
+        json_token: tokenRaw,
+        chatgpt_cookie: "",
+      });
+    } catch (error) {
+      return {
+        ok: false as const,
+        taskId: "",
+        status: 0,
+        body: error instanceof Error ? error.message : String(error || "validate_token failed"),
+        tries: 1,
+        immediateSuccess: false,
+        message: "AIEE не ответил при проверке токена.",
+        providerPayload: null,
+      };
+    }
+    if (!validation.json?.success) {
+      return {
+        ok: false as const,
+        taskId: "",
+        status: validation.status || 502,
+        body: validation.raw || "validate_token failed",
+        tries: 1,
+        immediateSuccess: false,
+        message: String(validation.json?.message || "AIEE отклонил токен аккаунта."),
+        providerPayload: null,
+      };
+    }
+  }
+
   let submit;
   try {
     submit = await callChongzhiJsonApi(base, "submit_recharge", {
       cdk: input.cdk,
       json_token: tokenRaw,
       sid,
+      chatgpt_cookie: "",
+      customer_notify_email: "",
       force_overwrite: false,
     });
   } catch (error) {
@@ -3212,6 +3275,7 @@ async function startChongzhiJsonTask(
 
   const submitPending = Boolean(submit.json?.pending);
   if (submit.json?.success || submitPending) {
+    const submitRechargeStatus = String(submit.json?.recharge_status || "").trim().toLowerCase();
     const taskId =
       String(submit.json?.order_id || submit.json?.task_id || "").trim() ||
       `chongzhi-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -3221,7 +3285,9 @@ async function startChongzhiJsonTask(
       status: submit.status || 200,
       body: submit.raw || "",
       tries: 1,
-      immediateSuccess: Boolean(submit.json?.success && !submitPending),
+      immediateSuccess: isAieeProviderBase(base)
+        ? ["success", "completed"].includes(submitRechargeStatus)
+        : Boolean(submit.json?.success && !submitPending),
       message: String(
         submit.json?.message ||
           (submitPending ? "Activation request is processing" : "Activation completed")
@@ -3519,14 +3585,18 @@ async function verifyChongzhiCodeStatus(base: string, cdk: string, headers: Reco
   };
 }
 
-function isChongzhiCodeUsed(payload: { json?: any } | null | undefined) {
+function isChongzhiCodeUsed(
+  payload: { json?: any } | null | undefined,
+  options?: { requireRechargeSuccess?: boolean }
+) {
   const codeStatus = String(
     payload?.json?.data?.code_status || payload?.json?.code_status || payload?.json?.status || ""
   )
     .trim()
     .toLowerCase();
   const rechargeStatus = String(payload?.json?.recharge_status || "").trim().toLowerCase();
-  return codeStatus === "used" || rechargeStatus === "success";
+  if (options?.requireRechargeSuccess) return ["success", "completed"].includes(rechargeStatus);
+  return codeStatus === "used" || ["success", "completed"].includes(rechargeStatus);
 }
 
 function updateActivationFromChongzhiCodePayload(orderId: string, payload: { status?: number; json?: any; raw?: string }) {
@@ -3534,19 +3604,26 @@ function updateActivationFromChongzhiCodePayload(orderId: string, payload: { sta
   if (!stored) return;
 
   const nowIso = new Date().toISOString();
-  const used = isChongzhiCodeUsed(payload);
+  const isAiee = isAieeProviderBase(stored.activationSiteUrl || "");
+  const used = isChongzhiCodeUsed(payload, { requireRechargeSuccess: isAiee });
   const codeStatus = String(
     payload?.json?.data?.code_status || payload?.json?.code_status || payload?.json?.status || ""
   ).trim();
+  const rechargeStatus = String(payload?.json?.recharge_status || "").trim().toLowerCase();
+  const failed = ["failed", "fail", "error", "rejected", "expired", "canceled", "cancelled"].includes(rechargeStatus);
   const hasTask = Boolean(String(stored.taskId || "").trim());
-  const nextStatus: ActivationRecord["status"] = used ? "success" : stored.status;
+  const nextStatus: ActivationRecord["status"] = used ? "success" : failed ? "failed" : stored.status;
   const nextVerificationState: NonNullable<ActivationRecord["verificationState"]> = used
     ? "success"
+    : failed
+    ? "failed"
     : hasTask
     ? "pending"
     : "unknown";
   const providerMessage = used
-    ? "Provider check: Chongzhi activation code is marked as used"
+    ? "Provider check: activation completed"
+    : failed
+    ? "Provider check: activation failed"
     : hasTask
     ? `Provider check: Chongzhi activation code is not used yet${codeStatus ? ` (${codeStatus})` : ""}`
     : `Provider check: Chongzhi activation code is not used yet${codeStatus ? ` (${codeStatus})` : ""}. Activation has not been started (task is missing)`;
@@ -3558,7 +3635,7 @@ function updateActivationFromChongzhiCodePayload(orderId: string, payload: { sta
     lastProviderMessage: providerMessage,
     lastProviderCheckedAt: nowIso,
     lastProviderPayload: {
-      source: "chongzhi/status",
+      source: isAiee ? "aiee.fun/api/auth.php" : "chongzhi/status",
       providerStatus: Number(payload?.status || 0),
       code_status: codeStatus || null,
       recharge_status: String(payload?.json?.recharge_status || "").trim() || null,
