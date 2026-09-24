@@ -23,6 +23,7 @@ const checks = [
   "scripts/verify-showcase-product-visual-editor.mjs",
   "scripts/verify-showcase-service-cards.mjs",
   "scripts/verify-suno-link-flow.mjs",
+  "scripts/verify-devin-payment-link-flow.mjs",
   "scripts/verify-chat-restoration.mjs",
   "scripts/verify-native-page-navigation.mjs",
   "scripts/verify-round-favicon.mjs",

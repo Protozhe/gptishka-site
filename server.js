@@ -2467,6 +2467,10 @@ function createApp() {
     sendFreshHtml(res, path.join(__dirname, "devin.html"));
   });
 
+  app.get(["/devin-link", "/devin-link.html"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "devin-link.html"));
+  });
+
   app.get(["/midjourney", "/midjourney/", "/midjourney.html"], (_req, res) => {
     sendFreshHtml(res, path.join(__dirname, "midjourney.html"));
   });

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Отправить ссылку Devin — GPTishka</title>
+  <link rel="icon" href="/favicon.png?v=20260920-white-cat-round1" sizes="any">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/devin-link.css?v=20260924-devin-link1">
+</head>
+<body>
+  <header class="devin-header">
+    <div class="devin-header__inner">
+      <a class="devin-header__logo" href="/" aria-label="GPTishka — главная">
+        <img src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka" width="300" height="127">
+      </a>
+      <a class="devin-header__pill" href="/codex-credits" aria-label="Кредиты Codex от 1 850 рублей">
+        <img src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" width="28" height="28">
+        <span>Кредиты Codex от 1 850 ₽</span>
+      </a>
+      <nav class="devin-header__nav" aria-label="Быстрые разделы GPTishka">
+        <a href="/news/">Новости</a>
+        <a href="/app/">Отзывы</a>
+        <a href="https://vk.com/gptishka" target="_blank" rel="noopener noreferrer">VK</a>
+        <a href="https://t.me/aimarket_gpt" target="_blank" rel="noopener noreferrer">Telegram</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="devin-shell">
+    <a class="devin-back" href="/devin">
+      <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M17 10H3M3 10l5-5M3 10l5 5"></path></svg>
+      <span>К тарифам Devin</span>
+    </a>
+
+    <div class="devin-layout">
+      <aside class="devin-brand" aria-label="Devin">
+        <div class="devin-brand__art" aria-hidden="true"><img src="/assets/img/services/devin-card-v2.webp?v=20260922-devin2" alt=""></div>
+        <p>Подключение Devin по ссылке на оплату</p>
+      </aside>
+
+      <section class="devin-content" aria-labelledby="pageTitle">
+        <div class="devin-content__eyebrow">После оплаты GPTishka</div>
+        <h1 id="pageTitle">Отправьте ссылку Devin</h1>
+        <p class="devin-lead">Откройте оплату выбранного тарифа в своём аккаунте Devin и отправьте нам ссылку Stripe Checkout. Логин, пароль и данные банковской карты передавать не нужно.</p>
+        <div class="devin-order" aria-label="Данные заказа">
+          <span id="orderNumber">Заказ: —</span>
+          <span id="orderPlan">Тариф: —</span>
+        </div>
+
+        <div class="mj-status" id="status" role="status" aria-live="polite">Проверяем оплату заказа…</div>
+        <form class="devin-form" id="linkForm" hidden>
+          <label for="paymentLink">Ссылка на оплату Devin</label>
+          <p class="devin-form__hint">Скопируйте полную ссылку со страницы оплаты Stripe.</p>
+          <input id="paymentLink" name="paymentLink" type="url" inputmode="url" autocomplete="off" spellcheck="false" maxlength="4096" placeholder="https://checkout.stripe.com/g/pay/cs_live_…" aria-describedby="linkFormat linkNote" required>
+          <small id="linkFormat">Ссылка должна начинаться с https://checkout.stripe.com/g/pay/cs_live_</small>
+          <p class="devin-form__note" id="linkNote">Форма проверяет формат ссылки. Менеджер отдельно проверит тариф и доступность страницы оплаты.</p>
+          <button class="devin-button" type="submit" id="submitButton">Отправить ссылку</button>
+        </form>
+        <button class="devin-retry" type="button" id="retryButton" hidden>Проверить оплату ещё раз</button>
+
+        <div class="devin-steps">
+          <h2>Как получить ссылку</h2>
+          <ol>
+            <li>Войдите в свой аккаунт Devin и откройте выбор подписки.</li>
+            <li>Выберите оплату на один месяц и тот же тариф, который заказали у GPTishka.</li>
+            <li>На странице оплаты Stripe скопируйте полную ссылку из адресной строки. Не оплачивайте её самостоятельно.</li>
+            <li>Вставьте ссылку выше и нажмите «Отправить ссылку».</li>
+          </ol>
+        </div>
+      </section>
+    </div>
+
+    <p class="devin-footer">Если возникнут сложности, менеджер свяжется с вами по контакту из заказа. <a href="/oferta.html">Публичная оферта</a> · <a href="/politika.html">Политика конфиденциальности</a></p>
+  </main>
+  <script src="/assets/js/devin-link.js?v=20260924-devin-link1" defer></script>
+</body>
+</html>

@@ -95,10 +95,12 @@ for (const file of htmlFiles) {
       ["index.html", "catalog/index.html", "catalog/ai/index.html", "en/index.html", "en/catalog/index.html", "en/catalog/ai/index.html", "suno.html", "en/suno.html"].includes(file.replaceAll("\\", "/"));
     const isModelCardsRefresh = match[1] === "app.min.js" && match[2] === "20260923-model-cards2" &&
       ["index.html", "catalog/index.html", "catalog/ai/index.html", "en/index.html", "en/catalog/index.html", "en/catalog/ai/index.html", "suno.html", "en/suno.html"].includes(file.replaceAll("\\", "/"));
+    const isDevinLinkUpdate = match[1] === "app.min.js" && match[2] === "20260924-devin-link1" &&
+      file.replaceAll("\\", "/") === "devin.html";
     const isChatGptAutoLabelUpdate = ["20260923-chatgpt-auto-label1", "20260923-chatgpt-auto-label2"].includes(match[2]) &&
       ["chatgpt.html", "en/chatgpt.html"].includes(file.replaceAll("\\", "/")) &&
       ["chatgpt-onboarding-v1.css", "chatgpt-onboarding-v1.js"].includes(match[1]);
-    expect(expectedVersion.has(match[2]) || isMidjourneyUpdate || isMidjourneyHoverUpdate || isClaudeMaxUpdate || isClaudePlansUpdate || isModelCardsUpdate || isSunoPlansUpdate || isModelCardsRefresh || isChatGptAutoLabelUpdate, `${file}: stale cache version for ${match[1]}`);
+    expect(expectedVersion.has(match[2]) || isMidjourneyUpdate || isMidjourneyHoverUpdate || isClaudeMaxUpdate || isClaudePlansUpdate || isModelCardsUpdate || isSunoPlansUpdate || isModelCardsRefresh || isDevinLinkUpdate || isChatGptAutoLabelUpdate, `${file}: stale cache version for ${match[1]}`);
   }
 }
 

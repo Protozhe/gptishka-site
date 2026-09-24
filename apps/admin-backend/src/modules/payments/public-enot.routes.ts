@@ -54,6 +54,8 @@ publicEnotRouter.post(
       ? "/store/vpn/activate"
       : /^midjourney-(basic|standard|pro)-1$/.test(String(created.productSlug || ""))
         ? "/midjourney-link.html"
+        : /^devin-(pro|max|teams)-1$/.test(String(created.productSlug || ""))
+          ? "/devin-link.html"
         : "/redeem-start.html";
     const activationUrl = new URL(activationPath, publicOrigin);
     activationUrl.searchParams.set("order_id", created.orderId);

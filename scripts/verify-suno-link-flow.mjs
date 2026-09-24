@@ -15,7 +15,7 @@ const sunoModalScope = '.service-page:is([data-service-page="chatgpt"], [data-se
 assert.match(plans, /slug: "suno-pro-1-month", name: "Pro", price: 1490/);
 assert.match(plans, /slug: "suno-premier-1-month", name: "Premier", price: 3290/);
 assert.match(plans, /activation-pool:\$\{plan\.slug\}/);
-assert.match(app, /paymentLinkFlow: serviceKey === "suno" \? "suno-v1"/);
+assert.match(app, /serviceKey === "suno" \? "suno-v1"/);
 assert.match(app, /SUNO_ORDER_MODAL_PLAN_KEYS = new Set\(\["pro", "premier"\]\)/);
 assert.match(payments, /"\/suno-link\.html"/);
 assert.match(orders, /isSunoPaymentLinkOrder\(productSlug, fullOrder\?\.orderDetails\)/);

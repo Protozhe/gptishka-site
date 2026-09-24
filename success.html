@@ -619,6 +619,20 @@
             return true;
           }
 
+          if (serviceKey === "devin") {
+            setPaidReceipt(service, "Оплата заказа подтверждена. Осталось отправить ссылку Devin.");
+            statusEl.className = "status paid";
+            statusEl.textContent = "Платёж подтверждён. Открываем форму для ссылки на оплату Devin.";
+            setNextStep("Отправьте ссылку Devin", "Откройте оплату выбранного тарифа в своём аккаунте Devin и вставьте ссылку на следующей странице.");
+            setTimeout(() => {
+              const url = new URL("/devin-link.html", window.location.origin);
+              url.searchParams.set("order_id", id);
+              if (linkToken) url.searchParams.set("t", linkToken);
+              window.location.href = url.toString();
+            }, 1200);
+            return true;
+          }
+
           if (deliveryMode === "manual_login") {
             if (serviceKey === "steam") {
               setPaidReceipt(service, "Оплата подтверждена. Заказ Steam передан менеджеру.");
@@ -706,6 +720,7 @@
       if (normalized.includes("gemini") || normalized.includes("googleai")) return "gemini";
       if (normalized.includes("suno")) return "suno";
       if (normalized.includes("midjourney")) return "midjourney";
+      if (normalized.includes("devin") || normalized.includes("cognitionai")) return "devin";
       if (normalized.includes("vpn") || normalized.includes("vless")) return "vpn";
       if (normalized.includes("supergrok") || normalized === "grok") return "grok";
       if (normalized.includes("chatgptgo")) return "chatgptgo";
@@ -716,6 +731,7 @@
 
     function activationPagePath(serviceKey) {
       if (serviceKey === "midjourney") return "/midjourney-link.html";
+      if (serviceKey === "devin") return "/devin-link.html";
       return serviceKey === "grok" ? "/supergrok-activation.html" : "/redeem-start.html";
     }
 
@@ -769,6 +785,12 @@
           icon: "/assets/img/services/midjourney-card-v1.svg",
           price: 0,
         },
+        devin: {
+          name: "Devin",
+          href: "/devin",
+          icon: "/assets/img/services/devin-card-v2.webp?v=20260922-devin2",
+          price: 0,
+        },
         grok: {
           name: "SuperGrok",
           href: "/supergrok",
@@ -815,6 +837,8 @@
         payload?.serviceKey,
         payload?.productSlug,
         payload?.productTitle,
+        payload?.product?.slug,
+        payload?.product?.title,
         payload?.product,
       ];
       for (const signal of directSignals) {

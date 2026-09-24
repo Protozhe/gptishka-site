@@ -2870,6 +2870,14 @@
           return;
         }
         const deliveryMode = String(payload?.deliveryMode || '').toLowerCase();
+        if (deliveryMode === 'payment_link' && /^devin-(pro|max|teams)-1$/.test(String(payload?.productSlug || '').toLowerCase())) {
+          const url = new URL('/devin-link.html', window.location.origin);
+          url.searchParams.set('order_id', orderId);
+          if (orderLinkToken) url.searchParams.set('t', orderLinkToken);
+          leaveGuardBypass = true;
+          window.location.replace(url.toString());
+          return;
+        }
         applyActivationPayloadMode(payload, deliveryMode);
         if (isPerplexityManualFlow) {
           handlePaidOrder(orderId);

@@ -26,6 +26,7 @@ import { activationReviewsStore } from "./activation-reviews.store";
 import { buildActivationReviewModerationCallback } from "./activation-review-moderation";
 import { isMidjourneyProductSlug, validateMidjourneyPaymentLink } from "./midjourney-payment-link";
 import { isSunoPaymentLinkOrder, validateSunoPaymentLink } from "./suno-payment-link";
+import { isDevinProductSlug, validateDevinPaymentLink } from "./devin-payment-link";
 
 const MAX_CLIENT_TOKEN_LENGTH = 500_000;
 const MAX_ACTIVATION_START_ATTEMPTS = 3;
@@ -538,8 +539,9 @@ export const ordersService = {
     const isSupportTokenFlow = isSupportLikeDeliveryType(deliveryType) || isSupportActivationFlow(tokenActivationFlow);
 
     const isSunoLink = isSunoPaymentLinkOrder(productSlug, fullOrder?.orderDetails);
-    if (isMidjourneyProductSlug(productSlug) || isSunoLink) {
-      const serviceName = isSunoLink ? "Suno" : "Midjourney";
+    const isDevinLink = isDevinProductSlug(productSlug);
+    if (isMidjourneyProductSlug(productSlug) || isSunoLink || isDevinLink) {
+      const serviceName = isDevinLink ? "Devin" : isSunoLink ? "Suno" : "Midjourney";
       const submitted = hasStoredClientToken(normalizeActivationRecordForRead(activationStore.findByOrderId(order.id)));
       return {
         orderId: order.id,
@@ -781,7 +783,8 @@ export const ordersService = {
     const isPerplexityManual = productSlug === "perplexity-pro" && deliveryType === "manual_login";
     const isMidjourneyLink = isMidjourneyProductSlug(productSlug);
     const isSunoLink = isSunoPaymentLinkOrder(productSlug, orderWithItem?.orderDetails);
-    if (isMidjourneyLink || isSunoLink || isPerplexityManual) await assertPaidOrderAccess(orderId, orderToken);
+    const isDevinLink = isDevinProductSlug(productSlug);
+    if (isMidjourneyLink || isSunoLink || isDevinLink || isPerplexityManual) await assertPaidOrderAccess(orderId, orderToken);
     const productTitle = String(firstItem?.product?.title || (firstItem?.product as any)?.name || "").trim();
     const productKeyForFlow = canonicalProductKey(productSlug || String(firstItem?.productId || "chatgpt")) || productSlug || "chatgpt";
     const tokenActivationFlow = resolveTokenActivationFlowForProduct({
@@ -799,8 +802,10 @@ export const ordersService = {
     if (!tokenInfo.raw) reasons.push("Token is required");
     if (tokenInfo.raw && tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) reasons.push("Token is too long");
 
-    if (isMidjourneyLink || isSunoLink) {
-      const linkError = isSunoLink ? validateSunoPaymentLink(tokenInfo.raw) : validateMidjourneyPaymentLink(tokenInfo.raw);
+    if (isMidjourneyLink || isSunoLink || isDevinLink) {
+      const linkError = isDevinLink
+        ? validateDevinPaymentLink(tokenInfo.raw)
+        : isSunoLink ? validateSunoPaymentLink(tokenInfo.raw) : validateMidjourneyPaymentLink(tokenInfo.raw);
       if (linkError) reasons.push(linkError);
     } else if (isPerplexityManual) {
       if (!tokenInfo.json || typeof tokenInfo.json !== "object" || Array.isArray(tokenInfo.json) || !Object.keys(tokenInfo.json).length) {
@@ -814,7 +819,7 @@ export const ordersService = {
       }
     }
 
-    if (isSupportFlow && !isMidjourneyLink && !isSunoLink) {
+    if (isSupportFlow && !isMidjourneyLink && !isSunoLink && !isDevinLink) {
       const supportValidation = validateSupportSessionJwtToken(tokenInfo.extracted || tokenInfo.raw);
       reasons.push(...supportValidation.reasons);
     }
@@ -851,8 +856,8 @@ export const ordersService = {
       verificationState: existing?.verificationState || "unknown",
       lastProviderMessage:
         existing?.lastProviderMessage ||
-        (isMidjourneyLink || isSunoLink
-          ? `${isSunoLink ? "Suno" : "Midjourney"} checkout link submitted for manual payment`
+        (isMidjourneyLink || isSunoLink || isDevinLink
+          ? `${isDevinLink ? "Devin" : isSunoLink ? "Suno" : "Midjourney"} checkout link submitted for manual payment`
           : order.status === OrderStatus.PAID
             ? "Client token stored"
             : "Client token stored before payment confirmation"),

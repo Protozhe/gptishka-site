@@ -14,6 +14,7 @@ import { resolveProductDeliveryType } from "../../common/utils/product-delivery"
 import { resolveActivationVariant } from "../../common/utils/product-activation-variants";
 import { canonicalProductKey } from "../../common/utils/product-key";
 import { encryptManualLoginCredentials, ManualLoginCredentials } from "../../common/security/manual-login-credentials";
+import { isDevinProductSlug } from "../orders/devin-payment-link";
 
 const ORDER_SOURCE_SITE = "site";
 const ORDER_SOURCE_TELEGRAM = "telegram";
@@ -212,10 +213,13 @@ export const paymentsService = {
     const isDevinManualLogin =
       selectedVariant.deliveryType === "manual_login" &&
       (Array.isArray(product.tags) ? product.tags : []).some((tag) => String(tag || "").trim().toLowerCase() === "devin");
-    if (isDevinManualLogin && (!input.manualLoginCredentials?.login || !input.manualLoginCredentials?.password)) {
+    const isDevinPaymentLink = isDevinProductSlug(product.slug) &&
+      rawOrderDetails?.selection?.paymentLinkFlow === "devin-v1";
+    const isDevinCredentialsFlow = isDevinManualLogin && !isDevinPaymentLink;
+    if (isDevinCredentialsFlow && (!input.manualLoginCredentials?.login || !input.manualLoginCredentials?.password)) {
       throw new AppError("Devin account login and password are required", 422);
     }
-    const protectedAccount = isDevinManualLogin
+    const protectedAccount = isDevinCredentialsFlow
       ? {
           ...(rawOrderDetails?.account && typeof rawOrderDetails.account === "object" ? rawOrderDetails.account : {}),
           status: "has_account",

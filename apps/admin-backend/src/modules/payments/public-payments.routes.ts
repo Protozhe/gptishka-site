@@ -251,6 +251,8 @@ publicPaymentsRouter.post(
       ? "/store/vpn/activate"
       : /^midjourney-(basic|standard|pro)-1$/.test(String(created.productSlug || ""))
         ? "/midjourney-link.html"
+        : /^devin-(pro|max|teams)-1$/.test(String(created.productSlug || ""))
+          ? "/devin-link.html"
         : /^suno-(pro|premier)-1-month$/.test(String(created.productSlug || "")) &&
           Boolean(orderDetails && typeof orderDetails === "object" && !Array.isArray(orderDetails) &&
             (orderDetails as Record<string, any>).selection?.paymentLinkFlow === "suno-v1")
