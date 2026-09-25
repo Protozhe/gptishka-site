@@ -1772,6 +1772,7 @@
     const STEAM_KEY_DELIVERY_MESSAGE = 'Мы передаём ключи ежедневно с 10:00 до 20:00 по МСК. Среднее время ожидания — от 5 минут до 2 часов после оплаты. Если заказ оформлен ночью — передадим ключи утром. Максимальное время выполнения — 2 рабочих дня. Ключи будут переданы по указанной Steam trade-ссылке.';
     let isCredentialsDelivery = false;
     let isPerplexityManualFlow = false;
+    let isCodexCreditsFlow = false;
     let perplexitySessionSubmitted = false;
     let isSteamKeyDeliveryFlow = false;
     let isSupportTokenDelivery = false;
@@ -2315,6 +2316,7 @@
       const codexCreditsMatch = productKey.includes('codex')
         ? productKey.match(/\b(250|500|1000)\b/)
         : null;
+      isCodexCreditsFlow = Boolean(codexCreditsMatch);
       if (dedicatedSuperGrokPage) {
         if (redeemTitleEl) redeemTitleEl.textContent = 'Активировать SuperGrok';
         if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата подтверждена. Укажите ID аккаунта — остальное система выполнит автоматически.';
@@ -2472,6 +2474,7 @@
         },
       };
       const config = configs[normalizedKey] || configs.perplexity;
+      isCodexCreditsFlow = Boolean(config.codexCredits);
 
       document.body.classList.add('redeem-preview-mode');
       if (orderIdEl) orderIdEl.textContent = 'ПРЕДПРОСМОТР';
@@ -3155,7 +3158,9 @@
       const token = extractTokenFromInput(raw);
       const length = token.length;
       tokenInfo.textContent = `Символов: ${length}`;
-      if (!isSupportTokenDelivery && raw.startsWith('{') && token && token !== raw) {
+      if (isCodexCreditsFlow) {
+        tokenWarn.textContent = 'Вставьте полный JSON сеанса ChatGPT. Данные временно сохраняются для выполнения заказа.';
+      } else if (!isSupportTokenDelivery && raw.startsWith('{') && token && token !== raw) {
         tokenWarn.textContent = 'Обнаружен JSON: будет использован извлеченный токен.';
       } else if (isSupportTokenDelivery) {
         tokenWarn.textContent = isClaudeSupportFlow()
@@ -3275,9 +3280,11 @@
         lastValidateReason = reasons.join('; ');
 
         if (ok) {
-          tokenWarn.textContent = isSupportTokenDelivery
-            ? 'ID аккаунта проверен и сохранён для выполнения заказа.'
-            : 'Токен проверен и сохранён для выполнения заказа.';
+          tokenWarn.textContent = isCodexCreditsFlow
+            ? 'Данные сохранены. Нажмите «Активировать», чтобы запустить пополнение.'
+            : isSupportTokenDelivery
+              ? 'ID аккаунта проверен и сохранён для выполнения заказа.'
+              : 'Токен сохранён для выполнения заказа. Нажмите «Активировать».';
           tokenWarn.className = '';
         } else {
           tokenWarn.textContent = lastValidateReason || 'Токен не подходит';
