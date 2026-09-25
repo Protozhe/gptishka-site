@@ -103,6 +103,10 @@ export const cdkKeysStore = {
     return mapRow(row);
   },
 
+  async returnAssignedToUnused(id: string, orderId: string, actor?: { userId?: string }) {
+    return licenseService.returnAssignedToAvailable(id, orderId, actor);
+  },
+
   async removeUnused(id: string, actor?: { userId?: string }) {
     const result = await licenseService.archiveAvailable(id, actor);
     if (!result.ok) {

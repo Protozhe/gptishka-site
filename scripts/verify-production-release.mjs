@@ -13,6 +13,7 @@ const checks = [
   "scripts/verify-activation-video-removed.mjs",
   "scripts/verify-chongzhi-submit-timeout-recovery.mjs",
   "scripts/verify-aiee-codex-activation.mjs",
+  "scripts/verify-chatgpt-plus-dual-pool.mjs",
   "scripts/verify-aichongzhi-grok-activation.mjs",
   "scripts/verify-supergrok-activation-page.mjs",
   "scripts/verify-deferred-analytics.mjs",

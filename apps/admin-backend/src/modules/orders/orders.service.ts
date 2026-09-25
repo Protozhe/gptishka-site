@@ -55,12 +55,23 @@ const DEFAULT_CLAUDE_MAX20X_SUPPORT_URL = "https://quickplus.vip/public/max20x/"
 const DEFAULT_GROK_1M_SUPPORT_URL = "https://vip.sxzfd.com/grok";
 const DEFAULT_AICHONGZHI_URL = "https://aichongzhi.fun";
 const DEFAULT_AIEE_URL = "https://aiee.fun";
+const CHATGPT_PLUS_PRODUCT_KEY = "chatgpt-plus-1";
+const CHATGPT_PLUS_IOS_SITE_URL = "https://vip.sxzfd.com";
+const CHATGPT_PLUS_FREE_SITE_URL = "https://aiee.fun";
 const DEFAULT_SUPPORT_EMAIL = "";
 
 function isAieeProviderBase(value: unknown) {
   try {
     const hostname = new URL(String(value || "").trim()).hostname.toLowerCase();
     return hostname === "aiee.fun" || hostname.endsWith(".aiee.fun");
+  } catch {
+    return false;
+  }
+}
+
+function isIosProviderBase(value: unknown) {
+  try {
+    return new URL(String(value || "").trim()).hostname.toLowerCase() === "vip.sxzfd.com";
   } catch {
     return false;
   }
@@ -85,6 +96,26 @@ function validateAieeSessionJson(tokenInfo: { raw: string; json: Record<string, 
     return "ChatGPT session JSON does not include accessToken or sessionToken";
   }
   return "";
+}
+
+function resolveChatGptPlanType(tokenInfo: { json: Record<string, unknown> | null }) {
+  const account = tokenInfo.json?.account;
+  if (!account || typeof account !== "object" || Array.isArray(account)) return "";
+  return String((account as Record<string, unknown>).planType || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
+}
+
+function resolveChatGptPlusPool(tokenInfo: { json: Record<string, unknown> | null }) {
+  const planType = resolveChatGptPlanType(tokenInfo);
+  if (planType === "free") {
+    return { planType, siteUrl: CHATGPT_PLUS_FREE_SITE_URL, forceOverwrite: false };
+  }
+  if (["go", "plus", "prolight", "pro"].includes(planType)) {
+    return { planType, siteUrl: CHATGPT_PLUS_IOS_SITE_URL, forceOverwrite: true };
+  }
+  return null;
 }
 
 function publicActivationMessage(status: unknown, verificationState?: unknown) {
@@ -2107,6 +2138,92 @@ async function ensureActivationRecordForTokenFlow(
   return normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || skeleton;
 }
 
+async function selectChatGptPlusCandidate(
+  stored: ActivationRecord,
+  tokenInfo: { json: Record<string, unknown> | null }
+) {
+  if (canonicalProductKey(stored.productKey) !== CHATGPT_PLUS_PRODUCT_KEY) {
+    return { record: stored, forceOverwrite: false };
+  }
+
+  const pool = resolveChatGptPlusPool(tokenInfo);
+  if (!pool) {
+    throw new AppError(
+      "Не удалось определить Plan Type аккаунта. Вставьте полный JSON со страницы https://chatgpt.com/api/auth/session.",
+      400
+    );
+  }
+
+  const desiredSite = pool.siteUrl;
+  const candidates = Array.isArray(stored.reservedCandidates) ? stored.reservedCandidates : [];
+  const selectedCandidate = candidates.find((candidate) => candidate.activationSiteUrl === desiredSite) || null;
+  const currentMatches = Boolean(String(stored.cdk || "").trim()) && stored.activationSiteUrl === desiredSite;
+  let chosen = selectedCandidate
+    ? { keyId: selectedCandidate.keyId, code: selectedCandidate.code, activationSiteUrl: desiredSite }
+    : currentMatches
+      ? { keyId: "", code: stored.cdk, activationSiteUrl: desiredSite }
+      : null;
+
+  if (!chosen) {
+    const reserved = await activationStore.reserveCdkRecordForOrder({
+      productKey: CHATGPT_PLUS_PRODUCT_KEY,
+      activationSiteUrl: desiredSite,
+      orderId: stored.orderId,
+      email: stored.email,
+    });
+    if (!reserved) {
+      throw new AppError(
+        pool.planType === "free"
+          ? "Сейчас нет свободного ключа GPLUS для аккаунта Free."
+          : "Сейчас нет свободного ключа IOS для продления действующей подписки.",
+        409
+      );
+    }
+    chosen = { keyId: reserved.keyId, code: reserved.code, activationSiteUrl: reserved.activationSiteUrl || desiredSite };
+  }
+
+  const selectedAt = new Date().toISOString();
+  const interim: ActivationRecord = {
+    ...stored,
+    cdk: chosen.code,
+    activationSiteUrl: desiredSite,
+    status: "issued",
+    taskId: null,
+    verificationState: "unknown",
+    lastProviderMessage: `ChatGPT Plus pool selected for Plan Type ${pool.planType}`,
+    lastProviderCheckedAt: selectedAt,
+    updatedAt: selectedAt,
+  };
+  activationStore.upsert(interim);
+
+  const unreleased: NonNullable<ActivationRecord["reservedCandidates"]> = [];
+  for (const candidate of candidates) {
+    if (candidate.keyId === chosen.keyId) continue;
+    try {
+      const released = await licenseService.returnAssignedToAvailable(candidate.keyId, stored.orderId);
+      if (!released) unreleased.push(candidate);
+    } catch {
+      unreleased.push(candidate);
+    }
+  }
+
+  if (String(stored.cdk || "").trim() && !currentMatches && stored.cdk !== chosen.code) {
+    await licenseService.returnAssignedValueToAvailable(
+      CHATGPT_PLUS_PRODUCT_KEY,
+      stored.cdk,
+      stored.orderId
+    ).catch(() => false);
+  }
+
+  const selectedRecord: ActivationRecord = {
+    ...interim,
+    reservedCandidates: unreleased,
+    updatedAt: new Date().toISOString(),
+  };
+  activationStore.upsert(selectedRecord);
+  return { record: selectedRecord, forceOverwrite: pool.forceOverwrite };
+}
+
 async function startActivationUnsafe(orderId: string, token: string, orderToken?: string, trustedAdmin = false) {
   const activationInfo = await ordersService.getActivation(orderId, orderToken, trustedAdmin);
   assertTokenActivationDeliveryMode(activationInfo);
@@ -2144,6 +2261,13 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   });
   stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || latestBeforeStart;
 
+  if (stored.status === "success") {
+    throw new AppError("Activation is already completed", 409);
+  }
+
+  const chatGptPlusSelection = await selectChatGptPlusCandidate(stored, tokenInfo);
+  stored = chatGptPlusSelection.record;
+
   if (!String(stored.cdk || "").trim()) {
     const paidOrder = trustedAdmin
       ? await assertPaidOrderForAdmin(orderId)
@@ -2180,9 +2304,6 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   const userCandidates = buildUpstreamUserCandidates(tokenInfo);
   const tokenMeta = buildTokenMeta(tokenInfo);
 
-  if (stored.status === "success") {
-    throw new AppError("Activation is already completed", 409);
-  }
   if (isTokenBoundToAnotherFingerprint(stored.tokenMeta, tokenMeta)) {
     throw new AppError("Order is already bound to another token", 409);
   }
@@ -2203,6 +2324,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     activationFlow: String(activationInfo?.activationFlow || "").trim().toLowerCase(),
     productKey: String(stored.productKey || ""),
     activationSiteUrl: String(stored.activationSiteUrl || ""),
+    forceOverwrite: chatGptPlusSelection.forceOverwrite,
   });
   // For support-flow providers (SuperGrok/Claude), automatically rotate CDK once
   // when upstream reports "key already used"/validation-type errors.
@@ -2236,6 +2358,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
         activationFlow: String(activationInfo?.activationFlow || "").trim().toLowerCase(),
         productKey: String(stored.productKey || ""),
         activationSiteUrl: String(stored.activationSiteUrl || ""),
+        forceOverwrite: chatGptPlusSelection.forceOverwrite,
       });
     }
   }
@@ -2290,6 +2413,7 @@ async function startOutstockTaskWithRetry(input: {
   activationFlow?: string;
   productKey?: string;
   activationSiteUrl?: string;
+  forceOverwrite?: boolean;
 }) {
   const aichongzhiProduct = resolveAichongzhiProduct(input.productKey);
   if (aichongzhiProduct) {
@@ -2298,8 +2422,14 @@ async function startOutstockTaskWithRetry(input: {
   if (input.supportFlow) {
     return startQuickplusSupportTaskWithRetry(input);
   }
-  if (isCodexCreditsProductKey(input.productKey) || isAieeProviderBase(input.activationSiteUrl)) {
-    const baseUrl = isAieeProviderBase(input.activationSiteUrl) ? input.activationSiteUrl : DEFAULT_AIEE_URL;
+  if (
+    isCodexCreditsProductKey(input.productKey) ||
+    isAieeProviderBase(input.activationSiteUrl) ||
+    isIosProviderBase(input.activationSiteUrl)
+  ) {
+    const baseUrl = isAieeProviderBase(input.activationSiteUrl) || isIosProviderBase(input.activationSiteUrl)
+      ? input.activationSiteUrl
+      : DEFAULT_AIEE_URL;
     return startChongzhiTaskWithRetry(input, { baseUrl, sourceLabel: baseUrl });
   }
   if (String(env.ACTIVATION_PROVIDER || "nitro").trim().toLowerCase() === "chongzhi") {
@@ -3060,7 +3190,7 @@ async function fetchSxzfdGrokTaskPayload(input: { cdk?: string }) {
 
 function shouldRetryOutstockFailure(status: number, body: string) {
   const normalized = String(body || "").toLowerCase();
-  if (status >= 500 || status === 429 || status === 408) return true;
+  if (status === 0 || status >= 500 || status === 429 || status === 408) return true;
   if (status === 400 || status === 404 || status === 409) {
     return (
       normalized.includes("stock not found") ||
@@ -3169,15 +3299,24 @@ async function recoverCompletedChongzhiJsonTask(
 }
 
 async function startChongzhiJsonTask(
-  input: { cdk: string; userCandidates: any[] },
+  input: { cdk: string; userCandidates: any[]; forceOverwrite?: boolean },
   base: string,
   sourceLabel?: string
 ) {
   let verify;
   try {
     verify = await callChongzhiJsonApi(base, "verify_code", { cdk: input.cdk });
-  } catch {
-    return null;
+  } catch (error) {
+    return {
+      ok: false as const,
+      taskId: "",
+      status: 0,
+      body: error instanceof Error ? error.message : String(error || "verify_code failed"),
+      tries: 1,
+      immediateSuccess: false,
+      message: "Сервис активации временно не ответил при проверке ключа.",
+      providerPayload: null,
+    };
   }
 
   // Older compatible providers do not expose api.php. Keep the legacy flow for them.
@@ -3309,7 +3448,7 @@ async function startChongzhiJsonTask(
       sid,
       chatgpt_cookie: "",
       customer_notify_email: "",
-      force_overwrite: false,
+      force_overwrite: Boolean(input.forceOverwrite),
     });
   } catch (error) {
     // The provider can complete a recharge but leave the submit request open
@@ -3371,7 +3510,7 @@ async function startChongzhiJsonTask(
 }
 
 async function startChongzhiTaskWithRetry(
-  input: { cdk: string; deviceId: string; userCandidates: any[] },
+  input: { cdk: string; deviceId: string; userCandidates: any[]; forceOverwrite?: boolean },
   options?: { baseUrl?: string; sourceLabel?: string }
 ) {
   const base = String(options?.baseUrl || env.ACTIVATION_CHONGZHI_BASE_URL || "https://vip.sxzfd.com")
@@ -3398,8 +3537,19 @@ async function startChongzhiTaskWithRetry(
     };
   }
 
-  const jsonApiResult = await startChongzhiJsonTask(input, base, options?.sourceLabel);
-  if (jsonApiResult) return jsonApiResult;
+  let jsonApiResult: Awaited<ReturnType<typeof startChongzhiJsonTask>> = null;
+  const jsonApiAttempts = Math.min(3, ACTIVATION_OUTSTOCK_MAX_RETRIES);
+  for (let attempt = 1; attempt <= jsonApiAttempts; attempt += 1) {
+    jsonApiResult = await startChongzhiJsonTask(input, base, options?.sourceLabel);
+    if (!jsonApiResult) break;
+    if (jsonApiResult.ok || jsonApiResult.status !== 0) {
+      return { ...jsonApiResult, tries: attempt };
+    }
+    if (attempt < jsonApiAttempts) {
+      await sleep(Math.min(5_000, ACTIVATION_OUTSTOCK_RETRY_DELAY_MS));
+    }
+  }
+  if (jsonApiResult) return { ...jsonApiResult, tries: jsonApiAttempts };
 
   let lastStatus = 0;
   let lastBody = "";

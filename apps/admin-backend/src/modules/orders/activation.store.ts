@@ -8,6 +8,11 @@ export type ActivationRecord = {
   productKey: string;
   cdk: string;
   activationSiteUrl?: string | null;
+  reservedCandidates?: Array<{
+    keyId: string;
+    code: string;
+    activationSiteUrl: string;
+  }>;
   // Safe debug info (never store raw tokens).
   tokenMeta?: {
     kind: "raw" | "json_accessToken" | "json_sessionToken" | "json_token" | "json_unknown";
@@ -167,6 +172,7 @@ export const activationStore = {
     });
     return reserved
       ? {
+          keyId: reserved.id,
           code: reserved.code,
           activationSiteUrl: reserved.activationSiteUrl || "",
         }

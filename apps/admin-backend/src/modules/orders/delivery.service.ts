@@ -7,8 +7,12 @@ import { isTelegramOrderEmail } from "../../common/utils/telegram-order-email";
 import { prisma } from "../../config/prisma";
 import { resolveVpnProvisionPayload, vpnService } from "../../services/vpn.service";
 import { manualCredentialsStore } from "../products/manual-credentials.store";
-import { activationStore } from "./activation.store";
+import { ActivationRecord, activationStore } from "./activation.store";
 import { sendDirectCodeTelegram } from "./direct-code-notifications.service";
+
+const CHATGPT_PLUS_PRODUCT_KEY = "chatgpt-plus-1";
+const CHATGPT_PLUS_IOS_SITE_URL = "https://vip.sxzfd.com";
+const CHATGPT_PLUS_FREE_SITE_URL = "https://aiee.fun";
 
 export function hasTrustedPaidPayment(order: any) {
   if (!order || order.status !== OrderStatus.PAID) return false;
@@ -157,6 +161,60 @@ export async function deliverProduct(order: Order) {
 
   if (!productKey) {
     console.warn(`[delivery] product key not resolved for order=${order.id}`);
+    return;
+  }
+
+  const isWebsiteChatGptPlusDualPool =
+    productKey === CHATGPT_PLUS_PRODUCT_KEY &&
+    deliveryType === "activation" &&
+    !isTelegramOrderEmail(order.email);
+
+  if (isWebsiteChatGptPlusDualPool) {
+    const candidates: NonNullable<ActivationRecord["reservedCandidates"]> = [];
+    for (const siteUrl of [CHATGPT_PLUS_IOS_SITE_URL, CHATGPT_PLUS_FREE_SITE_URL]) {
+      const candidate = await activationStore.reserveCdkRecordForOrder({
+        productKey,
+        activationSiteUrl: siteUrl,
+        orderId: order.id,
+        email: order.email,
+      });
+      if (candidate) {
+        candidates.push({
+          keyId: candidate.keyId,
+          code: candidate.code,
+          activationSiteUrl: candidate.activationSiteUrl || siteUrl,
+        });
+      }
+    }
+
+    if (!candidates.length) {
+      console.warn(`[delivery] no ChatGPT Plus candidates available order=${order.id}`);
+      return;
+    }
+
+    const nowIso = new Date().toISOString();
+    activationStore.upsert({
+      ...(existing || {}),
+      orderId: order.id,
+      email: order.email,
+      productKey,
+      cdk: "",
+      activationSiteUrl: "",
+      reservedCandidates: candidates,
+      status: "issued",
+      taskId: null,
+      attempts: 0,
+      verificationState: "unknown",
+      lastProviderMessage: candidates.length === 2
+        ? "ChatGPT Plus activation candidates reserved"
+        : "One ChatGPT Plus activation candidate reserved; the other pool is empty",
+      lastProviderCheckedAt: nowIso,
+      lastProviderPayload: null,
+      issuedAt: nowIso,
+      updatedAt: nowIso,
+    });
+    console.info(`[delivery] reserved ${candidates.length} ChatGPT Plus candidate(s) order=${order.id}`);
+    await ensureBundleVpnAccess();
     return;
   }
 

@@ -402,6 +402,62 @@ export const licenseService = {
     return row;
   },
 
+  async returnAssignedToAvailable(
+    keyId: string,
+    orderId: string,
+    actor?: { userId?: string }
+  ) {
+    const id = String(keyId || "").trim();
+    const oid = String(orderId || "").trim();
+    if (!id) throw new Error("keyId is required");
+    if (!oid) throw new Error("orderId is required");
+
+    return prisma.$transaction(async (tx) => {
+      const updated = await tx.licenseKey.updateMany({
+        where: { id, orderId: oid, status: "used" },
+        data: {
+          status: "available",
+          orderId: null,
+          email: null,
+          reservedAt: null,
+          usedAt: null,
+          revokedAt: null,
+        },
+      });
+      if (updated.count !== 1) return false;
+
+      const auditUserId = await resolveAuditUserId(actor?.userId);
+      await tx.licenseKeyAuditLog.create({
+        data: {
+          keyId: id,
+          action: "return_available",
+          userId: auditUserId,
+          meta: asJson({ orderId: oid, reason: "unused_chatgpt_plus_candidate" }),
+        },
+      });
+      return true;
+    });
+  },
+
+  async returnAssignedValueToAvailable(
+    productKey: string,
+    keyValue: string,
+    orderId: string,
+    actor?: { userId?: string }
+  ) {
+    const pk = canonicalProductKey(productKey);
+    const value = normalizeKeyValue(keyValue);
+    const oid = String(orderId || "").trim();
+    if (!pk || !value || !oid) return false;
+
+    const row = await prisma.licenseKey.findFirst({
+      where: { productKey: pk, keyValue: value, orderId: oid, status: "used" },
+      select: { id: true },
+    });
+    if (!row) return false;
+    return licenseService.returnAssignedToAvailable(row.id, oid, actor);
+  },
+
   async archiveAvailable(keyId: string, actor?: { userId?: string }) {
     const id = String(keyId || "").trim();
     if (!id) throw new Error("keyId is required");
