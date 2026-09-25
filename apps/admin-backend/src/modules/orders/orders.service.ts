@@ -54,6 +54,7 @@ const DEFAULT_SUPPORT_URL = "https://quickplus.vip/public/grok/";
 const DEFAULT_CLAUDE_MAX20X_SUPPORT_URL = "https://quickplus.vip/public/max20x/";
 const DEFAULT_GROK_1M_SUPPORT_URL = "https://vip.sxzfd.com/grok";
 const DEFAULT_AICHONGZHI_URL = "https://aichongzhi.fun";
+const DEFAULT_AIEE_URL = "https://aiee.fun";
 const DEFAULT_SUPPORT_EMAIL = "";
 
 function isAieeProviderBase(value: unknown) {
@@ -63,6 +64,27 @@ function isAieeProviderBase(value: unknown) {
   } catch {
     return false;
   }
+}
+
+function isCodexCreditsProductKey(value: unknown) {
+  return /^codex-(250|500|1000)$/.test(String(value || "").trim().toLowerCase());
+}
+
+function validateAieeSessionJson(tokenInfo: { raw: string; json: Record<string, unknown> | null }) {
+  const session = tokenInfo.json;
+  if (!tokenInfo.raw.startsWith("{") || !session || typeof session !== "object" || Array.isArray(session)) {
+    return "Paste the complete ChatGPT session JSON, not a single token";
+  }
+  const user = session.user && typeof session.user === "object" && !Array.isArray(session.user)
+    ? session.user as Record<string, unknown>
+    : null;
+  if (!String(user?.email || session.email || "").trim()) {
+    return "ChatGPT session JSON does not include user email";
+  }
+  if (!String(session.accessToken || session.sessionToken || "").trim()) {
+    return "ChatGPT session JSON does not include accessToken or sessionToken";
+  }
+  return "";
 }
 
 function publicActivationMessage(status: unknown, verificationState?: unknown) {
@@ -234,6 +256,7 @@ function normalizeActivationRecordForRead(record: ActivationRecord | null | unde
 
 function isChongzhiActivationRecord(record: ActivationRecord | null | undefined) {
   if (!record) return false;
+  if (isCodexCreditsProductKey(record.productKey)) return true;
   if (isAieeProviderBase(record.activationSiteUrl || "")) return true;
   if (String(record.taskId || "").startsWith("chongzhi-")) return true;
   const productKey = String(record.productKey || "").trim().toLowerCase();
@@ -781,6 +804,9 @@ export const ordersService = {
       if (!tokenInfo.json || typeof tokenInfo.json !== "object" || Array.isArray(tokenInfo.json) || !Object.keys(tokenInfo.json).length) {
         reasons.push("Paste the complete Perplexity session JSON");
       }
+    } else if (isCodexCreditsProductKey(productSlug)) {
+      const sessionError = validateAieeSessionJson(tokenInfo);
+      if (sessionError) reasons.push(sessionError);
     } else if (tokenInfo.raw.startsWith("{")) {
       if (!tokenInfo.json) {
         reasons.push("Token JSON is invalid");
@@ -864,7 +890,12 @@ export const ordersService = {
     if (tokenInfo.raw && tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) reasons.push("Token is too long");
     if (isTokenBoundToAnotherFingerprint(stored.tokenMeta, tokenMeta)) reasons.push("Order is already bound to another token");
 
-    if (tokenInfo.raw.startsWith("{")) {
+    if (isCodexCreditsProductKey(activationInfo?.productSlug || activationInfo?.product)) {
+      const sessionError = validateAieeSessionJson(tokenInfo);
+      if (sessionError) reasons.push(sessionError);
+    }
+
+    if (!isCodexCreditsProductKey(activationInfo?.productSlug || activationInfo?.product) && tokenInfo.raw.startsWith("{")) {
       if (!tokenInfo.json) {
         reasons.push("Token JSON is invalid");
       } else if (tokenInfo.extracted === tokenInfo.raw) {
@@ -1026,7 +1057,10 @@ export const ordersService = {
     if (isChongzhiActivationRecord(stored) && String(stored?.cdk || "").trim()) {
       let current = stored;
       try {
-        const checked = await fetchChongzhiCodeStatus(String(stored?.cdk || ""), stored?.activationSiteUrl || "");
+        const statusBaseUrl = isCodexCreditsProductKey(stored?.productKey)
+          ? (isAieeProviderBase(stored?.activationSiteUrl) ? stored?.activationSiteUrl : DEFAULT_AIEE_URL)
+          : stored?.activationSiteUrl;
+        const checked = await fetchChongzhiCodeStatus(String(stored?.cdk || ""), statusBaseUrl || "");
         updateActivationFromChongzhiCodePayload(orderId, checked);
       } catch (error) {
         updateActivationProviderCheckError(orderId, error);
@@ -1449,7 +1483,10 @@ export const ordersService = {
     if (activation && options?.forceCheck && !activationAlreadyConfirmed) {
       if (isChongzhiActivationRecord(activation) && activation.cdk) {
         try {
-          const checked = await fetchChongzhiCodeStatus(activation.cdk, activation.activationSiteUrl || "");
+          const statusBaseUrl = isCodexCreditsProductKey(activation.productKey)
+            ? (isAieeProviderBase(activation.activationSiteUrl) ? activation.activationSiteUrl : DEFAULT_AIEE_URL)
+            : activation.activationSiteUrl;
+          const checked = await fetchChongzhiCodeStatus(activation.cdk, statusBaseUrl || "");
           updateActivationFromChongzhiCodePayload(id, checked);
         } catch (error) {
           updateActivationProviderCheckError(id, error);
@@ -2077,6 +2114,10 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   const tokenInfo = parseClientTokenInput(token);
   if (!tokenInfo.raw) throw new AppError("Token is required", 400);
   if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
+  if (isCodexCreditsProductKey(activationInfo?.productSlug || stored.productKey)) {
+    const sessionError = validateAieeSessionJson(tokenInfo);
+    if (sessionError) throw new AppError(sessionError, 400);
+  }
   const isSupportFlow = isSupportTokenActivationMode(activationInfo);
   const isChongzhiProvider = String(env.ACTIVATION_PROVIDER || "nitro").trim().toLowerCase() === "chongzhi";
   if (!isSupportFlow && isChongzhiProvider && !tokenInfo.raw.startsWith("{")) {
@@ -2199,6 +2240,16 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     }
   }
   if (!createResult.ok) {
+    const failedAt = new Date().toISOString();
+    const latestFailed = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
+    const providerName = isCodexCreditsProductKey(latestFailed.productKey) ? "AIEE" : "Activation provider";
+    activationStore.upsert({
+      ...latestFailed,
+      lastProviderMessage: `${providerName} task creation failed (HTTP ${createResult.status || 0}; requests ${createResult.tries || 0}).`,
+      lastProviderCheckedAt: failedAt,
+      lastProviderPayload: null,
+      updatedAt: failedAt,
+    });
     throw new AppError("Не удалось запустить активацию автоматически. Повторите попытку или обратитесь в поддержку.", 502, {
       upstreamStatus: createResult.status || 0,
       retries: createResult.tries,
@@ -2246,6 +2297,10 @@ async function startOutstockTaskWithRetry(input: {
   }
   if (input.supportFlow) {
     return startQuickplusSupportTaskWithRetry(input);
+  }
+  if (isCodexCreditsProductKey(input.productKey) || isAieeProviderBase(input.activationSiteUrl)) {
+    const baseUrl = isAieeProviderBase(input.activationSiteUrl) ? input.activationSiteUrl : DEFAULT_AIEE_URL;
+    return startChongzhiTaskWithRetry(input, { baseUrl, sourceLabel: baseUrl });
   }
   if (String(env.ACTIVATION_PROVIDER || "nitro").trim().toLowerCase() === "chongzhi") {
     return startChongzhiTaskWithRetry(input, {
@@ -3834,6 +3889,9 @@ function parseClientTokenInput(input: string) {
 
   try {
     const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return { raw, extracted: raw, json: null as Record<string, unknown> | null };
+    }
     const accessToken = typeof parsed.accessToken === "string" ? parsed.accessToken.trim() : "";
     const sessionToken = typeof parsed.sessionToken === "string" ? parsed.sessionToken.trim() : "";
     const token = typeof parsed.token === "string" ? parsed.token.trim() : "";
