@@ -12,6 +12,11 @@ html body#storefrontBody [data-service-page="perplexity"] .perplexity-credit-not
   line-height: 1.5;
 }
 
+html body#storefrontBody [data-service-page="perplexity"] .perplexity-credit-notice,
+html body#storefrontBody [data-service-page="perplexity"] .perplexity-credit-notice :is(p, strong) {
+  font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif !important;
+}
+
 html body#storefrontBody [data-service-page="perplexity"] .perplexity-credit-notice > span {
   flex-shrink: 0;
 }
