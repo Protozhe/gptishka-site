@@ -35,7 +35,12 @@ html body#storefrontBody #gptishka-support-widget .support-widget__panel { right
 #storefrontHeader .header-quick-link { min-height: 44px !important; height: auto !important; padding: 0 10px !important; font-size: 13px !important; color: #cbd2da !important; background: transparent !important; box-shadow: none !important; border: 0 !important; border-radius: 8px !important; }
 #storefrontHeader .header-quick-link:hover,
 #storefrontHeader .header-quick-link.is-current-section { background: #2d343c !important; color: #fff !important; }
+/* The active section is indicated by its background, without a separate dot. */
+#storefrontHeader .header-quick-link.is-current-section::before,
+#storefrontHeader .header-quick-link[aria-current="page"]::before { content: none !important; display: none !important; }
 #storefrontHeader .header-quick-link.header-social-link { width: 36px !important; min-width: 36px !important; max-width: 36px !important; flex-basis: 36px !important; padding: 0 !important; margin: 0 !important; }
+/* Legacy icon translations shift the glyph away from the hover background. */
+html body#storefrontBody #storefrontHeader .header-social-icon { transform: none !important; }
 html body#storefrontBody #storefrontHeader .header-quick-link.header-social-link.header-social-link--vk { color: #0077ff !important; }
 html body#storefrontBody #storefrontHeader .header-quick-link.header-social-link.header-social-link--telegram { color: #26a5e4 !important; }
 #storefrontHeader .header-tools.header-actions { grid-column: 4 !important; grid-row: 1 !important; }
