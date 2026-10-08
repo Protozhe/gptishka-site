@@ -239,3 +239,11 @@ html body#storefrontBody.redeem-flow :is(.redeem-guide summary,.redeem-btn,.rede
 @media (max-width: 760px) {
   html body#storefrontBody.redeem-flow :is(.redeem-subtitle,.redeem-label,#tokenGuideList > li,.redeem-manual-copy,.redeem-status,.redeem-perplexity-nextstep p) { font-size: 17px !important; }
 }
+/* The redesign keeps navigation visible while scrolling. Legacy auto-hide
+   classes must therefore never make its visible controls unclickable. */
+html body#storefrontBody > header.gptishka-canonical-header,
+html body#storefrontBody > header.gptishka-canonical-header.header-hidden {
+  transform: none !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}

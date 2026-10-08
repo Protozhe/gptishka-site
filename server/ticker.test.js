@@ -19,4 +19,6 @@ test("normalizePublicTickerEntries removes private local emails before applying 
   assert.ok(entries[1].email.endsWith(".net"), entries[1].email);
   assert.equal(entries.some(entry => entry.email.includes(".local")), false);
   assert.equal(entries.some(entry => entry.email.includes("telegram")), false);
+  assert.notEqual(entries[0].email, "tg_3@example.com", "Public statistics must mask real customer addresses");
+  assert.notEqual(entries[1].email, "buyer@example.net", "Public statistics must mask system addresses too");
 });

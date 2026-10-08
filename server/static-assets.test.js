@@ -2,9 +2,10 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
+const crypto = require("node:crypto");
 
 const ROOT_DIR = path.resolve(__dirname, "..");
-const STOREFRONT_BUNDLE_VERSION = "20260721-heavy-cards-webp1";
+const STOREFRONT_BUNDLE_VERSION = "sha256-" + crypto.createHash("sha256").update(fs.readFileSync(path.join(ROOT_DIR, "assets/js/app.min.js"))).digest("hex").slice(0, 16);
 const VPN_CARD_VERSION = "20260721-cards-webp1";
 
 function readProjectFile(relativePath) {

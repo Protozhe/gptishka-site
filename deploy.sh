@@ -86,7 +86,7 @@ git -C "$RELEASE" archive "$COMMIT" | tar -x -C "$TEST_DIR"
 ln -s "$(readlink -f "$RELEASE/node_modules")" "$TEST_DIR/node_modules"
 (
   cd "$TEST_DIR"
-  export NODE_ENV=test ADMIN_BACKEND_URL=http://127.0.0.1:9
+  export NODE_ENV=test ADMIN_BACKEND_URL=http://127.0.0.1:9 ADMIN_BACKEND_FALLBACK_URLS=http://127.0.0.1:9
   node --test server/*.test.js apps/admin-backend/scripts/*.test.js
   find apps/admin-backend/src -name '*.test.ts' -print0 | xargs -0 node --import tsx --test
 )

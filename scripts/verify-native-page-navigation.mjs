@@ -36,6 +36,8 @@ for (const file of catalogPages) {
 }
 
 const catalogCss = read("assets/css/home-catalog-pages.css");
+const designCss = read("assets/css/storefront-design.css");
+assert.match(designCss, /html body#storefrontBody > header\.gptishka-canonical-header\.header-hidden\s*\{[\s\S]*?transform:\s*none\s*!important;[\s\S]*?opacity:\s*1\s*!important;[\s\S]*?pointer-events:\s*auto\s*!important;/, "Visible sticky navigation must remain clickable after legacy auto-hide fires");
 assert.match(catalogCss, /\.catalog-page\s*\{[\s\S]*?animation:\s*none;/, "Catalog page still fades in");
 assert.match(catalogCss, /\.catalog-grid--directory \.ai-directory-card\s*\{[\s\S]*?opacity:\s*1;[\s\S]*?animation:\s*none;/, "Catalog cards still reveal after load");
 

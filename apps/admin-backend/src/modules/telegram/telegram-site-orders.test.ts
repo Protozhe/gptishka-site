@@ -444,12 +444,12 @@ function testTelegramKnownLabelsDoNotExposeInternalValues() {
 
   assert.match(text, /Доставка: автоматическая активация/);
   assert.match(text, /Доставка: VPN-доступ/);
-  assert.match(text, /Доставка: логин и пароль/);
+  assert.match(text, /Доставка: готовый цифровой доступ/);
   assert.match(text, /Доставка: ручная обработка менеджером/);
   assert.match(text, /Доставка: через поддержку/);
   assert.match(text, /Доставка: активация Claude через поддержку/);
-  assert.match(text, /Доставка: без передачи логина/);
-  assert.match(text, /Доставка: с логином пользователя/);
+  assert.match(text, /Доставка: самостоятельная активация/);
+  assert.match(text, /8\. With Login[\s\S]*Доставка: через поддержку/);
   assert.match(text, /Активация: VPN готов/);
   assert.match(text, /Активация: данные для входа готовы/);
   assert.match(text, /Активация: ожидает ручной обработки/);

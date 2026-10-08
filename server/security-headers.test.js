@@ -123,13 +123,14 @@ test("admin csp is stricter than storefront csp", () => {
   assert.ok(storefront["media-src"].includes("data:"));
 });
 
-test("admin csp allows current external and hashed inline assets without unsafe-inline scripts", () => {
+test("admin csp allows current external assets and forbids inline scripts", () => {
   const admin = getCspDirectivesForPath("/admin");
   const hashes = inlineScriptHashes(path.join(__dirname, "..", "apps", "admin-ui", "index.html"));
 
-  assert.equal(hashes.length, 2);
-  for (const hash of hashes) {
-    assert.ok(admin["script-src"].includes(hash), hash);
+  assert.equal(hashes.length, 0);
+  for (const name of ["admin-analytics.js", "admin-errors.js"]) {
+    assert.match(adminIndexHtml(), new RegExp(`/admin/${name.replaceAll(".", "\\.")}\\?v=sha256-`));
+    assert.ok(fs.statSync(path.join(__dirname, "..", "apps", "admin-ui", "public", name)).size > 0);
   }
   assert.equal(admin["script-src"].includes("'unsafe-inline'"), false);
   assert.ok(admin["script-src"].includes("https://top-fwz1.mail.ru"));

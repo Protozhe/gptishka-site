@@ -1,18 +1,9 @@
 <!doctype html>
 <html lang="en">
   <head>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://top-fwz1.mail.ru; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://top-fwz1.mail.ru; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self'; form-action 'self'; upgrade-insecure-requests">
 <!-- Top.Mail.Ru counter -->
-<script type="text/javascript">
-var _tmr = window._tmr || (window._tmr = []);
-_tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
-(function (d, w, id) {
-  if (d.getElementById(id)) return;
-  var ts = d.createElement("script"); ts.type = "text/javascript"; ts.async = true; ts.id = id;
-  ts.src = "https://top-fwz1.mail.ru/js/code.js";
-  var f = function () {var s = d.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ts, s);};
-  if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); }
-})(document, window, "tmr-code");
-</script>
+<script src="/admin/admin-analytics.js?v=sha256-b80f41fbcd30e5f8"></script>
 <!-- /Top.Mail.Ru counter -->
 <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -24,30 +15,7 @@ _tmr.push({id: "3744660", type: "pageView", start: (new Date()).getTime()});
   <body>
     <noscript><div><img src="https://top-fwz1.mail.ru/counter?id=3744660;js=na" style="position:absolute;left:-9999px;" alt="Top.Mail.Ru" /></div></noscript>
     <div id="root"></div>
-    <script>
-      (function () {
-        function printError(kind, message) {
-          const pre = document.createElement("pre");
-          pre.style.padding = "16px";
-          pre.style.margin = "16px";
-          pre.style.background = "#fff";
-          pre.style.border = "1px solid #fecaca";
-          pre.style.borderRadius = "12px";
-          pre.style.color = "#991b1b";
-          pre.style.whiteSpace = "pre-wrap";
-          pre.textContent = "[admin-ui " + kind + "] " + message;
-          document.body.appendChild(pre);
-        }
-        window.addEventListener("error", function (event) {
-          printError("error", (event && event.message) || "Unknown error");
-        });
-        window.addEventListener("unhandledrejection", function (event) {
-          var reason = event && event.reason;
-          var text = typeof reason === "string" ? reason : (reason && reason.message) || JSON.stringify(reason);
-          printError("promise", text || "Unhandled rejection");
-        });
-      })();
-    </script>
+    <script src="/admin/admin-errors.js?v=sha256-c9cacded5a956eb0"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

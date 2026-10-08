@@ -1,7 +1,4 @@
-const ADMIN_INLINE_SCRIPT_HASHES = [
-  "'sha256-KkVaDlptswTDyvzOLDAq/AxTW+JG7HR5Uaeu/UZfjNg='",
-  "'sha256-j/AzaJP4t+MaBTLn/KnjQJ2fP42g6/Q8LyxwMRUXL9k='",
-];
+const ADMIN_INLINE_SCRIPT_HASHES = [];
 
 function parseReportOnly(value, fallback) {
   if (value === undefined || value === null || value === "") return fallback;

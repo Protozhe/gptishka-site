@@ -591,6 +591,16 @@ function isPublicTickerEmailDisplayable(email) {
   return true;
 }
 
+function normalizePublicTickerEntries(rows, limit = TICKER_EVENT_LIMIT) {
+  return (Array.isArray(rows) ? rows : [])
+    .filter(row => isPublicTickerEmailDisplayable(String(row?.email || "")))
+    .slice(0, Math.max(0, Number(limit) || 0))
+    .map(row => ({
+      source: String(row?.source || "real").toLowerCase() === "system" ? "system" : "real",
+      email: maskEmail(row.email),
+    }));
+}
+
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
 }
@@ -2030,14 +2040,7 @@ function createApp() {
       if (!response.ok) return null;
       const payload = await response.json();
       const sales = Number(payload?.sales || 0);
-      const tickerEntries = Array.isArray(payload?.tickerEntries)
-        ? payload.tickerEntries
-            .map(entry => ({
-              email: String(entry?.email || "").trim(),
-              source: "real",
-            }))
-            .filter(entry => isPublicTickerEmailDisplayable(entry.email))
-        : [];
+      const tickerEntries = normalizePublicTickerEntries(payload?.tickerEntries);
       return {
         sales: Number.isFinite(sales) && sales >= 0 ? sales : 0,
         tickerEntries,
@@ -2147,13 +2150,7 @@ function createApp() {
         );
       }
 
-      const tickerEntries = buyerRows.filter(row => isPublicTickerEmailDisplayable(String(row?.email || ""))).map(row => {
-        const source = String(row?.source || "real").toLowerCase() === "system" ? "system" : "real";
-        return {
-          source,
-          email: maskEmail(String(row?.email || "")),
-        };
-      });
+      const tickerEntries = normalizePublicTickerEntries(buyerRows);
 
       return {
         sales: realSales + systemSales,
@@ -2754,7 +2751,7 @@ if (require.main === module) {
     });
 }
 
-module.exports = { startServer };
+module.exports = { startServer, normalizePublicTickerEntries };
 
 
 
