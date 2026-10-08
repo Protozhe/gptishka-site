@@ -305,7 +305,7 @@
 
   function selectedPaymentMethod() {
     var checked = orderForm ? orderForm.querySelector('input[name="paymentMethod"]:checked') : null;
-    return checked && checked.value === "enot" ? "enot" : "lava";
+    return checked && ["pally", "enot", "lava"].includes(checked.value) ? checked.value : "pally";
   }
 
   function syncPaymentAria() {

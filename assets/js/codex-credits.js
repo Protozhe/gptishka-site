@@ -140,7 +140,7 @@
     const option = selectedOption();
     const credits = Number(option.dataset.slug && option.value || 0);
       const slug = String(option.dataset.slug || "");
-    const paymentMethod = String(form.elements.paymentMethod.value || "lava").toLowerCase();
+    const paymentMethod = String(form.elements.paymentMethod.value || "pally").toLowerCase();
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setStatus(text.invalidEmail, "error"); emailInput.focus(); return;

@@ -1,12 +1,84 @@
+html { scrollbar-gutter: stable; }
+
+/* Shared header geometry wins over legacy page-specific !important rules.
+ * Repeated canonical class supplies specificity without depending on page type.
+ * Desktop and responsive values below use the homepage as their reference. */
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header,
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header * {
+  font-family: Manrope, system-ui, -apple-system, "Segoe UI", sans-serif !important;
+  box-sizing: border-box;
+  letter-spacing: normal;
+}
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .nav.nav-shell {
+  max-width: none !important;
+  border-radius: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  max-width: max-content !important;
+  gap: 10px !important;
+  border-radius: 999px !important;
+  white-space: nowrap !important;
+}
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-links {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+  white-space: nowrap !important;
+}
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-tools,
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-actions {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .lang-current {
+  height: 44px !important;
+  min-height: 42px !important;
+  padding: 8px 14px !important;
+  gap: 9px !important;
+  border-radius: 999px !important;
+}
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .language-menu__chevron {
+  margin: -3px 2px 0 3px !important;
+}
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .language-menu-host.open .language-menu__chevron {
+  margin-top: 3px !important;
+}
+@media (min-width: 1181px) {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .logo-link { grid-column: 1 !important; grid-row: 1 !important; order: 0 !important; }
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill { grid-column: 2 !important; grid-row: 1 !important; order: 0 !important; }
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-links { grid-column: 3 !important; grid-row: 1 !important; order: 0 !important; }
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-tools,
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-actions { grid-row: 1 !important; order: 0 !important; }
+}
+
 /*
  * Shared navigation state for the unified header.
  * Loaded after page-specific styles by site-header-unify.js.
  */
 
-html body header.gptishka-unified-header .header-quick-link.is-current-section,
-html body header.gptishka-unified-header .header-quick-link[aria-current="page"],
-html body header.gptishka-canonical-header .header-quick-link.is-current-section,
-html body header.gptishka-canonical-header .header-quick-link[aria-current="page"] {
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.is-current-section,
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link[aria-current="page"],
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.is-current-section,
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link[aria-current="page"] {
   color: rgba(255, 255, 255, 0.98) !important;
   font-weight: 900 !important;
   line-height: 1 !important;
@@ -17,31 +89,34 @@ html body header.gptishka-canonical-header .header-quick-link[aria-current="page
     0 10px 28px rgba(20, 180, 112, 0.12) !important;
 }
 
-html body header.gptishka-unified-header .header-quick-link.is-current-section::before,
-html body header.gptishka-unified-header .header-quick-link[aria-current="page"]::before,
-html body header.gptishka-canonical-header .header-quick-link.is-current-section::before,
-html body header.gptishka-canonical-header .header-quick-link[aria-current="page"]::before {
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.is-current-section::before,
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link[aria-current="page"]::before,
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.is-current-section::before,
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link[aria-current="page"]::before {
   content: "";
   width: 6px;
   height: 6px;
-  margin-right: 8px;
+  position: absolute;
+  left: calc(50% - 3px);
+  bottom: 2px;
+  margin-right: 0;
   flex: 0 0 auto;
   border-radius: 50%;
   background: #35e58d;
   box-shadow: 0 0 0 4px rgba(53, 229, 141, 0.1), 0 0 16px rgba(53, 229, 141, 0.42);
 }
 
-html body header,
-html body header.gptishka-unified-header,
-html body header.gptishka-canonical-header {
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header,
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header,
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header {
   position: sticky !important;
   top: 0 !important;
   color: rgba(255, 255, 255, 0.9) !important;
 }
 
-html body header .header-product-pill,
-html body header.gptishka-unified-header .header-product-pill,
-html body header.gptishka-canonical-header .header-product-pill {
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill,
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill,
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill {
   color: #03110a !important;
   font-size: 15px !important;
   font-weight: 800 !important;
@@ -55,9 +130,9 @@ html body header.gptishka-canonical-header .header-product-pill {
     0 14px 34px rgba(24, 185, 120, 0.22) !important;
 }
 
-html body header .header-quick-link:not(.header-social-link):not(.is-current-section):not([aria-current="page"]),
-html body header.gptishka-unified-header .header-quick-link:not(.header-social-link):not(.is-current-section):not([aria-current="page"]),
-html body header.gptishka-canonical-header .header-quick-link:not(.header-social-link):not(.is-current-section):not([aria-current="page"]) {
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link:not(.header-social-link):not(.is-current-section):not([aria-current="page"]),
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link:not(.header-social-link):not(.is-current-section):not([aria-current="page"]),
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link:not(.header-social-link):not(.is-current-section):not([aria-current="page"]) {
   position: relative !important;
   color: rgba(255, 255, 255, 0.66) !important;
   font-weight: 900 !important;
@@ -69,9 +144,9 @@ html body header.gptishka-canonical-header .header-quick-link:not(.header-social
     0 8px 18px rgba(0, 0, 0, 0.12) !important;
 }
 
-html body header .lang-current,
-html body header.gptishka-unified-header .lang-current,
-html body header.gptishka-canonical-header .lang-current {
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .lang-current,
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .lang-current,
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .lang-current {
   color: rgba(255, 255, 255, 0.92) !important;
   font-size: 13px !important;
   font-weight: 850 !important;
@@ -83,9 +158,9 @@ html body header.gptishka-canonical-header .lang-current {
     inset 0 1px 0 rgba(255, 255, 255, 0.09) !important;
 }
 
-html body header .header-quick-link.header-social-link,
-html body header .header-quick-link.header-social-link:hover,
-html body header .header-quick-link.header-social-link:focus-visible {
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.header-social-link,
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.header-social-link:hover,
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.header-social-link:focus-visible {
   width: 40px !important;
   min-width: 40px !important;
   max-width: 40px !important;
@@ -101,37 +176,37 @@ html body header .header-quick-link.header-social-link:focus-visible {
   -webkit-backdrop-filter: none !important;
 }
 
-html body header .header-quick-link.header-social-link {
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.header-social-link {
   transition: color 180ms ease, transform 180ms ease !important;
 }
 
-html body header .header-quick-link.header-social-link--vk {
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.header-social-link--vk {
   color: #0077ff !important;
 }
 
-html body header .header-quick-link.header-social-link--telegram {
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.header-social-link--telegram {
   color: #229ed9 !important;
 }
 
-html body header .header-social-link--vk + .header-social-link--telegram {
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-social-link--vk + .header-social-link--telegram {
   margin-left: -8px !important;
 }
 
-html body header .header-quick-link.header-social-link--vk:hover,
-html body header .header-quick-link.header-social-link--vk:focus-visible {
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.header-social-link--vk:hover,
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.header-social-link--vk:focus-visible {
   color: #2d91ff !important;
   transform: translateY(-2px) !important;
   outline: none !important;
 }
 
-html body header .header-quick-link.header-social-link--telegram:hover,
-html body header .header-quick-link.header-social-link--telegram:focus-visible {
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.header-social-link--telegram:hover,
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.header-social-link--telegram:focus-visible {
   color: #4ab3e6 !important;
   transform: translateY(-2px) !important;
   outline: none !important;
 }
 
-html body header .header-social-icon {
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-social-icon {
   display: block;
   width: 24px !important;
   min-width: 24px !important;
@@ -140,23 +215,23 @@ html body header .header-social-icon {
   fill: currentColor !important;
 }
 
-html body header .header-social-icon.header-social-icon--telegram {
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-social-icon.header-social-icon--telegram {
   width: 20px !important;
   min-width: 20px !important;
   height: 20px !important;
   flex-basis: 20px !important;
 }
 
-html body header .header-social-icon.header-social-icon--vk {
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-social-icon.header-social-icon--vk {
   transform: translateX(3px);
 }
 
-html body header .header-social-icon.header-social-icon--telegram {
+html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-social-icon.header-social-icon--telegram {
   transform: translateX(-3px);
 }
 
 @media (min-width: 1181px) {
-  html body header.gptishka-canonical-header {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header {
     position: sticky !important;
     top: 0 !important;
     z-index: 50 !important;
@@ -175,18 +250,18 @@ html body header .header-social-icon.header-social-icon--telegram {
     transform: none !important;
   }
 
-  html body header.gptishka-canonical-header.header-hidden {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.header-hidden {
     transform: translate3d(0, -120%, 0) !important;
     pointer-events: none !important;
   }
 
-  html body header .nav.nav-shell,
-  html body header.gptishka-canonical-header .nav.nav-shell,
-  html body:has(main.redeem-page) header .nav.nav-shell,
-  html body:has(main.bundle-activation-page) header .nav.nav-shell,
-  html body:has(main.vpn-activation-page) header .nav.nav-shell,
-  html body:has(main.vpn-activation-wrap) header .nav.nav-shell,
-  html body.vpn-activation-flow header .nav.nav-shell {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .nav.nav-shell,
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .nav.nav-shell,
+  html body:has(main.redeem-page) header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .nav.nav-shell,
+  html body:has(main.bundle-activation-page) header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .nav.nav-shell,
+  html body:has(main.vpn-activation-page) header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .nav.nav-shell,
+  html body:has(main.vpn-activation-wrap) header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .nav.nav-shell,
+  html body.vpn-activation-flow header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .nav.nav-shell {
     width: 100% !important;
     min-height: 54px !important;
     height: 54px !important;
@@ -205,7 +280,7 @@ html body header .header-social-icon.header-social-icon--telegram {
     -webkit-backdrop-filter: none !important;
   }
 
-  html body header.gptishka-canonical-header .logo-link.logo-link {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .logo-link.logo-link {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: flex-start !important;
@@ -216,7 +291,7 @@ html body header .header-social-icon.header-social-icon--telegram {
     padding: 0 !important;
   }
 
-  html body header.gptishka-canonical-header .logo-img.logo-img {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .logo-img.logo-img {
     display: block !important;
     width: auto !important;
     height: 32px !important;
@@ -226,41 +301,41 @@ html body header .header-social-icon.header-social-icon--telegram {
     filter: brightness(0) invert(1) drop-shadow(0 12px 24px rgba(0, 0, 0, 0.32)) !important;
   }
 
-  html body header .header-product-pill,
-  html body header.gptishka-unified-header .header-product-pill,
-  html body header.gptishka-canonical-header .header-product-pill {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill,
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill,
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill {
     min-height: 42px !important;
     height: 42px !important;
     padding: 7px 18px 7px 9px !important;
   }
 
-  html body header .header-product-pill__logo,
-  html body header.gptishka-unified-header .header-product-pill__logo,
-  html body header.gptishka-canonical-header .header-product-pill__logo {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill__logo,
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill__logo,
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill__logo {
     width: 28px !important;
     height: 28px !important;
   }
 
-  html body header .header-quick-links,
-  html body header.gptishka-unified-header .header-quick-links,
-  html body header.gptishka-canonical-header .header-quick-links,
-  html body:has(main.redeem-page) header .header-quick-links,
-  html body:has(main.bundle-activation-page) header .header-quick-links,
-  html body:has(main.vpn-activation-page) header .header-quick-links,
-  html body:has(main.vpn-activation-wrap) header .header-quick-links,
-  html body.vpn-activation-flow header .header-quick-links {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-links,
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-links,
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-links,
+  html body:has(main.redeem-page) header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-links,
+  html body:has(main.bundle-activation-page) header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-links,
+  html body:has(main.vpn-activation-page) header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-links,
+  html body:has(main.vpn-activation-wrap) header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-links,
+  html body.vpn-activation-flow header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-links {
     justify-self: end !important;
     justify-content: flex-end !important;
     margin-left: auto !important;
     margin-right: 0 !important;
   }
 
-  html body header .header-tools,
-  html body header .header-actions,
-  html body header.gptishka-unified-header .header-tools,
-  html body header.gptishka-unified-header .header-actions,
-  html body header.gptishka-canonical-header .header-tools,
-  html body header.gptishka-canonical-header .header-actions {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-tools,
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-actions,
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-tools,
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-actions,
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-tools,
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-actions {
     grid-column: 4 !important;
     justify-self: end !important;
     gap: 10px !important;
@@ -268,8 +343,8 @@ html body header .header-social-icon.header-social-icon--telegram {
 }
 
 @media (min-width: 1181px) and (max-width: 1320px) {
-  html body header .header-quick-link:not(.header-social-link),
-  html body header.gptishka-unified-header .header-quick-link:not(.header-social-link) {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link:not(.header-social-link),
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link:not(.header-social-link) {
     min-height: 36px !important;
     padding: 0 11px !important;
     font-size: 12px !important;
@@ -277,8 +352,8 @@ html body header .header-social-icon.header-social-icon--telegram {
 }
 
 @media (min-width: 1321px) {
-  html body header .header-quick-link:not(.header-social-link),
-  html body header.gptishka-unified-header .header-quick-link:not(.header-social-link) {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link:not(.header-social-link),
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link:not(.header-social-link) {
     min-height: 38px !important;
     padding: 0 14px !important;
     font-size: 13px !important;
@@ -291,7 +366,7 @@ html body header .header-social-icon.header-social-icon--telegram {
  * control available in a compact two-row layout on portrait devices.
  */
 @media (min-width: 861px) and (max-width: 1180px) {
-  html body header.gptishka-canonical-header {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header {
     position: sticky !important;
     top: 0 !important;
     z-index: 50 !important;
@@ -305,7 +380,7 @@ html body header .header-social-icon.header-social-icon--telegram {
     box-shadow: none !important;
   }
 
-  html body header.gptishka-canonical-header .nav.nav-shell {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .nav.nav-shell {
     width: 100% !important;
     min-height: 50px !important;
     height: 50px !important;
@@ -320,7 +395,7 @@ html body header .header-social-icon.header-social-icon--telegram {
     box-shadow: none !important;
   }
 
-  html body header.gptishka-canonical-header .logo-link.logo-link {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .logo-link.logo-link {
     grid-column: 1 !important;
     grid-row: 1 !important;
     order: 0 !important;
@@ -331,14 +406,14 @@ html body header .header-social-icon.header-social-icon--telegram {
     padding: 0 !important;
   }
 
-  html body header.gptishka-canonical-header .logo-img.logo-img {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .logo-img.logo-img {
     width: auto !important;
     height: 29px !important;
     max-width: none !important;
     max-height: 29px !important;
   }
 
-  html body header.gptishka-canonical-header .header-product-pill {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill {
     grid-column: 2 !important;
     grid-row: 1 !important;
     order: 0 !important;
@@ -351,20 +426,20 @@ html body header .header-social-icon.header-social-icon--telegram {
     font-size: 12px !important;
   }
 
-  html body header.gptishka-canonical-header .header-product-pill__logo {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill__logo {
     width: 25px !important;
     height: 25px !important;
     flex: 0 0 25px !important;
   }
 
-  html body header.gptishka-canonical-header .header-product-pill span {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill span {
     min-width: 0 !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
   }
 
-  html body header.gptishka-canonical-header .header-quick-links {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-links {
     grid-column: 3 !important;
     grid-row: 1 !important;
     order: 0 !important;
@@ -379,13 +454,13 @@ html body header .header-social-icon.header-social-icon--telegram {
     border-top: 0 !important;
   }
 
-  html body header.gptishka-canonical-header .header-quick-link:not(.header-social-link) {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link:not(.header-social-link) {
     min-height: 34px !important;
     padding: 0 9px !important;
     font-size: 11px !important;
   }
 
-  html body header.gptishka-canonical-header .header-quick-link.header-social-link {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.header-social-link {
     width: 34px !important;
     min-width: 34px !important;
     max-width: 34px !important;
@@ -394,14 +469,14 @@ html body header .header-social-icon.header-social-icon--telegram {
     flex: 0 0 34px !important;
   }
 
-  html body header.gptishka-canonical-header .header-social-icon.header-social-icon--vk {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-social-icon.header-social-icon--vk {
     width: 21px !important;
     min-width: 21px !important;
     height: 21px !important;
     transform: translateX(2px) !important;
   }
 
-  html body header.gptishka-canonical-header .header-social-icon.header-social-icon--telegram {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-social-icon.header-social-icon--telegram {
     width: 18px !important;
     min-width: 18px !important;
     height: 18px !important;
@@ -409,8 +484,8 @@ html body header .header-social-icon.header-social-icon--telegram {
     transform: translateX(-2px) !important;
   }
 
-  html body header.gptishka-canonical-header .header-tools,
-  html body header.gptishka-canonical-header .header-actions {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-tools,
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-actions {
     grid-column: 4 !important;
     grid-row: 1 !important;
     order: 0 !important;
@@ -419,7 +494,7 @@ html body header .header-social-icon.header-social-icon--telegram {
     gap: 6px !important;
   }
 
-  html body header.gptishka-canonical-header .lang-current {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .lang-current {
     min-height: 40px !important;
     padding: 7px 11px !important;
     font-size: 12px !important;
@@ -433,7 +508,7 @@ html body header .header-social-icon.header-social-icon--telegram {
     overflow-x: clip;
   }
 
-  html body header.gptishka-canonical-header {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header {
     position: sticky !important;
     top: 0 !important;
     z-index: 50 !important;
@@ -447,7 +522,7 @@ html body header .header-social-icon.header-social-icon--telegram {
     box-shadow: none !important;
   }
 
-  html body header.gptishka-canonical-header .nav.nav-shell {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .nav.nav-shell {
     width: 100% !important;
     min-height: 0 !important;
     height: auto !important;
@@ -465,7 +540,7 @@ html body header .header-social-icon.header-social-icon--telegram {
     overflow: visible !important;
   }
 
-  html body header.gptishka-canonical-header .logo-link.logo-link {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .logo-link.logo-link {
     grid-column: 1 !important;
     grid-row: 1 !important;
     order: 0 !important;
@@ -477,7 +552,7 @@ html body header .header-social-icon.header-social-icon--telegram {
     padding: 0 !important;
   }
 
-  html body header.gptishka-canonical-header .logo-img.logo-img {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .logo-img.logo-img {
     display: block !important;
     width: auto !important;
     height: 28px !important;
@@ -486,8 +561,8 @@ html body header .header-social-icon.header-social-icon--telegram {
     object-fit: contain !important;
   }
 
-  html body header.gptishka-canonical-header .header-tools,
-  html body header.gptishka-canonical-header .header-actions {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-tools,
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-actions {
     grid-column: 2 !important;
     grid-row: 1 !important;
     order: 0 !important;
@@ -498,7 +573,7 @@ html body header .header-social-icon.header-social-icon--telegram {
     padding: 0 !important;
   }
 
-  html body header.gptishka-canonical-header .lang-current {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .lang-current {
     min-height: 38px !important;
     height: 38px !important;
     gap: 7px !important;
@@ -507,7 +582,7 @@ html body header .header-social-icon.header-social-icon--telegram {
     border-radius: 999px !important;
   }
 
-  html body header.gptishka-canonical-header .header-product-pill {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill {
     grid-column: 1 !important;
     grid-row: 2 !important;
     order: 0 !important;
@@ -521,20 +596,20 @@ html body header .header-social-icon.header-social-icon--telegram {
     font-size: 11px !important;
   }
 
-  html body header.gptishka-canonical-header .header-product-pill__logo {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill__logo {
     width: 24px !important;
     height: 24px !important;
     flex: 0 0 24px !important;
   }
 
-  html body header.gptishka-canonical-header .header-product-pill span {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill span {
     min-width: 0 !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
   }
 
-  html body header.gptishka-canonical-header .header-quick-links {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-links {
     grid-column: 2 !important;
     grid-row: 2 !important;
     order: 0 !important;
@@ -550,14 +625,14 @@ html body header .header-social-icon.header-social-icon--telegram {
     border-top: 0 !important;
   }
 
-  html body header.gptishka-canonical-header .header-quick-link:not(.header-social-link) {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link:not(.header-social-link) {
     min-height: 32px !important;
     height: 32px !important;
     padding: 0 8px !important;
     font-size: 10px !important;
   }
 
-  html body header.gptishka-canonical-header .header-quick-link.header-social-link {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.header-social-link {
     width: 30px !important;
     min-width: 30px !important;
     max-width: 30px !important;
@@ -566,14 +641,14 @@ html body header .header-social-icon.header-social-icon--telegram {
     flex: 0 0 30px !important;
   }
 
-  html body header.gptishka-canonical-header .header-social-icon.header-social-icon--vk {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-social-icon.header-social-icon--vk {
     width: 20px !important;
     min-width: 20px !important;
     height: 20px !important;
     transform: translateX(1px) !important;
   }
 
-  html body header.gptishka-canonical-header .header-social-icon.header-social-icon--telegram {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-social-icon.header-social-icon--telegram {
     width: 17px !important;
     min-width: 17px !important;
     height: 17px !important;
@@ -581,34 +656,34 @@ html body header .header-social-icon.header-social-icon--telegram {
     transform: translateX(-1px) !important;
   }
 
-  html body header.gptishka-canonical-header .header-social-link--vk + .header-social-link--telegram {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-social-link--vk + .header-social-link--telegram {
     margin-left: -5px !important;
   }
 }
 
 @media (max-width: 520px) {
-  html body header.gptishka-canonical-header {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header {
     width: calc(100% - 20px) !important;
     margin-top: 6px !important;
   }
 
-  html body header.gptishka-canonical-header .nav.nav-shell {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .nav.nav-shell {
     grid-template-rows: 40px 36px !important;
     column-gap: 6px !important;
     row-gap: 5px !important;
   }
 
-  html body header.gptishka-canonical-header .logo-link.logo-link {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .logo-link.logo-link {
     height: 40px !important;
   }
 
-  html body header.gptishka-canonical-header .logo-img.logo-img {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .logo-img.logo-img {
     height: 26px !important;
     max-width: 132px !important;
     max-height: 26px !important;
   }
 
-  html body header.gptishka-canonical-header .lang-current {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .lang-current {
     min-height: 36px !important;
     height: 36px !important;
     gap: 6px !important;
@@ -616,8 +691,8 @@ html body header .header-social-icon.header-social-icon--telegram {
     font-size: 11px !important;
   }
 
-  html body header.gptishka-canonical-header .lang-current img,
-  html body header.gptishka-canonical-header .lang-current .lang-flag-img {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .lang-current img,
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .lang-current .lang-flag-img {
     width: 27px !important;
     height: 18px !important;
     flex: 0 0 27px !important;
@@ -628,7 +703,7 @@ html body header .header-social-icon.header-social-icon--telegram {
     box-shadow: none !important;
   }
 
-  html body header.gptishka-canonical-header .header-product-pill {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill {
     max-width: 152px !important;
     min-height: 34px !important;
     height: 34px !important;
@@ -636,20 +711,20 @@ html body header .header-social-icon.header-social-icon--telegram {
     font-size: 10px !important;
   }
 
-  html body header.gptishka-canonical-header .header-product-pill__logo {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill__logo {
     width: 22px !important;
     height: 22px !important;
     flex-basis: 22px !important;
   }
 
-  html body header.gptishka-canonical-header .header-quick-link:not(.header-social-link) {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link:not(.header-social-link) {
     min-height: 30px !important;
     height: 30px !important;
     padding: 0 6px !important;
     font-size: 9px !important;
   }
 
-  html body header.gptishka-canonical-header .header-quick-link.header-social-link {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.header-social-link {
     width: 27px !important;
     min-width: 27px !important;
     max-width: 27px !important;
@@ -658,13 +733,13 @@ html body header .header-social-icon.header-social-icon--telegram {
     flex-basis: 27px !important;
   }
 
-  html body header.gptishka-canonical-header .header-social-icon.header-social-icon--vk {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-social-icon.header-social-icon--vk {
     width: 18px !important;
     min-width: 18px !important;
     height: 18px !important;
   }
 
-  html body header.gptishka-canonical-header .header-social-icon.header-social-icon--telegram {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-social-icon.header-social-icon--telegram {
     width: 15px !important;
     min-width: 15px !important;
     height: 15px !important;
@@ -673,35 +748,35 @@ html body header .header-social-icon.header-social-icon--telegram {
 }
 
 @media (max-width: 360px) {
-  html body header.gptishka-canonical-header .logo-img.logo-img {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .logo-img.logo-img {
     max-width: 124px !important;
   }
 
-  html body header.gptishka-canonical-header .header-product-pill {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill {
     max-width: 140px !important;
   }
 
-  html body header.gptishka-canonical-header .header-quick-link:not(.header-social-link) {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link:not(.header-social-link) {
     padding-inline: 5px !important;
     font-size: 8.5px !important;
   }
 }
 
 @media (max-width: 340px) {
-  html body header.gptishka-canonical-header .logo-img.logo-img {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .logo-img.logo-img {
     max-width: 116px !important;
   }
 
-  html body header.gptishka-canonical-header .header-product-pill {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-product-pill {
     max-width: 122px !important;
   }
 
-  html body header.gptishka-canonical-header .header-quick-link:not(.header-social-link) {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link:not(.header-social-link) {
     padding-inline: 4px !important;
     font-size: 8px !important;
   }
 
-  html body header.gptishka-canonical-header .header-quick-link.header-social-link {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.header-social-link {
     width: 24px !important;
     min-width: 24px !important;
     max-width: 24px !important;
@@ -710,7 +785,7 @@ html body header .header-social-icon.header-social-icon--telegram {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html body header .header-quick-link.header-social-link {
+  html body header.gptishka-canonical-header.gptishka-canonical-header.gptishka-canonical-header .header-quick-link.header-social-link {
     transition: none !important;
   }
 }

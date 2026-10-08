@@ -2500,7 +2500,7 @@ textarea.chatgpt-order-field__control {
   cursor: pointer;
 }
 
-.service-faq-question span {
+.service-faq-question__toggle {
   width: 12px;
   height: 12px;
   border-right: 2px solid rgba(29, 39, 58, 0.62);
@@ -2509,7 +2509,7 @@ textarea.chatgpt-order-field__control {
   transition: transform 0.2s ease;
 }
 
-.service-faq-item.active .service-faq-question span {
+.service-faq-item.active .service-faq-question__toggle {
   transform: rotate(225deg);
 }
 

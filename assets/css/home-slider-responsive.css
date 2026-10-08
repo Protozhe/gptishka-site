@@ -1,0 +1,162 @@
+/* Keep navigation inside the clipped banner and reserve space for its artwork. */
+body.home-wide-body .home-opening-frame .home-promo-slider__controls {
+  display: block;
+  inset: 0 14px;
+}
+
+body.home-wide-body .home-opening-frame .home-promo-slider__arrow {
+  --promo-arrow-x: 0;
+  position: absolute;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 14px;
+  background: rgba(10, 14, 16, .78);
+  border: 1px solid rgba(255, 255, 255, .28);
+  font-size: 30px;
+  transform: translateY(-50%);
+}
+
+body.home-wide-body .home-opening-frame .home-promo-slider__arrow:first-child {
+  left: 0;
+}
+
+body.home-wide-body .home-opening-frame .home-promo-slider__arrow:last-child {
+  right: 0;
+}
+
+body.home-wide-body .home-opening-frame .home-promo-slider__arrow:hover {
+  transform: translateY(-50%);
+  background: rgba(31, 39, 42, .94);
+}
+
+body.home-wide-body .home-opening-frame .home-promo-slider__dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  width: max-content;
+  max-width: calc(100% - 112px);
+  margin: 0;
+  transform: translateX(-50%);
+}
+
+/* Vote labels and the result bar participate in normal layout at every width. */
+body.home-wide-body .home-opening-frame .home-ai-battle__stats {
+  margin: 0 auto;
+  transform: none;
+}
+
+body.home-wide-body .home-opening-frame .home-ai-battle__choice-copy small {
+  max-width: 100%;
+  overflow: visible;
+  white-space: normal;
+  text-overflow: clip;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 1100px) {
+  body.home-wide-body .home-opening-frame {
+    grid-template-rows: auto auto;
+    min-height: 0;
+  }
+
+  body.home-wide-body .home-opening-frame > .home-hero-wide {
+    height: clamp(540px, 70vw, 600px);
+  }
+
+  body.home-wide-body .home-opening-frame .home-promo-slide--ai-battle {
+    align-items: flex-start;
+    padding: 32px 64px 190px !important;
+    background-size: 100% 100%, 100% 100%, 100% auto;
+    background-position: center, center, center bottom;
+  }
+
+  body.home-wide-body .home-opening-frame .home-ai-battle {
+    width: 100%;
+    margin: 0 auto;
+    gap: 16px;
+    justify-content: flex-start;
+  }
+
+  body.home-wide-body .home-opening-frame .home-ai-battle__title {
+    font-size: clamp(30px, 4.6vw, 44px);
+  }
+
+  body.home-wide-body .home-opening-frame .home-ai-battle__description {
+    margin-top: 14px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+}
+
+@media (max-width: 760px) {
+  body.home-wide-body .home-opening-frame .home-promo-slider__controls {
+    inset-inline: 10px;
+  }
+
+  body.home-wide-body .home-opening-frame .home-promo-slider__arrow,
+  body.home-wide-body .home-opening-frame .home-promo-slider__arrow:hover {
+    top: auto;
+    bottom: 14px;
+    transform: none;
+  }
+
+  body.home-wide-body .home-opening-frame .home-promo-slider__dots {
+    bottom: 31px;
+  }
+
+  body.home-wide-body .home-opening-frame > .home-hero-wide {
+    height: 520px;
+  }
+
+  body.home-wide-body .home-opening-frame .home-promo-slide--ai-battle {
+    --promo-bg:
+      linear-gradient(180deg, rgba(0, 0, 0, .08), rgba(0, 0, 0, .08)),
+      linear-gradient(180deg, #020504 0%, rgba(2, 5, 4, .94) 48%, rgba(2, 5, 4, .08) 80%),
+      url("/assets/img/home/ai-battle-logo-bg-v2.webp?v=20260810-ai-battle-logo1") center bottom / 100% auto no-repeat;
+    padding: 26px 32px 130px !important;
+    background-position: center, center, center calc(100% - 52px);
+  }
+
+  body.home-wide-body .home-opening-frame .home-ai-battle__title {
+    grid-template-columns: max-content 29px max-content;
+    gap: 6px;
+    font-size: clamp(22px, 6vw, 34px);
+  }
+
+  body.home-wide-body .home-opening-frame .home-ai-battle__title-claude {
+    color: #ff8b61;
+  }
+
+  body.home-wide-body .home-opening-frame .home-ai-battle__versus {
+    width: 29px;
+    height: 29px;
+  }
+
+  body.home-wide-body .home-opening-frame .home-ai-battle__description {
+    max-width: 100%;
+    margin-top: 14px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  body.home-wide-body .home-opening-frame .home-ai-battle__choice {
+    min-height: 148px;
+    padding: 8px 0;
+    gap: 8px;
+  }
+
+  body.home-wide-body .home-opening-frame .home-ai-battle__choice-copy {
+    gap: 3px;
+  }
+
+  body.home-wide-body .home-opening-frame .home-ai-battle__total,
+  body.home-wide-body .home-opening-frame .home-ai-battle__status {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+}

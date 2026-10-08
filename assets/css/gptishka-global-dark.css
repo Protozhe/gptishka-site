@@ -1063,7 +1063,7 @@ html body:has(main.service-page) .service-faq-question {
   color: rgba(255, 255, 255, 0.94) !important;
 }
 
-html body:has(main.service-page) .service-faq-question span {
+html body:has(main.service-page) .service-faq-question__toggle {
   border-color: rgba(53, 229, 141, 0.86) !important;
 }
 

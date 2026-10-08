@@ -52,3 +52,8 @@ _head_*
 
 # Malformed backup directory accidentally created with a single-space name
 /\ /
+
+# All mutable state is linked from /var/lib/gptishka-runtime.
+data/
+apps/admin-backend/data/
+uploads/

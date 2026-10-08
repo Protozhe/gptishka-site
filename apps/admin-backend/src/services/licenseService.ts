@@ -14,6 +14,34 @@ function normalizeKeyValue(value: string) {
   return String(value || "").trim().toUpperCase();
 }
 
+const GEMINI_ACTIVATION_LINK_PRODUCT_KEY = "gemini-pro-18";
+
+function isGeminiActivationLinkPool(productKey: string) {
+  return canonicalProductKey(productKey) === GEMINI_ACTIVATION_LINK_PRODUCT_KEY;
+}
+
+function normalizeKeyValueForProduct(productKey: string, value: string) {
+  const raw = String(value || "").trim();
+  return isGeminiActivationLinkPool(productKey) ? raw : raw.toUpperCase();
+}
+
+function validateGeminiActivationLinks(productKey: string, values: string[]) {
+  if (!isGeminiActivationLinkPool(productKey)) return;
+
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    try {
+      const url = new URL(value);
+      if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("unsupported protocol");
+    } catch {
+      throw new AppError(
+        `Строка ${index + 1}: для Gemini нужна полная ссылка, начинающаяся с http:// или https://`,
+        400
+      );
+    }
+  }
+}
+
 function normalizeEmail(value: string | null | undefined) {
   const v = String(value || "").trim().toLowerCase();
   return v || null;
@@ -41,10 +69,11 @@ export const licenseService = {
     meta?: Record<string, unknown> & { activationSiteUrl?: string }
   ) {
     const pk = canonicalProductKey(productKey);
-    const kv = normalizeKeyValue(keyValue);
+    const kv = normalizeKeyValueForProduct(pk, keyValue);
     const activationSiteUrl = normalizeActivationSiteUrl(meta?.activationSiteUrl);
     if (!pk) throw new Error("productKey is required");
     if (!kv) throw new Error("keyValue is required");
+    validateGeminiActivationLinks(pk, [kv]);
     const poolError = validateChatGptPlusKeyImport(pk, activationSiteUrl, [kv]);
     if (poolError) throw new AppError(poolError, 400);
 
@@ -80,10 +109,11 @@ export const licenseService = {
   ) {
     const pk = canonicalProductKey(productKey);
     const activationSiteUrl = normalizeActivationSiteUrl(options?.activationSiteUrl);
-    const normalized = (codes || []).map(normalizeKeyValue).filter(Boolean);
+    const normalized = (codes || []).map((code) => normalizeKeyValueForProduct(pk, code)).filter(Boolean);
     const unique = Array.from(new Set(normalized));
 
     if (!pk) throw new Error("productKey is required");
+    validateGeminiActivationLinks(pk, unique);
     const poolError = validateChatGptPlusKeyImport(pk, activationSiteUrl, unique);
     if (poolError) throw new AppError(poolError, 400);
     if (unique.length === 0) {
@@ -283,7 +313,7 @@ export const licenseService = {
 
     const email = normalizeEmail(input.email);
     const ts = now();
-    const exclude = normalizeKeyValue(String(opts?.excludeKeyValue || ""));
+    const exclude = normalizeKeyValueForProduct(pk, String(opts?.excludeKeyValue || ""));
 
     const auditUserId = await resolveAuditUserId(actor?.userId);
 
@@ -452,7 +482,7 @@ export const licenseService = {
     actor?: { userId?: string }
   ) {
     const pk = canonicalProductKey(productKey);
-    const value = normalizeKeyValue(keyValue);
+    const value = normalizeKeyValueForProduct(pk, keyValue);
     const oid = String(orderId || "").trim();
     if (!pk || !value || !oid) return false;
 

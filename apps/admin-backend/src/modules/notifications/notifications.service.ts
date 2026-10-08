@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { env } from "../../config/env";
+import { buildOrderActivationRecoveryLink } from "../orders/activation-recovery.service";
 
 function getTransporter() {
   if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASSWORD) {
@@ -89,9 +90,8 @@ export async function sendOrderPaidEmail(
   }
 
   const siteOrigin = resolveSiteOrigin();
-  // Activation access is protected by a link secret. For emails, the storefront success redirect includes it.
-  // If SMTP is enabled, this URL will still work for legacy orders without a secret.
-  const activationUrl = `${siteOrigin}/redeem-start.html?order_id=${encodeURIComponent(payload.orderId)}`;
+  const recovery = await buildOrderActivationRecoveryLink(payload.orderId);
+  const activationUrl = recovery.activationUrl;
   const successUrl = `${siteOrigin}/success.html?order_id=${encodeURIComponent(payload.orderId)}`;
   const supportContact = "https://t.me/gptishkasupport";
   const fromAddress = resolveFromAddress();
@@ -320,6 +320,26 @@ export async function sendTelegramNotification(
     ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
   });
   return Number((result as any)?.message_id) || null;
+}
+
+export async function sendOrderPaidManagerNotification(payload: {
+  orderId: string;
+  email: string;
+  amount: number;
+  currency: string;
+}) {
+  const recovery = await buildOrderActivationRecoveryLink(payload.orderId);
+  return sendTelegramNotification(
+    [
+      "Оплата подтверждена",
+      `Заказ: ${payload.orderId}`,
+      `Клиент: ${payload.email}`,
+      `Сумма: ${Number(payload.amount).toLocaleString("ru-RU")} ${payload.currency}`,
+      "",
+      "Резервная ссылка активации для клиента:",
+      recovery.activationUrl,
+    ].join("\n")
+  );
 }
 
 export async function answerTelegramCallbackQuery(callbackQueryId: string, text: string) {

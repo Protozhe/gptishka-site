@@ -8,11 +8,13 @@ on:
 
 concurrency:
   group: deploy-production
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   verify:
     runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.candidate.outputs.commit }}
     steps:
       - name: Check out approved production candidate
         uses: actions/checkout@v4
@@ -27,6 +29,10 @@ jobs:
       - name: Run production regression checks
         run: npm run verify:production
 
+      - name: Record verified candidate
+        id: candidate
+        run: echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
   deploy:
     needs: verify
     runs-on: ubuntu-latest
@@ -39,7 +45,17 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script_stop: true
+          command_timeout: 15m
           script: |
-            set -e
-            cd /var/www/gptishka-new
-            DEPLOY_BRANCH=production bash ./deploy.sh
+            set -euo pipefail
+            REPO=/var/www/gptishka-releases/repository.git
+            if [ ! -d "$REPO" ]; then
+              git clone --mirror https://github.com/Protozhe/gptishka-site.git "$REPO"
+            fi
+            git -C "$REPO" fetch origin refs/heads/production:refs/heads/production
+            COMMIT="${{ needs.verify.outputs.commit }}"
+            test "$(git -C "$REPO" rev-parse production)" = "$COMMIT"
+            SCRIPT="$(mktemp /tmp/gptishka-deploy.XXXXXX)"
+            trap 'rm -f "$SCRIPT"' EXIT
+            git -C "$REPO" show "$COMMIT:deploy.sh" > "$SCRIPT"
+            DEPLOY_BRANCH=production DEPLOY_COMMIT="$COMMIT" bash "$SCRIPT"

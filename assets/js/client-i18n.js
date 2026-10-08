@@ -1,12 +1,18 @@
 (() => {
   const url = new URL(window.location.href);
-  const englishMode = url.searchParams.get("lang") === "en";
+  const englishMode = /^\/en(?:\/|$)/.test(url.pathname) || url.searchParams.get("lang") === "en";
   if (!englishMode) return;
 
   document.documentElement.lang = "en";
   document.documentElement.dataset.clientLanguage = "en";
 
   const translations = new Map([
+    ["Отзывы покупателей — GPTishka", "Customer reviews — GPTishka"],
+    ["iTunes и App Store", "iTunes & App Store"],
+    ["Отзыв", "Review"],
+    ["Покупатель", "Customer"],
+    ["Отзыв из Telegram", "Review from Telegram"],
+    ["Отзыв из VK", "Review from VK"],
     ["Главная", "Home"],
     ["Тарифы", "Plans"],
     ["Как это работает", "How it works"],
@@ -247,7 +253,14 @@
     }
   };
 
+  translations.set("Дополнительные настройки подарка", "Additional gift settings");
+  // Shared checkout copy; never translate values entered by the customer.
+  Object.entries({"Тарифные планы": "Subscription plans", "Фильтры тарифов": "Plan options", "Быстрые разделы GPTishka": "GPTishka navigation", "Контакты": "Contact details", "Для статуса заказа и связи": "For order updates and support", "Почта": "Email", "Нужна для связи по заказу": "Used for order updates", "Сюда придет вся информация по заказу": "Order information will be sent here", "Дополнительно": "Additional options", "Оформить в подарок": "Send as a gift", "Покажем поля получателя после включения": "Enable to enter the recipient's details", "🎁 Хотите устроить сюрприз?": "Sending a surprise?", "Вы выбираете подписку и указываете получателя. Мы сами свяжемся с ним, уточним данные и подключим подписку без передачи логинов и паролей.": "Choose a subscription and enter the recipient's details. We will contact them to arrange activation without sharing login credentials.", "Укажите получателя и контакт — остальные детали можно оставить на менеджера или раскрыть ниже.": "Enter the recipient and their contact. Leave the remaining details to our team or expand the options below.", "Данные подарка": "Gift details", "Отправитель": "Sender", "Получатель": "Recipient", "Укажем в подарке": "Shown with the gift", "Где прислать подарок": "How to send the gift", "Выберите способ": "Choose a method", "Электронная почта": "Email", "Контакт получателя": "Recipient's contact", "Дата отправки": "Delivery date", "Время отправки (МСК)": "Delivery time (Moscow time)", "Подарки отправляем с 10:00 до 20:00 МСК.": "Gifts are sent between 10:00 and 20:00 Moscow time.", "Ставьте время минимум +4 часа от оформления. Если заказ ночью, доставка должна быть не раньше 14:00.": "Allow at least 4 hours after placing the order. For overnight orders, choose a delivery time of 14:00 or later.", "Сообщение получателю": "Message to the recipient", "Пришлём вместе с подарком": "Sent with the gift", "Пришёл по рекомендации": "Referred by a friend", "Добавим контакт друга для скидки": "Enter your friend's contact for the referral discount", "Пришли от друга? Дайте ему 5% скидки за ваш первый заказ — напишите его контакт ниже.": "Referred by a friend? Give them a 5% discount for your first order by entering their contact below.", "Кто пригласил": "Who referred you", "Комментарий к заказу": "Order comment", "Комментарий": "Comment", "У меня есть промокод": "I have a promo code", "Введите промокод": "Enter a promo code", "Применить": "Apply", "Оплата": "Payment", "Выберите платёжный шлюз": "Choose a payment provider", "Способ оплаты": "Payment method", "Сроки выполнения заказа": "Order processing times", "Мы обрабатываем заказы ежедневно с 08:00 до 20:00 по МСК.": "Our team processes orders daily from 08:00 to 20:00 Moscow time.", "Заказы с автоматическим подключением выполняются 24/7.": "Automatic activation runs 24/7.", "Среднее время ожидания — от 5 минут до 2 часов после оплаты.": "The usual wait is between 5 minutes and 2 hours after payment.", "Нажимая кнопку, вы соглашаетесь с": "By pressing the button, you agree to the", "офертой": "public offer", "и": "and", "политикой конфиденциальности": "privacy policy", "Итого": "Total", "Итого к оплате": "Total due", "Скидка:": "Discount:", "Оформить заказ": "Place order", "Закрыть": "Close", "Проверяем...": "Checking...", "Переходим к оплате...": "Opening payment...", "Введите корректный email.": "Enter a valid email address.", "Укажите Telegram.": "Enter your Telegram contact.", "Укажите имя отправителя.": "Enter the sender's name.", "Укажите имя получателя.": "Enter the recipient's name.", "Выберите способ доставки подарка.": "Choose how to deliver the gift.", "Укажите контакт получателя.": "Enter the recipient's contact.", "Укажите дату отправки подарка.": "Choose the gift delivery date.", "Укажите время отправки подарка.": "Choose the gift delivery time.", "Данные аккаунта Devin": "Devin account details", "Логин Devin": "Devin login", "Пароль Devin": "Devin password", "Нужны только для подключения выбранного тарифа": "Required only to activate the selected plan", "Почта, на которую зарегистрирован аккаунт": "The email registered with your account", "После подключения рекомендуем сменить пароль": "We recommend changing your password after activation", "Введите пароль": "Enter your password", "Показать пароль": "Show password", "Скрыть пароль": "Hide password", "Безопасная передача": "Secure transfer", "Данные шифруются на сервере, доступны только сотруднику, который выполняет заказ, и не передаются платёжной системе. Никому не сообщайте коды 2FA или резервные коды.": "Details are encrypted on the server and available only to the team member processing your order. They are not shared with the payment provider. Never share two-factor or backup codes.", "Никита": "Alex", "Артём": "Sam", "Например: продление аккаунта, пожелания, детали по заказу": "For example: renewal, preferences or order details", "Напишите тёплые слова или оставьте поле пустым": "Write a message or leave this blank", "Дополнительные настройки": "Additional settings", "Подробнее": "More details", "Свернуть": "Collapse", "Показать детали": "Show details", "Выберите Pro, Max или Teams. После оплаты мы подключим подписку на ваш аккаунт Devin и сообщим о результате.": "Choose Pro, Max or Teams. After payment, we will activate the subscription on your Devin account and send you an update.", "AI-инженер для кода, репозиториев и задач разработки.": "AI software engineer for code, repositories and development tasks.", "Выберите план Pro на 12 или 18 месяцев. Конструктор сразу покажет итоговую стоимость и откроет оформление выбранного варианта.": "Choose a Pro plan for 12 or 18 months. The total updates with your selection.", "Gemini Pro для работы с текстом, файлами, идеями и сложными задачами. Выберите подписку на 12 или 18 месяцев.": "Gemini Pro for text, files, ideas and complex tasks. Choose a 12 or 18 month subscription.", "Perplexity Pro помогает быстро находить и проверять информацию, проводить глубокие исследования, анализировать файлы и получать ответы со ссылками на источники.": "Perplexity Pro helps you find and verify information, research topics, analyse files and get answers with source links.", "Выберите Pro или Premier на один месяц. После оплаты GPTishka отправьте ссылку Stripe Checkout со страницы оплаты того же тарифа в Suno.": "Choose Pro or Premier for one month. After paying GPTishka, submit the Stripe Checkout link for the same plan from Suno.", "Выберите Basic, Standard или Pro на один месяц. После оплаты заказа отправьте ссылку на оплату тарифа Midjourney — менеджер завершит подключение.": "Choose Basic, Standard or Pro for one month. After paying for your order, submit the Midjourney plan payment link and our team will complete activation.", "Claude помогает работать с текстами, кодом, документами и большими объёмами информации. Выберите подходящий тариф, проверьте требования к аккаунту и оформите заказ — GPTishka выполнит подключение и останется на связи после оплаты.": "Claude helps with text, code, documents and large amounts of information. Choose a plan, check the account requirements and place your order. GPTishka will arrange activation and provide order support."}).forEach(([ru, en]) => translations.set(ru, en));
+
+  Object.entries({"Введите корректную почту.": "Enter a valid email address.", "Введите id telegram с @": "Enter your Telegram username starting with @.", "Укажите отправителя.": "Enter the sender's name.", "Укажите получателя.": "Enter the recipient's name.", "Укажите время по МСК или оставьте дату пустой.": "Enter a Moscow delivery time or leave the date blank.", "Укажите дату отправки или оставьте время пустым.": "Choose a delivery date or leave the time blank.", "Выберите вариант аккаунта.": "Choose an account option.", "Введите логин от сервиса.": "Enter your service login.", "Введите пароль или напишите «Восстановить».": "Enter your password or write “Restore”.", "Введите почту Apple ID или логин сервиса.": "Enter your Apple ID email or service login.", "Выберите способ оплаты.": "Choose a payment method.", "Понятно": "Got it", "Подключение по ссылке на оплату": "Activation using a payment link"}).forEach(([ru, en]) => translations.set(ru, en));
+
   function replaceTextNode(node) {
+    if (node.parentElement?.closest('script, style, textarea, [translate="no"]')) return;
     const raw = String(node.nodeValue || "");
     const clean = raw.trim();
     if (!clean) return;
@@ -282,7 +295,7 @@
   }
 
   function translateElement(element) {
-    if (!(element instanceof Element)) return;
+    if (!(element instanceof Element) || element.matches('script, style, textarea, [translate="no"]')) return;
     ["aria-label", "placeholder", "title"].forEach((name) => {
       const value = element.getAttribute(name);
       if (!value) return;
@@ -321,6 +334,17 @@
     applySeoPage();
     translateMetadata();
     translateElement(document.body);
+  }
+
+  function explainOriginalLanguage() {
+    if (!/^\/(?:en\/)?news(?:\/|$)|^\/app(?:\/|$)/.test(window.location.pathname)) return;
+    const main = document.querySelector('main');
+    const heading = main?.querySelector('h1');
+    if (!heading || main.querySelector('.storefront-language-note') || !/[А-Яа-яЁё]{3,}/.test(main.innerText)) return;
+    const note = document.createElement('p');
+    note.className = 'storefront-language-note';
+    note.textContent = 'Some news items and customer reviews are shown in their original language.';
+    heading.insertAdjacentElement('afterend', note);
   }
 
   function rewriteInternalLinks() {
@@ -372,8 +396,10 @@
   const start = () => {
     applyTranslations();
     rewriteInternalLinks();
+    explainOriginalLanguage();
     const observer = new MutationObserver((records) => {
       records.forEach((record) => {
+        if (record.type === "attributes") { translateElement(record.target); return; }
         if (record.type === "characterData") {
           replaceTextNode(record.target);
           return;
@@ -384,8 +410,11 @@
         });
       });
       rewriteInternalLinks();
+      explainOriginalLanguage();
     });
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["aria-label", "placeholder", "title"] });
+    const title = document.querySelector('title');
+    if (title) new MutationObserver(translateMetadata).observe(title, {childList: true, characterData: true, subtree: true});
   };
 
   if (document.readyState === "loading") {

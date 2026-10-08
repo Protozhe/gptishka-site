@@ -19,6 +19,16 @@ publicProductsRouter.get(
   })
 );
 
+// Checkout-only consultation products never become subscription or catalog cards.
+publicProductsRouter.get("/verification-support-products", asyncHandler(async (_req, res) => {
+  const items = await prisma.product.findMany({
+    where: { slug: { in: ["claude-kyc-support", "claude-cvp-support"] }, isActive: true, isArchived: false },
+    select: { id: true, slug: true, price: true, currency: true },
+  });
+  res.setHeader("Cache-Control", "no-store");
+  res.json({ items: items.map(product => ({ ...product, price: Number(product.price) })) });
+}));
+
 function buildPublicServiceCardsPayload(serviceCards: any[]) {
   return (Array.isArray(serviceCards) ? serviceCards : [])
     .filter((card) => String(card?.serviceKey || "").toLowerCase() !== "vpn")

@@ -49,7 +49,7 @@ export const createPublicOrderSchema = z.object({
   email: z.string().email(),
   productId: z.string().min(10),
   quantity: z.coerce.number().int().min(1).max(100).default(1),
-  paymentMethod: z.preprocess(normalizePublicPaymentMethod, z.enum(["enot", "lava"]).default("enot")),
+  paymentMethod: z.preprocess(normalizePublicPaymentMethod, z.enum(["enot", "lava", "pally"]).default("enot")),
   country: z.string().max(2).optional(),
   promoCode: z.string().min(2).max(40).optional(),
   orderDetails: z.unknown().optional(),

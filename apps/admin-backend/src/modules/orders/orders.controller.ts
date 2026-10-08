@@ -5,6 +5,7 @@ import { storefrontTickerService } from "./storefront-ticker.service";
 import { decryptManualLoginCredentials } from "../../common/security/manual-login-credentials";
 import { writeAuditLog } from "../audit/audit.service";
 import { AppError } from "../../common/errors/app-error";
+import { buildOrderActivationRecoveryLink } from "./activation-recovery.service";
 
 function actor(req: Request) {
   return {
@@ -122,6 +123,13 @@ export const getOrderActivationProof = asyncHandler(async (req: Request, res: Re
 export const getOrderActivationToken = asyncHandler(async (req: Request, res: Response) => {
   const orderId = String(req.params.id || "");
   const data = await ordersService.getActivationClientToken(orderId, actor(req));
+  res.json(data);
+});
+
+export const getOrderActivationLink = asyncHandler(async (req: Request, res: Response) => {
+  const orderId = String(req.params.id || "");
+  const data = await buildOrderActivationRecoveryLink(orderId, { actor: actor(req), audit: true });
+  res.setHeader("Cache-Control", "no-store");
   res.json(data);
 });
 

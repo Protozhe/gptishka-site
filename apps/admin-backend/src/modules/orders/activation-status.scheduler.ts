@@ -16,7 +16,16 @@ function processingRecords() {
     .filter((record) => {
       const status = String(record.status || "").toLowerCase();
       const verification = String(record.verificationState || "").toLowerCase();
-      if (status !== "processing" && verification !== "pending") return false;
+      // A lost start response can leave a paid Codex order issued without a
+      // task id. Reconcile via getActivationProof (query only), never resubmit.
+      const unresolvedCodex =
+        /^codex-(250|500|1000)$/.test(String(record.productKey || "")) &&
+        status === "issued" &&
+        verification !== "success" &&
+        Boolean(record.clientTokenCiphertext) &&
+        Number(record.tokenValidationAttempts || 0) > 0 &&
+        Date.parse(String(record.issuedAt || "")) >= oldestAllowed;
+      if (status !== "processing" && verification !== "pending" && !unresolvedCodex) return false;
       const updatedAt = Date.parse(String(record.updatedAt || ""));
       return !Number.isFinite(updatedAt) || updatedAt >= oldestAllowed;
     })

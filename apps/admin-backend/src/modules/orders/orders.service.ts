@@ -3,7 +3,11 @@ import { prisma } from "../../config/prisma";
 import { AppError } from "../../common/errors/app-error";
 import { ordersRepository } from "./orders.repository";
 import { writeAuditLog } from "../audit/audit.service";
-import { sendOrderPaidEmail, sendTelegramNotification } from "../notifications/notifications.service";
+import {
+  sendOrderPaidEmail,
+  sendOrderPaidManagerNotification,
+  sendTelegramNotification,
+} from "../notifications/notifications.service";
 import { paymentsService } from "../payments/payments.service";
 import { env } from "../../config/env";
 import { paymentWebhookService } from "../payments/payment-webhook.service";
@@ -18,15 +22,19 @@ import { resolveTelegramOrderContext } from "./telegram-order-context";
 import { manualCredentialsStore } from "../products/manual-credentials.store";
 import { toVpnMePayload, vpnService } from "../../services/vpn.service";
 import { licenseService } from "../../services/licenseService";
+import { syncWebsiteCustomerToSheet } from "../customers/customer-sheet.service";
 import crypto from "crypto";
 import fs from "fs";
 import https from "https";
+import { spawn } from "child_process";
 import path from "path";
 import { activationReviewsStore } from "./activation-reviews.store";
 import { buildActivationReviewModerationCallback } from "./activation-review-moderation";
 import { isMidjourneyProductSlug, validateMidjourneyPaymentLink } from "./midjourney-payment-link";
 import { isSunoPaymentLinkOrder, validateSunoPaymentLink } from "./suno-payment-link";
 import { isDevinProductSlug, validateDevinPaymentLink } from "./devin-payment-link";
+import { isVerificationSupportProduct, VERIFICATION_MANAGER_URL } from "./verification-support";
+import { isActivationRecoveryTokenValid } from "../../common/security/activation-recovery-token";
 
 const MAX_CLIENT_TOKEN_LENGTH = 500_000;
 const MAX_ACTIVATION_START_ATTEMPTS = 3;
@@ -39,7 +47,8 @@ const ACTIVATION_OUTSTOCK_RETRY_DELAY_MS = Math.min(
   Math.max(500, Number(env.ACTIVATION_OUTSTOCK_RETRY_DELAY_MS || 2_000))
 );
 const SXZFD_GROK_API_TIMEOUT_MS = 25_000;
-const CHONGZHI_JSON_API_TIMEOUT_MS = 30_000;
+const CHONGZHI_JSON_API_TIMEOUT_MS = 15_000;
+const CHONGZHI_SUBMIT_API_TIMEOUT_MS = 45_000;
 const AICHONGZHI_API_TIMEOUT_MS = 30_000;
 const SXZFD_GROK_MAX_START_ATTEMPTS = Math.min(3, ACTIVATION_OUTSTOCK_MAX_RETRIES);
 const MIN_STORED_CLIENT_TOKEN_TTL_HOURS = 24 * 7;
@@ -488,6 +497,11 @@ export const ordersService = {
     const firstItem = order.items[0];
     const planId = firstItem?.product?.id || firstItem?.productId || null;
     const deliveryMode = resolveOrderDeliveryType(order.orderDetails, firstItem?.product?.tags || []);
+    const orderSelection = order.orderDetails && typeof order.orderDetails === "object" && !Array.isArray(order.orderDetails)
+      ? (order.orderDetails as Record<string, any>).selection
+      : null;
+    const needsNewAccount = orderSelection?.needsNewAccount === true &&
+      Number(orderSelection?.serverNewAccountSurcharge) > 0;
     const activationSiteUrl = readActivationSiteUrlFromOrderDetails(order.orderDetails);
     const productSlug = String(firstItem?.product?.slug || "").trim().toLowerCase();
     const productTitle = String(firstItem?.product?.title || (firstItem?.product as any)?.name || "").trim();
@@ -526,6 +540,7 @@ export const ordersService = {
       paidAt: paidPayment ? paidPayment.processedAt || paidPayment.createdAt || null : null,
       planId,
       deliveryMode,
+      needsNewAccount,
       activationFlow,
       product: {
         id: planId,
@@ -574,6 +589,11 @@ export const ordersService = {
     const fullOrder = await getOrderWithFirstItem(order.id);
     const firstItem = fullOrder?.items?.[0];
     const deliveryType = resolveOrderDeliveryType(fullOrder?.orderDetails, firstItem?.product?.tags || []);
+    const orderSelection = fullOrder?.orderDetails && typeof fullOrder.orderDetails === "object" && !Array.isArray(fullOrder.orderDetails)
+      ? (fullOrder.orderDetails as Record<string, any>).selection
+      : null;
+    const needsNewAccount = orderSelection?.needsNewAccount === true &&
+      Number(orderSelection?.serverNewAccountSurcharge) > 0;
     const activationSiteUrl = readActivationSiteUrlFromOrderDetails(fullOrder?.orderDetails);
     const productSlug = String(firstItem?.product?.slug || "").trim().toLowerCase();
     const productTitle = String(firstItem?.product?.title || (firstItem?.product as any)?.name || "").trim();
@@ -591,6 +611,14 @@ export const ordersService = {
       activationSiteUrl,
     });
     const isSupportTokenFlow = isSupportLikeDeliveryType(deliveryType) || isSupportActivationFlow(tokenActivationFlow);
+
+    if (isVerificationSupportProduct(productSlug)) {
+      return {
+        orderId: order.id, deliveryMode: "verification_support", productSlug, productTitle,
+        status: "paid", supportUrl: VERIFICATION_MANAGER_URL,
+        message: "Оплата сопровождения подтверждена. Свяжитесь с менеджером и сообщите номер заказа. Клиент проходит проверку своей личности самостоятельно.",
+      };
+    }
 
     const isSunoLink = isSunoPaymentLinkOrder(productSlug, fullOrder?.orderDetails);
     const isDevinLink = isDevinProductSlug(productSlug);
@@ -648,13 +676,16 @@ export const ordersService = {
       return {
         orderId: order.id,
         deliveryMode: "manual_login",
+        needsNewAccount,
         status: perplexityTokenStored ? "details_submitted" : "pending_manual",
         tokenStored: perplexityTokenStored,
         productSlug,
         productTitle,
         supportUrl: DEFAULT_SUPPORT_URL,
         supportEmail,
-        message: ["claude-5x-max", "claude-20x-max"].includes(productSlug)
+        message: needsNewAccount
+          ? "Оплата подтверждена. Для нового аккаунта свяжитесь с менеджером и сообщите номер заказа. Токен и данные старого аккаунта не нужны."
+          : ["claude-5x-max", "claude-20x-max"].includes(productSlug)
           ? "Оплата подтверждена. Менеджер свяжется с вами и запросит данные аккаунта Claude для подключения тарифа Max."
           : "Заказ со входом принят. Менеджер обработает заявку вручную и подключит подписку на аккаунт, данные которого вы указали при оформлении.",
       };
@@ -713,6 +744,11 @@ export const ordersService = {
       };
     }
 
+    const activationUrl =
+      productSlug.includes("gemini") && /^https?:\/\//i.test(String(current.cdk || "").trim())
+        ? String(current.cdk || "").trim()
+        : null;
+
     return {
       orderId: current.orderId,
       deliveryMode: isSupportTokenFlow ? "support" : "activation",
@@ -721,6 +757,7 @@ export const ordersService = {
       productSlug,
       productTitle,
       durationMonths,
+      activationUrl,
       status: current.status,
       taskId: current.taskId || null,
       verificationState: current.verificationState || "unknown",
@@ -834,6 +871,7 @@ export const ordersService = {
     const deliveryType = resolveOrderDeliveryType(orderWithItem?.orderDetails, firstItem?.product?.tags || []);
     const activationSiteUrl = readActivationSiteUrlFromOrderDetails(orderWithItem?.orderDetails);
     const productSlug = String(firstItem?.product?.slug || "").trim().toLowerCase();
+    if (isVerificationSupportProduct(productSlug)) throw new AppError("Для сопровождения свяжитесь с менеджером. Данные проверки здесь не принимаются.", 409);
     const isPerplexityManual = productSlug === "perplexity-pro" && deliveryType === "manual_login";
     const isMidjourneyLink = isMidjourneyProductSlug(productSlug);
     const isSunoLink = isSunoPaymentLinkOrder(productSlug, orderWithItem?.orderDetails);
@@ -1728,10 +1766,18 @@ export const ordersService = {
         amount: Number(order.totalAmount),
         currency: order.currency,
       });
-      await sendTelegramNotification(`Order paid: ${order.id}, ${order.email}, ${order.totalAmount} ${order.currency}`);
+      await sendOrderPaidManagerNotification({
+        orderId: order.id,
+        email: order.email,
+        amount: Number(order.totalAmount),
+        currency: order.currency,
+      });
       if (order.status !== OrderStatus.PAID) {
         await deliverProduct(order as any);
       }
+      void syncWebsiteCustomerToSheet(order.id).catch((error) => {
+        console.error(`[orders] customer-sheet sync failed for order=${order.id}`, error);
+      });
     }
 
     await writeAuditLog({
@@ -1778,7 +1824,16 @@ export const ordersService = {
       amount: Number(order.totalAmount),
       currency: order.currency,
     });
+    await sendOrderPaidManagerNotification({
+      orderId: order.id,
+      email: order.email,
+      amount: Number(order.totalAmount),
+      currency: order.currency,
+    });
     await deliverProduct(order as any);
+    void syncWebsiteCustomerToSheet(order.id).catch((error) => {
+      console.error(`[orders] customer-sheet sync failed for order=${order.id}`, error);
+    });
 
     await writeAuditLog({
       userId: actor?.userId,
@@ -1889,7 +1944,11 @@ async function assertOrderTokenAccess(orderId: string, orderToken?: string) {
     const provided = String(orderToken || "").trim();
     if (!provided) throw new AppError("Activation link token is required", 401);
     const providedHash = crypto.createHash("sha256").update(provided).digest("hex");
-    if (providedHash !== expected) throw new AppError("Invalid activation link token", 403);
+    const originalTokenMatches = providedHash === expected;
+    const recoveryTokenMatches = isActivationRecoveryTokenValid(order.id, expected, provided);
+    if (!originalTokenMatches && !recoveryTokenMatches) {
+      throw new AppError("Invalid activation link token", 403);
+    }
   }
 
   return order;
@@ -2206,6 +2265,12 @@ async function selectChatGptPlusCandidate(
       email: stored.email,
     });
     if (!reserved) {
+      activationStore.upsert({
+        ...stored,
+        keyAllocationState: "exhausted",
+        keyAllocationSite: desiredSite,
+        updatedAt: new Date().toISOString(),
+      });
       throw new AppError(
         pool.planType === "free"
           ? "Сейчас нет свободного ключа GPLUS для аккаунта Free."
@@ -2219,6 +2284,8 @@ async function selectChatGptPlusCandidate(
   const selectedAt = new Date().toISOString();
   const interim: ActivationRecord = {
     ...stored,
+    keyAllocationState: "selected",
+    keyAllocationSite: desiredSite,
     cdk: chosen.code,
     activationSiteUrl: desiredSite,
     status: "issued",
@@ -2286,6 +2353,17 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   const storagePatch = buildStoredClientTokenPatch(tokenInfo.raw);
   const nowIso = new Date().toISOString();
   const latestBeforeStart = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
+  // Check binding and in-flight state before pool selection can replace a key
+  // or reset the provider task id.
+  if (latestBeforeStart.status === "success" || latestBeforeStart.verificationState === "success") {
+    throw new AppError("Activation is already completed", 409);
+  }
+  if (isTokenBoundToAnotherFingerprint(latestBeforeStart.tokenMeta, buildTokenMeta(tokenInfo))) {
+    throw new AppError("Order is already bound to another token", 409);
+  }
+  if (latestBeforeStart.status === "processing" || latestBeforeStart.verificationState === "pending") {
+    return { taskId: String(latestBeforeStart.taskId || `reconcile-${orderId}`), reused: true };
+  }
   activationStore.upsert({
     ...latestBeforeStart,
     ...storagePatch,
@@ -3239,6 +3317,57 @@ function shouldRetryOutstockFailure(status: number, body: string) {
   return false;
 }
 
+// AIEE's CDN stalls token-bearing requests from Node's TLS transport on our
+// production host. Use the verified curl transport for the entire AIEE flow.
+// Payloads go through stdin, never argv, files, or diagnostic output. In
+// particular, do not add curl retries or a fallback after submit_recharge.
+function callAieeJsonApi(body: string, timeoutMs: number) {
+  return new Promise<{ status: number; raw: string; json: any }>((resolve, reject) => {
+    const child = spawn("curl", [
+      "--disable", "--silent", "--show-error", "--http1.1",
+      "--connect-timeout", "10", "--max-time", String(timeoutMs / 1000),
+      "--proto", "=https",
+      "-H", "Content-Type: application/json",
+      "-H", "Accept: application/json",
+      "-H", "Origin: https://aiee.fun",
+      "-H", "Referer: https://aiee.fun/",
+      "--data-binary", "@-", "--write-out", "\n%{http_code}",
+      "https://aiee.fun/api/auth.php",
+    ], { stdio: ["pipe", "pipe", "pipe"], windowsHide: true });
+    let output = "";
+    let settled = false;
+    const fail = (reason: string) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(deadline);
+      child.kill("SIGKILL");
+      reject(new Error(reason));
+    };
+    const deadline = setTimeout(() => fail("AIEE transport deadline exceeded"), timeoutMs + 1000);
+    child.stdout.setEncoding("utf8");
+    child.stdout.on("data", (chunk: string) => {
+      output += chunk;
+      if (output.length > 1_000_000) fail("AIEE response too large");
+    });
+    // Discard stderr: never propagate provider payloads or curl diagnostics.
+    child.stderr.resume();
+    child.on("error", () => fail("AIEE transport unavailable"));
+    child.stdin.on("error", () => fail("AIEE request stream failed"));
+    child.on("close", (code) => {
+      if (settled) return;
+      if (code !== 0) return fail("AIEE transport failed");
+      const separator = output.lastIndexOf("\n");
+      const status = Number(output.slice(separator + 1));
+      if (separator < 0 || status < 100 || status > 599) return fail("AIEE invalid HTTP response");
+      settled = true;
+      clearTimeout(deadline);
+      const raw = output.slice(0, separator);
+      resolve({ status, raw, json: tryParseJson(raw) });
+    });
+    child.stdin.end(body);
+  });
+}
+
 async function callChongzhiJsonApi(
   base: string,
   action: "verify_code" | "validate_token" | "submit_recharge" | "query_code",
@@ -3250,6 +3379,10 @@ async function callChongzhiJsonApi(
   const configuredIp = String(env.ACTIVATION_CHONGZHI_IP || "").trim();
   const directIp = configuredIp && parsedApiUrl.hostname === "vip.sxzfd.com" ? configuredIp : "";
   const body = JSON.stringify({ action, ...data });
+  const timeoutMs =
+    action === "submit_recharge" ? CHONGZHI_SUBMIT_API_TIMEOUT_MS : CHONGZHI_JSON_API_TIMEOUT_MS;
+
+  if (isAieeProviderBase(base)) return callAieeJsonApi(body, timeoutMs);
 
   // Node's built-in fetch (undici) can time out while connecting to this
   // provider even though a regular TLS request from the same host succeeds.
@@ -3267,6 +3400,10 @@ async function callChongzhiJsonApi(
         headers: {
           Host: parsedApiUrl.host,
           Accept: "application/json, text/plain, */*",
+          Origin: parsedApiUrl.origin,
+          Referer: parsedApiUrl.origin + "/",
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36",
           "Content-Type": "application/json",
           "Content-Length": Buffer.byteLength(body),
           "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -3281,19 +3418,32 @@ async function callChongzhiJsonApi(
           raw += chunk;
         });
         response.on("end", () => {
+          clearTimeout(absoluteDeadline);
           resolve({
             status: response.statusCode || 0,
             raw,
             json: tryParseJson(raw) as any,
           });
         });
+        response.on("error", (error) => {
+          clearTimeout(absoluteDeadline);
+          reject(error);
+        });
       }
     );
 
-    request.setTimeout(CHONGZHI_JSON_API_TIMEOUT_MS, () => {
-      request.destroy(new Error("Chongzhi API request timed out"));
+    // request.setTimeout only measures socket inactivity and can be kept alive
+    // forever by partial provider data. Enforce a wall-clock deadline as well.
+    const absoluteDeadline = setTimeout(() => {
+      request.destroy(new Error("Chongzhi API " + action + " exceeded " + timeoutMs + "ms deadline"));
+    }, timeoutMs);
+    request.setTimeout(timeoutMs, () => {
+      request.destroy(new Error("Chongzhi API " + action + " timed out"));
     });
-    request.on("error", reject);
+    request.on("error", (error) => {
+      clearTimeout(absoluteDeadline);
+      reject(error);
+    });
     request.end(body);
   });
 }
@@ -3337,6 +3487,28 @@ async function startChongzhiJsonTask(
   base: string,
   sourceLabel?: string
 ) {
+  if (isAieeProviderBase(base) || isIosProviderBase(base)) {
+    // A key may have been consumed outside our store. Never report an old
+    // recharge as this customer's successful activation.
+    try {
+      const current = await callChongzhiJsonApi(base, "query_code", { cdk: input.cdk, polling: 1, silent_log: 1 });
+      const state = String(current.json?.recharge_status || current.json?.status || "").toLowerCase();
+      if (!current.json?.success || !["active", "available", "unused"].includes(state)) {
+        return {
+          ok: false as const, taskId: "", status: 409, body: "Key is not confirmed unused",
+          tries: 1, immediateSuccess: false,
+          message: "Ключ уже использован или обрабатывается поставщиком. Требуется проверка статуса заказа.",
+          providerPayload: null,
+        };
+      }
+    } catch {
+      return {
+        ok: false as const, taskId: "", status: 0, body: "query_code unavailable",
+        tries: 1, immediateSuccess: false,
+        message: "Не удалось проверить статус ключа у поставщика. Повторите позже.", providerPayload: null,
+      };
+    }
+  }
   let verify;
   try {
     verify = await callChongzhiJsonApi(base, "verify_code", { cdk: input.cdk });
@@ -3441,22 +3613,34 @@ async function startChongzhiJsonTask(
       };
     }
     let validation;
-    try {
-      validation = await callChongzhiJsonApi(base, "validate_token", {
-        cdk: input.cdk,
-        sid,
-        json_token: tokenRaw,
-        chatgpt_cookie: "",
-      });
-    } catch (error) {
+    let validationTries = 0;
+    let validationError: unknown = null;
+    while (validationTries < 2 && !validation) {
+      validationTries += 1;
+      try {
+        validation = await callChongzhiJsonApi(base, "validate_token", {
+          cdk: input.cdk,
+          sid,
+          json_token: tokenRaw,
+          chatgpt_cookie: "",
+        });
+      } catch (error) {
+        validationError = error;
+        if (validationTries < 2) await sleep(500);
+      }
+    }
+    if (!validation) {
       return {
         ok: false as const,
         taskId: "",
         status: 0,
-        body: error instanceof Error ? error.message : String(error || "validate_token failed"),
-        tries: 1,
+        body:
+          validationError instanceof Error
+            ? validationError.message
+            : String(validationError || "validate_token failed"),
+        tries: validationTries,
         immediateSuccess: false,
-        message: "AIEE не ответил при проверке токена.",
+        message: "AIEE не ответил при проверке токена после повторной попытки.",
         providerPayload: null,
       };
     }
@@ -3476,22 +3660,31 @@ async function startChongzhiJsonTask(
 
   let submit;
   try {
-    submit = await callChongzhiJsonApi(base, "submit_recharge", {
-      cdk: input.cdk,
-      json_token: tokenRaw,
-      sid,
-      chatgpt_cookie: "",
-      customer_notify_email: "",
-      force_overwrite: Boolean(input.forceOverwrite),
-    });
+    const submitData = isIosProviderBase(base)
+      ? {
+          cdk: input.cdk,
+          json_token: tokenRaw,
+          sid,
+          force_overwrite: Boolean(input.forceOverwrite),
+          confirm_overwrite: Boolean(input.forceOverwrite && verify.json?.requires_overwrite_consent === true),
+        }
+      : {
+          cdk: input.cdk,
+          json_token: tokenRaw,
+          sid,
+          chatgpt_cookie: "",
+          customer_notify_email: "",
+          ...(input.forceOverwrite ? { force_overwrite: true } : {}),
+        };
+    submit = await callChongzhiJsonApi(base, "submit_recharge", submitData);
   } catch (error) {
     // The provider can complete a recharge but leave the submit request open
     // until our HTTP timeout. Query the CDK before reporting a false failure.
     const recovered = await recoverCompletedChongzhiJsonTask(input.cdk, base, sourceLabel);
     if (recovered) return recovered;
     return {
-      ok: false as const,
-      taskId: "",
+      ok: true as const,
+      taskId: `reconcile-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       status: 0,
       body: error instanceof Error ? error.message : String(error || "submit_recharge failed"),
       tries: 1,
@@ -3502,7 +3695,7 @@ async function startChongzhiJsonTask(
   }
 
   const submitPending = Boolean(submit.json?.pending);
-  if (submit.json?.success || submitPending) {
+  if (submit.json?.success || submitPending || !submit.json || submit.status >= 500) {
     const submitRechargeStatus = String(submit.json?.recharge_status || "").trim().toLowerCase();
     const taskId =
       String(submit.json?.order_id || submit.json?.task_id || "").trim() ||
@@ -3515,7 +3708,7 @@ async function startChongzhiJsonTask(
       tries: 1,
       immediateSuccess: isAieeProviderBase(base)
         ? ["success", "completed"].includes(submitRechargeStatus)
-        : Boolean(submit.json?.success && !submitPending),
+        : Boolean(submit.json?.success && !submitPending && !["pending", "processing", "queued"].includes(submitRechargeStatus)),
       message: String(
         submit.json?.message ||
           (submitPending ? "Activation request is processing" : "Activation completed")
@@ -3850,25 +4043,39 @@ function updateActivationFromChongzhiCodePayload(orderId: string, payload: { sta
   ).trim();
   const rechargeStatus = String(payload?.json?.recharge_status || "").trim().toLowerCase();
   const failed = ["failed", "fail", "error", "rejected", "expired", "canceled", "cancelled"].includes(rechargeStatus);
+  const pending = ["pending", "processing", "queued", "waiting"].includes(rechargeStatus);
   const hasTask = Boolean(String(stored.taskId || "").trim());
-  const nextStatus: ActivationRecord["status"] = used ? "success" : failed ? "failed" : stored.status;
+  const reconcileStartedAt = /^reconcile-(\d{13})-[a-z0-9]+$/.exec(String(stored.taskId || ""));
+  const providerTaskId = String(payload?.json?.order_id || payload?.json?.task_id || payload?.json?.record_id || "").trim();
+  const reconcileExpired = Boolean(
+    payload?.json?.success &&
+    reconcileStartedAt &&
+    Date.now() - Number(reconcileStartedAt[1]) >= 5 * 60 * 1000 &&
+    !providerTaskId &&
+    ["active", "available", "unused"].includes(rechargeStatus || codeStatus.toLowerCase())
+  );
+  const nextStatus: ActivationRecord["status"] = used ? "success" : failed || reconcileExpired ? "failed" : pending ? "processing" : stored.status;
   const nextVerificationState: NonNullable<ActivationRecord["verificationState"]> = used
     ? "success"
-    : failed
+    : failed || reconcileExpired
     ? "failed"
-    : hasTask
+    : hasTask || pending
     ? "pending"
     : "unknown";
   const providerMessage = used
     ? "Provider check: activation completed"
     : failed
     ? "Provider check: activation failed"
+    : reconcileExpired
+    ? "Provider did not accept the activation request; the key is still available. Check the provider before retrying."
     : hasTask
     ? `Provider check: Chongzhi activation code is not used yet${codeStatus ? ` (${codeStatus})` : ""}`
     : `Provider check: Chongzhi activation code is not used yet${codeStatus ? ` (${codeStatus})` : ""}. Activation has not been started (task is missing)`;
 
   activationStore.upsert({
     ...stored,
+    ...(used ? buildStoredClientTokenPatch("") : {}),
+    taskId: providerTaskId || stored.taskId || null,
     status: nextStatus,
     verificationState: nextVerificationState,
     lastProviderMessage: providerMessage,

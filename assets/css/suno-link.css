@@ -37,7 +37,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .mj-status.success { border-color: rgba(80,227,156,.5); background: rgba(36,160,106,.17); color: #ddffeb; }
 .mj-status.error { border-color: rgba(229,107,114,.55); background: rgba(140,54,69,.17); color: #ffe1e4; }
 .mj-status[hidden], .suno-form[hidden], .suno-retry[hidden] { display: none; }
-.suno-form { margin: 0 0 30px; }
+.suno-form { margin: 0; }
 .suno-form label { display: block; color: #f5f5f8; font-size: 17px; font-weight: 800; }
 .suno-form__hint { margin: 5px 0 11px; color: #b8bac5; font-size: 14px; line-height: 1.5; }
 .suno-form input { display: block; width: 100%; min-height: 58px; padding: 15px 17px; border: 1px solid rgba(255,255,255,.25); border-radius: 13px; outline: 0; background: rgba(17,19,27,.45); color: #fff; font-size: 16px; transition: border-color .18s ease,box-shadow .18s ease,background .18s ease; }
@@ -51,7 +51,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .suno-button:disabled { opacity: .6; cursor: wait; transform: none; }
 .suno-retry { margin: 0 0 26px; }
 
-.suno-steps { padding: 25px 26px 26px; border: 1px solid rgba(255,255,255,.13); border-radius: 19px; background: rgba(255,255,255,.045); }
+.suno-steps { margin: 0 0 30px; padding: 25px 26px 26px; border: 1px solid rgba(255,255,255,.13); border-radius: 19px; background: rgba(255,255,255,.045); }
 .suno-steps h2 { margin: 0 0 14px; font-size: 20px; font-weight: 800; }
 .suno-steps ol { margin: 0; padding-left: 22px; color: #c6c8d0; font-size: 15px; font-weight: 600; line-height: 1.65; }
 .suno-steps li { padding-left: 4px; }

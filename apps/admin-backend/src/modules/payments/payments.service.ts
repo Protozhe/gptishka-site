@@ -15,6 +15,9 @@ import { resolveActivationVariant } from "../../common/utils/product-activation-
 import { canonicalProductKey } from "../../common/utils/product-key";
 import { encryptManualLoginCredentials, ManualLoginCredentials } from "../../common/security/manual-login-credentials";
 import { isDevinProductSlug } from "../orders/devin-payment-link";
+import { buildPallyOrderData } from "./pally-order-data";
+import { resolveNewAccountSurcharge } from "./new-account-option";
+import { syncWebsiteCustomerToSheet } from "../customers/customer-sheet.service";
 
 const ORDER_SOURCE_SITE = "site";
 const ORDER_SOURCE_TELEGRAM = "telegram";
@@ -201,7 +204,15 @@ export const paymentsService = {
     if (!selectedVariant.enabled) {
       throw new AppError("Selected activation option is not available", 400);
     }
-    if (selectedVariant.deliveryType === "code") {
+    const newAccountSurcharge = resolveNewAccountSurcharge(
+      product.slug,
+      product.currency,
+      rawOrderDetails?.selection?.needsNewAccount
+    );
+    const needsNewAccount = newAccountSurcharge > 0;
+    const quantity = Math.max(1, input.quantity);
+    const unitPrice = selectedVariant.price + newAccountSurcharge;
+    if (!needsNewAccount && selectedVariant.deliveryType === "code") {
       const productKey = canonicalProductKey(product.slug || product.id);
       const availableCodes = productKey
         ? await prisma.licenseKey.count({ where: { productKey, status: "available" } })
@@ -219,7 +230,9 @@ export const paymentsService = {
     if (isDevinCredentialsFlow && (!input.manualLoginCredentials?.login || !input.manualLoginCredentials?.password)) {
       throw new AppError("Devin account login and password are required", 422);
     }
-    const protectedAccount = isDevinCredentialsFlow
+    const protectedAccount = needsNewAccount
+      ? { status: "new_account" }
+      : isDevinCredentialsFlow
       ? {
           ...(rawOrderDetails?.account && typeof rawOrderDetails.account === "object" ? rawOrderDetails.account : {}),
           status: "has_account",
@@ -232,13 +245,16 @@ export const paymentsService = {
       selection: {
         ...(rawOrderDetails?.selection && typeof rawOrderDetails.selection === "object" ? rawOrderDetails.selection : {}),
         activationVariant: selectedVariant.key,
-        serverDeliveryType: selectedVariant.deliveryType,
-        serverUnitPrice: selectedVariant.price,
+        needsNewAccount,
+        serverNewAccountSurcharge: newAccountSurcharge,
+        serverDeliveryType: needsNewAccount ? "manual_login" : selectedVariant.deliveryType,
+        serverUnitPrice: unitPrice,
         serverActivationSiteUrl: selectedVariant.activationSiteUrl || "",
       },
     } as Prisma.InputJsonValue;
 
-    const subtotal = selectedVariant.price * Math.max(1, input.quantity);
+    const baseSubtotal = selectedVariant.price * quantity;
+    const subtotal = unitPrice * quantity;
     let discountAmount = 0;
     let promo: {
       id: string;
@@ -286,7 +302,7 @@ export const paymentsService = {
         discountPercent: Number(found.discountPercent || 0),
         partnerId: found.partnerId,
       };
-      discountAmount = this.computeDiscount(subtotal, {
+      discountAmount = this.computeDiscount(baseSubtotal, {
         discountType: promo.discountType,
         discountValue: promo.discountValue,
         discountPercent: promo.discountPercent,
@@ -308,6 +324,19 @@ export const paymentsService = {
 
     const selectedProviderCode = resolveProviderCodeByPaymentMethod(input.paymentMethod);
     const selectedPaymentMethod = normalizePaymentMethodCode(input.paymentMethod, selectedProviderCode);
+    const pallyOrderData = selectedProviderCode === "pally"
+      ? buildPallyOrderData({
+          title: needsNewAccount ? `${product.title} + новый аккаунт` : product.title,
+          slug: product.slug,
+          category: product.category,
+          quantity: Math.max(1, input.quantity),
+          amount: total,
+          email: input.email,
+          orderDetails: rawOrderDetails,
+          telegramUsername,
+          telegramUserId,
+        })
+      : undefined;
 
     const order = await prisma.$transaction(async tx => {
       const created = await tx.order.create({
@@ -336,7 +365,7 @@ export const paymentsService = {
             create: {
               productId: product.id,
               productRaw: product.title,
-              price: selectedVariant.price,
+              price: unitPrice,
               quantity: Math.max(1, input.quantity),
             },
           },
@@ -351,9 +380,11 @@ export const paymentsService = {
       orderId: order.id,
       amount: total,
       currency: order.currency,
-      description: `${product.title} x${input.quantity}`,
+      description: `${product.title}${needsNewAccount ? " + новый аккаунт" : ""} x${input.quantity}`,
+      orderData: pallyOrderData,
       metadata: {
         productId: product.id,
+        ...(["claude-kyc-support", "claude-cvp-support"].includes(product.slug) ? { verificationSupport: true, language: rawOrderDetails?.language === "en" ? "en" : "ru" } : {}),
         planId: product.id,
         quantity: input.quantity,
         email: input.email,
@@ -374,7 +405,10 @@ export const paymentsService = {
     try {
       paymentResponse = await provider.createPayment(paymentInput);
     } catch (error) {
-      const canFallbackToEnot = selectedProviderCode === "lava";
+      // Pally remains the primary method. If its invoice endpoint is temporarily
+      // unavailable, complete the same order through the proven ENOT gateway so
+      // the customer still receives a payment link.
+      const canFallbackToEnot = selectedProviderCode === "lava" || selectedProviderCode === "pally";
       if (!canFallbackToEnot) throw error;
 
       const fallbackProvider = getProviderByCode("gateway");
@@ -458,6 +492,12 @@ export const paymentsService = {
       }
     }
 
+    if (nextStatus === OrderStatus.PAID) {
+      void syncWebsiteCustomerToSheet(order.id).catch((error) => {
+        console.error(`[payment] immediate customer-sheet sync failed for order=${order.id}`, error);
+      });
+    }
+
     console.info(
       `[order] created id=${order.id} status=${nextStatus} paymentProvider=${payment.provider} paymentRef=${payment.providerRef || payment.id}`
     );
@@ -472,7 +512,7 @@ export const paymentsService = {
       promoCode: promo?.code || null,
       partnerId: promo?.partnerId || null,
       paymentProvider: payment.provider,
-      deliveryType: selectedVariant.deliveryType,
+      deliveryType: needsNewAccount ? "manual_login" : selectedVariant.deliveryType,
       productSlug: product.slug,
       checkoutUrl: paymentResponse.checkoutUrl,
       status: nextStatus,

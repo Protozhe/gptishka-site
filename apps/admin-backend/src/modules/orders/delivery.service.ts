@@ -173,28 +173,9 @@ export async function deliverProduct(order: Order) {
     !isTelegramOrderEmail(order.email);
 
   if (isWebsiteChatGptPlusDualPool) {
-    const candidates: NonNullable<ActivationRecord["reservedCandidates"]> = [];
-    for (const siteUrl of [CHATGPT_PLUS_IOS_SITE_URL, CHATGPT_PLUS_FREE_SITE_URL]) {
-      const candidate = await activationStore.reserveCdkRecordForOrder({
-        productKey,
-        activationSiteUrl: siteUrl,
-        orderId: order.id,
-        email: order.email,
-      });
-      if (candidate) {
-        candidates.push({
-          keyId: candidate.keyId,
-          code: candidate.code,
-          activationSiteUrl: candidate.activationSiteUrl || siteUrl,
-        });
-      }
-    }
-
-    if (!candidates.length) {
-      console.warn(`[delivery] no ChatGPT Plus candidates available order=${order.id}`);
-      return;
-    }
-
+    // The account plan is only trustworthy after the customer submits a
+    // complete ChatGPT session JSON. Keep the order keyless until then so a
+    // single order never reserves keys from both Plus pools.
     const nowIso = new Date().toISOString();
     activationStore.upsert({
       ...(existing || {}),
@@ -203,20 +184,18 @@ export async function deliverProduct(order: Order) {
       productKey,
       cdk: "",
       activationSiteUrl: "",
-      reservedCandidates: candidates,
+      reservedCandidates: [],
       status: "issued",
       taskId: null,
       attempts: 0,
       verificationState: "unknown",
-      lastProviderMessage: candidates.length === 2
-        ? "ChatGPT Plus activation candidates reserved"
-        : "One ChatGPT Plus activation candidate reserved; the other pool is empty",
+      lastProviderMessage: "Waiting for session JSON to select one ChatGPT Plus key",
       lastProviderCheckedAt: nowIso,
       lastProviderPayload: null,
       issuedAt: nowIso,
       updatedAt: nowIso,
     });
-    console.info(`[delivery] reserved ${candidates.length} ChatGPT Plus candidate(s) order=${order.id}`);
+    console.info("[delivery] ChatGPT Plus order waits for plan-based key selection order=" + order.id);
     await ensureBundleVpnAccess();
     return;
   }

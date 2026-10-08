@@ -1,27 +1,28 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<script src="/assets/js/analytics-init.js?v=20260813-yandex-attribution1" defer></script>
 <meta charset="UTF-8" />
+<link rel="preload" href="/assets/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/manrope-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/site-fonts.css?v=20260930-first-paint1">
+
+<script src="/assets/js/analytics-init.js?v=20260813-yandex-attribution1" defer></script>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="GPTишка: продление и активация ChatGPT Plus." />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="GPTishka" />
-  <meta property="og:title" content="Продлить / Активировать - GPTишка" />
+  <meta property="og:title" content="Завершение подключения - GPTишка" />
   <meta property="og:description" content="GPTишка: продление и активация ChatGPT Plus." />
   <meta property="og:image" content="https://gptishka.shop/assets/img/logo.png" />
   <meta property="og:url" content="https://gptishka.shop/redeem-start.html" />
   <link rel="icon" href="/favicon.png?v=20260920-white-cat-round1" sizes="any">
-  <title>Продлить / Активировать - GPTишка</title>
+  <title>Завершение подключения - GPTишка</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/logo.min.css">
   <link rel="stylesheet" href="/assets/css/gptishka-header-refresh.css?v=20260912-header-codex1">
-<link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20260724-header-layout3">
-  
-  <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2">
+<link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2">
 <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260310r" />
 
   <style>
@@ -479,6 +480,16 @@
 
     .redeem-perplexity-next p { margin: 0 0 12px; }
     .redeem-perplexity-next__actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+    .redeem-gemini-link {
+      border-color: rgba(66, 133, 244, 0.34);
+      background: linear-gradient(145deg, rgba(239, 246, 255, 0.98), rgba(245, 249, 255, 0.9));
+    }
+
+    .redeem-gemini-link__steps { margin: 12px 0 18px; padding-left: 22px; color: #2f4458; line-height: 1.65; }
+    .redeem-gemini-link__steps li + li { margin-top: 7px; }
+    .redeem-gemini-link__actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .redeem-gemini-link__waiting { margin: 12px 0 0; color: #607386; font-weight: 650; }
 
     .redeem-manual-hint {
       margin: 12px 0 0;
@@ -1294,7 +1305,6 @@
         height: 32px;
       }
     }
-  
 
     /* Unified redeem visual language with main site */
     body.redeem-flow {
@@ -1473,11 +1483,1085 @@
 
   </style>
 <link rel="stylesheet" href="/assets/css/support-widget.css?v=20260724-resume-collapse1" />
-<link rel="stylesheet" href="/assets/css/home-stability-hotfix.css?v=20260723-checkout-controls1" />
+<link rel="stylesheet" href="/assets/css/home-stability-hotfix.css?v=sha256-4b642dad31012b96" />
 <link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260923-scroll-render1" />
+<style id="redeem-flat-layout">
+  /* Keep one clear surface and use spacing/dividers instead of nested cards. */
+  body.redeem-flow .redeem-card {
+    padding: clamp(24px, 4vw, 44px) !important;
+  }
+
+  body.redeem-flow .redeem-card::before,
+  body.redeem-flow .redeem-card::after {
+    display: none !important;
+  }
+
+  body.redeem-flow .redeem-grid {
+    gap: 0 !important;
+    margin-top: 26px !important;
+    border-top: 1px solid var(--lp-border, rgba(173, 186, 213, 0.38));
+  }
+
+  body.redeem-flow .redeem-block {
+    margin: 0 !important;
+    padding: 24px 0 !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--lp-border, rgba(173, 186, 213, 0.38)) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  body.redeem-flow .redeem-block::before {
+    display: none !important;
+  }
+
+  body.redeem-flow .redeem-order-row {
+    min-height: 54px;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  body.redeem-flow .redeem-order-row + .redeem-order-row {
+    margin-top: 12px !important;
+    padding-top: 12px !important;
+    border-top: 1px solid var(--lp-border, rgba(173, 186, 213, 0.3)) !important;
+  }
+
+  body.redeem-flow .redeem-order-id {
+    min-width: 0;
+    padding: 0 16px;
+    color: var(--lp-text, #161f2f) !important;
+    font-size: 14px;
+  }
+
+  body.redeem-flow .redeem-guide {
+    margin: 2px 0 16px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  body.redeem-flow .redeem-guide summary {
+    padding: 12px 0 !important;
+    border-bottom: 1px solid var(--lp-border, rgba(173, 186, 213, 0.32));
+  }
+
+  body.redeem-flow .redeem-guide ol {
+    margin: 16px 0 4px !important;
+    padding-left: 22px !important;
+  }
+
+  body.redeem-flow .redeem-actions {
+    margin-top: 24px !important;
+  }
+
+  body.redeem-flow .redeem-status {
+    margin-top: 12px !important;
+    border-width: 1px 1px 1px 4px !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  body.redeem-flow .redeem-faq {
+    border: 0 !important;
+    border-top: 1px solid var(--lp-border, rgba(173, 186, 213, 0.38)) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  @media (max-width: 640px) {
+    body.redeem-flow .redeem-card {
+      padding: 22px 18px !important;
+    }
+
+    body.redeem-flow .redeem-block {
+      padding: 20px 0 !important;
+    }
+
+    body.redeem-flow .redeem-order-row {
+      gap: 10px !important;
+    }
+  }
+</style>
 <link rel="stylesheet" href="/assets/css/redeem-start-refresh.css?v=20260811-redeem-alert1" />
+<style id="redeem-flat-layout-final">
+  body.redeem-flow.home-wide-body .redeem-card {
+    overflow: hidden;
+    position: relative;
+    padding: clamp(30px, 4vw, 48px) !important;
+    background: radial-gradient(620px 280px at 92% -8%, rgba(40, 213, 151, 0.11), transparent 64%), linear-gradient(155deg, rgba(34, 46, 62, 0.97), rgba(25, 35, 49, 0.97)) !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    margin-bottom: 16px;
+    color: #7be5bd;
+    width: 100%;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-stage__dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #31d99a;
+    box-shadow: 0 0 0 5px rgba(49, 217, 154, 0.12), 0 0 20px rgba(49, 217, 154, 0.34);
+  }
+
+  body.redeem-flow.home-wide-body .redeem-title {
+    max-width: 980px !important;
+    margin: 0 auto 12px !important;
+    font-size: clamp(42px, 5vw, 64px) !important;
+    line-height: 1.08 !important;
+    text-align: center !important;
+    text-wrap: balance;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-subtitle {
+    font-size: clamp(19px, 1.7vw, 22px) !important;
+    line-height: 1.55 !important;
+    max-width: 760px;
+    margin: 0 auto !important;
+    text-align: center !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-label {
+    font-size: 15px !important;
+    line-height: 1.4 !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-order-id,
+  body.redeem-flow.home-wide-body .redeem-guide summary,
+  body.redeem-flow.home-wide-body .redeem-guide li,
+  body.redeem-flow.home-wide-body .redeem-input,
+  body.redeem-flow.home-wide-body .redeem-manual-hint,
+  body.redeem-flow.home-wide-body .redeem-gemini-link,
+  body.redeem-flow.home-wide-body .redeem-perplexity-next {
+    font-size: 17px !important;
+    line-height: 1.55 !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-meta,
+  body.redeem-flow.home-wide-body .redeem-status {
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-btn {
+    font-size: 16px !important;
+    min-height: 44px;
+    padding-inline: 18px !important;
+    transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-btn:not(:disabled):hover {
+    transform: translateY(-1px);
+  }
+
+  body.redeem-flow.home-wide-body .redeem-btn:disabled {
+    opacity: 0.42 !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-btn-primary:not(:disabled) {
+    border-color: rgba(70, 231, 171, 0.72) !important;
+    background: linear-gradient(135deg, #35dda1, #18b97d) !important;
+    color: #071811 !important;
+    box-shadow: 0 12px 28px rgba(24, 185, 125, 0.22) !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-grid {
+    gap: 0 !important;
+    margin-top: 30px !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-block {
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 24px 0 !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--redeem-border, rgba(255, 255, 255, 0.1)) !important;
+    border-radius: 0 !important;
+    color: var(--redeem-text) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-order-row {
+    min-width: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-order-row + .redeem-order-row {
+    border-top: 1px solid var(--redeem-border, rgba(255, 255, 255, 0.1)) !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide,
+  body.redeem-flow.home-wide-body .redeem-faq {
+    margin: 2px 0 16px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    color: var(--redeem-text-secondary) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide summary {
+    padding: 14px 52px 16px 0 !important;
+    border-bottom: 1px solid rgba(73, 225, 169, 0.3) !important;
+    color: #ffffff !important;
+    font-size: clamp(22px, 2.2vw, 27px) !important;
+    font-weight: 850 !important;
+    line-height: 1.25 !important;
+    letter-spacing: -0.02em !important;
+    transition: color 160ms ease !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide summary:hover {
+    color: #ffffff !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide ol {
+    margin: 20px 0 6px !important;
+    padding-left: 28px !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide {
+    position: relative !important;
+    margin: 10px 0 22px !important;
+    padding: 10px 18px 16px 24px !important;
+    border-left: 4px solid #38dca3 !important;
+    background: linear-gradient(90deg, rgba(50, 220, 162, 0.12), rgba(50, 220, 162, 0.025) 58%, transparent 100%) !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide summary::before {
+    content: "Главный шаг";
+    display: inline-flex;
+    align-items: center;
+    min-height: 27px;
+    margin: 0 12px 4px 0;
+    padding: 3px 10px;
+    border: 1px solid rgba(86, 235, 180, 0.42);
+    border-radius: 999px;
+    color: #77f1c1;
+    background: rgba(42, 205, 146, 0.12);
+    font-size: 12px;
+    font-weight: 850;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    vertical-align: 3px;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide li {
+    margin-bottom: 13px !important;
+    padding-left: 5px !important;
+    color: #e2e9f2 !important;
+    font-size: clamp(18px, 1.55vw, 20px) !important;
+    line-height: 1.58 !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide li::marker {
+    color: #64eab8 !important;
+    font-size: 1.08em;
+    font-weight: 900;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide a {
+    color: #70edbd !important;
+    font-weight: 850 !important;
+    text-decoration-thickness: 2px !important;
+    text-underline-offset: 4px !important;
+  }
+
+  @media (max-width: 640px) {
+    body.redeem-flow.home-wide-body .redeem-guide {
+      padding: 8px 10px 12px 16px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-guide summary {
+      padding-right: 44px !important;
+      font-size: 21px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-guide summary::before {
+      display: flex;
+      width: max-content;
+      margin-bottom: 9px;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-guide li {
+      font-size: 17px !important;
+    }
+  }
+
+  body.redeem-flow.home-wide-body .redeem-input {
+    min-height: 160px !important;
+    padding: 16px 18px !important;
+    border: 1px solid rgba(151, 174, 202, 0.24) !important;
+    border-radius: 15px !important;
+    background: rgba(10, 17, 27, 0.72) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+    transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-input:focus {
+    outline: none !important;
+    border-color: rgba(64, 222, 163, 0.72) !important;
+    background: rgba(8, 15, 24, 0.86) !important;
+    box-shadow: 0 0 0 4px rgba(49, 217, 154, 0.1) !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-meta {
+    margin-top: 10px !important;
+    gap: 12px 24px !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-actions {
+    gap: 12px !important;
+    margin-top: 26px !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-status {
+    margin-top: 14px !important;
+    padding: 14px 16px !important;
+  }
+
+  @media (min-width: 900px) and (min-height: 700px) {
+    body.redeem-flow.home-wide-body .redeem-page {
+      max-width: 1280px !important;
+      padding-top: 12px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-card {
+      padding: 22px 34px 24px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-stage {
+      margin-bottom: 8px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-title {
+      margin-bottom: 7px !important;
+      font-size: clamp(42px, 3.7vw, 52px) !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-subtitle {
+      font-size: 18px !important;
+      line-height: 1.4 !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-grid {
+      margin-top: 16px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-block {
+      padding: 14px 0 !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-guide {
+      margin: 4px 0 10px !important;
+      padding: 5px 14px 8px 18px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-guide summary {
+      padding: 9px 48px 10px 0 !important;
+      font-size: 23px !important;
+    }
+
+    body.redeem-flow.home-wide-body #tokenBlock:has(.redeem-guide-linear) {
+      display: grid !important;
+      grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+      grid-template-rows: auto auto 1fr auto;
+      column-gap: 34px;
+      row-gap: 10px;
+      align-items: start;
+    }
+
+    body.redeem-flow.home-wide-body #tokenBlock:has(.redeem-guide-linear) > .redeem-label {
+      grid-column: 1 / -1;
+      margin-bottom: 0 !important;
+    }
+
+    body.redeem-flow.home-wide-body #tokenBlock:has(.redeem-guide-linear) > .redeem-guide {
+      grid-column: 1;
+      grid-row: 2 / 5;
+      margin: 0 !important;
+      padding: 6px 18px 8px 20px !important;
+    }
+
+    body.redeem-flow.home-wide-body #tokenBlock:has(.redeem-guide-linear) .redeem-guide summary {
+      display: block !important;
+      position: relative;
+      padding-right: 42px !important;
+    }
+
+    body.redeem-flow.home-wide-body #tokenBlock:has(.redeem-guide-linear) .redeem-guide summary::before {
+      display: flex;
+      width: max-content;
+      margin: 0 0 9px !important;
+    }
+
+    body.redeem-flow.home-wide-body #tokenBlock:has(.redeem-guide-linear) .redeem-guide summary::after {
+      position: absolute;
+      top: 12px;
+      right: 0;
+    }
+
+    body.redeem-flow.home-wide-body #tokenBlock:has(.redeem-guide-linear) > .redeem-token-toolbar {
+      grid-column: 2;
+      grid-row: 2;
+      margin: 0 !important;
+    }
+
+    body.redeem-flow.home-wide-body #tokenBlock:has(.redeem-guide-linear) > .redeem-input {
+      grid-column: 2;
+      grid-row: 3;
+      min-height: 184px !important;
+      padding: 14px 16px !important;
+    }
+
+    body.redeem-flow.home-wide-body #tokenBlock:has(.redeem-guide-linear) > .redeem-meta {
+      grid-column: 2;
+      grid-row: 4;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-guide ol.redeem-guide-linear {
+      display: block !important;
+      margin: 12px 0 0 !important;
+      padding: 0 !important;
+      list-style: none !important;
+      counter-reset: redeem-guide-step;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-guide ol.redeem-guide-linear li {
+      position: relative;
+      margin: 0 !important;
+      padding: 11px 0 11px 44px !important;
+      border-bottom: 1px solid rgba(129, 155, 181, 0.14);
+      font-size: 17px !important;
+      line-height: 1.45 !important;
+      counter-increment: redeem-guide-step;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-guide ol.redeem-guide-linear li:last-child {
+      border-bottom: 0;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-guide ol.redeem-guide-linear li::before {
+      content: counter(redeem-guide-step);
+      position: absolute;
+      top: 10px;
+      left: 0;
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border: 1px solid rgba(94, 232, 180, 0.42);
+      border-radius: 50%;
+      color: #83f0c6;
+      background: rgba(42, 205, 146, 0.1);
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-meta {
+      margin-top: 6px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-actions {
+      margin-top: 14px !important;
+      gap: 10px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-status {
+      margin-top: 8px !important;
+      padding: 10px 14px !important;
+    }
+  }
+
+  @media (max-width: 640px) {
+    body.redeem-flow.home-wide-body .redeem-card {
+      padding: 24px 20px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-stage {
+      margin-bottom: 12px;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-title {
+      font-size: clamp(34px, 10vw, 46px) !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-block {
+      padding: 20px 0 !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-input {
+      min-height: 145px !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.redeem-flow.home-wide-body .redeem-btn,
+    body.redeem-flow.home-wide-body .redeem-guide summary,
+    body.redeem-flow.home-wide-body .redeem-input {
+      transition: none !important;
+    }
+  }
+</style>
+<style id="redeem-clean-checkout-v1">
+  /* Activation is a checkout continuation: calm, compact and consistent with /chatgpt. */
+  body.redeem-flow.home-wide-body {
+    --redeem-page: #191d22;
+    --redeem-panel: #22272d;
+    --redeem-panel-soft: #1d2228;
+    --redeem-border: rgba(255, 255, 255, 0.12);
+    --redeem-border-soft: rgba(255, 255, 255, 0.08);
+    --redeem-text: rgba(255, 255, 255, 0.94);
+    --redeem-text-secondary: rgba(255, 255, 255, 0.62);
+    --redeem-accent: #42dda6;
+    background: var(--redeem-page) !important;
+    color: var(--redeem-text) !important;
+  }
+
+  body.redeem-flow.home-wide-body::before,
+  body.redeem-flow.home-wide-body::after,
+  body.redeem-flow.home-wide-body main.page::before,
+  body.redeem-flow.home-wide-body main.page::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-page {
+    width: min(1080px, calc(100% - 40px)) !important;
+    max-width: 1080px !important;
+    padding: 32px 0 64px !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-card {
+    overflow: visible !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-stage {
+    display: inline-flex !important;
+    width: auto !important;
+    min-height: 30px;
+    margin: 0 0 18px !important;
+    padding: 6px 11px;
+    border: 1px solid rgba(66, 221, 166, 0.24);
+    border-radius: 999px;
+    color: #78e7c0 !important;
+    background: rgba(66, 221, 166, 0.08);
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.03em !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-stage__dot {
+    width: 7px !important;
+    height: 7px !important;
+    box-shadow: 0 0 0 3px rgba(66, 221, 166, 0.1) !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-title {
+    max-width: none !important;
+    margin: 0 !important;
+    color: var(--redeem-text) !important;
+    font-family: Manrope, system-ui, -apple-system, "Segoe UI", sans-serif !important;
+    font-size: clamp(32px, 4vw, 42px) !important;
+    font-weight: 750 !important;
+    line-height: 1.14 !important;
+    letter-spacing: -0.035em !important;
+    text-align: left !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-subtitle {
+    max-width: 660px !important;
+    margin: 10px 0 0 !important;
+    color: var(--redeem-text-secondary) !important;
+    font-size: 17px !important;
+    line-height: 1.55 !important;
+    text-align: left !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-grid {
+    display: grid !important;
+    gap: 12px !important;
+    margin-top: 28px !important;
+    border: 0 !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-grid > .redeem-block:first-child {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    min-height: 54px;
+    padding: 0 18px !important;
+    border: 1px solid var(--redeem-border-soft) !important;
+    border-radius: 14px !important;
+    background: rgba(255, 255, 255, 0.025) !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-grid > .redeem-block:first-child > .redeem-label {
+    flex: 0 0 auto;
+    margin: 0 !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-grid > .redeem-block:first-child .redeem-order-row {
+    flex: 1;
+    justify-content: flex-end;
+    min-height: 0 !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-grid > .redeem-block:first-child .redeem-order-id {
+    flex: 0 1 auto;
+    padding: 0 !important;
+    color: rgba(255, 255, 255, 0.72) !important;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace !important;
+    font-size: 14px !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-grid > .redeem-block:first-child .redeem-btn {
+    flex: 0 0 118px !important;
+    width: 118px !important;
+    min-width: 118px !important;
+    min-height: 32px !important;
+    padding: 5px 10px !important;
+    font-size: 13px !important;
+  }
+
+  body.redeem-flow.home-wide-body #tokenBlock,
+  body.redeem-flow.home-wide-body #manualCredentialsBlock,
+  body.redeem-flow.home-wide-body #geminiActivationBlock {
+    padding: 28px !important;
+    border: 1px solid var(--redeem-border) !important;
+    border-radius: 20px !important;
+    background: var(--redeem-panel) !important;
+    box-shadow: none !important;
+  }
+
+  body.redeem-flow.home-wide-body #tokenBlock > .redeem-label {
+    grid-column: 1 / -1;
+    margin: 0 0 4px !important;
+    color: var(--redeem-text) !important;
+    font-size: 16px !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide summary {
+    position: relative;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    padding: 0 4px 14px 0 !important;
+    border-bottom: 1px solid var(--redeem-border-soft) !important;
+    color: var(--redeem-text) !important;
+    font-size: 18px !important;
+    font-weight: 750 !important;
+    line-height: 1.4 !important;
+    letter-spacing: -0.01em !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide summary::before {
+    display: none !important;
+    content: none !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide summary::after {
+    content: "" !important;
+    display: block !important;
+    position: static !important;
+    flex: 0 0 10px !important;
+    margin: 0 3px 0 0 !important;
+    width: 10px !important;
+    height: 10px !important;
+    border: 0 !important;
+    border-right: 2px solid rgba(255, 255, 255, 0.62) !important;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.62) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    transform: rotate(45deg) !important;
+    transition: transform 160ms ease, border-color 160ms ease !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide[open] summary::after {
+    margin-top: 0 !important;
+    transform: rotate(225deg) !important;
+    border-color: #72e5bc !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide ol,
+  body.redeem-flow.home-wide-body .redeem-guide ol.redeem-guide-linear {
+    display: block !important;
+    margin: 14px 0 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+    counter-reset: redeem-clean-step;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide ol li,
+  body.redeem-flow.home-wide-body .redeem-guide ol.redeem-guide-linear li {
+    position: relative;
+    margin: 0 !important;
+    padding: 9px 0 9px 38px !important;
+    border: 0 !important;
+    color: rgba(255, 255, 255, 0.68) !important;
+    font-size: 16px !important;
+    line-height: 1.55 !important;
+    counter-increment: redeem-clean-step;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide ol li::before,
+  body.redeem-flow.home-wide-body .redeem-guide ol.redeem-guide-linear li::before {
+    content: counter(redeem-clean-step) !important;
+    position: absolute !important;
+    top: 8px !important;
+    left: 0 !important;
+    display: grid !important;
+    width: 25px !important;
+    height: 25px !important;
+    place-items: center !important;
+    border: 1px solid rgba(66, 221, 166, 0.28) !important;
+    border-radius: 50% !important;
+    color: #72e5bc !important;
+    background: rgba(66, 221, 166, 0.07) !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-guide a {
+    color: #72e5bc !important;
+    font-weight: 700 !important;
+    text-decoration-thickness: 1px !important;
+    text-underline-offset: 3px !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-token-toolbar {
+    margin: 0 0 10px !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-input {
+    min-height: 166px !important;
+    padding: 15px 16px !important;
+    border: 1px solid var(--redeem-border) !important;
+    border-radius: 12px !important;
+    color: var(--redeem-text) !important;
+    background: #181d22 !important;
+    box-shadow: none !important;
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-input:focus {
+    border-color: rgba(66, 221, 166, 0.68) !important;
+    background: #181d22 !important;
+    box-shadow: 0 0 0 3px rgba(66, 221, 166, 0.1) !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-meta {
+    margin-top: 9px !important;
+    color: rgba(255, 255, 255, 0.48) !important;
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-btn {
+    min-height: 44px !important;
+    padding: 8px 14px !important;
+    border: 1px solid var(--redeem-border) !important;
+    border-radius: 10px !important;
+    color: rgba(255, 255, 255, 0.82) !important;
+    background: #2c3239 !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-btn::before {
+    display: none !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-btn:not(:disabled):hover {
+    transform: none !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    background: #333a42 !important;
+    box-shadow: none !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-btn-primary,
+  body.redeem-flow.home-wide-body .redeem-btn-primary:not(:disabled) {
+    border-color: #42dda6 !important;
+    color: #0c241b !important;
+    background: #42dda6 !important;
+    box-shadow: none !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-btn-primary:not(:disabled):hover {
+    border-color: #58e5b3 !important;
+    background: #58e5b3 !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    margin: 12px 0 0 !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-actions .full,
+  body.redeem-flow.home-wide-body #startBtn {
+    grid-column: 1 / -1 !important;
+    min-height: 50px !important;
+    font-size: 15px !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-actions .redeem-btn:disabled:not(#startBtn) {
+    display: none !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-status {
+    margin-top: 12px !important;
+    padding: 13px 15px !important;
+    border-width: 1px !important;
+    border-radius: 12px !important;
+    font-size: 13px !important;
+    box-shadow: none !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-faq {
+    margin-top: 28px !important;
+    padding: 18px 0 0 !important;
+    border: 0 !important;
+    border-top: 1px solid var(--redeem-border-soft) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body.redeem-flow.home-wide-body .redeem-vpn-offer,
+  body.redeem-flow.home-wide-body .redeem-manual-hint,
+  body.redeem-flow.home-wide-body .redeem-perplexity-next {
+    border-color: var(--redeem-border) !important;
+    background: var(--redeem-panel-soft) !important;
+    box-shadow: none !important;
+  }
+
+  @media (min-width: 760px) {
+    body.redeem-flow.home-wide-body #tokenBlock:has(.redeem-guide-linear) {
+      display: grid !important;
+      grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr) !important;
+      grid-template-rows: auto auto minmax(166px, auto) auto !important;
+      column-gap: 30px !important;
+      row-gap: 10px !important;
+      align-items: start !important;
+    }
+
+    body.redeem-flow.home-wide-body #tokenBlock:has(.redeem-guide-linear) > .redeem-guide {
+      grid-column: 1 !important;
+      grid-row: 2 / 5 !important;
+    }
+
+    body.redeem-flow.home-wide-body #tokenBlock:has(.redeem-guide-linear) > .redeem-token-toolbar {
+      grid-column: 2 !important;
+      grid-row: 2 !important;
+    }
+
+    body.redeem-flow.home-wide-body #tokenBlock:has(.redeem-guide-linear) > .redeem-input {
+      grid-column: 2 !important;
+      grid-row: 3 !important;
+    }
+
+    body.redeem-flow.home-wide-body #tokenBlock:has(.redeem-guide-linear) > .redeem-meta {
+      grid-column: 2 !important;
+      grid-row: 4 !important;
+    }
+  }
+
+  @media (max-width: 759px) {
+    body.redeem-flow.home-wide-body .gptishka-canonical-header .header-product-pill,
+    body.redeem-flow.home-wide-body .gptishka-canonical-header .header-quick-links {
+      display: none !important;
+    }
+
+    body.redeem-flow.home-wide-body #gptishka-support-widget {
+      display: none !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-page {
+      width: calc(100% - 16px) !important;
+      padding: 22px 0 42px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-stage {
+      margin-bottom: 14px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-title {
+      font-size: 29px !important;
+      line-height: 1.18 !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-subtitle {
+      margin-top: 8px !important;
+      font-size: 15px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-grid {
+      margin-top: 20px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-grid > .redeem-block:first-child {
+      min-height: 48px;
+      padding: 0 12px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-grid > .redeem-block:first-child > .redeem-label {
+      display: none;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-grid > .redeem-block:first-child .redeem-order-row {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) auto;
+      justify-content: stretch;
+      gap: 8px !important;
+      width: 100%;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-grid > .redeem-block:first-child .redeem-btn {
+      width: 112px !important;
+      min-width: 112px !important;
+      max-width: 112px !important;
+    }
+
+    body.redeem-flow.home-wide-body #tokenBlock {
+      display: flex !important;
+      flex-direction: column;
+      padding: 20px 18px !important;
+      border-radius: 16px !important;
+    }
+
+    body.redeem-flow.home-wide-body #tokenBlock > .redeem-label { order: 1; }
+    body.redeem-flow.home-wide-body #tokenBlock > .redeem-token-toolbar { order: 2; }
+    body.redeem-flow.home-wide-body #tokenBlock > .redeem-input { order: 3; }
+    body.redeem-flow.home-wide-body #tokenBlock > .redeem-meta { order: 4; }
+    body.redeem-flow.home-wide-body #tokenBlock > .redeem-guide { order: 5; margin-top: 18px !important; }
+    body.redeem-flow.home-wide-body #tokenBlock > .redeem-perplexity-next { order: 6; }
+
+    body.redeem-flow.home-wide-body .redeem-token-toolbar {
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px !important;
+      margin-top: 10px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-token-toolbar .redeem-btn {
+      width: 100% !important;
+      min-width: 0 !important;
+      padding-inline: 8px !important;
+    }
+
+    body.redeem-flow.home-wide-body #tokenBlock > .redeem-meta {
+      display: grid !important;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: start;
+      gap: 12px !important;
+    }
+
+    body.redeem-flow.home-wide-body #tokenInfo {
+      white-space: nowrap;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-input {
+      min-height: 108px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-guide summary {
+      padding: 14px 34px 12px 0 !important;
+      font-size: 16px !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-guide:not([open]) ol {
+      display: none !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-actions {
+      grid-template-columns: 1fr !important;
+    }
+
+    body.redeem-flow.home-wide-body .redeem-actions > * {
+      grid-column: 1 !important;
+    }
+  }
+</style>
+<link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
+<link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
+<link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
+<link rel="stylesheet" href="/assets/css/redeem-clean-checkout-v2.css?v=20261007-all-services6">
+<style id="redeem-focus-header-v1">
+  @media (max-width: 759px) {
+    body.redeem-flow.home-wide-body header.gptishka-canonical-header .header-product-pill,
+    body.redeem-flow.home-wide-body header.gptishka-canonical-header .header-quick-links {
+      display: none !important;
+    }
+
+    body.redeem-flow.home-wide-body header.gptishka-canonical-header .nav-shell {
+      grid-template-columns: minmax(0, 1fr) auto !important;
+      grid-template-areas: "logo tools" !important;
+      min-height: 64px !important;
+    }
+  }
+</style>
+<link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-398a7ebc6c68aeda">
 </head>
-<body class="redeem-flow home-wide-body">
+<body id="storefrontBody" class="redeem-flow home-wide-body">
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
   <div class="page-overlay"></div>
 
@@ -1486,42 +2570,48 @@
       <a href="/" class="logo-link">
         <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTишка" class="logo-img">
       </a>
-      <a href="/codex-credits" class="header-product-pill" aria-label="Пополнить кредиты Codex от 1 500 рублей">
-        <img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" loading="lazy" decoding="async">
+      <a href="/codex-credits" class="header-product-pill" aria-label="Пополнить кредиты Codex от 1 500 рублей" style="display:none !important">
+        <img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" loading="eager" decoding="async">
         <span>Кредиты Codex от 1 500 ₽</span>
       </a>
-      <nav class="header-quick-links" aria-label="Быстрые разделы GPTishka">
+      <nav class="header-quick-links" aria-label="Быстрые разделы GPTishka" style="display:none !important">
         <a class="header-quick-link" href="/news/">Новости</a>
         <a class="header-quick-link" href="/app/">Отзывы</a>
-        <a class="header-quick-link" href="https://vk.com/gptishka?from=groups&amp;trackcode=7f99670c_6HjhbFhCJIgWV0ALEpOr-nIlZFrs3X3-3D3-z00f1k7ylk5Mhdl7hxbRgwtUEeZ8MCZjDfHpk0ywZuW" target="_blank" rel="noopener">VK</a>
-        <a class="header-quick-link header-quick-link--telegram" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener">Telegram</a>
+        <a class="header-quick-link header-social-link header-social-link--vk" href="https://vk.com/gptishka?from=groups&amp;trackcode=7f99670c_6HjhbFhCJIgWV0ALEpOr-nIlZFrs3X3-3D3-z00f1k7ylk5Mhdl7hxbRgwtUEeZ8MCZjDfHpk0ywZuW" target="_blank" rel="noopener" aria-label="GPTishka в VK"><svg class="header-social-icon header-social-icon--vk" viewBox="3.8 6.8 17.4 10.2" aria-hidden="true" focusable="false" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.194c.136-.148.132-.427.132-.427s-.019-1.304.586-1.496c.596-.188 1.362 1.26 2.174 1.817.614.421 1.08.329 1.08.329l2.169-.03s1.134-.07.596-.961c-.044-.073-.313-.658-1.611-1.863-1.36-1.262-1.177-1.058.46-3.242.997-1.33 1.395-2.142 1.27-2.49-.119-.331-.854-.244-.854-.244l-2.442.015s-.181-.025-.315.056c-.131.079-.216.263-.216.263s-.386 1.029-.9 1.904c-1.085 1.845-1.519 1.942-1.696 1.828-.413-.267-.31-1.072-.31-1.643 0-1.782.27-2.524-.526-2.716-.264-.064-.458-.105-1.132-.112-.865-.009-1.598.003-2.012.206-.276.135-.489.437-.359.454.16.021.522.098.714.359.248.34.239 1.103.239 1.103s.142 2.103-.332 2.364c-.325.18-.772-.187-1.729-1.861-.49-.858-.861-1.807-.861-1.807s-.071-.175-.199-.268c-.155-.113-.371-.149-.371-.149l-2.321.015s-.348.01-.476.161c-.114.134-.009.411-.009.411s1.816 4.248 3.872 6.389c1.886 1.963 4.028 1.834 4.028 1.834h.971Z"></path></svg></a>
+        <a class="header-quick-link header-social-link header-social-link--telegram" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener" aria-label="GPTishka в Telegram"><svg class="header-social-icon header-social-icon--telegram" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor"><path d="M23.91 3.79 20.3 20.84c-.27 1.2-.98 1.49-1.99.93l-5.5-4.06-2.65 2.55c-.29.29-.54.54-1.1.54l.39-5.6 10.2-9.21c.44-.39-.1-.61-.68-.22L6.36 13.7.92 12c-1.18-.37-1.2-1.18.25-1.75L22.44 2.06c.98-.36 1.84.24 1.47 1.73Z"></path></svg></a>
       </nav>
       <div class="header-tools header-actions">
-        <div class="lang-switch" id="langSwitch">
-          <div class="lang-current" id="langCurrent">
-            <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
-            <span>Русский</span>
-            <span class="arrow">&#9662;</span>
-          </div>
-          <div class="lang-dropdown">
-            <div class="lang-item" data-lang="ru">
-              <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
-              <span>Русский</span>
-            </div>
-            <div class="lang-item" data-lang="en">
-              <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
-              <span>English</span>
-            </div>
-          </div>
-        </div>
+        <div class="lang-switch language-menu-host" id="langSwitch" data-language-menu-version="20260913-header-grid1" data-language-menu-language="ru">
+      <button class="language-menu__trigger lang-current" type="button" aria-label="Выбрать язык" aria-haspopup="menu" aria-expanded="false">
+        <img class="language-menu__flag lang-flag-img" src="/assets/img/iconrus.avif" alt="" width="24" height="24" decoding="async">
+        <span class="language-menu__current-name">Русский</span>
+        <span class="language-menu__chevron lang-arrow" aria-hidden="true"></span>
+      </button>
+      <div class="language-menu__popover lang-options lang-dropdown" role="menu" aria-label="Доступные языки" aria-hidden="true">
+
+          <a class="language-menu__option lang-item is-active" href="/redeem-start.html" role="menuitem" lang="ru" hreflang="ru" data-language="ru">
+            <img class="language-menu__flag lang-flag-img" src="/assets/img/iconrus.avif" alt="" width="24" height="24" loading="lazy" decoding="async">
+            <span class="language-menu__option-name">Русский</span>
+            <span class="language-menu__check" aria-hidden="true"></span>
+          </a>
+
+          <a class="language-menu__option lang-item" href="/en/redeem-start.html" role="menuitem" lang="en" hreflang="en" data-language="en">
+            <img class="language-menu__flag lang-flag-img" src="/assets/img/iconeng.png" alt="" width="24" height="24" loading="lazy" decoding="async">
+            <span class="language-menu__option-name">English</span>
+            <span class="language-menu__check" aria-hidden="true"></span>
+          </a>
+
+      </div>
+    </div>
       </div>
     </div>
   </header>
 
   <main class="page redeem-page">
     <section class="redeem-card">
-      <h1 class="redeem-title" id="redeemTitle">Продлить / Активировать</h1>
-      <p class="redeem-subtitle" id="redeemSubtitle">Заказ принят в работу, мы с вами свяжемся, если возникнут вопросы</p>
+      <div class="redeem-stage"><span class="redeem-stage__dot" aria-hidden="true"></span><span>Оплата подтверждена</span></div>
+      <h1 class="redeem-title" id="redeemTitle">Завершите подключение</h1>
+      <p class="redeem-subtitle" id="redeemSubtitle">Оплата прошла успешно. Остался последний шаг подключения.</p>
 
       <section id="vpnOfferBlock" class="redeem-vpn-offer" hidden>
         <div class="redeem-vpn-offer-head">
@@ -1537,7 +2627,7 @@
 
       <div class="redeem-grid">
         <section class="redeem-block">
-          <p class="redeem-label">Order ID</p>
+          <p class="redeem-label">Номер заказа</p>
           <div class="redeem-order-row">
             <span id="orderId" class="redeem-order-id">-</span>
             <button id="copyOrderIdBtn" type="button" class="redeem-btn">Скопировать</button>
@@ -1546,9 +2636,9 @@
 
         <section class="redeem-block" id="tokenBlock">
           <p class="redeem-label" id="tokenLabel">Токен аккаунта</p>
-          <details class="redeem-guide">
-            <summary id="tokenGuideSummary">Где взять токен аккаунта</summary>
-            <ol id="tokenGuideList">
+          <details class="redeem-guide" open>
+            <summary id="tokenGuideSummary">Инструкция!</summary>
+            <ol id="tokenGuideList" class="redeem-guide-linear">
               <li>Войдите через браузер в аккаунт ChatGPT (если ещё не вошли — просто авторизуйтесь).</li>
               <li>Откройте ссылку <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>
               <li>Скопируйте все содержимое и вставьте его в поле «Токен аккаунта».</li>
@@ -1556,7 +2646,7 @@
             </ol>
           </details>
 
-          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+          <div class="redeem-token-toolbar" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
             <button id="toggleMaskBtn" type="button" class="redeem-btn">Показать</button>
             <button id="pasteBtn" type="button" class="redeem-btn">Вставить</button>
             <button id="clearBtn" type="button" class="redeem-btn">Очистить</button>
@@ -1566,10 +2656,10 @@
 
           <div class="redeem-meta">
             <span id="tokenInfo">Символов: 0</span>
-            <span id="tokenWarn">Мы не сохраняем токен и используем его только для активации.</span>
+            <span id="tokenWarn">Данные защищены и используются только для заказа.</span>
           </div>
           <div id="perplexityNextStep" class="redeem-perplexity-next" hidden>
-            <p>Данные сессии получены. Скопируйте ссылку на эту страницу и отправьте её только в личный чат поддержки — так мы быстрее найдём ваш заказ. Не публикуйте ссылку и данные сессии.</p>
+            <p>Данные получены. Скопируйте ссылку и отправьте её в личный чат поддержки.</p>
             <div class="redeem-perplexity-next__actions">
               <button id="copyPerplexityPageBtn" type="button" class="redeem-btn">Скопировать ссылку</button>
               <a class="redeem-btn redeem-btn-primary" href="https://t.me/gptishkasupport" target="_blank" rel="noopener noreferrer">Написать в поддержку</a>
@@ -1596,6 +2686,22 @@
             rel="noopener noreferrer"
             style="display:none; margin-top:8px;"
           >Написать в поддержку</a>
+        </section>
+
+        <section class="redeem-block redeem-gemini-link" id="geminiActivationBlock" hidden>
+          <p class="redeem-label">Активация Gemini Pro</p>
+          <p>Откройте ссылку активации в том же браузере, где выполнен вход в нужный аккаунт Google.</p>
+          <ol class="redeem-gemini-link__steps">
+            <li>Войдите в аккаунт Google, на котором должна появиться подписка Gemini Pro.</li>
+            <li>Нажмите «Открыть ссылку активации» или скопируйте ссылку и вставьте её в адресную строку этого браузера.</li>
+            <li>Подтвердите подключение на странице Google и дождитесь сообщения об успешной активации.</li>
+          </ol>
+          <div class="redeem-gemini-link__actions">
+            <a id="geminiActivationLink" class="redeem-btn redeem-btn-primary" href="#" target="_blank" rel="noopener noreferrer" hidden>Открыть ссылку активации</a>
+            <button id="copyGeminiActivationLinkBtn" type="button" class="redeem-btn" hidden>Скопировать ссылку</button>
+            <button id="refreshGeminiActivationBtn" type="button" class="redeem-btn">Обновить статус</button>
+          </div>
+          <p id="geminiActivationWaiting" class="redeem-gemini-link__waiting">Ссылка активации подготавливается. Обновите статус через несколько минут.</p>
         </section>
       </div>
 
@@ -1667,7 +2773,7 @@
     <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
   </footer>
 
-  <script src="/assets/js/app.min.js?v=20260924-support-account1" defer></script>
+  <script src="/assets/js/app.min.js?v=sha256-46a7cf8cb3d853dd" defer></script>
   <script>
     (() => {
     const params = new URLSearchParams(window.location.search);
@@ -1708,6 +2814,11 @@
     const manualSupportBtn = document.getElementById('manualSupportBtn');
     const copyLoginBtn = document.getElementById('copyLoginBtn');
     const copyPasswordBtn = document.getElementById('copyPasswordBtn');
+    const geminiActivationBlock = document.getElementById('geminiActivationBlock');
+    const geminiActivationLink = document.getElementById('geminiActivationLink');
+    const copyGeminiActivationLinkBtn = document.getElementById('copyGeminiActivationLinkBtn');
+    const refreshGeminiActivationBtn = document.getElementById('refreshGeminiActivationBtn');
+    const geminiActivationWaiting = document.getElementById('geminiActivationWaiting');
     const vpnOfferBlock = document.getElementById('vpnOfferBlock');
     const vpnOfferSetupBtn = document.getElementById('vpnOfferSetupBtn');
     const vpnOfferSkipBtn = document.getElementById('vpnOfferSkipBtn');
@@ -1772,6 +2883,8 @@
     const STEAM_KEY_DELIVERY_MESSAGE = 'Мы передаём ключи ежедневно с 10:00 до 20:00 по МСК. Среднее время ожидания — от 5 минут до 2 часов после оплаты. Если заказ оформлен ночью — передадим ключи утром. Максимальное время выполнения — 2 рабочих дня. Ключи будут переданы по указанной Steam trade-ссылке.';
     let isCredentialsDelivery = false;
     let isPerplexityManualFlow = false;
+    let isGeminiActivationLinkFlow = false;
+    let currentGeminiActivationUrl = '';
     let isCodexCreditsFlow = false;
     let perplexitySessionSubmitted = false;
     let isSteamKeyDeliveryFlow = false;
@@ -2270,14 +3383,14 @@
       isCredentialsDelivery = false;
       isSupportTokenDelivery = false;
       perplexitySessionSubmitted = Boolean(payload?.tokenStored || payload?.status === 'details_submitted');
-      if (redeemTitleEl) redeemTitleEl.textContent = 'Продлить / Активировать Perplexity Pro';
-      if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата подтверждена. Передайте данные сессии через защищённую форму — подключение завершит специалист.';
-      document.title = 'Продлить / Активировать Perplexity Pro - GPTишка';
+      if (redeemTitleEl) redeemTitleEl.textContent = 'Завершите подключение Perplexity Pro';
+      if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата подтверждена. Отправьте данные сессии для подключения.';
+      document.title = 'Подключение Perplexity Pro - GPTишка';
       if (tokenBlock) tokenBlock.style.display = 'block';
       if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'none';
       if (actionsRow) actionsRow.style.display = '';
       if (tokenLabelEl) tokenLabelEl.textContent = 'Данные сессии Perplexity';
-      if (tokenGuideSummaryEl) tokenGuideSummaryEl.textContent = 'Как получить данные сессии Perplexity';
+      if (tokenGuideSummaryEl) tokenGuideSummaryEl.textContent = 'Инструкция!';
       if (tokenGuideSummaryEl) tokenGuideSummaryEl.closest('details').open = true;
       if (tokenGuideListEl) tokenGuideListEl.innerHTML = [
         '<li>Войдите через браузер в свой аккаунт на <a href="https://www.perplexity.ai/" target="_blank" rel="noreferrer noopener">официальном сайте Perplexity</a> (если ещё не вошли — авторизуйтесь).</li>',
@@ -2298,17 +3411,62 @@
       if (retryNewKeyBtn) retryNewKeyBtn.style.display = 'none';
       if (stopPollingBtn) stopPollingBtn.style.display = 'none';
       if (perplexityNextStep) perplexityNextStep.hidden = !perplexitySessionSubmitted;
-      if (tokenWarn) tokenWarn.textContent = 'Данные сессии конфиденциальны. Вставляйте их только в это защищённое поле.';
+      if (tokenWarn) tokenWarn.textContent = 'Сессия защищена и нужна только для активации.';
       if (!previewMode && perplexitySessionSubmitted) {
-        setStatus('pending', 'Данные получены. Специалист завершит подключение Perplexity Pro.', false);
+        setStatus('pending', 'Данные получены. Специалист завершит активацию.', false);
       }
       updateStartButtonState();
+    }
+
+    function applyGeminiActivationLinkFlow(payload) {
+      isGeminiActivationLinkFlow = true;
+      isPerplexityManualFlow = false;
+      isCredentialsDelivery = false;
+      isSupportTokenDelivery = false;
+      currentGeminiActivationUrl = '';
+      try {
+        const parsed = new URL(String(payload?.activationUrl || '').trim());
+        if (parsed.protocol === 'https:' || parsed.protocol === 'http:') currentGeminiActivationUrl = parsed.toString();
+      } catch (_) {}
+
+      if (redeemTitleEl) redeemTitleEl.textContent = 'Активировать Gemini Pro';
+      if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата подтверждена. Откройте персональную ссылку в браузере, где выполнен вход в Google.';
+      document.title = 'Активация Gemini Pro - GPTишка';
+      if (tokenBlock) tokenBlock.style.display = 'none';
+      if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'none';
+      if (actionsRow) actionsRow.style.display = 'none';
+      if (perplexityNextStep) perplexityNextStep.hidden = true;
+      if (geminiActivationBlock) geminiActivationBlock.hidden = false;
+      if (geminiActivationLink) {
+        geminiActivationLink.hidden = !currentGeminiActivationUrl;
+        geminiActivationLink.style.display = currentGeminiActivationUrl ? 'inline-flex' : 'none';
+        geminiActivationLink.href = currentGeminiActivationUrl || '#';
+      }
+      if (copyGeminiActivationLinkBtn) {
+        copyGeminiActivationLinkBtn.hidden = !currentGeminiActivationUrl;
+        copyGeminiActivationLinkBtn.style.display = currentGeminiActivationUrl ? 'inline-flex' : 'none';
+      }
+      if (geminiActivationWaiting) {
+        geminiActivationWaiting.hidden = Boolean(currentGeminiActivationUrl);
+        geminiActivationWaiting.style.display = currentGeminiActivationUrl ? 'none' : 'block';
+      }
+      setStatus(
+        currentGeminiActivationUrl ? 'success' : 'pending',
+        currentGeminiActivationUrl
+          ? 'Ссылка активации готова. Откройте её в браузере с нужным аккаунтом Google.'
+          : 'Ссылка активации ещё подготавливается. Оплата уже подтверждена.',
+        false
+      );
     }
 
     function applyActivationPayloadMode(payload, deliveryMode) {
       const activationFlow = resolveSupportActivationFlow(payload);
       const forcedSupportFlow = resolveForcedSupportActivationFlow(payload);
       const productKey = getActivationProductFingerprint(payload);
+      if (productKey.includes('gemini') || productKey.includes('google ai')) {
+        applyGeminiActivationLinkFlow(payload);
+        return;
+      }
       if ((productKey.includes('perplexity') || productKey.includes('pplx')) && deliveryMode === 'manual_login') {
         applyPerplexityManualFlow(payload);
         return;
@@ -2338,9 +3496,17 @@
         if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата подтверждена. Выполните последний шаг пополнения.';
         document.title = `Пополнение ${credits} кредитов Codex - GPTишка`;
       } else if (chatGptPlanName) {
-        if (redeemTitleEl) redeemTitleEl.textContent = `Продлить / Активировать ${chatGptPlanName}`;
-        if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата подтверждена. Выполните последний шаг подключения подписки.';
-        document.title = `Продлить / Активировать ${chatGptPlanName} - GPTишка`;
+        if (redeemTitleEl) redeemTitleEl.textContent = `Завершите подключение ${chatGptPlanName}`;
+        if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата прошла успешно. Вставьте токен аккаунта и запустите активацию.';
+        document.title = `Подключение ${chatGptPlanName} - GPTишка`;
+      } else if ((forcedSupportFlow || activationFlow) === SUPPORT_ACTIVATION_FLOW_CLAUDE) {
+        if (redeemTitleEl) redeemTitleEl.textContent = 'Завершите подключение Claude Pro';
+        if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата подтверждена. Укажите ID аккаунта, чтобы завершить подключение.';
+        document.title = 'Подключение Claude Pro - GPTишка';
+      } else if ((forcedSupportFlow || activationFlow) === SUPPORT_ACTIVATION_FLOW_GROK) {
+        if (redeemTitleEl) redeemTitleEl.textContent = 'Завершите подключение SuperGrok';
+        if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Оплата подтверждена. Укажите ID аккаунта — остальное система выполнит автоматически.';
+        document.title = 'Подключение SuperGrok - GPTишка';
       }
       applyTokenFlowMode(
         deliveryMode === 'support' || Boolean(forcedSupportFlow),
@@ -2353,6 +3519,8 @@
     }
 
     function applyTokenFlowMode(isSupportMode, flow) {
+      isGeminiActivationLinkFlow = false;
+      currentGeminiActivationUrl = '';
       isPerplexityManualFlow = false;
       isSupportTokenDelivery = Boolean(isSupportMode);
       supportActivationFlow = isSupportTokenDelivery
@@ -2362,6 +3530,7 @@
       const claudeSupportFlow = isClaudeSupportFlow();
 
       if (tokenBlock) tokenBlock.style.display = 'block';
+      if (geminiActivationBlock) geminiActivationBlock.hidden = true;
       if (perplexityNextStep) perplexityNextStep.hidden = true;
       if (startBtn) startBtn.textContent = 'Активировать';
       if (checkBtn) checkBtn.style.display = '';
@@ -2371,15 +3540,16 @@
 
       if (tokenLabelEl) {
         tokenLabelEl.textContent = claudeSupportFlow
-          ? 'ID аккаунта Claude для активации Claude Pro'
-          : (isSupportTokenDelivery ? 'ID аккаунта Grok для активации SuperGrok' : 'Токен аккаунта ChatGPT');
+          ? 'ID аккаунта Claude'
+          : (isSupportTokenDelivery ? 'ID аккаунта Grok' : 'Токен аккаунта ChatGPT');
       }
       if (tokenGuideSummaryEl) {
-        tokenGuideSummaryEl.textContent = claudeSupportFlow
-          ? 'Инструкция'
-          : (isSupportTokenDelivery ? 'Инструкция' : 'Где взять токен аккаунта');
+        tokenGuideSummaryEl.textContent = 'Инструкция!';
+        const tokenGuideDetails = tokenGuideSummaryEl.closest('details');
+        if (tokenGuideDetails) tokenGuideDetails.open = true;
       }
       if (tokenGuideListEl) {
+        tokenGuideListEl.classList.toggle('redeem-guide-linear', !isSupportTokenDelivery);
         if (isSupportTokenDelivery) {
           tokenGuideListEl.innerHTML = claudeSupportFlow
             ? [
@@ -2391,15 +3561,12 @@
                 '<li>Вставьте ID в поле ниже и нажмите «Активировать».</li>',
               ].join('')
             : [
-                '<li><strong>🚀 Для активации SUPERGROK отправьте ваш ID аккаунта Grok.</strong></li>',
-                '<li><strong>Как найти ID:</strong></li>',
-                '<li>1️⃣ Перейдите на сайт <a href="https://grok.com" target="_blank" rel="noreferrer noopener">grok.com</a> и войдите в свой аккаунт.</li>',
-                '<li>2️⃣ Скопируйте и откройте в браузере ссылку <a href="https://grok.com/api/auth/session" target="_blank" rel="noreferrer noopener">https://grok.com/api/auth/session</a>.</li>',
-                '<li>3️⃣ Найдите строку <strong>ID</strong> (на 2 скриншотах нужная область выделена).</li>',
+                '<li>Откройте <a href="https://grok.com" target="_blank" rel="noreferrer noopener">grok.com</a> и войдите в свой аккаунт.</li>',
+                '<li>В этом же браузере откройте <a href="https://grok.com/api/auth/session" target="_blank" rel="noreferrer noopener">grok.com/api/auth/session</a>.</li>',
+                '<li>Найдите поле <strong>id</strong>. Нужная область отмечена на скриншотах.</li>',
                 '<li class="redeem-guide-shot"><img src="/assets/img/supergrok-activation-1.png" alt="Где найти ID аккаунта Grok — пример 1" loading="lazy" decoding="async"></li>',
                 '<li class="redeem-guide-shot"><img src="/assets/img/supergrok-activation-2.png" alt="Где найти ID аккаунта Grok — пример 2" loading="lazy" decoding="async"></li>',
-                '<li>4️⃣ Скопируйте ID и отправьте его <strong>одним сообщением в это поле</strong>.</li>',
-                '<li>💡 <strong>Важно:</strong> отправляйте только ID без дополнительных комментариев и символов.</li>',
+                '<li>Скопируйте UUID и вставьте его в поле ниже. Не добавляйте комментарии и лишние символы.</li>',
               ].join('');
         } else {
           tokenGuideListEl.innerHTML = [
@@ -2461,7 +3628,7 @@
           codexCredits: 1000,
         },
         claude: {
-          name: 'Claude',
+          name: 'Claude Pro',
           flow: SUPPORT_ACTIVATION_FLOW_CLAUDE,
         },
         grok: {
@@ -2480,13 +3647,13 @@
       if (orderIdEl) orderIdEl.textContent = 'ПРЕДПРОСМОТР';
       if (redeemTitleEl) redeemTitleEl.textContent = dedicatedSuperGrokPage
         ? 'Активировать SuperGrok'
-        : (config.codexCredits ? `Пополнение ${config.codexCredits} кредитов Codex` : `Продлить / Активировать ${config.name}`);
+        : (config.codexCredits ? `Пополнение ${config.codexCredits} кредитов Codex` : `Завершите подключение ${config.name}`);
       if (redeemSubtitleEl) redeemSubtitleEl.textContent = dedicatedSuperGrokPage
         ? 'Оплата подтверждена. Укажите ID аккаунта — остальное система выполнит автоматически.'
         : 'Безопасный предпросмотр страницы после успешной оплаты.';
       document.title = dedicatedSuperGrokPage
         ? 'Активация SuperGrok - GPTишка'
-        : (config.codexCredits ? `Пополнение ${config.codexCredits} кредитов Codex - GPTишка` : `Продлить / Активировать ${config.name} - GPTишка`);
+        : (config.codexCredits ? `Пополнение ${config.codexCredits} кредитов Codex - GPTишка` : `Подключение ${config.name} - GPTишка`);
 
       if (config.deliveryMode === 'manual_login') {
         applyPerplexityManualFlow({
@@ -2497,11 +3664,11 @@
           serviceKey: normalizedKey,
         });
         if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Безопасный предпросмотр страницы после успешной оплаты.';
-        setStatus('pending', 'Предпросмотр: данные не отправляются, подключение не запускается.', false);
+        setStatus('pending', 'Предпросмотр: данные не отправляются.', false);
       } else {
         applyTokenFlowMode(!config.tokenFlow, config.flow);
         hideVpnOffer(false);
-        setStatus('pending', 'Предпросмотр: данные не отправляются, активация не запускается.', false);
+        setStatus('pending', 'Предпросмотр: данные не отправляются.', false);
       }
 
       [startBtn, checkBtn, retryNewKeyBtn, stopPollingBtn].forEach((button) => {
@@ -2694,6 +3861,15 @@
       });
     }
 
+    if (copyGeminiActivationLinkBtn) {
+      copyGeminiActivationLinkBtn.addEventListener('click', () => {
+        if (currentGeminiActivationUrl) copyText(currentGeminiActivationUrl, 'Ссылка активации скопирована');
+      });
+    }
+    if (refreshGeminiActivationBtn) {
+      refreshGeminiActivationBtn.addEventListener('click', () => loadActivation());
+    }
+
     copyOrderIdBtn.addEventListener('click', () => copyText(orderId, 'Order ID скопирован'));
     copyTaskBtn.addEventListener('click', () => copyText(currentTaskId, 'Номер операции скопирован'));
     if (copyLoginBtn) {
@@ -2739,7 +3915,7 @@
           tokenInput.disabled = true;
           if (perplexityNextStep) perplexityNextStep.hidden = false;
           updateTokenMeta();
-          setStatus('pending', 'Данные получены. Специалист завершит подключение Perplexity Pro.', false);
+          setStatus('pending', 'Данные получены. Специалист завершит активацию.', false);
         } catch {
           setStatus('error', 'Не удалось связаться с сервером. Проверьте интернет и повторите попытку.', false);
         } finally {
@@ -2869,10 +4045,21 @@
           if (fallbackContext.deliveryMode) {
             applyActivationPayloadMode(fallbackContext, fallbackContext.deliveryMode);
           }
+          if (isGeminiActivationLinkFlow) {
+            handlePaidOrder(orderId);
+            return;
+          }
           setStatus('error', payload?.message || 'Не удалось загрузить статус активации', false);
           return;
         }
         const deliveryMode = String(payload?.deliveryMode || '').toLowerCase();
+        if (payload?.needsNewAccount === true && deliveryMode === 'manual_login') {
+          const url = new URL('/new-account.html', window.location.origin);
+          url.searchParams.set('order_id', orderId);
+          if (orderLinkToken) url.searchParams.set('t', orderLinkToken);
+          window.location.replace(url.toString());
+          return;
+        }
         if (deliveryMode === 'payment_link' && /^devin-(pro|max|teams)-1$/.test(String(payload?.productSlug || '').toLowerCase())) {
           const url = new URL('/devin-link.html', window.location.origin);
           url.searchParams.set('order_id', orderId);
@@ -2881,7 +4068,27 @@
           window.location.replace(url.toString());
           return;
         }
+        if (deliveryMode === 'payment_link' && /^suno-(pro|premier)-1-month$/.test(String(payload?.productSlug || '').toLowerCase())) {
+          const url = new URL('/suno-link.html', window.location.origin);
+          url.searchParams.set('order_id', orderId);
+          if (orderLinkToken) url.searchParams.set('t', orderLinkToken);
+          leaveGuardBypass = true;
+          window.location.replace(url.toString());
+          return;
+        }
+        if (deliveryMode === 'verification_support' && ['claude-kyc-support', 'claude-cvp-support'].includes(payload?.productSlug)) {
+          const url = new URL('/verification-support.html', window.location.origin);
+          url.searchParams.set('order_id', orderId);
+          if (orderLinkToken) url.searchParams.set('t', orderLinkToken);
+          leaveGuardBypass = true;
+          window.location.replace(url.toString());
+          return;
+        }
         applyActivationPayloadMode(payload, deliveryMode);
+        if (isGeminiActivationLinkFlow) {
+          handlePaidOrder(orderId);
+          return;
+        }
         if (isPerplexityManualFlow) {
           handlePaidOrder(orderId);
           return;
@@ -3151,7 +4358,7 @@
       const raw = String(tokenInput.value || '').trim();
       if (isPerplexityManualFlow) {
         tokenInfo.textContent = `Символов: ${raw.length}`;
-        tokenWarn.textContent = 'Данные сессии конфиденциальны. Вставляйте их только в это защищённое поле.';
+        tokenWarn.textContent = 'Сессия защищена и нужна только для активации.';
         tokenWarn.className = '';
         return;
       }
@@ -3159,15 +4366,15 @@
       const length = token.length;
       tokenInfo.textContent = `Символов: ${length}`;
       if (isCodexCreditsFlow) {
-        tokenWarn.textContent = 'Вставьте полный JSON сеанса ChatGPT. Данные временно сохраняются для выполнения заказа.';
+        tokenWarn.textContent = 'JSON защищён и используется только для пополнения.';
       } else if (!isSupportTokenDelivery && raw.startsWith('{') && token && token !== raw) {
-        tokenWarn.textContent = 'Обнаружен JSON: будет использован извлеченный токен.';
+        tokenWarn.textContent = 'JSON распознан: используем найденный токен.';
       } else if (isSupportTokenDelivery) {
         tokenWarn.textContent = isClaudeSupportFlow()
-          ? 'Для метода 5 используется только ID аккаунта Claude в формате UUID.'
-          : 'Для метода 4 используется только ID аккаунта Grok в формате UUID.';
+          ? 'Нужен только ID Claude в формате UUID.'
+          : 'Нужен только ID Grok в формате UUID.';
       } else {
-        tokenWarn.textContent = 'Мы не сохраняем токен и используем его только для активации.';
+        tokenWarn.textContent = 'Данные защищены и используются только для заказа.';
       }
       tokenWarn.className = '';
     }
@@ -3203,7 +4410,7 @@
       tokenValidatedOk = !reason;
       lastValidateReason = reason;
       if (tokenWarn) {
-        tokenWarn.textContent = reason || 'JSON готов к отправке. Данные будут доступны только для выполнения заказа.';
+        tokenWarn.textContent = reason || 'JSON готов и используется только для активации.';
         tokenWarn.className = reason ? 'warn' : '';
       }
       updateStartButtonState();
@@ -3408,12 +4615,9 @@
     setupGuideImageZoom();
     })();
   </script>
-<script src="/assets/js/support-widget.js?v=20260924-support-account1" defer></script>
-  <script src="/assets/js/language-switcher.js?v=20260912-chat-restoration2" defer></script>
+<script src="/assets/js/support-widget.js?v=20260924-support-account1&build=sha256-9da6a0dc556ea999" defer></script>
+  <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
+<script src="/assets/js/storefront-ui.js?v=sha256-bcae5e9700f06872" defer></script>
+<script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer></script>
 </body>
 </html>
-
-
-
-
-

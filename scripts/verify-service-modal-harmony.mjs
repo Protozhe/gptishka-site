@@ -1,3 +1,4 @@
+import { assertAssetReference } from "./release-assets.mjs";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
@@ -23,7 +24,7 @@ const pages = [
 
 for (const page of pages) {
   const html = fs.readFileSync(page, "utf8");
-  assert.match(html, /home-stability-hotfix\.css\?v=20260924-toggle-align1/, `${page} must load the current modal styles`);
+  assertAssetReference(html, "assets/css/home-stability-hotfix.css", page);
 }
 
 const css = fs.readFileSync("assets/css/home-stability-hotfix.css", "utf8");
@@ -40,12 +41,10 @@ for (const selector of [
   assert.ok(css.includes(selector), `shared modal styles must cover ${selector}`);
 }
 
-const flatStyle = "service-checkout-flat.css?v=20260924-referral-hours1";
-const modalScript = "app.min.js?v=20260924-referral-hours1";
 for (const page of pages) {
   const html = fs.readFileSync(page, "utf8");
-  assert.ok(html.includes(flatStyle), `${page} must load the shared checkout layout`);
-  assert.ok(html.includes(modalScript), `${page} must load the current checkout artwork`);
+  assertAssetReference(html, "assets/css/service-checkout-flat.css", page);
+  assertAssetReference(html, "assets/js/app.min.js", page);
 }
 const flatCss = fs.readFileSync("assets/css/service-checkout-flat.css", "utf8");
 assert.ok(flatCss.includes('.service-page[data-service-page] ~ .chatgpt-go-order-modal'));

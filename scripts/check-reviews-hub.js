@@ -12,9 +12,9 @@ const css = read(path.join("assets", "css", "reviews-hub.css"));
 const client = read(path.join("assets", "js", "reviews-hub.js"));
 const refresh = read(path.join("scripts", "refresh-public-reviews.js"));
 const server = read("server.js");
-const data = JSON.parse(read(path.join("data", "public-reviews.json")));
+const data = JSON.parse(read(path.join("scripts", "fixtures", "public-reviews.json")));
 
-assert.match(html, /<body class="reviews-hub-body">/);
+assert.match(html, /<body\b[^>]*class="[^"]*\breviews-hub-body\b[^"]*"[^>]*>/);
 assert.match(html, /href="\/app\/" aria-current="page">Отзывы<\/a>/);
 assert.match(html, /id="reviewsSources"/);
 assert.match(html, /отзывов на всех площадках/);

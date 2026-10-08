@@ -60,6 +60,23 @@
   };
 
   const automaticPlanKeys = new Set(["go", "plus"]);
+  const managerCopy = isEnglish ? {
+    briefTitle: "Activation by a manager",
+    briefText: "After payment, contact a manager. We will create your account and send you the login details — no token needed.",
+    title: "How to receive your new account",
+    lead: "Your selected subscription will be connected to a new account.",
+    steps: [["Pay for your plan", "The total includes the account creation fee."], ["Contact a manager", "After payment, open the manager contact page and send your order number."], ["Receive your account", "The manager will create your account and send you the login details."]],
+    result: "No account token needed",
+    resultText: "You do not need an existing account. The manager will prepare your new account with the selected subscription."
+  } : {
+    briefTitle: "Подключение через менеджера",
+    briefText: "После оплаты свяжитесь с менеджером. Создадим аккаунт и передадим логин и пароль — токен не нужен.",
+    title: "Как получить новый аккаунт",
+    lead: "Подключим выбранную подписку на новый аккаунт.",
+    steps: [["Оплатите тариф", "Создание нового аккаунта уже включено в итоговую сумму."], ["Свяжитесь с менеджером", "После оплаты откроется страница связи с менеджером. Напишите ему номер заказа."], ["Получите аккаунт", "Менеджер создаст аккаунт и передаст вам логин и пароль."]],
+    result: "Токен аккаунта не нужен",
+    resultText: "Существующий аккаунт не требуется. Менеджер подготовит новый аккаунт с выбранной подпиской."
+  };
   const markup = `
     <section class="chatgpt-onboarding-brief" aria-label="${copy.briefLabel}">
       <div class="chatgpt-onboarding-brief__copy">
@@ -70,20 +87,36 @@
     </section>`;
 
   function mountBrief() {
+    mountCodexEntry();
     const card = grid.querySelector(".price-card");
     const buyButton = card && card.querySelector(".pay-now-btn");
-    if (!card || !buyButton || card.querySelector(".chatgpt-onboarding-brief")) return;
-    if (!automaticPlanKeys.has(card.dataset.planKey || "")) return;
-    buyButton.insertAdjacentHTML("beforebegin", markup);
+    if (!card || !buyButton) return;
+    const needsNewAccount = Boolean(document.querySelector('[data-service-new-account]')?.checked);
+    const mode = needsNewAccount ? "manager" : "automatic";
+    const current = card.querySelector(".chatgpt-onboarding-brief");
+    if (current?.dataset.fulfillmentMode === mode) return;
+    current?.remove();
+    if (!needsNewAccount) {
+      if (!automaticPlanKeys.has(card.dataset.planKey || "")) return;
+    }
+    const briefMarkup = needsNewAccount
+      ? markup.replace(copy.briefTitle, managerCopy.briefTitle).replace(copy.briefText, managerCopy.briefText)
+      : markup;
+    buyButton.insertAdjacentHTML("beforebegin", briefMarkup.replace('class="chatgpt-onboarding-brief"', 'class="chatgpt-onboarding-brief" data-fulfillment-mode="' + mode + '"'));
   }
 
   new MutationObserver(mountBrief).observe(grid, { childList: true, subtree: true });
+  document.querySelector('[data-service-new-account]')?.addEventListener('change', mountBrief);
   mountBrief();
 
   function mountCodexEntry() {
     const page = document.querySelector("main.service-page");
     const plans = page && page.querySelector(".service-plans-section");
-    if (!page || !plans || page.querySelector(".codex-entry")) return;
+    if (!page || !plans || page.hasAttribute("data-chatgpt-workspace")) return;
+    if (page.querySelector(".codex-entry")) {
+      positionCodexEntry(page, plans);
+      return;
+    }
     plans.insertAdjacentHTML("afterend", `
       <section class="codex-entry" aria-label="${isEnglish ? "Codex credit top-up" : "Пополнение кредитов Codex"}">
         <a class="codex-entry__card" href="${isEnglish ? "/en/codex-credits" : "/codex-credits"}">
@@ -96,8 +129,21 @@
           <span class="codex-entry__button">${isEnglish ? "Top up credits" : "Пополнить кредиты"}</span>
         </a>
       </section>`);
+    positionCodexEntry(page, plans);
   }
 
+  function positionCodexEntry(page, plans) {
+    const entry = page.querySelector(".codex-entry");
+    const column = page.querySelector(".service-product-column");
+    if (!entry || !column) return;
+    if (window.matchMedia("(min-width: 981px)").matches) {
+      if (entry.parentElement !== column) column.appendChild(entry);
+    } else if (entry.previousElementSibling !== plans) {
+      plans.insertAdjacentElement("afterend", entry);
+    }
+  }
+
+  window.matchMedia("(min-width: 981px)").addEventListener("change", mountCodexEntry);
   mountCodexEntry();
 
   document.body.insertAdjacentHTML("beforeend", `
@@ -135,10 +181,24 @@
     </div>`);
 
   const modal = document.querySelector("[data-onboarding-modal]");
+  const modalCopyNodes = [
+    modal.querySelector(".chatgpt-onboarding-modal__dialog h2"),
+    modal.querySelector(".chatgpt-onboarding-modal__lead"),
+    ...modal.querySelectorAll(".chatgpt-onboarding-step__copy strong, .chatgpt-onboarding-step__copy small"),
+    modal.querySelector(".chatgpt-onboarding-modal__note strong"),
+    modal.querySelector(".chatgpt-onboarding-modal__note small")
+  ];
+  const automaticModalText = modalCopyNodes.map(node => node.textContent);
   let opener = null;
 
   function openModal(button) {
     opener = button;
+    const managerMode = button.closest(".chatgpt-onboarding-brief")?.dataset.fulfillmentMode === "manager";
+    const texts = managerMode
+      ? [managerCopy.title, managerCopy.lead, ...managerCopy.steps.flat(), managerCopy.result, managerCopy.resultText]
+      : automaticModalText;
+    modalCopyNodes.forEach((node, index) => { node.textContent = texts[index]; });
+    modal.querySelector(".chatgpt-onboarding-fit").hidden = managerMode;
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("chatgpt-onboarding-is-open");

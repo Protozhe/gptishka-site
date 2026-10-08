@@ -1,0 +1,221 @@
+/* ChatGPT product workspace. Shared storefront and checkout styles stay scoped. */
+html body.claude-workspace-body:has(#claudeWorkspace) {
+  background: #191d22 !important;
+  --workspace-surface: #22272d;
+  --workspace-line: rgba(255,255,255,.12);
+  --workspace-muted: #acb5bf;
+  --workspace-accent: #42d99c;
+}
+html body.claude-workspace-body:has(#claudeWorkspace)::before,
+html body.claude-workspace-body:has(#claudeWorkspace)::after { display: none !important; }
+html body #claudeWorkspace {
+  width: min(960px, calc(100% - 40px)) !important;
+  max-width: 960px !important;
+  padding: 32px 0 64px !important;
+  color: #f4f6f8;
+}
+/* Match the Manrope typography used by the home page catalog. */
+html body #claudeWorkspace,
+html body #claudeWorkspace * {
+  font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif !important;
+}
+[data-claude-workspace] .service-directory-back { margin-bottom: 28px !important; }
+.claude-workspace-intro { margin-bottom: 28px; }
+.claude-workspace-brand { display: flex; align-items: center; gap: 14px; }
+.claude-workspace-brand h1 { margin: 0; font: 750 38px/1.1 'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif; letter-spacing: -.04em; }
+.claude-workspace-mark { display: block; width: 40px; height: 40px; background: #f4f6f8; mask: url('/assets/img/services/chatgpt-symbol-mask-v2.webp') center/contain no-repeat; }
+.claude-workspace-intro > p { margin: 12px 0 0; color: var(--workspace-muted); font-size: 15px; line-height: 1.5; }
+.claude-workspace-tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--workspace-line); margin-bottom: 28px; }
+.claude-workspace-tabs a { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 6px; min-height: 76px; padding: 12px 16px; color: var(--workspace-muted); text-decoration: none; font-size: 16px; font-weight: 750; transition: color .15s; }
+.claude-workspace-tabs a span { color: #8e99a5; font-size: 12px; font-weight: 500; }
+.claude-workspace-tabs a[aria-selected="true"] { color: #f4f6f8; }
+.claude-workspace-tabs a[aria-selected="true"]::after { content: ''; position: absolute; height: 3px; background: var(--workspace-accent); bottom: -1px; inset-inline: 0; }
+.claude-workspace-tabs a:hover { color: #fff; }
+[data-claude-workspace] :is(a,button,input,summary):focus-visible { outline: 2px solid var(--workspace-accent) !important; outline-offset: 4px; }
+.claude-workspace-panel[hidden] { display: none !important; }
+.claude-workspace-panel:focus-visible { outline: 2px solid var(--workspace-accent); outline-offset: 6px; }
+html body #claudeWorkspace .service-plans-section { margin: 0 !important; }
+html body #claudeWorkspace .service-constructor-shell { display: block !important; }
+html body #claudeWorkspace .service-constructor-card { padding: 28px !important; background: var(--workspace-surface) !important; border: 1px solid var(--workspace-line) !important; border-radius: 20px !important; box-shadow: none !important; }
+html body #claudeWorkspace .service-constructor-head { align-items: center !important; gap: 20px !important; margin-bottom: 24px !important; }
+html body #claudeWorkspace .service-constructor-brand > span { display: none !important; }
+html body #claudeWorkspace #serviceConstructorTitle { margin: 0 !important; font: 750 24px/1.25 'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif !important; letter-spacing: -.03em !important; }
+html body #claudeWorkspace #serviceConstructorPrice { font: 750 24px/1.2 'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif !important; white-space: nowrap; }
+html body #claudeWorkspace .service-filter-stack { gap: 20px !important; margin: 0 0 22px !important; }
+html body #claudeWorkspace .service-filter-group { margin: 0 !important; }
+html body #claudeWorkspace .service-filter-chip { font-family: 'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif !important; min-height: 44px !important; border-radius: 10px !important; box-shadow: none !important; }
+html body #claudeWorkspace .service-filter-chip[aria-pressed="true"] { background: var(--workspace-accent) !important; color: #10261c !important; border-color: transparent !important; }
+html body #claudeWorkspace .service-account-choice { padding: 18px 0 !important; margin: 0 !important; border-top: 1px solid var(--workspace-line) !important; }
+html body #claudeWorkspace .service-account-choice__title { display: none !important; }
+html body #claudeWorkspace .service-new-account { min-height: 44px; }
+html body #claudeWorkspace .service-account-choice__note { margin: 8px 0 0 !important; font-size: 13px !important; color: var(--workspace-muted) !important; }
+html body #claudeWorkspace .service-selected-plan { margin-top: 0 !important; }
+html body #claudeWorkspace .service-selected-plan .price-card { padding: 0 !important; border: 0 !important; background: none !important; box-shadow: none !important; gap: 0 !important; }
+html body #claudeWorkspace .service-selected-plan .service-checkout-card__summary { display: none !important; }
+html body #claudeWorkspace .chatgpt-onboarding-brief { margin: 0 0 18px !important; padding: 16px 0 !important; border: 0 !important; border-top: 1px solid var(--workspace-line) !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; }
+html body #claudeWorkspace .chatgpt-onboarding-brief__mark { display: none !important; }
+html body #claudeWorkspace .chatgpt-onboarding-brief__text small { color: var(--workspace-muted) !important; }
+html body #claudeWorkspace .pay-now-btn,
+html body #claudeWorkspace .codex-submit { min-height: 48px !important; border-radius: 12px !important; background: var(--workspace-accent) !important; color: #10261c !important; box-shadow: none !important; font: 750 15px 'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif !important; transform: none !important; }
+html body #claudeWorkspace .service-constructor-description { display: none !important; }
+html body #claudeWorkspace .service-info-section { margin-top: 36px !important; }
+html body #claudeWorkspace .service-section-title h2,
+html body #claudeWorkspace .faq h2 { font-size: 26px !important; line-height: 1.3 !important; }
+html body #claudeWorkspace .service-info-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+.claude-verification-intro { margin-bottom: 24px; }
+.claude-verification-intro h2 { margin: 0; font-size: 24px; letter-spacing: -.03em; }
+.claude-verification-intro p { margin: 10px 0 12px; color: var(--workspace-muted); font-size: 15px; line-height: 1.6; }
+.claude-verification-intro > span { color: var(--workspace-muted); font-size: 13px; }
+html body #claudeWorkspace .codex-order { padding: 28px; background: var(--workspace-surface); border: 1px solid var(--workspace-line); border-radius: 20px; box-shadow: none; }
+html body #claudeWorkspace .codex-order__head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+html body #claudeWorkspace .codex-order__head > div > span { display: none; }
+html body #claudeWorkspace .codex-order__head h2 { margin: 0; font-size: 20px; line-height: 1.35; letter-spacing: -.025em; }
+html body #claudeWorkspace .codex-order__head > strong { color: #f4f6f8; font-size: 24px; white-space: nowrap; }
+html body #claudeWorkspace .codex-options { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
+html body #claudeWorkspace .codex-option { display: flex; justify-content: center; min-height: 84px; padding: 12px 8px; border-radius: 12px; background: transparent; box-shadow: none; }
+html body #claudeWorkspace .codex-option.is-selected { border-color: var(--workspace-accent); background: rgba(66,217,156,.06); box-shadow: none; }
+html body #claudeWorkspace .codex-option > span { display: grid; gap: 4px; text-align: center; }
+html body #claudeWorkspace .codex-option > span strong { font: 750 28px/1.1 'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif; }
+html body #claudeWorkspace .codex-option small { color: var(--workspace-muted); }
+html body #claudeWorkspace .codex-field input { min-height: 48px; background: #1a1f25; border-radius: 10px; color: #f4f6f8; }
+html body #claudeWorkspace .codex-field small { color: var(--workspace-muted); }
+html body #claudeWorkspace .codex-payment { grid-template-columns: repeat(3,minmax(0,1fr)); }
+html body #claudeWorkspace .codex-payment label > span { padding: 12px 6px; border-radius: 10px; box-shadow: none; font-size: 12px; }
+html body #claudeWorkspace .codex-payment label > span img { width: 24px; height: 24px; }
+html body #claudeWorkspace .codex-supporting { margin-top: 24px; }
+@media (max-width: 600px) {
+  html body #claudeWorkspace { width: calc(100% - 28px) !important; padding-top: 18px !important; }
+  [data-claude-workspace] .service-directory-back { margin-bottom: 18px !important; }
+  .claude-workspace-intro { margin-bottom: 14px; }
+  .claude-workspace-brand h1 { font-size: 30px; }
+  .claude-workspace-mark { width: 32px; height: 32px; }
+  .claude-workspace-intro > p { font-size: 13px; }
+  .claude-workspace-tabs { margin-bottom: 20px; }
+  .claude-workspace-tabs a { align-items: center; justify-content: center; flex-direction: column; gap: 5px; padding: 12px 8px; font-size: 15px; }
+  html body #claudeWorkspace .service-constructor-card,
+  html body #claudeWorkspace .codex-order { padding: 20px 16px !important; border-radius: 16px !important; }
+  html body #claudeWorkspace .service-constructor-head { gap: 10px !important; margin-bottom: 20px !important; }
+  html body #claudeWorkspace #serviceConstructorTitle,
+  html body #claudeWorkspace #serviceConstructorPrice { font-size: 20px !important; }
+  html body #claudeWorkspace .service-filter-stack { gap: 14px !important; margin-bottom: 16px !important; }
+  html body #claudeWorkspace .service-filter-chip { padding: 10px !important; font-size: 13px !important; }
+  html body #claudeWorkspace .service-new-account__text small { font-size: 12px !important; }
+  html body #claudeWorkspace .service-new-account__price { white-space: nowrap; font-size: 13px !important; }
+  html body #claudeWorkspace .chatgpt-onboarding-brief { margin-bottom: 14px !important; }
+  html body #claudeWorkspace .chatgpt-onboarding-brief__text small { font-size: 12px !important; line-height: 1.5 !important; }
+  html body #claudeWorkspace .codex-order__head { flex-wrap: wrap; gap: 10px; }
+  html body #claudeWorkspace .codex-order__head h2 { font-size: 18px; }
+  html body #claudeWorkspace .codex-payment label > span { flex-direction: column; gap: 7px; }
+}
+@media (prefers-reduced-motion: reduce) { .claude-workspace-tabs a { transition: none; } }
+
+/* Override the legacy mobile constructor at the workspace boundary. */
+#claudeWorkspace ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-soft-actions:has(> .chatgpt-order-collapsible:last-child:not([open])) {
+  padding-bottom: 8px !important;
+}
+#claudeWorkspace ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-soft-actions > .chatgpt-order-collapsible:last-child:not([open]) {
+  padding-bottom: 0;
+}
+#claudeWorkspace ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-soft-actions:has(> .chatgpt-order-collapsible:last-child:not([open])) + .chatgpt-order-section {
+  padding-top: 16px !important;
+}
+html body #claudeWorkspace .service-constructor-card { display: block !important; }
+html body #claudeWorkspace .service-constructor-head { display: flex !important; flex-direction: row !important; justify-content: space-between !important; text-align: left !important; }
+html body #claudeWorkspace .service-constructor-brand { text-align: left !important; }
+html body #claudeWorkspace .service-constructor-brand { flex: 1 1 auto !important; width: auto !important; min-width: 0 !important; }
+html body #claudeWorkspace .service-constructor-price { flex: 0 0 auto !important; width: auto !important; min-width: 0 !important; }
+html body #claudeWorkspace .service-filter-group__chips { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; }
+html body #claudeWorkspace .service-filter-chip { background: #30363d !important; color: #d5dce4 !important; border: 1px solid var(--workspace-line) !important; }
+html body #claudeWorkspace .service-filter-chip.is-active { background: var(--workspace-accent) !important; color: #10261c !important; border-color: transparent !important; }
+html body #claudeWorkspace .service-new-account { display: grid !important; grid-template-columns: 22px minmax(0,1fr) auto !important; gap: 10px !important; align-items: center !important; padding: 0 !important; }
+html body #claudeWorkspace .service-new-account__text { min-width: 0; }
+html body #claudeWorkspace .service-new-account__price { grid-column: auto !important; margin: 0 !important; }
+html body #claudeWorkspace .chatgpt-onboarding-brief { display: grid !important; grid-template-columns: minmax(0,1fr) auto !important; align-items: center !important; gap: 14px !important; }
+html body #claudeWorkspace .chatgpt-onboarding-brief { min-height: 0 !important; }
+html body #claudeWorkspace .chatgpt-onboarding-brief__copy { display: block !important; }
+html body #claudeWorkspace .chatgpt-onboarding-brief__text { display: grid !important; gap: 6px !important; }
+html body #claudeWorkspace .chatgpt-onboarding-brief__text strong { font-size: 14px !important; }
+html body #claudeWorkspace .chatgpt-onboarding-brief__details { min-height: 44px !important; padding: 8px !important; border: 0 !important; border-radius: 8px !important; background: none !important; font-size: 12px !important; }
+html body #claudeWorkspace .service-selected-plan .service-checkout-card__summary { display: none !important; }
+html body #claudeWorkspace .pay-now-btn::before,
+html body #claudeWorkspace .pay-now-btn::after { display: none !important; }
+@media (max-width: 600px) {
+  html body #claudeWorkspace .service-directory-back { margin-bottom: 12px !important; }
+  .claude-workspace-intro > p { display: none; }
+  html body #claudeWorkspace .service-constructor-head { align-items: flex-start !important; }
+  html body #claudeWorkspace #serviceConstructorTitle { max-width: 180px; font-size: 18px !important; }
+  html body #claudeWorkspace #serviceConstructorPrice { font-size: 18px !important; }
+  html body #claudeWorkspace #servicePlanFilters .service-filter-group__chips { display: grid !important; grid-template-columns: repeat(4,minmax(0,1fr)) !important; gap: 6px !important; }
+  html body #claudeWorkspace .service-filter-chip { width: auto !important; min-width: 0 !important; padding: 8px 4px !important; font-size: 12px !important; }
+  html body #claudeWorkspace .service-account-choice { padding: 14px 0 !important; }
+  html body #claudeWorkspace .service-new-account__text small { display: none !important; }
+  html body #claudeWorkspace #serviceDurationFilters .service-filter-group { display: flex !important; justify-content: space-between !important; align-items: center !important; gap: 12px !important; }
+  html body #claudeWorkspace #serviceDurationFilters .service-filter-group__label { margin: 0 !important; }
+  html body #claudeWorkspace .service-new-account__text strong { font-size: 13px !important; }
+  html body #claudeWorkspace .chatgpt-onboarding-brief { gap: 6px !important; padding: 14px 0 !important; }
+  html body #claudeWorkspace .chatgpt-onboarding-brief__details { max-width: 74px; white-space: normal !important; }
+  html body #claudeWorkspace .chatgpt-onboarding-brief__arrow { display: none !important; }
+  html body #claudeWorkspace .chatgpt-onboarding-brief__text small { display: none !important; }
+}
+
+
+html body #claudeWorkspace .service-product-gallery { display:none !important; }
+.claude-workspace-mark { background: #e8ae91; mask: url('/assets/img/services/claude-symbol-mask-v1.webp') center/contain no-repeat; }
+.claude-verification-card { padding:28px; background:var(--workspace-surface); border:1px solid var(--workspace-line); border-radius:20px; }
+.claude-verification-head { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:22px; }
+.claude-verification-head h2 { margin:0; font-size:24px; }
+.claude-verification-head strong { font-size:24px; white-space:nowrap; }
+.claude-verification-options { display:flex; gap:8px; border:0; padding:0; margin:0 0 24px; }
+.claude-verification-options legend { margin-bottom:12px; color:var(--workspace-muted); font-size:14px; }
+.claude-verification-option { position:relative; display:flex; justify-content:center; align-items:center; min-height:44px; min-width:80px; padding:0 20px; border:1px solid var(--workspace-line); border-radius:10px; background:rgba(255,255,255,.035); color:#dce2e8; cursor:pointer; transition:background .15s,color .15s,border-color .15s; }
+.claude-verification-option:hover { border-color:rgba(255,255,255,.3); background:rgba(255,255,255,.07); }
+.claude-verification-option:has(input:checked) { border-color:transparent; background:var(--workspace-accent); color:#10261c; }
+.claude-verification-option:has(input:focus-visible) { outline:2px solid var(--workspace-accent); outline-offset:3px; }
+.claude-verification-option input { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+.claude-verification-option span { text-align:center; }
+.claude-verification-option b { font-size:14px; font-weight:750; }
+.claude-verification-steps { margin:0; padding-left:22px; color:var(--workspace-muted); line-height:1.7; }
+.claude-verification-steps li { padding-left:4px; margin:8px 0; }
+.claude-verification-time { margin:22px 0 0; padding-top:18px; border-top:1px solid var(--workspace-line); font-size:14px; }
+.claude-verification-submit { width:100%; margin-top:24px; min-height:48px; border:0; border-radius:12px; background:var(--workspace-accent); color:#10261c; font-weight:750; font-size:15px; }
+.claude-verification-submit:disabled { opacity:.55; cursor:not-allowed; }
+.claude-account-age { margin:0 0 22px; padding:14px 16px; border:1px solid rgba(232,174,145,.3); border-radius:12px; background:rgba(232,174,145,.06); font-size:14px; line-height:1.5; }
+.claude-account-age[hidden] { display:none !important; }
+.claude-account-age strong { display:block; margin-bottom:3px; color:#f1c5ad; }
+@media(max-width:600px) { .claude-verification-card { padding:20px 16px; border-radius:16px; } .claude-verification-head h2,.claude-verification-head strong { font-size:20px; } }
+
+.claude-verification-description { margin:0 0 18px; font-size:15px; line-height:1.65; color:var(--workspace-muted); }
+#claudeVerificationDetails[hidden] { display:none !important; }
+
+
+.verification-support-checkout { width:min(520px,calc(100% - 32px)); max-height:calc(100dvh - 32px); box-sizing:border-box; border:1px solid #414750; border-radius:20px; padding:28px; background:#242930; color:#edf1f5; font-family:Manrope,sans-serif; }
+.verification-support-checkout::backdrop { background:rgba(0,0,0,.7); }
+.verification-support-checkout__head { display:flex; justify-content:space-between; align-items:center; gap:16px; }
+.verification-support-checkout__head h2 { margin:0; font-size:24px; }
+.verification-support-checkout__head button { min-width:40px; min-height:40px; border:0; border-radius:8px; background:transparent; color:inherit; font-size:28px; cursor:pointer; }
+.verification-support-checkout__total { margin:12px 0 0; font-size:24px; font-weight:750; }
+#verificationSupportCheckoutForm > label { display:block; margin:18px 0 8px; font-size:14px; }
+#verificationSupportCheckoutForm > input { width:100%; box-sizing:border-box; min-height:46px; background:#191e24; color:#edf1f5; border:1px solid #414750; border-radius:10px; padding:10px 12px; font:inherit; }
+#verificationSupportCheckoutForm fieldset { display:grid; gap:8px; padding:0; margin:22px 0; border:0; }
+#verificationSupportCheckoutForm legend { margin-bottom:10px; font-size:14px; }
+#verificationSupportCheckoutForm fieldset label { display:flex; align-items:center; gap:10px; border:1px solid #414750; border-radius:10px; padding:12px; font-size:14px; cursor:pointer; }
+#verificationSupportCheckoutForm fieldset label:has(input:checked) { border-color:#42d99c; background:rgba(66,217,156,.06); }
+#verificationSupportCheckoutForm input[type=radio] { accent-color:#42d99c; }
+.verification-support-checkout__hint,.verification-support-checkout__terms { color:#b6bec9; font-size:13px; line-height:1.6; }
+.verification-support-checkout a { color:#42d99c; }
+[data-support-payment-status] { font-size:14px; line-height:1.5; }
+.claude-verification-submit:not(:disabled) { cursor:pointer; }
+.verification-support-receipt { max-width:600px; margin:30px auto; }
+.verification-support-receipt h1 { margin:0 0 16px; font-size:30px; }
+.verification-support-receipt p { line-height:1.65; }
+.verification-support-receipt [hidden] { display:none !important; }
+.verification-support-contact { display:flex; align-items:center; justify-content:center; text-decoration:none; }
+@media(max-width:600px) { .verification-support-checkout { padding:20px; } }
+
+.verification-support-receipt a:not(.verification-support-contact) { color:var(--workspace-muted); }
+.verification-support-receipt a:not(.verification-support-contact):hover { color:var(--workspace-accent); }
+#supportRetry { min-height:44px; padding:10px 16px; border:1px solid var(--workspace-line); border-radius:10px; color:inherit; background:transparent; font:inherit; cursor:pointer; }
+
+.claude-verification-intro { margin:0 0 24px; text-align:center; }
+.claude-verification-intro h2 { margin:0 0 8px; font-size:24px; line-height:1.3; }
+.claude-verification-intro p { margin:0; color:var(--workspace-muted); font-size:14px; line-height:1.5; }

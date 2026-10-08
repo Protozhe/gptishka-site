@@ -243,7 +243,7 @@
     var en = isEnPage();
     var text = en
       ? {
-          rootLabel: "Support mascot",
+          rootLabel: "Support",
           panelTitle: "Need help?",
           panelText: "Write to support, we will help you with activation.",
           panelMeta: "Average response: ~5 minutes",
@@ -253,7 +253,7 @@
           resumeAria: "Go to order activation"
         }
       : {
-          rootLabel: "Кот-помощник",
+          rootLabel: "Поддержка",
           panelTitle: "Нужна помощь?",
           panelText: "Напишите нам в поддержку — поможем с подключением.",
           panelMeta: "Средний ответ: ~5 минут",
@@ -273,9 +273,9 @@
     root.setAttribute("aria-label", text.rootLabel);
 
     root.innerHTML =
-      '<div class="support-widget__mascot" aria-hidden="true">' +
-        '<img class="support-widget__mascot-image" src="/assets/img/assistant-cat-left-placeholder.webp?v=20260721-mascot-placeholder-webp1" data-animation-src="/assets/img/assistant-cat-left.webp?v=20260721-mascot-webp1" alt="" width="112" height="168" loading="lazy" decoding="async" fetchpriority="low" />' +
-      '</div>' +
+      '<button class="support-widget__mascot" type="button" aria-expanded="false" aria-controls="storefrontSupportPanel">' +
+        escapeHtml(en ? "Support" : "Поддержка") +
+      '</button>' +
       '<div class="support-widget__resume-bubble" data-resume-bubble hidden>' +
         '<span class="support-widget__resume-text" data-resume-text></span>' +
         '<div class="support-widget__resume-actions">' +
@@ -290,7 +290,7 @@
         '</svg>' +
         '<span class="support-widget__resume-restore-dot" aria-hidden="true"></span>' +
       '</button>' +
-      '<div class="support-widget__panel">' +
+      '<div class="support-widget__panel" id="storefrontSupportPanel">' +
         '<h3 class="support-widget__title">' + escapeHtml(text.panelTitle) + '</h3>' +
         '<p class="support-widget__text">' + escapeHtml(text.panelText) + '</p>' +
         '<p class="support-widget__meta">' + escapeHtml(text.panelMeta) + '</p>' +
@@ -405,7 +405,7 @@
     }
 
     var requestAnimatedMascot = function (delay) {
-      if (animationRequested || !shouldAnimateMascot()) return;
+      if (!mascotImage || animationRequested || !shouldAnimateMascot()) return;
       animationRequested = true;
       var doLoad = function () {
         loadAnimatedMascot();
@@ -434,6 +434,7 @@
     var openPanel = function () {
       clearCloseTimer();
       root.classList.add("is-open");
+      if (mascot) mascot.setAttribute("aria-expanded", "true");
       if (panel) panel.style.display = "block";
       setBubbleBottom(true);
       onPanelOpenTrack();
@@ -442,6 +443,7 @@
     var closePanel = function () {
       clearCloseTimer();
       root.classList.remove("is-open");
+      if (mascot) mascot.setAttribute("aria-expanded", "false");
       if (panel) panel.style.display = "none";
       setBubbleBottom(false);
     };
@@ -451,17 +453,31 @@
       closeTimer = window.setTimeout(function () {
         closeTimer = 0;
         if (panel && panel.matches(":hover")) return;
+        if (root.contains(document.activeElement)) return;
         closePanel();
       }, 90);
     };
 
     if (mascot) {
-      mascot.addEventListener("mouseenter", function () {
-        requestAnimatedMascot(260);
-        openPanel();
+      mascot.addEventListener("click", function () {
+        if (root.classList.contains("is-open")) closePanel();
+        else openPanel();
       });
-      mascot.addEventListener("mouseleave", requestClosePanel);
     }
+
+    root.addEventListener("keydown", function (event) {
+      if (event.key !== "Escape" || !root.classList.contains("is-open")) return;
+      event.preventDefault();
+      event.stopPropagation();
+      closePanel();
+      if (mascot) mascot.focus();
+    });
+    root.addEventListener("focusout", function (event) {
+      if (!root.contains(event.relatedTarget)) requestClosePanel();
+    });
+    document.addEventListener("click", function (event) {
+      if (!root.contains(event.target)) closePanel();
+    });
 
     if (panel) {
       panel.addEventListener("mouseenter", function () {

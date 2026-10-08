@@ -7,18 +7,26 @@
   <meta name="referrer" content="no-referrer">
   <title>Отправить ссылку Suno — GPTishka</title>
   <link rel="icon" href="/favicon.png?v=20260920-white-cat-round1" sizes="any">
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/suno-link.css?v=20260923-suno-link1">
+<link rel="preload" href="/assets/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/manrope-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/site-fonts.css?v=20260930-first-paint1">
+<link rel="stylesheet" href="/assets/css/gptishka-header-refresh.css?v=20260912-header-codex1">
+<link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1">
+<link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
+<script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
+<script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer></script>
+<link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-398a7ebc6c68aeda">
 </head>
-<body>
+<body id="storefrontBody">
   <header class="suno-header">
     <div class="suno-header__inner">
       <a class="suno-header__logo" href="/" aria-label="GPTishka — главная">
         <img src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka" width="300" height="127">
       </a>
-      <a class="suno-header__pill" href="/codex-credits" aria-label="Кредиты Codex от 1 850 рублей">
+      <a class="suno-header__pill" href="/codex-credits" aria-label="Кредиты Codex от 1 500 рублей">
         <img src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" width="28" height="28">
-        <span>Кредиты Codex от 1 850 ₽</span>
+        <span>Кредиты Codex от 1 500 ₽</span>
       </a>
       <nav class="suno-header__nav" aria-label="Быстрые разделы GPTishka">
         <a href="/news/">Новости</a>
@@ -44,13 +52,29 @@
       <section class="suno-content" aria-labelledby="pageTitle">
         <div class="suno-content__eyebrow">После оплаты GPTishka</div>
         <h1 id="pageTitle">Отправьте ссылку Suno</h1>
-        <p class="suno-lead">Откройте оплату выбранного тарифа в своём аккаунте Suno и отправьте нам ссылку Stripe Checkout. Логин, пароль и данные банковской карты передавать не нужно.</p>
+        <p class="suno-lead">Пройдите шаги ниже в своём аккаунте Suno, выберите тот же тариф, что оплатили в GPTishka, и вставьте ссылку со страницы оплаты в форму. Не оплачивайте её самостоятельно. Логин, пароль и данные банковской карты передавать не нужно.</p>
         <div class="suno-order" aria-label="Данные заказа">
           <span id="orderNumber">Заказ: —</span>
           <span id="orderPlan">Тариф: —</span>
         </div>
 
         <div class="mj-status" id="status" role="status" aria-live="polite">Проверяем оплату заказа…</div>
+        <button class="suno-retry" type="button" id="retryButton" hidden>Проверить оплату ещё раз</button>
+
+        <div class="suno-steps">
+          <h2>Как получить ссылку на оплату Suno</h2>
+          <ol>
+            <li>Зайдите в свой аккаунт на <a href="https://suno.com" target="_blank" rel="noopener noreferrer">suno.com</a>.</li>
+            <li>В правом верхнем углу рядом с профилем нажмите на три точки («Ещё»).</li>
+            <li>Перейдите в раздел «Аккаунт» → «Подписка».</li>
+            <li>Выберите вариант оплаты «Ежемесячно».</li>
+            <li>Выберите платный тариф, соответствующий вашему заказу GPTishka.</li>
+            <li>Нажмите «Subscribe».</li>
+            <li>Дождитесь открытия страницы оплаты Stripe. Не оплачивайте её самостоятельно.</li>
+            <li>Скопируйте полную ссылку из адресной строки браузера, вставьте её в поле ниже и нажмите «Отправить ссылку».</li>
+          </ol>
+        </div>
+
         <form class="suno-form" id="linkForm" hidden>
           <label for="paymentLink">Ссылка на оплату Suno</label>
           <p class="suno-form__hint">Скопируйте полную ссылку со страницы оплаты Stripe.</p>
@@ -59,22 +83,12 @@
           <p class="suno-form__note" id="linkNote">Форма проверяет формат ссылки. Менеджер отдельно проверит тариф и доступность страницы оплаты.</p>
           <button class="suno-button" type="submit" id="submitButton">Отправить ссылку</button>
         </form>
-        <button class="suno-retry" type="button" id="retryButton" hidden>Проверить оплату ещё раз</button>
-
-        <div class="suno-steps">
-          <h2>Как получить ссылку</h2>
-          <ol>
-            <li>Войдите в свой аккаунт на <a href="https://suno.com/account" target="_blank" rel="noopener noreferrer">suno.com</a> и откройте управление подпиской.</li>
-            <li>Выберите оплату на один месяц и тот же тариф, который заказали у GPTishka.</li>
-            <li>На странице оплаты Stripe скопируйте полную ссылку из адресной строки. Не оплачивайте её самостоятельно.</li>
-            <li>Вставьте ссылку выше и нажмите «Отправить ссылку».</li>
-          </ol>
-        </div>
       </section>
     </div>
 
     <p class="suno-footer">Если возникнут сложности, менеджер свяжется с вами по контакту из заказа. <a href="/oferta.html">Публичная оферта</a> · <a href="/politika.html">Политика конфиденциальности</a></p>
   </main>
   <script src="/assets/js/suno-link.js?v=20260923-suno1" defer></script>
+<script src="/assets/js/storefront-ui.js?v=sha256-bcae5e9700f06872" defer></script>
 </body>
 </html>

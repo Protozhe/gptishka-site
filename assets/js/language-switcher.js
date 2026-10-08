@@ -1,8 +1,9 @@
 (() => {
   const VERSION = "20260913-header-grid1";
+  const boundTriggers = new WeakSet();
   const LANGUAGE_STORAGE_KEY = "gptishka-language";
   const STYLESHEET = "/assets/css/language-slider.css?v=20260811-mobile-header1";
-  const HEADER_NAV_STYLESHEET = "/assets/css/header-navigation-state.css?v=20260913-header-grid1";
+  const HEADER_NAV_STYLESHEET = "/assets/css/header-navigation-state.css?v=20261007-shared-header2";
   const FOOTER_STYLESHEET = "/assets/css/site-footer-unified.css?v=20260724-unified-footer1";
   const ENGLISH_PRODUCT_ROUTES = new Map([
     ["/chatgpt", "/en/chatgpt.html"],
@@ -45,6 +46,10 @@
     ["/en/codex-credits.html", "/codex-credits"]
   ]);
   const FALLBACK_ENGLISH_PATHS = new Set([
+    "/devin-link.html",
+    "/midjourney-link.html",
+    "/suno-link.html",
+    "/payment.html",
     "/404.html",
     "/500.html",
     "/account.html",
@@ -322,6 +327,8 @@
     const trigger = wrapper.querySelector(".language-menu__trigger");
     const options = Array.from(wrapper.querySelectorAll(".language-menu__option"));
     if (!trigger || !options.length) return;
+    if (boundTriggers.has(trigger)) return;
+    boundTriggers.add(trigger);
 
     trigger.addEventListener("keydown", (event) => {
       if (!["ArrowDown", "ArrowUp"].includes(event.key)) return;
@@ -354,15 +361,24 @@
 
   function buildMenu(wrapper) {
     if (!(wrapper instanceof Element)) return;
-    if (wrapper.dataset.languageMenuVersion === VERSION) return;
-
     const activeLanguage = currentLanguage();
+    if (wrapper.dataset.languageMenuVersion === VERSION
+      && wrapper.dataset.languageMenuLanguage === activeLanguage) {
+      // Static markup is already final; retain its nodes and only attach behavior.
+      wrapper.querySelectorAll(".language-menu__option").forEach((option) => {
+        const href = languageHref(option.dataset.language);
+        if (option.getAttribute("href") !== href) option.setAttribute("href", href);
+      });
+      bindMenu(wrapper);
+      return;
+    }
     const active = languages[activeLanguage];
     const labels = activeLanguage === "en"
       ? { choose: "Choose language", menu: "Available languages" }
       : { choose: "Выбрать язык", menu: "Доступные языки" };
 
     wrapper.dataset.languageMenuVersion = VERSION;
+    wrapper.dataset.languageMenuLanguage = activeLanguage;
     wrapper.classList.add("language-menu-host");
     wrapper.classList.remove("language-slider-host", "open");
     wrapper.innerHTML = `

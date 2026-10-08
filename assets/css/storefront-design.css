@@ -1,0 +1,241 @@
+/* Shared storefront foundations. Brand artwork stays inside product media. */
+:root {
+  --store-bg: #191d22;
+  --store-surface: #232930;
+  --store-text: #f3f5f7;
+  --store-muted: #b5bec9;
+  --store-line: #3e464f;
+  --store-accent: #6ddace;
+  --store-focus: #a7eee5;
+  --store-radius: 16px;
+}
+html:has(body#storefrontBody),
+html body#storefrontBody.gptishka-unified-header-ready { background: var(--store-bg) !important; padding-top: 0 !important; }
+html body#storefrontBody::before,
+html body#storefrontBody::after { display: none !important; }
+body.gptishka-unified-header-ready :is(a, button, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--store-focus) !important;
+  outline-offset: 4px !important;
+}
+#storefrontBody .storefront-skip-link { position: fixed !important; top: 8px; left: 16px; z-index: 100001; padding: 12px 18px; background: #f3f5f7; color: #191d22; border-radius: 8px; transform: translateY(-160%); }
+#storefrontBody .storefront-skip-link:focus { transform: none !important; }
+html body#storefrontBody #gptishka-support-widget.support-widget { width: 104px !important; height: 44px !important; right: 14px !important; bottom: 14px !important; filter: none !important; }
+html body#storefrontBody #gptishka-support-widget .support-widget__mascot { display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 104px !important; height: 44px !important; padding: 0 12px !important; border: 1px solid var(--store-line) !important; border-radius: 10px !important; background: var(--store-surface) !important; color: var(--store-text) !important; font: 650 13px/1.2 'Manrope',system-ui,sans-serif !important; box-shadow: none !important; cursor: pointer; }
+html body#storefrontBody #gptishka-support-widget .support-widget__mascot::after { display: none !important; }
+html body#storefrontBody #gptishka-support-widget .support-widget__panel { right: 0 !important; bottom: 54px !important; width: min(320px,calc(100vw - 28px)) !important; background: var(--store-surface) !important; box-shadow: 0 8px 24px #0004 !important; }
+#storefrontHeader { width: min(1320px, calc(100% - 48px)) !important; margin: 8px auto 0 !important; background: var(--store-bg) !important; }
+#storefrontHeader .nav.nav-shell { display: grid !important; grid-template-columns: auto auto minmax(0,1fr) auto !important; grid-template-rows: auto !important; gap: 16px !important; align-items: center !important; padding: 0 !important; }
+#storefrontHeader .logo-link { grid-column: 1 !important; grid-row: 1 !important; min-height: 48px !important; height: auto !important; }
+#storefrontHeader .logo-img { width: 148px !important; max-width: 148px !important; height: auto !important; max-height: 48px !important; object-fit: contain; }
+#storefrontHeader .header-product-pill { grid-column: 2 !important; grid-row: 1 !important; min-height: 44px !important; border: 1px solid #a7eee5 !important; border-radius: 10px !important; background: #a7eee5 !important; color: #173532 !important; box-shadow: none !important; font-size: 12px !important; padding: 8px 12px !important; }
+#storefrontHeader .header-product-pill:hover { background: #c0f5ed !important; border-color: #c0f5ed !important; }
+#storefrontHeader .header-product-pill::before,
+#storefrontHeader .header-product-pill::after { display: none !important; }
+#storefrontHeader .header-quick-links { grid-column: 3 !important; grid-row: 1 !important; display: flex !important; justify-content: flex-end !important; gap: 4px !important; min-width: 0 !important; }
+#storefrontHeader .header-quick-link { min-height: 44px !important; height: auto !important; padding: 0 10px !important; font-size: 13px !important; color: #cbd2da !important; background: transparent !important; box-shadow: none !important; border: 0 !important; border-radius: 8px !important; }
+#storefrontHeader .header-quick-link:hover,
+#storefrontHeader .header-quick-link.is-current-section { background: #2d343c !important; color: #fff !important; }
+#storefrontHeader .header-quick-link.header-social-link { width: 36px !important; min-width: 36px !important; max-width: 36px !important; flex-basis: 36px !important; padding: 0 !important; margin: 0 !important; }
+html body#storefrontBody #storefrontHeader .header-quick-link.header-social-link.header-social-link--vk { color: #0077ff !important; }
+html body#storefrontBody #storefrontHeader .header-quick-link.header-social-link.header-social-link--telegram { color: #26a5e4 !important; }
+#storefrontHeader .header-tools.header-actions { grid-column: 4 !important; grid-row: 1 !important; }
+#storefrontHeader .lang-current { min-height: 44px !important; height: auto !important; padding: 8px 12px !important; font-size: 13px !important; background: #232930 !important; box-shadow: none !important; border-radius: 10px !important; }
+.storefront-intro { width: min(1320px, calc(100% - 48px)); margin: 46px auto 24px; }
+.storefront-intro h1 { max-width: 880px; margin: 0 0 14px; color: var(--store-text); font: 750 clamp(30px, 3.8vw, 52px)/1.13 'Manrope',system-ui,sans-serif; letter-spacing: -.04em; }
+.storefront-intro p { max-width: 680px; margin: 0; color: var(--store-muted); font-size: 16px; line-height: 1.65; }
+html body#storefrontBody .home-wide-page { --home-wide-max: 1320px; --home-wide-gutter: 24px; --home-pricing-reveal-offset: 32px; --home-promo-slider-height: 300px; }
+html body#storefrontBody .home-opening-frame { display: block !important; height: auto !important; min-height: 0 !important; padding: 0 !important; }
+html body#storefrontBody .home-wide-page .home-hero-wide { width: min(1320px, calc(100% - 48px)) !important; margin: 24px auto 16px !important; }
+html body#storefrontBody .home-wide-page .home-hero-wide,
+html body#storefrontBody .home-wide-page .home-hero-wide__content { height: auto !important; min-height: 0 !important; display: block !important; }
+html body#storefrontBody .home-wide-page .home-hero-wide__panel { height: 320px !important; min-height: 0 !important; aspect-ratio: auto !important; overflow: hidden !important; border: 1px solid var(--store-line) !important; border-radius: var(--store-radius) !important; box-shadow: none !important; }
+html body#storefrontBody .home-wide-page .home-promo-slider { height: 100% !important; min-height: 0 !important; aspect-ratio: auto !important; border: 0 !important; border-radius: inherit !important; box-shadow: none !important; }
+html body#storefrontBody .home-wide-page .home-promo-slide { box-sizing: border-box; height: 100% !important; min-height: 0 !important; padding: 24px 72px 64px !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+html body#storefrontBody .home-wide-page .home-promo-slide--ai-battle { background: var(--store-surface) !important; padding: 0 !important; }
+html body#storefrontBody .home-wide-page .home-promo-slide__content { width: min(65%,760px) !important; padding: 0 !important; }
+html body#storefrontBody .home-wide-page .home-promo-slide__content h2 { max-width: none !important; margin: 0 !important; }
+html body#storefrontBody .home-wide-page .home-promo-slide__badge { min-height: 20px !important; margin-bottom: 8px !important; padding: 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; }
+html body#storefrontBody .home-wide-page .home-promo-slide__content p { margin-top: 8px !important; font-size: 14px !important; }
+html body#storefrontBody .home-wide-page .home-promo-slide__button { min-height: 44px !important; margin-top: 14px !important; border-radius: 10px !important; box-shadow: none !important; }
+html body#storefrontBody .home-wide-page .home-hero-wide__panel::before,
+html body#storefrontBody .home-wide-page .home-hero-wide__panel::after,
+html body#storefrontBody .home-wide-page .home-promo-slider::before,
+html body#storefrontBody .home-wide-page .home-promo-slider::after { display: none !important; }
+html body#storefrontBody .home-wide-page .home-promo-slide--ai-battle { --promo-bg: #232930; background: #232930 !important; padding: 0 !important; box-shadow: none !important; }
+html body#storefrontBody .home-wide-page .home-promo-slide--ai-battle::before,
+html body#storefrontBody .home-wide-page .home-promo-slide--ai-battle::after { display: none !important; }
+html body#storefrontBody .home-wide-page .home-promo-slide h2 { font-size: clamp(25px, 2.6vw, 36px) !important; line-height: 1.16 !important; }
+html body#storefrontBody .home-wide-page .home-promo-slide p { line-height: 1.55 !important; }
+html body#storefrontBody .home-wide-page .home-service-shortcuts { width: min(1320px, calc(100% - 48px)) !important; margin: 0 auto !important; }
+html body#storefrontBody .home-wide-page .home-service-shortcuts__grid { max-width: none !important; gap: 12px !important; }
+html body#storefrontBody .home-wide-page .home-service-shortcut { display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: center !important; gap: 16px !important; padding: 18px 22px !important; min-height: 66px !important; border: 1px solid var(--store-line) !important; border-radius: 12px !important; background: var(--store-surface) !important; box-shadow: none !important; transform: none !important; }
+html body#storefrontBody .home-wide-page .home-service-shortcut__art { display: none !important; }
+html body#storefrontBody .home-wide-page .home-service-shortcut__title { margin: 0 !important; padding: 0 !important; font-size: 18px !important; text-align: left !important; }
+html body#storefrontBody .home-wide-page .home-service-shortcut::after { content: '↗' !important; position: static !important; display: block !important; color: var(--store-accent); font-size: 22px; background: none !important; }
+html body#storefrontBody .home-wide-page .home-service-shortcut:hover { border-color: #7a8d86 !important; background: #2b3239 !important; }
+html body#storefrontBody .home-wide-page :is(.ai-directory-card, .product-showcase-card) { box-shadow: none !important; }
+html body#storefrontBody .home-wide-page .ai-directory-card__media { border-radius: 18px !important; box-shadow: none !important; }
+html body#storefrontBody .home-wide-page .ai-directory-card:hover { transform: none !important; }
+html body#storefrontBody .home-wide-page .home-ai-battle { box-sizing: border-box; width: 100% !important; max-width: 1000px !important; height: 100% !important; min-height: 0 !important; padding: 24px 72px 64px !important; margin-block: 0 !important; gap: 16px !important; justify-content: center !important; }
+html body#storefrontBody .home-wide-page .home-ai-battle__intro { gap: 4px !important; }
+html body#storefrontBody .home-wide-page .home-ai-battle__title { width: min(500px,100%) !important; margin: 0 auto !important; font-size: 34px !important; line-height: 1.15 !important; letter-spacing: -.03em !important; text-shadow: none !important; }
+html body#storefrontBody .home-wide-page .home-ai-battle__versus { width: 34px !important; height: 34px !important; font-size: 12px !important; background: transparent !important; border: 0 !important; box-shadow: none !important; transform: none !important; }
+html body#storefrontBody .home-wide-page .home-ai-battle__title-chatgpt,
+html body#storefrontBody .home-wide-page .home-ai-battle__title-claude { text-shadow: none !important; }
+html body#storefrontBody .home-wide-page .home-ai-battle__description { margin: 8px auto 0 !important; color: var(--store-muted) !important; font-size: 16px !important; line-height: 1.5 !important; text-shadow: none !important; }
+html body#storefrontBody .home-wide-page .home-ai-battle__logo { display: block !important; width: 44px !important; height: 44px !important; flex: 0 0 44px !important; border-radius: 0 !important; background: currentColor !important; mask-size: contain; mask-repeat: no-repeat; mask-position: center; box-shadow: none !important; }
+html body#storefrontBody .home-ai-battle__logo--chatgpt { color: var(--store-accent); mask-image: url('/assets/img/services/chatgpt-symbol-mask-v2.webp'); }
+html body#storefrontBody .home-ai-battle__logo--claude { color: #e5a07f; mask-image: url('/assets/img/services/claude-symbol-mask-v1.webp'); }
+html body#storefrontBody .home-wide-page .home-ai-battle__choice { display: grid !important; grid-template-columns: 44px minmax(0,1fr) auto !important; min-height: 96px !important; padding: 14px 18px !important; align-items: center !important; gap: 12px !important; border: 1px solid var(--store-line) !important; border-radius: 12px !important; background: #2b323a !important; box-shadow: none !important; filter: none !important; transform: none !important; }
+html body#storefrontBody .home-wide-page .home-ai-battle__choice:hover,
+html body#storefrontBody .home-wide-page .home-ai-battle__choice[aria-pressed="true"] { border-color: var(--store-accent) !important; background: #303e39 !important; }
+html body#storefrontBody .home-wide-page .home-ai-battle__choice-copy { align-items: flex-start !important; text-align: left !important; }
+html body#storefrontBody .home-wide-page .home-ai-battle__choice-copy strong { font-size: 20px !important; line-height: 1.3 !important; }
+html body#storefrontBody .home-wide-page .home-ai-battle__choice-copy small { display: block !important; overflow: visible !important; color: var(--store-muted) !important; font-size: 13px !important; line-height: 1.4 !important; white-space: normal !important; }
+html body#storefrontBody .home-wide-page .home-ai-battle__total,
+html body#storefrontBody .home-wide-page .home-ai-battle__status { font-size: 13px !important; line-height: 1.4 !important; }
+html body#storefrontBody .home-wide-page .home-ai-battle__status:empty { display: none; }
+html body#storefrontBody .home-wide-page .home-ai-battle__stats { margin: 0 auto !important; transform: none !important; }
+html body#storefrontBody .home-wide-page .home-ai-battle__bar { background: #de956e !important; box-shadow: none !important; }
+html body#storefrontBody .home-wide-page .home-ai-battle__bar-chatgpt { background: var(--store-accent) !important; box-shadow: none !important; }
+html body#storefrontBody .steam-topup-card--visual h1 { margin: 0; font: 750 clamp(23px,2.5vw,32px)/1.2 'Manrope',system-ui,sans-serif; }
+html body footer.gptishka-unified-footer { padding: 24px 0 !important; border-top: 1px solid var(--store-line) !important; color: var(--store-muted) !important; }
+html body footer.gptishka-unified-footer .footer-link { min-height: 44px !important; padding: 8px 4px !important; font-size: 14px !important; color: #cbd2da !important; }
+html body footer.gptishka-unified-footer .footer-copy { color: #aeb8c5 !important; }
+html body .gptishka-compliance-note { border-radius: 0 !important; background: transparent !important; box-shadow: none !important; border: 0 !important; color: #b5bec9 !important; line-height: 1.7 !important; }
+body.gptishka-unified-header-ready .catalog-design-title { margin: 12px 0 24px; font: 750 clamp(28px,3vw,40px)/1.2 'Manrope',system-ui,sans-serif; color: var(--store-text); letter-spacing: -.03em; }
+html body#storefrontBody .service-constructor-brand h1 { margin: 0; font: 750 clamp(26px,3vw,36px)/1.2 'Manrope',system-ui,sans-serif; color: var(--store-text); letter-spacing: -.03em; }
+body.gptishka-unified-header-ready .service-empty-state { padding: 24px; border: 1px solid var(--store-line); border-radius: 12px; }
+body.gptishka-unified-header-ready .storefront-language-note { color: var(--store-muted); font-size: 14px; line-height: 1.6; margin: 12px 0 24px; }
+body.gptishka-unified-header-ready .service-empty-state p { color: var(--store-muted); line-height: 1.6; }
+body.gptishka-unified-header-ready [data-service-retry] { min-height: 44px; padding: 10px 18px; border: 1px solid var(--store-line); border-radius: 8px; background: var(--store-surface); color: var(--store-text); cursor: pointer; }
+@media (max-width: 1100px) {
+  html body#storefrontBody .home-wide-page .home-promo-slide__content p { display: none !important; }
+  #storefrontHeader .header-product-pill { display: none !important; }
+  #storefrontHeader .nav.nav-shell { grid-template-columns: auto minmax(0,1fr) auto !important; }
+  #storefrontHeader .header-quick-links { grid-column: 2 !important; }
+  #storefrontHeader .header-tools.header-actions { grid-column: 3 !important; }
+}
+@media (max-width: 760px) {
+  #storefrontHeader { width: calc(100% - 28px) !important; }
+  #storefrontHeader .nav.nav-shell { grid-template-columns: minmax(0,1fr) auto !important; grid-template-rows: 48px 44px !important; gap: 4px 10px !important; }
+  #storefrontHeader .logo-img { width: 136px !important; max-width: 136px !important; }
+  #storefrontHeader .header-tools.header-actions { grid-column: 2 !important; grid-row: 1 !important; }
+  #storefrontHeader .header-quick-links { grid-column: 1 / -1 !important; grid-row: 2 !important; justify-content: space-between !important; }
+  #storefrontHeader .header-quick-link { flex: 1 !important; justify-content: center !important; padding: 0 6px !important; font-size: 13px !important; }
+  #storefrontHeader .header-quick-link.header-social-link { display: none !important; }
+  .storefront-intro { width: calc(100% - 28px); margin: 28px auto 20px; }
+  .storefront-intro h1 { font-size: 30px; }
+  .storefront-intro p { font-size: 14px; }
+  html body#storefrontBody .home-wide-page { --home-wide-gutter: 14px; --home-promo-slider-height: 250px; }
+  html body#storefrontBody .home-wide-page .home-hero-wide { width: calc(100% - 28px) !important; margin-top: 20px !important; }
+  html body#storefrontBody .home-wide-page .home-hero-wide__panel { height: 280px !important; }
+  html body#storefrontBody .home-wide-page .home-promo-slide { padding: 20px 30px 40px !important; }
+  html body#storefrontBody .home-wide-page .home-promo-slide--ai-battle { padding: 0 !important; }
+  html body#storefrontBody .home-wide-page .home-promo-slide__content { width: 100% !important; }
+  html body#storefrontBody .home-wide-page .home-promo-slide__content h2 { font-size: 26px !important; }
+  html body#storefrontBody .home-wide-page .home-ai-battle__description { display: block !important; font-size: 14px !important; }
+  html body#storefrontBody .home-wide-page .home-ai-battle { padding: 20px 18px 40px !important; }
+  html body#storefrontBody .home-wide-page .home-ai-battle__title { font-size: 25px !important; grid-template-columns: minmax(0,1fr) 24px minmax(0,1fr) !important; gap: 8px !important; }
+  html body#storefrontBody .home-wide-page .home-ai-battle__versus { width: 24px !important; }
+  html body#storefrontBody .home-wide-page .home-ai-battle__choice { display: flex !important; padding: 12px !important; flex-direction: column !important; align-items: center !important; gap: 8px !important; }
+  html body#storefrontBody .home-wide-page .home-ai-battle__choice-copy { align-items: center !important; text-align: center !important; }
+  html body#storefrontBody .home-wide-page .home-ai-battle__choice-copy strong { font-size: 17px !important; }
+  html body#storefrontBody .home-wide-page .home-ai-battle__choice-copy small { font-size: 12px !important; }
+  html body#storefrontBody .home-wide-page .home-ai-battle__logo { width: 36px !important; height: 36px !important; flex-basis: 36px !important; }
+  html body#storefrontBody .home-wide-page .home-service-shortcuts { width: calc(100% - 28px) !important; }
+  html body#storefrontBody .home-wide-page .home-service-shortcut { min-height: 58px !important; padding: 14px !important; gap: 6px !important; }
+  html body#storefrontBody .home-wide-page .home-service-shortcut__title { font-size: 15px !important; }
+  html body#storefrontBody .service-page .service-constructor-shell { grid-template-columns: minmax(0,1fr) !important; gap: 18px !important; }
+  html body#storefrontBody .service-page .service-product-gallery { width: 100% !important; height: 96px !important; min-height: 0 !important; aspect-ratio: auto !important; display: flex !important; justify-content: flex-start !important; align-items: center !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; }
+  html body#storefrontBody .service-page .service-product-gallery > :is(span, img, div) { width: 96px !important; height: 96px !important; max-height: 96px !important; flex: 0 0 96px !important; border-radius: 16px !important; overflow: hidden; object-fit: contain; }
+  html body#storefrontBody .service-page .service-constructor-head { flex-direction: row !important; align-items: flex-start !important; justify-content: space-between !important; gap: 12px !important; text-align: left !important; }
+  html body#storefrontBody .service-page .service-constructor-brand { min-width: 0 !important; width: auto !important; }
+  html body#storefrontBody .service-page .service-constructor-price { width: auto !important; min-width: 0 !important; flex: 0 0 auto !important; }
+  html body#storefrontBody .service-page .service-constructor-price strong { font-size: 19px !important; white-space: nowrap; }
+  html body#storefrontBody .service-page .service-filter-chip { min-height: 44px !important; }
+  html body#storefrontBody .service-page .service-filter-chip.is-active { background: var(--store-accent) !important; color: #10261c !important; border-radius: 10px !important; box-shadow: none !important; }
+  html body#storefrontBody .service-page .service-selected-plan .service-checkout-card__summary { display: none !important; }
+  html body#storefrontBody .service-page .chatgpt-onboarding-brief { display: grid !important; grid-template-columns: minmax(0,1fr) auto !important; gap: 10px !important; min-height: 0 !important; padding: 14px 0 !important; }
+  html body#storefrontBody .service-page .chatgpt-onboarding-brief__copy { display: block !important; }
+  html body#storefrontBody .service-page .chatgpt-onboarding-brief__text { display: grid !important; gap: 6px !important; }
+  html body#storefrontBody .service-page .chatgpt-onboarding-brief__text strong { font-size: 14px !important; }
+  html body#storefrontBody .service-page .chatgpt-onboarding-brief__text small { font-size: 12px !important; line-height: 1.5 !important; }
+  html body#storefrontBody .service-page .chatgpt-onboarding-brief__details { width: auto !important; max-width: 74px !important; min-height: 44px !important; padding: 8px !important; white-space: normal !important; font-size: 12px !important; background: none !important; border: 0 !important; }
+  html body#storefrontBody .service-page .pay-now-btn { min-height: 48px !important; background: var(--store-accent) !important; color: #10261c !important; box-shadow: none !important; border-radius: 10px !important; }
+  html body#storefrontBody .service-page .pay-now-btn::before,
+  html body#storefrontBody .service-page .pay-now-btn::after { display: none !important; }
+  html body#storefrontBody .steam-topup-page .steam-topup-hero__bg { max-height: 150px !important; }
+  html body#storefrontBody .steam-topup-page .steam-topup-hero__content { padding: 18px !important; }
+  html body#storefrontBody .steam-topup-page .steam-topup-hero h1 { font-size: 25px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.gptishka-unified-header-ready :is(.home-promo-slide, .ai-directory-card, .home-service-shortcut, .btn, .pay-now-btn) { animation: none !important; transition: none !important; }
+}
+
+/* Reading text, product choices and activation instructions. */
+html body#storefrontBody :is(.service-page,#chatgptWorkspace) :is(.service-info-card p,.service-info-card li,.service-section-title p,.service-faq-answer p,.service-faq-answer li,.service-constructor-description,.service-account-choice__note,.service-new-account__text small,.chatgpt-onboarding-brief__text small) { font-size: 18px !important; line-height: 1.65 !important; color: var(--store-muted) !important; }
+html body#storefrontBody :is(.service-page,#chatgptWorkspace) :is(.service-faq-question,.service-faq-question__text,.service-filter-group__label,.service-new-account__text strong,.chatgpt-onboarding-brief__text strong) { font-size: 18px !important; line-height: 1.45 !important; }
+html body#storefrontBody :is(.service-page,#chatgptWorkspace) :is(.service-filter-chip,.chatgpt-onboarding-brief__details,.pay-now-btn) { font-size: 17px !important; line-height: 1.45 !important; min-height: 48px !important; }
+html body#storefrontBody .chatgpt-onboarding-brief__details { max-width: none !important; padding: 12px !important; }
+html body#storefrontBody .chatgpt-onboarding-modal__dialog { width: min(760px,calc(100vw - 32px)) !important; max-width: 760px !important; }
+html body#storefrontBody :is(.chatgpt-onboarding-modal__lead,.chatgpt-onboarding-step__copy small,.chatgpt-onboarding-fit__summary small,.chatgpt-onboarding-fit__list small,.chatgpt-onboarding-modal__note small) { font-size: 18px !important; line-height: 1.65 !important; }
+html body#storefrontBody :is(.chatgpt-onboarding-step__copy strong,.chatgpt-onboarding-fit__summary strong,.chatgpt-onboarding-fit__list strong,.chatgpt-onboarding-modal__note strong) { font-size: 20px !important; line-height: 1.4 !important; }
+html body#storefrontBody :is(.chatgpt-onboarding-modal__primary,.chatgpt-onboarding-fit__action) { font-size: 17px !important; line-height: 1.4 !important; }
+html body#storefrontBody .chatgpt-onboarding-modal__primary { min-height: 48px !important; }
+html body#storefrontBody .chatgpt-onboarding-modal__primary,
+html body#storefrontBody .chatgpt-onboarding-modal__primary:hover { background: var(--store-accent) !important; color: #153330 !important; box-shadow: none !important; }
+html body#storefrontBody :is(.chatgpt-onboarding-modal__eyebrow,.chatgpt-onboarding-fit__action,.chatgpt-onboarding-step__number) { color: var(--store-accent) !important; }
+html body#storefrontBody #chatgptWorkspace { width: min(1100px,calc(100% - 48px)) !important; max-width: 1100px !important; --workspace-accent: #6ddace; scroll-margin-top: 80px !important; }
+html body#storefrontBody #chatgptWorkspace :is(#subscriptions,#credits) { scroll-margin-top: 204px !important; }
+html body#storefrontBody #chatgptWorkspace .chatgpt-workspace-tabs a { font-size: 20px !important; }
+html body#storefrontBody #chatgptWorkspace .chatgpt-workspace-tabs a span { color: var(--store-muted); font-size: 16px !important; }
+html body#storefrontBody #chatgptWorkspace :is(.chatgpt-workspace-intro > p,.chatgpt-credits-intro p,.codex-field small,.codex-supporting p,.codex-supporting li,.codex-order__legal) { font-size: 18px !important; line-height: 1.65 !important; }
+html body#storefrontBody #chatgptWorkspace :is(.chatgpt-credits-intro > span,.codex-supporting summary,.codex-order__status) { font-size: 18px !important; line-height: 1.5 !important; }
+html body#storefrontBody #chatgptWorkspace :is(.codex-field > span,.codex-field input,.codex-payment legend,.codex-payment label > span,.codex-option small) { font-size: 17px !important; line-height: 1.45 !important; }
+html body#storefrontBody #chatgptWorkspace :is(.pay-now-btn,.codex-submit) { font-size: 18px !important; min-height: 52px !important; }
+html body#storefrontBody #chatgptWorkspace #serviceConstructorTitle { font-size: 28px !important; line-height: 1.3 !important; max-width: none !important; }
+html body#storefrontBody #chatgptWorkspace #serviceConstructorPrice { font-size: 30px !important; }
+html body#storefrontBody #chatgptWorkspace :is(.codex-order__head h2,.chatgpt-credits-intro h2) { font-size: 26px !important; line-height: 1.3 !important; }
+html body#storefrontBody #chatgptWorkspace .codex-payment { gap: 10px; }
+html body#storefrontBody #chatgptWorkspace .codex-payment label > span { flex-wrap: wrap; min-height: 60px; text-align: center; }
+html body#storefrontBody :is(.itunes-guide-section,.devin-steps,.bundle-page,.vpn-activation-wrap) { zoom: 1 !important; }
+html body#storefrontBody :is(.itunes-guide-section,.devin-steps,.bundle-page,.vpn-activation-wrap) :is(p,li,small,figcaption) { font-size: 18px !important; line-height: 1.65 !important; }
+html body#storefrontBody :is(.itunes-guide-section,.devin-steps,.bundle-page,.vpn-activation-wrap) h3 { font-size: 22px !important; line-height: 1.4 !important; }
+@media (max-width: 760px) {
+  html body#storefrontBody :is(.service-page,#chatgptWorkspace) :is(.service-info-card p,.service-info-card li,.service-section-title p,.service-faq-answer p,.service-faq-answer li,.service-constructor-description,.service-account-choice__note,.service-new-account__text small,.chatgpt-onboarding-brief__text small) { font-size: 17px !important; }
+  html body#storefrontBody .chatgpt-onboarding-brief { grid-template-columns: 1fr !important; gap: 14px !important; }
+  html body#storefrontBody .chatgpt-onboarding-brief__text small { display: block !important; }
+  html body#storefrontBody .chatgpt-onboarding-brief__details { justify-self: start; }
+  html body#storefrontBody .chatgpt-onboarding-modal__dialog { padding: 28px 20px !important; }
+  html body#storefrontBody :is(.chatgpt-onboarding-modal__lead,.chatgpt-onboarding-step__copy small,.chatgpt-onboarding-fit__summary small,.chatgpt-onboarding-fit__list small,.chatgpt-onboarding-modal__note small) { font-size: 17px !important; }
+  html body#storefrontBody #chatgptWorkspace { width: calc(100% - 28px) !important; scroll-margin-top: 124px !important; }
+  html body#storefrontBody #chatgptWorkspace .service-constructor-head { flex-wrap: wrap !important; gap: 12px !important; }
+  html body#storefrontBody #chatgptWorkspace .service-constructor-brand { flex-basis: 100% !important; }
+  html body#storefrontBody #chatgptWorkspace :is(#serviceConstructorTitle,#serviceConstructorPrice) { font-size: 24px !important; }
+  html body#storefrontBody #chatgptWorkspace #servicePlanFilters .service-filter-group__chips { display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 10px !important; }
+  html body#storefrontBody #chatgptWorkspace .service-filter-chip { min-width: 80px !important; padding: 10px 14px !important; }
+  html body#storefrontBody #chatgptWorkspace .service-new-account { grid-template-columns: 22px minmax(0,1fr) !important; }
+  html body#storefrontBody #chatgptWorkspace .service-new-account__price { grid-column: 2 !important; font-size: 17px !important; }
+  html body#storefrontBody #chatgptWorkspace .service-new-account__text small { display: block !important; }
+  html body#storefrontBody #chatgptWorkspace .chatgpt-onboarding-brief { grid-template-columns: 1fr !important; }
+  html body#storefrontBody #chatgptWorkspace :is(.chatgpt-workspace-intro > p,.chatgpt-credits-intro p,.codex-field small,.codex-supporting p,.codex-supporting li,.codex-order__legal) { font-size: 17px !important; }
+  html body#storefrontBody #chatgptWorkspace :is(.chatgpt-credits-intro > span,.codex-supporting summary,.codex-order__status) { font-size: 17px !important; }
+  html body#storefrontBody #chatgptWorkspace .chatgpt-workspace-tabs a { font-size: 18px !important; }
+  html body#storefrontBody #chatgptWorkspace .chatgpt-workspace-tabs a span { font-size: 15px !important; }
+  html body#storefrontBody #chatgptWorkspace .codex-payment { grid-template-columns: 1fr !important; }
+  html body#storefrontBody #chatgptWorkspace .codex-payment label > span { flex-direction: row; justify-content: center; }
+  html body#storefrontBody #chatgptWorkspace :is(#subscriptions,#credits) { scroll-margin-top: 208px !important; }
+  html body#storefrontBody :is(.itunes-guide-section,.devin-steps,.bundle-page,.vpn-activation-wrap) :is(p,li,small,figcaption) { font-size: 17px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:has(body#storefrontBody) { scroll-behavior: auto !important; }
+}
+
+/* Activation pages share the readable type scale after the live layout merge. */
+html body#storefrontBody.redeem-flow main.page { opacity: 1 !important; animation: none !important; transform: none !important; transition: none !important; }
+html body#storefrontBody.redeem-flow :is(.redeem-subtitle,.redeem-label,#tokenGuideList > li,.redeem-manual-copy,.redeem-status,.redeem-perplexity-nextstep p) { font-size: 18px !important; line-height: 1.6 !important; }
+html body#storefrontBody.redeem-flow :is(.redeem-guide summary,.redeem-btn,.redeem-input,.redeem-token-toolbar .redeem-btn) { font-size: 17px !important; line-height: 1.45 !important; }
+@media (max-width: 760px) {
+  html body#storefrontBody.redeem-flow :is(.redeem-subtitle,.redeem-label,#tokenGuideList > li,.redeem-manual-copy,.redeem-status,.redeem-perplexity-nextstep p) { font-size: 17px !important; }
+}

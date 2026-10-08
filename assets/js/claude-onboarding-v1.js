@@ -93,7 +93,12 @@
   function mountBrief() {
     const card = grid.querySelector(".price-card");
     const buyButton = card && card.querySelector(".pay-now-btn");
-    if (!card || !buyButton || card.querySelector(".chatgpt-onboarding-brief")) return;
+    if (!card || !buyButton) return;
+    if (document.querySelector('[data-service-new-account]')?.checked) {
+      card.querySelector(".chatgpt-onboarding-brief")?.remove();
+      return;
+    }
+    if (card.querySelector(".chatgpt-onboarding-brief")) return;
     const planCopy = String(card.dataset.planKey || "").startsWith("max-") ? { ...copy, ...maxCopy } : copy;
     buyButton.insertAdjacentHTML("beforebegin", markupFor(planCopy));
     const detailsButton = card.querySelector("[data-claude-onboarding-open]");
@@ -108,6 +113,7 @@
   }
 
   new MutationObserver(mountBrief).observe(grid, { childList: true, subtree: true });
+  document.querySelector('[data-service-new-account]')?.addEventListener('change', mountBrief);
   mountBrief();
 
   document.body.insertAdjacentHTML("beforeend", `

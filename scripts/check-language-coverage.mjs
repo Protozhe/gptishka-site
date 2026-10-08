@@ -1,3 +1,6 @@
+import { assertAssetReference } from "./release-assets.mjs";
+import assert from "node:assert/strict";
+import vm from "node:vm";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -40,20 +43,31 @@ const pairedPages = [
   "supergrok.html"
 ];
 
+function verifyServiceRoutes(source, label) {
+  function fn(name) {
+    const start = source.search(new RegExp("^  (?:async )?function " + name + "\\(", "m"));
+    assert.ok(start >= 0, name);
+    const next = source.slice(start + 3).search(/^  (?:async )?function /m);
+    assert.ok(next >= 0, name);
+    return source.slice(start, start + next + 3);
+  }
+  for (const en of [false, true]) {
+    const context = vm.createContext({isEnPage: en});
+    for (const name of ["normalizeAiServiceKey", "getProductSearchText", "getAiServiceConfig", "getServicePagePath"]) vm.runInContext(fn(name), context);
+    for (const [route, key] of englishProductRoutes) {
+      if (key === "itunes") continue; // Apple uses its dedicated top-up page and language router below.
+      const actual = vm.runInContext(`getServicePagePath(${JSON.stringify(key)})`, context);
+      assert.equal(actual, en ? route : `/${key}`, `${label}: ${key} route (${en ? "en" : "ru"})`);
+    }
+  }
+}
 const failures = [];
 const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "utf8");
 
 for (const page of fallbackPages) {
   const html = read(page);
-  if (!html.includes("/assets/js/site-header-unify.js?v=20260916-codex-header-price1")) {
-    failures.push(`${page}: unified language switch is missing`);
-  }
-  const clientI18nVersion = page === "app/index.html"
-    ? "/assets/js/client-i18n.js?v=20260906-review-origin-labels1"
-    : "/assets/js/client-i18n.js?v=20260724-en-product-routes1";
-  if (!html.includes(clientI18nVersion)) {
-    failures.push(`${page}: English fallback is missing`);
-  }
+  assertAssetReference(html, "assets/js/site-header-unify.js", page);
+  assertAssetReference(html, "assets/js/client-i18n.js", page);
 }
 
 for (const page of pairedPages) {
@@ -97,6 +111,17 @@ const englishProductRoutes = [
   ["/en/gemini.html", "gemini"],
   ["/en/itunes.html", "itunes"]
 ];
+const languageSource = read("assets/js/language-switcher.js");
+const maps = languageSource.slice(languageSource.indexOf("  const ENGLISH_PRODUCT_ROUTES"), languageSource.indexOf("  const languages ="));
+const languageFn = languageSource.slice(languageSource.indexOf("  function languageHref("), languageSource.indexOf("  function ensureStylesheet("));
+for (const [route, key] of englishProductRoutes) {
+  const window = {location: {href: `https://gptishka.shop/${key}?order=test&lang=ru#subscriptions`}};
+  const context = vm.createContext({URL, window});
+  vm.runInContext(maps + languageFn, context);
+  assert.equal(vm.runInContext('languageHref("en")', context), `${route}?order=test#subscriptions`);
+  window.location.href = `https://gptishka.shop${route}?order=test#subscriptions`;
+  assert.equal(vm.runInContext('languageHref("ru")', context), `/${key}?order=test#subscriptions`);
+}
 for (const page of pairedPages.map((file) => path.join("en", file))) {
   const html = read(page);
   for (const [route, slug] of englishProductRoutes) {
@@ -117,11 +142,7 @@ for (const [route] of englishProductRoutes.slice(3)) {
 
 for (const script of ["assets/js/app.js", "assets/js/app.min.js"]) {
   const source = read(script);
-  for (const [route] of englishProductRoutes) {
-    if (!source.includes(route)) {
-      failures.push(`${script}: missing English product route ${route}`);
-    }
-  }
+  verifyServiceRoutes(source, script);
   if (!source.includes("const displayHref = isEnPage ? getServicePagePath(serviceKey) : configuredHref;")) {
     failures.push(`${script}: API service-card links are not localized`);
   }

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import vm from "node:vm";
 
 const read = file => fs.readFileSync(file, "utf8");
 const appFiles = ["assets/js/app.js", "assets/js/app.min.js"];
@@ -8,6 +9,13 @@ for (const file of appFiles) {
   const source = read(file);
   assert.match(source, /function navigateWithPageTransition[\s\S]*?window\.location\.href = href;/, `${file}: native navigation is missing`);
   assert.ok(!source.includes('document.documentElement.classList.add("is-leaving")'), `${file}: delayed leave overlay is enabled`);
+  const context = vm.createContext({window: {location: {href: "https://gptishka.shop/"}}, document: {documentElement: {classList: {remove() {}}}}, PAGE_TRANSITION_LEAVE_MS: 260});
+  const navigation = source.slice(source.indexOf("function navigateWithPageTransition("), source.indexOf("function initPageEnterTransition("));
+  vm.runInContext(navigation, context);
+  vm.runInContext('navigateWithPageTransition("#pricing"); navigateWithPageTransition("/news/"); navigateWithPageTransition("/app/");', context);
+  assert.equal(context.window.location.href, "/app/", `${file}: a same-document transition must not lock later clicks`);
+  const links = source.slice(source.indexOf("function initLinkPageTransitions("), source.indexOf("function runWhenIdle("));
+  assert.doesNotMatch(links, /preventDefault\(|addEventListener\("click"/, `${file}: ordinary anchors must retain native repeat-click and history behavior`);
 }
 
 const catalogPages = [

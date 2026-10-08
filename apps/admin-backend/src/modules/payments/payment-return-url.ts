@@ -32,6 +32,9 @@ export function buildPaymentReturnUrls(input: PaymentCreateInput) {
   }
 
   const successUrl = new URL(env.PAYMENT_SUCCESS_URL);
+  if (input.metadata?.verificationSupport === true) {
+    successUrl.pathname = input.metadata?.language === "en" ? "/en/verification-support.html" : "/verification-support.html";
+  }
   successUrl.searchParams.set("order_id", input.orderId);
   const failUrl = new URL(env.PAYMENT_FAIL_URL);
   failUrl.searchParams.set("order_id", input.orderId);

@@ -1,0 +1,160 @@
+/* ChatGPT product workspace. Shared storefront and checkout styles stay scoped. */
+html body.chatgpt-workspace-body:has(#chatgptWorkspace) {
+  background: #191d22 !important;
+  --workspace-surface: #22272d;
+  --workspace-line: rgba(255,255,255,.12);
+  --workspace-muted: #acb5bf;
+  --workspace-accent: #42d99c;
+}
+html body.chatgpt-workspace-body:has(#chatgptWorkspace)::before,
+html body.chatgpt-workspace-body:has(#chatgptWorkspace)::after { display: none !important; }
+html body #chatgptWorkspace {
+  width: min(960px, calc(100% - 40px)) !important;
+  max-width: 960px !important;
+  padding: 32px 0 64px !important;
+  color: #f4f6f8;
+}
+/* Match the Manrope typography used by the home page catalog. */
+html body #chatgptWorkspace,
+html body #chatgptWorkspace * {
+  font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif !important;
+}
+[data-chatgpt-workspace] .service-directory-back { margin-bottom: 28px !important; }
+.chatgpt-workspace-intro { margin-bottom: 28px; }
+.chatgpt-workspace-brand { display: flex; align-items: center; gap: 14px; }
+.chatgpt-workspace-brand h1 { margin: 0; font: 750 38px/1.1 'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif; letter-spacing: -.04em; }
+.chatgpt-workspace-mark { display: block; width: 40px; height: 40px; background: #f4f6f8; mask: url('/assets/img/services/chatgpt-symbol-mask-v2.webp') center/contain no-repeat; }
+.chatgpt-workspace-intro > p { margin: 12px 0 0; color: var(--workspace-muted); font-size: 15px; line-height: 1.5; }
+.chatgpt-workspace-tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--workspace-line); margin-bottom: 28px; }
+.chatgpt-workspace-tabs a { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 6px; min-height: 76px; padding: 12px 16px; color: var(--workspace-muted); text-decoration: none; font-size: 16px; font-weight: 750; transition: color .15s; }
+.chatgpt-workspace-tabs a span { color: #8e99a5; font-size: 12px; font-weight: 500; }
+.chatgpt-workspace-tabs a[aria-selected="true"] { color: #f4f6f8; }
+.chatgpt-workspace-tabs a[aria-selected="true"]::after { content: ''; position: absolute; height: 3px; background: var(--workspace-accent); bottom: -1px; inset-inline: 0; }
+.chatgpt-workspace-tabs a:hover { color: #fff; }
+[data-chatgpt-workspace] :is(a,button,input,summary):focus-visible { outline: 2px solid var(--workspace-accent) !important; outline-offset: 4px; }
+.chatgpt-workspace-panel[hidden] { display: none !important; }
+.chatgpt-workspace-panel:focus-visible { outline: 2px solid var(--workspace-accent); outline-offset: 6px; }
+html body #chatgptWorkspace .service-plans-section { margin: 0 !important; }
+html body #chatgptWorkspace .service-constructor-shell { display: block !important; }
+html body #chatgptWorkspace .service-constructor-card { padding: 28px !important; background: var(--workspace-surface) !important; border: 1px solid var(--workspace-line) !important; border-radius: 20px !important; box-shadow: none !important; }
+html body #chatgptWorkspace .service-constructor-head { align-items: center !important; gap: 20px !important; margin-bottom: 24px !important; }
+html body #chatgptWorkspace .service-constructor-brand > span { display: none !important; }
+html body #chatgptWorkspace #serviceConstructorTitle { margin: 0 !important; font: 750 24px/1.25 'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif !important; letter-spacing: -.03em !important; }
+html body #chatgptWorkspace #serviceConstructorPrice { font: 750 24px/1.2 'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif !important; white-space: nowrap; }
+html body #chatgptWorkspace .service-filter-stack { gap: 20px !important; margin: 0 0 22px !important; }
+html body #chatgptWorkspace .service-filter-group { margin: 0 !important; }
+html body #chatgptWorkspace .service-filter-chip { font-family: 'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif !important; min-height: 44px !important; border-radius: 10px !important; box-shadow: none !important; }
+html body #chatgptWorkspace .service-filter-chip[aria-pressed="true"] { background: var(--workspace-accent) !important; color: #10261c !important; border-color: transparent !important; }
+html body #chatgptWorkspace .service-account-choice { padding: 18px 0 !important; margin: 0 !important; border-top: 1px solid var(--workspace-line) !important; }
+html body #chatgptWorkspace .service-account-choice__title { display: none !important; }
+html body #chatgptWorkspace .service-new-account { min-height: 44px; }
+html body #chatgptWorkspace .service-account-choice__note { margin: 8px 0 0 !important; font-size: 13px !important; color: var(--workspace-muted) !important; }
+html body #chatgptWorkspace .service-selected-plan { margin-top: 0 !important; }
+html body #chatgptWorkspace .service-selected-plan .price-card { padding: 0 !important; border: 0 !important; background: none !important; box-shadow: none !important; gap: 0 !important; }
+html body #chatgptWorkspace .service-selected-plan .service-checkout-card__summary { display: none !important; }
+html body #chatgptWorkspace .chatgpt-onboarding-brief { margin: 0 0 18px !important; padding: 16px 0 !important; border: 0 !important; border-top: 1px solid var(--workspace-line) !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; }
+html body #chatgptWorkspace .chatgpt-onboarding-brief__mark { display: none !important; }
+html body #chatgptWorkspace .chatgpt-onboarding-brief__text small { color: var(--workspace-muted) !important; }
+html body #chatgptWorkspace .pay-now-btn,
+html body #chatgptWorkspace .codex-submit { min-height: 48px !important; border-radius: 12px !important; background: var(--workspace-accent) !important; color: #10261c !important; box-shadow: none !important; font: 750 15px 'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif !important; transform: none !important; }
+html body #chatgptWorkspace .service-constructor-description { display: none !important; }
+html body #chatgptWorkspace .service-info-section { margin-top: 36px !important; }
+html body #chatgptWorkspace .service-section-title h2,
+html body #chatgptWorkspace .faq h2 { font-size: 26px !important; line-height: 1.3 !important; }
+html body #chatgptWorkspace .service-info-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+.chatgpt-credits-intro { margin-bottom: 24px; }
+.chatgpt-credits-intro h2 { margin: 0; font-size: 24px; letter-spacing: -.03em; }
+.chatgpt-credits-intro p { margin: 10px 0 12px; color: var(--workspace-muted); font-size: 15px; line-height: 1.6; }
+.chatgpt-credits-intro > span { color: var(--workspace-muted); font-size: 13px; }
+html body #chatgptWorkspace .codex-order { padding: 28px; background: var(--workspace-surface); border: 1px solid var(--workspace-line); border-radius: 20px; box-shadow: none; }
+html body #chatgptWorkspace .codex-order__head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+html body #chatgptWorkspace .codex-order__head > div > span { display: none; }
+html body #chatgptWorkspace .codex-order__head h2 { margin: 0; font-size: 20px; line-height: 1.35; letter-spacing: -.025em; }
+html body #chatgptWorkspace .codex-order__head > strong { color: #f4f6f8; font-size: 24px; white-space: nowrap; }
+html body #chatgptWorkspace .codex-options { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
+html body #chatgptWorkspace .codex-option { display: flex; justify-content: center; min-height: 84px; padding: 12px 8px; border-radius: 12px; background: transparent; box-shadow: none; }
+html body #chatgptWorkspace .codex-option.is-selected { border-color: var(--workspace-accent); background: rgba(66,217,156,.06); box-shadow: none; }
+html body #chatgptWorkspace .codex-option > span { display: grid; gap: 4px; text-align: center; }
+html body #chatgptWorkspace .codex-option > span strong { font: 750 28px/1.1 'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif; }
+html body #chatgptWorkspace .codex-option small { color: var(--workspace-muted); }
+html body #chatgptWorkspace .codex-field input { min-height: 48px; background: #1a1f25; border-radius: 10px; color: #f4f6f8; }
+html body #chatgptWorkspace .codex-field small { color: var(--workspace-muted); }
+html body #chatgptWorkspace .codex-payment { grid-template-columns: repeat(3,minmax(0,1fr)); }
+html body #chatgptWorkspace .codex-payment label > span { padding: 12px 6px; border-radius: 10px; box-shadow: none; font-size: 12px; }
+html body #chatgptWorkspace .codex-payment label > span img { width: 24px; height: 24px; }
+html body #chatgptWorkspace .codex-supporting { margin-top: 24px; }
+@media (max-width: 600px) {
+  html body #chatgptWorkspace { width: calc(100% - 28px) !important; padding-top: 18px !important; }
+  [data-chatgpt-workspace] .service-directory-back { margin-bottom: 18px !important; }
+  .chatgpt-workspace-intro { margin-bottom: 14px; }
+  .chatgpt-workspace-brand h1 { font-size: 30px; }
+  .chatgpt-workspace-mark { width: 32px; height: 32px; }
+  .chatgpt-workspace-intro > p { font-size: 13px; }
+  .chatgpt-workspace-tabs { margin-bottom: 20px; }
+  .chatgpt-workspace-tabs a { align-items: center; justify-content: center; flex-direction: column; gap: 5px; padding: 12px 8px; font-size: 15px; }
+  html body #chatgptWorkspace .service-constructor-card,
+  html body #chatgptWorkspace .codex-order { padding: 20px 16px !important; border-radius: 16px !important; }
+  html body #chatgptWorkspace .service-constructor-head { gap: 10px !important; margin-bottom: 20px !important; }
+  html body #chatgptWorkspace #serviceConstructorTitle,
+  html body #chatgptWorkspace #serviceConstructorPrice { font-size: 20px !important; }
+  html body #chatgptWorkspace .service-filter-stack { gap: 14px !important; margin-bottom: 16px !important; }
+  html body #chatgptWorkspace .service-filter-chip { padding: 10px !important; font-size: 13px !important; }
+  html body #chatgptWorkspace .service-new-account__text small { font-size: 12px !important; }
+  html body #chatgptWorkspace .service-new-account__price { white-space: nowrap; font-size: 13px !important; }
+  html body #chatgptWorkspace .chatgpt-onboarding-brief { margin-bottom: 14px !important; }
+  html body #chatgptWorkspace .chatgpt-onboarding-brief__text small { font-size: 12px !important; line-height: 1.5 !important; }
+  html body #chatgptWorkspace .codex-order__head { flex-wrap: wrap; gap: 10px; }
+  html body #chatgptWorkspace .codex-order__head h2 { font-size: 18px; }
+  html body #chatgptWorkspace .codex-payment label > span { flex-direction: column; gap: 7px; }
+}
+@media (prefers-reduced-motion: reduce) { .chatgpt-workspace-tabs a { transition: none; } }
+
+/* Override the legacy mobile constructor at the workspace boundary. */
+#chatgptWorkspace ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-soft-actions:has(> .chatgpt-order-collapsible:last-child:not([open])) {
+  padding-bottom: 8px !important;
+}
+#chatgptWorkspace ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-soft-actions > .chatgpt-order-collapsible:last-child:not([open]) {
+  padding-bottom: 0;
+}
+#chatgptWorkspace ~ .chatgpt-go-order-modal .chatgpt-order-card .chatgpt-order-soft-actions:has(> .chatgpt-order-collapsible:last-child:not([open])) + .chatgpt-order-section {
+  padding-top: 16px !important;
+}
+html body #chatgptWorkspace .service-constructor-card { display: block !important; }
+html body #chatgptWorkspace .service-constructor-head { display: flex !important; flex-direction: row !important; justify-content: space-between !important; text-align: left !important; }
+html body #chatgptWorkspace .service-constructor-brand { text-align: left !important; }
+html body #chatgptWorkspace .service-constructor-brand { flex: 1 1 auto !important; width: auto !important; min-width: 0 !important; }
+html body #chatgptWorkspace .service-constructor-price { flex: 0 0 auto !important; width: auto !important; min-width: 0 !important; }
+html body #chatgptWorkspace .service-filter-group__chips { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; }
+html body #chatgptWorkspace .service-filter-chip { background: #30363d !important; color: #d5dce4 !important; border: 1px solid var(--workspace-line) !important; }
+html body #chatgptWorkspace .service-filter-chip.is-active { background: var(--workspace-accent) !important; color: #10261c !important; border-color: transparent !important; }
+html body #chatgptWorkspace .service-new-account { display: grid !important; grid-template-columns: 22px minmax(0,1fr) auto !important; gap: 10px !important; align-items: center !important; padding: 0 !important; }
+html body #chatgptWorkspace .service-new-account__text { min-width: 0; }
+html body #chatgptWorkspace .service-new-account__price { grid-column: auto !important; margin: 0 !important; }
+html body #chatgptWorkspace .chatgpt-onboarding-brief { display: grid !important; grid-template-columns: minmax(0,1fr) auto !important; align-items: center !important; gap: 14px !important; }
+html body #chatgptWorkspace .chatgpt-onboarding-brief { min-height: 0 !important; }
+html body #chatgptWorkspace .chatgpt-onboarding-brief__copy { display: block !important; }
+html body #chatgptWorkspace .chatgpt-onboarding-brief__text { display: grid !important; gap: 6px !important; }
+html body #chatgptWorkspace .chatgpt-onboarding-brief__text strong { font-size: 14px !important; }
+html body #chatgptWorkspace .chatgpt-onboarding-brief__details { min-height: 44px !important; padding: 8px !important; border: 0 !important; border-radius: 8px !important; background: none !important; font-size: 12px !important; }
+html body #chatgptWorkspace .service-selected-plan .service-checkout-card__summary { display: none !important; }
+html body #chatgptWorkspace .pay-now-btn::before,
+html body #chatgptWorkspace .pay-now-btn::after { display: none !important; }
+@media (max-width: 600px) {
+  html body #chatgptWorkspace .service-directory-back { margin-bottom: 12px !important; }
+  .chatgpt-workspace-intro > p { display: none; }
+  html body #chatgptWorkspace .service-constructor-head { align-items: flex-start !important; }
+  html body #chatgptWorkspace #serviceConstructorTitle { max-width: 180px; font-size: 18px !important; }
+  html body #chatgptWorkspace #serviceConstructorPrice { font-size: 18px !important; }
+  html body #chatgptWorkspace #servicePlanFilters .service-filter-group__chips { display: grid !important; grid-template-columns: repeat(4,minmax(0,1fr)) !important; gap: 6px !important; }
+  html body #chatgptWorkspace .service-filter-chip { width: auto !important; min-width: 0 !important; padding: 8px 4px !important; font-size: 12px !important; }
+  html body #chatgptWorkspace .service-account-choice { padding: 14px 0 !important; }
+  html body #chatgptWorkspace .service-new-account__text small { display: none !important; }
+  html body #chatgptWorkspace #serviceDurationFilters .service-filter-group { display: flex !important; justify-content: space-between !important; align-items: center !important; gap: 12px !important; }
+  html body #chatgptWorkspace #serviceDurationFilters .service-filter-group__label { margin: 0 !important; }
+  html body #chatgptWorkspace .service-new-account__text strong { font-size: 13px !important; }
+  html body #chatgptWorkspace .chatgpt-onboarding-brief { gap: 6px !important; padding: 14px 0 !important; }
+  html body #chatgptWorkspace .chatgpt-onboarding-brief__details { max-width: 74px; white-space: normal !important; }
+  html body #chatgptWorkspace .chatgpt-onboarding-brief__arrow { display: none !important; }
+  html body #chatgptWorkspace .chatgpt-onboarding-brief__text small { display: none !important; }
+}
+

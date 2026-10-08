@@ -482,10 +482,23 @@ function KeyProductColumn({
   const baseProductKey = resolveProductPoolBaseKey(product);
   const productKey = productKeyOverride || resolveKeyPoolProductKey(baseProductKey, mode);
   const isChatGptPlusDualPool = !isSupportMode && productKey === CHATGPT_PLUS_PRODUCT_KEY;
-  const keyColumnLabel = isSupportMode ? "SDK" : "CDK";
-  const modeLabel = isSupportMode ? (isClaudeMode ? TEXT.modeSupportClaude : TEXT.modeSupport) : TEXT.modeActivation;
-  const placeholder = isSupportMode ? TEXT.sdkTextareaPlaceholder : TEXT.textareaPlaceholder;
-  const fillErrorMessage = isSupportMode ? TEXT.fillSdkKeys : TEXT.fillKeys;
+  const isGeminiActivationLinkPool = !isSupportMode && productKey === "gemini-pro-18";
+  const keyColumnLabel = isGeminiActivationLinkPool ? "Ссылка активации" : isSupportMode ? "SDK" : "CDK";
+  const modeLabel = isGeminiActivationLinkPool
+    ? "Ссылки активации Google · одна уникальная ссылка на один оплаченный заказ"
+    : isSupportMode
+      ? (isClaudeMode ? TEXT.modeSupportClaude : TEXT.modeSupport)
+      : TEXT.modeActivation;
+  const placeholder = isGeminiActivationLinkPool
+    ? "Вставьте ссылки активации Gemini — по одной в строке\nhttps://..."
+    : isSupportMode
+      ? TEXT.sdkTextareaPlaceholder
+      : TEXT.textareaPlaceholder;
+  const fillErrorMessage = isGeminiActivationLinkPool
+    ? "Введите хотя бы одну ссылку активации Gemini"
+    : isSupportMode
+      ? TEXT.fillSdkKeys
+      : TEXT.fillKeys;
   const defaultActivationSiteUrl = String(product.activationVariants?.withoutLogin?.activationSiteUrl || "").trim();
   const [text, setText] = useState("");
   const [activationSiteUrl, setActivationSiteUrl] = useState(defaultActivationSiteUrl);
@@ -554,7 +567,7 @@ function KeyProductColumn({
       (
         await api.post("/cdks/import", {
           productKey,
-          activationSiteUrl: isSupportMode ? "" : selectedActivationSiteUrl,
+          activationSiteUrl: isSupportMode || isGeminiActivationLinkPool ? "" : selectedActivationSiteUrl,
           text,
         })
       ).data as CdkImportResult,
@@ -626,7 +639,7 @@ function KeyProductColumn({
       setError(fillErrorMessage);
       return;
     }
-    if (!isSupportMode && !selectedActivationSiteUrl.trim()) {
+    if (!isSupportMode && !isGeminiActivationLinkPool && !selectedActivationSiteUrl.trim()) {
       setError(TEXT.fillActivationSite);
       return;
     }
@@ -696,7 +709,7 @@ function KeyProductColumn({
             </div>
             <p className="text-xs text-slate-500">Выберите пул перед загрузкой. Смешанная партия или неверный префикс отклоняются целиком.</p>
           </fieldset>
-        ) : !isSupportMode ? (
+        ) : !isSupportMode && !isGeminiActivationLinkPool ? (
           <label className="grid gap-1">
             <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
               Сайт активации для этой партии CDK
@@ -711,6 +724,14 @@ function KeyProductColumn({
               Эти ключи будут выдаваться только заказам этого товара и только если в товаре выбран этот же сайт.
             </span>
           </label>
+        ) : null}
+        {isGeminiActivationLinkPool ? (
+          <div className="rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-sky-900 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-100">
+            <div className="font-semibold">Пул ссылок Gemini Pro — 18 месяцев</div>
+            <div className="mt-1 text-xs opacity-80">
+              Каждая строка — отдельная ссылка. После оплаты система атомарно резервирует одну свободную ссылку для одного заказа.
+            </div>
+          </div>
         ) : null}
         <textarea
           className="input min-h-[120px]"

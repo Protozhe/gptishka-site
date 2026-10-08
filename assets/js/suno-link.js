@@ -14,6 +14,7 @@
   function setStatus(message, kind = "") {
     status.textContent = message;
     status.className = `mj-status${kind ? ` ${kind}` : ""}`;
+    status.hidden = !message;
   }
 
   function validLink(value) {
@@ -55,7 +56,7 @@
         setStatus("Ссылка уже получена. Мы оплатим подписку Suno в ближайшее время, ожидайте. Если возникнут сложности, менеджер свяжется с вами.", "success");
         button.textContent = "Отправить новую ссылку";
       } else {
-        setStatus("Оплата заказа подтверждена. Отправьте ссылку Stripe Checkout для выбранного тарифа.");
+        setStatus("");
       }
     } catch {
       setStatus("Не удалось проверить заказ из-за ошибки сети. Попробуйте ещё раз.", "error");

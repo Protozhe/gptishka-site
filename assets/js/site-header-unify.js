@@ -1,12 +1,16 @@
 (() => {
-  const SCRIPT_VERSION = "20260916-codex-price1";
+  const SCRIPT_VERSION = "20261008-design5";
   const HEADER_CSS = "/assets/css/gptishka-header-refresh.css?v=20260724-language-slider1";
-  const HEADER_NAV_CSS = "/assets/css/header-navigation-state.css?v=20260913-header-grid1";
+  const HEADER_NAV_CSS = "/assets/css/header-navigation-state.css?v=20261007-shared-header2";
   const LOGO_SRC = "/assets/img/logo-new-dark.png?v=20260622-header4";
   const CODEX_LOGO_SRC = "/assets/img/services/chatgpt-card.webp?v=20260721-webp1";
   const VK_URL = "https://vk.com/gptishka?from=groups&trackcode=7f99670c_6HjhbFhCJIgWV0ALEpOr-nIlZFrs3X3-3D3-z00f1k7ylk5Mhdl7hxbRgwtUEeZ8MCZjDfHpk0ywZuW";
   const TELEGRAM_URL = "https://t.me/aimarket_gpt";
   const FALLBACK_ENGLISH_PATHS = new Set([
+    "/devin-link.html",
+    "/midjourney-link.html",
+    "/suno-link.html",
+    "/payment.html",
     "/404.html",
     "/500.html",
     "/account.html",
@@ -133,10 +137,12 @@
 
   function buildHeader() {
     const en = isEnglishPage();
+    const catalogHref = document.querySelector("main.home-wide-page") ? "#pricing" : (en ? "/en/#pricing" : "/?lang=ru#pricing");
     const activeSection = activeHeaderSection();
     const newsCurrent = activeSection === "news";
     const reviewsCurrent = activeSection === "reviews";
     const header = document.createElement("header");
+    header.id = "storefrontHeader";
     header.className = "gptishka-unified-header gptishka-canonical-header";
     header.setAttribute("data-unified-header", SCRIPT_VERSION);
     header.innerHTML = `
@@ -145,12 +151,14 @@
           <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="${LOGO_SRC}" alt="GPTISHKA" class="logo-img">
         </a>
 
-        <a href="${en ? "/en/codex-credits" : "/codex-credits"}" class="header-product-pill" aria-label="${en ? "Top up Codex Credits from 1,850 RUB" : "Пополнить кредиты Codex от 1 850 рублей"}">
-          <img class="header-product-pill__logo" src="${CODEX_LOGO_SRC}" alt="" loading="lazy" decoding="async">
-          <span>${en ? "Codex Credits from 1,850 RUB" : "Кредиты Codex от 1 850 ₽"}</span>
+        <a href="${en ? "/en/codex-credits" : "/codex-credits"}" class="header-product-pill" aria-label="${en ? "Top up Codex Credits from 1,500 RUB" : "Пополнить кредиты Codex от 1 500 рублей"}">
+          <img class="header-product-pill__logo" src="${CODEX_LOGO_SRC}" alt="" loading="eager" decoding="async">
+          <span>${en ? "Codex Credits from 1,500 RUB" : "Кредиты Codex от 1 500 ₽"}</span>
         </a>
 
         <nav class="header-quick-links" aria-label="${en ? "GPTishka quick links" : "Быстрые разделы GPTishka"}">
+          <a class="header-quick-link" href="${catalogHref}">${en ? "Catalog" : "Каталог"}</a>
+          <a class="header-quick-link" href="${en ? "/en/contact.html" : "/contact.html"}">${en ? "Support" : "Помощь"}</a>
           <a class="header-quick-link${newsCurrent ? " is-current-section" : ""}" href="${en ? "/en/news/" : "/news/"}"${newsCurrent ? ' aria-current="page"' : ""}>${en ? "News" : "Новости"}</a>
           <a class="header-quick-link${reviewsCurrent ? " is-current-section" : ""}" href="${reviewsHref(en)}"${reviewsCurrent ? ' aria-current="page"' : ""}>${en ? "Reviews" : "Отзывы"}</a>
           <a class="header-quick-link header-social-link header-social-link--vk" href="${VK_URL}" target="_blank" rel="noopener" aria-label="${en ? "GPTishka on VK" : "GPTishka в VK"}">
@@ -197,9 +205,16 @@
 
   function unifyHeader() {
     if (/^\/admin(?:\/|$)/.test(window.location.pathname || "")) return;
+    if (!document.body.id) document.body.id = "storefrontBody";
     ensureHeaderCss();
     ensureLanguageAlternates();
     const oldHeader = document.querySelector("body > header") || document.querySelector("header");
+    if (oldHeader?.dataset.unifiedHeader === SCRIPT_VERSION
+      && oldHeader.dataset.headerLanguage === (isEnglishPage() ? "en" : "ru")) {
+      refreshCodexPillPrice(oldHeader);
+      document.body.classList.add("gptishka-unified-header-ready");
+      return;
+    }
     const nextHeader = buildHeader();
     if (oldHeader) {
       oldHeader.replaceWith(nextHeader);

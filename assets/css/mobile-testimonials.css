@@ -1,0 +1,109 @@
+/* Phone layout retains the site's existing review-card colours and typography. */
+body.home-wide-body .home-testimonials__status { display: none; }
+
+@media (max-width: 760px) {
+  body.home-wide-body .home-wide-page > .home-testimonials {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px 12px;
+    min-width: 0;
+    margin-bottom: 40px !important;
+    scroll-margin-top: 100px;
+  }
+
+  body.home-wide-body .home-testimonials__header,
+  body.home-wide-body .home-testimonials__footer { display: contents; }
+
+  body.home-wide-body .home-testimonials__header > div:first-child {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  body.home-wide-body .home-testimonials__eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.09em;
+    margin-bottom: 8px;
+  }
+
+  body.home-wide-body .home-testimonials h2 {
+    font-size: clamp(26px, 7.2vw, 32px);
+    line-height: 1.12;
+    max-width: 100%;
+    scroll-margin-top: 110px;
+  }
+
+  body.home-wide-body .home-testimonials__viewport {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    min-width: 0;
+    scroll-padding-inline: 0;
+  }
+
+  body.home-wide-body .home-testimonials__track {
+    display: flex;
+    box-sizing: content-box;
+    width: 100%;
+    grid-auto-columns: calc(100% - 20px);
+    gap: 12px;
+    padding-right: 0;
+  }
+
+  /* Keep the last review aligned with the first, including its trailing space. */
+  body.home-wide-body .home-testimonials__track::after {
+    content: "";
+    flex: 0 0 8px;
+  }
+
+  body.home-wide-body .home-testimonial-card {
+    flex: 0 0 calc(100% - 20px);
+    min-height: 0;
+    padding: 18px;
+    border-radius: 20px;
+    scroll-snap-stop: always;
+  }
+
+  body.home-wide-body .home-testimonial-card__person { gap: 10px; }
+  body.home-wide-body .home-testimonial-card__avatar { width: 40px; height: 40px; flex-basis: 40px; }
+  body.home-wide-body .home-testimonial-card__person strong { font-size: 14px; }
+  body.home-wide-body .home-testimonial-card__person small { font-size: 12px; line-height: 1.4; }
+  body.home-wide-body .home-testimonial-card__rating { margin: 16px 0 10px; flex-wrap: wrap; }
+  body.home-wide-body .home-testimonial-card blockquote { font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
+
+  body.home-wide-body .home-testimonials__controls {
+    grid-column: 2;
+    grid-row: 3;
+    gap: 8px;
+  }
+
+  body.home-wide-body .home-testimonials__arrow { width: 44px; height: 44px; }
+  body.home-wide-body .home-testimonials__dots { display: none; }
+  body.home-wide-body .home-testimonials__status {
+    display: block;
+    grid-column: 1;
+    grid-row: 3;
+    align-self: center;
+    color: rgba(199, 210, 224, 0.75);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  body.home-wide-body .home-testimonials__footer > a {
+    display: flex;
+    grid-column: 1 / -1;
+    grid-row: 4;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 46px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.045);
+    font-size: 14px;
+  }
+
+  body.home-wide-body .home-testimonials :focus-visible {
+    outline: 2px solid #55e7a1;
+    outline-offset: -2px;
+  }
+}

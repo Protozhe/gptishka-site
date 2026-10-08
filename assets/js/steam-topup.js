@@ -17,6 +17,8 @@
         productConfigFetchError: "Could not load the current product configuration.",
         productNotFoundError: "The Steam product is not available in the server configuration yet. Try again later or contact support.",
         invalidTelegram: "Enter a valid Telegram username, for example @username.",
+        invalidEmail: "Enter a valid buyer email.",
+        invalidSteamAccount: "Enter your Steam account name.",
         invalidTradeUrl: "Enter a Steam trade URL in the tradeoffer/new format with partner and token.",
         creatingPayment: "Creating secure payment...",
         paymentCreateError: "Could not create the payment. Try again.",
@@ -30,6 +32,8 @@
         productConfigFetchError: "Не удалось получить актуальную конфигурацию товара.",
         productNotFoundError: "Товар Steam пока не найден в серверной конфигурации. Попробуйте позже или напишите в поддержку.",
         invalidTelegram: "Укажите корректный Telegram, например @username.",
+        invalidEmail: "Укажите настоящий email покупателя.",
+        invalidSteamAccount: "Укажите логин Steam-аккаунта.",
         invalidTradeUrl: "Укажите Steam trade-ссылку в формате tradeoffer/new с partner и token.",
         creatingPayment: "Создаём безопасную оплату...",
         paymentCreateError: "Не удалось создать оплату. Попробуйте снова.",
@@ -67,11 +71,6 @@
 
   function isValidTelegram(value) {
     return /^@[a-z0-9_]{5,32}$/i.test(normalizeTelegram(value));
-  }
-
-  function buildTelegramContactEmail(value) {
-    const username = normalizeTelegram(value).slice(1).toLowerCase();
-    return `steam_${username}@telegram.local`;
   }
 
   function isValidSteamTradeUrl(value) {
@@ -157,11 +156,11 @@
 
   function collectPaymentMethod(form) {
     const checked = qs(form, 'input[name="paymentMethod"]:checked');
-    const value = String(checked && checked.value || "lava").trim().toLowerCase();
-    return value === "lava" ? "lava" : "enot";
+    const value = String(checked && checked.value || "pally").trim().toLowerCase();
+    return ["pally", "lava", "enot"].includes(value) ? value : "pally";
   }
 
-  function buildOrderDetails(form, productId, quantity, total, tradeUrl, telegram, email, paymentMethod) {
+  function buildOrderDetails(form, productId, quantity, total, tradeUrl, telegram, email, steamAccount, paymentMethod) {
     const comment = String(qs(form, '[name="comment"]')?.value || "").trim();
     return {
       source: "steam_topup_page",
@@ -184,6 +183,7 @@
         total: total,
         paymentMethod: paymentMethod,
         steamTradeUrl: tradeUrl,
+        steamAccount: steamAccount,
       },
       contact: {
         email: email,
@@ -191,6 +191,7 @@
         steamTradeUrl: tradeUrl,
       },
       steam: {
+        account: steamAccount,
         tradeUrl: tradeUrl,
         quantity: quantity,
         unitPrice: STEAM_UNIT_PRICE,
@@ -202,13 +203,18 @@
 
   async function submitSteamTopup(form) {
     const telegramInput = qs(form, '[name="telegram"]');
+    const emailInput = qs(form, '[name="email"]');
+    const steamAccountInput = qs(form, '[name="steamAccount"]');
     const tradeInput = qs(form, '[name="steamTradeUrl"]');
     const telegram = normalizeTelegram(telegramInput && telegramInput.value);
-    const email = buildTelegramContactEmail(telegram);
+    const email = String(emailInput && emailInput.value || "").trim().toLowerCase();
+    const steamAccount = String(steamAccountInput && steamAccountInput.value || "").trim();
     const tradeUrl = normalizeTradeUrl(tradeInput && tradeInput.value);
     const { quantity, total } = updateTotals(form);
 
     markInvalid(telegramInput, false);
+    markInvalid(emailInput, false);
+    markInvalid(steamAccountInput, false);
     markInvalid(tradeInput, false);
 
     if (!isValidTelegram(telegram)) {
@@ -224,6 +230,18 @@
       if (tradeInput && typeof tradeInput.focus === "function") tradeInput.focus();
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || /@telegram\.local$/i.test(email)) {
+      markInvalid(emailInput, true);
+      setStatus(form, COPY.invalidEmail, "error");
+      if (emailInput && typeof emailInput.focus === "function") emailInput.focus();
+      return;
+    }
+    if (!/^[^\s]{2,64}$/.test(steamAccount)) {
+      markInvalid(steamAccountInput, true);
+      setStatus(form, COPY.invalidSteamAccount, "error");
+      if (steamAccountInput && typeof steamAccountInput.focus === "function") steamAccountInput.focus();
+      return;
+    }
 
     const paymentMethod = collectPaymentMethod(form);
     setBusy(form, true);
@@ -231,7 +249,7 @@
 
     try {
       const productId = await resolveSteamProductId(form);
-      const orderDetails = buildOrderDetails(form, productId, quantity, total, tradeUrl, telegram, email, paymentMethod);
+      const orderDetails = buildOrderDetails(form, productId, quantity, total, tradeUrl, telegram, email, steamAccount, paymentMethod);
       try {
         localStorage.setItem("checkout_telegram", telegram);
         localStorage.setItem("gptishka_site_checkout_context", JSON.stringify({
@@ -267,6 +285,7 @@
           duration: COPY.duration(quantity),
           tradeUrl: tradeUrl,
           steamTradeUrl: tradeUrl,
+          steamAccount: steamAccount,
           order_details: orderDetails,
           orderDetails: orderDetails,
         }),

@@ -6,6 +6,12 @@ export type PaymentCreateInput = {
   currency: Currency;
   description: string;
   metadata?: Record<string, unknown>;
+  orderData?: {
+    name: string;
+    type: "normal";
+    payer_email: string;
+    items: Array<{ name: string; price: string; quantity: string; category: string; extra?: Record<string, string> }>;
+  };
 };
 
 export type PaymentCreateResult = {

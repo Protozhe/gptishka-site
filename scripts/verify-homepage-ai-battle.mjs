@@ -1,3 +1,4 @@
+import { assertAssetReference } from "./release-assets.mjs";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
@@ -10,8 +11,8 @@ const routes = read("apps/admin-backend/src/modules/homepage/homepage-content.ro
 const statsService = read("apps/admin-backend/src/modules/homepage/ai-battle-stats.service.ts");
 const ecosystem = read("ecosystem.config.js");
 const deploy = read("deploy.sh");
-const stats = JSON.parse(read("apps/admin-backend/data/ai-battle-stats.json"));
-const content = JSON.parse(read("apps/admin-backend/data/homepage-content.json"));
+const stats = JSON.parse(read("scripts/fixtures/ai-battle-stats.json"));
+const content = JSON.parse(read("scripts/fixtures/homepage-content.json"));
 const desktopArt = "assets/img/home/ai-battle-logo-bg-v2.webp";
 const mobileArt = "assets/img/home/ai-battle-logo-bg-mobile-v2.webp";
 
@@ -60,13 +61,13 @@ assert.match(routes, /homepageContentPublicRouter\.post\([\s\S]*?\/ai-battle/);
 assert.match(statsService, /process\.env\.AI_BATTLE_STATS_FILE/);
 assert.match(statsService, /dataFile !== legacyDataFile/);
 assert.match(ecosystem, /AI_BATTLE_STATS_FILE:\s*"\/var\/lib\/gptishka-runtime\/ai-battle-stats\.json"/);
-assert.match(deploy, /install -d -m 0755 "\$RUNTIME_DIR"/);
+assert.match(deploy, /install -d -m 0755 [^\n]*"\$RUNTIME_DIR"/);
 assert.match(deploy, /install -m 0644 "\$LEGACY_AI_BATTLE_STATS" "\$RUNTIME_AI_BATTLE_STATS"/);
 assert.ok(
-  deploy.indexOf('install -m 0644 "$LEGACY_AI_BATTLE_STATS" "$RUNTIME_AI_BATTLE_STATS"') < deploy.indexOf('git reset --hard "origin/$DEPLOY_BRANCH"'),
+  deploy.indexOf('install -m 0644 "$LEGACY_AI_BATTLE_STATS" "$RUNTIME_AI_BATTLE_STATS"') < deploy.indexOf('mv -Tf "$APP_DIR.next" "$APP_DIR"'),
   "The live counter must be preserved before Git resets tracked files.",
 );
-assert.match(index, /home-promo-slider\.js\?v=20260912-restored-products1/);
-assert.match(enIndex, /home-promo-slider\.js\?v=20260912-restored-products1/);
+assertAssetReference(index, "assets/js/home-promo-slider.js", "index");
+assertAssetReference(enIndex, "assets/js/home-promo-slider.js", "enIndex");
 
 console.log("Homepage AI battle slide and click counter wiring verified.");

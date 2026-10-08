@@ -2,6 +2,15 @@
 // PAGE TRANSITION - FIXED
 // =========================
 
+function isEnglishRequest() {
+  if (/^\/en(?:\/|$)/.test(window.location.pathname || "")) return true;
+  try {
+    return new URLSearchParams(window.location.search).get("lang") === "en";
+  } catch (_) {
+    return false;
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   document.documentElement.classList.remove("is-leaving");
   const enteredWithTransition = initPageEnterTransition();
@@ -16,7 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initLinkPageTransitions();
   initProgressiveResourceWarmup();
   window.addEventListener("pageshow", () => {
-    pageNavigationInProgress = false;
     document.documentElement.classList.remove("is-leaving");
     document.documentElement.classList.remove("is-entering");
     document.documentElement.classList.remove("is-entering-active");
@@ -63,7 +71,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initSoftProgressivePageReveal(enteredWithTransition);
 });
 
-let pageNavigationInProgress = false;
 const PAGE_TRANSITION_LEAVE_MS = 260;
 const PAGE_TRANSITION_ENTER_MS = 480;
 const PAGE_TRANSITION_CLEANUP_MS = PAGE_TRANSITION_ENTER_MS + 80;
@@ -74,6 +81,10 @@ const WARMUP_MAX_ROUTES = 7;
 const WARMUP_PRODUCTS_DELAY_MS = 4400;
 const METRIKA_COUNTER_ID = 106969126;
 const TOP_MAIL_COUNTER_ID = "3744660";
+const METRIKA_GOAL_BY_EVENT = {
+  checkout_start: "ym-begin-checkout",
+  payment_method_selected: "ym-add-payment-info",
+};
 const prefetchedNavigationKeys = new Set();
 
 function markTransitionNavigationIntent() {
@@ -113,7 +124,8 @@ function trackAnalyticsEvent(eventName, payload = {}) {
 
   if (typeof window.ym === "function") {
     try {
-      window.ym(METRIKA_COUNTER_ID, "reachGoal", safeName, safePayload);
+      const metrikaGoal = METRIKA_GOAL_BY_EVENT[safeName] || safeName;
+      window.ym(METRIKA_COUNTER_ID, "reachGoal", metrikaGoal, safePayload);
     } catch (_) {
       // Ignore analytics transport errors.
     }
@@ -134,33 +146,34 @@ function trackAnalyticsEvent(eventName, payload = {}) {
 
 window.gptishkaTrackEvent = trackAnalyticsEvent;
 
+function getMarketingAttribution() {
+  try {
+    if (typeof window.gptishkaGetAttribution === "function") {
+      const attribution = window.gptishkaGetAttribution();
+      if (!attribution || typeof attribution !== "object") return null;
+      return {
+        version: 1,
+        firstTouch: attribution.firstTouch || null,
+        lastTouch: attribution.lastTouch || attribution.session || null,
+      };
+    }
+  } catch (_) {
+    // Attribution must never block checkout.
+  }
+  return null;
+}
+
 function navigateWithPageTransition(targetHref, delayMs = PAGE_TRANSITION_LEAVE_MS) {
   const href = String(targetHref || "").trim();
   if (!href) return;
-  if (pageNavigationInProgress) return;
-  pageNavigationInProgress = true;
-  markTransitionNavigationIntent();
-  document.documentElement.classList.add("is-leaving");
-  window.setTimeout(() => {
-    window.location.href = href;
-  }, delayMs);
+  document.documentElement.classList.remove("is-leaving", "is-entering", "is-entering-active");
+  window.location.href = href;
 }
 
 function initPageEnterTransition() {
-  const isTransitionNavigation = consumeTransitionNavigationIntent();
-  if (!isTransitionNavigation) return false;
-  const root = document.documentElement;
-  root.classList.add("is-entering");
-  window.requestAnimationFrame(() => {
-    window.requestAnimationFrame(() => {
-      root.classList.add("is-entering-active");
-      window.setTimeout(() => {
-        root.classList.remove("is-entering");
-        root.classList.remove("is-entering-active");
-      }, PAGE_TRANSITION_CLEANUP_MS);
-    });
-  });
-  return true;
+  consumeTransitionNavigationIntent();
+  document.documentElement.classList.remove("is-leaving", "is-entering", "is-entering-active");
+  return false;
 }
 
 function normalizePathname(pathname) {
@@ -197,24 +210,9 @@ function shouldUsePageTransitionForHref(href, linkEl) {
 }
 
 function initLinkPageTransitions() {
-  document.addEventListener("click", e => {
-    if (e.defaultPrevented) return;
-    if (e.button !== 0) return;
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-
-    const target = e.target instanceof Element ? e.target : null;
-    const link = target ? target.closest("a[href]") : null;
-    if (!(link instanceof HTMLAnchorElement)) return;
-
-    const href = link.getAttribute("href");
-    if (!shouldUsePageTransitionForHref(href, link)) return;
-
-    e.preventDefault();
-    const fastDelay = isPrefetchedNavigationTarget(link.href)
-      ? Math.min(180, PAGE_TRANSITION_LEAVE_MS)
-      : PAGE_TRANSITION_LEAVE_MS;
-    navigateWithPageTransition(link.href, fastDelay);
-  });
+  // Links use the browser's navigation, including repeated clicks and history.
+  // A same-document navigation does not emit pageshow, so a shared lock can
+  // otherwise disable every following link until the page is reloaded.
 }
 
 function runWhenIdle(callback, timeoutMs = 1400) {
@@ -346,7 +344,7 @@ function addDocumentPrefetch(href) {
 }
 
 function collectWarmupRoutes() {
-  const isEnPage = String(window.location.pathname || "").toLowerCase().startsWith("/en/");
+  const isEnPage = isEnglishRequest();
   const defaults = isEnPage
     ? ["/en/", "/en/about.html", "/en/guarantee.html", "/en/contact.html", "/en/site-map.html"]
     : ["/", "/about.html", "/guarantee.html", "/contact.html", "/site-map.html"];
@@ -377,7 +375,7 @@ function canRunProgressiveWarmup() {
 }
 
 function warmupProductsEndpoint() {
-  const isEnPage = String(window.location.pathname || "").toLowerCase().startsWith("/en/");
+  const isEnPage = isEnglishRequest();
   const lang = isEnPage ? "en" : "ru";
   fetch(`/api/public/products?lang=${lang}`, {
     method: "GET",
@@ -513,11 +511,18 @@ function initFaqAccordions() {
   const questions = Array.from(document.querySelectorAll(".faq-question"));
   if (!questions.length) return;
   questions.forEach(btn => {
+    const item = btn.parentElement;
+    const answer = item ? item.querySelector(".faq-answer") : null;
+    if (!item) return;
+    item.classList.remove("active");
+    btn.setAttribute("aria-expanded", "false");
+    if (answer) answer.setAttribute("aria-hidden", "true");
+
     btn.addEventListener("click", () => {
-      const item = btn.parentElement;
-      if (!item) return;
       const nextState = !item.classList.contains("active");
-      item.classList.toggle("active");
+      item.classList.toggle("active", nextState);
+      btn.setAttribute("aria-expanded", String(nextState));
+      if (answer) answer.setAttribute("aria-hidden", String(!nextState));
       if (nextState) {
         trackAnalyticsEvent("faq_open", {
           question: String(btn.textContent || "").replace(/\s+/g, " ").trim().slice(0, 120),
@@ -613,7 +618,7 @@ function initReviewsSecurityBanner() {
 
   const reviewsSection = document.querySelector(".reviews");
   if (!reviewsSection || reviewsSection.querySelector(".reviews-security-banner")) return;
-  const isEnPage = currentPath.startsWith("/en/");
+  const isEnPage = currentPath.startsWith("/en/") || isEnglishRequest();
 
   const title = isEnPage
     ? "For client privacy, we fully mask personal emails in activation logs."
@@ -681,8 +686,8 @@ function initLanguageSwitch() {
       if (lang !== "ru" && lang !== "en") return;
       const targetPath = resolveLangTargetPath(lang);
       const targetUrl = new URL(targetPath, window.location.origin);
-      targetUrl.search = "";
-      targetUrl.hash = "";
+      targetUrl.search = window.location.search;
+      targetUrl.hash = window.location.hash;
       navigateWithPageTransition(targetUrl.toString());
     });
   });
@@ -768,7 +773,7 @@ function persistActivationResumeContext(orderId, token, activationUrl) {
 }
 
 function buildActivationResumeUrl(orderId, token) {
-  const isEnPage = window.location.pathname.startsWith("/en/");
+  const isEnPage = isEnglishRequest();
   const path = isEnPage ? "/en/redeem-start.html" : "/redeem-start.html";
   const url = new URL(path, window.location.origin);
   url.searchParams.set("order_id", String(orderId || "").trim());
@@ -779,7 +784,7 @@ function buildActivationResumeUrl(orderId, token) {
 function initActivationResumeShortcut() {
   const path = String(window.location.pathname || "").toLowerCase();
   if (path.includes("redeem-start.html") || path.includes("success.html")) return;
-  const isEnPage = path.startsWith("/en/");
+  const isEnPage = path.startsWith("/en/") || isEnglishRequest();
 
   const { orderId, token: orderToken } = readStoredActivationResumeContext();
   if (!orderId || !orderToken) return;
@@ -808,19 +813,45 @@ function initActivationResumeShortcut() {
   const serviceMinPriceEl = document.getElementById("serviceMinPrice");
   const servicePlansCountEl = document.getElementById("servicePlansCount");
   const serviceConstructorPriceEl = document.getElementById("serviceConstructorPrice");
+  const serviceConstructorTitleEl = document.getElementById("serviceConstructorTitle");
   let servicePageItems = [];
   let dynamicServicePagePayload = null;
+  const requestedServicePlan = (() => {
+    try {
+      const requested = String(new URLSearchParams(window.location.search).get("plan") || "")
+        .trim()
+        .toLowerCase();
+      const aliases = {
+        go: "go",
+        plus: "plus",
+        pro: "pro-5x",
+        "pro-5x": "pro-5x",
+        pro5x: "pro-5x",
+        "pro-20x": "pro-20x",
+        pro20x: "pro-20x",
+      };
+      if (aliases[requested]) return aliases[requested];
+      const serviceKey = String(servicePageRootEl?.getAttribute("data-service-page") || "").trim().toLowerCase();
+      return serviceKey === "chatgpt" && !isEnglishRequest() ? "plus" : "all";
+    } catch (_) {
+      return "all";
+    }
+  })();
   const servicePageState = {
-    plan: "all",
+    plan: requestedServicePlan,
     delivery: "all",
     duration: "all",
   };
   const CHATGPT_ORDER_MODAL_PLAN_KEYS = new Set(["go", "plus", "pro-5x", "pro-20x"]);
   const CLAUDE_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max-5x", "max-20x"]);
-  const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["supergrok"]);
+  const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["supergrok", "supergrok-heavy"]);
+  const PERPLEXITY_ORDER_MODAL_PLAN_KEYS = new Set(["pro"]);
+  const GEMINI_ORDER_MODAL_PLAN_KEYS = new Set(["pro"]);
+  const SUNO_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "premier"]);
   const DEVIN_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max", "teams"]);
+  const MIDJOURNEY_ORDER_MODAL_PLAN_KEYS = new Set(["basic", "standard", "pro"]);
   const VPN_ORDER_MODAL_PLAN_KEYS = new Set(["1m", "2m", "6m", "12m"]);
-  const AI_ORDER_MODAL_SERVICE_KEYS = new Set(["chatgpt", "claude", "grok", "devin", "vpn"]);
+  const AI_ORDER_MODAL_SERVICE_KEYS = new Set(["chatgpt", "claude", "grok", "perplexity", "gemini", "suno", "devin", "midjourney", "vpn"]);
   const AI_ORDER_MODAL_SERVICE_CONFIG = {
     chatgpt: {
       displayName: "ChatGPT",
@@ -840,11 +871,35 @@ function initActivationResumeShortcut() {
       fallbackPlan: "1m",
       logo: "/assets/img/services/grok-card.webp?v=20260721-heavy-cards-webp1",
     },
+    perplexity: {
+      displayName: "Perplexity",
+      fallbackTitle: "Perplexity Pro",
+      fallbackPlan: "pro",
+      logo: "/assets/img/services/perplexity-card.webp?v=20260809-perplexity1",
+    },
+    gemini: {
+      displayName: "Gemini",
+      fallbackTitle: "Gemini Pro",
+      fallbackPlan: "pro",
+      logo: "/assets/img/services/gemini-card.webp?v=20260810-gemini1",
+    },
+    suno: {
+      displayName: "Suno",
+      fallbackTitle: "Suno Pro",
+      fallbackPlan: "pro",
+      logo: "/assets/img/services/suno-card-v2.webp?v=20260824-suno-square2",
+    },
     devin: {
       displayName: "Devin",
       fallbackTitle: "Devin Pro",
       fallbackPlan: "pro",
       logo: "/assets/img/services/devin-symbol-mask-v1.svg?v=20260922-devin-image1",
+    },
+    midjourney: {
+      displayName: "Midjourney",
+      fallbackTitle: "Midjourney Basic",
+      fallbackPlan: "basic",
+      logo: "/assets/img/services/midjourney-card-v1.svg",
     },
     vpn: {
       displayName: "GPTishka VPN",
@@ -887,7 +942,7 @@ function initActivationResumeShortcut() {
   );
   const isEnPage =
     String(document.documentElement.lang || "").toLowerCase().startsWith("en") ||
-    window.location.pathname.startsWith("/en/");
+    isEnglishRequest();
   const numberLocale = isEnPage ? "en-US" : "ru-RU";
   const checkoutLandingPath = isEnPage ? "/en/#pricing" : "/#pricing";
   const TEXT = isEnPage
@@ -989,11 +1044,11 @@ function initActivationResumeShortcut() {
       };
   const PROMO_CODE_KEY = "gptishka_cart_promo_v1";
   const PROMO_CODE_TS_KEY = "gptishka_cart_promo_ts_v1";
-  const PAYMENT_METHOD_KEY = "gptishka_checkout_payment_method_v1";
+  const PAYMENT_METHOD_KEY = "gptishka_checkout_payment_method_v3";
   const CHATGPT_GO_ORDER_KEY = "gptishka_chatgpt_go_order_v1";
   const CHATGPT_GO_ORDER_TTL_MS = 20 * 60 * 1000;
-  const DEFAULT_PAYMENT_METHOD = "lava";
-  const AVAILABLE_PAYMENT_METHODS = new Set(["enot", "lava"]);
+  const DEFAULT_PAYMENT_METHOD = "pally";
+  const AVAILABLE_PAYMENT_METHODS = new Set(["pally", "enot", "lava"]);
   const PROMO_TTL_MS = 30 * 60 * 1000;
   const PRODUCTS_CACHE_TTL_MS = 15 * 1000;
   const PRODUCTS_FETCH_TIMEOUT_MS = 8000;
@@ -1022,6 +1077,9 @@ function initActivationResumeShortcut() {
   let chatGptGoOrderModalEl = null;
   let chatGptGoOrderContentEl = null;
   let chatGptGoOrderLastFocusedElement = null;
+  let pro20RenewalConfirmModalEl = null;
+  let pro20RenewalConfirmLastFocusedElement = null;
+  let pro20RenewalPendingForm = null;
 
   function normalizePromoCodeInput(value) {
     const raw = String(value || "").trim().toUpperCase();
@@ -1245,7 +1303,7 @@ function initActivationResumeShortcut() {
   function formatPriceByCurrency(value, currency) {
     const amount = Math.max(0, toAmount(value));
     const c = String(currency || "RUB").toUpperCase();
-    const symbol = c === "RUB" ? "RUB" : c;
+    const symbol = c === "RUB" && !isEnPage ? "₽" : c;
     return formatAmount(amount) + "\u00A0" + symbol;
   }
 
@@ -1287,11 +1345,21 @@ function initActivationResumeShortcut() {
     return normalizePromoCodeInput(activePromoCode);
   }
 
-  function alignToHashTarget(behavior = "auto") {
+  // Reconcile an incoming anchor once after catalog hydration, unless the reader
+  // has already interacted. Subsequent navigation belongs to the browser.
+  const incomingCatalogHash = window.location.hash;
+  let catalogReaderInteracted = false;
+  ["pointerdown", "wheel", "touchstart", "keydown"].forEach(type => {
+    window.addEventListener(type, () => { catalogReaderInteracted = true; }, { once: true, passive: true });
+  });
+
+  function alignToHashTarget(behavior = "instant") {
+    if (catalogReaderInteracted || window.location.hash !== incomingCatalogHash) return;
     const hash = String(window.location.hash || "").trim();
     if (!hash || hash === "#") return;
 
-    const targetId = decodeURIComponent(hash.slice(1));
+    let targetId;
+    try { targetId = decodeURIComponent(hash.slice(1)); } catch (_) { return; }
     if (!targetId) return;
 
     const target = document.getElementById(targetId);
@@ -2329,7 +2397,7 @@ function initActivationResumeShortcut() {
         cache: "no-store",
         signal: controller.signal,
       })
-      .catch(() => fetchJson("/api/public/products?lang=" + lang, { cache: "no-store" }))
+      .catch(() => fetchJson("/api/public/products?lang=" + lang, { cache: "no-store", signal: controller.signal }))
       .then(payload => {
         const normalizedPayload = normalizePayload(payload);
         productsPayloadCache = normalizedPayload;
@@ -2443,18 +2511,39 @@ function initActivationResumeShortcut() {
         backgroundGradient: "linear-gradient(135deg, #020617 0%, #1e3a8a 52%, #2563eb 100%)",
       };
     }
-    if (text.includes("devin") || text.includes("cognition ai")) {
-      return {
-        backgroundType: "gradient",
-        backgroundColor: "#061426",
-        backgroundGradient: "linear-gradient(135deg, #030712 0%, #0b2c5f 52%, #1388d4 100%)",
-      };
-    }
     if (text.includes("claude")) {
       return {
         backgroundType: "gradient",
         backgroundColor: "#3b2418",
         backgroundGradient: "linear-gradient(135deg, #1c1917 0%, #92400e 54%, #f97316 100%)",
+      };
+    }
+    if (text.includes("perplexity") || text.includes("pplx")) {
+      return {
+        backgroundType: "gradient",
+        backgroundColor: "#080c0d",
+        backgroundGradient: "linear-gradient(135deg, #080c0d 0%, #102426 54%, #21808d 100%)",
+      };
+    }
+    if (text.includes("gemini") || text.includes("google ai")) {
+      return {
+        backgroundType: "gradient",
+        backgroundColor: "#070b18",
+        backgroundGradient: "linear-gradient(135deg, #070b18 0%, #172554 48%, #6d28d9 100%)",
+      };
+    }
+    if (text.includes("suno")) {
+      return {
+        backgroundType: "gradient",
+        backgroundColor: "#0b0712",
+        backgroundGradient: "linear-gradient(135deg, #08050d 0%, #31105a 50%, #b51b71 100%)",
+      };
+    }
+    if (text.includes("devin") || text.includes("cognition ai")) {
+      return {
+        backgroundType: "gradient",
+        backgroundColor: "#061426",
+        backgroundGradient: "linear-gradient(135deg, #030712 0%, #0b2c5f 52%, #1388d4 100%)",
       };
     }
     if (text.includes("vpn")) {
@@ -2491,9 +2580,7 @@ function initActivationResumeShortcut() {
         key: "claude",
         name: "Claude",
         icon: "CL",
-        description: isEnPage
-          ? "Claude Pro activation for text, analysis and code."
-          : "Claude Pro для текста, анализа и кода.",
+        description: "Claude Opus 5.5",
         theme: "claude",
         sort: 20,
       };
@@ -2510,6 +2597,42 @@ function initActivationResumeShortcut() {
         sort: 30,
       };
     }
+    if (text.includes("perplexity") || text.includes("pplx")) {
+      return {
+        key: "perplexity",
+        name: "Perplexity",
+        icon: "PPLX",
+        description: isEnPage
+          ? "Perplexity Pro for search, research and cited answers."
+          : "Perplexity Pro для поиска, исследований и ответов с источниками.",
+        theme: "perplexity",
+        sort: 40,
+      };
+    }
+    if (text.includes("gemini") || text.includes("google ai")) {
+      return {
+        key: "gemini",
+        name: "Gemini",
+        icon: "GM",
+        description: isEnPage
+          ? "Gemini Pro for work, study, analysis and creativity."
+          : "Gemini Pro для работы, учёбы, анализа и творчества.",
+        theme: "gemini",
+        sort: 50,
+      };
+    }
+    if (text.includes("suno")) {
+      return {
+        key: "suno",
+        name: "Suno",
+        icon: "SU",
+        description: isEnPage
+          ? "Suno Pro and Premier for AI music creation."
+          : "Suno Pro и Premier для создания музыки и вокала.",
+        theme: "suno",
+        sort: 60,
+      };
+    }
     if (text.includes("devin") || text.includes("cognition ai")) {
       return {
         key: "devin",
@@ -2519,7 +2642,19 @@ function initActivationResumeShortcut() {
           ? "An AI software engineer for code, repositories and development tasks."
           : "AI-инженер для кода, репозиториев и задач разработки.",
         theme: "devin",
-        sort: 40,
+        sort: 55,
+      };
+    }
+    if (text.includes("midjourney")) {
+      return {
+        key: "midjourney",
+        name: "Midjourney",
+        icon: "MJ",
+        description: isEnPage
+          ? "AI image and video generation on your account."
+          : "Генерация изображений и видео на вашем аккаунте.",
+        theme: "midjourney",
+        sort: 58,
       };
     }
     if (isStandaloneVpnProduct(item)) {
@@ -2531,7 +2666,7 @@ function initActivationResumeShortcut() {
           ? "VLESS Reality VPN access with automatic key delivery after payment."
           : "VPN-доступ VLESS Reality с автоматической выдачей ключа после оплаты.",
         theme: "vpn",
-        sort: 50,
+        sort: 60,
       };
     }
     return null;
@@ -2554,6 +2689,11 @@ function initActivationResumeShortcut() {
       if (text.includes("pro")) return 10;
       if (text.includes("max")) return 20;
       if (text.includes("team")) return 30;
+    }
+    if (serviceKey === "midjourney") {
+      if (text.includes("basic")) return 10;
+      if (text.includes("standard")) return 20;
+      if (text.includes("pro")) return 30;
     }
     if (serviceKey === "vpn") {
       return getServiceDurationSortScore(getServiceDurationKey(item));
@@ -2580,14 +2720,26 @@ function initActivationResumeShortcut() {
     if (text.includes("claude")) {
       return 300 + (text.includes("pro") ? 10 : 20);
     }
+    if (text.includes("perplexity") || text.includes("pplx")) {
+      return 400 + (text.includes("pro") ? 10 : 20);
+    }
+    if (text.includes("gemini") || text.includes("google ai")) {
+      return 500 + (text.includes("pro") ? 10 : 20);
+    }
+    if (text.includes("suno")) {
+      return 550 + (text.includes("premier") ? 10 : 20);
+    }
     if (text.includes("devin")) {
-      return 400 + getAiPlanSortScore(item, "devin");
+      return 540 + getAiPlanSortScore(item, "devin");
+    }
+    if (text.includes("midjourney")) {
+      return 545 + getAiPlanSortScore(item, "midjourney");
     }
     if (text.includes("vpn")) {
-      if (text.includes("1 месяц") || text.includes("1 month") || text.includes("30")) return 500;
-      if (text.includes("6 месяцев") || text.includes("6 month") || text.includes("180")) return 510;
-      if (text.includes("12 месяцев") || text.includes("12 month") || text.includes("365")) return 520;
-      return 550;
+      if (text.includes("1 месяц") || text.includes("1 month") || text.includes("30")) return 600;
+      if (text.includes("6 месяцев") || text.includes("6 month") || text.includes("180")) return 610;
+      if (text.includes("12 месяцев") || text.includes("12 month") || text.includes("365")) return 620;
+      return 650;
     }
     return 900 + Math.max(0, toAmount(item?.price));
   }
@@ -2620,11 +2772,15 @@ function initActivationResumeShortcut() {
     const normalized = String(value || "").trim().toLowerCase();
     if (!normalized) return "";
     if (normalized === "supergrok" || normalized === "grok" || normalized === "xai") return "grok";
+    if (normalized === "pplx" || normalized.includes("perplexity")) return "perplexity";
+    if (normalized.includes("gemini") || normalized.includes("google ai")) return "gemini";
+    if (normalized.includes("suno")) return "suno";
+    if (normalized.includes("devin") || normalized.includes("cognition")) return "devin";
+    if (normalized.includes("midjourney")) return "midjourney";
     if (normalized === "vpn" || normalized === "vless" || normalized === "xray" || normalized === "reality" || normalized.includes("gptishka vpn")) return "vpn";
     if (normalized.includes("chatgpt") || normalized.includes("openai")) return "chatgpt";
     if (normalized.includes("claude")) return "claude";
     if (normalized.includes("grok")) return "grok";
-    if (normalized.includes("devin") || normalized.includes("cognition")) return "devin";
     if (normalized.includes("vpn") || normalized.includes("vless")) return "vpn";
     return normalized;
   }
@@ -2640,26 +2796,156 @@ function initActivationResumeShortcut() {
     return Boolean(servicePageRootEl && String(servicePageRootEl.getAttribute("data-service-layout") || "").trim() === "constructor");
   }
 
+  function getEnglishServicePageContent(serviceKey) {
+    const key = normalizeAiServiceKey(serviceKey);
+    if (key === "midjourney") {
+      return {
+        metaTitle: "Midjourney Basic, Standard and Pro — 1 month | GPTishka",
+        heroEyebrow: "Subscription plans",
+        heroTitle: "Midjourney",
+        heroDescription: "AI image and video generation on your own account.",
+        constructorTitle: "Midjourney",
+        constructorDescription: "Choose Basic, Standard or Pro for one month. After paying GPTishka, submit the Stripe Checkout link for the same plan on your Midjourney account.",
+        infoSections: [
+          { title: "What you receive", items: ["One month of your selected Midjourney Basic, Standard or Pro plan.", "Plan access on your account.", "GPTishka assistance with subscription payment and setup."] },
+          { title: "Account security", items: ["We do not need your login, password or verification codes.", "Submit only the Stripe Checkout link from Midjourney after paying GPTishka.", "Do not share bank card details in the form."] },
+          { title: "How it works", ordered: true, items: ["Choose a monthly plan and pay GPTishka in rubles.", "Open checkout for the same plan on your Midjourney account.", "Submit the full Stripe Checkout URL without paying Midjourney yourself.", "A manager reviews the link and completes the payment."] },
+          { title: "Important details", items: ["The form checks URL format only; a manager verifies the plan and checkout session.", "Checkout sessions can expire, so submit the link soon after ordering.", "Midjourney may change plan features and limits."] }
+        ],
+        faqItems: [
+          { question: "What happens after paying GPTishka?", answer: "Submit the Stripe Checkout link for the same monthly Midjourney plan on the next page. A manager will review it and pay for the subscription." },
+          { question: "Do you need my login or password?", answer: "No. Sign in to Midjourney yourself and send only the checkout link." },
+          { question: "Why might my link not work?", answer: "The session may have expired or the wrong plan may have been selected. A manager will ask for a new link if needed." },
+          { question: "How can I pay GPTishka?", answer: "Available payment methods appear at checkout. GPTishka does not store bank card details." }
+        ]
+      };
+    }
+    if (key === "perplexity") {
+      return {
+        metaTitle: "Perplexity Pro — 1 month plan | GPTishka",
+        heroEyebrow: "Subscription plans",
+        heroTitle: "Perplexity Pro",
+        heroDescription: "Advanced AI search, deep research, file analysis and cited answers for one month with GPTishka support.",
+        constructorTitle: "Perplexity Pro",
+        constructorDescription: "Research current topics, compare sources and work with documents using Perplexity Pro. Choose the one-month plan and GPTishka will help with activation.",
+        infoSections: [
+          { title: "What is included", items: ["One month of Perplexity Pro on your account.", "Advanced Pro Search and deeper web research.", "Higher limits for files, images and research tools.", "Access to the models and features available in the current Pro plan."] },
+          { title: "What it is useful for", items: ["Research, comparisons and fact checking with source links.", "Reviewing documents, spreadsheets, images and long materials.", "Preparing reports, plans and structured summaries.", "Assistance with writing, ideas, code and everyday work."] },
+          { title: "How activation works", ordered: true, items: ["Choose the Perplexity Pro plan and place your order.", "After payment, receive the next activation instructions.", "GPTishka helps activate Pro and checks the result.", "The order status is sent to the contact you provided."] },
+          { title: "Support and important terms", items: ["The plan lasts one month from successful activation.", "Perplexity may update its models, features and usage limits.", "GPTishka remains available for order and activation support."] }
+        ],
+        faqItems: [
+          { question: "What will I receive after payment?", answer: "One month of Perplexity Pro on your account and GPTishka assistance with activation." },
+          { question: "Which features are included?", answer: "Advanced search, current AI models, higher file and image limits, research tools and cited answers within the current Pro plan." },
+          { question: "How long does activation take?", answer: "Most orders are completed within 5 minutes to 2 hours. The maximum processing time is 48 hours." },
+          { question: "Which payment methods are available?", answer: "Available payment methods are shown during checkout. GPTishka does not store bank card details." },
+          { question: "What if I need help after payment?", answer: "Contact support with your order number and we will check the activation status." }
+        ]
+      };
+    }
+    if (key === "gemini") {
+      return {
+        metaTitle: "Gemini Pro — 12 or 18 months | GPTishka",
+        heroEyebrow: "Subscription plans",
+        heroTitle: "Gemini Pro",
+        heroDescription: "Gemini Pro for writing, files, ideas and complex tasks. Choose a 12- or 18-month subscription with GPTishka support.",
+        constructorTitle: "Gemini Pro",
+        constructorDescription: "Use Gemini Pro for work, study, analysis and creative tasks. Select 12 or 18 months and GPTishka will help with activation.",
+        infoSections: [
+          { title: "What is included", items: ["Gemini Pro for the selected 12- or 18-month term.", "Access to the models and features included in the current Pro plan.", "Higher limits for working with text, files and images.", "GPTishka assistance during activation."] },
+          { title: "What it is useful for", items: ["Writing, editing and summarizing content.", "Analyzing documents, images and structured information.", "Study, research and planning.", "Ideas, creative work and everyday tasks."] },
+          { title: "How activation works", ordered: true, items: ["Select a 12- or 18-month term.", "Place the order and complete payment.", "Follow the activation instructions from GPTishka.", "Check that Gemini Pro is active on your account."] },
+          { title: "Support and important terms", items: ["The term starts after successful activation.", "Google may update available models, features and limits.", "Keep access to your account and linked email.", "Contact GPTishka support if you have an order question."] }
+        ],
+        faqItems: [
+          { question: "What will I receive after payment?", answer: "Gemini Pro for the selected 12- or 18-month term and GPTishka assistance with activation." },
+          { question: "Which term should I choose?", answer: "Choose 12 months for a shorter commitment or 18 months for longer access. The available price is shown before payment." },
+          { question: "How long does activation take?", answer: "Most orders are completed within 5 minutes to 2 hours. The maximum processing time is 48 hours." },
+          { question: "Which payment methods are available?", answer: "Available payment methods are shown during checkout. GPTishka does not store bank card details." },
+          { question: "What if I need help after payment?", answer: "Contact support with your order number and we will check the activation status." }
+        ]
+      };
+    }
+    if (key === "suno") {
+      return {
+        metaTitle: "Suno Pro and Premier — monthly plans | GPTishka",
+        heroEyebrow: "Subscription plans",
+        heroTitle: "Suno",
+        heroDescription: "Choose Suno Pro or Premier for one month and complete activation through your own account.",
+        constructorTitle: "Suno",
+        constructorDescription: "After paying GPTishka, submit the checkout link for the same Suno plan through the secure form.",
+        infoSections: [
+          { title: "What is included", items: ["Pro: 2,500 monthly credits and access to paid models.", "Premier: 10,000 monthly credits and Suno Studio.", "Both plans include commercial rights for new songs, subject to Suno terms."] },
+          { title: "How activation works", ordered: true, items: ["Choose Pro or Premier for one month and pay GPTishka.", "Open checkout for the same plan in your own Suno account, but do not pay Suno yourself.", "Submit the full checkout link through the secure form.", "A manager checks the link and completes activation."] },
+          { title: "Security and support", items: ["No account login, password or verification code is needed.", "The form checks URL shape; a manager verifies the plan manually.", "If the session expires, a manager will contact you using your order details."] }
+        ],
+        faqItems: [
+          { question: "What do I do after paying GPTishka?", answer: "Submit the checkout link for the same Suno monthly plan. A manager checks it and completes activation." },
+          { question: "How do Pro and Premier differ?", answer: "Pro includes 2,500 monthly credits. Premier includes 10,000 monthly credits and Suno Studio." },
+          { question: "Do I need to share my password?", answer: "No. Sign in to Suno yourself and submit only the checkout URL." },
+          { question: "Why might my link not work?", answer: "The payment session may expire or point to a different plan. A manager can request a new link." }
+        ]
+      };
+    }
+    return null;
+  }
+
+  function localizeServicePagePayload(payload, serviceKey) {
+    if (!isEnPage) return payload;
+    const content = normalizeAiServiceKey(serviceKey) === "devin" ? {
+      metaTitle: "Devin subscription plans | GPTishka",
+      heroEyebrow: "Subscription plans", heroTitle: "Devin",
+      heroDescription: "AI software engineer for development tasks.",
+      constructorTitle: "Devin",
+      constructorDescription: "Choose an available plan. After paying GPTishka, submit the Stripe Checkout link for the same plan from your Devin account.",
+      infoSections: [], faqItems: []
+    } : getEnglishServicePageContent(serviceKey);
+    if (!content) {
+      const titles = {chatgpt: "ChatGPT plans and subscriptions | GPTishka", claude: "Claude Pro and Max plans | GPTishka", grok: "SuperGrok subscription | GPTishka"};
+      const title = titles[normalizeAiServiceKey(serviceKey)];
+      return title && payload && typeof payload === "object"
+        ? {...payload, meta: {...(payload.meta || {}), title}}
+        : payload;
+    }
+    const source = payload && typeof payload === "object" ? payload : {};
+    return {
+      ...source,
+      meta: { ...(source.meta || {}), title: content.metaTitle },
+      page: {
+        ...(source.page || {}),
+        serviceKey: normalizeAiServiceKey(serviceKey),
+        heroEyebrow: content.heroEyebrow,
+        heroTitle: content.heroTitle,
+        heroDescription: content.heroDescription,
+        constructorTitle: content.constructorTitle,
+        constructorDescription: content.constructorDescription,
+        infoSections: content.infoSections,
+        faqItems: content.faqItems,
+      },
+    };
+  }
+
   async function fetchServicePageConfig(serviceKey) {
-    const key = String(serviceKey || "").trim() || String(location.pathname || "").replace(/^\/+|\/+$/g, "");
+    const key = String(serviceKey || "").trim();
     if (!key) return null;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), PRODUCTS_FETCH_TIMEOUT_MS);
     try {
-      const requestLang = isEnPage ? "en" : "ru";
-      const response = await fetch("/api/public/service-pages/" + encodeURIComponent(key) + "?lang=" + requestLang, { cache: "no-store" });
-      if (!response.ok) return null;
-      return await response.json();
+      const response = await fetch("/api/public/service-pages/" + encodeURIComponent(key) + "?lang=" + (isEnPage ? "en" : "ru"), {cache: "no-store", signal: controller.signal});
+      if (!response.ok) return localizeServicePagePayload(null, key);
+      return localizeServicePagePayload(await response.json(), key);
     } catch (_) {
-      return null;
+      return localizeServicePagePayload(null, key);
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 
   function getServicePagePath(serviceKey) {
     const key = normalizeAiServiceKey(serviceKey);
-    if (key === "chatgpt") return "/chatgpt";
-    if (key === "claude") return "/claude";
-    if (key === "grok") return "/supergrok";
-    if (key === "devin") return "/devin";
-    if (key === "vpn") return "/store/vpn";
+    const routes = {chatgpt: "chatgpt", claude: "claude", grok: "supergrok", devin: "devin", perplexity: "perplexity", gemini: "gemini", suno: "suno", midjourney: "midjourney"};
+    if (routes[key]) return isEnPage ? "/en/" + routes[key] + ".html" : "/" + routes[key];
+    if (key === "vpn") return isEnPage ? "/en/store/vpn" : "/store/vpn";
     return isEnPage ? "/en/#pricing" : "/#pricing";
   }
 
@@ -2691,67 +2977,97 @@ function initActivationResumeShortcut() {
     const eyebrow = servicePageRootEl.querySelector(".service-hero__eyebrow");
     const title = servicePageRootEl.querySelector(".service-hero__content h1");
     const description = servicePageRootEl.querySelector(".service-hero__content p");
-    const constructorBrand = servicePageRootEl.querySelector(".service-constructor-brand h2");
+    const constructorBrand = servicePageRootEl.querySelector(".service-constructor-brand h1, .service-constructor-brand h2");
     const constructorBrandLabel = servicePageRootEl.querySelector(".service-constructor-brand span");
     const constructorDescriptionTitle = servicePageRootEl.querySelector(".service-constructor-description h3");
     const constructorDescriptionText = servicePageRootEl.querySelector(".service-constructor-description p");
     const video = servicePageRootEl.querySelector(".service-hero__video");
+    const directoryBack = servicePageRootEl.querySelector(".service-directory-back");
 
-    if (eyebrow) eyebrow.textContent = page.heroEyebrow || (isEnPage ? "Plans" : "Тарифные планы");
+    if (eyebrow) eyebrow.textContent = (page.heroEyebrow && (!isEnPage || !/[А-Яа-яЁё]/.test(page.heroEyebrow)) ? page.heroEyebrow : (isEnPage ? "Plans" : "Тарифные планы"));
     if (title) title.textContent = page.heroTitle || page.title || "GPTishka";
     if (description) description.textContent = page.heroDescription || "";
-    if (constructorBrand) constructorBrand.textContent = page.constructorTitle || page.title || "GPTishka";
-    if (constructorBrandLabel) constructorBrandLabel.textContent = page.heroEyebrow || (isEnPage ? "Plans" : "Тарифные планы");
+    if (constructorBrand) {
+      constructorBrand.textContent = key === "chatgpt" && !isEnPage
+        ? "ChatGPT"
+        : page.constructorTitle || page.title || "GPTishka";
+    }
+    if (constructorBrandLabel) constructorBrandLabel.textContent = (page.heroEyebrow && (!isEnPage || !/[А-Яа-яЁё]/.test(page.heroEyebrow)) ? page.heroEyebrow : (isEnPage ? "Plans" : "Тарифные планы"));
     if (constructorDescriptionTitle) constructorDescriptionTitle.textContent = page.constructorTitle || page.title || "GPTishka";
     if (constructorDescriptionText) constructorDescriptionText.textContent = page.constructorDescription || page.heroDescription || "";
+    if (directoryBack && isEnPage) {
+      const directoryBackLabel = directoryBack.querySelector("span");
+      if (directoryBackLabel) directoryBackLabel.textContent = "AI services";
+      directoryBack.setAttribute("aria-label", "Back to AI services");
+    }
 
-    if (video && page.heroVideoUrl) {
-      video.hidden = false;
-      video.innerHTML = '<source src="' + escapeHtml(page.heroVideoUrl) + '" type="video/mp4">';
+    if (video) {
+      video.hidden = !page.heroVideoUrl;
+      video.innerHTML = page.heroVideoUrl ? '<source src="' + escapeHtml(page.heroVideoUrl) + '" type="video/mp4">' : '';
       try {
         video.load();
       } catch (_) {}
     }
 
-    if (payload.meta && payload.meta.title) document.title = payload.meta.title;
+    if (servicePageRootEl.dataset.defaultSection === "credits") {
+      document.title = isEnPage ? "Codex credit top-up | GPTishka" : "Пополнение кредитов Codex | GPTishka";
+    } else if (key === "chatgpt" && !isEnPage) {
+      document.title = "Купить ChatGPT Plus — 2 190 ₽ за месяц";
+    } else if (payload.meta && payload.meta.title) {
+      document.title = payload.meta.title;
+    }
   }
 
   function renderDynamicServiceInfo(payload) {
-    const section = document.querySelector("[data-service-info-section]");
+    const section = document.querySelector("[data-service-info-section], .service-info-section");
     if (!section || !payload || !payload.page) return;
     const items = Array.isArray(payload.page.infoSections) ? payload.page.infoSections : [];
     if (!items.length) {
+      // Keep the authored HTML as a fallback when the admin page has no
+      // dynamic sections configured. This prevents a successful API response
+      // with an empty array from removing useful service information.
       section.hidden = false;
       return;
     }
     section.hidden = false;
+    const serviceTitle = String(payload.page.constructorTitle || payload.page.heroTitle || payload.page.title || "").trim();
     section.innerHTML =
-      '<div class="service-section-title"><h2>' + escapeHtml(isEnPage ? "Features" : "Возможности") + "</h2><p>" +
-      escapeHtml(payload.page.title || "") +
+      '<div class="service-section-title"><h2>' + escapeHtml(isEnPage ? "Before you buy" : "Перед покупкой") + " " + escapeHtml(serviceTitle) + "</h2><p>" +
+      escapeHtml(isEnPage ? "Features, activation and order support." : "Возможности тарифа, порядок подключения и сопровождение заказа.") +
       "</p></div>" +
       '<div class="service-info-grid">' +
       items
-        .map(
-          item =>
-            '<article class="service-info-card"><h3>' +
+        .map(item => {
+          const listItems = Array.isArray(item?.items) ? item.items.filter(Boolean) : [];
+          const listTag = item?.ordered === true ? "ol" : "ul";
+          const text = String(item?.text || "").trim();
+          return '<article class="service-info-card"><h3>' +
             escapeHtml(String(item?.title || "")) +
-            "</h3><p>" +
-            escapeHtml(String(item?.text || "")) +
-            "</p></article>"
-        )
+            "</h3>" +
+            (text ? "<p>" + escapeHtml(text) + "</p>" : "") +
+            (listItems.length
+              ? "<" + listTag + ">" + listItems.map(value => "<li>" + escapeHtml(String(value)) + "</li>").join("") + "</" + listTag + ">"
+              : "") +
+            "</article>";
+        })
         .join("") +
       "</div>";
   }
 
   function renderDynamicServiceFaq(payload) {
-    const section = document.querySelector("[data-service-faq-section]");
+    const section = document.querySelector("[data-service-faq-section], .service-faq-section");
     if (!section || !payload || !payload.page) return;
     const items = Array.isArray(payload.page.faqItems) ? payload.page.faqItems : [];
     if (!items.length) {
+      // Keep the static FAQ when the API does not provide an override.
       section.hidden = false;
       return;
     }
     section.hidden = false;
+    const isChatGptFaq = getServicePageKey() === "chatgpt";
+    const faqTopics = isEnPage
+      ? ["Security", "Payment", "Timing", "Guarantees"]
+      : ["Безопасность", "Оплата", "Сроки", "Гарантии"];
     section.innerHTML =
       '<div class="service-section-title"><h2>' +
       escapeHtml(isEnPage ? "FAQ" : "Часто задаваемые вопросы") +
@@ -2761,14 +3077,20 @@ function initActivationResumeShortcut() {
       '<div class="service-faq-list">' +
       items
         .map(
-          (item, index) =>
+          (item, index) => {
+            const answers = Array.isArray(item?.answer) ? item.answer.filter(Boolean) : [item?.answer].filter(Boolean);
+            const topic = isChatGptFaq ? faqTopics[index] || (isEnPage ? "Details" : "Подробнее") : "";
+            return (
             '<article class="service-faq-item' +
             (index === 0 ? " active" : "") +
             '"><button class="service-faq-question" type="button">' +
-            escapeHtml(String(item?.question || "")) +
-            '<span></span></button><div class="service-faq-answer"><p>' +
-            escapeHtml(String(item?.answer || "")) +
-            "</p></div></article>"
+            (topic ? '<span class="service-faq-question__topic">' + escapeHtml(topic) + '</span>' : "") +
+            '<span class="service-faq-question__text">' + escapeHtml(String(item?.question || "")) + '</span>' +
+            '<span class="service-faq-question__toggle"></span></button><div class="service-faq-answer">' +
+            answers.map(value => "<p>" + escapeHtml(String(value)) + "</p>").join("") +
+            "</div></article>"
+            );
+          }
         )
         .join("") +
       "</div>";
@@ -2792,7 +3114,36 @@ function initActivationResumeShortcut() {
     }
 
     if (key === "grok") {
+      if (text.includes("supergrok-heavy") || text.includes("supergrok heavy") || joinedTags.includes("heavy")) return "supergrok-heavy";
       return "supergrok";
+    }
+
+    if (key === "perplexity") {
+      return "pro";
+    }
+
+    if (key === "gemini") {
+      return "pro";
+    }
+
+    if (key === "suno") {
+      if (text.includes("premier") || joinedTags.includes("premier")) return "premier";
+      if (text.includes("pro") || joinedTags.includes("pro")) return "pro";
+      return "suno";
+    }
+
+    if (key === "devin") {
+      if (text.includes("team") || joinedTags.includes("teams")) return "teams";
+      if (text.includes("max") || joinedTags.includes("max")) return "max";
+      if (text.includes("pro") || joinedTags.includes("pro")) return "pro";
+      return "devin";
+    }
+
+    if (key === "midjourney") {
+      if (text.includes("standard") || joinedTags.includes("standard")) return "standard";
+      if (text.includes("basic") || joinedTags.includes("basic")) return "basic";
+      if (text.includes("pro") || joinedTags.includes("pro")) return "pro";
+      return "midjourney";
     }
 
     if (key === "vpn") {
@@ -2806,18 +3157,22 @@ function initActivationResumeShortcut() {
       return "claude";
     }
 
-    if (key === "devin") {
-      if (text.includes("team") || joinedTags.includes("teams")) return "teams";
-      if (text.includes("max") || joinedTags.includes("max")) return "max";
-      if (text.includes("pro") || joinedTags.includes("pro")) return "pro";
-      return "devin";
-    }
-
     return "plan";
   }
 
   function getServiceDurationKey(item) {
     const text = getProductSearchText(item);
+    const explicitDurationSources = [
+      item?.title,
+      item?.visual?.cardTitle,
+      item?.description,
+      item?.visual?.cardDescription,
+    ];
+    for (const source of explicitDurationSources) {
+      const match = String(source || "").match(/(?:^|[^\d])(\d{1,2})\s*(?:месяц(?:а|ев)?|months?)(?:[^\p{L}]|$)/iu);
+      const months = match ? Number(match[1]) : 0;
+      if (months > 0) return `${months}m`;
+    }
     const tags = Array.isArray(item?.tags)
       ? item.tags.map(tag => String(tag || "").trim().toLowerCase())
       : [];
@@ -2844,11 +3199,14 @@ function initActivationResumeShortcut() {
     const tags = Array.isArray(item?.tags) ? item.tags : [];
     const normalizedTags = tags.map(tag => String(tag || "").trim().toLowerCase());
     const deliveryType = resolveDeliveryType(item?.deliveryType, item?.deliveryMethod, tags);
+    const activationVariant = String(item?.activationVariant || "").trim().toLowerCase().replace(/[\s_-]+/g, "");
     const text = getProductSearchText(item);
-    const activationVariant = String(item?.activationVariant || "").trim().toLowerCase();
     if (isStandaloneVpnProduct(item)) return "vpn";
-    if (text.includes("devin") && (normalizedTags.includes("delivery:manual_login") || activationVariant === "withlogin" || activationVariant === "with_login")) return "login";
+    if (text.includes("midjourney") || text.includes("suno")) return "link";
+    if (activationVariant === "withoutlogin") return "id";
+    if (text.includes("devin") && (normalizedTags.includes("delivery:manual_login") || activationVariant === "withlogin")) return "login";
     if ((deliveryType === "manual_login" || deliveryType === "credentials") && text.includes("devin")) return "login";
+    if (activationVariant === "withlogin") return "support";
     if (deliveryType === "manual_login" || deliveryType === "credentials") return "support";
     if (deliveryType === "support" || text.includes("РїРѕ id") || text.includes("account id")) return "id";
     if (text.includes("по ссылке") || text.includes("link")) return "link";
@@ -2860,12 +3218,22 @@ function initActivationResumeShortcut() {
     const allowedDurations = {
       chatgpt: new Set(["1m"]),
       claude: new Set(["1m"]),
-      grok: new Set(["1m", "2m"]),
+      grok: new Set(["1m", "2m", "3m"]),
+      perplexity: new Set(["1m"]),
+      gemini: new Set(["12m", "18m"]),
+      suno: new Set(["1m"]),
       devin: new Set(["1m"]),
+      midjourney: new Set(["1m"]),
     };
     return (Array.isArray(items) ? items : []).filter(item => {
+      if (key === "chatgpt" && !["go", "plus", "pro-5x", "pro-20x"].includes(getServicePlanKey(item, key))) return false;
       const deliveryKey = getServiceDeliveryKey(item);
-      if ((key === "claude" || key === "grok") && deliveryKey !== "id") return false;
+      if (key === "claude") {
+        const planKey = getServicePlanKey(item, key);
+        if (planKey === "pro" && deliveryKey !== "id") return false;
+        if (["max-5x", "max-20x"].includes(planKey) && deliveryKey !== "support") return false;
+      }
+      if (key === "grok" && deliveryKey !== "id") return false;
       if (key === "devin" && deliveryKey !== "login") return false;
       if (allowedDurations[key] && !allowedDurations[key].has(getServiceDurationKey(item))) return false;
       if (key === "claude" || key === "grok" || key === "devin") return true;
@@ -2901,12 +3269,32 @@ function initActivationResumeShortcut() {
       grok: {
         all: isEnPage ? "All plans" : "Все тарифы",
         supergrok: "SuperGrok",
+        "supergrok-heavy": "SuperGrok Heavy",
+      },
+      perplexity: {
+        all: isEnPage ? "All plans" : "Все тарифы",
+        pro: "Pro",
+      },
+      gemini: {
+        all: isEnPage ? "All plans" : "Все тарифы",
+        pro: "Pro",
+      },
+      suno: {
+        all: isEnPage ? "All plans" : "Все тарифы",
+        pro: "Pro",
+        premier: "Premier",
       },
       devin: {
         all: isEnPage ? "All plans" : "Все тарифы",
         pro: "Pro",
         max: "Max",
         teams: "Teams",
+      },
+      midjourney: {
+        all: isEnPage ? "All plans" : "Все тарифы",
+        basic: "Basic",
+        standard: "Standard",
+        pro: "Pro",
       },
       vpn: {
         all: isEnPage ? "All durations" : "Все сроки",
@@ -2930,7 +3318,9 @@ function initActivationResumeShortcut() {
     const key = normalizeAiServiceKey(serviceKey);
     const value = String(deliveryKey || "").trim();
     if ((key === "claude" || key === "grok") && value === "id") return isEnPage ? "By ID" : "По ID";
-    if (key === "devin" && value === "login") return isEnPage ? "Account login" : "Со входом в аккаунт";
+    if (key === "claude" && value === "support") return isEnPage ? "Account sign-in" : "Со входом в аккаунт";
+    if (key === "devin" && value === "login") return isEnPage ? "Payment link" : "По ссылке на оплату";
+    if ((key === "midjourney" || key === "suno") && value === "link") return isEnPage ? "Payment link" : "По ссылке на оплату";
     if (key === "vpn" && value === "vpn") return isEnPage ? "VLESS key" : "VLESS-ключ";
     return getServiceDeliveryLabel(value);
   }
@@ -2966,7 +3356,17 @@ function initActivationResumeShortcut() {
       return order[planKey] || 100;
     }
     if (key === "grok") {
-      return planKey === "supergrok" ? 10 : 100;
+      const order = { supergrok: 10, "supergrok-heavy": 20 };
+      return order[planKey] || 100;
+    }
+    if (key === "perplexity") {
+      return planKey === "pro" ? 10 : 100;
+    }
+    if (key === "gemini") {
+      return planKey === "pro" ? 10 : 100;
+    }
+    if (key === "suno") {
+      return planKey === "pro" ? 10 : planKey === "premier" ? 20 : 100;
     }
     if (key === "vpn") {
       const months = Number(String(planKey || "").replace(/[^\d]/g, ""));
@@ -3048,21 +3448,32 @@ function initActivationResumeShortcut() {
     try {
       const payload = await fetchProductsPayload();
       const serviceCards = Array.isArray(payload?.serviceCards) ? payload.serviceCards : [];
-      const visibility = new Map(
-        serviceCards.map(card => [normalizeAiServiceKey(card?.serviceKey), card?.isActive !== false])
-      );
+      const visibility = new Map(serviceCards.map(card => [normalizeAiServiceKey(card?.serviceKey), card?.isActive !== false]));
+      const items = Array.isArray(payload?.items) ? payload.items : [];
       staticCards.forEach(card => {
         const key = normalizeAiServiceKey(card.getAttribute("data-showcase-service-key"));
-        const isHidden = visibility.get(key) === false;
+        const isHidden = key === "midjourney" ? visibility.get(key) !== true : visibility.get(key) === false;
         card.hidden = isHidden;
         card.style.display = isHidden ? "none" : "";
+        const plans = items.filter(item => normalizeAiServiceKey(getAiServiceConfig(item)?.key) === key && toAmount(item?.price) > 0);
+        if (!plans.length) return;
+        const cheapest = plans.reduce((best, item) => toAmount(item.price) < toAmount(best.price) ? item : best);
+        const price = card.querySelector(".ai-directory-card__price");
+        if (price) price.textContent = (isEnPage ? "from " : "от ") + formatPriceByCurrency(cheapest.price, cheapest.currency);
+        card.querySelectorAll(".ai-directory-card__media, .ai-directory-card__button").forEach(link => link.setAttribute("href", getServicePagePath(key)));
       });
     } catch (_) {
-      // Keep static catalog cards as a fallback when the showcase API is unavailable.
+      // The static cards remain usable when public data cannot be loaded.
     }
   }
 
   function getServiceCardValue(serviceCard, field, fallback) {
+    if (
+      isEnPage &&
+      ["title", "description", "planSummary", "priceText", "buttonText", "href", "imageAlt", "hoverImageAlt"].includes(field)
+    ) {
+      return fallback;
+    }
     const value = serviceCard && Object.prototype.hasOwnProperty.call(serviceCard, field) ? serviceCard[field] : "";
     const text = String(value || "").trim();
     const resolved = text || fallback;
@@ -3155,14 +3566,71 @@ function initActivationResumeShortcut() {
     const displayTitle = title;
     const displayDescription = getServiceCardValue(serviceCard, "description", description);
     const displayPlanSummary = getServiceCardValue(serviceCard, "planSummary", planSummary);
-    const displayPriceText = getServiceCardValue(serviceCard, "priceText", minPrice ? fromLabel + " " + formatPriceByCurrency(minPrice, currency) : "");
+    const displayPriceText = minPrice ? fromLabel + " " + formatPriceByCurrency(minPrice, currency) : getServiceCardValue(serviceCard, "priceText", "");
     const displayButtonLabel = getServiceCardValue(serviceCard, "buttonText", buttonLabel);
-    const displayHref = getServiceCardValue(serviceCard, "href", "/store/steam/topup/");
+    const displayHref = isEnPage ? "/en/store/steam/topup/" : getServiceCardValue(serviceCard, "href", "/store/steam/topup/");
     const displayIconText = getServiceCardValue(serviceCard, "iconText", "STEAM");
     const displayTheme = getServiceCardValue(serviceCard, "theme", "topups");
     const displayHasHoverImage = false;
     const displayBackground = getServiceCardBackground(serviceCard, visual || { backgroundColor: "#111111", backgroundType: "solid" });
     const imageMarkup = '<span class="ai-directory-card__brand-mark ai-directory-card__brand-mark--steam" aria-hidden="true"></span>';
+    const appStoreTitle = isEnPage ? "iTunes & App Store" : "iTunes и App Store";
+    const appStoreDescription = isEnPage
+      ? "Apple ID top-up cards."
+      : "Карты пополнения Apple ID";
+    const appStorePlanSummary = isEnPage ? "Apple ID gift card" : "Подарочная карта Apple ID";
+    const appStorePriceText = isEnPage ? "Choose an amount" : "Номинал на выбор";
+    const appStoreButtonText = isEnPage ? "Order" : "Заказать";
+    const appStoreHref = isEnPage ? "/en/itunes.html" : "/itunes";
+    const codexTitle = isEnPage ? "Codex Credits" : "Кредиты Codex";
+    const codexDescription = isEnPage
+      ? "Top up your Codex credits."
+      : "Пополнение кредитов Codex";
+    const codexPlanSummary = isEnPage ? "250 / 500 / 1000 credits" : "250 / 500 / 1000 кредитов";
+    const codexPriceText = fromLabel + " " + formatPriceByCurrency(1500, "RUB");
+    const codexButtonText = isEnPage ? "Top up" : "Пополнить";
+    const codexHref = isEnPage ? "/en/codex-credits" : "/codex-credits";
+    const codexMarkup =
+      '<article class="ai-directory-card ai-directory-card--integrated ai-directory-card--codex" style="--ai-directory-bg:#063b31">' +
+        '<a class="ai-directory-card__media" href="' + escapeHtml(codexHref) + '" aria-label="' + escapeHtml(codexTitle) + '">' +
+          '<span class="ai-directory-card__codex-lockup" aria-hidden="true">' +
+            '<span class="ai-directory-card__brand-mark ai-directory-card__brand-mark--codex"></span>' +
+            '<span class="ai-directory-card__codex-word">CODEX</span>' +
+          '</span>' +
+        "</a>" +
+        '<div class="ai-directory-card__body">' +
+          '<div class="ai-directory-card__top">' +
+            '<span class="ai-directory-card__icon ai-service-card__icon--codex">CODEX</span>' +
+            '<span class="ai-directory-card__count">3</span>' +
+          "</div>" +
+          '<h4 class="ai-directory-card__name">' + escapeHtml(codexTitle) + "</h4>" +
+          '<p class="ai-directory-card__desc">' + escapeHtml(codexDescription) + "</p>" +
+          '<p class="ai-directory-card__plans">' + escapeHtml(codexPlanSummary) + "</p>" +
+          '<div class="ai-directory-card__bottom">' +
+            '<span class="ai-directory-card__price">' + escapeHtml(codexPriceText) + "</span>" +
+            '<a class="ai-directory-card__button" href="' + escapeHtml(codexHref) + '"><span class="ai-directory-card__button-label">' + escapeHtml(codexButtonText) + "</span></a>" +
+          "</div>" +
+        "</div>" +
+      "</article>";
+    const appStoreMarkup =
+      '<article class="ai-directory-card ai-directory-card--integrated ai-directory-card--appstore" style="--ai-directory-bg:#0a1831">' +
+        '<a class="ai-directory-card__media" href="' + escapeHtml(appStoreHref) + '" aria-label="' + escapeHtml(appStoreTitle) + '">' +
+          '<span class="ai-directory-card__brand-mark ai-directory-card__brand-mark--appstore" aria-hidden="true"></span>' +
+        "</a>" +
+        '<div class="ai-directory-card__body">' +
+          '<div class="ai-directory-card__top">' +
+            '<span class="ai-directory-card__icon ai-service-card__icon--appstore">APPLE</span>' +
+            '<span class="ai-directory-card__count">1</span>' +
+          "</div>" +
+          '<h4 class="ai-directory-card__name">' + escapeHtml(appStoreTitle) + "</h4>" +
+          '<p class="ai-directory-card__desc">' + escapeHtml(appStoreDescription) + "</p>" +
+          '<p class="ai-directory-card__plans">' + escapeHtml(appStorePlanSummary) + "</p>" +
+          '<div class="ai-directory-card__bottom">' +
+            '<span class="ai-directory-card__price">' + escapeHtml(appStorePriceText) + "</span>" +
+            '<a class="ai-directory-card__button" href="' + escapeHtml(appStoreHref) + '"><span class="ai-directory-card__button-label">' + escapeHtml(appStoreButtonText) + "</span></a>" +
+          "</div>" +
+        "</div>" +
+      "</article>";
     return (
       '<div class="ai-directory-grid ai-directory-grid--topups">' +
         '<article class="ai-directory-card ai-directory-card--integrated ai-directory-card--steam ai-directory-card--' + escapeHtml(displayTheme) + '" style="--ai-directory-bg:' + escapeHtml(displayBackground) + '">' +
@@ -3182,7 +3650,7 @@ function initActivationResumeShortcut() {
               '<a class="ai-directory-card__button" href="' + escapeHtml(displayHref) + '"><span class="ai-directory-card__button-label">' + escapeHtml(displayButtonLabel) + "</span></a>" +
             "</div>" +
           "</div>" +
-        "</article>" +
+        "</article>" + codexMarkup + appStoreMarkup +
       "</div>"
     );
   }
@@ -3226,7 +3694,7 @@ function initActivationResumeShortcut() {
     const displayTitle = getServiceCardValue(serviceCard, "title", title);
     const displayDescription = getServiceCardValue(serviceCard, "description", description);
     const displayPlanSummary = getServiceCardValue(serviceCard, "planSummary", planSummary);
-    const displayPriceText = getServiceCardValue(serviceCard, "priceText", minPrice ? fromLabel + " " + formatPriceByCurrency(minPrice, currency) : "");
+    const displayPriceText = minPrice ? fromLabel + " " + formatPriceByCurrency(minPrice, currency) : getServiceCardValue(serviceCard, "priceText", "");
     const displayButtonLabel = getServiceCardValue(serviceCard, "buttonText", buttonLabel);
     const displayHref = getServiceCardValue(serviceCard, "href", "/store/vpn");
     const displayIconText = getServiceCardValue(serviceCard, "iconText", "VPN");
@@ -3279,9 +3747,12 @@ function initActivationResumeShortcut() {
     const prices = group.items.map(item => toAmount(item?.price)).filter(price => Number.isFinite(price) && price > 0);
     const minPrice = prices.length ? Math.min(...prices) : 0;
     const currency = String(group.items.find(item => toAmount(item?.price) === minPrice)?.currency || group.items[0]?.currency || "RUB").toUpperCase();
+    const planCount = ["chatgpt", "claude", "grok"].includes(serviceKey)
+      ? new Set(group.items.map(item => getServicePlanKey(item, serviceKey))).size
+      : group.items.length;
     const planCountText = isEnPage
-      ? `${group.items.length} plan${group.items.length === 1 ? "" : "s"}`
-      : `${group.items.length} тариф${group.items.length === 1 ? "" : group.items.length < 5 ? "а" : "ов"}`;
+      ? `${planCount} plan${planCount === 1 ? "" : "s"}`
+      : `${planCount} тариф${planCount === 1 ? "" : planCount < 5 ? "а" : "ов"}`;
     const fromLabel = isEnPage ? "from" : "от";
     const buttonLabel = isEnPage ? "To plans" : "К тарифам";
     const planSummary = formatServicePlanSummary(group);
@@ -3307,11 +3778,35 @@ function initActivationResumeShortcut() {
         imageAlt: "SuperGrok",
         hoverImageAlt: "SuperGrok",
       },
+      perplexity: {
+        imageUrl: "/assets/img/services/perplexity-card.webp?v=20260809-perplexity1",
+        hoverImageUrl: "/assets/img/services/perplexity-card-hover.webp?v=20260809-perplexity1",
+        imageAlt: "Perplexity",
+        hoverImageAlt: "Perplexity",
+      },
+      gemini: {
+        imageUrl: "/assets/img/services/gemini-card.webp?v=20260810-gemini1",
+        hoverImageUrl: "/assets/img/services/gemini-card-hover.webp?v=20260810-gemini1",
+        imageAlt: "Gemini",
+        hoverImageAlt: "Gemini",
+      },
+      suno: {
+        imageUrl: "/assets/img/services/suno-card-v2.webp?v=20260824-suno-square2",
+        hoverImageUrl: "/assets/img/services/suno-card-hover-v2.webp?v=20260824-suno-square2",
+        imageAlt: "Suno",
+        hoverImageAlt: "Suno",
+      },
       devin: {
         imageUrl: "/assets/img/services/devin-card-v2.webp?v=20260922-devin2",
         hoverImageUrl: "",
         imageAlt: "Devin",
         hoverImageAlt: "Devin",
+      },
+      midjourney: {
+        imageUrl: "/assets/img/services/midjourney-card-v1.svg",
+        hoverImageUrl: "/assets/img/services/midjourney-card-hover-v1.svg",
+        imageAlt: "Midjourney",
+        hoverImageAlt: "Midjourney",
       },
       vpn: {
         imageUrl: "/assets/img/services/vpn-card.webp?v=20260721-cards-webp1",
@@ -3324,28 +3819,31 @@ function initActivationResumeShortcut() {
     const displayTitle = getServiceCardValue(serviceCard, "title", group.service.name);
     const compactDescriptions = isEnPage
       ? {
-          chatgpt: "ChatGPT for everyday tasks.",
-          claude: "Claude for text and code.",
-          grok: "Fast SuperGrok activation.",
-          devin: "AI software engineer for development.",
+          chatgpt: "GPT-6",
+          claude: "Claude Opus 5.5",
+          grok: "Grok 4.7",
           perplexity: "Search with trusted sources.",
           gemini: "Gemini for work and study.",
           suno: "Suno for music creation.",
+          devin: "AI software engineer for development.",
         }
       : {
-          chatgpt: "ChatGPT для любых задач",
-          claude: "Claude для текста и кода",
-          grok: "SuperGrok — быстрая активация",
-          devin: "AI-инженер для задач разработки",
+          chatgpt: "GPT-6",
+          claude: "Claude Opus 5.5",
+          grok: "Grok 4.7",
           perplexity: "Поиск с надёжными источниками",
           gemini: "Gemini для работы и учёбы",
           suno: "Suno для создания музыки",
+          devin: "AI-инженер для задач разработки",
         };
     const displayDescription = compactDescriptions[serviceKey] || getServiceCardValue(serviceCard, "description", group.service.description);
-    const displayPlanSummary = getServiceCardValue(serviceCard, "planSummary", planSummary);
-    const displayPriceText = getServiceCardValue(serviceCard, "priceText", minPrice ? fromLabel + " " + formatPriceByCurrency(minPrice, currency) : "");
+    const displayPlanSummary = serviceKey === "claude"
+      ? planSummary
+      : getServiceCardValue(serviceCard, "planSummary", planSummary);
+    const displayPriceText = minPrice ? fromLabel + " " + formatPriceByCurrency(minPrice, currency) : getServiceCardValue(serviceCard, "priceText", "");
     const displayButtonLabel = getServiceCardValue(serviceCard, "buttonText", buttonLabel);
-    const displayHref = getServiceCardValue(serviceCard, "href", getServicePagePath(serviceKey));
+    const configuredHref = getServiceCardValue(serviceCard, "href", getServicePagePath(serviceKey));
+    const displayHref = isEnPage ? getServicePagePath(serviceKey) : configuredHref;
     const displayIconText = getServiceCardValue(serviceCard, "iconText", group.service.icon);
     const displayTheme = getServiceCardValue(serviceCard, "theme", group.service.theme);
     const primaryImageUrl = getServiceCardValue(serviceCard, "imageUrl", visual.imageUrl || visual.hoverImageUrl || fallbackImages.imageUrl || "");
@@ -3632,8 +4130,20 @@ function initActivationResumeShortcut() {
         duration: ["1m"],
       },
       grok: {
-        plan: ["supergrok"],
-        duration: ["1m", "2m"],
+        plan: ["supergrok", "supergrok-heavy"],
+        duration: ["1m", "2m", "3m"],
+      },
+      perplexity: {
+        plan: ["pro"],
+        duration: ["1m"],
+      },
+      gemini: {
+        plan: ["pro"],
+        duration: ["12m", "18m"],
+      },
+      suno: {
+        plan: ["pro", "premier"],
+        duration: ["1m"],
       },
       devin: {
         plan: ["pro", "max", "teams"],
@@ -3778,6 +4288,7 @@ function initActivationResumeShortcut() {
     const durationKey = getServiceDurationKey(item);
     const planLabel = getServicePlanLabel(serviceKey, planKey);
     const planTitle = getServiceConstructorPlanTitle(item, serviceKey, planLabel);
+    const summaryPlanTitle = ["chatgpt", "claude"].includes(normalizeAiServiceKey(serviceKey)) ? planLabel : planTitle;
     const durationLabel = getServiceDurationLabel(durationKey);
     const description = String(item.description || "").trim();
     const modalDescriptionRaw = String(item.modalDescription || description).trim();
@@ -3806,7 +4317,7 @@ function initActivationResumeShortcut() {
         '<div class="service-checkout-card__summary">' +
           '<div>' +
             '<span class="service-checkout-card__label">' + escapeHtml(isEnPage ? "Selected plan" : "Выбранный тариф") + "</span>" +
-            '<strong>' + escapeHtml(planTitle) + "</strong>" +
+            '<strong>' + escapeHtml(summaryPlanTitle) + "</strong>" +
           "</div>" +
           '<div>' +
             '<span class="service-checkout-card__label">' + escapeHtml(isEnPage ? "Duration" : "Длительность") + "</span>" +
@@ -3845,14 +4356,30 @@ function initActivationResumeShortcut() {
     return /^\d+m$/i.test(key);
   }
 
-  function isDevinOrderModalPlanKey(planKey) {
-    return DEVIN_ORDER_MODAL_PLAN_KEYS.has(String(planKey || "").trim());
-  }
-
   function isVpnOrderModalPlanKey(planKey) {
     const key = String(planKey || "").trim();
     if (VPN_ORDER_MODAL_PLAN_KEYS.has(key)) return true;
     return /^\d+m$/i.test(key);
+  }
+
+  function isPerplexityOrderModalPlanKey(planKey) {
+    return PERPLEXITY_ORDER_MODAL_PLAN_KEYS.has(String(planKey || "").trim());
+  }
+
+  function isGeminiOrderModalPlanKey(planKey) {
+    return GEMINI_ORDER_MODAL_PLAN_KEYS.has(String(planKey || "").trim());
+  }
+
+  function isSunoOrderModalPlanKey(planKey) {
+    return SUNO_ORDER_MODAL_PLAN_KEYS.has(String(planKey || "").trim());
+  }
+
+  function isDevinOrderModalPlanKey(planKey) {
+    return DEVIN_ORDER_MODAL_PLAN_KEYS.has(String(planKey || "").trim());
+  }
+
+  function isMidjourneyOrderModalPlanKey(planKey) {
+    return MIDJOURNEY_ORDER_MODAL_PLAN_KEYS.has(String(planKey || "").trim());
   }
 
   function isAiOrderModalServiceKey(serviceKey) {
@@ -3864,7 +4391,11 @@ function initActivationResumeShortcut() {
     if (key === "chatgpt") return isChatGptOrderModalPlanKey(planKey);
     if (key === "claude") return isClaudeOrderModalPlanKey(planKey);
     if (key === "grok") return isGrokOrderModalPlanKey(planKey);
+    if (key === "perplexity") return isPerplexityOrderModalPlanKey(planKey);
+    if (key === "gemini") return isGeminiOrderModalPlanKey(planKey);
+    if (key === "suno") return isSunoOrderModalPlanKey(planKey);
     if (key === "devin") return isDevinOrderModalPlanKey(planKey);
+    if (key === "midjourney") return isMidjourneyOrderModalPlanKey(planKey);
     if (key === "vpn") return isVpnOrderModalPlanKey(planKey);
     return false;
   }
@@ -3950,18 +4481,26 @@ function initActivationResumeShortcut() {
       giftSendTime: String(order.giftSendTime || "").trim(),
       giftMessage: String(order.giftMessage || "").trim(),
       accountStatus: String(order.accountStatus || "has_account").trim(),
+      needsNewAccount: Boolean(order.needsNewAccount),
+      newAccountServiceKey: String(order.serviceKey || "").trim(),
       serviceLogin: "",
       servicePassword: "",
       cameByRecommendation: Boolean(order.cameByRecommendation),
       referrerContact: String(order.referrerContact || "").trim(),
       orderComment: String(order.orderComment || "").trim(),
-      paymentMethod: normalizeChatGptGoPaymentChoice(order.paymentMethod || "lava"),
+      paymentMethod: normalizeChatGptGoPaymentChoice(order.paymentMethod || DEFAULT_PAYMENT_METHOD),
     };
     try {
       localStorage.setItem(CHATGPT_GO_ORDER_KEY, JSON.stringify({ savedAt: Date.now(), data: safeOrder }));
     } catch (_) {
       // Ignore storage write errors.
     }
+  }
+
+  function getNewAccountSurcharge(serviceKey, productSlug) {
+    const key = normalizeAiServiceKey(serviceKey);
+    if (!String(productSlug || "").trim().toLowerCase().startsWith(`${key}-`)) return 0;
+    return key === "chatgpt" ? 500 : key === "claude" ? 3000 : 0;
   }
 
   function getChatGptGoPromoContextKey(item, promoCode) {
@@ -3978,16 +4517,18 @@ function initActivationResumeShortcut() {
 
   function getChatGptGoPaymentProvider(paymentMethod) {
     const method = String(paymentMethod || "").trim().toLowerCase();
+    if (method === "pally") return "pally";
     if (method === "lava" || method === "crypto") return "lava";
     if (method === "enot" || method === "card") return "enot";
-    return "lava";
+    return DEFAULT_PAYMENT_METHOD;
   }
 
   function normalizeChatGptGoPaymentChoice(value) {
     const method = String(value || "").trim().toLowerCase();
+    if (method === "pally") return "pally";
     if (method === "lava" || method === "crypto") return "lava";
     if (method === "enot" || method === "enot.io" || method === "gateway" || method === "card") return "enot";
-    return "lava";
+    return DEFAULT_PAYMENT_METHOD;
   }
 
   function escapeCssIdentifier(value) {
@@ -4013,7 +4554,16 @@ function initActivationResumeShortcut() {
       field.classList.toggle("is-invalid", Boolean(message));
       field.setAttribute("aria-invalid", message ? "true" : "false");
     }
-    if (errorEl) errorEl.textContent = message || "";
+    if (errorEl) {
+      if (!errorEl.id) errorEl.id = "checkout-error-" + name;
+      errorEl.setAttribute("aria-live", "polite");
+      if (field) {
+        const ids = new Set((field.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean));
+        ids.add(errorEl.id);
+        field.setAttribute("aria-describedby", Array.from(ids).join(" "));
+      }
+      errorEl.textContent = message || "";
+    }
   }
 
   function clearChatGptGoErrors(form) {
@@ -4067,9 +4617,17 @@ function initActivationResumeShortcut() {
     const promoCode = normalizePromoCodeInput(promoInput ? promoInput.value : activePromoCode);
     const basePrice = Math.max(0, toAmount(item.price));
     const discount = getChatGptGoDiscount(item, promoCode);
-    const total = Math.max(0, Number((basePrice - discount).toFixed(2)));
+    const surcharge = getNewAccountSurcharge(form.getAttribute("data-service-key"), form.getAttribute("data-product"));
+    const needsNewAccount = Boolean(getChatGptGoOrderField(form, "needsNewAccount")?.checked && surcharge);
+    const total = Math.max(0, Number((basePrice - discount + (needsNewAccount ? surcharge : 0)).toFixed(2)));
     const currency = String(item.currency || "RUB").toUpperCase();
     const discountRow = form.querySelector("[data-chatgpt-go-summary-discount]");
+    const existingClaudeAccountNote = form.querySelector("[data-claude-existing-account-note]");
+    if (existingClaudeAccountNote) existingClaudeAccountNote.hidden = needsNewAccount;
+    const summaryMeta = form.querySelector(".chatgpt-order-summary-card__meta");
+    if (summaryMeta) summaryMeta.textContent = needsNewAccount
+      ? [getServiceDurationLabel(form.getAttribute("data-duration-key") || "1m"), isEnPage ? "New account" : "Новый аккаунт"].join(" · ")
+      : String(form.getAttribute("data-summary-description") || "");
     const totalNodes = form.querySelectorAll("[data-chatgpt-go-total]");
     const payButton = form.querySelector("[data-chatgpt-go-submit]");
 
@@ -4277,7 +4835,7 @@ function initActivationResumeShortcut() {
       }
     } else {
       const deliveryKey = String(form.getAttribute("data-delivery-key") || "link").trim();
-      const needsAccountCredentials = deliveryKey === "login";
+      const needsAccountCredentials = deliveryKey === "login" && form.getAttribute("data-service-key") !== "devin";
       if (needsAccountCredentials && !accountStatus) {
         setChatGptGoFieldError(form, "accountStatus", "Выберите вариант аккаунта.");
         valid = false;
@@ -4310,10 +4868,12 @@ function initActivationResumeShortcut() {
     const promoCode = normalizePromoCodeInput(promoInput ? promoInput.value : activePromoCode);
     const basePrice = Math.max(0, toAmount(item.price));
     const discount = getChatGptGoDiscount(item, promoCode);
-    const totalPrice = Math.max(0, Number((basePrice - discount).toFixed(2)));
     const deliveryKey = String(form.getAttribute("data-delivery-key") || "link").trim();
     const durationKey = String(form.getAttribute("data-duration-key") || "1m").trim();
     const serviceKey = normalizeAiServiceKey(form.getAttribute("data-service-key") || item.serviceKey || getServicePageKey() || "chatgpt");
+    const newAccountSurcharge = getNewAccountSurcharge(serviceKey, form.getAttribute("data-product"));
+    const needsNewAccount = Boolean(getChatGptGoOrderField(form, "needsNewAccount")?.checked && newAccountSurcharge);
+    const totalPrice = Math.max(0, Number((basePrice - discount + (needsNewAccount ? newAccountSurcharge : 0)).toFixed(2)));
     const serviceConfig = getAiOrderModalServiceConfig(serviceKey);
     const planKey = String(form.getAttribute("data-plan-key") || item.planKey || getServicePlanKey(item, serviceKey) || serviceConfig.fallbackPlan || "go").trim();
     const serviceDisplayName = serviceConfig.displayName || "ChatGPT";
@@ -4326,9 +4886,11 @@ function initActivationResumeShortcut() {
       deliveryMethod: deliveryKey === "id" ? "id" : deliveryKey === "vpn" ? "vpn" : deliveryKey === "support" ? "support" : deliveryKey === "login" ? "login" : "link",
       duration: getServiceDurationLabel(durationKey),
       quantity: 1,
+      pro20RenewalConfirmed: form.dataset.pro20RenewalConfirmed === "1",
       basePrice,
       discount,
       totalPrice,
+      needsNewAccount,
       contactEmail: String(getChatGptGoOrderField(form, "contactEmail")?.value || "").trim().toLowerCase(),
       telegram: String(getChatGptGoOrderField(form, "telegram")?.value || "").trim(),
       isGift: Boolean(getChatGptGoOrderField(form, "isGift")?.checked),
@@ -4339,14 +4901,14 @@ function initActivationResumeShortcut() {
       giftSendDate: String(getChatGptGoOrderField(form, "giftSendDate")?.value || "").trim(),
       giftSendTime: String(getChatGptGoOrderField(form, "giftSendTime")?.value || "").trim(),
       giftMessage: String(getChatGptGoOrderField(form, "giftMessage")?.value || "").trim(),
-      accountStatus: deliveryKey === "login" ? (getChatGptGoCheckedValue(form, "accountStatus") || "has_account") : "",
-      serviceLogin: deliveryKey === "login" ? String(getChatGptGoOrderField(form, "serviceLogin")?.value || "").trim() : "",
-      servicePassword: deliveryKey === "login" ? String(getChatGptGoOrderField(form, "servicePassword")?.value || "") : "",
+      accountStatus: deliveryKey === "login" && serviceKey !== "devin" ? (getChatGptGoCheckedValue(form, "accountStatus") || "has_account") : "",
+      serviceLogin: deliveryKey === "login" && serviceKey !== "devin" ? String(getChatGptGoOrderField(form, "serviceLogin")?.value || "").trim() : "",
+      servicePassword: deliveryKey === "login" && serviceKey !== "devin" ? String(getChatGptGoOrderField(form, "servicePassword")?.value || "") : "",
       cameByRecommendation: Boolean(getChatGptGoOrderField(form, "cameByRecommendation")?.checked),
       referrerContact: String(getChatGptGoOrderField(form, "referrerContact")?.value || "").trim(),
       orderComment: String(getChatGptGoOrderField(form, "orderComment")?.value || "").trim(),
       promoCode,
-      paymentMethod: normalizeChatGptGoPaymentChoice(getChatGptGoCheckedValue(form, "paymentMethod") || "lava"),
+      paymentMethod: normalizeChatGptGoPaymentChoice(getChatGptGoCheckedValue(form, "paymentMethod") || DEFAULT_PAYMENT_METHOD),
     };
   }
 
@@ -4396,6 +4958,7 @@ function initActivationResumeShortcut() {
         plan: String(safeOrder.plan || getServicePlanLabel(serviceKey, safeOrder.planKey || safeItem.planKey || serviceConfig.fallbackPlan || "go")).trim(),
         serviceKey,
         planKey: String(safeOrder.planKey || safeItem.planKey || serviceConfig.fallbackPlan || "").trim(),
+        paymentLinkFlow: serviceKey === "devin" ? "devin-v1" : serviceKey === "suno" ? "suno-v1" : null,
         activationVariant: String(safeItem.activationVariant || "").trim() || null,
         deliveryMethod: String(safeOrder.deliveryMethod || "").trim(),
         deliveryKey: String(safeItem.deliveryKey || safeOrder.deliveryMethod || "").trim(),
@@ -4404,8 +4967,10 @@ function initActivationResumeShortcut() {
         basePrice: Math.max(0, toAmount(safeOrder.basePrice)),
         discount: Math.max(0, toAmount(safeOrder.discount)),
         totalPrice: Math.max(0, toAmount(safeOrder.totalPrice)),
-        paymentMethod: normalizeChatGptGoPaymentChoice(safeOrder.paymentMethod || "lava"),
+        paymentMethod: normalizeChatGptGoPaymentChoice(safeOrder.paymentMethod || DEFAULT_PAYMENT_METHOD),
         promoCode: normalizePromoCodeInput(safeOrder.promoCode || "") || null,
+        pro20RenewalConfirmed: Boolean(safeOrder.pro20RenewalConfirmed),
+        needsNewAccount: Boolean(safeOrder.needsNewAccount && getNewAccountSurcharge(serviceKey, safeItem.product || safeItem.slug)),
       },
       contact: {
         email: String(safeOrder.contactEmail || "").trim().toLowerCase(),
@@ -4445,6 +5010,11 @@ function initActivationResumeShortcut() {
       return;
     }
 
+    if (isChatGptPro20RenewalItem(item) && !getChatGptGoOrderField(form, "needsNewAccount")?.checked && form.dataset.pro20RenewalConfirmed !== "1") {
+      openPro20RenewalConfirm(form);
+      return;
+    }
+
     if (!validateChatGptGoOrder(form)) {
       setChatGptGoStatus(form, "Проверьте обязательные поля.", "error");
       const firstInvalid = form.querySelector(".is-invalid");
@@ -4480,6 +5050,7 @@ function initActivationResumeShortcut() {
         productId: String(item.productId || item.id || ""),
         planKey: String(order.planKey || item.planKey || "go"),
         deliveryKey: String(item.deliveryKey || "link"),
+        needsNewAccount: order.needsNewAccount,
         createdAt: Date.now(),
       }));
       if (headerCartEmailInputEl) headerCartEmailInputEl.value = order.contactEmail;
@@ -4528,25 +5099,45 @@ function initActivationResumeShortcut() {
       ? String(title || getAiOrderModalSummaryTitle(serviceDisplayName, summaryPlanLabel || planLabel)).trim()
       : getAiOrderModalSummaryTitle(serviceDisplayName, summaryPlanLabel || planLabel);
     const showIdDelivery = (resolvedServiceKey === "claude" || resolvedServiceKey === "grok") && deliveryKey === "id";
-    const summaryDescription = [durationLabel, showIdDelivery ? deliveryLabel : ""].filter(Boolean).join(" · ");
-    const deliveryChip = showIdDelivery ? '<span>' + escapeHtml(deliveryLabel) + '</span>' : '';
+    const isClaudeMaxManual = resolvedServiceKey === "claude" && ["max-5x", "max-20x"].includes(planKey) && deliveryKey === "support";
+    const showDeliveryLabel = showIdDelivery || isClaudeMaxManual;
+    const summaryDescription = [durationLabel, showDeliveryLabel ? deliveryLabel : ""].filter(Boolean).join(" · ");
+    const deliveryChip = showDeliveryLabel ? '<span>' + escapeHtml(deliveryLabel) + '</span>' : '';
+    const manualClaudeMaxNote = isClaudeMaxManual
+      ? '<p class="chatgpt-order-security-note" data-claude-existing-account-note>После оплаты менеджер свяжется с вами и запросит данные аккаунта Claude для подключения. В форме заказа логин и пароль не нужны.</p>'
+      : '';
     const draft = readChatGptGoOrderDraft();
+    const newAccountSurcharge = getNewAccountSurcharge(resolvedServiceKey, product);
+    const pageNewAccount = servicePageRootEl?.querySelector('[data-service-new-account]');
+    const savedNewAccount = Boolean(newAccountSurcharge &&
+      (pageNewAccount ? pageNewAccount.checked :
+        draft.newAccountServiceKey === resolvedServiceKey ? Boolean(draft.needsNewAccount) : false));
     const savedEmail = String(draft.contactEmail || localStorage.getItem("checkout_email") || "").trim().toLowerCase();
     const savedTelegram = String(draft.telegram || "").trim();
     const savedGift = Boolean(draft.isGift);
     const savedGiftDeliveryMethod = String(draft.giftDeliveryMethod || "").trim();
     const savedRecommendation = Boolean(draft.cameByRecommendation);
-    const savedPaymentMethod = normalizeChatGptGoPaymentChoice(draft.paymentMethod || activePaymentMethod || "lava");
+    const savedPaymentMethod = normalizeChatGptGoPaymentChoice(activePaymentMethod || DEFAULT_PAYMENT_METHOD);
     const savedPromo = normalizePromoCodeInput(activePromoCode || "");
     const discount = getChatGptGoDiscount({ ...item, productId }, savedPromo);
-    const total = Math.max(0, Number((price - discount).toFixed(2)));
+    const total = Math.max(0, Number((price - discount + (savedNewAccount ? newAccountSurcharge : 0)).toFixed(2)));
     const format = value => formatPriceByCurrency(value, currency);
     const todayIso = new Date().toISOString().slice(0, 10);
     const selected = (value, current) => value === current ? " selected" : "";
     const boolChecked = value => value ? " checked" : "";
     const serviceLogo = serviceConfig.logo || "/assets/img/services/chatgpt-card.webp?v=20260721-webp1";
-    const accountSectionMarkup = deliveryKey === "login"
-      ? '<section class="chatgpt-order-section" data-chatgpt-go-account-section><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Данные аккаунта Devin</h4><p>Нужны только для подключения выбранного тарифа</p></div><input name="accountStatus" type="radio" value="has_account" checked hidden><div class="chatgpt-order-account-fields" data-chatgpt-go-account-fields><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Логин Devin</span><small>Почта, на которую зарегистрирован аккаунт</small><input class="chatgpt-order-field__control" name="serviceLogin" type="text" autocomplete="username" placeholder="name@email.com" required></label><label class="chatgpt-order-field" data-chatgpt-go-password-field><span>Пароль Devin</span><small>После подключения рекомендуем сменить пароль</small><span class="chatgpt-order-password-wrap"><input class="chatgpt-order-field__control" name="servicePassword" type="password" autocomplete="current-password" placeholder="Введите пароль" required><button type="button" class="chatgpt-order-password-toggle" data-chatgpt-go-password-toggle aria-label="Показать пароль" title="Показать пароль" aria-pressed="false"><span data-chatgpt-go-password-icon>' + getChatGptGoPasswordIcon(false) + '</span></button></span></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="serviceLogin"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="servicePassword"></p></div></div><p class="chatgpt-order-security-note"><strong>Безопасная передача</strong> Данные шифруются на сервере, доступны только сотруднику, который выполняет заказ, и не передаются платёжной системе. Никому не сообщайте коды 2FA или резервные коды.</p></section>'
+    const useCurrentBrandIcon = ["chatgpt", "claude", "grok", "perplexity", "gemini", "suno", "devin"].includes(resolvedServiceKey);
+    const serviceIconMarkup = useCurrentBrandIcon
+      ? '<span class="chatgpt-order-item__icon chatgpt-order-summary-card__logo chatgpt-order-icon checkout-brand-icon checkout-brand-icon--' + escapeHtml(resolvedServiceKey) + '" aria-hidden="true"></span>'
+      : '<img class="chatgpt-order-item__icon chatgpt-order-summary-card__logo chatgpt-order-icon" src="' + escapeHtml(serviceLogo) + '" alt="' + escapeHtml(serviceDisplayName) + '" loading="lazy" decoding="async">';
+    const devinLinkNote = resolvedServiceKey === "devin"
+      ? '<p class="chatgpt-order-security-note">После оплаты откроется страница с инструкцией. Вставьте на ней ссылку Stripe Checkout для выбранного тарифа Devin — логин и пароль передавать не нужно.</p>'
+      : '';
+    const accountSectionMarkup = deliveryKey === "login" && resolvedServiceKey !== "devin"
+      ? '<section class="chatgpt-order-section" data-chatgpt-go-account-section><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Данные аккаунта Devin</h4><p>Нужны только для подключения выбранного тарифа</p></div><input name="accountStatus" type="radio" value="has_account" checked hidden><div class="chatgpt-order-account-fields" data-chatgpt-go-account-fields><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Почта или логин Devin</span><small>Почта, на которую зарегистрирован аккаунт</small><input class="chatgpt-order-field__control" name="serviceLogin" type="text" autocomplete="username" placeholder="name@email.com" required></label><label class="chatgpt-order-field" data-chatgpt-go-password-field><span>Пароль от Devin</span><small>После подключения рекомендуем сменить пароль</small><span class="chatgpt-order-password-wrap"><input class="chatgpt-order-field__control" name="servicePassword" type="password" autocomplete="current-password" placeholder="Введите пароль" required><button type="button" class="chatgpt-order-password-toggle" data-chatgpt-go-password-toggle aria-label="Показать пароль" title="Показать пароль" aria-pressed="false"><span data-chatgpt-go-password-icon>' + getChatGptGoPasswordIcon(false) + '</span></button></span></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="serviceLogin"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="servicePassword"></p></div></div><p class="chatgpt-order-security-note"><strong>Безопасная передача</strong> Данные шифруются на сервере, доступны только сотруднику, который выполняет заказ, и не передаются платёжной системе. Никому не сообщайте коды 2FA или резервные коды.</p></section>'
+      : '';
+    const newAccountMarkup = newAccountSurcharge
+      ? '<section class="chatgpt-order-section chatgpt-order-new-account"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Аккаунт</h4></div><label class="chatgpt-order-soft-action"><span><strong>Нужен новый аккаунт</strong><small>' + (resolvedServiceKey === "claude" ? 'Создадим аккаунт, пройдём верификацию и подключим выбранную подписку. В дальнейшем продлевайте этот аккаунт по цене тарифа — без повторной доплаты за создание. После оплаты свяжитесь с менеджером; токен вводить не потребуется.' : 'Создадим аккаунт для выбранного тарифа. После оплаты свяжитесь с менеджером; токен вводить не потребуется.') + '</small></span><span class="chatgpt-order-new-account__price">+' + escapeHtml(format(newAccountSurcharge)) + '</span><input name="needsNewAccount" type="checkbox"' + boolChecked(savedNewAccount) + '><i></i></label></section>'
       : '';
     return (
       '<form class="price-card service-checkout-card chatgpt-order-card" data-chatgpt-go-order' +
@@ -4565,23 +5156,24 @@ function initActivationResumeShortcut() {
       ' data-plan-key="' + escapeHtml(planKey) + '"' +
       ' data-delivery-key="' + escapeHtml(deliveryKey) + '"' +
       ' data-duration-key="' + escapeHtml(durationKey) + '"' +
+      ' data-summary-description="' + escapeHtml(summaryDescription) + '"' +
       ' data-badge="">' +
         '<div class="chatgpt-order-scroll">' +
           '<section class="chatgpt-order-section chatgpt-order-section--summary chatgpt-order-summary-card chatgpt-order-header">' +
             '<div class="chatgpt-order-summary-card__top chatgpt-order-main">' +
-              '<img class="chatgpt-order-item__icon chatgpt-order-summary-card__logo chatgpt-order-icon" src="' + escapeHtml(serviceLogo) + '" alt="' + escapeHtml(serviceDisplayName) + '" loading="lazy" decoding="async">' +
+              serviceIconMarkup +
               '<div class="chatgpt-order-summary-card__body chatgpt-order-info"><h3 class="chatgpt-order-title" id="chatGptGoOrderModalTitle">' + escapeHtml(summaryTitle) + '</h3><p class="chatgpt-order-summary-card__meta chatgpt-order-meta">' + escapeHtml(summaryDescription) + '</p><div class="chatgpt-order-summary-card__chips chatgpt-order-chips"><span>' + escapeHtml(planLabel) + '</span><span>' + escapeHtml(durationLabel) + '</span>' + deliveryChip + '</div></div>' +
             '</div>' +
             '<div class="chatgpt-order-summary-card__price chatgpt-order-total"><span>Итого</span><strong data-chatgpt-go-total>' + escapeHtml(format(total)) + '</strong></div>' +
             '<div class="chatgpt-order-summary-lines"><div data-chatgpt-go-summary-discount' + (discount > 0 ? "" : " hidden") + '><span>Скидка:</span><strong>−' + escapeHtml(format(discount)) + '</strong></div></div>' +
-          '</section>' +
-          '<section class="chatgpt-order-section"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Контакты</h4><p>Для статуса заказа и связи</p></div><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Почта</span><small>Нужна для связи по заказу</small><input class="chatgpt-order-field__control" name="contactEmail" type="email" autocomplete="email" placeholder="name@email.com" value="' + escapeHtml(savedEmail) + '" required></label><label class="chatgpt-order-field"><span>Telegram</span><small>Сюда придет вся информация по заказу</small><input class="chatgpt-order-field__control" name="telegram" type="text" autocomplete="off" placeholder="@username" value="' + escapeHtml(savedTelegram) + '" required></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="contactEmail"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="telegram"></p></div></section>' + accountSectionMarkup +
+          '</section>' + manualClaudeMaxNote + devinLinkNote +
+          '<section class="chatgpt-order-section"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Контакты</h4><p>Для статуса заказа и связи</p></div><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Почта</span><small>Нужна для связи по заказу</small><input class="chatgpt-order-field__control" name="contactEmail" type="email" autocomplete="email" placeholder="name@email.com" value="' + escapeHtml(savedEmail) + '" required></label><label class="chatgpt-order-field"><span>Telegram</span><small>Сюда придет вся информация по заказу</small><input class="chatgpt-order-field__control" name="telegram" type="text" autocomplete="off" placeholder="@username" value="' + escapeHtml(savedTelegram) + '" required></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="contactEmail"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="telegram"></p></div></section>' + newAccountMarkup + accountSectionMarkup +
           '<section class="chatgpt-order-section chatgpt-order-soft-actions"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Дополнительно</h4></div>' +
             '<label class="chatgpt-order-soft-action"><span><strong>Оформить в подарок</strong><small>Покажем поля получателя после включения</small></span><input name="isGift" type="checkbox"' + boolChecked(savedGift) + '><i></i></label><div class="chatgpt-order-gift-extra"' + (savedGift ? "" : " hidden") + ' data-chatgpt-go-gift-extra><div class="chatgpt-order-gift-note"><strong>🎁 Хотите устроить сюрприз?</strong><p>Вы выбираете подписку и указываете получателя. Мы сами свяжемся с ним, уточним данные и подключим подписку без передачи логинов и паролей.</p></div><div class="chatgpt-order-gift-panel"><h4 class="chatgpt-order-section-title">Данные подарка</h4><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Отправитель</span><small>Укажем в подарке</small><input class="chatgpt-order-field__control" name="giftSender" type="text" autocomplete="name" placeholder="Никита" value="' + escapeHtml(String(draft.giftSender || "")) + '"></label><label class="chatgpt-order-field"><span>Получатель</span><small>Укажем в подарке</small><input class="chatgpt-order-field__control" name="giftRecipient" type="text" autocomplete="off" placeholder="Артём" value="' + escapeHtml(String(draft.giftRecipient || "")) + '"></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftSender"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftRecipient"></p></div><label class="chatgpt-order-field chatgpt-order-field--full"><span>Где прислать подарок</span><select class="chatgpt-order-field__control" name="giftDeliveryMethod"><option value=""' + selected("", savedGiftDeliveryMethod) + '>Выберите способ</option><option value="telegram"' + selected("telegram", savedGiftDeliveryMethod) + '>Telegram</option><option value="vk"' + selected("vk", savedGiftDeliveryMethod) + '>VK</option><option value="whatsapp"' + selected("whatsapp", savedGiftDeliveryMethod) + '>WhatsApp</option><option value="email"' + selected("email", savedGiftDeliveryMethod) + '>Электронная почта</option></select></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftDeliveryMethod"></p><label class="chatgpt-order-field chatgpt-order-field--full"><span>Контакт получателя</span><input class="chatgpt-order-field__control" name="giftRecipientContact" type="text" autocomplete="off" placeholder="@telegram / vk.com/name / WhatsApp / name@mail.ru" value="' + escapeHtml(String(draft.giftRecipientContact || "")) + '"></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftRecipientContact"></p><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Дата отправки</span><input class="chatgpt-order-field__control" name="giftSendDate" type="date" min="' + escapeHtml(todayIso) + '" value="' + escapeHtml(String(draft.giftSendDate || "")) + '"></label><label class="chatgpt-order-field"><span>Время отправки (МСК)</span><input class="chatgpt-order-field__control" name="giftSendTime" type="time" value="' + escapeHtml(String(draft.giftSendTime || "")) + '"></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftSendDate"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftSendTime"></p></div><p class="chatgpt-order-gift-time-note"><strong>Подарки отправляем с 10:00 до 20:00 МСК.</strong><br>Ставьте время минимум +4 часа от оформления. Если заказ ночью, доставка должна быть не раньше 14:00.</p><label class="chatgpt-order-field chatgpt-order-field--full"><span>Сообщение получателю</span><small>Пришлём вместе с подарком</small><textarea class="chatgpt-order-field__control" name="giftMessage" rows="4" placeholder="Напишите поздравление или пожелание">' + escapeHtml(String(draft.giftMessage || "")) + '</textarea></label></div></div>' +
             '<label class="chatgpt-order-soft-action"><span><strong>Пришёл по рекомендации</strong><small>Добавим контакт друга для скидки</small></span><input name="cameByRecommendation" type="checkbox"' + boolChecked(savedRecommendation) + '><i></i></label><div class="chatgpt-order-referral-extra"' + (savedRecommendation ? "" : " hidden") + ' data-chatgpt-go-referral-extra><strong>Кто пригласил</strong><p>Пришли от друга? Дайте ему 5% скидки за ваш первый заказ — напишите его контакт ниже.</p><input class="chatgpt-order-field__control" name="referrerContact" type="text" autocomplete="off" placeholder="@telegram" value="' + escapeHtml(String(draft.referrerContact || "")) + '"></div>' +
             '<details class="chatgpt-order-collapsible"' + (String(draft.orderComment || "").trim() ? " open" : "") + '><summary>Комментарий к заказу</summary><label class="chatgpt-order-field"><span>Комментарий</span><textarea class="chatgpt-order-field__control" name="orderComment" rows="3" placeholder="Например: продление аккаунта, пожелания, детали по заказу">' + escapeHtml(String(draft.orderComment || "")) + '</textarea></label></details>' +
             '<details class="chatgpt-order-collapsible" data-chatgpt-go-promo-panel' + (savedPromo ? " open" : "") + '><summary>У меня есть промокод</summary><div class="chatgpt-order-promo"><input class="chatgpt-order-field__control" name="promoCode" type="text" autocomplete="off" placeholder="Введите промокод" value="' + escapeHtml(savedPromo) + '"><button type="button" class="btn secondary" data-chatgpt-go-promo-apply>Применить</button></div><p class="chatgpt-order-promo-msg" data-chatgpt-go-promo-msg></p></details></section>' +
-          '<section class="chatgpt-order-section"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Оплата</h4><p>Выберите платёжный шлюз</p></div><div class="chatgpt-order-payment chatgpt-payment-options" role="radiogroup" aria-label="Способ оплаты">' + renderChatGptPaymentOption("lava", "LAVA", "/assets/img/payment-lava.svg?v=20260724-lava-mark2", savedPaymentMethod) + renderChatGptPaymentOption("enot", "ENOT", "/assets/img/payment-enot.svg?v=20260724-enot-mark1", savedPaymentMethod) + '</div><p class="chatgpt-order-error" data-chatgpt-go-error-for="paymentMethod"></p><details class="chatgpt-order-collapsible chatgpt-order-processing-details"><summary>Сроки выполнения заказа</summary><div class="chatgpt-order-processing-copy"><p>Мы обрабатываем заказы ежедневно с 08:00 до 20:00 по МСК.</p><p>Заказы с автоматическим подключением выполняются 24/7.</p><p>Среднее время ожидания — от 5 минут до 2 часов после оплаты.</p></div></details></section>' +
+          '<section class="chatgpt-order-section"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Оплата</h4><p>Выберите платёжный шлюз</p></div><div class="chatgpt-order-payment chatgpt-payment-options" role="radiogroup" aria-label="Способ оплаты">' + renderChatGptPaymentOption("pally", "Pally.info", "/assets/img/payment-pally.svg", savedPaymentMethod) + renderChatGptPaymentOption("lava", "LAVA", "/assets/img/payment-lava.svg?v=20260724-lava-mark2", savedPaymentMethod) + renderChatGptPaymentOption("enot", "ENOT", "/assets/img/payment-enot.svg?v=20260724-enot-mark1", savedPaymentMethod) + '</div><p class="chatgpt-order-error" data-chatgpt-go-error-for="paymentMethod"></p><details class="chatgpt-order-collapsible chatgpt-order-processing-details"><summary>Сроки выполнения заказа</summary><div class="chatgpt-order-processing-copy"><p>Мы обрабатываем заказы ежедневно с 08:00 до 20:00 по МСК.</p><p>Заказы с автоматическим подключением выполняются 24/7.</p><p>Среднее время ожидания — от 5 минут до 2 часов после оплаты.</p></div></details></section>' +
           '<p class="chatgpt-order-legal-note">Нажимая кнопку, вы соглашаетесь с <a href="/oferta.html" target="_blank" rel="noopener">офертой</a> и <a href="/politika.html" target="_blank" rel="noopener">политикой конфиденциальности</a>.</p><p class="chatgpt-order-status" data-chatgpt-go-status></p>' +
         '</div><div class="chatgpt-order-footer"><div class="chatgpt-order-footer__total"><span>Итого к оплате</span><strong data-chatgpt-go-total>' + escapeHtml(format(total)) + '</strong></div><button type="submit" class="btn chatgpt-order-submit" data-chatgpt-go-submit>Оформить заказ</button></div>' +
       '</form>'
@@ -4639,6 +5231,137 @@ function initActivationResumeShortcut() {
     requestAnimationFrame(() => {
       restoreChatGptGoOrderFocus();
     });
+  }
+
+  function isChatGptPro20RenewalItem(item) {
+    if (!item) return false;
+    const serviceKey = normalizeAiServiceKey(item.serviceKey || getServicePageKey() || "");
+    return serviceKey === "chatgpt" && getServicePlanKey(item, serviceKey) === "pro-20x";
+  }
+
+  function isPro20RenewalConfirmOpen() {
+    return Boolean(pro20RenewalConfirmModalEl && !pro20RenewalConfirmModalEl.hidden);
+  }
+
+  function getPro20RenewalConfirmFocusableElements() {
+    if (!pro20RenewalConfirmModalEl) return [];
+    const selector = [
+      "a[href]",
+      "button:not([disabled])",
+      "input:not([disabled]):not([type='hidden'])",
+      "[tabindex]:not([tabindex='-1'])",
+    ].join(", ");
+    return Array.from(pro20RenewalConfirmModalEl.querySelectorAll(selector))
+      .filter(isChatGptGoFocusableElementVisible);
+  }
+
+  function trapPro20RenewalConfirmFocus(event) {
+    if (!isPro20RenewalConfirmOpen()) return;
+    const focusable = getPro20RenewalConfirmFocusableElements();
+    if (!focusable.length) {
+      event.preventDefault();
+      return;
+    }
+    const active = document.activeElement;
+    const currentIndex = focusable.indexOf(active);
+    const nextIndex = event.shiftKey
+      ? (currentIndex <= 0 ? focusable.length - 1 : currentIndex - 1)
+      : (currentIndex >= focusable.length - 1 ? 0 : currentIndex + 1);
+    event.preventDefault();
+    focusable[nextIndex].focus({ preventScroll: true });
+  }
+
+  function closePro20RenewalConfirm(options = {}) {
+    if (!isPro20RenewalConfirmOpen()) return;
+    pro20RenewalConfirmModalEl.hidden = true;
+    pro20RenewalConfirmModalEl.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("is-pro20-renewal-confirm-open");
+    pro20RenewalPendingForm = null;
+    if (options.restoreFocus === false) return;
+    const target = pro20RenewalConfirmLastFocusedElement;
+    pro20RenewalConfirmLastFocusedElement = null;
+    requestAnimationFrame(() => {
+      if (target && typeof target.focus === "function" && document.contains(target)) {
+        target.focus({ preventScroll: true });
+      }
+    });
+  }
+
+  function ensurePro20RenewalConfirmModal() {
+    if (pro20RenewalConfirmModalEl) return;
+    const isEnglish = String(document.documentElement.lang || "").toLowerCase().startsWith("en");
+    const copy = isEnglish ? {
+      eyebrow: "Before payment",
+      title: "Pro 20x is renewal only",
+      lead: "This plan can only be renewed on an account with an active ChatGPT Pro 20x subscription.",
+      noteTitle: "Please check before paying",
+      note: "Open ChatGPT settings and make sure that Pro 20x is active on this account.",
+      agree: "I confirm that I am renewing an account with an active ChatGPT Pro 20x subscription.",
+      back: "Back to order",
+      continue: "I understand, continue",
+      close: "Close",
+    } : {
+      eyebrow: "Перед оплатой",
+      title: "Pro 20x — только продление",
+      lead: "Этот тариф подключается только на аккаунт, где уже действует подписка ChatGPT Pro 20x.",
+      noteTitle: "Проверьте перед оплатой",
+      note: "Откройте настройки ChatGPT и убедитесь, что на этом аккаунте уже активен Pro 20x.",
+      agree: "Я подтверждаю, что продлеваю аккаунт с действующей подпиской ChatGPT Pro 20x.",
+      back: "Вернуться к заказу",
+      continue: "Понимаю, продолжить",
+      close: "Закрыть",
+    };
+    const modal = document.createElement("section");
+    modal.id = "pro20RenewalConfirmModal";
+    modal.className = "pro20-renewal-confirm";
+    modal.hidden = true;
+    modal.setAttribute("aria-hidden", "true");
+    modal.innerHTML = [
+      '<button type="button" class="pro20-renewal-confirm__backdrop" aria-label="' + escapeHtml(copy.close) + '" data-pro20-renewal-confirm-close></button>',
+      '<div class="pro20-renewal-confirm__dialog" role="dialog" aria-modal="true" aria-labelledby="pro20RenewalConfirmTitle">',
+      '  <button type="button" class="pro20-renewal-confirm__close" aria-label="' + escapeHtml(copy.close) + '" data-pro20-renewal-confirm-close>&times;</button>',
+      '  <div class="pro20-renewal-confirm__eyebrow">' + escapeHtml(copy.eyebrow) + '</div>',
+      '  <div class="pro20-renewal-confirm__mark" aria-hidden="true">!</div>',
+      '  <h2 id="pro20RenewalConfirmTitle">' + escapeHtml(copy.title) + '</h2>',
+      '  <p class="pro20-renewal-confirm__lead">' + escapeHtml(copy.lead) + '</p>',
+      '  <div class="pro20-renewal-confirm__note"><strong>' + escapeHtml(copy.noteTitle) + '</strong><span>' + escapeHtml(copy.note) + '</span></div>',
+      '  <label class="pro20-renewal-confirm__check"><input type="checkbox" data-pro20-renewal-confirm-check><span>' + escapeHtml(copy.agree) + '</span></label>',
+      '  <div class="pro20-renewal-confirm__actions"><button type="button" class="pro20-renewal-confirm__back" data-pro20-renewal-confirm-close>' + escapeHtml(copy.back) + '</button><button type="button" class="pro20-renewal-confirm__continue" data-pro20-renewal-confirm-continue disabled>' + escapeHtml(copy.continue) + '</button></div>',
+      '</div>',
+    ].join("");
+    document.body.appendChild(modal);
+    pro20RenewalConfirmModalEl = modal;
+    modal.querySelectorAll("[data-pro20-renewal-confirm-close]").forEach(button => {
+      button.addEventListener("click", () => closePro20RenewalConfirm());
+    });
+    const checkbox = modal.querySelector("[data-pro20-renewal-confirm-check]");
+    const continueButton = modal.querySelector("[data-pro20-renewal-confirm-continue]");
+    checkbox?.addEventListener("change", () => {
+      if (continueButton) continueButton.disabled = !checkbox.checked;
+    });
+    continueButton?.addEventListener("click", () => {
+      if (!checkbox?.checked || !pro20RenewalPendingForm) return;
+      const form = pro20RenewalPendingForm;
+      form.dataset.pro20RenewalConfirmed = "1";
+      closePro20RenewalConfirm({ restoreFocus: false });
+      void submitChatGptGoOrder(form);
+    });
+  }
+
+  function openPro20RenewalConfirm(form) {
+    if (!form) return;
+    ensurePro20RenewalConfirmModal();
+    if (!pro20RenewalConfirmModalEl) return;
+    pro20RenewalPendingForm = form;
+    pro20RenewalConfirmLastFocusedElement = document.activeElement;
+    const checkbox = pro20RenewalConfirmModalEl.querySelector("[data-pro20-renewal-confirm-check]");
+    const continueButton = pro20RenewalConfirmModalEl.querySelector("[data-pro20-renewal-confirm-continue]");
+    if (checkbox) checkbox.checked = false;
+    if (continueButton) continueButton.disabled = true;
+    pro20RenewalConfirmModalEl.hidden = false;
+    pro20RenewalConfirmModalEl.setAttribute("aria-hidden", "false");
+    document.body.classList.add("is-pro20-renewal-confirm-open");
+    requestAnimationFrame(() => checkbox?.focus({ preventScroll: true }));
   }
 
   function applyChatGptGoOrderLayoutGuard(form) {
@@ -4723,7 +5446,10 @@ function initActivationResumeShortcut() {
 
   function isChatGptGoFocusableElementVisible(element) {
     if (!element || element.disabled) return false;
-    if (element.closest("[hidden], [aria-hidden='true']")) return false;
+    if (element.closest("[hidden], [inert], [aria-hidden='true']")) return false;
+    for (let parent = element.parentElement; parent && parent !== chatGptGoOrderModalEl; parent = parent.parentElement) {
+      if (parent.tagName === "DETAILS" && !parent.open && element !== parent.querySelector(":scope > summary")) return false;
+    }
     return Boolean(element.offsetWidth || element.offsetHeight || element.getClientRects().length);
   }
 
@@ -4735,6 +5461,7 @@ function initActivationResumeShortcut() {
       "input:not([disabled]):not([type='hidden'])",
       "select:not([disabled])",
       "textarea:not([disabled])",
+      "summary",
       "[tabindex]:not([tabindex='-1'])",
     ].join(", ");
     return Array.from(chatGptGoOrderModalEl.querySelectorAll(selector))
@@ -4846,16 +5573,36 @@ function initActivationResumeShortcut() {
       product_id: String(modalItem.productId || modalItem.id || "").trim(),
       amount: Math.max(0, toAmount(modalItem.price)),
     });
+    trackAnalyticsEvent("checkout_start", {
+      source: "service_order_modal",
+      service_key: serviceKey,
+      product_id: String(modalItem.productId || modalItem.id || "").trim(),
+      amount: Math.max(0, toAmount(modalItem.price)),
+    });
   }
 
   function renderServiceConstructorPage(allItems, serviceKey) {
     const filteredItems = filterServicePageItems(allItems, serviceKey);
     const selectedItem = filteredItems[0] || null;
-    const selectedPrice = selectedItem ? Math.max(0, toAmount(selectedItem.price)) : 0;
+    const pageNewAccount = servicePageRootEl?.querySelector('[data-service-new-account]');
+    const selectedPrice = selectedItem
+      ? Math.max(0, toAmount(selectedItem.price)) + (pageNewAccount?.checked ? getNewAccountSurcharge(serviceKey, selectedItem.product || selectedItem.slug) : 0)
+      : 0;
     const selectedCurrency = String(selectedItem?.currency || "RUB").toUpperCase();
+    const accountNote = servicePageRootEl?.querySelector('[data-service-account-note]');
+    if (accountNote) accountNote.textContent = pageNewAccount?.checked
+      ? (serviceKey === "claude"
+        ? (isEnPage ? "After payment, contact the manager to receive your login details. Future renewals cost only the plan price, without the account creation fee." : "После оплаты свяжитесь с менеджером для получения данных входа. В дальнейшем продлевайте этот аккаунт по цене тарифа — без повторной доплаты за создание.")
+        : (isEnPage ? "After payment, a manager will create your account and send you the login details." : "После оплаты менеджер создаст аккаунт и передаст вам данные для входа."))
+      : (isEnPage ? "By default, the subscription is connected to your existing account." : "По умолчанию подключаем подписку на ваш аккаунт.");
 
     if (serviceConstructorPriceEl) {
       serviceConstructorPriceEl.textContent = selectedPrice ? formatPriceByCurrency(selectedPrice, selectedCurrency) : "—";
+    }
+    if (serviceConstructorTitleEl && serviceKey === "chatgpt") {
+      const selectedPlan = servicePageState.plan === "all" ? "" : getServicePlanLabel(serviceKey, servicePageState.plan);
+      const selectedTitle = getServiceConstructorPlanTitle(selectedItem, serviceKey, selectedPlan);
+      serviceConstructorTitleEl.textContent = selectedTitle || "ChatGPT";
     }
 
     servicePlansGridEl.innerHTML = selectedItem
@@ -4925,8 +5672,20 @@ function initActivationResumeShortcut() {
   function setupServicePageFilters() {
     if (!servicePageRootEl || servicePageRootEl.dataset.serviceFiltersInit === "1") return;
     servicePageRootEl.dataset.serviceFiltersInit = "1";
+    servicePageRootEl.addEventListener("change", event => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (!target?.matches('[data-service-new-account]')) return;
+      const serviceKey = getServicePageKey();
+      renderServiceConstructorPage(sortServicePageItems(serviceKey, getPublicServiceItems(servicePageItems, serviceKey)), serviceKey);
+    });
     servicePageRootEl.addEventListener("click", event => {
       const target = event.target instanceof Element ? event.target : null;
+      if (target?.closest("[data-service-retry]")) {
+        event.preventDefault();
+        servicePlansGridEl.innerHTML = '<div class="service-empty-state" role="status">' + (isEnPage ? "Loading plans…" : "Загружаем тарифы…") + '</div>';
+        loadServicePage();
+        return;
+      }
       const faqButton = target ? target.closest(".service-faq-question") : null;
       if (faqButton) {
         event.preventDefault();
@@ -4958,6 +5717,14 @@ function initActivationResumeShortcut() {
         renderDynamicServiceInfo(dynamicServicePagePayload);
         renderDynamicServiceFaq(dynamicServicePagePayload);
         servicePageItems = Array.isArray(dynamicServicePagePayload.products) ? dynamicServicePagePayload.products : [];
+        if (!servicePageItems.length) {
+          const fallbackPayload = await fetchProductsPayload();
+          const fallbackItems = Array.isArray(fallbackPayload?.items) ? fallbackPayload.items : [];
+          servicePageItems = fallbackItems.filter(item => {
+            const service = getAiServiceConfig(item);
+            return service && normalizeAiServiceKey(service.key) === serviceKey;
+          });
+        }
         reconcileCartProductIds(servicePageItems);
         if (!servicePageItems.length) {
           updateServiceSummary([]);
@@ -4997,10 +5764,8 @@ function initActivationResumeShortcut() {
       renderServicePageFromItems();
     } catch (_) {
       updateServiceSummary([]);
-      servicePlansGridEl.innerHTML =
-        '<div class="service-empty-state">' +
-          '<h3>' + escapeHtml(TEXT.productsUnavailable) + "</h3>" +
-        "</div>";
+      if (serviceConstructorPriceEl) serviceConstructorPriceEl.textContent = "—";
+      servicePlansGridEl.innerHTML = '<div class="service-empty-state" role="status"><h3>' + (isEnPage ? "Could not load plans" : "Не удалось загрузить тарифы") + '</h3><p>' + (isEnPage ? "Check your connection and try again." : "Проверьте соединение и попробуйте ещё раз.") + '</p><button type="button" data-service-retry>' + (isEnPage ? "Try again" : "Попробовать ещё раз") + '</button></div>';
       refreshCards();
       syncCards();
       renderCart();
@@ -5068,14 +5833,14 @@ function initActivationResumeShortcut() {
       refreshCards();
       syncCards();
       renderCart();
-      alignToHashTarget("auto");
+      alignToHashTarget("instant");
     } catch (_) {
       pricingGridEl.classList.remove("pricing-grid--categorized");
       pricingGridEl.innerHTML = '<div class="price-card"><h3>' + escapeHtml(TEXT.productsUnavailable) + "</h3></div>";
       refreshCards();
       syncCards();
       renderCart();
-      alignToHashTarget("auto");
+      alignToHashTarget("instant");
     }
   }
 
@@ -5203,6 +5968,13 @@ function initActivationResumeShortcut() {
           activationVariant: String(checkoutItem.activationVariant || "").trim() || null,
           deliveryMethod: String(checkoutItem.deliveryKey || checkoutItem.deliveryType || "").trim(),
         },
+      };
+    }
+    const attribution = getMarketingAttribution();
+    if (attribution) {
+      orderDetails = {
+        ...orderDetails,
+        attribution,
       };
     }
     if (orderDetails && typeof orderDetails === "object") {
@@ -6205,8 +6977,23 @@ function initActivationResumeShortcut() {
       setChatGptGoFieldError(form, "servicePassword", "");
     }
 
+    if (target.matches('[name="needsNewAccount"]')) {
+      const item = getCardItem(form);
+      if (item) updateChatGptGoOrderTotals(form, item);
+      const pageNewAccount = servicePageRootEl?.querySelector('[data-service-new-account]');
+      if (pageNewAccount) {
+        pageNewAccount.checked = target.checked;
+        const serviceKey = getServicePageKey();
+        renderServiceConstructorPage(sortServicePageItems(serviceKey, getPublicServiceItems(servicePageItems, serviceKey)), serviceKey);
+      }
+    }
+
     if (target.matches('[name="paymentMethod"]')) {
       syncChatGptGoPaymentAria(form);
+      trackAnalyticsEvent("payment_method_selected", {
+        source: "service_order_modal",
+        method: normalizeChatGptGoPaymentChoice(target.value),
+      });
     }
 
     if (target.matches('[name="cameByRecommendation"]')) {
@@ -6380,11 +7167,20 @@ function initActivationResumeShortcut() {
   });
 
   document.addEventListener("keydown", (e) => {
+    if (e.defaultPrevented) return;
+    if (e.key === "Tab" && isPro20RenewalConfirmOpen()) {
+      trapPro20RenewalConfirmFocus(e);
+      return;
+    }
     if (e.key === "Tab" && isChatGptGoOrderModalOpen()) {
       trapChatGptGoOrderFocus(e);
       return;
     }
     if (e.key !== "Escape") return;
+    if (isPro20RenewalConfirmOpen()) {
+      closePro20RenewalConfirm();
+      return;
+    }
     closeHeaderCartPanel();
     resetPendingCheckout();
     closePaymentMethodModal();
@@ -6407,9 +7203,6 @@ function initActivationResumeShortcut() {
     renderCart();
   }, 60 * 1000);
 
-  window.addEventListener("hashchange", () => {
-    alignToHashTarget("smooth");
-  });
 
   window.gptishkaCart = {
     getQty,
@@ -6457,7 +7250,7 @@ function initActivationResumeShortcut() {
   const PRODUCT_OWNERS = "OpenAI, Anthropic, xAI";
 
   function isEnglishPage() {
-    return /^\/en(?:\/|$)/.test(window.location.pathname || "");
+    return isEnglishRequest();
   }
 
   function isPublicPage() {
@@ -6543,10 +7336,10 @@ function initActivationResumeShortcut() {
     if (isChatgpt) {
       const title = en
         ? "ChatGPT assistance — independent GPTishka service"
-        : "Помощь с ChatGPT — независимый сервис GPTishka";
+        : "Купить ChatGPT Plus — 2 190 ₽ за месяц";
       const description = en
         ? "GPTishka provides independent purchase and activation assistance for AI services. We are not an official OpenAI website and do not represent OpenAI."
-        : "GPTishka оказывает независимую помощь с оформлением и активацией AI-сервисов. Мы не являемся официальным сайтом OpenAI и не представляем OpenAI.";
+        : "Купить ChatGPT Plus за 2 190 ₽ на месяц. Подключение на ваш аккаунт без передачи логина и пароля, оплата в рублях, поддержка и гарантия. Также доступны Go, Pro 5x и Pro 20x.";
       document.title = title;
       setMeta("description", description);
       setMeta("og:title", title, "property");
@@ -6587,14 +7380,26 @@ function initActivationResumeShortcut() {
     const pill = pillLink && pillLink.querySelector("span");
     if (pillLink) {
       pillLink.href = en ? "/en/codex-credits" : "/codex-credits";
-      pillLink.setAttribute("aria-label", en ? "Top up Codex Credits from 1,500 RUB" : "Пополнить кредиты Codex от 1 500 рублей");
+      if (!pillLink.getAttribute("aria-label")) {
+        pillLink.setAttribute("aria-label", en ? "Top up Codex Credits from 1,500 RUB" : "Пополнить кредиты Codex от 1 500 рублей");
+      }
     }
-    if (pill) pill.textContent = en ? "Codex Credits from 1,500 RUB" : "Кредиты Codex от 1 500 ₽";
+    // Keep the server-rendered (or already refreshed) price while the catalog loads.
+    if (pill && !pill.textContent.trim()) {
+      pill.textContent = en ? "Codex Credits from 1,500 RUB" : "Кредиты Codex от 1 500 ₽";
+    }
 
-    const links = Array.from(document.querySelectorAll(".header-quick-link"));
-    const labels = en ? ["News", "Reviews", "VK", "Telegram"] : ["Новости", "Отзывы", "VK", "Telegram"];
-    links.forEach((link, index) => {
-      if (labels[index]) link.textContent = labels[index];
+    document.querySelectorAll(".header-quick-link:not(.header-social-link)").forEach((link) => {
+      let target;
+      try { target = new URL(link.getAttribute("href"), window.location.href); }
+      catch (_) { return; }
+      const path = target.pathname.replace(/^\/en(?=\/)/, "");
+      const label = /\/news(?:\/|$)/.test(path) ? (en ? "News" : "Новости")
+        : /\/app(?:\/|$)/.test(path) ? (en ? "Reviews" : "Отзывы")
+        : /\/contact(?:\.html)?\/?$/.test(path) ? (en ? "Support" : "Помощь")
+        : target.hash === "#pricing" || /\/catalog(?:\/|$)/.test(path) ? (en ? "Catalog" : "Каталог")
+        : null;
+      if (label) link.textContent = label;
     });
 
     document.querySelectorAll(".lang-current span, .lang-item span").forEach((node) => {
@@ -6610,10 +7415,34 @@ function initActivationResumeShortcut() {
     if (logo) logo.alt = "GPTISHKA";
   }
 
+  function refreshCodexPillPrice() {
+    const en = isEnglishPage();
+    const pillLink = document.querySelector(".header-product-pill");
+    const pill = pillLink && pillLink.querySelector("span");
+    if (!pillLink || !pill) return;
+    fetch(`/api/public/products?lang=${en ? "en" : "ru"}`, { credentials: "same-origin", cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((payload) => {
+        const products = Array.isArray(payload && payload.items) ? payload.items :
+          Array.isArray(payload && payload.products) ? payload.products : [];
+        const prices = products
+          .filter((item) => /codex/i.test([item && item.slug, item && item.product, item && item.baseSlug, item && item.title, ...(Array.isArray(item && item.tags) ? item.tags : [])].join(" ")))
+          .map((item) => Number(item && item.price))
+          .filter((price) => Number.isFinite(price) && price > 0);
+        if (!prices.length) return;
+        const price = Math.min(...prices);
+        const formatted = price.toLocaleString(en ? "en-US" : "ru-RU", { maximumFractionDigits: 0 });
+        pill.textContent = en ? `Codex Credits from ${formatted} RUB` : `Кредиты Codex от ${formatted} ₽`;
+        pillLink.setAttribute("aria-label", en ? `Top up Codex Credits from ${formatted} RUB` : `Пополнить кредиты Codex от ${formatted} рублей`);
+      })
+      .catch(() => {});
+  }
+
   function initComplianceLayer() {
     if (!isPublicPage()) return;
     ensureStyles();
     repairHeaderText();
+    refreshCodexPillPrice();
     updatePublicMeta();
     insertComplianceNote();
   }

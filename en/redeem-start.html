@@ -1,8 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script src="/assets/js/analytics-init.js?v=20260813-yandex-attribution1" defer></script>
 <meta charset="UTF-8" />
+<link rel="preload" href="/assets/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/site-fonts.css?v=20260930-first-paint1">
+
+<script src="/assets/js/analytics-init.js?v=20260813-yandex-attribution1" defer></script>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="GPTishka: renewal and activation of ChatGPT Plus." />
   <meta property="og:type" content="website" />
@@ -14,14 +19,9 @@
   <link rel="icon" href="/favicon.png?v=20260920-white-cat-round1" sizes="any">
   <title>Renew / Activate - GPTishka</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/logo.min.css">
   <link rel="stylesheet" href="/assets/css/gptishka-header-refresh.css?v=20260912-header-codex1">
-<link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20260724-header-layout3">
-
-  <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2">
+<link rel="stylesheet" href="/assets/css/theme.min.css?v=20260304m2">
 <link rel="stylesheet" href="/assets/css/unified-premium.css?v=20260310r" />
 
   <style>
@@ -1273,11 +1273,16 @@
 
   </style>
 <link rel="stylesheet" href="/assets/css/support-widget.css?v=20260724-resume-collapse1" />
-<link rel="stylesheet" href="/assets/css/home-stability-hotfix.css?v=20260723-checkout-controls1" />
+<link rel="stylesheet" href="/assets/css/home-stability-hotfix.css?v=sha256-4b642dad31012b96" />
 <link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260923-scroll-render1" />
 <link rel="stylesheet" href="/assets/css/redeem-start-refresh.css?v=20260724-redeem-refresh3" />
+<link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
+<link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
+<link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
+<link rel="stylesheet" href="/assets/css/redeem-clean-checkout-v2.css?v=20261007-all-services6">
+<link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-398a7ebc6c68aeda">
 </head>
-<body class="redeem-flow home-wide-body">
+<body id="storefrontBody" class="redeem-flow home-wide-body">
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
   <div class="page-overlay"></div>
 
@@ -1286,42 +1291,48 @@
       <a href="/en/" class="logo-link">
         <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka" class="logo-img">
       </a>
-      <a href="/en/codex-credits" class="header-product-pill" aria-label="Top up Codex Credits from 1,500 RUB">
-        <img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" loading="lazy" decoding="async">
+      <a href="/en/codex-credits" class="header-product-pill" style="display:none !important" aria-label="Top up Codex Credits from 1,500 RUB">
+        <img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" loading="eager" decoding="async">
         <span>Codex Credits from 1,500 RUB</span>
       </a>
-      <nav class="header-quick-links" aria-label="Quick sections GPTishka">
-        <a class="header-quick-link" href="/news/">News</a>
+      <nav class="header-quick-links" style="display:none !important" aria-label="Quick sections GPTishka">
+        <a class="header-quick-link" href="/en/news/">News</a>
         <a class="header-quick-link" href="/app/?lang=en">Reviews</a>
-        <a class="header-quick-link" href="https://vk.com/gptishka?from=groups&amp;trackcode=7f99670c_6HjhbFhCJIgWV0ALEpOr-nIlZFrs3X3-3D3-z00f1k7ylk5Mhdl7hxbRgwtUEeZ8MCZjDfHpk0ywZuW" target="_blank" rel="noopener">VK</a>
-        <a class="header-quick-link header-quick-link--telegram" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener">Telegram</a>
+        <a class="header-quick-link header-social-link header-social-link--vk" href="https://vk.com/gptishka?from=groups&amp;trackcode=7f99670c_6HjhbFhCJIgWV0ALEpOr-nIlZFrs3X3-3D3-z00f1k7ylk5Mhdl7hxbRgwtUEeZ8MCZjDfHpk0ywZuW" target="_blank" rel="noopener" aria-label="GPTishka on VK"><svg class="header-social-icon header-social-icon--vk" viewBox="3.8 6.8 17.4 10.2" aria-hidden="true" focusable="false" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.194c.136-.148.132-.427.132-.427s-.019-1.304.586-1.496c.596-.188 1.362 1.26 2.174 1.817.614.421 1.08.329 1.08.329l2.169-.03s1.134-.07.596-.961c-.044-.073-.313-.658-1.611-1.863-1.36-1.262-1.177-1.058.46-3.242.997-1.33 1.395-2.142 1.27-2.49-.119-.331-.854-.244-.854-.244l-2.442.015s-.181-.025-.315.056c-.131.079-.216.263-.216.263s-.386 1.029-.9 1.904c-1.085 1.845-1.519 1.942-1.696 1.828-.413-.267-.31-1.072-.31-1.643 0-1.782.27-2.524-.526-2.716-.264-.064-.458-.105-1.132-.112-.865-.009-1.598.003-2.012.206-.276.135-.489.437-.359.454.16.021.522.098.714.359.248.34.239 1.103.239 1.103s.142 2.103-.332 2.364c-.325.18-.772-.187-1.729-1.861-.49-.858-.861-1.807-.861-1.807s-.071-.175-.199-.268c-.155-.113-.371-.149-.371-.149l-2.321.015s-.348.01-.476.161c-.114.134-.009.411-.009.411s1.816 4.248 3.872 6.389c1.886 1.963 4.028 1.834 4.028 1.834h.971Z"></path></svg></a>
+        <a class="header-quick-link header-social-link header-social-link--telegram" href="https://t.me/aimarket_gpt" target="_blank" rel="noopener" aria-label="GPTishka on Telegram"><svg class="header-social-icon header-social-icon--telegram" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor"><path d="M23.91 3.79 20.3 20.84c-.27 1.2-.98 1.49-1.99.93l-5.5-4.06-2.65 2.55c-.29.29-.54.54-1.1.54l.39-5.6 10.2-9.21c.44-.39-.1-.61-.68-.22L6.36 13.7.92 12c-1.18-.37-1.2-1.18.25-1.75L22.44 2.06c.98-.36 1.84.24 1.47 1.73Z"></path></svg></a>
       </nav>
       <div class="header-tools header-actions">
-        <div class="lang-switch" id="langSwitch">
-          <div class="lang-current" id="langCurrent">
-            <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
-            <span>English</span>
-            <span class="arrow">&#9662;</span>
-          </div>
-          <div class="lang-dropdown">
-            <div class="lang-item" data-lang="ru">
-              <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
-              <span>Russian</span>
-            </div>
-            <div class="lang-item" data-lang="en">
-              <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
-              <span>English</span>
-            </div>
-          </div>
-        </div>
+        <div class="lang-switch language-menu-host" id="langSwitch" data-language-menu-version="20260913-header-grid1" data-language-menu-language="en">
+      <button class="language-menu__trigger lang-current" type="button" aria-label="Choose language" aria-haspopup="menu" aria-expanded="false">
+        <img class="language-menu__flag lang-flag-img" src="/assets/img/iconeng.png" alt="" width="24" height="24" decoding="async">
+        <span class="language-menu__current-name">English</span>
+        <span class="language-menu__chevron lang-arrow" aria-hidden="true"></span>
+      </button>
+      <div class="language-menu__popover lang-options lang-dropdown" role="menu" aria-label="Available languages" aria-hidden="true">
+
+          <a class="language-menu__option lang-item" href="/redeem-start.html" role="menuitem" lang="ru" hreflang="ru" data-language="ru">
+            <img class="language-menu__flag lang-flag-img" src="/assets/img/iconrus.avif" alt="" width="24" height="24" loading="lazy" decoding="async">
+            <span class="language-menu__option-name">Русский</span>
+            <span class="language-menu__check" aria-hidden="true"></span>
+          </a>
+
+          <a class="language-menu__option lang-item is-active" href="/en/redeem-start.html" role="menuitem" lang="en" hreflang="en" data-language="en">
+            <img class="language-menu__flag lang-flag-img" src="/assets/img/iconeng.png" alt="" width="24" height="24" loading="lazy" decoding="async">
+            <span class="language-menu__option-name">English</span>
+            <span class="language-menu__check" aria-hidden="true"></span>
+          </a>
+
+      </div>
+    </div>
       </div>
     </div>
   </header>
 
   <main class="page redeem-page">
     <section class="redeem-card">
-      <h1 class="redeem-title">Renew / Activate</h1>
-      <p class="redeem-subtitle">Your order has been processed, we will contact you if you have any questions</p>
+      <div class="redeem-stage"><span class="redeem-stage__dot" aria-hidden="true"></span><span>Payment confirmed</span></div>
+      <h1 class="redeem-title" id="redeemTitle">Complete activation</h1>
+      <p class="redeem-subtitle" id="redeemSubtitle">Payment confirmed. Complete the final activation step.</p>
 
       <section id="vpnOfferBlock" class="redeem-vpn-offer" hidden>
         <div class="redeem-vpn-offer-head">
@@ -1346,8 +1357,8 @@
 
         <section class="redeem-block" id="tokenBlock">
           <p class="redeem-label" id="tokenLabel">Account token</p>
-          <details class="redeem-guide">
-            <summary id="tokenGuideSummary">Where to get an account token</summary>
+          <details class="redeem-guide" open>
+            <summary id="tokenGuideSummary">Instructions!</summary>
             <ol id="tokenGuideList">
               <li>Login through your browser to your ChatGPT account (if you haven’t logged in yet, just log in).</li>
               <li>Open the link <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>
@@ -1356,7 +1367,7 @@
             </ol>
           </details>
 
-          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+          <div class="redeem-token-toolbar" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
             <button id="toggleMaskBtn" type="button" class="redeem-btn">Show</button>
             <button id="pasteBtn" type="button" class="redeem-btn">Insert</button>
             <button id="clearBtn" type="button" class="redeem-btn">Clear</button>
@@ -1366,7 +1377,14 @@
 
           <div class="redeem-meta">
             <span id="tokenInfo">Characters: 0</span>
-            <span id="tokenWarn">We do not store the token and use it only for activation.</span>
+            <span id="tokenWarn">Protected and used only to fulfill your order.</span>
+          </div>
+          <div id="perplexityNextStep" class="redeem-perplexity-next" hidden>
+            <p>Data received. Copy this page link and send it in a private support chat.</p>
+            <div class="redeem-perplexity-next__actions">
+              <button id="copyPerplexityPageBtn" type="button" class="redeem-btn">Copy page link</button>
+              <a class="redeem-btn redeem-btn-primary" href="https://t.me/gptishkasupport" target="_blank" rel="noopener noreferrer">Contact support</a>
+            </div>
           </div>
         </section>
 
@@ -1441,15 +1459,20 @@
     <span class="footer-copy">© 2026 GPTishka. All rights reserved, copying prohibited.</span>
   </footer>
 
-  <script src="/assets/js/app.min.js?v=20260924-support-account1" defer></script>
+  <script src="/assets/js/app.min.js?v=sha256-46a7cf8cb3d853dd" defer></script>
   <script>
     (() => {
     const params = new URLSearchParams(window.location.search);
-    const orderId = String(params.get('order_id') || params.get('orderId') || '').trim();
+    const previewServiceKey = String(params.get('service') || '').trim().toLowerCase().replace(/[\s_-]+/g, '');
+    const previewServices = new Set(['codex250', 'codex500', 'codex1000', 'claude', 'grok', 'supergrok', 'perplexity', 'pplx']);
+    const previewMode = params.get('preview') === '1' && previewServices.has(previewServiceKey);
+    const orderId = previewMode ? 'PREVIEW' : String(params.get('order_id') || params.get('orderId') || '').trim();
     let orderLinkToken = String(params.get('t') || '').trim();
     const skipBundleRedirect = String(params.get('skip_bundle_redirect') || '').trim() === '1';
 
     const orderIdEl = document.getElementById('orderId');
+    const redeemTitleEl = document.getElementById('redeemTitle');
+    const redeemSubtitleEl = document.getElementById('redeemSubtitle');
     const copyOrderIdBtn = document.getElementById('copyOrderIdBtn');
     const tokenBlock = document.getElementById('tokenBlock');
     const tokenLabelEl = document.getElementById('tokenLabel');
@@ -1458,6 +1481,8 @@
     const tokenInput = document.getElementById('tokenInput');
     const tokenInfo = document.getElementById('tokenInfo');
     const tokenWarn = document.getElementById('tokenWarn');
+    const perplexityNextStep = document.getElementById('perplexityNextStep');
+    const copyPerplexityPageBtn = document.getElementById('copyPerplexityPageBtn');
     const toggleMaskBtn = document.getElementById('toggleMaskBtn');
     const pasteBtn = document.getElementById('pasteBtn');
     const clearBtn = document.getElementById('clearBtn');
@@ -1526,6 +1551,8 @@
     let isCredentialsDelivery = false;
     let isSteamKeyDeliveryFlow = false;
     let isSupportTokenDelivery = false;
+    let isPerplexityManualFlow = false;
+    let perplexitySessionSubmitted = false;
     let supportActivationFlow = SUPPORT_ACTIVATION_FLOW_GROK;
     let vpnOfferDismissed = false;
     let activationCompleted = false;
@@ -1795,11 +1822,13 @@
 
     function setCredentialsDeliveryMode(payload) {
       isCredentialsDelivery = true;
+      isPerplexityManualFlow = false;
       stopPolling();
       hideVpnOffer(false);
       if (tokenBlock) tokenBlock.style.display = 'none';
       if (actionsRow) actionsRow.style.display = 'none';
       if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'block';
+      if (perplexityNextStep) perplexityNextStep.hidden = true;
 
       const deliveryMode = String(payload?.deliveryMode || '').trim().toLowerCase();
       const isSupportDelivery = deliveryMode === 'support' || deliveryMode === 'manual_login';
@@ -1915,10 +1944,54 @@
       return '';
     }
 
+    function applyPerplexityManualFlow(payload) {
+      isPerplexityManualFlow = true;
+      isCredentialsDelivery = false;
+      isSupportTokenDelivery = false;
+      perplexitySessionSubmitted = Boolean(payload?.tokenStored || payload?.status === 'details_submitted');
+      if (redeemTitleEl) redeemTitleEl.textContent = 'Complete Perplexity Pro activation';
+      if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Payment confirmed. Send session data to complete activation.';
+      document.title = 'Perplexity Pro activation - GPTishka';
+      if (tokenBlock) tokenBlock.style.display = 'block';
+      if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'none';
+      if (actionsRow) actionsRow.style.display = '';
+      if (tokenLabelEl) tokenLabelEl.textContent = 'Perplexity session data';
+      if (tokenGuideSummaryEl) tokenGuideSummaryEl.textContent = 'Instructions!';
+      if (tokenGuideSummaryEl) tokenGuideSummaryEl.closest('details').open = true;
+      if (tokenGuideListEl) tokenGuideListEl.innerHTML = [
+        '<li>Sign in to your account on the <a href="https://www.perplexity.ai/" target="_blank" rel="noreferrer noopener">official Perplexity website</a>.</li>',
+        '<li>Open <a href="https://www.perplexity.ai/api/auth/session" target="_blank" rel="noreferrer noopener">perplexity.ai/api/auth/session</a> in the same browser.</li>',
+        '<li>Copy the entire page contents (JSON).</li>',
+        '<li>Paste the copied text into the field below and select “Send session data”.</li>',
+        '<li>After confirmation, send the link to this page only in a private support chat.</li>',
+      ].join('');
+      if (tokenInput) {
+        tokenInput.placeholder = 'Paste the full JSON from the Perplexity session page';
+        tokenInput.disabled = perplexitySessionSubmitted;
+      }
+      isMasked = true;
+      if (tokenInput) tokenInput.classList.add('masked');
+      if (toggleMaskBtn) toggleMaskBtn.textContent = 'Show';
+      if (startBtn) startBtn.textContent = 'Send session data';
+      if (checkBtn) checkBtn.style.display = 'none';
+      if (retryNewKeyBtn) retryNewKeyBtn.style.display = 'none';
+      if (stopPollingBtn) stopPollingBtn.style.display = 'none';
+      if (perplexityNextStep) perplexityNextStep.hidden = !perplexitySessionSubmitted;
+      if (tokenWarn) tokenWarn.textContent = 'Protected and used only for activation.';
+      if (!previewMode && perplexitySessionSubmitted) {
+        setStatus('pending', 'Data received. A specialist will complete activation.', false);
+      }
+      updateStartButtonState();
+    }
+
     function applyActivationPayloadMode(payload, deliveryMode) {
       const activationFlow = resolveSupportActivationFlow(payload);
       const forcedSupportFlow = resolveForcedSupportActivationFlow(payload);
       const productKey = getActivationProductFingerprint(payload);
+      if ((productKey.includes('perplexity') || productKey.includes('pplx')) && deliveryMode === 'manual_login') {
+        applyPerplexityManualFlow(payload);
+        return;
+      }
       const codexCreditsMatch = productKey.includes('codex')
         ? productKey.match(/\b(250|500|1000)\b/)
         : null;
@@ -1941,6 +2014,14 @@
         if (redeemTitleEl) redeemTitleEl.textContent = `Renew / Activate ${chatGptPlanName}`;
         if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Payment confirmed. Complete the final step to connect your subscription.';
         document.title = `Renew / Activate ${chatGptPlanName} - GPTishka`;
+      } else if ((forcedSupportFlow || activationFlow) === SUPPORT_ACTIVATION_FLOW_CLAUDE) {
+        if (redeemTitleEl) redeemTitleEl.textContent = 'Complete Claude Pro activation';
+        if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Payment confirmed. Enter your account ID to complete activation.';
+        document.title = 'Claude Pro activation - GPTishka';
+      } else if ((forcedSupportFlow || activationFlow) === SUPPORT_ACTIVATION_FLOW_GROK) {
+        if (redeemTitleEl) redeemTitleEl.textContent = 'Complete SuperGrok activation';
+        if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Payment confirmed. Enter your account ID and we will handle the rest.';
+        document.title = 'SuperGrok activation - GPTishka';
       }
       applyTokenFlowMode(
         deliveryMode === 'support' || Boolean(forcedSupportFlow),
@@ -1953,6 +2034,7 @@
     }
 
     function applyTokenFlowMode(isSupportMode, flow) {
+      isPerplexityManualFlow = false;
       isSupportTokenDelivery = Boolean(isSupportMode);
       supportActivationFlow = isSupportTokenDelivery
         ? normalizeSupportActivationFlow(flow || supportActivationFlow)
@@ -1963,16 +2045,17 @@
       if (tokenBlock) tokenBlock.style.display = 'block';
       if (actionsRow) actionsRow.style.display = '';
       if (manualCredentialsBlock) manualCredentialsBlock.style.display = 'none';
+      if (perplexityNextStep) perplexityNextStep.hidden = true;
 
       if (tokenLabelEl) {
         tokenLabelEl.textContent = claudeSupportFlow
-          ? 'Account activation to activate Claude Pro'
-          : (isSupportTokenDelivery ? 'Grok account ID for SuperGrok activation' : 'ChatGPT account token');
+          ? 'Claude account ID'
+          : (isSupportTokenDelivery ? 'Grok account ID' : 'ChatGPT account token');
       }
       if (tokenGuideSummaryEl) {
-        tokenGuideSummaryEl.textContent = claudeSupportFlow
-          ? 'Instructions'
-          : (isSupportTokenDelivery ? 'Instructions' : 'Where to get an account token');
+        tokenGuideSummaryEl.textContent = 'Instructions!';
+        const tokenGuideDetails = tokenGuideSummaryEl.closest('details');
+        if (tokenGuideDetails) tokenGuideDetails.open = true;
       }
       if (tokenGuideListEl) {
         if (isSupportTokenDelivery) {
@@ -1986,15 +2069,12 @@
                 '<li>Insert the ID in the field below and click “Activate”.</li>',
               ].join('')
             : [
-                '<li><strong>🚀 To activate SUPERGROK send your account ID Grok.</strong></li>',
-                '<li><strong>How to find ID:</strong></li>',
-                '<li>1️⃣ Go to the website <a href="https://grok.com" target="_blank" rel="noreferrer noopener">grok.com</a> and log in to your account.</li>',
-                '<li>2️⃣ Copy and open the link <a href="https://grok.com/api/auth/session" target="_blank" rel="noreferrer noopener">https://grok.com/api/auth/session</a>.</li> in your browser',
-                '<li>3️⃣ Find the line <strong>ID</strong> (in 2 screenshots the desired area is highlighted).</li>',
+                '<li>Open <a href="https://grok.com" target="_blank" rel="noreferrer noopener">grok.com</a> and sign in to your account.</li>',
+                '<li>Open <a href="https://grok.com/api/auth/session" target="_blank" rel="noreferrer noopener">grok.com/api/auth/session</a> in the same browser.</li>',
+                '<li>Find the <strong>id</strong> field. The correct area is highlighted in the screenshots.</li>',
                 '<li class="redeem-guide-shot"><img src="/assets/img/supergrok-activation-1.png" alt="Where to find account ID Grok - example 1" loading="lazy" decoding="async"></li>',
                 '<li class="redeem-guide-shot"><img src="/assets/img/supergrok-activation-2.png" alt="Where to find account ID Grok - example 2" loading="lazy" decoding="async"></li>',
-                '<li>4️⃣ Copy the ID and send it to <strong> in one message in this field</strong>.</li>',
-                '<li>💡 <strong>Important:</strong> send only ID without additional comments and symbols.</li>',
+                '<li>Copy the UUID and paste it into the field below. Do not add comments or extra characters.</li>',
               ].join('');
         } else {
           tokenGuideListEl.innerHTML = [
@@ -2017,6 +2097,54 @@
       isMasked = !isSupportTokenDelivery;
       if (tokenInput) tokenInput.classList.toggle('masked', isMasked);
       if (toggleMaskBtn) toggleMaskBtn.textContent = isMasked ? 'Show' : 'Hide';
+    }
+
+    function renderActivationPreview(serviceKey) {
+      const normalizedKey = serviceKey === 'supergrok'
+        ? 'grok'
+        : (serviceKey === 'pplx' ? 'perplexity' : serviceKey);
+      const configs = {
+        codex250: { name: '250 Codex credits', credits: 250, tokenFlow: true },
+        codex500: { name: '500 Codex credits', credits: 500, tokenFlow: true },
+        codex1000: { name: '1000 Codex credits', credits: 1000, tokenFlow: true },
+        claude: { name: 'Claude Pro', flow: SUPPORT_ACTIVATION_FLOW_CLAUDE },
+        grok: { name: 'SuperGrok', flow: SUPPORT_ACTIVATION_FLOW_GROK },
+        perplexity: { name: 'Perplexity Pro', perplexity: true },
+      };
+      const config = configs[normalizedKey] || configs.perplexity;
+
+      document.body.classList.add('redeem-preview-mode');
+      if (orderIdEl) orderIdEl.textContent = 'PREVIEW';
+      if (redeemTitleEl) redeemTitleEl.textContent = config.credits
+        ? `Top up ${config.credits} Codex credits`
+        : `Complete ${config.name} activation`;
+      if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Safe preview of the page shown after successful payment.';
+      document.title = config.credits
+        ? `Top up ${config.credits} Codex credits - GPTishka`
+        : `${config.name} activation - GPTishka`;
+
+      if (config.perplexity) {
+        applyTokenFlowMode(false, '');
+        if (tokenLabelEl) tokenLabelEl.textContent = 'Perplexity session data';
+        if (tokenGuideListEl) tokenGuideListEl.innerHTML = [
+          '<li>Sign in to your account on the <a href="https://www.perplexity.ai/" target="_blank" rel="noreferrer noopener">official Perplexity website</a>.</li>',
+          '<li>Open <a href="https://www.perplexity.ai/api/auth/session" target="_blank" rel="noreferrer noopener">perplexity.ai/api/auth/session</a> in the same browser.</li>',
+          '<li>Copy the entire page contents (JSON).</li>',
+          '<li>Paste the copied text into the field below and select “Send session data”.</li>',
+          '<li>After confirmation, send the link to this page only in a private support chat.</li>',
+        ].join('');
+        if (tokenInput) tokenInput.placeholder = 'Paste the full JSON from the Perplexity session page';
+        if (startBtn) startBtn.textContent = 'Send session data';
+        if (checkBtn) checkBtn.style.display = 'none';
+        if (retryNewKeyBtn) retryNewKeyBtn.style.display = 'none';
+      } else {
+        applyTokenFlowMode(!config.tokenFlow, config.flow);
+      }
+
+      setStatus('pending', 'Preview only: no data is sent.', false);
+      [startBtn, checkBtn, retryNewKeyBtn, stopPollingBtn].forEach((button) => {
+        if (button) button.disabled = true;
+      });
     }
 
     function buildVpnActivateUrl() {
@@ -2115,7 +2243,9 @@
       }
     });
 
-    if (!orderId) {
+    if (previewMode) {
+      renderActivationPreview(previewServiceKey);
+    } else if (!orderId) {
       // Allow returning if the client closed the window but is in the same browser.
       try {
         const { orderId: lastId, token: lastToken } = readStoredActivationResumeContext();
@@ -2187,6 +2317,14 @@
       setStatus('pending', 'Field cleared', false);
     });
 
+    if (copyPerplexityPageBtn) {
+      copyPerplexityPageBtn.addEventListener('click', () => {
+        const url = new URL(window.location.href);
+        if (orderLinkToken) url.searchParams.set('t', orderLinkToken);
+        copyText(url.toString(), 'Link copied. Send it only in a private support chat.');
+      });
+    }
+
     copyOrderIdBtn.addEventListener('click', () => copyText(orderId, 'Order ID copied'));
     copyTaskBtn.addEventListener('click', () => copyText(currentTaskId, 'Task ID copied'));
     if (copyLoginBtn) {
@@ -2211,6 +2349,35 @@
 
     startBtn.addEventListener('click', async () => {
       if (isCredentialsDelivery) return;
+      if (isPerplexityManualFlow) {
+        if (perplexitySessionSubmitted || !(await validateTokenNow())) return;
+        const token = getTokenForSubmit();
+        setButtonLoading(startBtn, true);
+        try {
+          setStatus('pending', 'Sending session data…', true);
+          const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/store-token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, orderToken: orderLinkToken }),
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok || !payload.ok) {
+            setStatus('error', payload?.message || 'Could not send the data. Please try again.', false);
+            return;
+          }
+          perplexitySessionSubmitted = true;
+          tokenInput.value = '';
+          tokenInput.disabled = true;
+          if (perplexityNextStep) perplexityNextStep.hidden = false;
+          updateTokenMeta();
+          setStatus('pending', 'Data received. A specialist will complete activation.', false);
+        } catch {
+          setStatus('error', 'Could not reach the server. Check your connection and try again.', false);
+        } finally {
+          setButtonLoading(startBtn, false);
+        }
+        return;
+      }
       const token = getTokenForSubmit();
       if (!token) return;
 
@@ -2337,7 +2504,19 @@
           return;
         }
         const deliveryMode = String(payload?.deliveryMode || '').toLowerCase();
+        if (deliveryMode === 'verification_support' && ['claude-kyc-support', 'claude-cvp-support'].includes(payload?.productSlug)) {
+          const url = new URL('/en/verification-support.html', window.location.origin);
+          url.searchParams.set('order_id', orderId);
+          if (orderLinkToken) url.searchParams.set('t', orderLinkToken);
+          leaveGuardBypass = true;
+          window.location.replace(url.toString());
+          return;
+        }
         applyActivationPayloadMode(payload, deliveryMode);
+        if (isPerplexityManualFlow) {
+          handlePaidOrder(orderId);
+          return;
+        }
         if (deliveryMode === 'credentials' || deliveryMode === 'manual_login') {
           handlePaidOrder(orderId);
           const orderContext = await resolveOrderDeliveryContext();
@@ -2447,6 +2626,7 @@
 
         const deliveryMode = String(payload?.deliveryMode || '').trim().toLowerCase();
         applyActivationPayloadMode(payload, deliveryMode);
+        if (isPerplexityManualFlow) return true;
         if (deliveryMode === 'credentials' || deliveryMode === 'manual_login') {
           setCredentialsDeliveryMode(payload);
           return true;
@@ -2601,17 +2781,23 @@
 
     function updateTokenMeta() {
       const raw = String(tokenInput.value || '').trim();
+      if (isPerplexityManualFlow) {
+        tokenInfo.textContent = `Characters: ${raw.length}`;
+        tokenWarn.textContent = 'Protected and used only for activation.';
+        tokenWarn.className = '';
+        return;
+      }
       const token = extractTokenFromInput(raw);
       const length = token.length;
       tokenInfo.textContent = `Characters: ${length}`;
       if (!isSupportTokenDelivery && raw.startsWith('{') && token && token !== raw) {
-        tokenWarn.textContent = 'JSON detected: The extracted token will be used.';
+        tokenWarn.textContent = 'JSON recognized: the detected token will be used.';
       } else if (isSupportTokenDelivery) {
         tokenWarn.textContent = isClaudeSupportFlow()
-          ? 'Method 5 uses only the account ID Claude in the format UUID.'
-          : 'Method 4 uses only the account ID Grok in the format UUID.';
+          ? 'Only the Claude ID in UUID format is required.'
+          : 'Only the Grok ID in UUID format is required.';
       } else {
-        tokenWarn.textContent = 'We do not store the token and use it only for activation.';
+        tokenWarn.textContent = 'Protected and used only to fulfill your order.';
       }
       tokenWarn.className = '';
     }
@@ -2621,15 +2807,59 @@
         startBtn.disabled = true;
         return;
       }
+      if (isPerplexityManualFlow) {
+        startBtn.disabled = perplexitySessionSubmitted || !orderId || !tokenValidatedOk;
+        return;
+      }
       const hasValue = Boolean(orderId && String(tokenInput.value || '').trim());
       startBtn.disabled = !hasValue || !tokenValidatedOk;
     }
 
+    function validatePerplexitySessionInput() {
+      const raw = getTokenForSubmit();
+      let reason = '';
+      if (!raw) {
+        reason = 'Paste your Perplexity session data.';
+      } else {
+        try {
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !Object.keys(parsed).length) {
+            reason = 'Paste the full JSON from the Perplexity session page.';
+          }
+        } catch (_) {
+          reason = 'This does not look like complete JSON. Copy the entire page contents.';
+        }
+      }
+      tokenValidatedOk = !reason;
+      lastValidateReason = reason;
+      if (tokenWarn) {
+        tokenWarn.textContent = reason || 'JSON is ready and used only for activation.';
+        tokenWarn.className = reason ? 'warn' : '';
+      }
+      updateStartButtonState();
+      return tokenValidatedOk;
+    }
+
     function scheduleValidateToken() {
+      if (previewMode) {
+        tokenValidatedOk = false;
+        if (tokenWarn) {
+          tokenWarn.textContent = previewServiceKey === 'perplexity' || previewServiceKey === 'pplx'
+            ? 'Protected and used only for activation.'
+            : 'Protected and used only to fulfill your order.';
+          tokenWarn.className = '';
+        }
+        if (startBtn) startBtn.disabled = true;
+        return;
+      }
       if (isCredentialsDelivery) {
         tokenValidatedOk = true;
         if (tokenWarn) tokenWarn.textContent = '';
         updateStartButtonState();
+        return;
+      }
+      if (isPerplexityManualFlow) {
+        validatePerplexitySessionInput();
         return;
       }
       tokenValidatedOk = false;
@@ -2643,6 +2873,7 @@
     }
 
     async function validateTokenNow() {
+      if (isPerplexityManualFlow) return validatePerplexitySessionInput();
       if (isCredentialsDelivery) {
         tokenValidatedOk = true;
         updateStartButtonState();
@@ -2766,7 +2997,10 @@
     setupGuideImageZoom();
     })();
   </script>
-<script src="/assets/js/support-widget.js?v=20260924-support-account1" defer></script>
-  <script src="/assets/js/language-switcher.js?v=20260912-chat-restoration2" defer></script>
+<script src="/assets/js/support-widget.js?v=20260924-support-account1&build=sha256-9da6a0dc556ea999" defer></script>
+  <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
+<script src="/assets/js/storefront-ui.js?v=sha256-bcae5e9700f06872" defer></script>
+<script src="/assets/js/client-i18n.js?v=sha256-147a6b1fa95ee1ac" defer></script>
+<script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer></script>
 </body>
 </html>

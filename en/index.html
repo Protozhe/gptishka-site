@@ -1,8 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script src="/assets/js/analytics-init.js?v=20260813-yandex-attribution1" defer></script>
 <meta charset="UTF-8" />
+<link rel="preload" href="/assets/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/site-fonts.css?v=20260930-first-paint1">
+
+<script src="/assets/js/analytics-init.js?v=20260813-yandex-attribution1" defer></script>
+
 <link rel="icon" href="/favicon.png?v=20260920-white-cat-round1" sizes="any">
 <link rel="icon" type="image/png" sizes="512x512" href="/favicon.png?v=20260920-white-cat-round1">
 <link rel="apple-touch-icon" href="/favicon.png?v=20260920-white-cat-round1">
@@ -101,18 +106,10 @@
   ]
 }
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" href="/assets/img/home/ai-battle-logo-bg-v2.webp?v=20260810-ai-battle-logo1" as="image" type="image/webp" fetchpriority="high">
-<link rel="preload" as="image" href="/assets/img/home/topups-shortcut-384.webp?v=20260912-restored-wide1" imagesrcset="/assets/img/home/topups-shortcut-384.webp?v=20260912-restored-wide1 384w, /assets/img/home/topups-shortcut-724.webp?v=20260912-restored-wide1 724w, /assets/img/home/topups-shortcut.webp?v=20260912-restored-wide1 1448w" imagesizes="(max-width: 760px) calc((100vw - 26px) / 2), min(490px, 50vw)" type="image/webp" fetchpriority="high">
-<link rel="preload" as="image" href="/assets/img/home/ai-shortcut-384.webp?v=20260912-restored-wide1" imagesrcset="/assets/img/home/ai-shortcut-384.webp?v=20260912-restored-wide1 384w, /assets/img/home/ai-shortcut-724.webp?v=20260912-restored-wide1 724w, /assets/img/home/ai-shortcut.webp?v=20260912-restored-wide1 1448w" imagesizes="(max-width: 760px) calc((100vw - 26px) / 2), min(490px, 50vw)" type="image/webp" fetchpriority="high">
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="/assets/css/home-critical-bundle.min.css?v=20260912-header-codex1">
 <link rel="stylesheet" href="/assets/css/codex-card.css?v=20260912-restored-products1">
 <link rel="stylesheet" href="/assets/css/appstore-card-motion.css?v=20260810-appstore-modal1">
 <link rel="stylesheet" href="/assets/css/home-info-sections.css?v=20260923-scroll-render1">
-<link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20260811-mobile-header1">
 <style id="unified-mobile-visuals">
   @media (max-width: 900px) {
     body.home-wide-body.home-gradient-page::before,
@@ -130,8 +127,17 @@
 <!-- GOOGLE FONTS -->
 <link rel="preload" href="/assets/css/support-widget.css?v=20260724-resume-collapse1" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="/assets/css/support-widget.css?v=20260724-resume-collapse1" /></noscript>
+<link rel="stylesheet" href="/assets/css/mobile-product-grid.css?v=sha256-d290c94dba31d62e">
+<link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
+<link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
+<link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
+<link rel="preload" as="image" href="/assets/img/services/chatgpt-card.webp">
+<link rel="preload" as="image" href="/assets/img/services/claude-card.png">
+<link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-398a7ebc6c68aeda">
+<link rel="stylesheet" href="/assets/css/home-slider-responsive.css?v=20261008-responsive1">
+<link rel="stylesheet" href="/assets/css/home-launch.css?v=sha256-d1d109814074f4a1">
 </head>
-<body class="home-wide-body">
+<body id="storefrontBody" class="home-wide-body">
 <script>
   (function () {
     try {
@@ -212,14 +218,16 @@
 </script>
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <div class="page-overlay"></div>
-<header class="gptishka-canonical-header">
+<header id="storefrontHeader" class="gptishka-canonical-header">
 <div class="nav nav-shell">
 
           <a href="/en/" class="logo-link">
             <img loading="eager" decoding="async" fetchpriority="high" width="300" height="127" src="/assets/img/logo-new-dark.png?v=20260622-header4" alt="GPTishka" class="logo-img">
           </a>
-    <a href="/en/codex-credits" class="header-product-pill" aria-label="Top up Codex Credits from 1,500 RUB"><img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" loading="lazy" decoding="async"><span>Codex Credits from 1,500 RUB</span></a>
+    <a href="/en/codex-credits" class="header-product-pill" aria-label="Top up Codex Credits from 1,500 RUB"><img class="header-product-pill__logo" src="/assets/img/services/chatgpt-card.webp?v=20260721-webp1" alt="" loading="eager" decoding="async"><span>Codex Credits from 1,500 RUB</span></a>
     <nav class="header-quick-links" aria-label="Quick sections GPTishka">
+      <a class="header-quick-link" href="#pricing">Catalog</a>
+      <a class="header-quick-link" href="/en/contact.html">Support</a>
       <a class="header-quick-link" href="/en/news/">News</a>
       <a class="header-quick-link" href="/app/?lang=en">Reviews</a>
       <a class="header-quick-link header-social-link header-social-link--vk" href="https://vk.com/gptishka?from=groups&amp;trackcode=7f99670c_6HjhbFhCJIgWV0ALEpOr-nIlZFrs3X3-3D3-z00f1k7ylk5Mhdl7hxbRgwtUEeZ8MCZjDfHpk0ywZuW" target="_blank" rel="noopener" aria-label="GPTishka on VK"><svg class="header-social-icon header-social-icon--vk" viewBox="3.8 6.8 17.4 10.2" aria-hidden="true" focusable="false" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.194c.136-.148.132-.427.132-.427s-.019-1.304.586-1.496c.596-.188 1.362 1.26 2.174 1.817.614.421 1.08.329 1.08.329l2.169-.03s1.134-.07.596-.961c-.044-.073-.313-.658-1.611-1.863-1.36-1.262-1.177-1.058.46-3.242.997-1.33 1.395-2.142 1.27-2.49-.119-.331-.854-.244-.854-.244l-2.442.015s-.181-.025-.315.056c-.131.079-.216.263-.216.263s-.386 1.029-.9 1.904c-1.085 1.845-1.519 1.942-1.696 1.828-.413-.267-.31-1.072-.31-1.643 0-1.782.27-2.524-.526-2.716-.264-.064-.458-.105-1.132-.112-.865-.009-1.598.003-2.012.206-.276.135-.489.437-.359.454.16.021.522.098.714.359.248.34.239 1.103.239 1.103s.142 2.103-.332 2.364c-.325.18-.772-.187-1.729-1.861-.49-.858-.861-1.807-.861-1.807s-.071-.175-.199-.268c-.155-.113-.371-.149-.371-.149l-2.321.015s-.348.01-.476.161c-.114.134-.009.411-.009.411s1.816 4.248 3.872 6.389c1.886 1.963 4.028 1.834 4.028 1.834h.971Z"></path></svg></a>
@@ -232,24 +240,28 @@
 
 
           <div class="header-tools header-actions">
-            <div class="lang-switch" id="langSwitch">
-              <div class="lang-current" id="langCurrent">
-                <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
-                <span>English</span>
-                <span class="arrow">&#9662;</span>
-              </div>
+            <div class="lang-switch language-menu-host" id="langSwitch" data-language-menu-version="20260913-header-grid1" data-language-menu-language="en">
+      <button class="language-menu__trigger lang-current" type="button" aria-label="Choose language" aria-haspopup="menu" aria-expanded="false">
+        <img class="language-menu__flag lang-flag-img" src="/assets/img/iconeng.png" alt="" width="24" height="24" decoding="async">
+        <span class="language-menu__current-name">English</span>
+        <span class="language-menu__chevron lang-arrow" aria-hidden="true"></span>
+      </button>
+      <div class="language-menu__popover lang-options lang-dropdown" role="menu" aria-label="Available languages" aria-hidden="true">
 
-              <div class="lang-dropdown">
-                <div class="lang-item" data-lang="ru">
-                  <img loading="lazy" decoding="async" src="/assets/img/iconrus.avif" alt="">
-                  <span>Russian</span>
-                </div>
-                <div class="lang-item" data-lang="en">
-                  <img loading="lazy" decoding="async" src="/assets/img/iconeng.png" alt="">
-                <span>English</span>
-                </div>
-              </div>
-            </div>
+          <a class="language-menu__option lang-item" href="/" role="menuitem" lang="ru" hreflang="ru" data-language="ru">
+            <img class="language-menu__flag lang-flag-img" src="/assets/img/iconrus.avif" alt="" width="24" height="24" loading="lazy" decoding="async">
+            <span class="language-menu__option-name">Русский</span>
+            <span class="language-menu__check" aria-hidden="true"></span>
+          </a>
+
+          <a class="language-menu__option lang-item is-active" href="/en/" role="menuitem" lang="en" hreflang="en" data-language="en">
+            <img class="language-menu__flag lang-flag-img" src="/assets/img/iconeng.png" alt="" width="24" height="24" loading="lazy" decoding="async">
+            <span class="language-menu__option-name">English</span>
+            <span class="language-menu__check" aria-hidden="true"></span>
+          </a>
+
+      </div>
+    </div>
 
           </div>
 
@@ -257,100 +269,44 @@
 </header>
 
       <main class="page home-wide-page">
-<section class="home-opening-frame" aria-label="Main offers GPTishka">
-<div class="hero home-hero-wide">
-  <div class="home-hero-wide__content home-hero-wide__content--promo">
-    <aside class="home-hero-wide__panel" data-home-promo-slider aria-label="GPTishka news and offers">
-      <div class="home-promo-slider" data-home-promo-slider-track>
-        <article class="home-promo-slide home-promo-slide--ai-battle is-active" data-home-promo-slide>
-          <div class="home-ai-battle">
-            <div class="home-ai-battle__intro">
-              <h2 class="home-ai-battle__title"><span class="home-ai-battle__title-chatgpt">ChatGPT</span><span class="home-ai-battle__versus">VS</span><span class="home-ai-battle__title-claude">Claude</span></h2>
-              <p class="home-ai-battle__description">Choose your favorite AI service.</p>
-            </div>
-            <div class="home-ai-battle__choices">
-              <button type="button" class="home-ai-battle__choice home-ai-battle__choice--chatgpt" data-ai-battle-choice="chatgpt" data-ai-battle-href="/en/chatgpt.html" aria-pressed="false" aria-label="Choose ChatGPT"><span class="home-ai-battle__logo home-ai-battle__logo--chatgpt" aria-hidden="true"></span><span class="home-ai-battle__choice-copy"><strong>ChatGPT</strong><small>This is my pick</small></span><span class="home-ai-battle__percent" data-ai-battle-percent="chatgpt">—</span></button>
-              <button type="button" class="home-ai-battle__choice home-ai-battle__choice--claude" data-ai-battle-choice="claude" data-ai-battle-href="/en/claude.html" aria-pressed="false" aria-label="Choose Claude"><span class="home-ai-battle__logo home-ai-battle__logo--claude" aria-hidden="true"></span><span class="home-ai-battle__choice-copy"><strong>Claude</strong><small>This is my pick</small></span><span class="home-ai-battle__percent" data-ai-battle-percent="claude">—</span></button>
-            </div>
-            <div class="home-ai-battle__stats"><div class="home-ai-battle__bar" aria-hidden="true"><span class="home-ai-battle__bar-chatgpt" data-ai-battle-bar style="width:50%"></span></div><span class="home-ai-battle__total" data-ai-battle-total aria-busy="true">Updating stats…</span><span class="home-ai-battle__status" data-ai-battle-status aria-live="polite"></span></div>
-          </div>
-        </article>
-        <article class="home-promo-slide home-promo-slide--perplexity" data-home-promo-slide>
-          <div class="home-promo-slide__content">
-            <span class="home-promo-slide__badge">New</span>
-            <h2><span class="home-promo-slide__title-line">Perplexity Pro</span><span class="home-promo-slide__title-line">now available at GPTishka</span></h2>
-            <p>AI search with cited answers, deep research, and file analysis. One month of Pro costs 1,999 RUB.</p>
-            <a class="home-promo-slide__button" href="/en/perplexity.html">View plan</a>
-          </div>
-        </article>
-        <article class="home-promo-slide home-promo-slide--supergrok" data-home-promo-slide>
-          <div class="home-promo-slide__content">
-            <span class="home-promo-slide__badge">SUPERGROK</span>
-            <h2><span class="home-promo-slide__title-line">SUPERGROK</span><span class="home-promo-slide__title-line">for 1 month</span></h2>
-            <p>Grok by xAI: fast answers, analysis, creative tasks, and image generation in one 1-month subscription.</p>
-            <a class="home-promo-slide__button" href="/en/supergrok.html">Open plans</a>
-          </div>
-        </article>
-        <article class="home-promo-slide home-promo-slide--topups" data-home-promo-slide>
-          <div class="home-promo-slide__content">
-            <span class="home-promo-slide__badge">Top-ups</span>
-            <h2><span class="home-promo-slide__title-line">Top up your Steam balance</span><span class="home-promo-slide__title-line">with +10% using Mann Co. keys</span></h2>
-            <p>Enter your Steam trade URL, choose the number of keys, and pay with a convenient method. Useful when the market is unlocked and you need balance quickly.</p>
-            <a class="home-promo-slide__button" href="/en/store/steam/topup/">Top up</a>
-          </div>
-        </article>
+<section class="home-opening-frame home-launch" aria-labelledby="launchTitle">
+  <div class="launch-hero">
+    <div class="launch-copy">
+      <p class="launch-eyebrow"><span aria-hidden="true"></span>YOUR DIGITAL STORE</p>
+      <h1 id="launchTitle"><span>Your services.</span><span class="launch-title-accent">More possibilities.</span></h1>
+      <p class="launch-description">ChatGPT, Claude, Steam and more. Subscriptions and top-ups, with help getting connected.</p>
+      <div class="launch-actions">
+        <a class="launch-button" href="#pricing"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="15" y="3" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="3" y="15" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="15" y="15" width="6" height="6" rx="1.5" fill="currentColor"/></svg><span>Choose a service</span><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <a class="launch-how" href="#how">How it works<span aria-hidden="true">↗</span></a>
       </div>
-      <div class="home-promo-slider__controls" aria-label="Banner navigation">
-        <button type="button" class="home-promo-slider__arrow" data-home-promo-prev aria-label="Previous banner">‹</button>
-        <div class="home-promo-slider__dots" data-home-promo-dots></div>
-        <button type="button" class="home-promo-slider__arrow" data-home-promo-next aria-label="Next banner">›</button>
+    </div>
+    <div class="launch-art" aria-hidden="true">
+      <div class="launch-orbit"></div>
+      <svg class="launch-star" viewBox="0 0 64 64" fill="none"><path d="M32 0l6 22 18-14-14 18 22 6-22 6 14 18-18-14-6 22-6-22L8 56l14-18L0 32l22-6L8 8l18 14L32 0Z" fill="currentColor"/></svg>
+      <div class="launch-tile launch-tile--chatgpt"><span class="launch-symbol launch-symbol--chatgpt"></span><strong>ChatGPT</strong></div>
+      <div class="launch-pass">
+        <div class="launch-pass-top"><span>SUBSCRIPTIONS / TOP-UPS</span>
+          <span class="launch-pass-series">G / 01</span></div>
+        <div class="launch-cat"><img src="/favicon.png?v=20260920-white-cat-round1" width="512" height="512" alt="" decoding="async" fetchpriority="high"></div>
+        <strong class="launch-pass-brand">GPTISHKA</strong>
+        <div class="launch-pass-bottom"><span>Make it yours.</span><span class="launch-barcode"></span></div>
       </div>
-    </aside>
-
-    <aside class="home-hero-wide__panel home-hero-wide__panel--legacy" hidden aria-hidden="true">
-      <div class="home-hero-panel__header">
-        <span>How connection works</span>
-        <strong>A clear flow after payment</strong>
-      </div>
-      <ol class="home-hero-process-legacy">
-        <li>
-          <span>01</span>
-          <strong>Choose a plan</strong>
-          <p>Open the service you need below and choose the right purchase option.</p>
-        </li>
-        <li>
-          <span>02</span>
-          <strong>Pay for the order</strong>
-          <p>Cards, SBP, and crypto are available — the final price is taken from the server.</p>
-        </li>
-        <li>
-          <span>03</span>
-          <strong>Get connected</strong>
-          <p>The system will open the activation, show instructions or transfer the application to the manager.</p>
-        </li>
-      </ol>
-      <div class="home-hero-panel__note">
-        If something does not follow the automatic flow, support will bring the order to completion.
-      </div>
-    </aside>
+      <div class="launch-tile launch-tile--claude"><span class="launch-symbol launch-symbol--claude"></span><strong>Claude</strong></div>
+      <div class="launch-tile launch-tile--codex"><span class="launch-terminal">&gt;_</span><span><strong>Codex</strong><small>Credits</small></span></div>
+      <div class="launch-tile launch-tile--steam"><span class="launch-symbol launch-symbol--steam"></span><strong>Steam</strong></div>
+    </div>
   </div>
-</div>
-<section class="home-service-shortcuts" aria-label="GPTishka sections">
-  <div class="home-service-shortcuts__grid">
-    <a class="home-service-shortcut home-service-shortcut--topups" href="/en/store/steam/" aria-label="Open Steam top-ups">
-      <span class="home-service-shortcut__art" aria-hidden="true">
-        <img class="home-service-shortcut__image" src="/assets/img/home/topups-shortcut-384.webp?v=20260912-restored-wide1" srcset="/assets/img/home/topups-shortcut-384.webp?v=20260912-restored-wide1 384w, /assets/img/home/topups-shortcut-724.webp?v=20260912-restored-wide1 724w, /assets/img/home/topups-shortcut.webp?v=20260912-restored-wide1 1448w" sizes="(max-width: 760px) calc((100vw - 26px) / 2), min(490px, 50vw)" alt="" loading="eager" fetchpriority="high" decoding="async">
-      </span>
-      <span class="home-service-shortcut__title">Top-ups</span>
-    </a>
-    <a class="home-service-shortcut home-service-shortcut--ai" href="/en/catalog/ai/" aria-label="Open AI services">
-      <span class="home-service-shortcut__art" aria-hidden="true">
-        <img class="home-service-shortcut__image" src="/assets/img/home/ai-shortcut-384.webp?v=20260912-restored-wide1" srcset="/assets/img/home/ai-shortcut-384.webp?v=20260912-restored-wide1 384w, /assets/img/home/ai-shortcut-724.webp?v=20260912-restored-wide1 724w, /assets/img/home/ai-shortcut.webp?v=20260912-restored-wide1 1448w" sizes="(max-width: 760px) calc((100vw - 26px) / 2), min(490px, 50vw)" alt="" loading="eager" fetchpriority="high" decoding="async">
-      </span>
-      <span class="home-service-shortcut__title">AI Services</span>
-    </a>
+  <div class="launch-assurances">
+    <div class="launch-assurance"><span class="launch-assurance-icon" aria-hidden="true">₽</span><span><strong>Price before payment</strong><small>Plans and terms on each service page.</small></span></div>
+    <div class="launch-assurance"><svg class="launch-assurance-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 14v-3a7 7 0 0 1 14 0v3M5 12H3v6h4v-6H5Zm14 0h2v6h-4v-6h2Zm0 6c0 3-3 3-6 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Help getting connected</strong><small>Instructions and support for your order.</small></span></div>
+    <div class="launch-assurance"><svg class="launch-assurance-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M2 10h20M6 15h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span><strong>Pay your way</strong><small>Bank card, SBP or cryptocurrency.</small></span></div>
   </div>
-</section>
+  <nav class="launch-categories" aria-label="Explore the store">
+    <a class="launch-category launch-category--ai" href="/en/catalog/ai/"><span class="launch-category-icon launch-symbol--chatgpt" aria-hidden="true"></span><span class="launch-category-copy"><strong>AI services</strong><small>For work and creativity</small></span><span class="launch-category-arrow" aria-hidden="true">↗</span></a>
+    <a class="launch-category launch-category--steam" href="/en/store/steam/topup/"><span class="launch-category-icon launch-symbol--steam" aria-hidden="true"></span><span class="launch-category-copy"><strong>Steam</strong><small>Top up your game balance</small></span><span class="launch-category-arrow" aria-hidden="true">↗</span></a>
+    <a class="launch-category launch-category--apple" href="/en/itunes.html"><span class="launch-category-icon launch-symbol--apple" aria-hidden="true"></span><span class="launch-category-copy"><strong>App Store</strong><small>Cards for apps and subscriptions</small></span><span class="launch-category-arrow" aria-hidden="true">↗</span></a>
+    <a class="launch-category launch-category--codex" href="/en/codex-credits"><span class="launch-category-icon launch-category-terminal" aria-hidden="true">&gt;_</span><span class="launch-category-copy"><strong>Codex Credits</strong><small>For your coding projects</small></span><span class="launch-category-arrow" aria-hidden="true">↗</span></a>
+  </nav>
 </section>
 
 <section class="trust-bar" aria-label="Trust and guarantees">
@@ -414,6 +370,90 @@
 
 </section>
 
+<section class="home-discover" aria-label="Service updates and community poll">
+  <div class="home-discover-heading"><h2>Worth a look</h2><p>Offers and the community’s choice</p></div>
+  <div class="hero home-hero-wide">
+  <div class="home-hero-wide__content home-hero-wide__content--promo">
+    <aside class="home-hero-wide__panel" data-home-promo-slider aria-label="GPTishka news and offers">
+      <div class="home-promo-slider" data-home-promo-slider-track>
+        <article class="home-promo-slide home-promo-slide--ai-battle is-active" data-home-promo-slide>
+          <div class="home-ai-battle">
+            <div class="home-ai-battle__intro">
+              <h2 class="home-ai-battle__title"><span class="home-ai-battle__title-chatgpt">ChatGPT</span><span class="home-ai-battle__versus">VS</span><span class="home-ai-battle__title-claude">Claude</span></h2>
+              <p class="home-ai-battle__description">Which service do you prefer?</p>
+            </div>
+            <div class="home-ai-battle__choices">
+              <button type="button" class="home-ai-battle__choice home-ai-battle__choice--chatgpt" data-ai-battle-choice="chatgpt" data-ai-battle-href="/en/chatgpt.html" aria-pressed="false" aria-label="Choose ChatGPT"><span class="home-ai-battle__logo home-ai-battle__logo--chatgpt" aria-hidden="true"></span><span class="home-ai-battle__choice-copy"><strong>ChatGPT</strong><small>Choose</small></span><span class="home-ai-battle__percent" data-ai-battle-percent="chatgpt">—</span></button>
+              <button type="button" class="home-ai-battle__choice home-ai-battle__choice--claude" data-ai-battle-choice="claude" data-ai-battle-href="/en/claude.html" aria-pressed="false" aria-label="Choose Claude"><span class="home-ai-battle__logo home-ai-battle__logo--claude" aria-hidden="true"></span><span class="home-ai-battle__choice-copy"><strong>Claude</strong><small>Choose</small></span><span class="home-ai-battle__percent" data-ai-battle-percent="claude">—</span></button>
+            </div>
+            <div class="home-ai-battle__stats"><div class="home-ai-battle__bar" aria-hidden="true"><span class="home-ai-battle__bar-chatgpt" data-ai-battle-bar style="width:50%"></span></div><span class="home-ai-battle__total" data-ai-battle-total aria-busy="true">Updating stats…</span><span class="home-ai-battle__status" data-ai-battle-status aria-live="polite"></span></div>
+          </div>
+        </article>
+        <article class="home-promo-slide home-promo-slide--perplexity" data-home-promo-slide>
+          <span class="discover-mark discover-mark--perplexity" aria-hidden="true"></span>
+          <div class="home-promo-slide__content">
+            <span class="home-promo-slide__badge">New</span>
+            <h2><span class="home-promo-slide__title-line">Perplexity Pro</span><span class="home-promo-slide__title-line">now available at GPTishka</span></h2>
+            <p>AI search with cited answers, deep research, and file analysis. One month of Pro costs 1,999 RUB.</p>
+            <a class="home-promo-slide__button" href="/en/perplexity.html">View plan</a>
+          </div>
+        </article>
+        <article class="home-promo-slide home-promo-slide--supergrok" data-home-promo-slide>
+          <span class="discover-mark discover-mark--supergrok" aria-hidden="true"></span>
+          <div class="home-promo-slide__content">
+            <span class="home-promo-slide__badge">SUPERGROK</span>
+            <h2><span class="home-promo-slide__title-line">SUPERGROK</span><span class="home-promo-slide__title-line">for 1 month</span></h2>
+            <p>Grok by xAI: fast answers, analysis, creative tasks, and image generation in one 1-month subscription.</p>
+            <a class="home-promo-slide__button" href="/en/supergrok.html">Open plans</a>
+          </div>
+        </article>
+        <article class="home-promo-slide home-promo-slide--topups" data-home-promo-slide>
+          <span class="discover-mark discover-mark--topups" aria-hidden="true"></span>
+          <div class="home-promo-slide__content">
+            <span class="home-promo-slide__badge">Top-ups</span>
+            <h2><span class="home-promo-slide__title-line">Top up your Steam balance</span><span class="home-promo-slide__title-line">with +10% using Mann Co. keys</span></h2>
+            <p>Enter your Steam trade URL, choose the number of keys, and pay with a convenient method. Useful when the market is unlocked and you need balance quickly.</p>
+            <a class="home-promo-slide__button" href="/en/store/steam/topup/">Top up</a>
+          </div>
+        </article>
+      </div>
+      <div class="home-promo-slider__controls" aria-label="Banner navigation">
+        <button type="button" class="home-promo-slider__arrow" data-home-promo-prev aria-label="Previous banner">‹</button>
+        <div class="home-promo-slider__dots" data-home-promo-dots></div>
+        <button type="button" class="home-promo-slider__arrow" data-home-promo-next aria-label="Next banner">›</button>
+      </div>
+    </aside>
+
+    <aside class="home-hero-wide__panel home-hero-wide__panel--legacy" hidden aria-hidden="true">
+      <div class="home-hero-panel__header">
+        <span>How connection works</span>
+        <strong>A clear flow after payment</strong>
+      </div>
+      <ol class="home-hero-process-legacy">
+        <li>
+          <span>01</span>
+          <strong>Choose a plan</strong>
+          <p>Open the service you need below and choose the right purchase option.</p>
+        </li>
+        <li>
+          <span>02</span>
+          <strong>Pay for the order</strong>
+          <p>Cards, SBP, and crypto are available — the final price is taken from the server.</p>
+        </li>
+        <li>
+          <span>03</span>
+          <strong>Get connected</strong>
+          <p>The system will open the activation, show instructions or transfer the application to the manager.</p>
+        </li>
+      </ol>
+      <div class="home-hero-panel__note">
+        If something does not follow the automatic flow, support will bring the order to completion.
+      </div>
+    </aside>
+  </div>
+</div>
+</section>
+
 <section class="how" id="how">
   <div class="how-header">
     <div class="how-title">How purchase works</div>
@@ -421,25 +461,25 @@
 
   <div class="how-grid">
     <div class="how-card">
-      <div class="how-number">1</div>
+      <div class="how-number">01</div>
       <h3>Choose a plan</h3>
       <p>Compare options by price and duration. All terms are visible in the card.</p>
     </div>
 
     <div class="how-card" id="payment">
-      <div class="how-number">2</div>
+      <div class="how-number">02</div>
       <h3>Pay with a convenient method</h3>
       <p>SBP, RU/CIS cards, and crypto. Payment is processed on a secure checkout page.</p>
     </div>
 
     <div class="how-card">
-      <div class="how-number">3</div>
+      <div class="how-number">03</div>
       <h3>Get instructions or a key</h3>
-      <p>After payment, a script for the selected product will open: activation by token, instructions or further actions.</p>
+      <p>After payment, follow the instructions for your service or receive a digital key.</p>
     </div>
 
     <div class="how-card">
-      <div class="how-number">4</div>
+      <div class="how-number">04</div>
       <h3>Support helps complete it</h3>
       <p>If automatic activation is unavailable or something goes wrong, a manager sees the order and helps complete the service.</p>
     </div>
@@ -573,6 +613,10 @@
     <h3 class="payment-method-modal__title" id="paymentMethodModalTitle">Choose payment method</h3>
     <p class="payment-method-modal__subtitle">After choosing, you will go to a secure payment page.</p>
     <div class="payment-method-modal__list">
+      <button type="button" class="payment-method-modal__option" data-payment-method-modal-option="pally" aria-pressed="false">
+        <img class="payment-method-modal__logo" loading="lazy" decoding="async" src="/assets/img/payment-pally.svg" alt="Pally.info">
+        <span class="payment-method-modal__text"><span class="payment-method-modal__name">Pally.info</span></span>
+      </button>
       <button type="button" class="payment-method-modal__option" data-payment-method-modal-option="enot" aria-pressed="false">
           <img class="payment-method-modal__logo" loading="lazy" decoding="async" src="/assets/img/payment-enot.svg?v=20260724-enot-mark1" alt="Enot.io">
         <span class="payment-method-modal__text">
@@ -600,115 +644,15 @@
   <span class="footer-copy">&copy; 2026 GPTishka. All rights reserved, copying prohibited.</span>
 </footer>
 <script src="/assets/js/hero-lite.js?v=20260516-fix4" defer></script>
-<script src="/assets/js/app.min.js?v=20260924-order-hours2" defer></script>
-<script src="/assets/js/home-promo-slider.js?v=20260912-restored-products1" defer></script>
-<script id="home-wide-hash-sync">
-  (function () {
-    var knownHashes = {
-      "#pricing": true,
-      "#how": true,
-      "#faq": true
-    };
+<script src="/assets/js/app.min.js?v=sha256-46a7cf8cb3d853dd" defer></script>
+<script src="/assets/js/home-promo-slider.js?v=sha256-4bc2151477ba0eeb" defer></script>
 
-    function currentHash() {
-      return String(window.location.hash || "").trim();
-    }
 
-    function initMobileMenu() {
-      var button = document.querySelector("[data-home-menu-toggle]");
-      var nav = document.getElementById("homeHeaderNav");
-      var body = document.body;
-      if (!button || !nav || !body || button.dataset.homeMenuReady === "1") return;
-      button.dataset.homeMenuReady = "1";
-
-      function setOpen(open) {
-        body.classList.toggle("home-nav-open", Boolean(open));
-        button.setAttribute("aria-expanded", open ? "true" : "false");
-        button.setAttribute("aria-label", open ? "Close menu" : "Open menu");
-      }
-
-      button.addEventListener("click", function () {
-        setOpen(!body.classList.contains("home-nav-open"));
-      });
-
-      nav.addEventListener("click", function (event) {
-        if (event.target && event.target.closest && event.target.closest("a[href]")) {
-          setOpen(false);
-        }
-      });
-
-      document.addEventListener("keydown", function (event) {
-        if (event.key === "Escape") setOpen(false);
-      });
-
-      window.addEventListener("resize", function () {
-        if (window.innerWidth > 760) setOpen(false);
-      }, { passive: true });
-    }
-
-    function syncActiveNav() {
-      var hash = currentHash();
-      var links = document.querySelectorAll("header nav a[href]");
-      links.forEach(function (link) {
-        var href = String(link.getAttribute("href") || "");
-        var isHome = href === "/";
-        var isHashLink = hash && href === "/" + hash;
-        var active = hash ? Boolean(isHashLink) : Boolean(isHome);
-        link.classList.toggle("active", active);
-        if (active) {
-          link.setAttribute("aria-current", "page");
-        } else {
-          link.removeAttribute("aria-current");
-        }
-      });
-    }
-
-    function scrollToCurrentHash(behavior) {
-      var hash = currentHash();
-      if (!knownHashes[hash]) return;
-      var target = document.querySelector(hash);
-      if (!target) return;
-      target.scrollIntoView({
-        block: "start",
-        inline: "nearest",
-        behavior: behavior || "auto"
-      });
-    }
-
-    function applyHashState(behavior) {
-      syncActiveNav();
-      window.setTimeout(function () {
-        scrollToCurrentHash(behavior);
-      }, 90);
-    }
-
-    function applyHashStateWithRetries(behavior) {
-      var delays = [0, 120, 320, 700, 1200, 2000];
-      delays.forEach(function (delay) {
-        window.setTimeout(function () {
-          applyHashState(behavior);
-        }, delay);
-      });
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-      initMobileMenu();
-      applyHashStateWithRetries("auto");
-    });
-    window.addEventListener("load", function () {
-      initMobileMenu();
-      applyHashStateWithRetries("auto");
-    }, { once: true });
-    window.addEventListener("hashchange", function () {
-      applyHashStateWithRetries("smooth");
-    });
-    initMobileMenu();
-    applyHashStateWithRetries("auto");
-  })();
-</script>
-
-<script src="/assets/js/support-widget.js?v=20260924-support-account1" defer></script>
+<script src="/assets/js/support-widget.js?v=20260924-support-account1&build=sha256-9da6a0dc556ea999" defer></script>
   <script src="/assets/js/header-scroll-behavior.js?v=20260810-header-scroll1" defer></script>
-  <script src="/assets/js/language-switcher.js?v=20260912-chat-restoration2" defer></script>
+  <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
+<script src="/assets/js/storefront-ui.js?v=sha256-bcae5e9700f06872" defer></script>
+<script src="/assets/js/client-i18n.js?v=sha256-147a6b1fa95ee1ac" defer></script>
+<script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer></script>
 </body>
 </html>

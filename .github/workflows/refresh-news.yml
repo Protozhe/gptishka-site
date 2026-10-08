@@ -26,7 +26,7 @@ jobs:
 
       - name: Refresh and publish Telegram news cache
         run: |
-          BEFORE_ID="$(node -p "require('./data/public-news.json').items[0]?.postId || ''")"
+          BEFORE_ID="$(node -p "require('./assets/data/public-news.json').items[0]?.postId || ''")"
           node scripts/refresh-public-news.js
           AFTER_ID="$(node -p "require('./data/public-news.json').items[0]?.postId || ''")"
           if [ "$BEFORE_ID" = "$AFTER_ID" ]; then
@@ -35,6 +35,6 @@ jobs:
           fi
           git config user.name "GPTishka News Bot"
           git config user.email "support@gptishka.shop"
-          git add data/public-news.json assets/data/public-news.json assets/img/news
+          git add assets/data/public-news.json assets/img/news
           git commit -m "chore: refresh public news cache"
           git push origin HEAD:production

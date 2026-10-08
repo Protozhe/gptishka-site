@@ -6,10 +6,12 @@ import { WebMoneyProvider } from "./providers/webmoney.provider";
 import { StripeProvider } from "./providers/stripe.provider";
 import { GatewayProvider } from "./providers/gateway.provider";
 import { LavaProvider } from "./providers/lava.provider";
+import { PallyProvider } from "./providers/pally.provider";
 
 const providers: Record<string, PaymentProvider> = {
   gateway: new GatewayProvider(),
   lava: new LavaProvider(),
+  pally: new PallyProvider(),
   stub: new StubProvider(),
   webmoney: new WebMoneyProvider(),
   stripe: new StripeProvider(),
@@ -19,6 +21,7 @@ const paymentMethodToProviderCode: Record<string, string> = {
   enot: "gateway",
   gateway: "gateway",
   lava: "lava",
+  pally: "pally",
   stripe: "stripe",
   webmoney: "webmoney",
   stub: "stub",

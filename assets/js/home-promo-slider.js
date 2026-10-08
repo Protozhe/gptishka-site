@@ -368,6 +368,15 @@
       return article;
     }
 
+    ["perplexity", "supergrok", "topups"].some(function (service) {
+      if (!article.classList.contains("home-promo-slide--" + service)) return false;
+      var mark = document.createElement("span");
+      mark.className = "discover-mark discover-mark--" + service;
+      mark.setAttribute("aria-hidden", "true");
+      article.appendChild(mark);
+      return true;
+    });
+
     var content = document.createElement("div");
     content.className = "home-promo-slide__content";
 
@@ -534,7 +543,7 @@
 
     function start() {
       stop();
-      if (REDUCED_MOTION || slides().length < 2 || paused) return;
+      if (!root.hasAttribute("data-promo-autoplay") || REDUCED_MOTION || slides().length < 2 || paused) return;
       timer = window.setInterval(function () {
         show(activeIndex + 1, false);
       }, AUTOPLAY_MS);

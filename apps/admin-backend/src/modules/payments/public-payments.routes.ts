@@ -7,6 +7,7 @@ import { asyncHandler } from "../../common/http/async-handler";
 import { AppError } from "../../common/errors/app-error";
 import { paymentsService } from "./payments.service";
 import { checkoutCreateRateLimit } from "../../common/security/rate-limit";
+import { env } from "../../config/env";
 
 const createPaymentSchema = z.object({
   email: z.preprocess((value) => String(value || "").trim().toLowerCase(), z.string().email()),
@@ -32,7 +33,7 @@ const createPaymentSchema = z.object({
   orderDetails: z.unknown().optional(),
 }).passthrough();
 
-const allowedPublicPaymentMethods = new Set(["enot", "lava"]);
+const allowedPublicPaymentMethods = new Set(["enot", "lava", "pally"]);
 
 function normalizePublicPaymentMethod(input: string) {
   const raw = String(input || "").trim().toLowerCase();
@@ -197,6 +198,9 @@ publicPaymentsRouter.post(
     if (!allowedPublicPaymentMethods.has(provider)) {
       throw new AppError("Unsupported payment provider", 400);
     }
+    if (provider === "pally" && (!env.PALLY_API_TOKEN || !env.PALLY_SHOP_ID)) {
+      throw new AppError("Pally is not configured", 503);
+    }
 
     const body = req.body as z.infer<typeof createPaymentSchema>;
     let productId = String(body.plan_id || body.planId || body.product_id || body.productId || "").trim();
@@ -234,7 +238,7 @@ publicPaymentsRouter.post(
     const created = await paymentsService.createOrderWithPayment({
       email: body.email,
       productId,
-      quantity: 1,
+      quantity: body.quantity || body.qty || 1,
       paymentMethod,
       promoCode,
       orderDetails,
@@ -247,7 +251,13 @@ publicPaymentsRouter.post(
     }
 
     const publicOrigin = resolvePublicOrigin(req) || `${req.protocol}://${req.get("host")}`;
-    const activationPath = created.deliveryType === "vpn"
+    const activationPath = ["claude-kyc-support", "claude-cvp-support"].includes(String(created.productSlug || ""))
+      ? "/verification-support.html"
+      : Boolean(orderDetails && typeof orderDetails === "object" && !Array.isArray(orderDetails) &&
+      (orderDetails as Record<string, any>).selection?.needsNewAccount === true &&
+      /^\s*(chatgpt|claude)-/i.test(String(created.productSlug || "")))
+      ? "/new-account.html"
+      : created.deliveryType === "vpn"
       ? "/store/vpn/activate"
       : /^midjourney-(basic|standard|pro)-1$/.test(String(created.productSlug || ""))
         ? "/midjourney-link.html"

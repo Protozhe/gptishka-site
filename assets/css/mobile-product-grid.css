@@ -1,0 +1,177 @@
+/* Two product icons per row on phones; pricing-plan grids are not affected. */
+@media (max-width: 760px) {
+  body .ai-directory-grid,
+  body #pricingGrid .ai-directory-grid,
+  body #pricingGrid .product-showcase-grid > .ai-directory-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 24px 12px !important;
+    min-width: 0;
+  }
+
+  body .ai-directory-grid > .ai-directory-card {
+    min-width: 0 !important;
+    padding: 0;
+  }
+
+  body .ai-directory-grid .ai-directory-card__media {
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    aspect-ratio: 1;
+    border-radius: 18px;
+  }
+
+  body #pricingGrid .ai-directory-card .ai-directory-card__body,
+  body .ai-directory-grid .ai-directory-card__body {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    padding: 10px 0 0;
+    gap: 6px;
+  }
+
+  body #pricingGrid .ai-directory-card .ai-directory-card__name,
+  body .ai-directory-grid .ai-directory-card__name {
+    font-size: clamp(16px, 4.3vw, 19px) !important;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  body.home-wide-body .home-wide-page #pricingGrid .ai-directory-card--integrated .ai-directory-card__desc,
+  body #pricingGrid .ai-directory-card .ai-directory-card__plans,
+  body .ai-directory-grid .ai-directory-card__desc,
+  body .ai-directory-grid .ai-directory-card__plans {
+    font-size: 12px !important;
+    line-height: 1.4;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  body #pricingGrid .ai-directory-card .ai-directory-card__price,
+  body .ai-directory-grid .ai-directory-card__price {
+    font-size: clamp(15px, 4vw, 18px) !important;
+    line-height: 1.25;
+    white-space: normal;
+  }
+
+  body .ai-directory-grid .ai-directory-card__button {
+    min-height: 44px;
+    padding-inline: 8px;
+    font-size: 12px;
+    white-space: normal;
+  }
+}
+
+/* The mobile storefront directories use the same icon grid as the homepage.
+ * Scope the overrides to product directories; checkout and plan grids stay
+ * independent. Legacy catalog rules otherwise force a 250px card body. */
+@media (max-width: 760px) {
+  html body.home-catalog-body.home-catalog-body main.catalog-page {
+    width: calc(100% - 64px) !important;
+    max-width: none !important;
+  }
+
+  html body.home-catalog-body.home-catalog-body main.catalog-page .catalog-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 24px 12px !important;
+    align-items: stretch !important;
+  }
+
+  html body.home-catalog-body.home-catalog-body main.catalog-page .ai-directory-card {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    overflow: visible !important;
+  }
+
+  html body.home-catalog-body.home-catalog-body main.catalog-page .ai-directory-card__media {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    aspect-ratio: 1 !important;
+    border-radius: 26px !important;
+    border: 0 !important;
+  }
+
+  html body.home-catalog-body.home-catalog-body main.catalog-page .ai-directory-card__body {
+    flex: 1 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 10px 0 0 !important;
+    gap: 6px !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+
+  html body.home-catalog-body.home-catalog-body main.catalog-page .ai-directory-card__name {
+    margin: 0 !important;
+    width: 100% !important;
+    font-size: clamp(16px, 4.3vw, 19px) !important;
+    font-weight: 950 !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+    overflow-wrap: anywhere;
+  }
+
+  html body.home-catalog-body.home-catalog-body main.catalog-page :is(.ai-directory-card__desc, .ai-directory-card__plans) {
+    width: 100% !important;
+    margin: 0 !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+    white-space: normal !important;
+    text-align: center !important;
+    overflow-wrap: anywhere;
+  }
+
+  html body.home-catalog-body.home-catalog-body main.catalog-page .ai-directory-card__desc {
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden !important;
+  }
+
+  html body.home-catalog-body.home-catalog-body main.catalog-page .ai-directory-card__bottom {
+    width: 100% !important;
+    margin-top: auto !important;
+    gap: 10px !important;
+    align-items: center !important;
+  }
+
+  html body.home-catalog-body.home-catalog-body main.catalog-page .ai-directory-card__price {
+    width: 100% !important;
+    font-size: clamp(15px, 4vw, 18px) !important;
+    line-height: 1.25 !important;
+    text-align: center !important;
+    white-space: normal !important;
+  }
+
+  /* Retain the existing destination and accessible link text while letting
+   * the entire compact card act as the link, without a second visible CTA. */
+  html body.home-catalog-body.home-catalog-body main.catalog-page .ai-directory-card__button {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 4;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    opacity: 0 !important;
+  }
+
+  html body.home-catalog-body.home-catalog-body main.catalog-page .ai-directory-card:focus-within {
+    outline: 2px solid #35e58d;
+    outline-offset: 5px;
+  }
+}

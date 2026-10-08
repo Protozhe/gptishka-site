@@ -6,6 +6,7 @@ import {
   exportOrdersCsv,
   getStorefrontTickerSettings,
   getOrderActivationProof,
+  getOrderActivationLink,
   getOrderActivationToken,
   getOrder,
   getOrderManualLoginCredentials,
@@ -42,6 +43,7 @@ ordersRouter.patch(
   updateStorefrontTickerSettings
 );
 ordersRouter.get("/:id/activation-proof", allowRoles(["OWNER", "ADMIN", "MANAGER", "SUPPORT"]), getOrderActivationProof);
+ordersRouter.get("/:id/activation-link", allowRoles(["OWNER", "ADMIN", "MANAGER", "SUPPORT"]), getOrderActivationLink);
 ordersRouter.get("/:id/activation-token", allowRoles(["OWNER", "ADMIN", "SUPPORT"]), getOrderActivationToken);
 ordersRouter.get("/:id/manual-login-credentials", allowRoles(["OWNER", "ADMIN", "SUPPORT"]), getOrderManualLoginCredentials);
 ordersRouter.post("/:id/activation/manual-complete", allowRoles(["OWNER", "ADMIN", "SUPPORT"]), manuallyCompleteOrderActivation);

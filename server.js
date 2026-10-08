@@ -98,6 +98,7 @@ const NOINDEX_PUBLIC_PATHS = new Set([
   "/success.html",
   "/fail.html",
   "/redeem-start.html",
+  "/new-account.html",
   "/supergrok-activation",
   "/supergrok-activation.html",
   "/en/cart.html",
@@ -606,7 +607,7 @@ function logError(message, error) {
 async function fetchAdminWithFallback(targetPath, fetchOptions = {}, options = {}) {
   const safePath = String(targetPath || "").startsWith("/") ? String(targetPath || "") : `/${String(targetPath || "")}`;
   const retryStatuses = new Set(
-    Array.isArray(options.retryStatuses) && options.retryStatuses.length
+    Array.isArray(options.retryStatuses)
       ? options.retryStatuses
       : [502, 503, 504]
   );
@@ -1171,6 +1172,12 @@ function createApp() {
     return next();
   });
 
+  // Payment providers can return the shopper with POST. Convert it to GET so
+  // the static result pages are served instead of falling through to 404.
+  app.post(["/payment/success", "/payment/fail", "/success.html", "/fail.html"], (req, res) => {
+    res.redirect(303, req.originalUrl);
+  });
+
   app.use(
     express.static(__dirname, {
       dotfiles: "ignore",
@@ -1267,7 +1274,7 @@ function createApp() {
       },
       {
         timeoutMs: Number(options.timeoutMs || 12000),
-        retryStatuses: Array.isArray(options.retryStatuses) && options.retryStatuses.length
+        retryStatuses: Array.isArray(options.retryStatuses)
           ? options.retryStatuses
           : [502, 503, 504],
       }
@@ -1430,7 +1437,6 @@ function createApp() {
     }
   });
 
-
   app.get("/api/public/products", async (req, res) => {
     const lang = String(req.query?.lang || "ru").toLowerCase().startsWith("en") ? "en" : "ru";
 
@@ -1471,6 +1477,11 @@ function createApp() {
       }
       return res.status(502).json({ error: "Products API unavailable" });
     }
+  });
+
+  app.get("/api/public/verification-support-products", async (req, res) => {
+    res.set("Cache-Control", "no-store");
+    return proxyToAdminBackend(req, res, "/api/public/verification-support-products");
   });
 
   app.get("/api/public/itunes-products", async (req, res) => {
@@ -1916,7 +1927,8 @@ function createApp() {
           method: "POST",
           forceJson: true,
           timeoutMs: 120000,
-          retryStatuses: [404, 502, 503, 504],
+          // Activation start is not safe to replay after an ambiguous upstream failure.
+          retryStatuses: [],
         }
       );
       if (!response.ok) {
@@ -2419,7 +2431,7 @@ function createApp() {
     const serviceSlug = String(req.params?.serviceSlug || "").trim();
     if (!serviceSlug) return null;
     const normalizedSlug = serviceSlug.toLowerCase();
-    const reserved = new Set(["api", "admin", "assets", "uploads", "data", "en", "store", "payment", "success", "fail", "cart", "redeem-start", "note", "n"]);
+    const reserved = new Set(["api", "admin", "assets", "uploads", "data", "en", "store", "payment", "success", "fail", "cart", "redeem-start", "new-account", "note", "n"]);
     if (reserved.has(normalizedSlug)) return null;
 
     try {
@@ -2451,6 +2463,10 @@ function createApp() {
     sendFreshHtml(res, path.join(__dirname, "claude.html"));
   });
 
+  app.get(["/new-account", "/new-account.html"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "new-account.html"));
+  });
+
   app.get(["/supergrok", "/supergrok/"], (_req, res) => {
     sendFreshHtml(res, path.join(__dirname, "supergrok.html"));
   });
@@ -2465,6 +2481,10 @@ function createApp() {
 
   app.get(["/devin", "/devin/", "/devin.html"], (_req, res) => {
     sendFreshHtml(res, path.join(__dirname, "devin.html"));
+  });
+
+  app.get(["/en/devin", "/en/devin/", "/en/devin.html"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "en", "devin.html"));
   });
 
   app.get(["/devin-link", "/devin-link.html"], (_req, res) => {

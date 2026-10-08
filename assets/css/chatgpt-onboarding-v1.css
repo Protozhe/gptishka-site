@@ -499,6 +499,9 @@ html body:has(main.service-page) > .chatgpt-onboarding-modal {
 }
 
 @media (max-width: 560px) {
+  .service-page[data-service-page="chatgpt"] .service-account-choice__note {
+    min-height: 4.35em;
+  }
   .chatgpt-onboarding-modal {
     align-items: end;
     padding: 10px;
@@ -569,6 +572,7 @@ html body:has(main.service-page) > .chatgpt-onboarding-modal {
 
 /* ChatGPT: the purchase guide is intentionally prominent and readable. */
 body.chatgpt-onboarding-ready .chatgpt-onboarding-brief {
+  min-height: 114px;
   gap: 16px;
   margin-bottom: 0;
   padding: 16px 18px;
@@ -735,6 +739,7 @@ main.service-page[data-service-page="chatgpt"] .service-faq-answer p {
 
 @media (max-width: 760px) {
   body.chatgpt-onboarding-ready .chatgpt-onboarding-brief {
+    min-height: 206px;
     gap: 14px;
     padding: 15px;
   }
@@ -833,6 +838,49 @@ main.service-page[data-service-page="chatgpt"] .service-faq-answer p {
 
 .codex-entry__card {
   grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.service-page[data-service-page="chatgpt"] .service-product-column {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 981px) {
+  .service-page[data-service-page="chatgpt"] .service-product-column {
+    max-width: 440px;
+    margin-inline: auto;
+  }
+  .service-product-column .codex-entry {
+    width: 100%;
+    margin: 18px 0 0;
+  }
+  .service-product-column .codex-entry__card {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 12px;
+    padding: 16px;
+    border-radius: 22px;
+  }
+  .service-product-column .codex-entry__visual {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+  .service-product-column .codex-entry__content strong {
+    font-size: 20px;
+    line-height: 1.2;
+  }
+  .service-product-column .codex-entry__content > span:last-child {
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .service-product-column .codex-entry__button {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 38px;
+    box-sizing: border-box;
+    text-align: center;
+    padding: 10px 12px;
+  }
 }
 
 /* The flat constructor has its own rounded image viewport, so the outer shell

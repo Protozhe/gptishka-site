@@ -106,6 +106,10 @@ function buildCheckoutDetailRows(details: any) {
   );
 
   push("План", selection.plan);
+  if (selection.needsNewAccount === true && Number(selection.serverNewAccountSurcharge) > 0) {
+    push("Новый аккаунт", "Да — создаёт менеджер");
+    push("Доплата за аккаунт", `${Number(selection.serverNewAccountSurcharge).toLocaleString("ru-RU")} ₽`);
+  }
   push("Доставка", selection.deliveryMethod);
   push("Длительность", selection.duration);
   push("Способ оплаты", selection.paymentMethod);
@@ -185,6 +189,11 @@ export default function OrdersPage() {
   const [tokenDialog, setTokenDialog] = useState<null | { orderId: string; token: string; storedAt: string | null; expiresAt: string | null }>(
     null
   );
+  const [activationLinkDialog, setActivationLinkDialog] = useState<null | {
+    orderId: string;
+    activationUrl: string;
+    deliveryType: string;
+  }>(null);
   const [credentialsDialog, setCredentialsDialog] = useState<null | { orderId: string; login: string; password: string }>(null);
 
   const params = useMemo(
@@ -290,6 +299,24 @@ export default function OrdersPage() {
     },
   });
 
+  const readActivationLink = useMutation({
+    mutationFn: async (id: string) => (await api.get(`/orders/${id}/activation-link`)).data,
+    onMutate: (id: string) => {
+      setCheckMessage(`Готовим резервную ссылку активации для заказа ${id}...`);
+    },
+    onSuccess: (data: any) => {
+      setActivationLinkDialog({
+        orderId: String(data?.orderId || ""),
+        activationUrl: String(data?.activationUrl || ""),
+        deliveryType: String(data?.deliveryType || "activation"),
+      });
+      setCheckMessage("Резервная ссылка активации готова");
+    },
+    onError: (error: unknown) => {
+      setCheckMessage(getCheckErrorMessage(error));
+    },
+  });
+
   const readManualLoginCredentials = useMutation({
     mutationFn: async (id: string) => (await api.get(`/orders/${id}/manual-login-credentials`)).data,
     onMutate: (id: string) => setCheckMessage(`Открываем защищённые данные заказа ${id}...`),
@@ -307,6 +334,16 @@ export default function OrdersPage() {
       setCheckMessage("Токен скопирован в буфер обмена");
     } catch {
       setCheckMessage("Не удалось скопировать токен");
+    }
+  }
+
+  async function copyActivationLinkFromDialog() {
+    if (!activationLinkDialog?.activationUrl) return;
+    try {
+      await navigator.clipboard.writeText(activationLinkDialog.activationUrl);
+      setCheckMessage("Ссылка активации скопирована");
+    } catch {
+      setCheckMessage("Не удалось скопировать ссылку. Выделите её вручную.");
     }
   }
 
@@ -554,6 +591,17 @@ export default function OrdersPage() {
                       <button className="btn-secondary" onClick={() => checkActivation.mutate(o.id)} disabled={checkActivation.isPending}>
                         {checkActivation.isPending && checkActivation.variables === o.id ? "Проверяем..." : "Проверить активацию"}
                       </button>
+                      {o.status === "PAID" ? (
+                        <button
+                          className="btn-secondary"
+                          onClick={() => readActivationLink.mutate(o.id)}
+                          disabled={readActivationLink.isPending}
+                        >
+                          {readActivationLink.isPending && readActivationLink.variables === o.id
+                            ? "Готовим ссылку..."
+                            : "Ссылка активации"}
+                        </button>
+                      ) : null}
                       <button
                         className="btn-secondary"
                         onClick={() => readActivationToken.mutate(o.id)}
@@ -731,6 +779,34 @@ export default function OrdersPage() {
                   </div>
                 </div>
               </section>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {activationLinkDialog ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-3xl rounded-2xl bg-white p-4 shadow-2xl dark:bg-slate-900">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="text-sm font-semibold">Резервная ссылка активации · {activationLinkDialog.orderId}</div>
+              <button className="btn-secondary" onClick={() => setActivationLinkDialog(null)}>
+                Закрыть
+              </button>
+            </div>
+            <p className="mb-3 text-xs text-slate-500">
+              Это защищённая ссылка на заказ клиента. Передавайте её только самому клиенту и не публикуйте в общих чатах.
+            </p>
+            <textarea
+              className="input min-h-32 w-full font-mono text-xs"
+              value={activationLinkDialog.activationUrl}
+              readOnly
+            />
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button className="btn-secondary" onClick={copyActivationLinkFromDialog}>
+                Скопировать ссылку
+              </button>
+              <a className="btn-secondary" href={activationLinkDialog.activationUrl} target="_blank" rel="noreferrer">
+                Открыть страницу
+              </a>
             </div>
           </div>
         </div>

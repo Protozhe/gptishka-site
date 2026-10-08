@@ -16,6 +16,7 @@ import { errorHandler, notFoundHandler } from "./common/errors/error-handler";
 import { publicOrdersRouter } from "./modules/orders/public-orders.routes";
 import { allowLavaWebhookIp, allowWebhookIp, verifyLavaWebhookSignature, verifyWebhookSignature } from "./common/security/webhook-security";
 import { handlePaymentWebhook } from "./modules/payments/payment-webhook.controller";
+import { handlePallyWebhook } from "./modules/payments/pally-webhook.controller";
 import { publicPromoCodesRouter } from "./modules/promocodes/public-promocodes.routes";
 import { partnerEarningsRouter, partnersRouter } from "./modules/partners/partners.routes";
 import { publicPaymentsRouter } from "./modules/payments/public-payments.routes";
@@ -46,6 +47,8 @@ export function createApp() {
   app.post("/api/webhooks/payment", ...enotWebhookStack);
   app.post("/api/public/webhook/lava", ...lavaWebhookStack);
   app.post("/api/webhooks/lava", ...lavaWebhookStack);
+  app.post("/api/public/webhook/pally", express.raw({ type: "application/x-www-form-urlencoded", limit: "16kb" }), handlePallyWebhook);
+  app.post("/api/payments/pally/callback", express.raw({ type: "application/x-www-form-urlencoded", limit: "16kb" }), handlePallyWebhook);
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ extended: true }));
   app.use(attachRequestMeta);
