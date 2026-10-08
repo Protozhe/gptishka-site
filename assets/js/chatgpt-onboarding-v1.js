@@ -90,11 +90,17 @@
     mountCodexEntry();
     const card = grid.querySelector(".price-card");
     const buyButton = card && card.querySelector(".pay-now-btn");
-    if (!card || !buyButton) return;
+    const workspace = grid.closest('[data-chatgpt-workspace]');
+    const briefHost = workspace ? grid.closest('.service-constructor-card') : card;
+    const current = briefHost?.querySelector(".chatgpt-onboarding-brief");
+    if (!card || !buyButton) {
+      current?.remove();
+      return;
+    }
     const needsNewAccount = Boolean(document.querySelector('[data-service-new-account]')?.checked);
     const mode = needsNewAccount ? "manager" : "automatic";
-    const current = card.querySelector(".chatgpt-onboarding-brief");
-    if (current?.dataset.fulfillmentMode === mode) return;
+    if (current?.dataset.fulfillmentMode === mode
+      && (needsNewAccount || automaticPlanKeys.has(card.dataset.planKey || ""))) return;
     current?.remove();
     if (!needsNewAccount) {
       if (!automaticPlanKeys.has(card.dataset.planKey || "")) return;
@@ -102,7 +108,9 @@
     const briefMarkup = needsNewAccount
       ? markup.replace(copy.briefTitle, managerCopy.briefTitle).replace(copy.briefText, managerCopy.briefText)
       : markup;
-    buyButton.insertAdjacentHTML("beforebegin", briefMarkup.replace('class="chatgpt-onboarding-brief"', 'class="chatgpt-onboarding-brief" data-fulfillment-mode="' + mode + '"'));
+    const briefAnchor = workspace ? briefHost.querySelector('.service-account-choice') : buyButton;
+    const briefPosition = workspace ? "afterend" : "beforebegin";
+    briefAnchor?.insertAdjacentHTML(briefPosition, briefMarkup.replace('class="chatgpt-onboarding-brief"', 'class="chatgpt-onboarding-brief" data-fulfillment-mode="' + mode + '"'));
   }
 
   new MutationObserver(mountBrief).observe(grid, { childList: true, subtree: true });

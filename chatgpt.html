@@ -41,8 +41,8 @@
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/codex-credits.css?v=20260916-wide-readable3">
-<link rel="stylesheet" href="/assets/css/chatgpt-workspace.css?v=20261007-promo4">
-<link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-c86d782cf9f2607d">
+<link rel="stylesheet" href="/assets/css/chatgpt-workspace.css?v=sha256-b729875dbe63e091">
+<link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-0574183fef76e6b4">
 </head>
 <body id="storefrontBody" class="chatgpt-workspace-body">
 <div class="page-overlay"></div>
@@ -95,13 +95,12 @@
 </header>
 
 <main id="chatgptWorkspace" class="page service-page service-page--constructor" data-service-page="chatgpt" data-service-layout="constructor" data-chatgpt-workspace>
-  <a class="service-directory-back" href="/catalog/ai/" aria-label="Вернуться в каталог нейросетей">
-    <svg class="service-directory-back__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-      <path d="M17 10H3M3 10l5-5M3 10l5 5"></path>
-    </svg>
-    <span>Нейросети</span>
-  </a>
-
+  <nav class="chatgpt-workspace-breadcrumbs" aria-label="Навигация по каталогу">
+    <ol>
+      <li><a href="/catalog/ai/">Нейросети</a></li>
+      <li><span class="chatgpt-workspace-breadcrumbs__separator" aria-hidden="true">›</span><span aria-current="page">ChatGPT</span></li>
+    </ol>
+  </nav>
 
   <div class="chatgpt-workspace-intro">
     <div class="chatgpt-workspace-brand"><span class="chatgpt-workspace-mark" aria-hidden="true"></span><h1>ChatGPT</h1></div>
@@ -128,11 +127,6 @@
           <div id="servicePlanFilters"></div>
           <div id="serviceDurationFilters"></div>
         </div>
-        <div class="service-account-choice">
-          <p class="service-account-choice__title">Аккаунт для подписки</p>
-          <label class="service-new-account"><input type="checkbox" data-service-new-account aria-describedby="serviceAccountNote"><span class="service-new-account__check" aria-hidden="true"></span><span class="service-new-account__text"><strong>Нужен новый аккаунт</strong><small>Создадим аккаунт с выбранной подпиской.</small></span><span class="service-new-account__price">+500 ₽</span></label>
-          <p class="service-account-choice__note" id="serviceAccountNote" data-service-account-note aria-live="polite">По умолчанию подключаем подписку на ваш аккаунт.</p>
-        </div>
         <div class="service-selected-plan" id="servicePlansGrid" aria-live="polite">
           <div class="price-card price-card-skeleton" aria-hidden="true">
             <div class="price-card-skeleton__title"></div>
@@ -140,6 +134,11 @@
             <div class="price-card-skeleton__line"></div>
             <div class="price-card-skeleton__button"></div>
           </div>
+        </div>
+        <div class="service-account-choice">
+          <p class="service-account-choice__title">Аккаунт для подписки</p>
+          <label class="service-new-account"><input type="checkbox" data-service-new-account aria-describedby="serviceAccountNote"><span class="service-new-account__check" aria-hidden="true"></span><span class="service-new-account__text"><strong>Нужен новый аккаунт</strong></span><span class="service-new-account__price">+500 ₽</span></label>
+          <p class="service-account-choice__note" id="serviceAccountNote" data-service-account-note aria-live="polite">По умолчанию подключаем подписку на ваш аккаунт.</p>
         </div>
         <div class="service-constructor-description">
           <h3>ChatGPT</h3>
@@ -234,7 +233,6 @@
 
   </div>
   <div id="credits" class="chatgpt-workspace-panel" role="tabpanel" aria-labelledby="credits-tab" tabindex="0">
-    <div class="chatgpt-credits-intro"><h2>Кредиты для задач в Codex</h2><p>Дополнительный баланс для работы с кодом. Выберите пакет и укажите контакты для заказа.</p><span>Без логина и пароля · На ваш аккаунт</span></div>
     <form class="codex-order" data-codex-order-form novalidate>
       <div class="codex-order__head"><div><span>Оформление заказа</span><h2>Выберите количество кредитов</h2></div><strong data-codex-total>1 500 ₽</strong></div>
       <div class="codex-options" role="radiogroup" aria-label="Количество кредитов">
@@ -242,10 +240,11 @@
         <label class="codex-option"><input type="radio" name="credits" value="500" data-price="2750" data-slug="codex-500-link"><span><strong>500</strong><small>кредитов</small></span></label>
         <label class="codex-option"><input type="radio" name="credits" value="1000" data-price="4850" data-slug="codex-1000-link"><span><strong>1000</strong><small>кредитов</small></span></label>
       </div>
-      <label class="codex-field"><span>Email</span><small>Укажите почту вашего аккаунта ChatGPT</small><input name="email" type="email" autocomplete="email" placeholder="name@example.com" required></label>
-      <label class="codex-field"><span>Telegram</span><small>Чтобы быть на связи: отправим статус заказа и поможем, если появятся вопросы.</small><input name="telegram" type="text" autocomplete="off" placeholder="@username" required></label>
+      <label class="codex-field"><span class="codex-field__heading"><strong>Email</strong><small>Почта аккаунта ChatGPT</small></span><input name="email" type="email" autocomplete="email" placeholder="name@example.com" required></label>
+      <label class="codex-field"><span class="codex-field__heading"><strong>Telegram</strong><small>Статус и поддержка</small></span><input name="telegram" type="text" autocomplete="off" placeholder="@username" required></label>
       <fieldset class="codex-payment">
-        <label><input name="paymentMethod" type="radio" value="pally" checked><span><img src="/assets/img/payment-pally.svg" alt="" width="34" height="34"><strong>Pally.info</strong></span></label><legend>Способ оплаты</legend>
+        <legend>Способ оплаты</legend>
+        <label><input name="paymentMethod" type="radio" value="pally" checked><span><img src="/assets/img/payment-pally.svg" alt="" width="34" height="34"><strong>Pally.info</strong></span></label>
         <label><input name="paymentMethod" type="radio" value="lava"><span><img src="/assets/img/payment-lava.svg?v=20260724-lava-mark2" alt="" width="34" height="34"><strong>Lava</strong></span></label>
         <label><input name="paymentMethod" type="radio" value="enot"><span><img src="/assets/img/payment-enot.svg?v=20260724-enot-mark1" alt="" width="34" height="34"><strong>Enot.io</strong></span></label>
       </fieldset>
@@ -254,6 +253,7 @@
       <button class="codex-submit" type="submit" data-codex-submit>Оплатить 1 500 ₽</button>
     </form>
     <section class="codex-supporting" aria-label="Дополнительная информация">
+    <details><summary>О кредитах Codex</summary><div><p>Дополнительный баланс для работы с кодом в Codex. Пополним ваш аккаунт без передачи логина и пароля.</p></div></details>
     <details><summary>Подойдёт ли мой аккаунт?</summary><div><p>Да, если у вас действует подписка Go, Plus, Pro 5x или Pro 20x. Кредиты не сгорают: неиспользованный остаток останется в аккаунте и будет доступен для следующих задач в Codex.</p></div></details>
     <details><summary>Что будет после оплаты?</summary><div><p>Откроется защищённая страница с короткой инструкцией. Вы передадите временный платёжный токен, а мы пополним баланс и покажем результат заказа.</p></div></details>
   </section>
@@ -300,7 +300,7 @@
 <script src="/assets/js/app.min.js?v=sha256-46a7cf8cb3d853dd" defer></script>
 <script src="/assets/js/support-widget.js?v=20260924-support-account1&build=sha256-9da6a0dc556ea999" defer></script>
   <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
-  <script src="/assets/js/chatgpt-onboarding-v1.js?v=sha256-cc104fe083f14995" defer></script>
+  <script src="/assets/js/chatgpt-onboarding-v1.js?v=sha256-3da5102f8ebf7e68" defer></script>
 <script src="/assets/js/chatgpt-workspace.js?v=sha256-244058e6dcea997d" defer></script>
 <script src="/assets/js/codex-credits.js?v=20260916-calm-copy1" defer></script>
 <script src="/assets/js/storefront-ui.js?v=sha256-bcae5e9700f06872" defer></script>

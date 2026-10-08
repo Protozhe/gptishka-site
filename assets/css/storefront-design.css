@@ -23,7 +23,8 @@ html body#storefrontBody #gptishka-support-widget.support-widget { width: 104px 
 html body#storefrontBody #gptishka-support-widget .support-widget__mascot { display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 104px !important; height: 44px !important; padding: 0 12px !important; border: 1px solid var(--store-line) !important; border-radius: 10px !important; background: var(--store-surface) !important; color: var(--store-text) !important; font: 650 13px/1.2 'Manrope',system-ui,sans-serif !important; box-shadow: none !important; cursor: pointer; }
 html body#storefrontBody #gptishka-support-widget .support-widget__mascot::after { display: none !important; }
 html body#storefrontBody #gptishka-support-widget .support-widget__panel { right: 0 !important; bottom: 54px !important; width: min(320px,calc(100vw - 28px)) !important; background: var(--store-surface) !important; box-shadow: 0 8px 24px #0004 !important; }
-#storefrontHeader { width: min(1320px, calc(100% - 48px)) !important; margin: 8px auto 0 !important; background: var(--store-bg) !important; }
+/* Match the existing wide catalog shell without changing page layouts. */
+#storefrontHeader { width: min(1640px, calc(100% - clamp(28px, 7vw, 92px))) !important; margin: 8px auto 0 !important; background: var(--store-bg) !important; }
 #storefrontHeader .nav.nav-shell { display: grid !important; grid-template-columns: auto auto minmax(0,1fr) auto !important; grid-template-rows: auto !important; gap: 16px !important; align-items: center !important; padding: 0 !important; }
 #storefrontHeader .logo-link { grid-column: 1 !important; grid-row: 1 !important; min-height: 48px !important; height: auto !important; }
 #storefrontHeader .logo-img { width: 148px !important; max-width: 148px !important; height: auto !important; max-height: 48px !important; object-fit: contain; }

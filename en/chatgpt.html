@@ -40,8 +40,8 @@
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/codex-credits.css?v=20260916-wide-readable3">
-<link rel="stylesheet" href="/assets/css/chatgpt-workspace.css?v=20261007-promo4">
-<link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-c86d782cf9f2607d">
+<link rel="stylesheet" href="/assets/css/chatgpt-workspace.css?v=sha256-b729875dbe63e091">
+<link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-0574183fef76e6b4">
 </head>
 <body id="storefrontBody" class="chatgpt-workspace-body">
 <div class="page-overlay"></div>
@@ -94,13 +94,12 @@
 </header>
 
 <main id="chatgptWorkspace" class="page service-page service-page--constructor" data-service-page="chatgpt" data-service-layout="constructor" data-chatgpt-workspace>
-  <a class="service-directory-back" href="/en/catalog/ai/" aria-label="Return to neural networks catalog">
-    <svg class="service-directory-back__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-      <path d="M17 10H3M3 10l5-5M3 10l5 5"></path>
-    </svg>
-    <span>Neural networks</span>
-  </a>
-
+  <nav class="chatgpt-workspace-breadcrumbs" aria-label="Catalog navigation">
+    <ol>
+      <li><a href="/en/catalog/ai/">Neural networks</a></li>
+      <li><span class="chatgpt-workspace-breadcrumbs__separator" aria-hidden="true">›</span><span aria-current="page">ChatGPT</span></li>
+    </ol>
+  </nav>
 
   <div class="chatgpt-workspace-intro">
     <div class="chatgpt-workspace-brand"><span class="chatgpt-workspace-mark" aria-hidden="true"></span><h1>ChatGPT</h1></div>
@@ -127,11 +126,6 @@
           <div id="servicePlanFilters"></div>
           <div id="serviceDurationFilters"></div>
         </div>
-        <div class="service-account-choice">
-          <p class="service-account-choice__title">Account for your subscription</p>
-          <label class="service-new-account"><input type="checkbox" data-service-new-account aria-describedby="serviceAccountNote"><span class="service-new-account__check" aria-hidden="true"></span><span class="service-new-account__text"><strong>Need a new account</strong><small>We will create an account with your selected subscription.</small></span><span class="service-new-account__price">+500 RUB</span></label>
-          <p class="service-account-choice__note" id="serviceAccountNote" data-service-account-note aria-live="polite">By default, the subscription is connected to your existing account.</p>
-        </div>
         <div class="service-selected-plan" id="servicePlansGrid" aria-live="polite">
           <div class="price-card price-card-skeleton" aria-hidden="true">
             <div class="price-card-skeleton__title"></div>
@@ -139,6 +133,11 @@
             <div class="price-card-skeleton__line"></div>
             <div class="price-card-skeleton__button"></div>
           </div>
+        </div>
+        <div class="service-account-choice">
+          <p class="service-account-choice__title">Account for your subscription</p>
+          <label class="service-new-account"><input type="checkbox" data-service-new-account aria-describedby="serviceAccountNote"><span class="service-new-account__check" aria-hidden="true"></span><span class="service-new-account__text"><strong>Need a new account</strong></span><span class="service-new-account__price">+500 RUB</span></label>
+          <p class="service-account-choice__note" id="serviceAccountNote" data-service-account-note aria-live="polite">By default, the subscription is connected to your existing account.</p>
         </div>
         <div class="service-constructor-description">
           <h3>ChatGPT</h3>
@@ -233,7 +232,6 @@
 
   </div>
   <div id="credits" class="chatgpt-workspace-panel" role="tabpanel" aria-labelledby="credits-tab" tabindex="0">
-    <div class="chatgpt-credits-intro"><h2>Credits for your Codex tasks</h2><p>Additional balance for coding. Choose a package and enter your order contact details.</p><span>No login or password · For your account</span></div>
     <form class="codex-order" data-codex-order-form novalidate>
         <div class="codex-order__head"><div><span>Order details</span><h2>Choose the number of credits</h2></div><strong data-codex-total>1,500 RUB</strong></div>
         <div class="codex-options" role="radiogroup" aria-label="Credit package">
@@ -242,11 +240,12 @@
           <label class="codex-option"><input type="radio" name="credits" value="1000" data-price="4850" data-slug="codex-1000-link"><span><strong>1000</strong><small>credits</small></span></label>
         </div>
 
-        <label class="codex-field"><span>Email</span><small>Enter the email address of your ChatGPT account</small><input name="email" type="email" autocomplete="email" placeholder="name@example.com" required></label>
-        <label class="codex-field"><span>Telegram</span><small>So we can stay in touch, send your order status and help with any questions.</small><input name="telegram" type="text" autocomplete="off" placeholder="@username" required></label>
+        <label class="codex-field"><span class="codex-field__heading"><strong>Email</strong><small>ChatGPT account email</small></span><input name="email" type="email" autocomplete="email" placeholder="name@example.com" required></label>
+        <label class="codex-field"><span class="codex-field__heading"><strong>Telegram</strong><small>Updates and support</small></span><input name="telegram" type="text" autocomplete="off" placeholder="@username" required></label>
 
         <fieldset class="codex-payment">
-        <label><input name="paymentMethod" type="radio" value="pally" checked><span><img src="/assets/img/payment-pally.svg" alt="" width="34" height="34"><strong>Pally.info</strong></span></label><legend>Payment method</legend>
+        <legend>Payment method</legend>
+        <label><input name="paymentMethod" type="radio" value="pally" checked><span><img src="/assets/img/payment-pally.svg" alt="" width="34" height="34"><strong>Pally.info</strong></span></label>
           <label><input name="paymentMethod" type="radio" value="lava"><span><img src="/assets/img/payment-lava.svg?v=20260724-lava-mark2" alt="" width="34" height="34"><strong>Lava</strong></span></label>
           <label><input name="paymentMethod" type="radio" value="enot"><span><img src="/assets/img/payment-enot.svg?v=20260724-enot-mark1" alt="" width="34" height="34"><strong>Enot.io</strong></span></label>
         </fieldset>
@@ -255,6 +254,7 @@
         <button class="codex-submit" type="submit" data-codex-submit>Pay 1,500 RUB</button>
       </form>
     <section class="codex-supporting" aria-label="Additional information">
+      <details><summary>About Codex credits</summary><div><p>Additional balance for coding in Codex. We top up your account without your login or password.</p></div></details>
       <details><summary>Is my account eligible?</summary><div><p>Yes, if you have an active Go, Plus, Pro 5x or Pro 20x plan. Credits do not expire: any unused balance stays in your account for future Codex work.</p></div></details>
       <details><summary>What happens after payment?</summary><div><p>A secure page with a short guide will open. You will provide a temporary payment token, and we will top up the balance and display the result.</p></div></details>
     </section>
@@ -301,7 +301,7 @@
 <script src="/assets/js/app.min.js?v=sha256-46a7cf8cb3d853dd" defer></script>
 <script src="/assets/js/support-widget.js?v=20260924-support-account1&build=sha256-9da6a0dc556ea999" defer></script>
   <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
-  <script src="/assets/js/chatgpt-onboarding-v1.js?v=sha256-cc104fe083f14995" defer></script>
+  <script src="/assets/js/chatgpt-onboarding-v1.js?v=sha256-3da5102f8ebf7e68" defer></script>
 <script src="/assets/js/chatgpt-workspace.js?v=sha256-244058e6dcea997d" defer></script>
 <script src="/assets/js/codex-credits.js?v=20260916-calm-copy1" defer></script>
 <script src="/assets/js/storefront-ui.js?v=sha256-bcae5e9700f06872" defer></script>
