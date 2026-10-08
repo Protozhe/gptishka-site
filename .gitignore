@@ -57,3 +57,14 @@ _head_*
 data/
 apps/admin-backend/data/
 uploads/
+
+# Directory symlinks need patterns without a trailing slash.
+/node_modules
+/data
+/apps/admin-backend/data
+/uploads
+/assets/downloads
+
+# Public scripts emitted by the admin build.
+/admin/admin-analytics.js
+/admin/admin-errors.js

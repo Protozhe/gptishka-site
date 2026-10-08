@@ -100,6 +100,7 @@ if [ "$SCHEMA_CHANGED" -eq 1 ]; then
 fi
 nginx -t
 git -C "$RELEASE" diff --exit-code
+[[ -z "$(git -C "$RELEASE" status --porcelain)" ]] || { echo "Release contains unexpected local files"; exit 1; }
 
 # Adopt the previous complete checkout as a recoverable release. No source
 # file is copied over the active site, and all runtime directories stay put.

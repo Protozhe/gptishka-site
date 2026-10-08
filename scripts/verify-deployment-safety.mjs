@@ -42,6 +42,11 @@ for (const path of ["data/public-reviews.json", "data/order-activations.json", "
   assert.notEqual(tracked.status, 0, `${path} must not be a tracked mutable seed`);
   if (fs.existsSync(path)) assert.ok(fs.realpathSync(path).startsWith("/var/lib/gptishka-runtime/"), `${path} must resolve outside the checkout`);
 }
+const runtimeLinks = ["node_modules", "data", "apps/admin-backend/data", "uploads", "assets/downloads", "admin/admin-analytics.js", "admin/admin-errors.js"];
+const ignoredLinks = spawnSync("git", ["check-ignore", "--no-index", "--stdin"], {input:runtimeLinks.join("\n") + "\n", encoding:"utf8"});
+assert.equal(ignoredLinks.status, 0);
+assert.deepEqual(ignoredLinks.stdout.trim().split(/\r?\n/), runtimeLinks, "Runtime symlinks and built admin scripts must be ignored even when they are not directories");
+assert.match(deploy, /git -C "\$RELEASE" status --porcelain/);
 assert.match(agentRules, /Production is deployed only from the `production` branch/);
 assert.match(agentRules, /production-stable-2026-08-25-r2/);
 
