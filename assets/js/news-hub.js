@@ -22,6 +22,7 @@
   let visibleCount = pageSize;
   let items = [];
   let appliedFetchedAt = 0;
+  const expandedPosts = new Set();
   const mediaObserver = "IntersectionObserver" in window
     ? new IntersectionObserver(entries => {
         entries.forEach(entry => {
@@ -104,12 +105,20 @@
     actions.className = "news-card__actions";
 
     if (readableText.length > 420) {
-      const expand = textNode("button", "news-card__expand", language === "en" ? "Read full article" : "Читать полностью");
+      const postKey = String(item.postId || item.url);
+      const initiallyExpanded = expandedPosts.has(postKey);
+      article.classList.add("news-card--collapsible");
+      article.classList.toggle("is-expanded", initiallyExpanded);
+      const expand = textNode("button", "news-card__expand", initiallyExpanded
+        ? (language === "en" ? "Collapse" : "Свернуть")
+        : (language === "en" ? "Read full article" : "Читать полностью"));
       expand.type = "button";
-      expand.setAttribute("aria-expanded", "false");
+      expand.setAttribute("aria-expanded", String(initiallyExpanded));
       expand.setAttribute("aria-controls", copy.id);
       expand.addEventListener("click", () => {
         const expanded = article.classList.toggle("is-expanded");
+        if (expanded) expandedPosts.add(postKey);
+        else expandedPosts.delete(postKey);
         expand.setAttribute("aria-expanded", String(expanded));
         expand.textContent = expanded
           ? (language === "en" ? "Collapse" : "Свернуть")
