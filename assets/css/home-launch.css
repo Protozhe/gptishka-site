@@ -283,3 +283,27 @@ html body#storefrontBody.home-wide-body :is(#pricing,#how,#faq) { scroll-margin-
   html body#storefrontBody.home-wide-body .how-card { display: grid !important; grid-template-columns: 40px minmax(0,1fr); gap: 16px; align-items: start; }
   html body#storefrontBody.home-wide-body .how-number { margin: 2px 0 0 !important; }
 }
+
+/* Product-focused opening copy, with plan-specific delivery details. */
+html body#storefrontBody .launch-copy h1 { font-size: clamp(36px,3.4vw,50px); line-height: 1.15; letter-spacing: -.045em; }
+.launch-benefits { display: flex; flex-wrap: wrap; gap: 10px 20px; list-style: none; margin: 20px 0 0; padding: 0; color: var(--store-text); font: 650 17px/1.5 'Manrope',sans-serif; }
+.launch-benefits li::before { content: '✓'; color: var(--store-accent); margin-right: 8px; }
+html body#storefrontBody .launch-terms { max-width: 520px; margin: 12px 0 0; color: var(--store-muted); font: 500 16px/1.6 'Manrope',sans-serif; }
+@media (min-width: 761px) and (max-width: 1100px) {
+  html body#storefrontBody .launch-copy h1 { font-size: 46px !important; }
+  .launch-benefits { justify-content: center; }
+  html body#storefrontBody .launch-terms { margin-inline: auto; }
+}
+@media (max-width: 760px) {
+  html body#storefrontBody .launch-copy h1 { font-size: clamp(30px,8.2vw,46px); }
+  html body#storefrontBody .launch-description { font-size: 17px; }
+  .launch-benefits { flex-direction: column; gap: 8px; font-size: 16px; margin-top: 18px; }
+}
+
+/* Each tilted service card is its own native link and hit area. */
+html body#storefrontBody a.launch-tile { text-decoration: none; cursor: pointer; color: var(--launch-tile-ink,#fff); transition: box-shadow .16s ease; }
+.launch-tile--claude { --launch-tile-ink: #281d17; }
+.launch-tile--codex { --launch-tile-ink: #20272a; }
+html body#storefrontBody a.launch-tile:hover { color: var(--launch-tile-ink,#fff); box-shadow: 7px 9px 0 #0004,0 0 0 3px var(--store-accent); }
+html body#storefrontBody a.launch-tile:focus-visible { outline: 3px solid var(--store-focus); outline-offset: 5px; }
+@media (prefers-reduced-motion: reduce) { html body#storefrontBody a.launch-tile { transition: none; } }
