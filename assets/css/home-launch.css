@@ -9,25 +9,6 @@ html body#storefrontBody.home-wide-body {
   --store-focus: #a7eee5;
   background: var(--store-bg) !important;
 }
-html body#storefrontBody.home-wide-body #storefrontHeader {
-  margin-top: 0 !important;
-  height: 80px !important;
-  min-height: 80px !important;
-  border-bottom: 1px solid #ffffff12 !important;
-}
-html body#storefrontBody.home-wide-body #storefrontHeader .nav.nav-shell { height: 100% !important; }
-html body#storefrontBody.home-wide-body #storefrontHeader .header-product-pill {
-  border: 1px solid #a7eee5 !important;
-  background: #a7eee5 !important;
-  color: #173532 !important;
-  border-radius: 100px !important;
-  padding-inline: 14px !important;
-  font-size: 13px !important;
-}
-html body#storefrontBody.home-wide-body #storefrontHeader .header-product-pill:hover { background: #c0f5ed !important; border-color: #c0f5ed !important; }
-html body#storefrontBody.home-wide-body #storefrontHeader .header-quick-link,
-html body#storefrontBody.home-wide-body #storefrontHeader .lang-current { color: #d4d7cf !important; }
-html body#storefrontBody.home-wide-body #storefrontHeader .lang-current { background: #232a2d !important; border-radius: 100px !important; }
 html body#storefrontBody.home-wide-body .home-wide-page { padding-top: 0 !important; }
 html body#storefrontBody .home-wide-page .home-opening-frame.home-launch {
   box-sizing: border-box;
@@ -174,8 +155,6 @@ html body#storefrontBody.home-wide-body .home-discover .home-promo-slider__dot::
   .launch-assurance { gap: 12px; padding-inline: 16px; }
 }
 @media (max-width: 760px) {
-  html body#storefrontBody.home-wide-body #storefrontHeader { height: 104px !important; min-height: 104px !important; }
-  html body#storefrontBody.home-wide-body #storefrontHeader .nav.nav-shell { align-content: center; }
   html body#storefrontBody .home-wide-page .home-opening-frame.home-launch { width: calc(100% - 28px); min-height: calc(100svh - 104px) !important; gap: 24px; padding: 26px 0 32px !important; }
   .launch-hero { grid-template-columns: minmax(0,1fr); gap: 12px; min-height: 0; }
   .launch-copy { padding: 0; }
@@ -287,7 +266,7 @@ html body#storefrontBody.home-wide-body :is(#pricing,#how,#faq) { scroll-margin-
 /* Product-focused opening copy, with plan-specific delivery details. */
 html body#storefrontBody .launch-copy h1 { font-size: clamp(36px,3.4vw,50px); line-height: 1.15; letter-spacing: -.045em; }
 .launch-benefits { display: flex; flex-wrap: wrap; gap: 10px 20px; list-style: none; margin: 20px 0 0; padding: 0; color: var(--store-text); font: 650 17px/1.5 'Manrope',sans-serif; }
-.launch-benefits li::before { content: '✓'; color: var(--store-accent); margin-right: 8px; }
+.launch-benefits li::before { content: '\2713'; color: var(--store-accent); margin-right: 8px; }
 html body#storefrontBody .launch-terms { max-width: 520px; margin: 12px 0 0; color: var(--store-muted); font: 500 16px/1.6 'Manrope',sans-serif; }
 @media (min-width: 761px) and (max-width: 1100px) {
   html body#storefrontBody .launch-copy h1 { font-size: 46px !important; }
@@ -307,3 +286,34 @@ html body#storefrontBody a.launch-tile { text-decoration: none; cursor: pointer;
 html body#storefrontBody a.launch-tile:hover { color: var(--launch-tile-ink,#fff); box-shadow: 7px 9px 0 #0004,0 0 0 3px var(--store-accent); }
 html body#storefrontBody a.launch-tile:focus-visible { outline: 3px solid var(--store-focus); outline-offset: 5px; }
 @media (prefers-reduced-motion: reduce) { html body#storefrontBody a.launch-tile { transition: none; } }
+
+/* Keep the four category entrances inside the desktop opening screen. */
+@media (min-width: 1101px) {
+  html body#storefrontBody .home-wide-page .home-opening-frame.home-launch { min-height: 0 !important; gap: 20px; padding: 24px 0 28px !important; }
+  .launch-hero { flex: none; min-height: 400px; }
+  .launch-copy { padding-block: 8px; }
+  .launch-eyebrow { margin-bottom: 14px; }
+  html body#storefrontBody .launch-description { margin-top: 18px; line-height: 1.55; }
+  .launch-benefits { margin-top: 14px; gap: 8px 18px; }
+  html body#storefrontBody .launch-terms { margin-top: 8px; max-width: none; }
+  .launch-actions { margin-top: 20px; }
+  .launch-assurances { padding-block: 16px; }
+  .launch-category { min-height: 96px; padding-block: 14px; }
+}
+@media (min-width: 1101px) and (max-height: 800px) {
+  html body#storefrontBody .home-wide-page .home-opening-frame.home-launch { gap: 14px; padding: 16px 0 !important; }
+  .launch-hero { min-height: 0; }
+  .launch-copy { padding-block: 0; }
+  html body#storefrontBody .launch-copy h1 { font-size: 36px; line-height: 1.1; }
+  .launch-eyebrow { margin-bottom: 12px; }
+  html body#storefrontBody .launch-description { margin-top: 14px; font-size: 17px; }
+  .launch-benefits { font-size: 16px; line-height: 1.4; margin-top: 12px; }
+  html body#storefrontBody .launch-terms { font-size: 15px; line-height: 1.4; }
+  .launch-actions { margin-top: 16px; }
+  .launch-button { min-height: 48px; }
+  .launch-assurances { padding-block: 12px; }
+  .launch-category { min-height: 88px; padding-block: 12px; }
+  .launch-art { transform: scale(.78); transform-origin: center right; height: 380px; }
+  .launch-tile--codex { bottom: -32px; }
+  .launch-tile--steam { bottom: -17px; }
+}

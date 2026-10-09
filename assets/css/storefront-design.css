@@ -253,3 +253,29 @@ html body#storefrontBody > header.gptishka-canonical-header.header-hidden {
   opacity: 1 !important;
   pointer-events: auto !important;
 }
+
+/* The homepage header is the shared header on every storefront page. */
+html body#storefrontBody #storefrontHeader {
+  margin-top: 0 !important;
+  background: #15191b !important;
+  height: 80px !important;
+  min-height: 80px !important;
+  border-bottom: 1px solid #ffffff12 !important;
+}
+html body#storefrontBody #storefrontHeader .nav.nav-shell { height: 100% !important; }
+html body#storefrontBody #storefrontHeader .header-product-pill {
+  border: 1px solid #a7eee5 !important;
+  background: #a7eee5 !important;
+  color: #173532 !important;
+  border-radius: 100px !important;
+  padding-inline: 14px !important;
+  font-size: 13px !important;
+}
+html body#storefrontBody #storefrontHeader .header-product-pill:hover { background: #c0f5ed !important; border-color: #c0f5ed !important; }
+html body#storefrontBody #storefrontHeader .header-quick-link,
+html body#storefrontBody #storefrontHeader .lang-current { color: #d4d7cf !important; }
+html body#storefrontBody #storefrontHeader .lang-current { background: #232a2d !important; border-radius: 100px !important; }
+@media (max-width: 760px) {
+  html body#storefrontBody #storefrontHeader { height: 104px !important; min-height: 104px !important; }
+  html body#storefrontBody #storefrontHeader .nav.nav-shell { align-content: center; }
+}
