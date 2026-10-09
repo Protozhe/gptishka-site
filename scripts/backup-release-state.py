@@ -2,7 +2,22 @@
 """Private on-server snapshot. Never emits credentials or customer records."""
 from pathlib import Path
 from urllib.parse import urlsplit,unquote
-import os,sys,subprocess,tarfile,sqlite3,json
+import os,sys,subprocess,tarfile,sqlite3,json,re
+
+
+def archive_runtime(archive, runtime):
+    """Keep durable data strict; an already-consumed IPC request may disappear."""
+    archive.add(runtime, arcname='runtime', recursive=False)
+    for path in sorted(runtime.iterdir()):
+        try:
+            archive.add(path, arcname='runtime/' + path.name, recursive=True)
+        except FileNotFoundError as error:
+            # The worker removes these root-level request files after processing.
+            # Never swallow a missing durable file or a missing child directory.
+            if (re.fullmatch(r'telegram-request-[0-9]+-[0-9a-f-]+\.json', path.name)
+                    and error.filename == str(path)):
+                continue
+            raise
 
 app=Path(sys.argv[1]).resolve()
 runtime=Path('/var/lib/gptishka-runtime')
@@ -25,7 +40,7 @@ os.chmod(dump,0o600)
 subprocess.run(['pg_restore','--list',str(dump)],check=True,capture_output=True)
 archive=dest/'runtime-and-config.tar.gz'
 with tarfile.open(archive,'w:gz') as t:
-    t.add(runtime,arcname='runtime',recursive=True)
+    archive_runtime(t, runtime)
     for file in ['.env','apps/admin-backend/.env','apps/admin-ui/.env.production']:
         p=app/file
         if p.is_file(): t.add(p.resolve(),arcname='config/'+file,recursive=False)
