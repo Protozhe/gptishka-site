@@ -257,7 +257,7 @@ html body#storefrontBody > header.gptishka-canonical-header.header-hidden {
 /* The homepage header is the shared header on every storefront page. */
 html body#storefrontBody #storefrontHeader {
   margin-top: 0 !important;
-  background: #15191b !important;
+  background: var(--store-bg) !important;
   height: 80px !important;
   min-height: 80px !important;
   border-bottom: 1px solid #ffffff12 !important;

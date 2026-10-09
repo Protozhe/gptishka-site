@@ -265,18 +265,14 @@ html body#storefrontBody.home-wide-body :is(#pricing,#how,#faq) { scroll-margin-
 
 /* Product-focused opening copy, with plan-specific delivery details. */
 html body#storefrontBody .launch-copy h1 { font-size: clamp(36px,3.4vw,50px); line-height: 1.15; letter-spacing: -.045em; }
-.launch-benefits { display: flex; flex-wrap: wrap; gap: 10px 20px; list-style: none; margin: 20px 0 0; padding: 0; color: var(--store-text); font: 650 17px/1.5 'Manrope',sans-serif; }
-.launch-benefits li::before { content: '\2713'; color: var(--store-accent); margin-right: 8px; }
 html body#storefrontBody .launch-terms { max-width: 520px; margin: 12px 0 0; color: var(--store-muted); font: 500 16px/1.6 'Manrope',sans-serif; }
 @media (min-width: 761px) and (max-width: 1100px) {
   html body#storefrontBody .launch-copy h1 { font-size: 46px !important; }
-  .launch-benefits { justify-content: center; }
   html body#storefrontBody .launch-terms { margin-inline: auto; }
 }
 @media (max-width: 760px) {
   html body#storefrontBody .launch-copy h1 { font-size: clamp(30px,8.2vw,46px); }
   html body#storefrontBody .launch-description { font-size: 17px; }
-  .launch-benefits { flex-direction: column; gap: 8px; font-size: 16px; margin-top: 18px; }
 }
 
 /* Each tilted service card is its own native link and hit area. */
@@ -289,12 +285,11 @@ html body#storefrontBody a.launch-tile:focus-visible { outline: 3px solid var(--
 
 /* Keep the four category entrances inside the desktop opening screen. */
 @media (min-width: 1101px) {
-  html body#storefrontBody .home-wide-page .home-opening-frame.home-launch { min-height: 0 !important; gap: 20px; padding: 24px 0 28px !important; }
-  .launch-hero { flex: none; min-height: 400px; }
+  html body#storefrontBody .home-wide-page .home-opening-frame.home-launch { min-height: calc(100svh - 80px) !important; gap: 20px; padding: 24px 0 28px !important; }
+  .launch-hero { flex: 1; min-height: 400px; }
   .launch-copy { padding-block: 8px; }
   .launch-eyebrow { margin-bottom: 14px; }
   html body#storefrontBody .launch-description { margin-top: 18px; line-height: 1.55; }
-  .launch-benefits { margin-top: 14px; gap: 8px 18px; }
   html body#storefrontBody .launch-terms { margin-top: 8px; max-width: none; }
   .launch-actions { margin-top: 20px; }
   .launch-assurances { padding-block: 16px; }
@@ -307,7 +302,6 @@ html body#storefrontBody a.launch-tile:focus-visible { outline: 3px solid var(--
   html body#storefrontBody .launch-copy h1 { font-size: 36px; line-height: 1.1; }
   .launch-eyebrow { margin-bottom: 12px; }
   html body#storefrontBody .launch-description { margin-top: 14px; font-size: 17px; }
-  .launch-benefits { font-size: 16px; line-height: 1.4; margin-top: 12px; }
   html body#storefrontBody .launch-terms { font-size: 15px; line-height: 1.4; }
   .launch-actions { margin-top: 16px; }
   .launch-button { min-height: 48px; }
