@@ -14,14 +14,14 @@
     failed: 'Could not open this order. Check your protected link or contact support.',
     wrong: 'This page is only for KYC or CVP support orders.',
     paid: 'Payment confirmed.', network: 'Network error. Please check payment again.',
-    draft: name => `Hello! I paid for ${name} support. Order: ${orderId}. I need guidance for completing my own verification.`,
+    draft: name => `Hello! I paid for ${name} support. Order: ${orderId}. Please help me complete the order.`,
   } : {
     missing: 'Откройте защищённую ссылку на заказ после оплаты или обратитесь в поддержку.',
     loading: 'Проверяем оплату…', pending: 'Оплата ещё подтверждается. Страница проверит её повторно через несколько секунд.',
     failed: 'Не удалось открыть заказ. Проверьте защищённую ссылку или обратитесь в поддержку.',
     wrong: 'Эта страница доступна для заказов сопровождения KYC или CVP.',
     paid: 'Оплата подтверждена.', network: 'Ошибка сети. Проверьте оплату ещё раз.',
-    draft: name => `Здравствуйте! Оплатил сопровождение ${name}. Заказ: ${orderId}. Нужна консультация по самостоятельному прохождению проверки.`,
+    draft: name => `Здравствуйте! Оплатил сопровождение ${name}. Заказ: ${orderId}. Помогите, пожалуйста, завершить заказ.`,
   };
   let attempts = 0;
   let pending = false;

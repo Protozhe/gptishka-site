@@ -41,7 +41,7 @@
 <link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
-<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-996c0808ab01cdb3">
+<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-8a2a0ab3e60ea734">
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-0574183fef76e6b4">
 </head>
 <body id="storefrontBody" class="claude-workspace-body">
@@ -95,12 +95,12 @@
 </header>
 
 <main id="claudeWorkspace" data-claude-workspace class="page service-page service-page--constructor" data-service-page="claude" data-service-layout="constructor">
-  <a class="service-directory-back" href="/catalog/ai/" aria-label="Вернуться в каталог нейросетей">
-    <svg class="service-directory-back__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-      <path d="M17 10H3M3 10l5-5M3 10l5 5"></path>
-    </svg>
-    <span>Нейросети</span>
-  </a>
+  <nav class="claude-workspace-breadcrumbs" aria-label="Навигация по каталогу">
+    <ol>
+      <li><a href="/catalog/ai/">Нейросети</a></li>
+      <li><span class="claude-workspace-breadcrumbs__separator" aria-hidden="true">›</span><span aria-current="page">Claude</span></li>
+    </ol>
+  </nav>
 
 <div class="claude-workspace-intro">
     <div class="claude-workspace-brand"><span class="claude-workspace-mark" aria-hidden="true"></span><h1>Claude</h1></div>
@@ -239,7 +239,7 @@
         <label class="claude-verification-option"><input type="radio" name="claude-verification" value="cvp"><span><b>CVP</b></span></label>
       </fieldset>
       <div id="claudeVerificationDetails" aria-live="polite">
-        <p class="claude-verification-description">Сопровождение по KYC: объясним порядок проверки и поможем разобраться с вопросами и ошибками. Личность вы подтверждаете самостоятельно.</p>
+        <p class="claude-verification-description">Сопровождение по KYC: объясним порядок проверки и поможем разобраться. Верификацию проходим мы и проводим без входа в аккаунт.</p>
       </div>
       <button id="claudeVerificationSubmit" class="claude-verification-submit" type="button" disabled>Оформить KYC</button>
     </section>
@@ -257,7 +257,7 @@
       <label><input type="radio" name="payment" value="enot">Карта / СБП — ENOT</label>
       <label><input type="radio" name="payment" value="lava">Зарубежная карта</label>
     </fieldset>
-    <p class="verification-support-checkout__hint">Вы оплачиваете консультацию менеджера. Проверку своей личности вы проходите самостоятельно. После подтверждения оплаты появится кнопка связи с менеджером.</p>
+    <p class="verification-support-checkout__hint">Для KYC верификацию проходим мы и проводим без входа в аккаунт. После подтверждения оплаты появится кнопка связи с менеджером.</p>
     <p class="verification-support-checkout__terms">Нажимая «Оплатить», вы принимаете <a href="/oferta.html" target="_blank" rel="noopener">оферту</a> и <a href="/politika.html" target="_blank" rel="noopener">политику конфиденциальности</a>.</p>
     <p data-support-payment-status role="status" aria-live="polite"></p>
     <button class="claude-verification-submit" type="submit" data-support-pay>Оплатить</button>
@@ -284,6 +284,5 @@
 <script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer></script>
 </body>
 </html>
-
 
 

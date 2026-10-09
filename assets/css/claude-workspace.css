@@ -19,7 +19,13 @@ html body #claudeWorkspace,
 html body #claudeWorkspace * {
   font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif !important;
 }
-[data-claude-workspace] .service-directory-back { margin-bottom: 28px !important; }
+html body #claudeWorkspace .claude-workspace-breadcrumbs { margin: 0 0 32px; font-size: 17px; line-height: 1.5; }
+html body #claudeWorkspace .claude-workspace-breadcrumbs ol { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 0; padding: 0; list-style: none; }
+html body #claudeWorkspace .claude-workspace-breadcrumbs li { display: flex; align-items: center; gap: 12px; margin: 0; padding: 0; }
+html body #claudeWorkspace .claude-workspace-breadcrumbs a { display: inline-flex; align-items: center; min-height: 44px; padding: 6px 0; color: var(--store-muted, #b5bec9); text-decoration: none; }
+html body #claudeWorkspace .claude-workspace-breadcrumbs a:hover { color: var(--store-focus, #a7eee5); text-decoration: underline; text-underline-offset: 4px; }
+html body #claudeWorkspace .claude-workspace-breadcrumbs__separator { color: var(--store-muted, #b5bec9); }
+html body #claudeWorkspace .claude-workspace-breadcrumbs [aria-current="page"] { color: var(--store-text, #f3f5f7); }
 .claude-workspace-intro { margin-bottom: 28px; }
 .claude-workspace-brand { display: flex; align-items: center; gap: 14px; }
 .claude-workspace-brand h1 { margin: 0; font: 750 38px/1.1 'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif; letter-spacing: -.04em; }
@@ -85,7 +91,7 @@ html body #claudeWorkspace .codex-payment label > span img { width: 24px; height
 html body #claudeWorkspace .codex-supporting { margin-top: 24px; }
 @media (max-width: 600px) {
   html body #claudeWorkspace { width: calc(100% - 28px) !important; padding-top: 18px !important; }
-  [data-claude-workspace] .service-directory-back { margin-bottom: 18px !important; }
+  html body #claudeWorkspace .claude-workspace-breadcrumbs { margin-bottom: 24px; font-size: 16px; }
   .claude-workspace-intro { margin-bottom: 14px; }
   .claude-workspace-brand h1 { font-size: 30px; }
   .claude-workspace-mark { width: 32px; height: 32px; }
@@ -140,7 +146,6 @@ html body #claudeWorkspace .service-selected-plan .service-checkout-card__summar
 html body #claudeWorkspace .pay-now-btn::before,
 html body #claudeWorkspace .pay-now-btn::after { display: none !important; }
 @media (max-width: 600px) {
-  html body #claudeWorkspace .service-directory-back { margin-bottom: 12px !important; }
   .claude-workspace-intro > p { display: none; }
   html body #claudeWorkspace .service-constructor-head { align-items: flex-start !important; }
   html body #claudeWorkspace #serviceConstructorTitle { max-width: 180px; font-size: 18px !important; }
@@ -184,7 +189,7 @@ html body #claudeWorkspace .service-product-gallery { display:none !important; }
 .claude-account-age strong { display:block; margin-bottom:3px; color:#f1c5ad; }
 @media(max-width:600px) { .claude-verification-card { padding:20px 16px; border-radius:16px; } .claude-verification-head h2,.claude-verification-head strong { font-size:20px; } }
 
-.claude-verification-description { margin:0 0 18px; font-size:15px; line-height:1.65; color:var(--workspace-muted); }
+.claude-verification-description { margin:0 0 18px; font-size:18px; line-height:1.65; color:var(--workspace-muted); }
 #claudeVerificationDetails[hidden] { display:none !important; }
 
 
