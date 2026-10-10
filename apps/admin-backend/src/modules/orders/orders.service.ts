@@ -616,7 +616,7 @@ export const ordersService = {
       return {
         orderId: order.id, deliveryMode: "verification_support", productSlug, productTitle,
         status: "paid", supportUrl: VERIFICATION_MANAGER_URL,
-        message: "Оплата сопровождения подтверждена. Свяжитесь с менеджером и сообщите номер заказа. Клиент проходит проверку своей личности самостоятельно.",
+        message: "Оплата верификации подтверждена. Свяжитесь с менеджером и сообщите номер заказа. Клиент проходит проверку своей личности самостоятельно.",
       };
     }
 
@@ -871,7 +871,7 @@ export const ordersService = {
     const deliveryType = resolveOrderDeliveryType(orderWithItem?.orderDetails, firstItem?.product?.tags || []);
     const activationSiteUrl = readActivationSiteUrlFromOrderDetails(orderWithItem?.orderDetails);
     const productSlug = String(firstItem?.product?.slug || "").trim().toLowerCase();
-    if (isVerificationSupportProduct(productSlug)) throw new AppError("Для сопровождения свяжитесь с менеджером. Данные проверки здесь не принимаются.", 409);
+    if (isVerificationSupportProduct(productSlug)) throw new AppError("Для верификации свяжитесь с менеджером. Данные проверки здесь не принимаются.", 409);
     const isPerplexityManual = productSlug === "perplexity-pro" && deliveryType === "manual_login";
     const isMidjourneyLink = isMidjourneyProductSlug(productSlug);
     const isSunoLink = isSunoPaymentLinkOrder(productSlug, orderWithItem?.orderDetails);

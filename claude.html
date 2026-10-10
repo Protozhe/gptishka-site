@@ -104,11 +104,11 @@
 
 <div class="claude-workspace-intro">
     <div class="claude-workspace-brand"><span class="claude-workspace-mark" aria-hidden="true"></span><h1>Claude</h1></div>
-    <p>Подписки Claude и сопровождение по верификации.</p>
+    <p>Подписки Claude и верификация KYC и CVP.</p>
   </div>
   <nav class="claude-workspace-tabs" role="tablist" aria-label="Выберите раздел">
     <a id="subscriptions-tab" href="#subscriptions" role="tab" aria-controls="subscriptions" aria-selected="true">Подписки<span>Pro · Max</span></a>
-    <a id="verification-tab" href="#verification" role="tab" aria-controls="verification" aria-selected="false" tabindex="-1">Сопровождение<span>KYC · CVP</span></a>
+    <a id="verification-tab" href="#verification" role="tab" aria-controls="verification" aria-selected="false" tabindex="-1">Верификация<span>KYC · CVP</span></a>
   </nav>
   <div id="subscriptions" class="claude-workspace-panel" role="tabpanel" aria-labelledby="subscriptions-tab" tabindex="0">
   <section class="service-plans-section" id="plans">
@@ -229,17 +229,17 @@
   </div>
   <div id="verification" class="claude-workspace-panel" role="tabpanel" aria-labelledby="verification-tab" tabindex="0" hidden>
     <div class="claude-verification-intro">
-      <h2>Сопровождение по KYC и CVP</h2>
-      <p>Выберите вариант сопровождения.</p>
+      <h2>Верификация KYC и CVP</h2>
+      <p>Выберите вариант верификации.</p>
     </div>
     <section class="claude-verification-card" aria-labelledby="claudeVerificationHeading">
       <div class="claude-verification-head"><h2 id="claudeVerificationHeading">Выберите услугу</h2><strong id="claudeVerificationPrice" aria-live="polite">6 500 ₽</strong></div>
-      <fieldset class="claude-verification-options"><legend>Вариант сопровождения</legend>
+      <fieldset class="claude-verification-options"><legend>Вариант верификации</legend>
         <label class="claude-verification-option"><input type="radio" name="claude-verification" value="kyc" checked><span><b>KYC</b></span></label>
         <label class="claude-verification-option"><input type="radio" name="claude-verification" value="cvp"><span><b>CVP</b></span></label>
       </fieldset>
       <div id="claudeVerificationDetails" aria-live="polite">
-        <p class="claude-verification-description">Сопровождение по KYC: объясним порядок проверки и поможем разобраться. Верификацию проходим мы и проводим без входа в аккаунт.</p>
+        <p class="claude-verification-description">Верификация KYC: объясним порядок проверки и поможем разобраться. Верификацию проходим мы и проводим без входа в аккаунт.</p>
       </div>
       <button id="claudeVerificationSubmit" class="claude-verification-submit" type="button" disabled>Оформить KYC</button>
     </section>
@@ -247,7 +247,7 @@
 </main>
 
 <dialog id="verificationSupportCheckout" class="verification-support-checkout" aria-labelledby="supportCheckoutTitle">
-  <div class="verification-support-checkout__head"><h2 id="supportCheckoutTitle">Сопровождение <span data-support-name>KYC</span></h2><button type="button" data-support-close aria-label="Закрыть">×</button></div>
+  <div class="verification-support-checkout__head"><h2 id="supportCheckoutTitle">Верификация <span data-support-name>KYC</span></h2><button type="button" data-support-close aria-label="Закрыть">×</button></div>
   <p class="verification-support-checkout__total" data-support-price>6 500 ₽</p>
   <form id="verificationSupportCheckoutForm">
     <label for="supportEmail">Email для заказа</label><input id="supportEmail" name="email" type="email" autocomplete="email" maxlength="254" required>
