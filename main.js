@@ -3083,7 +3083,7 @@ function initActivationResumeShortcut() {
             return (
             '<article class="service-faq-item' +
             (index === 0 ? " active" : "") +
-            '"><button class="service-faq-question" type="button">' +
+            '"><button class="service-faq-question" type="button" aria-expanded="' + (index === 0 ? 'true' : 'false') + '">' +
             (topic ? '<span class="service-faq-question__topic">' + escapeHtml(topic) + '</span>' : "") +
             '<span class="service-faq-question__text">' + escapeHtml(String(item?.question || "")) + '</span>' +
             '<span class="service-faq-question__toggle"></span></button><div class="service-faq-answer">' +
@@ -5690,7 +5690,10 @@ function initActivationResumeShortcut() {
       if (faqButton) {
         event.preventDefault();
         const item = faqButton.closest(".service-faq-item");
-        if (item) item.classList.toggle("active");
+        if (item) {
+          const expanded = item.classList.toggle("active");
+          faqButton.setAttribute("aria-expanded", String(expanded));
+        }
         return;
       }
       const button = target ? target.closest("[data-service-filter-kind][data-service-filter-key]") : null;

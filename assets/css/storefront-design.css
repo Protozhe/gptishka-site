@@ -279,3 +279,26 @@ html body#storefrontBody #storefrontHeader .lang-current { background: #232a2d !
   html body#storefrontBody #storefrontHeader { height: 104px !important; min-height: 104px !important; }
   html body#storefrontBody #storefrontHeader .nav.nav-shell { align-content: center; }
 }
+
+/* Consistent, flat FAQ rows for the ChatGPT and Claude workspaces. */
+html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) .service-faq-list { display: grid !important; gap: 10px !important; margin-top: 20px !important; border: 0 !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; overflow: visible !important; }
+html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) .service-faq-item { margin: 0 !important; border: 1px solid var(--store-line) !important; border-radius: 12px !important; background: var(--store-surface) !important; box-shadow: none !important; overflow: hidden !important; }
+html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) :is(.service-faq-item,.service-faq-question,.service-faq-question__text)::before,
+html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) :is(.service-faq-item,.service-faq-question,.service-faq-question__text)::after { display: none !important; content: none !important; }
+html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) .service-faq-question { display: grid !important; grid-template-columns: minmax(0,1fr) 34px !important; align-items: center !important; gap: 16px !important; width: 100% !important; min-height: 72px !important; padding: 18px 20px !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; filter: none !important; transform: none !important; color: var(--store-text) !important; text-align: left !important; cursor: pointer; }
+html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) .service-faq-question__topic { display: none !important; }
+html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) .service-faq-question__text { display: block !important; width: auto !important; height: auto !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; filter: none !important; transform: none !important; font-size: 18px !important; line-height: 1.5 !important; }
+html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) .service-faq-question__toggle { position: relative !important; display: grid !important; place-items: center !important; width: 34px !important; height: 34px !important; padding: 0 !important; border: 1px solid #6ddace80 !important; border-radius: 8px !important; color: var(--store-accent) !important; background: transparent !important; box-shadow: none !important; transform: none !important; }
+html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) .service-faq-question__toggle::before { content: '+' !important; position: static !important; display: block !important; width: auto !important; height: auto !important; background: none !important; transform: none !important; font: 500 26px/1 'Manrope',sans-serif !important; }
+html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) .service-faq-question__toggle::after { content: none !important; display: none !important; }
+html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) .service-faq-item.active .service-faq-question__toggle::before { content: '\2212' !important; }
+html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) .service-faq-question:hover,
+html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) .service-faq-question:focus-visible { background: #2b343b !important; }
+html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) .service-faq-question:focus { outline: none !important; }
+html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) .service-faq-question:focus-visible .service-faq-question__text { text-decoration: underline; text-decoration-color: var(--store-accent); text-underline-offset: 5px; }
+html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) .service-faq-answer { display: none !important; padding: 0 20px 20px !important; max-height: none !important; height: auto !important; background: transparent !important; box-shadow: none !important; opacity: 1 !important; transform: none !important; }
+html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) .service-faq-item.active .service-faq-answer { display: block !important; }
+@media (max-width: 600px) {
+  html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) .service-faq-question { padding: 16px !important; gap: 12px !important; }
+  html body#storefrontBody :is(#chatgptWorkspace,#claudeWorkspace) .service-faq-answer { padding: 0 16px 18px !important; }
+}
