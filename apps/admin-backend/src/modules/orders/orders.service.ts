@@ -892,6 +892,7 @@ export const ordersService = {
     const reasons: string[] = [];
 
     if (!tokenInfo.raw) reasons.push("Token is required");
+    if (tokenInfo.extracted === order.id) reasons.push("Вставлен номер заказа. Скопируйте полный JSON со страницы ChatGPT /api/auth/session.");
     if (tokenInfo.raw && tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) reasons.push("Token is too long");
 
     if (isMidjourneyLink || isSunoLink || isDevinLink) {
@@ -992,6 +993,7 @@ export const ordersService = {
     if (!tokenInfo.raw) reasons.push("Token is required");
     if (tokenInfo.raw && tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) reasons.push("Token is too long");
     if (isTokenBoundToAnotherFingerprint(stored.tokenMeta, tokenMeta)) reasons.push("Order is already bound to another token");
+    if (tokenInfo.extracted === orderId) reasons.push("Вставлен номер заказа. Скопируйте полный JSON со страницы ChatGPT /api/auth/session.");
 
     if (isCodexCreditsProductKey(activationInfo?.productSlug || activationInfo?.product)) {
       const sessionError = validateAieeSessionJson(tokenInfo);
@@ -2331,6 +2333,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   let stored = await ensureActivationRecordForTokenFlow(orderId, orderToken, activationInfo, trustedAdmin);
   const tokenInfo = parseClientTokenInput(token);
   if (!tokenInfo.raw) throw new AppError("Token is required", 400);
+  if (tokenInfo.extracted === orderId) throw new AppError("Вставлен номер заказа. Скопируйте полный JSON со страницы ChatGPT /api/auth/session.", 400);
   if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
   if (isCodexCreditsProductKey(activationInfo?.productSlug || stored.productKey)) {
     const sessionError = validateAieeSessionJson(tokenInfo);
@@ -3336,12 +3339,12 @@ function callAieeJsonApi(body: string, timeoutMs: number) {
     ], { stdio: ["pipe", "pipe", "pipe"], windowsHide: true });
     let output = "";
     let settled = false;
-    const fail = (reason: string) => {
+    const fail = (reason: string, transportExitCode?: number) => {
       if (settled) return;
       settled = true;
       clearTimeout(deadline);
       child.kill("SIGKILL");
-      reject(new Error(reason));
+      reject(Object.assign(new Error(reason), { transportExitCode }));
     };
     const deadline = setTimeout(() => fail("AIEE transport deadline exceeded"), timeoutMs + 1000);
     child.stdout.setEncoding("utf8");
@@ -3355,7 +3358,7 @@ function callAieeJsonApi(body: string, timeoutMs: number) {
     child.stdin.on("error", () => fail("AIEE request stream failed"));
     child.on("close", (code) => {
       if (settled) return;
-      if (code !== 0) return fail("AIEE transport failed");
+      if (code !== 0) return fail("AIEE transport failed", typeof code === "number" ? code : undefined);
       const separator = output.lastIndexOf("\n");
       const status = Number(output.slice(separator + 1));
       if (separator < 0 || status < 100 || status > 599) return fail("AIEE invalid HTTP response");
@@ -3690,7 +3693,20 @@ async function startChongzhiJsonTask(
       tries: 1,
       immediateSuccess: false,
       message: "Сервис активации не ответил вовремя. Проверьте статус заказа через минуту.",
-      providerPayload: null,
+      providerPayload: {
+        submissionDiagnostics: {
+          phase: "submit_recharge",
+          outcome: "unconfirmed",
+          checkedAt: new Date().toISOString(),
+          transportError: error instanceof Error && [
+            "AIEE transport deadline exceeded", "AIEE response too large", "AIEE transport unavailable",
+            "AIEE request stream failed", "AIEE transport failed", "AIEE invalid HTTP response",
+          ].includes(error.message)
+            ? error.message : "Provider request failed without confirmation",
+          transportExitCode: Number.isInteger((error as any)?.transportExitCode)
+            ? Number((error as any).transportExitCode) : null,
+        },
+      },
     };
   }
 
@@ -4067,7 +4083,7 @@ function updateActivationFromChongzhiCodePayload(orderId: string, payload: { sta
     : failed
     ? "Provider check: activation failed"
     : reconcileExpired
-    ? "Provider did not accept the activation request; the key is still available. Check the provider before retrying."
+    ? "Отправка заявки не подтверждена: при проверке ключ свободен, задача у поставщика не найдена. Требуется проверка перед повторным запуском."
     : hasTask
     ? `Provider check: Chongzhi activation code is not used yet${codeStatus ? ` (${codeStatus})` : ""}`
     : `Provider check: Chongzhi activation code is not used yet${codeStatus ? ` (${codeStatus})` : ""}. Activation has not been started (task is missing)`;
@@ -4081,6 +4097,8 @@ function updateActivationFromChongzhiCodePayload(orderId: string, payload: { sta
     lastProviderMessage: providerMessage,
     lastProviderCheckedAt: nowIso,
     lastProviderPayload: {
+      ...(stored.lastProviderPayload?.submissionDiagnostics
+        ? { submissionDiagnostics: stored.lastProviderPayload.submissionDiagnostics } : {}),
       source: isAiee ? "aiee.fun/api/auth.php" : "chongzhi/status",
       providerStatus: Number(payload?.status || 0),
       code_status: codeStatus || null,

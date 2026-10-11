@@ -2874,6 +2874,8 @@
     let lastRetryAt = 0;
     let isMasked = true;
     let validateTimer = null;
+    let validationRevision = 0;
+    let validationController = null;
     let tokenValidatedOk = false;
     let lastValidateReason = '';
     const SUPPORT_ACTIVATION_FLOW_GROK = 'grok_token';
@@ -2893,6 +2895,7 @@
     let vpnOfferDismissed = false;
     let activationCompleted = false;
     let activationWaitingForKey = false;
+    let activationInFlight = false;
     let leaveGuardBypass = false;
     let leaveConfirmModalEl = null;
     let leaveConfirmProceedBtn = null;
@@ -3825,6 +3828,16 @@
       updateTokenMeta();
       scheduleValidateToken();
     });
+    tokenInput.addEventListener('change', () => {
+      updateTokenMeta();
+      scheduleValidateToken();
+    });
+    window.addEventListener('pageshow', () => {
+      if (getTokenForSubmit()) scheduleValidateToken();
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && getTokenForSubmit()) scheduleValidateToken();
+    });
 
     toggleMaskBtn.addEventListener('click', () => {
       isMasked = !isMasked;
@@ -3960,6 +3973,8 @@
         }
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
+        activationInFlight = true;
+        updateStartButtonState();
         setStatus('pending', 'Подключаем подписку. Обычно это занимает несколько минут…', true, 'process');
         startPolling();
       } catch {
@@ -4132,6 +4147,8 @@
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
         if (currentTaskId) {
+          activationInFlight = activationStatus !== 'failed';
+          updateStartButtonState();
           if (isPollPaused()) {
             setStatus('pending', 'Активация ещё выполняется. Нажмите «Проверить статус», чтобы продолжить проверку.', false, 'process');
           } else {
@@ -4230,6 +4247,8 @@
     }
 
     function startPolling() {
+      activationInFlight = true;
+      updateStartButtonState();
       stopPolling();
       setPollPaused(false);
       stopPollingBtn.style.display = 'inline-flex';
@@ -4243,7 +4262,7 @@
             const resolved = await resolveActivationSuccessFallback();
             if (resolved) return;
             setStatus('pending', 'Активация выполняется более 15 минут. ID аккаунта сохранён — проверьте статус позже или напишите в поддержку.', false, 'process');
-            retryNewKeyBtn.disabled = false;
+            retryNewKeyBtn.disabled = true;
           }
         }
       }, POLL_INTERVAL_MS);
@@ -4260,16 +4279,25 @@
     async function checkTaskStatus() {
       try {
         const suffix = orderLinkToken ? `?t=${encodeURIComponent(orderLinkToken)}` : '';
-        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/task/${encodeURIComponent(currentTaskId)}${suffix}`);
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/task/${encodeURIComponent(currentTaskId)}${suffix}`, { cache: 'no-store' });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
           const resolved = await resolveActivationSuccessFallback();
           if (resolved) return true;
+          if (response.status >= 500 || response.status === 429 || response.status === 408) {
+            activationInFlight = true;
+            updateStartButtonState();
+            retryNewKeyBtn.disabled = true;
+            setStatus('pending', 'Связь с сервисом временно прервалась. Проверяем результат; повторная активация не требуется.', true, 'process');
+            return false;
+          }
           setStatus('error', 'Не удалось проверить статус. Повторите попытку через минуту.', false);
           return true;
         }
 
         if (payload.pending) {
+          activationInFlight = true;
+          updateStartButtonState();
           if (isSupportTokenDelivery) {
             const resolved = await resolveActivationSuccessFallback();
             if (resolved) return true;
@@ -4290,13 +4318,18 @@
 
         const resolved = await resolveActivationSuccessFallback();
         if (resolved) return true;
+        activationInFlight = false;
+        updateStartButtonState();
         setStatus('error', 'Не удалось завершить активацию автоматически. Повторите попытку или напишите в поддержку.', false);
         retryNewKeyBtn.disabled = false;
         return true;
       } catch {
         const resolved = await resolveActivationSuccessFallback();
         if (resolved) return true;
-        setStatus('error', 'Ошибка сети при проверке статуса', false);
+        activationInFlight = true;
+        updateStartButtonState();
+        retryNewKeyBtn.disabled = true;
+        setStatus('pending', 'Связь с сервисом временно прервалась. Продолжаем проверять результат активации.', true, 'process');
         return false;
       }
     }
@@ -4389,7 +4422,7 @@
         return;
       }
       const hasValue = Boolean(orderId && String(tokenInput.value || '').trim());
-      startBtn.disabled = activationWaitingForKey || !hasValue || !tokenValidatedOk;
+      startBtn.disabled = activationInFlight || activationWaitingForKey || !hasValue || !tokenValidatedOk;
     }
 
     function validatePerplexitySessionInput() {
@@ -4418,6 +4451,9 @@
     }
 
     function scheduleValidateToken() {
+      validationRevision += 1;
+      if (validationController) validationController.abort();
+      if (validateTimer) clearTimeout(validateTimer);
       if (previewMode) {
         tokenValidatedOk = false;
         updateStartButtonState();
@@ -4435,6 +4471,7 @@
       }
       tokenValidatedOk = false;
       lastValidateReason = '';
+      tokenWarn.textContent = 'Проверяем и сохраняем данные…';
       updateStartButtonState();
 
       if (validateTimer) clearTimeout(validateTimer);
@@ -4444,6 +4481,8 @@
     }
 
     async function validateTokenNow() {
+      if (validateTimer) clearTimeout(validateTimer);
+      validateTimer = null;
       if (previewMode) {
         tokenValidatedOk = false;
         updateStartButtonState();
@@ -4456,6 +4495,9 @@
       }
       if (isPerplexityManualFlow) return validatePerplexitySessionInput();
       const token = getTokenForSubmit();
+      const revision = ++validationRevision;
+      if (validationController) validationController.abort();
+      const isCurrent = () => revision === validationRevision && token === getTokenForSubmit();
       if (!orderId || !token) {
         tokenValidatedOk = false;
         lastValidateReason = isSupportTokenDelivery ? 'Введите ID аккаунта' : 'Введите токен';
@@ -4465,13 +4507,18 @@
         return false;
       }
 
+      const controller = new AbortController();
+      validationController = controller;
+      const timeout = setTimeout(() => controller.abort(), 15000);
       try {
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/store-token`, {
           method: 'POST',
+          signal: controller.signal,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token, orderToken: orderLinkToken }),
         });
         const payload = await response.json().catch(() => ({}));
+        if (!isCurrent()) return false;
         if (!response.ok) {
           tokenValidatedOk = false;
           lastValidateReason = payload?.message || 'Не удалось проверить токен';
@@ -4501,12 +4548,16 @@
         updateStartButtonState();
         return ok;
       } catch {
+        if (!isCurrent()) return false;
         tokenValidatedOk = false;
-        lastValidateReason = 'Ошибка сети при проверке токена';
+        lastValidateReason = 'Не удалось сохранить данные. Проверьте интернет и вставьте JSON ещё раз.';
         tokenWarn.textContent = lastValidateReason;
         tokenWarn.className = 'warn';
         updateStartButtonState();
         return false;
+      } finally {
+        clearTimeout(timeout);
+        if (validationController === controller) validationController = null;
       }
     }
 
