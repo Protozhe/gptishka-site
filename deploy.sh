@@ -26,11 +26,6 @@ RELEASE="$RELEASES_DIR/release-$COMMIT"
 git clone --shared --no-checkout "$REPO_DIR" "$RELEASE"
 git -C "$RELEASE" checkout --detach "$COMMIT"
 
-# All checks and builds precede the switch of the live directory.
-(
-  cd "$RELEASE"
-  node scripts/verify-production-release.mjs
-)
 ACTIVE_REAL="$(readlink -f "$APP_DIR")"
 [[ -d "$ACTIVE_REAL" && "$ACTIVE_REAL" == /var/www/* ]] || exit 1
 [[ -f "$ACTIVE_REAL/apps/admin-backend/.env" && -f "$ACTIVE_REAL/.env" ]] || exit 1
@@ -75,8 +70,11 @@ if [ "$SCHEMA_CHANGED" -eq 0 ] && cmp -s "$ACTIVE_REAL/package-lock.json" "$RELE
 else
   (cd "$RELEASE" && npm ci --include=dev --prefer-offline && npm run prisma:generate --workspace @gptishka/admin-backend)
 fi
+# Verification executes TypeScript functions, so dependencies must exist first.
+# All checks and builds still precede the switch of the live directory.
 (
   cd "$RELEASE"
+  node scripts/verify-production-release.mjs
   npm run build:admin:api
   npm run build:admin:ui
 )

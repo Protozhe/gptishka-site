@@ -11,6 +11,9 @@ assert.match(workflow, /branches:\s*\n\s*- production/);
 assert.doesNotMatch(workflow, /branches:\s*\n\s*- main/);
 assert.match(workflow, /deploy:\s*\n\s*needs: verify/);
 assert.match(workflow, /npm run verify:production/);
+assert.ok(workflow.indexOf("npm ci --include=dev") >= 0
+  && workflow.indexOf("npm ci --include=dev") < workflow.indexOf("npm run verify:production"),
+  "Verification dependencies must be installed before CI checks.");
 assert.match(workflow, /DEPLOY_BRANCH=production DEPLOY_COMMIT="\$COMMIT" bash "\$SCRIPT"/);
 assert.match(workflow, /needs\.verify\.outputs\.commit/);
 assert.match(workflow, /git -C "\$REPO" show "\$COMMIT:deploy.sh"/);
@@ -21,6 +24,9 @@ assert.doesNotMatch(newsWorkflow, /git push origin HEAD:main/);
 
 const verification = deploy.indexOf("node scripts/verify-production-release.mjs");
 const liveSwitch = deploy.indexOf('mv -Tf "$APP_DIR.next" "$APP_DIR"');
+assert.ok(deploy.indexOf('ln -s "$ACTIVE_REAL/node_modules" "$RELEASE/node_modules"') < verification
+  && deploy.indexOf("npm ci --include=dev") < verification,
+  "Both dependency reuse and installation must precede TypeScript verification.");
 assert.ok(verification >= 0 && liveSwitch > verification, "Candidate checks must run before the live directory switches.");
 for (const gate of ["npm run build:admin:api", "npm run build:admin:ui", "node --test server/*.test.js", "xargs -0 node --import tsx --test", 'python3 "$RELEASE/scripts/backup-release-state.py"', "nginx -t", 'git -C "$RELEASE" diff --exit-code']) {
   assert.ok(deploy.indexOf(gate) > verification && deploy.indexOf(gate) < liveSwitch, `${gate} must precede publication`);
