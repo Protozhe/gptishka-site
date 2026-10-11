@@ -2367,6 +2367,11 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   if (latestBeforeStart.status === "processing" || latestBeforeStart.verificationState === "pending") {
     return { taskId: String(latestBeforeStart.taskId || `reconcile-${orderId}`), reused: true };
   }
+  // A rejected retry must preserve the previous provider task and diagnostics.
+  const attempts = Math.max(0, Number(latestBeforeStart.attempts || 0));
+  if (attempts >= MAX_ACTIVATION_START_ATTEMPTS) {
+    throw new AppError("Activation attempts limit reached. Contact support.", 429);
+  }
   activationStore.upsert({
     ...latestBeforeStart,
     ...storagePatch,
@@ -2426,11 +2431,6 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     // Idempotent behavior for repeated clicks with the same token.
     return { taskId: String(stored.taskId || ""), reused: true };
   }
-  const attempts = Math.max(0, Number(stored.attempts || 0));
-  if (attempts >= MAX_ACTIVATION_START_ATTEMPTS) {
-    throw new AppError("Activation attempts limit reached. Contact support.", 429);
-  }
-
   let createResult = await startOutstockTaskWithRetry({
     cdk: stored.cdk,
     deviceId,
