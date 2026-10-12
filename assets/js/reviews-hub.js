@@ -11,7 +11,6 @@
   var elements = {
     total: document.getElementById("reviewsTotal"),
     rating: document.getElementById("reviewsRating"),
-    sources: document.getElementById("reviewsSources"),
     filters: document.getElementById("reviewsFilters"),
     grid: document.getElementById("reviewsGrid"),
     empty: document.getElementById("reviewsEmpty"),
@@ -23,12 +22,6 @@
     if (className) node.className = className;
     if (typeof text === "string") node.textContent = text;
     return node;
-  }
-
-  function setExternalLink(link, url) {
-    link.href = url;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
   }
 
   function formatNumber(value) {
@@ -43,28 +36,6 @@
     return new Intl.DateTimeFormat("ru-RU", options).format(date);
   }
 
-  function sourceStatus(source) {
-    if (source.status === "ok") return "Источник доступен";
-    if (source.status === "stale") return "Показана сохранённая копия";
-    if (source.status === "feed-not-public") return "Ожидает публичную ленту";
-    if (source.status === "awaiting-bot-messages") return "Бот подключён, ожидает новые отзывы";
-    return "Источник временно недоступен";
-  }
-
-  function sourceMeta(source) {
-    if (source.type === "telegram") {
-      return source.visibleItems
-        ? formatNumber(source.visibleItems) + " публичных публикаций"
-        : "Канал подключён к системе";
-    }
-    var total = Number(source.total || 0);
-    var rating = Number(source.rating || 0);
-    return [
-      total ? formatNumber(total) + " отзывов" : "",
-      rating ? rating.toFixed(1) + " из 5" : "",
-    ].filter(Boolean).join(" · ") || "Публичный профиль";
-  }
-
   function renderStats(data) {
     elements.total.textContent = "2000+";
     var rated = data.sources.filter(function (source) {
@@ -77,39 +48,6 @@
       return sum + Number(source.rating) * Number(source.total || source.visibleItems || 0);
     }, 0);
     elements.rating.textContent = totalWeight ? (weightedRating / totalWeight).toFixed(1) + " из 5" : "—";
-  }
-
-  function renderSources(data) {
-    elements.sources.replaceChildren();
-    data.sources.filter(function (source) {
-      return !source.hidden;
-    }).forEach(function (source) {
-      var card = create("a", "reviews-source reviews-source--" + source.type);
-      if (source.status !== "ok") card.classList.add("is-waiting");
-      setExternalLink(card, source.url);
-
-      var icon = create("span", "reviews-source__icon");
-      icon.setAttribute("aria-hidden", "true");
-      var iconImage = create("img", "reviews-source__logo");
-      iconImage.src = source.type === "telegram"
-        ? "/assets/img/telegram.png"
-        : source.type === "playerok"
-          ? "https://playerok.com/favicon.ico"
-          : "https://funpay.com/favicon.ico";
-      iconImage.alt = "";
-      iconImage.loading = "lazy";
-      iconImage.decoding = "async";
-      iconImage.referrerPolicy = "no-referrer";
-      icon.append(iconImage);
-      var copy = create("span", "reviews-source__copy");
-      copy.append(
-        create("strong", "reviews-source__name", source.label),
-        create("span", "reviews-source__meta", sourceMeta(source)),
-        create("span", "reviews-source__status", sourceStatus(source))
-      );
-      card.append(icon, copy);
-      elements.sources.append(card);
-    });
   }
 
   function renderFilters(data) {
@@ -133,10 +71,7 @@
   }
 
   function isSitePresentedReview(item) {
-    if (item.sourceType === "site" || item.sourceType === "playerok") return true;
-    var sourceLabel = String(item.sourceLabel || "").trim();
-    var author = String(item.author || "").trim();
-    return Boolean(item.sourceHidden) && sourceLabel === "Покупатель" && author === "Покупатель";
+    return item.sourceType === "site";
   }
 
   function reviewNickname(item) {
@@ -145,12 +80,12 @@
     if (explicitNickname) return explicitNickname;
 
     var author = String(item.author || "").trim();
-    return author || "Покупатель";
+    return author.replace(/\s*funpay/gi, "").trim() || "Покупатель";
   }
 
   function reviewSourceLabel(item) {
     if (isSitePresentedReview(item)) return "Отзыв на сайте";
-    return item.sourceLabel || "Открытый источник";
+    return "Отзыв покупателя";
   }
 
   function reviewDateLabel(item) {
@@ -177,12 +112,6 @@
     if (item.detail) meta.append(create("span", "review-card__purchase", item.detail));
     meta.append(create("span", "review-card__date", reviewDateLabel(item)));
     footer.append(meta);
-    if (item.url && !item.sourceHidden && item.sourceType !== "playerok") {
-      var link = create("a", "review-card__link", "Источник ↗");
-      link.setAttribute("aria-label", "Открыть исходный отзыв");
-      setExternalLink(link, item.url);
-      footer.append(link);
-    }
     card.append(top, text, footer);
     return card;
   }
@@ -247,7 +176,6 @@
   }
 
   function showError() {
-    elements.sources.replaceChildren();
     elements.filters.replaceChildren();
     elements.grid.replaceChildren();
     elements.grid.hidden = true;
@@ -279,7 +207,6 @@
       }
       state.data = data;
       renderStats(data);
-      renderSources(data);
       renderFilters(data);
       renderReviews(data);
     })

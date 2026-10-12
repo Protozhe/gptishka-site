@@ -16,20 +16,21 @@ const data = JSON.parse(read(path.join("scripts", "fixtures", "public-reviews.js
 
 assert.match(html, /<body\b[^>]*class="[^"]*\breviews-hub-body\b[^"]*"[^>]*>/);
 assert.match(html, /href="\/app\/" aria-current="page">Отзывы<\/a>/);
-assert.match(html, /id="reviewsSources"/);
+assert.doesNotMatch(html, /reviewsSources|reviewsTrustTitle|Источники отзывов|Хотите проверить или оставить отзыв|funpay/i);
 assert.match(html, /отзывов на всех площадках/);
 assert.doesNotMatch(html, /отзывов в источниках/);
 assert.doesNotMatch(html, /последняя проверка/);
 assert.doesNotMatch(html, /id="reviewsUpdated"/);
 assert.match(client, /elements\.total\.textContent = "2000\+"/);
-assert.match(client, /item\.sourceType !== "playerok"/);
+assert.doesNotMatch(client, /review-card__link|renderSources|elements\.sources/);
 assert.doesNotMatch(client, /function prepareReviewDates/);
 assert.match(client, /item\.dateLabel \|\| "Дата не указана площадкой"/);
 assert.match(client, /function rankReviews/);
-assert.match(client, /item\.sourceType === "site" \|\| item\.sourceType === "playerok"/);
+assert.match(client, /function isSitePresentedReview\(item\) \{\s*return item\.sourceType === "site";\s*\}/);
+assert.match(client, /return "Отзыв покупателя"/);
 assert.match(client, /if \(isSitePresentedReview\(item\)\) return "Отзыв на сайте"/);
 assert.doesNotMatch(client, /return "Отзыв оставлен на сайте"/);
-assert.match(html, /reviews-hub\.js\?v=20260918-source-dates1/);
+assert.match(html, /reviews-hub\.js\?v=sha256-[a-f0-9]{16}/);
 assert.match(refresh, /sourceLabel: "Отзыв покупателя",[\s\S]{0,100}sourceHidden: true/);
 assert.match(refresh, /rating: Number\(node\?\.rating\) \|\| 5,[\s\S]{0,100}url: ""/);
 assert.match(server, /fetchedAt: payload\.fetchedAt/);
@@ -39,14 +40,13 @@ assert.match(server, /IS_PRODUCTION[\s\S]*?\/var\/lib\/gptishka-runtime\/public-
 assert.match(refresh, /IS_PRODUCTION[\s\S]*?\/var\/lib\/gptishka-runtime\/public-reviews\.json/);
 assert.match(html, /id="reviewsGrid"/);
 assert.match(html, /assets\/js\/reviews-hub\.js/);
-assert.ok(html.indexOf('class="reviews-feed"') < html.indexOf('class="reviews-sources"'));
-assert.ok(html.indexOf('class="reviews-sources"') < html.indexOf('class="reviews-hero reviews-hero--summary"'));
+assert.ok(html.indexOf('class="reviews-feed"') < html.indexOf('class="reviews-hero reviews-hero--summary"'));
 assert.doesNotMatch(html, /Отзывы без редактирования/);
 assert.match(css, /grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(280px,\s*1fr\)\)/);
 assert.match(css, /@media \(max-width: 760px\)/);
 assert.match(client, /textContent\s*=/);
 assert.match(client, /fetch\("\/api\/public\/reviews/);
-assert.match(client, /Бот подключён, ожидает новые отзывы/);
+assert.doesNotMatch(client, /Источник ↗|https:\/\/funpay\.com/);
 assert.doesNotMatch(client, /\.innerHTML\s*=/);
 assert.match(server, /app\.get\("\/api\/public\/reviews"/);
 assert.match(server, /app\.post\("\/api\/reviews\/telegram\/webhook"/);
@@ -115,6 +115,46 @@ assert.strictEqual(new Set(data.items.map(item => item.id)).size, data.items.len
 assert.doesNotMatch(JSON.stringify(data), /Adelka999/);
 assert.doesNotMatch(JSON.stringify(data), /Отзывы GPTishka/);
 assert.doesNotMatch(read(path.join("server", "telegram-reviews-store.js")), /Отзывы GPTishka/);
+
+// Render without the removed source container, then exercise pagination.
+const vm = require("vm");
+function reviewNode(tag) {
+  return {
+    tag, children: [], dataset: {}, events: {}, hidden: false,
+    classList: { add() {} },
+    append(...nodes) { this.children.push(...nodes); },
+    replaceChildren(...nodes) { this.children = nodes; },
+    setAttribute() {},
+    addEventListener(event, handler) { this.events[event] = handler; },
+  };
+}
+const reviewElements = Object.fromEntries(
+  ["reviewsTotal", "reviewsRating", "reviewsFilters", "reviewsGrid", "reviewsEmpty", "reviewsMore", "reviewsFeedTitle"]
+    .map(id => [id, reviewNode("div")])
+);
+vm.runInNewContext(client, {
+  document: {
+    getElementById: id => reviewElements[id] || null,
+    createElement: reviewNode,
+  },
+  Intl, Date, console,
+  fetch() {
+    let value = { ok: true, json: () => data };
+    return {
+      then(callback) { value = callback(value); return this; },
+      catch() { return this; },
+    };
+  },
+});
+const renderedCards = reviewElements.reviewsGrid.children;
+assert.strictEqual(renderedCards.length, 12);
+assert.strictEqual(reviewElements.reviewsGrid.hidden, false);
+for (const card of renderedCards) {
+  assert.ok(["Отзыв покупателя", "Отзыв на сайте"].includes(card.children[0].children[0].textContent));
+  assert.ok(card.children[2].children.every(node => node.tag !== "a"));
+}
+reviewElements.reviewsMore.events.click();
+assert.strictEqual(reviewElements.reviewsGrid.children.length, 24);
 
 console.log(
   `[reviews-check] ${data.items.length} visible reviews, ${data.totalReviews} total, ` +
