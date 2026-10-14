@@ -1,6 +1,8 @@
 import { assertAssetReference } from "./release-assets.mjs";
 import fs from "node:fs";
 import path from "node:path";
+import vm from "node:vm";
+import assert from "node:assert/strict";
 
 const read = (file) => fs.readFileSync(file, "utf8");
 const failures = [];
@@ -47,10 +49,44 @@ expect(onboardingCss.includes("service-info-section--claude"), "legacy Claude in
 expect(onboardingCss.includes("+ .service-faq-section"), "ChatGPT FAQ spacing can regress after the hidden information block");
 expect(app.includes('const selectedTitle = getServiceConstructorPlanTitle(selectedItem, serviceKey, selectedPlan);'), "ChatGPT constructor title does not use the selected product");
 expect(app.includes('serviceConstructorTitleEl.textContent = selectedTitle || "ChatGPT";'), "ChatGPT constructor title falls back incorrectly");
-expect(app.includes("function isChatGptPro20RenewalItem(item)"), "Pro 20x renewal confirmation is missing");
-expect(app.includes('data-pro20-renewal-confirm-continue'), "Pro 20x renewal confirmation cannot be accepted");
-expect(app.includes('form.dataset.pro20RenewalConfirmed !== "1"'), "Pro 20x payment is not gated by confirmation");
-expect(onboardingCss.includes(".pro20-renewal-confirm"), "Pro 20x renewal confirmation styling is missing");
+expect(!/pro20Renewal|Pro20Renewal|pro20-renewal/.test(app), "Retired Pro 20x warning or checkout gate returned");
+expect(!onboardingCss.includes(".pro20-renewal-confirm"), "Retired Pro 20x overlay styling returned");
+const submitSource = app.slice(app.indexOf("  async function submitChatGptGoOrder(form) {"), app.indexOf("  function renderChatGptGoOrderCard(item, serviceKey) {"));
+for (const planKey of ["go", "plus", "pro-5x", "pro-20x"]) {
+  for (const needsNewAccount of [false, true]) {
+    for (const valid of [false, true]) {
+      let checkoutCalls = 0;
+      const item = { productId: "fixture-" + planKey, serviceKey: "chatgpt", planKey };
+      const order = { serviceKey: "chatgpt", planKey, needsNewAccount, contactEmail: "fixture@example.com", paymentMethod: "pally", promoCode: "" };
+      const context = vm.createContext({
+        chatGptGoOrderCheckoutInProgress: false,
+        getCardItem: () => item,
+        validateChatGptGoOrder: () => valid,
+        setChatGptGoStatus() {},
+        getChatGptGoOrderField: () => null,
+        normalizePromoCodeInput: value => value,
+        collectChatGptGoOrder: () => order,
+        saveChatGptGoOrderDraft() {},
+        window: {}, localStorage: { setItem() {} },
+        normalizeAiServiceKey: value => value,
+        headerCartEmailInputEl: null, cartEmailInputEl: null,
+        getChatGptGoPaymentProvider: value => value,
+        savePaymentMethod() {}, syncPaymentMethodUi() {}, setChatGptGoSubmitBusy() {},
+        buildChatGptGoCheckoutDetails: () => ({ order }),
+        async startBackendCheckout(selected, quantity, promo, provider, details) {
+          assert.equal(selected, item);
+          assert.equal(quantity, 1);
+          assert.equal(provider, "pally");
+          assert.equal(details.order.needsNewAccount, needsNewAccount);
+          checkoutCalls += 1;
+        },
+      });
+      vm.runInContext(submitSource, context);
+      await context.submitChatGptGoOrder({ dataset: {}, querySelector: () => null });
+      assert.equal(checkoutCalls, valid ? 1 : 0, `${planKey}, new account=${needsNewAccount}, valid=${valid}`);
+    }
+  }
+}
 expect(fs.existsSync("codex-credits.html"), "Russian Codex Credits page is missing");
 expect(fs.existsSync("en/codex-credits.html"), "English Codex Credits page is missing");
 expect(fs.existsSync("assets/css/codex-credits.css"), "Codex Credits base stylesheet is missing");
