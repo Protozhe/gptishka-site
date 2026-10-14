@@ -39,7 +39,13 @@ assert url.scheme in ['postgresql','postgres'] and url.hostname in ['localhost',
 env=os.environ.copy()
 env.update(PGHOST=url.hostname,PGPORT=str(url.port or 5432),PGUSER=unquote(url.username or ''),PGPASSWORD=unquote(url.password or ''),PGDATABASE=url.path.lstrip('/'))
 dump=dest/'database.dump'
-subprocess.run(['pg_dump','--format=custom','--file',str(dump)],env=env,check=True,capture_output=True)
+try:
+    subprocess.run(['pg_dump','--format=custom','--file',str(dump)],env=env,check=True,capture_output=True)
+except subprocess.CalledProcessError as error:
+    diagnostic=dest/'database-error.log'
+    diagnostic.write_bytes(error.stderr or b'pg_dump returned an error without diagnostics')
+    os.chmod(diagnostic,0o600)
+    raise RuntimeError('Database backup failed; private diagnostic saved at '+str(diagnostic)) from None
 os.chmod(dump,0o600)
 subprocess.run(['pg_restore','--list',str(dump)],check=True,capture_output=True)
 archive=dest/'runtime-and-config.tar.gz'
