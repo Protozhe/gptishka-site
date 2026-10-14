@@ -4,6 +4,7 @@ import { prisma } from "./config/prisma";
 import { vpnService } from "./services/vpn.service";
 import { accountNotificationsService } from "./modules/account/account-notifications.service";
 import { activationStatusScheduler } from "./modules/orders/activation-status.scheduler";
+import { startManagerNotificationScheduler } from "./modules/notifications/notifications.service";
 
 async function bootstrap() {
   await prisma.$connect();
@@ -21,6 +22,7 @@ async function bootstrap() {
   }
   accountNotificationsService.startScheduler();
   activationStatusScheduler.start();
+  startManagerNotificationScheduler();
   const app = createApp();
   const bindHost = String(env.HOST || "127.0.0.1").trim() || "127.0.0.1";
   await new Promise<void>((resolve, reject) => {

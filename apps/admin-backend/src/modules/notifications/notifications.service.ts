@@ -1,6 +1,18 @@
 import nodemailer from "nodemailer";
+import path from "node:path";
+import { ProxyAgent, fetch as telegramFetch } from "undici";
 import { env } from "../../config/env";
+import { prisma } from "../../config/prisma";
 import { buildOrderActivationRecoveryLink } from "../orders/activation-recovery.service";
+import { ManagerNotificationsOutbox } from "./manager-notifications.outbox";
+
+const telegramDispatcher = env.TELEGRAM_PROXY_URL ? new ProxyAgent(env.TELEGRAM_PROXY_URL) : undefined;
+const managerOutbox = new ManagerNotificationsOutbox(path.join(
+  process.env.GPTISHKA_RUNTIME_DIR || (env.NODE_ENV === "production" ? "/var/lib/gptishka-runtime" : path.resolve(process.cwd(), "data")),
+  "manager-notifications.json"
+));
+let managerRetryTimer: NodeJS.Timeout | null = null;
+let managerRetryRunning = false;
 
 function getTransporter() {
   if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASSWORD) {
@@ -277,11 +289,12 @@ async function callAdminTelegramApi(method: string, payload: Record<string, unkn
 
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     try {
-      const response = await fetch(url, {
+      const response = await telegramFetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body,
         signal: AbortSignal.timeout(10_000),
+        ...(telegramDispatcher ? {dispatcher: telegramDispatcher} : {}),
       });
       const responseBody = await response.text();
       let responsePayload: any = null;
@@ -328,18 +341,54 @@ export async function sendOrderPaidManagerNotification(payload: {
   amount: number;
   currency: string;
 }) {
-  const recovery = await buildOrderActivationRecoveryLink(payload.orderId);
-  return sendTelegramNotification(
+  await managerOutbox.enqueue(payload.orderId);
+  return managerOutbox.deliver(payload.orderId, deliverPaidManagerNotification);
+}
+
+async function deliverPaidManagerNotification(orderId: string) {
+  const order = await prisma.order.findUnique({
+    where: {id: orderId},
+    select: {id: true, email: true, totalAmount: true, currency: true, status: true,
+      paymentMethod: true, payments: {select: {status: true, provider: true}}},
+  });
+  // A queued event must never announce an unpaid, refunded or stub order.
+  if (!order || order.status !== "PAID" || order.paymentMethod === "stub"
+    || !order.payments.some(payment => payment.status === "SUCCESS" && payment.provider !== "stub")) return null;
+  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) throw new Error("Manager Telegram is not configured");
+  const recovery = await buildOrderActivationRecoveryLink(orderId);
+  const messageId = await sendTelegramNotification(
     [
       "Оплата подтверждена",
-      `Заказ: ${payload.orderId}`,
-      `Клиент: ${payload.email}`,
-      `Сумма: ${Number(payload.amount).toLocaleString("ru-RU")} ${payload.currency}`,
+      `Заказ: ${order.id}`,
+      `Клиент: ${order.email}`,
+      `Сумма: ${Number(order.totalAmount).toLocaleString("ru-RU")} ${order.currency}`,
       "",
       "Резервная ссылка активации для клиента:",
       recovery.activationUrl,
     ].join("\n")
   );
+  if (!messageId) throw new Error("Telegram did not confirm delivery");
+  return messageId;
+}
+
+export async function retryPendingManagerNotifications() {
+  if (managerRetryRunning) return;
+  managerRetryRunning = true;
+  try {
+    for (const orderId of managerOutbox.dueIds()) {
+      await managerOutbox.deliver(orderId, deliverPaidManagerNotification);
+    }
+  } finally { managerRetryRunning = false; }
+}
+
+export function startManagerNotificationScheduler() {
+  if (managerRetryTimer) return;
+  const retry = () => void retryPendingManagerNotifications().catch(() => {
+    console.error("[manager-notifications] outbox retry failed; pending entries remain on disk");
+  });
+  setTimeout(retry, 5000).unref();
+  managerRetryTimer = setInterval(retry, 30_000);
+  managerRetryTimer.unref();
 }
 
 export async function answerTelegramCallbackQuery(callbackQueryId: string, text: string) {
