@@ -9,6 +9,10 @@ def archive_runtime(archive, runtime):
     """Keep durable data strict; an already-consumed IPC request may disappear."""
     archive.add(runtime, arcname='runtime', recursive=False)
     for path in sorted(runtime.iterdir()):
+        # Queue locks and atomic-write staging files are not durable state.
+        # Restoring a lock would resurrect a pid from the previous process.
+        if re.fullmatch(r'manager-notifications\.json(?:\.lock|\.[0-9]+\.[0-9a-f-]+\.tmp)', path.name):
+            continue
         try:
             archive.add(path, arcname='runtime/' + path.name, recursive=True)
         except FileNotFoundError as error:

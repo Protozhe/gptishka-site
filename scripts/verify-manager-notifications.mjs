@@ -46,4 +46,6 @@ assert.match(observed, /fixture-order/);
 assert.match(fs.readFileSync("apps/admin-backend/src/main.ts", "utf8"), /startManagerNotificationScheduler\(\)/);
 const tests = spawnSync(process.execPath, ["--import", "tsx", "--test", "apps/admin-backend/src/modules/notifications/manager-notifications.outbox.test.ts"], {stdio: "inherit"});
 assert.equal(tests.status, 0, "Persistent notification retry checks must pass");
+const backup = spawnSync(process.platform === "win32" ? "python" : "python3", ["scripts/verify-manager-notification-backup.py"], {stdio: "inherit"});
+assert.equal(backup.status, 0, "Backups must include durable queue state and omit only transient files");
 console.log("Manager notifications use their proxy, validate paid orders and persist retries across restarts.");
