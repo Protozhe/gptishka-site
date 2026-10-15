@@ -6,6 +6,7 @@ module.exports = {
       cwd: "/var/www/gptishka-new",
       env: {
         NODE_ENV: "production",
+        TELEGRAM_REVIEWS_PROXY_URL: process.env.TELEGRAM_REVIEWS_PROXY_URL || "http://127.0.0.1:18082",
         PORT: 4000,
         HOST: "127.0.0.1",
         BIND_HOST: "127.0.0.1",

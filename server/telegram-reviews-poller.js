@@ -1,5 +1,7 @@
 "use strict";
 
+const { ProxyAgent } = require("undici");
+
 const POLL_TIMEOUT_SECONDS = 25;
 const RETRY_DELAY_MS = 3000;
 
@@ -12,6 +14,9 @@ function createTelegramReviewsPoller(options = {}) {
   const handleUpdate = options.handleUpdate;
   const fetchImpl = options.fetchImpl || global.fetch;
   const logger = options.logger || console;
+  const proxyUrl = String(options.proxyUrl ?? process.env.TELEGRAM_REVIEWS_PROXY_URL ?? process.env.TELEGRAM_PROXY_URL ?? "").trim();
+  let dispatcher;
+  let connected = false;
   let stopped = false;
   let activeController = null;
   let offset = 0;
@@ -19,6 +24,8 @@ function createTelegramReviewsPoller(options = {}) {
   if (!token) throw new Error("Telegram reviews bot token is required");
   if (typeof handleUpdate !== "function") throw new Error("Telegram reviews update handler is required");
   if (typeof fetchImpl !== "function") throw new Error("Fetch implementation is required");
+
+  if (proxyUrl) dispatcher = new ProxyAgent(proxyUrl);
 
   async function call(method, body) {
     activeController = new AbortController();
@@ -28,6 +35,7 @@ function createTelegramReviewsPoller(options = {}) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body || {}),
         signal: activeController.signal,
+        ...(dispatcher ? { dispatcher } : {}),
       });
       const payload = await response.json();
       if (!response.ok || payload?.ok !== true) {
@@ -55,6 +63,10 @@ function createTelegramReviewsPoller(options = {}) {
           timeout: POLL_TIMEOUT_SECONDS,
           allowed_updates: ["message", "edited_message", "channel_post", "edited_channel_post"],
         });
+        if (!connected) {
+          connected = true;
+          logger.info?.("[telegram-reviews] Polling connected");
+        }
         for (const update of Array.isArray(updates) ? updates : []) {
           if (stopped) break;
           await handleUpdate(update);
@@ -73,6 +85,7 @@ function createTelegramReviewsPoller(options = {}) {
     stop() {
       stopped = true;
       activeController?.abort();
+      dispatcher?.destroy().catch(() => {});
     },
   };
 }
