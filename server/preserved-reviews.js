@@ -5,7 +5,7 @@ function mergePreservedReviews(current, preserved) {
   const byId = new Map();
   // Saved copies win: future refreshes must not rewrite the fixed review text.
   for (const item of [...preserved.items, ...(current.items || [])]) {
-    if (item?.id && item.text && !byId.has(item.id)) byId.set(item.id, item);
+    if (item?.id && !byId.has(item.id)) byId.set(item.id, item);
   }
   const sources = new Map((current.sources || []).map(source => [source.id, source]));
   for (const source of preserved.sources || []) {

@@ -15,4 +15,5 @@ assert.equal(result.sources.length, 2);
 assert.deepEqual(mergePreservedReviews(result, saved), result);
 assert.deepEqual(mergePreservedReviews({ items: [], sources: [] }, saved).items, saved.items);
 assert.equal(mergePreservedReviews(current, {}), current);
+assert.deepEqual(mergePreservedReviews({ items: [] }, { items: [{ id: "rating-only", text: "", rating: 5 }] }).items, [{ id: "rating-only", text: "", rating: 5 }]);
 console.log("Preserved reviews survive source loss and refresh, without duplicate IDs or invented ratings.");
