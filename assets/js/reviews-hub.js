@@ -104,6 +104,7 @@
     stars.setAttribute("aria-hidden", "true");
     rating.append(stars, create("strong", "review-card__score", ratingValue + " из 5"));
     top.append(create("span", "review-card__source", reviewSourceLabel(item)), rating);
+    if (item.sourceType === "customer" && !Number(item.rating)) rating.hidden = true;
 
     var text = create("p", "review-card__text", item.text || "Оценка без комментария");
     var footer = create("div", "review-card__footer");

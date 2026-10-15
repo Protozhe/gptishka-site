@@ -109,6 +109,10 @@ const NOINDEX_PUBLIC_PATHS = new Set([
 ]);
 
 const dataDir = path.join(__dirname, "data");
+const { mergePreservedReviews } = require("./server/preserved-reviews");
+const PRESERVED_REVIEWS_PATH = IS_PRODUCTION
+  ? "/var/lib/gptishka-runtime/preserved-reviews.json"
+  : path.join(dataDir, "preserved-reviews.json");
 const dbPath = path.join(dataDir, "stats.sqlite");
 const PUBLIC_NEWS_CACHE_PATH = path.join(dataDir, "public-news.json");
 const PUBLIC_REVIEWS_CACHE_PATH = String(
@@ -2330,7 +2334,13 @@ function createApp() {
         "Cache-Control",
         "no-store, no-cache, must-revalidate"
       );
-      return res.json(mergedPayload);
+      let preserved = {};
+      try {
+        preserved = JSON.parse(await fs.promises.readFile(PRESERVED_REVIEWS_PATH, "utf8"));
+      } catch (error) {
+        if (error.code !== "ENOENT") throw error;
+      }
+      return res.json(mergePreservedReviews(mergedPayload, preserved));
     } catch (error) {
       logError("Public reviews request failed", error);
       return res.status(503).json({
