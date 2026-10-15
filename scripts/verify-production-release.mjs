@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 
 const checks = [
+  "scripts/verify-aiee-proxy.mjs",
   "scripts/verify-review-product-labels.cjs",
   "scripts/verify-preserved-reviews.cjs",
   "scripts/verify-manager-notifications.mjs",

@@ -3328,6 +3328,7 @@ function callAieeJsonApi(body: string, timeoutMs: number) {
   return new Promise<{ status: number; raw: string; json: any }>((resolve, reject) => {
     const child = spawn("curl", [
       "--disable", "--silent", "--show-error", "--http1.1",
+      ...(env.AIEE_PROXY_URL ? ["--proxy", env.AIEE_PROXY_URL, "--noproxy", ""] : []),
       "--connect-timeout", "10", "--max-time", String(timeoutMs / 1000),
       "--proto", "=https",
       "-H", "Content-Type: application/json",
