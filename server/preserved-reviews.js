@@ -1,4 +1,5 @@
 "use strict";
+const { reviewProductLabel } = require("./review-product-labels");
 
 function mergePreservedReviews(current, preserved) {
   if (!Array.isArray(preserved?.items) || !preserved.items.length) return current;
@@ -15,7 +16,7 @@ function mergePreservedReviews(current, preserved) {
   return {
     ...current,
     sources: [...sources.values()],
-    items: [...byId.values()],
+    items: [...byId.values()].map(item => ({ ...item, ...(item.detail ? { detail: reviewProductLabel(item.detail) } : {}) })),
     totalReviews: Number(current.totalReviews || 0) + additions,
   };
 }

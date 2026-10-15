@@ -1,0 +1,14 @@
+const assert = require("node:assert/strict");
+const { reviewProductLabel: label } = require("../server/review-product-labels");
+assert.equal(label("🧠 CODEX POINTS 💎 250 КРЕДИТОВ"), "Codex — 250 кредитов");
+assert.equal(label("CODEX POINTS 500 КРЕДИТОВ/КРЕДИТЫ"), "Codex — 500 кредитов");
+assert.equal(label("Верификация аккаунта Claude"), "Верификация Claude");
+assert.equal(label("Claude KYC verification"), "Верификация Claude — KYC");
+assert.equal(label("ChatGPT, 2000 ₽"), "Подписка ChatGPT");
+assert.equal(label("ChatGPT, 20000 ₽"), "Подписка ChatGPT");
+assert.equal(label("ChatGPT, 200 ₽"), "Подписка ChatGPT");
+assert.equal(label("ChatGPT Plus - 1 месяц"), "ChatGPT Plus — 1 месяц");
+assert.equal(label("ChatGPT Pro 20x"), "ChatGPT Pro 20x");
+assert.equal(label("Цифровая подписка"), "Цифровая подписка");
+assert.equal(label("Отзыв из Telegram"), "Отзыв из Telegram");
+console.log("Review product names use explicit source evidence; prices never imply plans.");

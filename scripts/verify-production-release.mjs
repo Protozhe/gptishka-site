@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 
 const checks = [
+  "scripts/verify-review-product-labels.cjs",
   "scripts/verify-preserved-reviews.cjs",
   "scripts/verify-manager-notifications.mjs",
   "scripts/verify-activation-start-limit.mjs",

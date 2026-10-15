@@ -227,16 +227,9 @@ function resolveApolloReference(state, value) {
   return value.__ref ? state[value.__ref] : value;
 }
 
+const { reviewProductLabel } = require("../server/review-product-labels");
 function playerokProductLabel(value) {
-  const productName = plainText(value).toLowerCase();
-  if (/чатгпт|chatgpt|cgpt/.test(productName) && /плюс|plus/.test(productName)) {
-    return "ChatGPT Plus — 1 месяц";
-  }
-  if (/чатгпт|chatgpt|cgpt/.test(productName) && /(?:^|\s|\\)го(?:\s|$)|\bgo\b/.test(productName)) {
-    return "ChatGPT Go — 1 месяц";
-  }
-  if (/супергрок|supergrok/.test(productName)) return "SuperGrok — 1 месяц";
-  return "Цифровая подписка";
+  return reviewProductLabel(plainText(value));
 }
 
 function parsePlayerokRenderedProfile(html, source) {
