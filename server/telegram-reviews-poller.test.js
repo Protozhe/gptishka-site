@@ -55,3 +55,25 @@ test("Direct polling remains available when the proxy is explicitly disabled", a
   await poller.run();
   assert.deepEqual(methods, ["deleteWebhook", "getUpdates"]);
 });
+
+test("Disabled polling makes no API calls and requires no bot credentials", async () => {
+  for (const configuration of [{ enabled: false }, {}]) {
+    const previous = process.env.TELEGRAM_REVIEWS_POLLING_ENABLED;
+    process.env.TELEGRAM_REVIEWS_POLLING_ENABLED = "false";
+    try {
+      const messages = [];
+      const poller = createTelegramReviewsPoller({
+        ...configuration,
+        proxyUrl: "invalid-proxy",
+        fetchImpl: () => { throw new Error("Disabled polling must never fetch"); },
+        logger: { info: message => messages.push(message) },
+      });
+      await poller.run();
+      poller.stop();
+      assert.deepEqual(messages, ["[telegram-reviews] Polling disabled by configuration"]);
+    } finally {
+      if (previous === undefined) delete process.env.TELEGRAM_REVIEWS_POLLING_ENABLED;
+      else process.env.TELEGRAM_REVIEWS_POLLING_ENABLED = previous;
+    }
+  }
+});

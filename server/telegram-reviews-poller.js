@@ -17,6 +17,13 @@ function createTelegramReviewsPoller(options = {}) {
   const proxyUrl = String(options.proxyUrl ?? process.env.TELEGRAM_REVIEWS_PROXY_URL ?? process.env.TELEGRAM_PROXY_URL ?? "").trim();
   let dispatcher;
   let connected = false;
+  const enabled = options.enabled ?? String(process.env.TELEGRAM_REVIEWS_POLLING_ENABLED ?? "true").trim().toLowerCase() !== "false";
+  if (!enabled) {
+    return {
+      async run() { logger.info?.("[telegram-reviews] Polling disabled by configuration"); },
+      stop() {},
+    };
+  }
   let stopped = false;
   let activeController = null;
   let offset = 0;
