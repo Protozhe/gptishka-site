@@ -152,16 +152,33 @@
     return score;
   }
 
-  function rankReviews(items) {
-    return items.slice().sort(function (a, b) {
+  function compareReviewDates(a, b) {
+    var aTime = Date.parse(a.displayDate || a.date || "");
+    var bTime = Date.parse(b.displayDate || b.date || "");
+    aTime = Number.isFinite(aTime) ? aTime : -Infinity;
+    bTime = Number.isFinite(bTime) ? bTime : -Infinity;
+    return aTime === bTime ? 0 : aTime > bTime ? -1 : 1;
+  }
+
+  function featuredReviewCount() {
+    var columns = getComputedStyle(elements.grid).gridTemplateColumns.split(/\s+/).filter(Boolean).length;
+    return Math.max(1, columns) * 2;
+  }
+
+  function rankReviews(items, featuredCount) {
+    var best = items.slice().sort(function (a, b) {
       var scoreDifference = reviewQualityScore(b) - reviewQualityScore(a);
       if (scoreDifference) return scoreDifference;
-      return (Date.parse(b.displayDate || b.date || "") || 0) - (Date.parse(a.displayDate || a.date || "") || 0);
+      return compareReviewDates(a, b);
     });
+    var featured = best.slice(0, featuredCount);
+    var featuredIds = new Set(featured.map(function (item) { return item.id; }));
+    var remaining = items.filter(function (item) { return !featuredIds.has(item.id); }).sort(compareReviewDates);
+    return featured.concat(remaining);
   }
 
   function renderReviews(data) {
-    var items = rankReviews(filteredItems(data));
+    var items = rankReviews(filteredItems(data), featuredReviewCount());
     elements.filters.hidden = true;
     var title = document.getElementById("reviewsFeedTitle");
     if (title) title.textContent = "Что пишут покупатели";
@@ -190,6 +207,15 @@
   elements.more.addEventListener("click", function () {
     state.visible += PAGE_SIZE;
     renderReviews(state.data);
+  });
+
+  var previousFeaturedCount = 0;
+  window.addEventListener("resize", function () {
+    var count = featuredReviewCount();
+    if (state.data && count !== previousFeaturedCount) {
+      previousFeaturedCount = count;
+      renderReviews(state.data);
+    }
   });
 
   var eightHourBucket = Math.floor(Date.now() / (8 * 60 * 60 * 1000));

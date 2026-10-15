@@ -133,6 +133,8 @@ const reviewElements = Object.fromEntries(
     .map(id => [id, reviewNode("div")])
 );
 vm.runInNewContext(client, {
+  getComputedStyle: () => ({ gridTemplateColumns: "300px 300px 300px" }),
+  window: { addEventListener() {} },
   document: {
     getElementById: id => reviewElements[id] || null,
     createElement: reviewNode,
@@ -155,6 +157,23 @@ for (const card of renderedCards) {
 }
 reviewElements.reviewsMore.events.click();
 assert.strictEqual(reviewElements.reviewsGrid.children.length, 24);
+
+const ranking = vm.createContext({});
+vm.runInContext(client.slice(client.indexOf("  function reviewQualityScore(item)"), client.indexOf("  function renderReviews(data)")), ranking);
+const rankingFixture = Array.from({ length: 12 }, (_, index) => ({
+  id: String(index), rating: 5, sourceHidden: true,
+  text: index < 6 ? "Не первый раз покупаю подписку. Всё быстро, понятно и безопасно. Рекомендую, вернусь снова." : "Хорошо",
+  date: new Date(Date.UTC(2026, 9, index + 1)).toISOString(),
+}));
+const originalOrder = rankingFixture.map(item => item.id);
+for (const count of [2, 4, 6]) {
+  const ranked = ranking.rankReviews(rankingFixture, count);
+  assert.ok(ranked.slice(0, count).every(item => Number(item.id) < 6));
+  const rest = ranked.slice(count);
+  assert.ok(rest.every((item, index) => !index || Date.parse(rest[index - 1].date) >= Date.parse(item.date)));
+  assert.strictEqual(new Set(ranked.map(item => item.id)).size, rankingFixture.length);
+}
+assert.deepEqual(rankingFixture.map(item => item.id), originalOrder);
 
 console.log(
   `[reviews-check] ${data.items.length} visible reviews, ${data.totalReviews} total, ` +
