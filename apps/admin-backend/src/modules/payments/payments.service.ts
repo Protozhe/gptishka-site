@@ -384,7 +384,7 @@ export const paymentsService = {
       orderData: pallyOrderData,
       metadata: {
         productId: product.id,
-        ...(["claude-kyc-support", "claude-cvp-support"].includes(product.slug) ? { verificationSupport: true, language: rawOrderDetails?.language === "en" ? "en" : "ru" } : {}),
+        ...(["claude-kyc-support", "claude-cvp-support", "claude-kyc", "claude-cvp"].includes(product.slug) ? { verificationSupport: true, language: rawOrderDetails?.language === "en" ? "en" : "ru" } : {}),
         planId: product.id,
         quantity: input.quantity,
         email: input.email,

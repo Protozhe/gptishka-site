@@ -16,7 +16,7 @@
     .then(response => { if (!response.ok) throw new Error(); return response.json(); })
     .then(data => {
       for (const name of ['kyc', 'cvp']) {
-        const product = data.items?.find(item => item.slug === `claude-${name}-support`);
+        const product = data.items?.find(item => item.slug === `claude-${name}-support`) || data.items?.find(item => item.slug === `claude-${name}`);
         if (!product || product.currency !== 'RUB' || !(Number(product.price) > 0)) continue;
         products.set(name, product);
         workspace.dataset[name + 'Available'] = 'true';

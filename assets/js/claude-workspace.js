@@ -84,7 +84,7 @@
       tabs.find(tab => tab.getAttribute('aria-selected') === 'true').focus({ preventScroll: true });
     }
   }
-  const prices = { kyc: 6500, cvp: 11500 };
+  const prices = { kyc: 4000, cvp: 11500 };
   workspace.querySelectorAll('[name="claude-verification"]').forEach(input => {
     input.addEventListener('change', () => {
       const amount = Number(workspace.dataset[input.value + 'Price'] || prices[input.value]);

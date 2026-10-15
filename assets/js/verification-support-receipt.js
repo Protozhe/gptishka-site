@@ -46,11 +46,11 @@
         if (response.status === 409 && attempts < 12) timer = setTimeout(loadOrder, 4000);
         return;
       }
-      if (data.deliveryMode !== 'verification_support' || !['claude-kyc-support', 'claude-cvp-support'].includes(data.productSlug) || data.status !== 'paid') {
+      if (data.deliveryMode !== 'verification_support' || !['claude-kyc-support', 'claude-cvp-support', 'claude-kyc', 'claude-cvp'].includes(data.productSlug) || data.status !== 'paid') {
         status.textContent = copy.wrong;
         return;
       }
-      const name = data.productSlug === 'claude-kyc-support' ? 'KYC' : 'CVP';
+      const name = ['claude-kyc-support', 'claude-kyc'].includes(data.productSlug) ? 'KYC' : 'CVP';
       const url = new URL('https://t.me/gptishkasupport');
       url.searchParams.set('text', copy.draft(name));
       contact.href = url.href;

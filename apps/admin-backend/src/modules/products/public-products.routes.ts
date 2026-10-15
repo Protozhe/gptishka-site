@@ -22,7 +22,7 @@ publicProductsRouter.get(
 // Checkout-only consultation products never become subscription or catalog cards.
 publicProductsRouter.get("/verification-support-products", asyncHandler(async (_req, res) => {
   const items = await prisma.product.findMany({
-    where: { slug: { in: ["claude-kyc-support", "claude-cvp-support"] }, isActive: true, isArchived: false },
+    where: { slug: { in: ["claude-kyc-support", "claude-cvp-support", "claude-kyc", "claude-cvp"] }, isActive: true, isArchived: false },
     select: { id: true, slug: true, price: true, currency: true },
   });
   res.setHeader("Cache-Control", "no-store");

@@ -251,7 +251,7 @@ publicPaymentsRouter.post(
     }
 
     const publicOrigin = resolvePublicOrigin(req) || `${req.protocol}://${req.get("host")}`;
-    const activationPath = ["claude-kyc-support", "claude-cvp-support"].includes(String(created.productSlug || ""))
+    const activationPath = ["claude-kyc-support", "claude-cvp-support", "claude-kyc", "claude-cvp"].includes(String(created.productSlug || ""))
       ? "/verification-support.html"
       : Boolean(orderDetails && typeof orderDetails === "object" && !Array.isArray(orderDetails) &&
       (orderDetails as Record<string, any>).selection?.needsNewAccount === true &&
