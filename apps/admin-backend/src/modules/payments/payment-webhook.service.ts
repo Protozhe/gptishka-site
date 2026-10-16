@@ -5,6 +5,7 @@ import { AppError } from "../../common/errors/app-error";
 import { sendOrderPaidEmail, sendOrderPaidManagerNotification } from "../notifications/notifications.service";
 import { deliverProduct } from "../orders/delivery.service";
 import { env } from "../../config/env";
+import { verifyPallyPaidBill } from "./pally-verification";
 import { resolveLavaCredentials } from "./lava.credentials";
 import { syncWebsiteCustomerToSheet } from "../customers/customer-sheet.service";
 
@@ -167,7 +168,7 @@ export const paymentWebhookService = {
       }
 
       const expectedAmount = Number(order.totalAmount);
-      if (Math.abs(reportedAmount - expectedAmount) > 0.01) {
+      if (targetPayment.provider !== "pally" && Math.abs(reportedAmount - expectedAmount) > 0.01) {
         throw new AppError("Webhook amount mismatch", 409);
       }
 
@@ -185,6 +186,7 @@ export const paymentWebhookService = {
         paymentRef: paymentRef || String(targetPayment.providerRef || ""),
         orderId: order.id,
         expectedAmount,
+        reportedAmount,
         expectedCurrency: String(order.currency).toUpperCase(),
         botType: order.botType,
       });
@@ -354,6 +356,7 @@ async function verifyGatewayInvoice(input: {
 }
 
 async function verifyPaymentWithProvider(input: {
+  reportedAmount?: number;
   provider: string;
   paymentRef: string;
   orderId: string;
@@ -371,39 +374,8 @@ async function verifyPaymentWithProvider(input: {
     return;
   }
   if (provider === "pally") {
-    await verifyPallyBill(input);
+    await verifyPallyPaidBill(input);
     return;
-  }
-}
-
-async function verifyPallyBill(input: {
-  paymentRef: string;
-  orderId: string;
-  expectedAmount: number;
-  expectedCurrency: string;
-}) {
-  if (!env.PALLY_API_TOKEN || !input.paymentRef) {
-    throw new AppError("Pally verification is not configured", 503);
-  }
-  const url = new URL("/api/v1/bill/status", env.PALLY_API_BASE_URL);
-  url.searchParams.set("id", input.paymentRef);
-  const response = await fetch(url.toString(), {
-    headers: { Accept: "application/json", Authorization: `Bearer ${env.PALLY_API_TOKEN}` },
-    signal: AbortSignal.timeout(10000),
-  });
-  if (!response.ok) throw new AppError("Pally verification failed", 409);
-  const bill = (await response.json()) as {
-    success?: boolean;
-    id?: string;
-    order_id?: string;
-    status?: string;
-    amount?: number | string;
-    currency_in?: string;
-  };
-  if (!bill.success || bill.id !== input.paymentRef || bill.order_id !== input.orderId ||
-      bill.status !== "SUCCESS" || parseAmount(bill.amount) !== input.expectedAmount ||
-      String(bill.currency_in || "").toUpperCase() !== input.expectedCurrency) {
-    throw new AppError("Pally bill does not match the order", 409);
   }
 }
 

@@ -11,6 +11,7 @@ import {
 import { paymentsService } from "../payments/payments.service";
 import { env } from "../../config/env";
 import { paymentWebhookService } from "../payments/payment-webhook.service";
+import { verifyPallyPaidBill } from "../payments/pally-verification";
 import { resolveLavaCredentials } from "../payments/lava.credentials";
 import { activationStore, type ActivationRecord } from "./activation.store";
 import { deliverProduct } from "./delivery.service";
@@ -2001,6 +2002,20 @@ async function tryReconcilePendingOrderPayment(orderId: string, cachedOrder?: Re
   if (!providerRef) return;
 
   try {
+    if (providerCode === "pally") {
+      const price = await prisma.order.findUnique({ where: { id: order.id }, select: { totalAmount: true, currency: true } });
+      if (!price) return;
+      const status = await verifyPallyPaidBill({
+        paymentRef: providerRef, orderId: order.id,
+        expectedAmount: Number(price.totalAmount), expectedCurrency: price.currency,
+      });
+      await paymentWebhookService.handle({
+        paymentId: providerRef, orderId: order.id, status: status.status,
+        amount: status.amount, currency: status.currency,
+      });
+      return;
+    }
+
     if (providerCode === "lava") {
       const status = await probeLavaInvoiceStatus(order.id, providerRef, order.botType);
       if (!status) {
