@@ -7,7 +7,7 @@
 <link rel="preload" href="/assets/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/css/site-fonts.css?v=20260930-first-paint1">
 
-  <script src="/assets/js/analytics-init.js?v=20260813-yandex-attribution1" defer></script>
+  <script src="/assets/js/analytics-init.js?v=20261016-private-links1" defer></script>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Оплата обрабатывается - GPTишка</title>
@@ -521,7 +521,9 @@
   <script>
     const params = new URLSearchParams(window.location.search);
     const orderId = String(params.get("order_id") || params.get("orderId") || "").trim();
-    const linkToken = String(params.get("t") || "").trim();
+    const linkToken = String(params.get("t") || "").trim() || (() => {
+      try { return localStorage.getItem(`gptishka_activation_order_token:${orderId}`) || ""; } catch (_) { return ""; }
+    })();
     const previewMode = String(params.get("preview") || "").trim().toLowerCase() === "paid";
     const previewServiceKey = normalizeServiceKey(params.get("service"));
     const LAST_PAID_ORDER_KEY = "gptishka_last_paid_order_id";
@@ -600,7 +602,7 @@
 
     async function requestStatus(id) {
       try {
-        const response = await fetch(`/api/orders/${encodeURIComponent(id)}/reconcile`, { cache: "no-store" });
+        const response = await fetch(`/api/orders/${encodeURIComponent(id)}/reconcile?t=${encodeURIComponent(linkToken)}`, { cache: "no-store" });
         if (!response.ok) return false;
         const payload = await response.json();
 

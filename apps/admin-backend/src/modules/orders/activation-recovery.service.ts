@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { OrderStatus } from "@prisma/client";
 import { AppError } from "../../common/errors/app-error";
 import { createActivationRecoveryToken } from "../../common/security/activation-recovery-token";
@@ -25,7 +26,7 @@ function resolveSiteOrigin() {
 
 export async function buildOrderActivationRecoveryLink(
   orderId: string,
-  options?: { actor?: RecoveryLinkActor; audit?: boolean }
+  options?: { actor?: RecoveryLinkActor; audit?: boolean; rotate?: boolean }
 ) {
   const id = String(orderId || "").trim();
   const order = await prisma.order.findUnique({
@@ -44,10 +45,17 @@ export async function buildOrderActivationRecoveryLink(
     throw new AppError("Activation link is available only for paid orders", 409);
   }
 
-  const redeemTokenHash = String(order.redeemTokenHash || "").trim();
-  const recoveryToken = redeemTokenHash
-    ? createActivationRecoveryToken(order.id, redeemTokenHash)
-    : "";
+  let redeemTokenHash = String(order.redeemTokenHash || "").trim();
+  if (!redeemTokenHash || options?.rotate) {
+    const next = crypto.randomBytes(32).toString("hex");
+    const updated = await prisma.order.updateMany({
+      where: { id: order.id, redeemTokenHash: order.redeemTokenHash },
+      data: { redeemTokenHash: next },
+    });
+    if (updated.count !== 1) throw new AppError("Order link changed. Please request it again", 409);
+    redeemTokenHash = next;
+  }
+  const recoveryToken = createActivationRecoveryToken(order.id, redeemTokenHash);
   const firstItem = order.items[0];
   const deliveryType = resolveOrderDeliveryType(order.orderDetails, firstItem?.product?.tags || []);
   const path = deliveryType === "vpn" ? "/store/vpn/activate" : "/redeem-start.html";
@@ -60,7 +68,7 @@ export async function buildOrderActivationRecoveryLink(
       userId: options.actor?.userId,
       entityType: "order",
       entityId: order.id,
-      action: "activation_recovery_link_view",
+      action: options?.rotate ? "activation_links_revoked" : "activation_recovery_link_view",
       after: { deliveryType, revealed: true },
       ip: options.actor?.ip,
       userAgent: options.actor?.userAgent,

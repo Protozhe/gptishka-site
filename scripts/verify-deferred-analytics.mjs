@@ -88,7 +88,7 @@ const pages = tracked.filter(file => fs.readFileSync(file, "utf8").includes("/as
 assert.ok(pages.length >= 48, `Expected at least 48 analytics pages, found ${pages.length}.`);
 for (const file of pages) {
   assert.ok(
-    fs.readFileSync(file, "utf8").includes("/assets/js/analytics-init.js?v=20260813-yandex-attribution1"),
+    fs.readFileSync(file, "utf8").includes("/assets/js/analytics-init.js?v=20261016-private-links1"),
     `${path.relative(root, file)} has a stale analytics cache version.`,
   );
 }

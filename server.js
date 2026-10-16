@@ -1131,6 +1131,13 @@ function createApp() {
     })
   );
   app.use(express.json({ limit: "256kb" }));
+  app.use((req, res, next) => {
+    if (/^\/api\/(?:public\/)?orders(?:\/|$)/.test(req.path)) {
+      res.setHeader("Cache-Control", "no-store");
+      res.setHeader("Referrer-Policy", "no-referrer");
+    }
+    next();
+  });
   app.get("/favicon.ico", (_req, res) => {
     if (!faviconPath) {
       return res.status(404).end();
@@ -1857,7 +1864,7 @@ function createApp() {
   app.get("/api/orders/:orderId", async (req, res) => {
     try {
       const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
-      const { response, body } = await fetchAdminText(req, `/api/orders/${orderId}`, {
+      const { response, body } = await fetchAdminText(req, `/api/orders/${orderId}${extractQuerySuffix(req)}`, {
         method: "GET",
         timeoutMs: 12000,
         retryStatuses: [404, 502, 503, 504],
@@ -1874,7 +1881,7 @@ function createApp() {
   app.get("/api/orders/:orderId/reconcile", async (req, res) => {
     try {
       const orderId = encodeURIComponent(String(req.params.orderId || "").trim());
-      const { response, body } = await fetchAdminText(req, `/api/orders/${orderId}/reconcile`, {
+      const { response, body } = await fetchAdminText(req, `/api/orders/${orderId}/reconcile${extractQuerySuffix(req)}`, {
         method: "GET",
         timeoutMs: 12000,
         retryStatuses: [404, 502, 503, 504],
@@ -2647,7 +2654,7 @@ function createApp() {
   });
 
   app.use((error, req, res, _next) => {
-    logError(`Unhandled error on ${req.method} ${req.originalUrl}`, error);
+    logError(`Unhandled error on ${req.method} ${String(req.path || "").split("?")[0]}`, new Error("Request failed"));
 
     if (req.path.startsWith("/api/")) {
       return res.status(500).json({ error: "Internal server error" });

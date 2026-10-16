@@ -57,12 +57,12 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getPublicOrderStatus = asyncHandler(async (req: Request, res: Response) => {
-  const data = await ordersService.getPublicStatus(String(req.params.orderId || ""));
+  const data = await ordersService.getPublicStatus(String(req.params.orderId || ""), String(req.query.t || ""));
   res.json(data);
 });
 
 export const reconcilePublicOrderStatus = asyncHandler(async (req: Request, res: Response) => {
-  const data = await ordersService.reconcilePublicStatus(String(req.params.orderId || ""));
+  const data = await ordersService.reconcilePublicStatus(String(req.params.orderId || ""), String(req.query.t || ""));
   res.json(data);
 });
 
@@ -131,6 +131,11 @@ export const getOrderActivationLink = asyncHandler(async (req: Request, res: Res
   const data = await buildOrderActivationRecoveryLink(orderId, { actor: actor(req), audit: true });
   res.setHeader("Cache-Control", "no-store");
   res.json(data);
+});
+
+export const revokeOrderActivationLink = asyncHandler(async (req: Request, res: Response) => {
+  res.setHeader("Cache-Control", "no-store");
+  res.json(await buildOrderActivationRecoveryLink(String(req.params.id || ""), { actor: actor(req), audit: true, rotate: true }));
 });
 
 export const manuallyCompleteOrderActivation = asyncHandler(async (req: Request, res: Response) => {

@@ -128,6 +128,13 @@
 
   persistAttribution();
 
+  // Never load third-party scripts where they could read private links or account data.
+  var privateLocation = window.location || location;
+  var privatePage = /(?:redeem-start|success|new-account|bundle-activation|midjourney-link|suno-link|devin-link|verification-support-receipt)\.html$/i.test(String(privateLocation.pathname || ""));
+  try { privatePage = privatePage || new URL(privateLocation.href).searchParams.has("t"); } catch (_) {}
+  if (privatePage) return;
+
+
   function hasScript(srcPrefix) {
     var scripts = document.scripts || [];
     for (var i = 0; i < scripts.length; i += 1) {
@@ -153,8 +160,8 @@
     webvisor: true,
     clickmap: true,
     ecommerce: "dataLayer",
-    referrer: document.referrer,
-    url: location.href,
+    referrer: cleanUrl(document.referrer, 1000),
+    url: cleanUrl(location.href, 1000),
     accurateTrackBounce: true,
     trackLinks: true
   });

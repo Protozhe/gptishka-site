@@ -8,7 +8,7 @@ import { env } from "../../config/env";
 import { deliverProduct, hasTrustedPaidPayment } from "../orders/delivery.service";
 import { ordersService } from "../orders/orders.service";
 import { resolveVpnProvisionPayload, toVpnMePayload, vpnService } from "../../services/vpn.service";
-import { isActivationRecoveryTokenValid } from "../../common/security/activation-recovery-token";
+import { assertOrderLinkAccess } from "../../common/security/order-link-access";
 
 function assertOrderId(orderId: string) {
   const value = String(orderId || "").trim();
@@ -37,21 +37,11 @@ async function resolveVpnAccessByOrder(orderId: string, orderToken?: string) {
   let order = await loadOrder();
   if (!order) throw new AppError("Order not found", 404);
 
-  const expectedTokenHash = String(order.redeemTokenHash || "").trim();
-  if (expectedTokenHash) {
-    const provided = String(orderToken || "").trim();
-    if (!provided) throw new AppError("Activation link token is required", 401);
-    const providedHash = crypto.createHash("sha256").update(provided).digest("hex");
-    const originalTokenMatches = providedHash === expectedTokenHash;
-    const recoveryTokenMatches = isActivationRecoveryTokenValid(order.id, expectedTokenHash, provided);
-    if (!originalTokenMatches && !recoveryTokenMatches) {
-      throw new AppError("Invalid activation link token", 403);
-    }
-  }
+  assertOrderLinkAccess(order, orderToken);
 
   if (order.status !== OrderStatus.PAID) {
     if (order.status === OrderStatus.PENDING) {
-      await ordersService.reconcilePublicStatus(order.id);
+      await ordersService.reconcilePublicStatus(order.id, orderToken);
       order = await loadOrder();
     }
     if (!order || order.status !== OrderStatus.PAID) {

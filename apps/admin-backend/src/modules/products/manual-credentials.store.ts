@@ -36,7 +36,7 @@ const manualCredentialsFile = path.join(dataDir, "manual-credentials.json");
 function ensureFiles() {
   fs.mkdirSync(dataDir, { recursive: true });
   if (!fs.existsSync(manualCredentialsFile)) {
-    fs.writeFileSync(manualCredentialsFile, JSON.stringify({ items: [] }, null, 2), "utf8");
+    fs.writeFileSync(manualCredentialsFile, JSON.stringify({ items: [] }, null, 2), { encoding: "utf8", mode: 0o600 });
   }
 }
 
@@ -54,7 +54,8 @@ function readStore(): ManualCredentialsStoreData {
 
 function writeStore(data: ManualCredentialsStoreData) {
   ensureFiles();
-  fs.writeFileSync(manualCredentialsFile, JSON.stringify(data, null, 2), "utf8");
+  if (fs.existsSync(manualCredentialsFile)) fs.chmodSync(manualCredentialsFile, 0o600);
+  fs.writeFileSync(manualCredentialsFile, JSON.stringify(data, null, 2), { encoding: "utf8", mode: 0o600 });
 }
 
 function normalizeProductId(value: string) {

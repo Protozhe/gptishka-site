@@ -66,8 +66,9 @@ let cachedMtimeMs: number | null = null;
 function ensureFiles() {
   fs.mkdirSync(dataDir, { recursive: true });
   if (!fs.existsSync(activationFile)) {
-    fs.writeFileSync(activationFile, JSON.stringify({ items: [] }, null, 2), "utf8");
+    fs.writeFileSync(activationFile, JSON.stringify({ items: [] }, null, 2), { encoding: "utf8", mode: 0o600 });
   }
+  fs.chmodSync(activationFile, 0o600);
 }
 
 function readJson<T>(file: string, fallback: T): T {
@@ -80,7 +81,8 @@ function readJson<T>(file: string, fallback: T): T {
 }
 
 function writeJson(file: string, data: unknown) {
-  fs.writeFileSync(file, JSON.stringify(data, null, 2), "utf8");
+  if (fs.existsSync(file)) fs.chmodSync(file, 0o600);
+  fs.writeFileSync(file, JSON.stringify(data, null, 2), { encoding: "utf8", mode: 0o600 });
 }
 
 function readStore(): ActivationStoreData {

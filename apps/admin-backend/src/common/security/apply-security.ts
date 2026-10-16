@@ -24,5 +24,7 @@ export function applySecurity(app: Express) {
     })
   );
   app.use(cookieParser());
-  app.use(morgan(env.NODE_ENV === "production" ? "combined" : "dev"));
+  // Never log query strings or Referer: both can contain order access tokens.
+  morgan.token("private-path", (req) => String(req.url || "").split("?")[0]);
+  app.use(morgan(':remote-addr :method :private-path :status :res[content-length] - :response-time ms'));
 }

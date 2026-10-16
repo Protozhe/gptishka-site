@@ -31,8 +31,13 @@ publicOrdersRouter.get("/activation-reviews", activationReadRateLimit, listPubli
 publicOrdersRouter.post("/create-order", checkoutCreateRateLimit, validateBody(createPublicOrderSchema), createOrder);
 publicOrdersRouter.post("/orders/create", checkoutCreateRateLimit, validateBody(createPublicOrderSchema), createOrder);
 publicOrdersRouter.post("/checkout", checkoutCreateRateLimit, validateBody(createPublicOrderSchema), createOrder);
-publicOrdersRouter.get("/orders/:orderId", getPublicOrderStatus);
-publicOrdersRouter.get("/orders/:orderId/reconcile", reconcilePublicOrderStatus);
+publicOrdersRouter.use("/orders", (_req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Referrer-Policy", "no-referrer");
+  next();
+});
+publicOrdersRouter.get("/orders/:orderId", activationReadRateLimit, getPublicOrderStatus);
+publicOrdersRouter.get("/orders/:orderId/reconcile", activationReadRateLimit, reconcilePublicOrderStatus);
 publicOrdersRouter.get("/orders/:orderId/activation", activationReadRateLimit, getOrderActivation);
 publicOrdersRouter.post("/orders/:orderId/activation/store-token", activationWriteRateLimit, storeOrderActivationClientToken);
 publicOrdersRouter.post("/orders/:orderId/activation/validate-token", activationValidateRateLimit, validateOrderActivationToken);

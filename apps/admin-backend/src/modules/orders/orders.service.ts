@@ -35,7 +35,7 @@ import { isMidjourneyProductSlug, validateMidjourneyPaymentLink } from "./midjou
 import { isSunoPaymentLinkOrder, validateSunoPaymentLink } from "./suno-payment-link";
 import { isDevinProductSlug, validateDevinPaymentLink } from "./devin-payment-link";
 import { isVerificationSupportProduct, VERIFICATION_MANAGER_URL } from "./verification-support";
-import { isActivationRecoveryTokenValid } from "../../common/security/activation-recovery-token";
+import { assertOrderLinkAccess } from "../../common/security/order-link-access";
 
 const MAX_CLIENT_TOKEN_LENGTH = 500_000;
 const MAX_ACTIVATION_START_ATTEMPTS = 3;
@@ -481,7 +481,7 @@ export const ordersService = {
     return order;
   },
 
-  async getPublicStatus(id: string) {
+  async getPublicStatus(id: string, orderToken?: string, trustedAdmin = false) {
     assertOrderId(id);
     const order = await prisma.order.findUnique({
       where: { id },
@@ -494,6 +494,8 @@ export const ordersService = {
       },
     });
     if (!order) throw new AppError("Order not found", 404);
+
+    if (!trustedAdmin) assertOrderLinkAccess(order, orderToken);
 
     const firstItem = order.items[0];
     const planId = firstItem?.product?.id || firstItem?.productId || null;
@@ -562,7 +564,8 @@ export const ordersService = {
     };
   },
 
-  async reconcilePublicStatus(id: string) {
+  async reconcilePublicStatus(id: string, orderToken?: string, trustedAdmin = false) {
+    if (!trustedAdmin) await assertOrderTokenAccess(id, orderToken);
     assertOrderId(id);
     const order = await prisma.order.findUnique({
       where: { id },
@@ -580,7 +583,7 @@ export const ordersService = {
     if (!order) throw new AppError("Order not found", 404);
     await tryReconcilePendingOrderPayment(id, order);
 
-    return this.getPublicStatus(id);
+    return this.getPublicStatus(id, orderToken, trustedAdmin);
   },
 
   async getActivation(orderId: string, orderToken?: string, trustedAdmin = false) {
@@ -652,7 +655,7 @@ export const ordersService = {
             login: assigned.login,
             password: assigned.password,
           },
-          supportUrl: DEFAULT_SUPPORT_URL,
+          supportUrl: "https://t.me/gptishkasupport",
           supportEmail,
           message: "Данные для входа доступны ниже.",
         };
@@ -662,7 +665,7 @@ export const ordersService = {
         orderId: order.id,
         deliveryMode: "credentials",
         status: "pending_manual",
-        supportUrl: DEFAULT_SUPPORT_URL,
+        supportUrl: "https://t.me/gptishkasupport",
         supportEmail,
         message:
           "Свободные данные для входа сейчас отсутствуют. Напишите в поддержку или ожидайте письмо с данными на email.",
@@ -682,7 +685,7 @@ export const ordersService = {
         tokenStored: perplexityTokenStored,
         productSlug,
         productTitle,
-        supportUrl: DEFAULT_SUPPORT_URL,
+        supportUrl: "https://t.me/gptishkasupport",
         supportEmail,
         message: needsNewAccount
           ? "Оплата подтверждена. Для нового аккаунта свяжитесь с менеджером и сообщите номер заказа. Токен и данные старого аккаунта не нужны."
@@ -711,7 +714,7 @@ export const ordersService = {
 
     const activation = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
     if (!activation) {
-      await this.reconcilePublicStatus(orderId);
+      await this.reconcilePublicStatus(orderId, orderToken, trustedAdmin);
     }
 
     let current = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
@@ -1942,17 +1945,7 @@ async function assertOrderTokenAccess(orderId: string, orderToken?: string) {
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) throw new AppError("Order not found", 404);
 
-  const expected = String(order.redeemTokenHash || "").trim();
-  if (expected) {
-    const provided = String(orderToken || "").trim();
-    if (!provided) throw new AppError("Activation link token is required", 401);
-    const providedHash = crypto.createHash("sha256").update(provided).digest("hex");
-    const originalTokenMatches = providedHash === expected;
-    const recoveryTokenMatches = isActivationRecoveryTokenValid(order.id, expected, provided);
-    if (!originalTokenMatches && !recoveryTokenMatches) {
-      throw new AppError("Invalid activation link token", 403);
-    }
-  }
+  assertOrderLinkAccess(order, orderToken);
 
   return order;
 }

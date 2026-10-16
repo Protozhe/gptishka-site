@@ -5,7 +5,7 @@ import { adminDisableVpnAccess, adminExtendVpnAccess, exportVpnCsv, getVpnAccess
 export const vpnPublicRouter = Router();
 export const vpnAdminRouter = Router();
 
-vpnPublicRouter.get("/vpn/me", getVpnMe);
+vpnPublicRouter.get("/vpn/me", (_req, res, next) => { res.setHeader("Cache-Control", "no-store"); next(); }, getVpnMe);
 vpnPublicRouter.get("/vpn/servers", listVpnServers);
 
 vpnAdminRouter.use(requireAuth);

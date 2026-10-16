@@ -317,6 +317,15 @@ export default function OrdersPage() {
     },
   });
 
+  const revokeActivationLink = useMutation({
+    mutationFn: async (id: string) => (await api.post(`/orders/${id}/activation-link/revoke`)).data,
+    onSuccess: (data: any) => {
+      setActivationLinkDialog({ orderId: String(data.orderId), activationUrl: String(data.activationUrl), deliveryType: String(data.deliveryType) });
+      setCheckMessage("Предыдущие ссылки отозваны. Передайте клиенту новую ссылку на 7 дней.");
+    },
+    onError: (error: unknown) => setCheckMessage(getCheckErrorMessage(error)),
+  });
+
   const readManualLoginCredentials = useMutation({
     mutationFn: async (id: string) => (await api.get(`/orders/${id}/manual-login-credentials`)).data,
     onMutate: (id: string) => setCheckMessage(`Открываем защищённые данные заказа ${id}...`),
@@ -793,7 +802,7 @@ export default function OrdersPage() {
               </button>
             </div>
             <p className="mb-3 text-xs text-slate-500">
-              Это защищённая ссылка на заказ клиента. Передавайте её только самому клиенту и не публикуйте в общих чатах.
+              Ссылка действует 7 дней. Передавайте её только клиенту. При утечке отзовите старые ссылки и отправьте новую.
             </p>
             <textarea
               className="input min-h-32 w-full font-mono text-xs"
@@ -803,6 +812,11 @@ export default function OrdersPage() {
             <div className="mt-3 flex flex-wrap gap-2">
               <button className="btn-secondary" onClick={copyActivationLinkFromDialog}>
                 Скопировать ссылку
+              </button>
+              <button className="btn-secondary" disabled={revokeActivationLink.isPending} onClick={() => {
+                if (window.confirm("Отозвать все предыдущие ссылки этого заказа? Клиенту понадобится новая ссылка.")) revokeActivationLink.mutate(activationLinkDialog.orderId);
+              }}>
+                Отозвать старые и выдать новую
               </button>
               <a className="btn-secondary" href={activationLinkDialog.activationUrl} target="_blank" rel="noreferrer">
                 Открыть страницу
