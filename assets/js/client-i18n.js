@@ -259,12 +259,287 @@
 
   Object.entries({"Введите корректную почту.": "Enter a valid email address.", "Введите id telegram с @": "Enter your Telegram username starting with @.", "Укажите отправителя.": "Enter the sender's name.", "Укажите получателя.": "Enter the recipient's name.", "Укажите время по МСК или оставьте дату пустой.": "Enter a Moscow delivery time or leave the date blank.", "Укажите дату отправки или оставьте время пустым.": "Choose a delivery date or leave the time blank.", "Выберите вариант аккаунта.": "Choose an account option.", "Введите логин от сервиса.": "Enter your service login.", "Введите пароль или напишите «Восстановить».": "Enter your password or write “Restore”.", "Введите почту Apple ID или логин сервиса.": "Enter your Apple ID email or service login.", "Выберите способ оплаты.": "Choose a payment method.", "Понятно": "Got it", "Подключение по ссылке на оплату": "Activation using a payment link"}).forEach(([ru, en]) => translations.set(ru, en));
 
-  function replaceTextNode(node) {
-    if (node.parentElement?.closest('script, style, textarea, [translate="no"]')) return;
-    const raw = String(node.nodeValue || "");
+  // Shared dynamic UI: account creation, checkout states and service-specific hints.
+  Object.entries({
+    "Аккаунт": "Account",
+    "Нужен новый аккаунт": "Need a new account",
+    "Новый аккаунт": "New account",
+    "Создадим аккаунт для выбранного тарифа. После оплаты свяжитесь с менеджером; токен вводить не потребуется.": "We will create an account with your selected plan. Contact our team after payment; no token is required.",
+    "Создадим аккаунт, пройдём верификацию и подключим выбранную подписку. В дальнейшем продлевайте этот аккаунт по цене тарифа — без повторной доплаты за создание. После оплаты свяжитесь с менеджером; токен вводить не потребуется.": "We will create and verify an account and activate your selected subscription. Future renewals cost the plan price, with no additional account creation fee. Contact our team after payment; no token is required.",
+    "После оплаты свяжитесь с менеджером для получения данных входа. В дальнейшем продлевайте этот аккаунт по цене тарифа — без повторной доплаты за создание.": "Contact our team after payment to receive your login details. Future renewals cost the plan price, with no additional account creation fee.",
+    "После оплаты менеджер создаст аккаунт и передаст вам данные для входа.": "After payment, our team will create your account and send you the login details.",
+    "По умолчанию подключаем подписку на ваш аккаунт.": "By default, we activate the subscription on your account.",
+    "После оплаты менеджер свяжется с вами и запросит данные аккаунта Claude для подключения. В форме заказа логин и пароль не нужны.": "After payment, our team will contact you to arrange activation using your Claude account details. No login or password is required in this order form.",
+    "После оплаты откроется страница с инструкцией. Вставьте на ней ссылку Stripe Checkout для выбранного тарифа Devin — логин и пароль передавать не нужно.": "After payment, an instructions page will open. Paste the Stripe Checkout link for your selected Devin plan there; no login or password is required.",
+    "Напишите поздравление или пожелание": "Write a greeting or a message",
+    "Нужны только для подключения выбранного тарифа": "Required only to activate your selected plan",
+    "Почта, на которую зарегистрирован аккаунт": "The email address registered to your account",
+    "После подключения рекомендуем сменить пароль": "We recommend changing your password after activation",
+    "Проверьте обязательные поля.": "Please check the required fields.",
+    "Товар устарел. Обновите страницу и выберите тариф заново.": "This product has changed. Refresh the page and select your plan again.",
+    "Промокод не применён. Исправьте его или очистите поле.": "The promo code was not applied. Check it or clear the field.",
+    "Создаём безопасную оплату...": "Creating a secure payment...",
+    "Создаём безопасную оплату…": "Creating a secure payment…",
+    "Создаём оплату…": "Creating payment…",
+    "Промокод не найден": "Promo code not found",
+    "Проверяем промокод...": "Checking promo code...",
+    "Промокод принят": "Promo code accepted",
+    "Не удалось начать оплату. Попробуйте снова.": "Could not start payment. Please try again.",
+    "Не удалось создать оплату.": "Could not create payment.",
+    "Не удалось создать оплату. Попробуйте снова.": "Could not create payment. Please try again.",
+    "Не удалось получить ссылку на оплату.": "Could not retrieve the payment link.",
+    "Ошибка сети. Попробуйте ещё раз.": "Network error. Please try again.",
+    "Платёжная система не вернула ссылку на оплату.": "The payment provider did not return a payment link.",
+    "Платёжный шлюз не вернул ссылку на оплату.": "The payment provider did not return a payment link.",
+    "Платёжная система отвечает дольше обычного. Подключаем доступный маршрут…": "The payment provider is taking longer than usual. Connecting to an available route…",
+    "Оплата готова. Открываем платёжную страницу…": "Payment is ready. Opening the payment page…",
+    "Lava временно недоступна. Выберите Enot.io.": "Lava is temporarily unavailable. Please choose Enot.io.",
+    "Товар в корзине устарел. Добавьте его заново из тарифов.": "This cart item has changed. Add it again from the plans page.",
+    "Сейчас оплата доступна по одному товару. Оплатите позиции по отдельности.": "Please pay for each item separately.",
+    "Укажите корректный email.": "Enter a valid email address.",
+    "Укажите настоящий email покупателя.": "Enter the buyer's valid email address.",
+    "Введите корректный email": "Enter a valid email address",
+    "Укажите Telegram в формате @username.": "Enter your Telegram username in the @username format.",
+    "Укажите корректный Telegram, например @username.": "Enter a valid Telegram username, such as @username.",
+    "Этот номинал пока недоступен. Напишите в поддержку.": "This amount is currently unavailable. Please contact support.",
+    "Не удалось загрузить актуальные варианты товара.": "Could not load the available product options.",
+    "Не удалось получить актуальную конфигурацию товара.": "Could not load the current product configuration.",
+    "Товар Steam пока не найден в серверной конфигурации. Попробуйте позже или напишите в поддержку.": "This Steam product is currently unavailable. Try again later or contact support.",
+    "Укажите логин Steam-аккаунта.": "Enter your Steam account login.",
+    "Укажите Steam trade-ссылку в формате tradeoffer/new с partner и token.": "Enter a Steam tradeoffer/new link containing partner and token parameters.",
+    "Подходящего тарифа нет": "No matching plan",
+    "Подходящих тарифов нет": "No matching plans",
+    "Выберите другой тариф или срок.": "Choose another plan or duration.",
+    "Загружаем тарифы…": "Loading plans…",
+    "Не удалось загрузить тарифы": "Could not load plans",
+    "Проверьте соединение и попробуйте ещё раз.": "Check your connection and try again.",
+    "Попробовать ещё раз": "Try again",
+    "План": "Plan",
+    "Длительность": "Duration",
+    "Выбранный тариф": "Selected plan",
+    "Выберите способ оплаты": "Choose a payment method",
+    "Купить": "Buy",
+    "Оплатить": "Pay",
+    "Закрыть": "Close",
+    "Показать пароль": "Show password",
+    "Скрыть пароль": "Hide password",
+    "Промокод": "Promo code",
+    "Товар": "Product",
+    "Удалить": "Remove",
+    "Уменьшить количество": "Decrease quantity",
+    "Увеличить количество": "Increase quantity",
+    "Что входит": "What's included",
+    "Детали тарифа": "Plan details",
+    "Оплатить этот тариф": "Pay for this plan",
+    "Описание появится в ближайшее время.": "Details will be available shortly.",
+    "Оплата заказа": "Order payment",
+    "Оформление корзины": "Cart checkout",
+    "Корзина:": "Cart:",
+    "Email для получения данных заказа": "Email for order details",
+    "Товары временно недоступны": "Products are temporarily unavailable",
+    "Перед покупкой": "Before you buy",
+    "Активация": "Activation",
+    "По ID": "Using ID",
+    "Со входом в аккаунт": "With account login",
+    "По ссылке на оплату": "Using a payment link",
+    "по ссылке": "using a link",
+    "Поддержка": "Support",
+    "Поддержка 24/7": "24/7 support",
+    "По умолчанию": "By default",
+    "Безопасность": "Security",
+    "Сроки": "Timing",
+    "Гарантии": "Guarantees",
+    "Часто задаваемые вопросы": "Frequently asked questions",
+    "Короткие ответы на частые вопросы": "Quick answers to common questions",
+    "Автовыдача": "Automatic delivery",
+    "Автоматически": "Automatically",
+    "Мгновенно": "Instantly",
+    "Безопасно": "Securely",
+    "Все тарифы": "All plans",
+    "Все сроки": "All durations",
+    "1 месяц": "1 month",
+    "2 месяца": "2 months",
+    "6 месяцев": "6 months",
+    "12 месяцев": "12 months",
+    "1 мес": "1 month",
+    "2 мес": "2 months",
+    "месяц": "month",
+    "месяца": "months",
+    "месяцев": "months",
+    "от": "from",
+    "Выбрать тариф": "Choose a plan",
+    "Сначала выберите сервис, затем подходящий тариф.": "Choose a service, then select a plan.",
+    "Сначала выберите сервис, затем откройте его тарифы.": "Choose a service to see its plans.",
+    "Выберите товар для пополнения и перейдите к оплате.": "Choose a top-up product and proceed to payment.",
+    "Откройте VPN-каталог и выберите актуальный тариф.": "Open the VPN catalog and choose an available plan.",
+    "Показать все": "Show all",
+    "Пополнения": "Top-ups",
+    "Товары": "Products",
+    "Пополнить": "Top up",
+    "Пополнение Steam": "Steam top-up",
+    "Пополнение Steam ключами": "Steam top-up using keys",
+    "Ключи Манн Ко": "Mann Co. keys",
+    "ключ(ей)": "key(s)",
+    "Карты пополнения Apple ID": "Apple ID gift cards",
+    "Подарочная карта Apple ID": "Apple ID gift card",
+    "Номинал на выбор": "Choose an amount",
+    "Заказать": "Order",
+    "Оформить": "Order",
+    "Кредиты Codex": "Codex credits",
+    "Пополнение кредитов Codex": "Codex credit top-up",
+    "Пополнение Codex": "Codex top-up",
+    "кредитов": "credits",
+    "250 / 500 / 1000 кредитов": "250 / 500 / 1000 credits",
+    "Нужна помощь?": "Need help?",
+    "Напишите нам в поддержку — поможем с подключением.": "Contact support for help with activation.",
+    "Средний ответ: ~5 минут": "Typical response: about 5 minutes",
+    "Написать в Telegram": "Message us on Telegram",
+    "Аккаунт еще не активирован. Вернитесь к активации по заказу.": "Your account has not been activated yet. Return to your order's activation page.",
+    "Перейти к активации": "Go to activation",
+    "Перейти к активации заказа": "Go to order activation",
+    "Продолжить активацию": "Resume activation",
+    "Продолжить активацию заказа": "Resume order activation",
+    "Скрыть": "Hide",
+    "Скрыть напоминание об активации": "Hide the activation reminder",
+    "Развернуть напоминание об активации": "Expand the activation reminder",
+    "Откройте защищённую ссылку на заказ после оплаты или обратитесь в поддержку.": "Open your protected order link after payment or contact support.",
+    "Проверяем оплату…": "Checking payment…",
+    "Оплата ещё подтверждается. Страница проверит её повторно через несколько секунд.": "Payment is still being confirmed. This page will check again shortly.",
+    "Не удалось открыть заказ. Проверьте защищённую ссылку или обратитесь в поддержку.": "Could not open this order. Check your protected link or contact support.",
+    "Эта страница доступна для заказов верификации KYC или CVP.": "This page is only available for KYC or CVP verification orders.",
+    "Оплата подтверждена.": "Payment confirmed.",
+    "Ошибка сети. Проверьте оплату ещё раз.": "Network error. Please check payment again.",
+    "Возможности тарифа, порядок подключения и сопровождение заказа.": "Plan features, activation steps and order support.",
+    "Категория": "Category",
+    "Нейросети": "AI services",
+    "Подписки ChatGPT": "ChatGPT subscriptions",
+    "Тарифы Plus, GO и Pro для работы, учебы и любых задач.": "Plus, Go and Pro plans for work, study and everyday tasks.",
+    "Тарифы SuperGrok с быстрой активацией на ваш аккаунт.": "SuperGrok plans with quick activation on your account.",
+    "Perplexity Pro для поиска, исследований и ответов с источниками.": "Perplexity Pro for search, research and answers with sources.",
+    "Gemini Pro для работы, учёбы, анализа и творчества.": "Gemini Pro for work, study, analysis and creativity.",
+    "Suno Pro и Premier для создания музыки и вокала.": "Suno Pro and Premier for creating music and vocals.",
+    "Генерация изображений и видео на вашем аккаунте.": "Create images and videos on your account.",
+    "Поиск с надёжными источниками": "Search with reliable sources",
+    "Gemini для работы и учёбы": "Gemini for work and study",
+    "Suno для создания музыки": "Suno for creating music",
+    "AI-инженер для задач разработки": "An AI engineer for development tasks",
+    "Грустный котёнок": "Sad kitten",
+    "Новости": "News",
+    "Отзывы": "Reviews",
+    "Помощь": "Help",
+    "Каталог": "Catalog",
+    "Русский": "Russian",
+    "В целях безопасности личных данных клиентов email в ленте активаций маскируется полностью.": "Customer email addresses in the activation feed are fully masked to protect personal data.",
+    "Не передавайте токены, сессионные ключи и чеки в личные сообщения. Используйте только официальные контакты поддержки с сайта.": "Do not send tokens, session keys or receipts in private messages. Use only the official support contacts listed on the site."
+}).forEach(([ru, en]) => translations.set(ru, en));
+
+  Object.entries({
+    "Оформление заказа": "Checkout",
+    "Выберите количество кредитов": "Choose the number of credits",
+    "Количество кредитов": "Number of credits",
+    "Почта аккаунта ChatGPT": "ChatGPT account email",
+    "Статус и поддержка": "Order status and support",
+    "После выбора вы перейдете к безопасной странице оплаты.": "After choosing a method, you will be taken to a secure payment page.",
+    "Закрыть выбор способа оплаты": "Close payment method selection",
+    "Верификация": "Verification",
+    "Email для заказа": "Order email",
+    "Telegram для связи": "Telegram contact",
+    "Карта РФ / СБП": "Russian card / SBP",
+    "Карта / СБП — ENOT": "Card / SBP — ENOT",
+    "Зарубежная карта": "International card",
+    "Для KYC верификацию проходим мы и проводим без входа в аккаунт. После подтверждения оплаты появится кнопка связи с менеджером.": "For KYC, we complete the verification without logging into your account. A contact button will appear once payment is confirmed.",
+    "Нажимая «Оплатить», вы принимаете": "By clicking Pay, you accept the",
+    "оферту": "public offer",
+    "политику конфиденциальности": "privacy policy",
+    "Скопируйте полную ссылку со страницы оплаты Stripe.": "Copy the full link from the Stripe payment page.",
+    "Форма проверяет формат ссылки. Менеджер отдельно проверит тариф и доступность страницы оплаты.": "This form checks the link format. Our team will separately check the plan and availability of the payment page.",
+    "Отправить ссылку": "Submit link",
+    "Регион: США": "Region: United States",
+    "Номинал:": "Amount:",
+    "Стоимость": "Price",
+    "Куда отправить чек и код": "Where to send the receipt and code",
+    "Укажите действующую электронную почту": "Enter a valid email address",
+    "На этот адрес будет оформлен заказ и сохранён доступ к выдаче": "Your order and access to delivery will be linked to this address",
+    "Если Telegram привязан к аккаунту с этим email, бот автоматически продублирует туда оплаченный код.": "If Telegram is linked to the account with this email, the bot will also send the paid code there.",
+    "Как вы получите карту": "How you will receive your card",
+    "После успешной оплаты сайт автоматически выдаст свободный код из админки. Код также придёт через Telegram-бота, если Telegram заранее привязан к аккаунту с указанным email. Карта подходит только для Apple ID региона США.": "After payment, the site will automatically issue an available code. The Telegram bot will also send it if Telegram is already linked to the account with this email. This card is only valid for US-region Apple IDs.",
+    "Перейти к оплате": "Proceed to payment",
+    "Оплата подтверждена": "Payment confirmed",
+    "Ваша подарочная карта готова": "Your gift card is ready",
+    "Получаем свободный код из админки…": "Retrieving your gift card code…",
+    "Код Apple Gift Card": "Apple Gift Card code",
+    "Скопировать код": "Copy code",
+    "Открыть инструкцию по активации": "Open activation instructions",
+    "Закрыть окно": "Close window",
+    "Например: карта в подарок": "For example: a gift card for a friend",
+    "Активация завершена": "Activation complete",
+    "Ваш тариф успешно активирован": "Your plan has been activated successfully",
+    "Подписка активна. Оцените подключение — после проверки отзыв появится на странице «Отзывы».": "Your subscription is active. Rate the activation experience: your review will appear on the Reviews page after moderation.",
+    "Ваша оценка": "Your rating",
+    "необязательно": "optional",
+    "Отзыв публикуется без email и данных аккаунта.": "Your review is published without your email or account details.",
+    "Отправить отзыв": "Submit review",
+    "Спасибо! Отзыв отправлен на проверку.": "Thank you! Your review has been submitted for moderation.",
+    "Мы в Telegram": "Find us on Telegram",
+    "Получить чек": "Get receipt",
+    "Позже": "Later",
+    "Закрыть сообщение": "Close message",
+    "Оценка от 1 до 5 звёзд": "Rating from 1 to 5 stars",
+    "Например: подписка подключилась быстро, всё работает": "For example: activation was quick and everything works",
+    "Выберите количество ключей": "Choose the number of keys",
+    "Email покупателя": "Buyer's email",
+    "Укажите настоящий email для уведомлений по заказу": "Enter a valid email address for order updates",
+    "Логин Steam": "Steam login",
+    "Аккаунт, на который отправим ключи": "The account that will receive the keys",
+    "Steam trade-ссылка": "Steam trade link",
+    "Количество ключей": "Number of keys",
+    "Цена за ключ": "Price per key",
+    "К оплате": "Total due",
+    "Необязательно. Можно указать пожелания или детали по трейду.": "Optional. Add any requests or trade details.",
+    "Например: отправить после 18:00": "For example: send after 18:00"
+  }).forEach(([ru, en]) => translations.set(ru, en));
+
+  // Example names belong to placeholders, never to customer text or author names.
+  Object.entries({
+    "Демонстрация страницы": "Page preview",
+    "Пример страницы после оплаты GPTishka. Здесь клиент отправит ссылку Devin.": "Example of the page after payment. The customer submits their Devin payment link here.",
+    "Не найдена защищённая ссылка на заказ. Вернитесь к странице подтверждения оплаты или обратитесь в поддержку.": "Your protected order link was not found. Return to the payment confirmation page or contact support.",
+    "Проверяем оплату заказа…": "Checking order payment…",
+    "Оплата заказа ещё подтверждается. Попробуйте проверить её чуть позже.": "Your payment is still being confirmed. Please check again shortly.",
+    "Не удалось открыть заказ. Проверьте ссылку из письма или обратитесь в поддержку.": "Could not open this order. Check the link in your email or contact support.",
+    "Отправить новую ссылку": "Submit a new link",
+    "Оплата заказа подтверждена. Отправьте ссылку Stripe Checkout для выбранного тарифа.": "Payment is confirmed. Submit the Stripe Checkout link for your selected plan.",
+    "Не удалось проверить заказ из-за ошибки сети. Попробуйте ещё раз.": "Could not check your order due to a network error. Please try again.",
+    "Это демонстрация. Ссылка не отправлена и заказ не изменён.": "This is a preview. No link was submitted and the order was not changed.",
+    "Нужна полная HTTPS-ссылка Stripe Checkout вида checkout.stripe.com/g/pay/cs_live_…": "Enter a full HTTPS Stripe Checkout link in the format checkout.stripe.com/g/pay/cs_live_…",
+    "Нужна полная HTTPS-ссылка Stripe Checkout вида checkout.stripe.com/c/pay/cs_live_…": "Enter a full HTTPS Stripe Checkout link in the format checkout.stripe.com/c/pay/cs_live_…",
+    "Сохраняем ссылку в заказе…": "Saving the link to your order…",
+    "Ссылка не принята. Проверьте её и попробуйте ещё раз.": "The link was not accepted. Please check it and try again.",
+    "Не удалось отправить ссылку из-за ошибки сети. Попробуйте ещё раз.": "Could not submit the link due to a network error. Please try again.",
+    "Тариф:": "Plan:",
+    "Не удалось загрузить актуальные цены. Попробуйте позже.": "Could not load current prices. Please try again later.",
+    "Укажите корректную электронную почту.": "Enter a valid email address.",
+    "Цена изменилась. Проверьте новую сумму и нажмите кнопку ещё раз.": "The price has changed. Check the new amount and click again.",
+    "Этот номинал больше недоступен. Выберите другой.": "This amount is no longer available. Choose another amount.",
+    "Не удалось проверить актуальную цену. Попробуйте позже.": "Could not verify the current price. Please try again later.",
+    "Коды этого номинала временно закончились. Выберите другой номинал или попробуйте позже.": "Codes for this amount are temporarily out of stock. Choose another amount or try again later.",
+    "Не удалось создать оплату. Выберите другой шлюз или попробуйте ещё раз.": "Could not create payment. Choose another provider or try again.",
+    "Код автоматически выдан после оплаты. Если Telegram привязан к аккаунту, бот уже продублировал его сообщением.": "Your code was issued automatically after payment. If Telegram is linked to your account, the bot has also sent it in a message.",
+    "Код скопирован": "Code copied"
+  }).forEach(([ru, en]) => translations.set(ru, en));
+  translations.delete("Никита");
+  translations.delete("Артём");
+
+  function translateUiText(value) {
+    const raw = String(value || "");
     const clean = raw.trim();
-    if (!clean) return;
+    if (!clean) return raw;
     let translated = translations.get(clean);
+    if (!translated && /\s[·•]\s/.test(clean)) {
+      const parts = clean.split(/(\s[·•]\s)/);
+      const joined = parts.map(part => /^\s[·•]\s$/.test(part) ? part : translateUiText(part)).join("");
+      if (joined !== clean) translated = joined;
+    }
     if (!translated) {
       translated = clean
         .replace(/GPTишка/g, "GPTishka")
@@ -288,19 +563,65 @@
         .replace(/^Последняя ошибка:\s*/i, "Last error: ")
         .replace(/^(\d+)\s*дн\.$/i, "$1 d.")
         .replace(/^(\d+)\s+отзыв(?:ов|а)?$/i, "$1 reviews")
-        .replace(/^(\d+(?:[.,]\d+)?)\s+из\s+5$/i, "$1 out of 5");
+        .replace(/^(\d+(?:[.,]\d+)?)\s+из\s+5$/i, "$1 out of 5")
+        .replace(/^У вас уже есть аккаунт (.+)\?$/, "Do you already have a $1 account?")
+        .replace(/^Да, у меня есть почта и пароль от (.+)$/, "Yes, I have the email and password for $1")
+        .replace(/^Выберите, если обычно входите в (.+) через email и пароль\.$/, "Choose this if you normally sign in to $1 with an email and password.")
+        .replace(/^Выберите, если нажимаете кнопку «Continue with Apple» \/ «Войти через Apple»\. Пароль от (.+) не нужен\.$/, "Choose this if you use Continue with Apple. Your $1 password is not required.")
+        .replace(/^Нет, аккаунта (.+) у меня нет$/, "No, I do not have a $1 account")
+        .replace(/^Почта или логин (.+)$/, "$1 email or username")
+        .replace(/^Данные аккаунта (.+)$/, "$1 account details")
+        .replace(/^Пароль от (.+)$/, "$1 password")
+        .replace(/^Оплатить\s*\((.+)\)$/, "Pay ($1)")
+        .replace(/^Оплатить\s+(.+)$/, "Pay $1")
+        .replace(/^Кредиты Codex от\s+(.+)$/, "Codex credits from $1")
+        .replace(/^Пополнить кредиты Codex от\s+(.+?)\s+рублей$/, "Top up Codex credits from $1 RUB")
+        .replace(/^(\d+)\s+кредитов$/, "$1 credits")
+        .replace(/^(\d+)\s+(?:месяц|месяца|месяцев|мес\.?)$/, "$1 months")
+        .replace(/^1 months$/, "1 month")
+        .replace(/^(\d+)\s+(?:вариант|варианта|вариантов)$/, "$1 options")
+        .replace(/^Проверьте поля:\s*/, "Please check these fields: ")
+        .replace(/^Выбрано:\s*/, "Selected: ")
+        .replace(/^Оформить\s+(KYC|CVP)$/, "Order $1")
+        .replace(/^Ссылка на оплату (.+)$/, "$1 payment link")
+        .replace(/^(?:Ссылка|Она) должна начинаться с (https:\/\/\S+)$/, "The link must start with $1")
+        .replace(/^Формат:\s*(https:\/\/\S+)$/, "Format: $1")
+        .replace(/^(\d+)\s+ключ(?:а|ей)?\s*=\s*(.+)$/, "$1 key = $2")
+        .replace(/^(\d+)\s+звезд(?:а|ы)?$/, "$1 stars")
+        .replace(/^(\d+)\s+звёзд$/, "$1 stars")
+        .replace(/^1 stars$/, "1 star")
+        .replace(/^Тариф:\s*/, "Plan: ")
+        .replace(/^Заказ:\s*/, "Order: ")
+        .replace(/(\d+)\s+(?:месяцев|месяца|месяц)(?=$|[\s·•,.)])/g, (_, count) => count + (count === "1" ? " month" : " months"))
+        .replace(/^Эта форма доступна только для заказа (.+)\.$/, "This form is only available for $1 orders.")
+        .replace(/^Ссылка (уже )?получена\. Мы оплатим подписку (.+) в ближайшее время, ожидайте\. Если возникнут сложности, менеджер свяжется с вами\.$/, "Your link has been received. We will complete your $2 subscription payment shortly. Our team will contact you if any issues arise.")
+        .replace(/^Оплата подтверждена, но свободный код пока не найден\. Обратитесь в поддержку с номером заказа:\s*/, "Payment is confirmed, but no available code was found. Contact support with your order number: ");
     }
-    if (translated === clean) return;
-    node.nodeValue = raw.replace(clean, translated);
+    return raw.replace(clean, translated);
+  }
+
+  function translateError(value) {
+    const translated = translateUiText(value);
+    return /[А-Яа-яЁё]/.test(translated)
+      ? "Could not complete the request. Please check your details or contact support."
+      : translated;
+  }
+
+  function replaceTextNode(node) {
+    if (node.parentElement?.closest('script, style, textarea, [translate="no"]')) return;
+    const raw = String(node.nodeValue || "");
+    const translated = translateUiText(raw);
+    if (translated !== raw) node.nodeValue = translated;
   }
 
   function translateElement(element) {
-    if (!(element instanceof Element) || element.matches('script, style, textarea, [translate="no"]')) return;
-    ["aria-label", "placeholder", "title"].forEach((name) => {
+    if (!(element instanceof Element) || element.matches('script, style, [translate="no"]')) return;
+    ["aria-label", "aria-description", "placeholder", "title", "alt"].forEach((name) => {
       const value = element.getAttribute(name);
       if (!value) return;
-      const translated = translations.get(value.trim());
-      if (translated) element.setAttribute(name, translated);
+      const exampleNames = name === "placeholder" ? { "Никита": "Alex", "Артём": "Sam" } : {};
+      const translated = Object.hasOwn(exampleNames, value) ? exampleNames[value] : translateUiText(value);
+      if (translated !== value) element.setAttribute(name, translated);
     });
     Array.from(element.childNodes).forEach((node) => {
       if (node.nodeType === Node.TEXT_NODE) replaceTextNode(node);
@@ -393,6 +714,8 @@
     });
   }
 
+  window.gptishkaI18n = { translateText: translateUiText, translateError, translateElement };
+
   const start = () => {
     applyTranslations();
     rewriteInternalLinks();
@@ -412,7 +735,7 @@
       rewriteInternalLinks();
       explainOriginalLanguage();
     });
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["aria-label", "placeholder", "title"] });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["aria-label", "aria-description", "placeholder", "title", "alt"] });
     const title = document.querySelector('title');
     if (title) new MutationObserver(translateMetadata).observe(title, {childList: true, characterData: true, subtree: true});
   };

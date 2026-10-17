@@ -4559,7 +4559,7 @@ function initActivationResumeShortcut() {
         ids.add(errorEl.id);
         field.setAttribute("aria-describedby", Array.from(ids).join(" "));
       }
-      errorEl.textContent = message || "";
+      errorEl.textContent = window.gptishkaI18n?.translateError(message || "") || message || "";
     }
   }
 
@@ -4577,7 +4577,7 @@ function initActivationResumeShortcut() {
   function setChatGptGoStatus(form, message, state) {
     const statusEl = form ? form.querySelector("[data-chatgpt-go-status]") : null;
     if (!statusEl) return;
-    statusEl.textContent = message || "";
+    statusEl.textContent = window.gptishkaI18n?.translateError(message || "") || message || "";
     statusEl.classList.remove("is-error", "is-success", "is-loading");
     if (state === "error") statusEl.classList.add("is-error");
     if (state === "success") statusEl.classList.add("is-success");
@@ -4587,7 +4587,7 @@ function initActivationResumeShortcut() {
   function setChatGptGoPromoMessage(form, message, state) {
     const msgEl = form ? form.querySelector("[data-chatgpt-go-promo-msg]") : null;
     if (!msgEl) return;
-    msgEl.textContent = message || "";
+    msgEl.textContent = window.gptishkaI18n?.translateError(message || "") || message || "";
     applyPromoMessageState(msgEl, state === "success" ? "valid" : state === "error" ? "invalid" : state);
     msgEl.classList.toggle("is-loading", state === "checking");
   }
@@ -4700,7 +4700,7 @@ function initActivationResumeShortcut() {
         const discount = getChatGptGoDiscount(item, normalized);
         setChatGptGoPromoMessage(
           form,
-          TEXT.promoAccepted + (discount > 0 ? " (в€’" + formatPriceByCurrency(discount, String(item.currency || "RUB")) + ")" : ""),
+          TEXT.promoAccepted + (discount > 0 ? " (−" + formatPriceByCurrency(discount, String(item.currency || "RUB")) + ")" : ""),
           "success"
         );
         trackAnalyticsEvent("promo_validate_success", {
@@ -5124,7 +5124,7 @@ function initActivationResumeShortcut() {
       ? '<p class="chatgpt-order-security-note">После оплаты откроется страница с инструкцией. Вставьте на ней ссылку Stripe Checkout для выбранного тарифа Devin — логин и пароль передавать не нужно.</p>'
       : '';
     const accountSectionMarkup = deliveryKey === "login" && resolvedServiceKey !== "devin"
-      ? '<section class="chatgpt-order-section" data-chatgpt-go-account-section><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Данные аккаунта Devin</h4><p>Нужны только для подключения выбранного тарифа</p></div><input name="accountStatus" type="radio" value="has_account" checked hidden><div class="chatgpt-order-account-fields" data-chatgpt-go-account-fields><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Почта или логин Devin</span><small>Почта, на которую зарегистрирован аккаунт</small><input class="chatgpt-order-field__control" name="serviceLogin" type="text" autocomplete="username" placeholder="name@email.com" required></label><label class="chatgpt-order-field" data-chatgpt-go-password-field><span>Пароль от Devin</span><small>После подключения рекомендуем сменить пароль</small><span class="chatgpt-order-password-wrap"><input class="chatgpt-order-field__control" name="servicePassword" type="password" autocomplete="current-password" placeholder="Введите пароль" required><button type="button" class="chatgpt-order-password-toggle" data-chatgpt-go-password-toggle aria-label="Показать пароль" title="Показать пароль" aria-pressed="false"><span data-chatgpt-go-password-icon>' + getChatGptGoPasswordIcon(false) + '</span></button></span></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="serviceLogin"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="servicePassword"></p></div></div><p class="chatgpt-order-security-note"><strong>Безопасная передача</strong> Данные шифруются на сервере, доступны только сотруднику, который выполняет заказ, и не передаются платёжной системе. Никому не сообщайте коды 2FA или резервные коды.</p></section>'
+      ? '<section class="chatgpt-order-section" data-chatgpt-go-account-section><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Данные аккаунта ' + escapeHtml(serviceDisplayName) + '</h4><p>Нужны только для подключения выбранного тарифа</p></div><input name="accountStatus" type="radio" value="has_account" checked hidden><div class="chatgpt-order-account-fields" data-chatgpt-go-account-fields><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Почта или логин Devin</span><small>Почта, на которую зарегистрирован аккаунт</small><input class="chatgpt-order-field__control" name="serviceLogin" type="text" autocomplete="username" placeholder="name@email.com" required></label><label class="chatgpt-order-field" data-chatgpt-go-password-field><span>Пароль от Devin</span><small>После подключения рекомендуем сменить пароль</small><span class="chatgpt-order-password-wrap"><input class="chatgpt-order-field__control" name="servicePassword" type="password" autocomplete="current-password" placeholder="Введите пароль" required><button type="button" class="chatgpt-order-password-toggle" data-chatgpt-go-password-toggle aria-label="Показать пароль" title="Показать пароль" aria-pressed="false"><span data-chatgpt-go-password-icon>' + getChatGptGoPasswordIcon(false) + '</span></button></span></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="serviceLogin"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="servicePassword"></p></div></div><p class="chatgpt-order-security-note"><strong>Безопасная передача</strong> Данные шифруются на сервере, доступны только сотруднику, который выполняет заказ, и не передаются платёжной системе. Никому не сообщайте коды 2FA или резервные коды.</p></section>'
       : '';
     const newAccountMarkup = newAccountSurcharge
       ? '<section class="chatgpt-order-section chatgpt-order-new-account"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Аккаунт</h4></div><label class="chatgpt-order-soft-action"><span><strong>Нужен новый аккаунт</strong><small>' + (resolvedServiceKey === "claude" ? 'Создадим аккаунт, пройдём верификацию и подключим выбранную подписку. В дальнейшем продлевайте этот аккаунт по цене тарифа — без повторной доплаты за создание. После оплаты свяжитесь с менеджером; токен вводить не потребуется.' : 'Создадим аккаунт для выбранного тарифа. После оплаты свяжитесь с менеджером; токен вводить не потребуется.') + '</small></span><span class="chatgpt-order-new-account__price">+' + escapeHtml(format(newAccountSurcharge)) + '</span><input name="needsNewAccount" type="checkbox"' + boolChecked(savedNewAccount) + '><i></i></label></section>'
@@ -5424,6 +5424,7 @@ function initActivationResumeShortcut() {
     updateChatGptGoOrderTotals(form, modalItem);
     syncChatGptGoAccountUi(form);
     syncChatGptGoPaymentAria(form);
+    window.gptishkaI18n?.translateElement(chatGptGoOrderModalEl);
     requestAnimationFrame(() => {
       focusChatGptGoOrderModal();
     });

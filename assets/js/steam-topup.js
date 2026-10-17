@@ -91,7 +91,7 @@
   function setStatus(form, message, state) {
     const status = qs(form, "[data-steam-topup-status]");
     if (!status) return;
-    status.textContent = message || "";
+    status.textContent = state === "error" && window.gptishkaI18n ? window.gptishkaI18n.translateError(message || "") : message || "";
     status.classList.remove("is-error", "is-loading");
     if (state) status.classList.add(`is-${state}`);
   }

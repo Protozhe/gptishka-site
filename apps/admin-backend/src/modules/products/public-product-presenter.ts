@@ -22,6 +22,11 @@ function localizedCategory(category: string, lang: PublicProductLang): string {
     if (normalized === "subscriptions") return "Подписки";
   }
 
+  if (lang === "en") {
+    if (["подписки ии", "подписки", "subscriptions"].includes(normalized)) return "AI subscriptions";
+    if (normalized === "пополнения") return "Top-ups";
+  }
+
   return category;
 }
 
@@ -96,19 +101,25 @@ function buildVisualPayload(item: any, lang: PublicProductLang) {
   const title = localizedTitle(item, lang);
   const description = localizedDescription(item, lang);
   const buttonText = lang === "en" ? "Choose plan" : "Выбрать тариф";
+  // Visual overrides have no separate language field. Keep English overrides,
+  // but use the translated product copy when an override is Russian.
+  const text = (override: unknown, fallback: string) => {
+    const value = String(override || "");
+    return lang === "en" && /[А-Яа-яЁё]/.test(value) ? fallback : value || fallback;
+  };
 
   return {
-    cardTitle: visual?.cardTitle || title,
-    cardDescription: visual?.cardDescription || description,
+    cardTitle: text(visual?.cardTitle, title),
+    cardDescription: text(visual?.cardDescription, description),
     imageUrl: visual?.imageUrl || "",
-    imageAlt: visual?.imageAlt || title,
+    imageAlt: text(visual?.imageAlt, title),
     hoverImageUrl: visual?.hoverImageUrl || "",
-    hoverImageAlt: visual?.hoverImageAlt || title,
+    hoverImageAlt: text(visual?.hoverImageAlt, title),
     backgroundType: visual?.backgroundType || "solid",
     backgroundColor: visual?.backgroundColor || "#111111",
     backgroundGradient: visual?.backgroundGradient || "",
     textColor: visual?.textColor || "",
-    buttonText: visual?.buttonText || buttonText,
+    buttonText: text(visual?.buttonText, buttonText),
     buttonStyle: visual?.buttonStyle || "primary",
     buttonBackground: visual?.buttonBackground || "",
     buttonTextColor: visual?.buttonTextColor || "",

@@ -58,7 +58,7 @@
 
   function setStatus(message, state) {
     if (!statusEl) return;
-    statusEl.textContent = message || "";
+    statusEl.textContent = state === "error" && window.gptishkaI18n ? window.gptishkaI18n.translateError(message || "") : message || "";
     statusEl.className = `codex-order__status${state ? ` is-${state}` : ""}`;
   }
 

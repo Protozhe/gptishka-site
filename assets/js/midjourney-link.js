@@ -12,7 +12,7 @@
   const plan = document.getElementById("orderPlan");
 
   function setStatus(message, kind = "") {
-    status.textContent = message;
+    status.textContent = kind === "error" && window.gptishkaI18n ? window.gptishkaI18n.translateError(message) : window.gptishkaI18n?.translateText(message) || message;
     status.className = `mj-status${kind ? ` ${kind}` : ""}`;
   }
 

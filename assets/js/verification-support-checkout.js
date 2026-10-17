@@ -64,7 +64,8 @@
       if (url.protocol !== 'https:') throw new Error(en ? 'Invalid payment URL.' : 'Не удалось получить ссылку на оплату.');
       location.assign(url.href);
     } catch (error) {
-      status.textContent = error instanceof Error ? error.message : (en ? 'Network error. Try again.' : 'Ошибка сети. Попробуйте ещё раз.');
+      const message = error instanceof Error ? error.message : (en ? 'Network error. Try again.' : 'Ошибка сети. Попробуйте ещё раз.');
+      status.textContent = en ? (window.gptishkaI18n?.translateError(message) || 'Could not create payment. Please try again or contact support.') : message;
       pay.disabled = false;
       pay.removeAttribute('aria-busy');
     }
