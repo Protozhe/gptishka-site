@@ -8,6 +8,7 @@ export type ActivationRecord = {
   productKey: string;
   cdk: string;
   activationSiteUrl?: string | null;
+  externalFulfillmentOwner?: string;
   keyAllocationState?: "exhausted" | "selected";
   keyAllocationSite?: string;
   reservedCandidates?: Array<{

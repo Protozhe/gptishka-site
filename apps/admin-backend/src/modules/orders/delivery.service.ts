@@ -11,6 +11,7 @@ import { ActivationRecord, activationStore } from "./activation.store";
 import { sendDirectCodeTelegram } from "./direct-code-notifications.service";
 import { isMidjourneyProductSlug } from "./midjourney-payment-link";
 import { isSunoPaymentLinkOrder } from "./suno-payment-link";
+import { resolveExternalCodexOwner } from "./external-codex";
 
 const CHATGPT_PLUS_PRODUCT_KEY = "chatgpt-plus-1";
 const CHATGPT_PLUS_IOS_SITE_URL = "https://vip.sxzfd.com";
@@ -135,6 +136,30 @@ export async function deliverProduct(order: Order) {
   activationStore.ensure();
 
   const existing = activationStore.findByOrderId(order.id);
+  const externalOwner = /^codex-(250|1000)$/.test(product?.slug || "") ? resolveExternalCodexOwner({
+    source: fullOrder.source,
+    productKey: product?.slug,
+    activationSiteUrl: readActivationSiteUrlFromOrderDetails(fullOrder.orderDetails),
+    record: existing,
+  }) : null;
+  if (externalOwner) {
+    if (existing?.status !== "success" && existing?.verificationState !== "success") {
+      const nowIso = new Date().toISOString();
+      activationStore.upsert({
+        ...existing, orderId: order.id, email: order.email, productKey: String(product?.slug), cdk: "",
+        activationSiteUrl: readActivationSiteUrlFromOrderDetails(fullOrder.orderDetails),
+        externalFulfillmentOwner: externalOwner,
+        status: existing?.clientTokenCiphertext ? "processing" : "issued",
+        verificationState: existing?.clientTokenCiphertext ? "pending" : "unknown",
+        attempts: 0, taskId: null,
+        lastProviderMessage: existing?.lastProviderMessage || "Ожидаем данные аккаунта для автоматического пополнения.",
+        lastProviderPayload: { ...(existing?.lastProviderPayload || {}), source: externalOwner },
+        issuedAt: existing?.issuedAt || nowIso, updatedAt: nowIso,
+      });
+    }
+    await ensureBundleVpnAccess();
+    return;
+  }
   const isPaymentLinkProduct = isMidjourneyProductSlug(product?.slug) || isSunoPaymentLinkOrder(product?.slug, fullOrder.orderDetails);
   if (existing && (!isPaymentLinkProduct || existing.cdk)) {
     console.info(`[delivery] activation already exists order=${order.id} cdk=${existing.cdk}`);

@@ -455,6 +455,17 @@ async function emptyKeyNotification(record) {
   ].join("\n");
 }
 
+function requiresActivationKey(record) {
+  if (activationState(record) === "success") return false;
+  const match = /^codex-(250|1000)$/.exec(String(record?.productKey || ""));
+  if (match) {
+    const owner = `pulse-site${match[1]}-v1`;
+    if (record.externalFulfillmentOwner === owner || record.lastProviderPayload?.source === owner ||
+        String(record.activationSiteUrl || "").replace(/\/+$/, "") === "https://zovocard.com") return false;
+  }
+  return true;
+}
+
 async function pollActivationNotifications(state) {
   const records = readActivationRecords();
   if (!state.activationInitialized) {
@@ -480,7 +491,7 @@ async function pollActivationNotifications(state) {
 
     const tokenStored = Boolean(String(record.clientTokenStoredAt || "").trim());
     const keyMissing = !String(record.cdk || "").trim();
-    if (tokenStored && keyMissing && !state.emptyKeyOrders[orderId]) {
+    if (tokenStored && keyMissing && requiresActivationKey(record) && !state.emptyKeyOrders[orderId]) {
       await notifyAdmins(await emptyKeyNotification(record));
       state.emptyKeyOrders[orderId] = new Date().toISOString();
       writeState(state);

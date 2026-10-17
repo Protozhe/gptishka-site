@@ -36,6 +36,7 @@ import { isSunoPaymentLinkOrder, validateSunoPaymentLink } from "./suno-payment-
 import { isDevinProductSlug, validateDevinPaymentLink } from "./devin-payment-link";
 import { isVerificationSupportProduct, VERIFICATION_MANAGER_URL } from "./verification-support";
 import { assertOrderLinkAccess } from "../../common/security/order-link-access";
+import { resolveExternalCodexOwner } from "./external-codex";
 
 const MAX_CLIENT_TOKEN_LENGTH = 500_000;
 const MAX_ACTIVATION_START_ATTEMPTS = 3;
@@ -1074,6 +1075,13 @@ export const ordersService = {
       const current = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
       if (current?.status === "success") {
         throw new AppError("Activation is already completed", 409);
+      }
+      if (isCodexCreditsProductKey(activationInfo?.productSlug || current?.productKey)) {
+        const fullOrder = await getOrderWithFirstItem(order.id);
+        if (resolveExternalCodexOwner({ source: fullOrder?.source, productKey: activationInfo?.productSlug || current?.productKey,
+          activationSiteUrl: readActivationSiteUrlFromOrderDetails(fullOrder?.orderDetails), record: current })) {
+          return startActivationUnsafe(orderId, token, orderToken);
+        }
       }
       if (current?.status === "processing") {
         throw new AppError("Activation is still processing", 409);
@@ -2371,6 +2379,22 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   }
   if (isTokenBoundToAnotherFingerprint(latestBeforeStart.tokenMeta, buildTokenMeta(tokenInfo))) {
     throw new AppError("Order is already bound to another token", 409);
+  }
+  if (isCodexCreditsProductKey(activationInfo?.productSlug || stored.productKey)) {
+    const fullOrder = await getOrderWithFirstItem(orderId);
+    const owner = resolveExternalCodexOwner({ source: fullOrder?.source, productKey: activationInfo?.productSlug || stored.productKey,
+      activationSiteUrl: readActivationSiteUrlFromOrderDetails(fullOrder?.orderDetails), record: latestBeforeStart });
+    if (owner) {
+      activationStore.upsert({
+        ...latestBeforeStart, ...storagePatch, tokenMeta: buildTokenMeta(tokenInfo), externalFulfillmentOwner: owner,
+        status: "processing", verificationState: "pending", lastTokenValidatedAt: nowIso,
+        tokenValidationAttempts: Math.max(0, Number(latestBeforeStart.tokenValidationAttempts || 0)) + 1,
+        lastProviderPayload: { ...(latestBeforeStart.lastProviderPayload || {}), source: owner },
+        lastProviderMessage: latestBeforeStart.lastProviderMessage || "Данные сохранены. Выполняем автоматическое пополнение.",
+        updatedAt: nowIso,
+      });
+      return { taskId: `reconcile-${orderId}`, reused: true };
+    }
   }
   if (latestBeforeStart.status === "processing" || latestBeforeStart.verificationState === "pending") {
     return { taskId: String(latestBeforeStart.taskId || `reconcile-${orderId}`), reused: true };

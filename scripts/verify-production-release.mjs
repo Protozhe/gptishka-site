@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 
 const checks = [
+  "scripts/verify-external-codex-routing.mjs",
   "scripts/verify-checkout-language.cjs",
   "scripts/verify-activation-confidentiality.mjs",
   "scripts/verify-pally-settlement.mjs",
