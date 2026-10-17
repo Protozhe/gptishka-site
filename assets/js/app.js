@@ -4136,7 +4136,7 @@ function initActivationResumeShortcut() {
       },
       gemini: {
         plan: ["pro"],
-        duration: ["12m", "18m"],
+        duration: ["18m"],
       },
       suno: {
         plan: ["pro", "premier"],

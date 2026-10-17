@@ -53,6 +53,9 @@ function collectGeminiStrings(value) {
 }
 collectGeminiStrings(geminiCopy);
 const geminiFallbackContext = vm.createContext({ normalizeAiServiceKey: value => value });
+vm.runInContext(functions.get('getConstructorFilterOptions'), geminiFallbackContext);
+const geminiDurations = geminiFallbackContext.getConstructorFilterOptions('gemini', 'duration', [{ key: '18m', count: 1 }]);
+assert.equal(JSON.stringify(geminiDurations), JSON.stringify([{ key: '18m', count: 1, disabled: false }]));
 vm.runInContext(functions.get('getEnglishServicePageContent'), geminiFallbackContext);
 const geminiEnglishFallback = geminiFallbackContext.getEnglishServicePageContent('gemini');
 assert.doesNotMatch(JSON.stringify(geminiEnglishFallback), /12.month|1,500|2,100/);
