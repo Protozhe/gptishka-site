@@ -2842,21 +2842,21 @@ function initActivationResumeShortcut() {
     }
     if (key === "gemini") {
       return {
-        metaTitle: "Gemini Pro — 12 or 18 months | GPTishka",
+        metaTitle: "Gemini Pro — 18 months | GPTishka",
         heroEyebrow: "Subscription plans",
         heroTitle: "Gemini Pro",
-        heroDescription: "Gemini Pro for writing, files, ideas and complex tasks. Choose a 12- or 18-month subscription with GPTishka support.",
+        heroDescription: "Gemini Pro for writing, files, ideas and complex tasks. An 18-month subscription with GPTishka support.",
         constructorTitle: "Gemini Pro",
-        constructorDescription: "Use Gemini Pro for work, study, analysis and creative tasks. Select 12 or 18 months and GPTishka will help with activation.",
+        constructorDescription: "Gemini Pro is available for 18 months. The current price is shown in the plan before checkout.",
         infoSections: [
-          { title: "What is included", items: ["Gemini Pro for the selected 12- or 18-month term.", "Access to the models and features included in the current Pro plan.", "Higher limits for working with text, files and images.", "GPTishka assistance during activation."] },
+          { title: "What is included", items: ["Gemini Pro for 18 months.", "Access to the models and features included in the current Pro plan.", "Higher limits for working with text, files and images.", "GPTishka assistance during activation."] },
           { title: "What it is useful for", items: ["Writing, editing and summarizing content.", "Analyzing documents, images and structured information.", "Study, research and planning.", "Ideas, creative work and everyday tasks."] },
-          { title: "How activation works", ordered: true, items: ["Select a 12- or 18-month term.", "Place the order and complete payment.", "Follow the activation instructions from GPTishka.", "Check that Gemini Pro is active on your account."] },
+          { title: "How activation works", ordered: true, items: ["Select Gemini Pro for 18 months.", "Place the order and complete payment.", "Follow the activation instructions from GPTishka.", "Check that Gemini Pro is active on your account."] },
           { title: "Support and important terms", items: ["The term starts after successful activation.", "Google may update available models, features and limits.", "Keep access to your account and linked email.", "Contact GPTishka support if you have an order question."] }
         ],
         faqItems: [
-          { question: "What will I receive after payment?", answer: "Gemini Pro for the selected 12- or 18-month term and GPTishka assistance with activation." },
-          { question: "Which term should I choose?", answer: "Choose 12 months for a shorter commitment or 18 months for longer access. The available price is shown before payment." },
+          { question: "What will I receive after payment?", answer: "Gemini Pro for 18 months and GPTishka assistance with activation." },
+          { question: "Do I need to choose a duration?", answer: "No. One duration is currently available: 18 months. The current price is shown before payment." },
           { question: "How long does activation take?", answer: "Most orders are completed within 5 minutes to 2 hours. The maximum processing time is 48 hours." },
           { question: "Which payment methods are available?", answer: "Available payment methods are shown during checkout. GPTishka does not store bank card details." },
           { question: "What if I need help after payment?", answer: "Contact support with your order number and we will check the activation status." }

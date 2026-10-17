@@ -44,6 +44,31 @@ function page(html, en = true) {
   return dom;
 }
 const failures = [];
+// CMS content arrives after the initial page; every Gemini sentence must translate.
+const geminiCopy = JSON.parse(fs.readFileSync('scripts/fixtures/gemini-page-copy.json', 'utf8'));
+const geminiStrings = [];
+function collectGeminiStrings(value) {
+  if (typeof value === 'string') geminiStrings.push(value);
+  else if (value && typeof value === 'object') Object.values(value).forEach(collectGeminiStrings);
+}
+collectGeminiStrings(geminiCopy);
+const geminiFallbackContext = vm.createContext({ normalizeAiServiceKey: value => value });
+vm.runInContext(functions.get('getEnglishServicePageContent'), geminiFallbackContext);
+const geminiEnglishFallback = geminiFallbackContext.getEnglishServicePageContent('gemini');
+assert.doesNotMatch(JSON.stringify(geminiEnglishFallback), /12.month|1,500|2,100/);
+assert.match(geminiEnglishFallback.metaTitle, /18 months/);
+for (const path of ['catalog/index.html', 'catalog/ai/index.html', 'en/catalog/index.html', 'en/catalog/ai/index.html']) {
+  assert.doesNotMatch(fs.readFileSync(path, 'utf8'), /12 или 18|12 or 18/);
+}
+const geminiDom = page('<html><body></body></html>');
+for (const value of geminiStrings) {
+  const translated = geminiDom.window.gptishkaI18n.translateText(value);
+  assert.doesNotMatch(translated, /[А-Яа-яЁё]/, 'Gemini CMS translation: ' + value);
+  assert.doesNotMatch(value, /12 месяцев|1 500|2 100/);
+  assert.doesNotMatch(translated, /12 months|1,500|2,100/);
+}
+assert.match(geminiDom.window.gptishkaI18n.translateText(geminiCopy.faqItems[0].answer), /One subscription.*18 months/);
+geminiDom.window.close();
 function check(root, label) {
   const walker = root.ownerDocument.createTreeWalker(root, 4);
   while (walker.nextNode()) {
