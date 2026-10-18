@@ -2781,7 +2781,7 @@
     const dedicatedSuperGrokPage = /\/supergrok-activation(?:\.html)?\/?$/i.test(window.location.pathname);
     const previewServiceKey = String(params.get('service') || (dedicatedSuperGrokPage ? 'supergrok' : '')).trim().toLowerCase().replace(/[\s_-]+/g, '');
     const previewMode = ['1', 'true', 'yes'].includes(String(params.get('preview') || '').trim().toLowerCase())
-      && ['chatgptgo', 'chatgptplus', 'chatgptpro5x', 'chatgptpro20x', 'codex250', 'codex500', 'codex1000', 'claude', 'grok', 'supergrok', 'perplexity', 'pplx'].includes(previewServiceKey);
+      && ['chatgptgo', 'chatgptplus', 'chatgptpro5x', 'chatgptpro20x', 'chatgptpro25x', 'codex250', 'codex500', 'codex1000', 'claude', 'grok', 'supergrok', 'perplexity', 'pplx'].includes(previewServiceKey);
     const orderId = previewMode
       ? `preview-${previewServiceKey}`
       : String(params.get('order_id') || params.get('orderId') || '').trim();
@@ -3485,7 +3485,9 @@
         document.title = 'Активация SuperGrok - GPTишка';
       }
       let chatGptPlanName = '';
-      if (productKey.includes('chatgpt') && (productKey.includes('pro-20x') || productKey.includes('pro 20x') || productKey.includes('pro20x'))) {
+      if (productKey.includes('chatgpt') && /pro[- ]?25x|pro[- ]?500/.test(productKey)) {
+        chatGptPlanName = 'ChatGPT Pro 25x / Pro 500';
+      } else if (productKey.includes('chatgpt') && (productKey.includes('pro-20x') || productKey.includes('pro 20x') || productKey.includes('pro20x'))) {
         chatGptPlanName = 'ChatGPT Pro 20x / Pro 200';
       } else if (productKey.includes('chatgpt') && (productKey.includes('pro-5x') || productKey.includes('pro 5x') || productKey.includes('pro5x'))) {
         chatGptPlanName = 'ChatGPT Pro 5x / Pro 100';
@@ -3520,7 +3522,7 @@
     }
 
     function applyProActivationMode(name) {
-      const isPro = /^ChatGPT Pro (5|20)x$/.test(name || '');
+      const isPro = /^ChatGPT Pro (5|20|25)x(?: \/ Pro (100|200|500))?$/.test(name || '');
       const note = document.getElementById('proActivationNote');
       if (note) note.hidden = !isPro;
       if (!isPro) return;
@@ -3614,6 +3616,7 @@
         ? 'grok'
         : (serviceKey === 'pplx' ? 'perplexity' : serviceKey);
       const configs = {
+        chatgptpro25x: { name: 'ChatGPT Pro 25x / Pro 500', tokenFlow: true },
         chatgptgo: {
           name: 'ChatGPT GO',
           tokenFlow: true,

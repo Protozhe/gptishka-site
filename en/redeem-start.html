@@ -1465,7 +1465,7 @@
     (() => {
     const params = new URLSearchParams(window.location.search);
     const previewServiceKey = String(params.get('service') || '').trim().toLowerCase().replace(/[\s_-]+/g, '');
-    const previewServices = new Set(['chatgptpro5x', 'chatgptpro20x', 'codex250', 'codex500', 'codex1000', 'claude', 'grok', 'supergrok', 'perplexity', 'pplx']);
+    const previewServices = new Set(['chatgptpro5x', 'chatgptpro20x', 'chatgptpro25x', 'codex250', 'codex500', 'codex1000', 'claude', 'grok', 'supergrok', 'perplexity', 'pplx']);
     const previewMode = params.get('preview') === '1' && previewServices.has(previewServiceKey);
     const orderId = previewMode ? 'PREVIEW' : String(params.get('order_id') || params.get('orderId') || '').trim();
     let orderLinkToken = String(params.get('t') || '').trim();
@@ -1997,7 +1997,9 @@
         ? productKey.match(/\b(250|500|1000)\b/)
         : null;
       let chatGptPlanName = '';
-      if (productKey.includes('chatgpt') && (productKey.includes('pro-20x') || productKey.includes('pro 20x') || productKey.includes('pro20x'))) {
+      if (productKey.includes('chatgpt') && /pro[- ]?25x|pro[- ]?500/.test(productKey)) {
+        chatGptPlanName = 'ChatGPT Pro 25x / Pro 500';
+      } else if (productKey.includes('chatgpt') && (productKey.includes('pro-20x') || productKey.includes('pro 20x') || productKey.includes('pro20x'))) {
         chatGptPlanName = 'ChatGPT Pro 20x / Pro 200';
       } else if (productKey.includes('chatgpt') && (productKey.includes('pro-5x') || productKey.includes('pro 5x') || productKey.includes('pro5x'))) {
         chatGptPlanName = 'ChatGPT Pro 5x / Pro 100';
@@ -2032,7 +2034,7 @@
     }
 
     function applyProActivationMode(name) {
-      const isPro = /^ChatGPT Pro (5|20)x$/.test(name || '');
+      const isPro = /^ChatGPT Pro (5|20|25)x(?: \/ Pro (100|200|500))?$/.test(name || '');
       const note = document.getElementById('proActivationNote');
       if (note) note.hidden = !isPro;
       if (!isPro) return;
@@ -2119,6 +2121,7 @@
         ? 'grok'
         : (serviceKey === 'pplx' ? 'perplexity' : serviceKey);
       const configs = {
+        chatgptpro25x: { name: 'ChatGPT Pro 25x / Pro 500', tokenFlow: true },
         chatgptpro5x: { name: 'ChatGPT Pro 5x / Pro 100', tokenFlow: true },
         chatgptpro20x: { name: 'ChatGPT Pro 20x / Pro 200', tokenFlow: true },
         codex250: { name: '250 Codex credits', credits: 250, tokenFlow: true },

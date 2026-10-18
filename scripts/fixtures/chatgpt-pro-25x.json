@@ -8,7 +8,8 @@
   "planKey": "pro-25x",
   "activation": "zovocard-autopurchase",
   "activationSiteUrl": "https://zovocard.com",
-  "fulfillmentReady": false,
+  "providerPlan": "pro_50x",
+  "fulfillmentReady": true,
   "isActive": false,
   "tags": [
     "chatgpt",

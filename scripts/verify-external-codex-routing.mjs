@@ -83,11 +83,11 @@ for (const packageSize of [250, 1000]) {
   assert.equal(JSON.stringify(stored), before);
 }
 reset(250, "https://aiee.fun");
-for (const size of [5, 20]) {
+for (const size of [5, 20, 25]) {
   reset(250);
   order.items[0].product.slug = `chatgpt-pro-${size}x-1`;
   await context.deliverProduct(order);
-  assert.equal(stored.externalFulfillmentOwner, `pulse-sitepro${size}x-v1`);
+  assert.equal(stored.externalFulfillmentOwner, size === 25 ? "pulse-sitepro500-v1" : `pulse-sitepro${size}x-v1`);
   assert.equal(stored.status, "issued");
   assert.equal(context.requiresActivationKey(stored), false);
   await context.startActivationUnsafe(order.id, '{"fixture":true}');

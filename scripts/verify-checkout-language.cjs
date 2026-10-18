@@ -79,7 +79,8 @@ assert.equal(pro25Contract.currency, 'RUB');
 assert.equal(pro25Contract.durationMonths, 1);
 assert.equal(pro25Contract.activation, 'zovocard-autopurchase');
 assert.equal(pro25Contract.activationSiteUrl, 'https://zovocard.com');
-assert.equal(pro25Contract.fulfillmentReady, false);
+assert.equal(pro25Contract.fulfillmentReady, true);
+assert.equal(pro25Contract.providerPlan, 'pro_50x', 'Pro 500 must have its own exact provider plan');
 assert.equal(pro25Contract.isActive, false, 'Unconfigured activation must stay in draft');
 for (const name of ['getServicePlanKey', 'getServicePlanLabel', 'getServicePlanSortScore']) vm.runInContext(functions.get(name), proPlanContext);
 for (const [key, label, aliases] of [
