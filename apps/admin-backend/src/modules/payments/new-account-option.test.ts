@@ -3,8 +3,8 @@ import test from "node:test";
 import { resolveNewAccountSurcharge } from "./new-account-option";
 
 test("new account surcharge applies to every ChatGPT and Claude plan", () => {
-  for (const slug of ["chatgpt-go-1m", "chatgpt-plus-1m", "chatgpt-pro-5x", "chatgpt-pro-20x"]) {
-    assert.equal(resolveNewAccountSurcharge(slug, "RUB", true), 500);
+  for (const slug of ["chatgpt-go-1m", "chatgpt-plus-1m", "chatgpt-pro-5x", "chatgpt-pro-20x", "chatgpt-pro-25x-1"]) {
+    assert.equal(resolveNewAccountSurcharge(slug, "RUB", true), 250);
   }
   for (const slug of ["claude-pro", "claude-5x-max", "claude-20x-max"]) {
     assert.equal(resolveNewAccountSurcharge(slug, "RUB", true), 3000);

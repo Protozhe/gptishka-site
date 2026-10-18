@@ -1,7 +1,7 @@
 import { AppError } from "../../common/errors/app-error";
 
 const NEW_ACCOUNT_SURCHARGES: Record<string, number> = {
-  chatgpt: 500,
+  chatgpt: 250,
   claude: 3000,
 };
 

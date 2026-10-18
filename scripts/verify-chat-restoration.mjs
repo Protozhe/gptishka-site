@@ -52,7 +52,7 @@ expect(app.includes('serviceConstructorTitleEl.textContent = selectedTitle || "C
 expect(!/pro20Renewal|Pro20Renewal|pro20-renewal/.test(app), "Retired Pro 20x warning or checkout gate returned");
 expect(!onboardingCss.includes(".pro20-renewal-confirm"), "Retired Pro 20x overlay styling returned");
 const submitSource = app.slice(app.indexOf("  async function submitChatGptGoOrder(form) {"), app.indexOf("  function renderChatGptGoOrderCard(item, serviceKey) {"));
-for (const planKey of ["go", "plus", "pro-5x", "pro-20x"]) {
+for (const planKey of ["go", "plus", "pro-5x", "pro-20x", "pro-25x"]) {
   for (const needsNewAccount of [false, true]) {
     for (const valid of [false, true]) {
       let checkoutCalls = 0;

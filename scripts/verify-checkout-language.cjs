@@ -53,7 +53,47 @@ function collectGeminiStrings(value) {
 }
 collectGeminiStrings(geminiCopy);
 const geminiFallbackContext = vm.createContext({ normalizeAiServiceKey: value => value });
+const proPlanContext = vm.createContext({
+  normalizeAiServiceKey: value => value,
+  isEnPage: false,
+  getProductSearchText: item => [item.title, item.slug, ...(item.tags || [])].filter(Boolean).join(' ').toLowerCase(),
+});
+vm.runInContext(functions.get('getNewAccountSurcharge'), proPlanContext);
+const surchargeSource = fs.readFileSync('apps/admin-backend/src/modules/payments/new-account-option.ts', 'utf8').replace(/^import .*;\r?\n/gm, '');
+const surchargeContext = vm.createContext({ exports: {}, AppError: class extends Error {} });
+vm.runInContext(ts.transpileModule(surchargeSource, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText, surchargeContext);
+for (const slug of ['chatgpt-go-1', 'chatgpt-plus-1', 'chatgpt-pro-5x-1', 'chatgpt-pro-20x-1', 'chatgpt-pro-25x-1']) {
+  assert.equal(proPlanContext.getNewAccountSurcharge('chatgpt', slug), 250);
+  assert.equal(surchargeContext.exports.resolveNewAccountSurcharge(slug, 'RUB', true), 250);
+  assert.equal(surchargeContext.exports.resolveNewAccountSurcharge(slug, 'RUB', false), 0);
+}
+assert.equal(surchargeContext.exports.resolveNewAccountSurcharge('claude-pro', 'RUB', true), 3000);
+for (const file of ['chatgpt.html', 'en/chatgpt.html']) {
+  const html = fs.readFileSync(file, 'utf8');
+  assert.match(html, /service-new-account__price">\+250 (?:₽|RUB)/);
+  assert.doesNotMatch(html, /service-new-account__price">\+500 (?:₽|RUB)/);
+}
+const pro25Contract = JSON.parse(fs.readFileSync('scripts/fixtures/chatgpt-pro-25x.json', 'utf8'));
+assert.equal(pro25Contract.price, 50000);
+assert.equal(pro25Contract.currency, 'RUB');
+assert.equal(pro25Contract.durationMonths, 1);
+assert.equal(pro25Contract.activation, 'zovocard-autopurchase');
+assert.equal(pro25Contract.activationSiteUrl, 'https://zovocard.com');
+assert.equal(pro25Contract.fulfillmentReady, false);
+assert.equal(pro25Contract.isActive, false, 'Unconfigured activation must stay in draft');
+for (const name of ['getServicePlanKey', 'getServicePlanLabel', 'getServicePlanSortScore']) vm.runInContext(functions.get(name), proPlanContext);
+for (const [key, label, aliases] of [
+  ['pro-5x', 'Pro 5x / Pro 100', ['Pro 5x', 'Pro 100']],
+  ['pro-20x', 'Pro 20x / Pro 200', ['Pro 20x', 'Pro 200']],
+  ['pro-25x', 'Pro 25x / Pro 500', ['Pro 25x', 'Pro 500']],
+]) {
+  for (const title of aliases) assert.equal(proPlanContext.getServicePlanKey({ title: 'ChatGPT ' + title }, 'chatgpt'), key);
+  assert.equal(proPlanContext.getServicePlanLabel('chatgpt', key), label);
+}
+assert.ok(proPlanContext.getServicePlanSortScore('chatgpt', 'pro-25x') > proPlanContext.getServicePlanSortScore('chatgpt', 'pro-20x'));
 vm.runInContext(functions.get('getConstructorFilterOptions'), geminiFallbackContext);
+const proOptions = geminiFallbackContext.getConstructorFilterOptions('chatgpt', 'plan', [{ key: 'pro-20x', count: 1 }]);
+assert.equal(proOptions.find(option => option.key === 'pro-25x').disabled, true, 'Pro 500 cannot be purchased without an active product');
 const geminiDurations = geminiFallbackContext.getConstructorFilterOptions('gemini', 'duration', [{ key: '18m', count: 1 }]);
 assert.equal(JSON.stringify(geminiDurations), JSON.stringify([{ key: '18m', count: 1, disabled: false }]));
 vm.runInContext(functions.get('getEnglishServicePageContent'), geminiFallbackContext);
@@ -100,7 +140,7 @@ for (const service of ['chatgpt', 'claude', 'grok', 'perplexity', 'gemini', 'sun
       getAiOrderModalSummaryTitle: (name, plan) => name + ' ' + plan,
       escapeHtml: value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;'),
       readChatGptGoOrderDraft: () => ({ isGift: true, giftSender: 'Иван', giftRecipient: 'Мария', giftMessage: 'Спасибо', orderComment: 'Продление', cameByRecommendation: true }),
-      getNewAccountSurcharge: key => key === 'chatgpt' ? 500 : key === 'claude' ? 3000 : 0,
+      getNewAccountSurcharge: key => key === 'chatgpt' ? 250 : key === 'claude' ? 3000 : 0,
       servicePageRootEl: null, DEFAULT_PAYMENT_METHOD: 'pally', activePaymentMethod: 'pally', activePromoCode: '',
       normalizeChatGptGoPaymentChoice: value => value, normalizePromoCodeInput: value => value,
       getChatGptGoDiscount: () => 0, formatPriceByCurrency: value => value + ' RUB',

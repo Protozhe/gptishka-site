@@ -1,0 +1,20 @@
+{
+  "slug": "chatgpt-pro-25x-1",
+  "title": "ChatGPT Pro 25x / Pro 500 — 1 месяц",
+  "titleEn": "ChatGPT Pro 25x / Pro 500 — 1 month",
+  "price": 50000,
+  "currency": "RUB",
+  "durationMonths": 1,
+  "planKey": "pro-25x",
+  "activation": "zovocard-autopurchase",
+  "activationSiteUrl": "https://zovocard.com",
+  "fulfillmentReady": false,
+  "isActive": false,
+  "tags": [
+    "chatgpt",
+    "pro",
+    "pro25x",
+    "month:1",
+    "delivery:activation"
+  ]
+}

@@ -829,6 +829,14 @@ function initActivationResumeShortcut() {
         pro5x: "pro-5x",
         "pro-20x": "pro-20x",
         pro20x: "pro-20x",
+        "pro-100": "pro-5x",
+        pro100: "pro-5x",
+        "pro-200": "pro-20x",
+        pro200: "pro-20x",
+        "pro-25x": "pro-25x",
+        pro25x: "pro-25x",
+        "pro-500": "pro-25x",
+        pro500: "pro-25x",
       };
       if (aliases[requested]) return aliases[requested];
       const serviceKey = String(servicePageRootEl?.getAttribute("data-service-page") || "").trim().toLowerCase();
@@ -842,7 +850,7 @@ function initActivationResumeShortcut() {
     delivery: "all",
     duration: "all",
   };
-  const CHATGPT_ORDER_MODAL_PLAN_KEYS = new Set(["go", "plus", "pro-5x", "pro-20x"]);
+  const CHATGPT_ORDER_MODAL_PLAN_KEYS = new Set(["go", "plus", "pro-5x", "pro-20x", "pro-25x"]);
   const CLAUDE_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max-5x", "max-20x"]);
   const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["supergrok", "supergrok-heavy"]);
   const PERPLEXITY_ORDER_MODAL_PLAN_KEYS = new Set(["pro"]);
@@ -2674,6 +2682,7 @@ function initActivationResumeShortcut() {
     if (serviceKey === "chatgpt") {
       if (text.includes("go")) return 10;
       if (text.includes("plus")) return 20;
+      if (/pro(?:[-\s]*25x|[-\s]*500)(?!\d)/.test(text)) return 45;
       if (text.includes("pro-5x") || text.includes("pro 5x") || text.includes("5x")) return 30;
       if (text.includes("pro-20x") || text.includes("pro 20x") || text.includes("20x")) return 40;
       if (text.includes("pro")) return 50;
@@ -3102,6 +3111,9 @@ function initActivationResumeShortcut() {
     const joinedTags = tags.join(" ");
 
     if (key === "chatgpt") {
+      if (/pro(?:[-\s]*25x|[-\s]*500)(?!\d)/.test(text) || tags.includes("pro25x") || tags.includes("pro500")) return "pro-25x";
+      if (/pro[-\s]*200(?!\d)/.test(text)) return "pro-20x";
+      if (/pro[-\s]*100(?!\d)/.test(text)) return "pro-5x";
       if (text.includes("pro-20x") || text.includes("pro 20x") || text.includes("pro20x") || joinedTags.includes("pro20x")) return "pro-20x";
       if (text.includes("pro-5x") || text.includes("pro 5x") || text.includes("pro5x") || joinedTags.includes("pro5x")) return "pro-5x";
       if (text.includes("go") || joinedTags.split(/\s+/).includes("go")) return "go";
@@ -3223,7 +3235,7 @@ function initActivationResumeShortcut() {
       midjourney: new Set(["1m"]),
     };
     return (Array.isArray(items) ? items : []).filter(item => {
-      if (key === "chatgpt" && !["go", "plus", "pro-5x", "pro-20x"].includes(getServicePlanKey(item, key))) return false;
+      if (key === "chatgpt" && !["go", "plus", "pro-5x", "pro-20x", "pro-25x"].includes(getServicePlanKey(item, key))) return false;
       const deliveryKey = getServiceDeliveryKey(item);
       if (key === "claude") {
         const planKey = getServicePlanKey(item, key);
@@ -3239,7 +3251,7 @@ function initActivationResumeShortcut() {
       const deliveryType = resolveDeliveryType(item?.deliveryType, item?.deliveryMethod, tags);
       const activationVariant = String(item?.activationVariant || "").trim().toLowerCase();
       const planKey = getServicePlanKey(item, key);
-      if (key === "chatgpt" && (planKey === "pro-5x" || planKey === "pro-20x")) return true;
+      if (key === "chatgpt" && ["pro-5x", "pro-20x", "pro-25x"].includes(planKey)) return true;
       if (activationVariant === "withlogin" || activationVariant === "with_login") return false;
       return !["manual_login", "credentials", "support", "support_claude"].includes(deliveryType);
     });
@@ -3253,8 +3265,9 @@ function initActivationResumeShortcut() {
         go: "Go",
         plus: "Plus",
         pro: "Pro",
-        "pro-5x": "Pro 5x",
-        "pro-20x": "Pro 20x",
+        "pro-5x": "Pro 5x / Pro 100",
+        "pro-20x": "Pro 20x / Pro 200",
+        "pro-25x": "Pro 25x / Pro 500",
         chatgpt: "ChatGPT",
       },
       claude: {
@@ -3349,7 +3362,7 @@ function initActivationResumeShortcut() {
   function getServicePlanSortScore(serviceKey, planKey) {
     const key = normalizeAiServiceKey(serviceKey);
     if (key === "chatgpt") {
-      const order = { go: 10, plus: 20, "pro-5x": 30, "pro-20x": 40, pro: 50, chatgpt: 90 };
+      const order = { go: 10, plus: 20, "pro-5x": 30, "pro-20x": 40, "pro-25x": 45, pro: 50, chatgpt: 90 };
       return order[planKey] || 100;
     }
     if (key === "grok") {
@@ -4119,7 +4132,7 @@ function initActivationResumeShortcut() {
     const safeOptions = Array.isArray(options) ? options : [];
     const fixedByService = {
       chatgpt: {
-        plan: ["go", "plus", "pro-5x", "pro-20x"],
+        plan: ["go", "plus", "pro-5x", "pro-20x", "pro-25x"],
         duration: ["1m"],
       },
       claude: {
@@ -4497,7 +4510,7 @@ function initActivationResumeShortcut() {
   function getNewAccountSurcharge(serviceKey, productSlug) {
     const key = normalizeAiServiceKey(serviceKey);
     if (!String(productSlug || "").trim().toLowerCase().startsWith(`${key}-`)) return 0;
-    return key === "chatgpt" ? 500 : key === "claude" ? 3000 : 0;
+    return key === "chatgpt" ? 250 : key === "claude" ? 3000 : 0;
   }
 
   function getChatGptGoPromoContextKey(item, promoCode) {
