@@ -18,7 +18,7 @@ const helper = functions(read("../apps/admin-backend/src/modules/orders/external
 const delivery = functions(read("../apps/admin-backend/src/modules/orders/delivery.service.ts"));
 const service = functions(read("../apps/admin-backend/src/modules/orders/orders.service.ts"));
 const bot = functions(read("../ops/telegram-monitor-bot/worker.mjs"));
-let order, stored, reservations = 0, providerCalls = 0, wrongToken = false;
+let order, stored, reservations = 0, providerCalls = 0, wrongToken = false, accountPlan = "free";
 class AppError extends Error { constructor(message, status) { super(message); this.status = status; } }
 const context = vm.createContext({
   exports: {}, console: { info() {}, warn() {} }, AppError,
@@ -39,7 +39,8 @@ const context = vm.createContext({
   ordersService: { getActivation: async () => ({ productSlug: order.items[0].product.slug }) },
   getOrderWithFirstItem: async () => order, assertTokenActivationDeliveryMode() {},
   ensureActivationRecordForTokenFlow: async () => stored,
-  parseClientTokenInput: raw => ({ raw, extracted: "fixture-session", json: {} }),
+  parseClientTokenInput: raw => ({ raw, extracted: "fixture-session", json: { sessionToken: "fixture-session" } }),
+  resolveChatGptPlanType: () => accountPlan,
   isCodexCreditsProductKey: value => /^codex-(250|500|1000)$/.test(value), validateAieeSessionJson: () => null,
   isSupportTokenActivationMode: () => false,
   buildStoredClientTokenPatch: () => ({ clientTokenCiphertext: "encrypted-fixture", clientTokenStoredAt: "fixture" }),
@@ -122,3 +123,23 @@ reset(250); order.status = "PENDING";
 await context.deliverProduct(order);
 assert.equal(stored, null); assert.equal(reservations, 0);
 console.log("External Codex: paid delivery, session persistence, binding, no CDK/provider retries, legacy routing and notification guards pass.");
+
+reset(250, "https://vip.sxzfd.com");order.items[0].product.slug="chatgpt-plus-1";
+await context.deliverProduct(order);
+assert.equal(stored.status,"issued");assert.equal(reservations,0);
+assert.equal(stored.externalFulfillmentOwner,undefined);
+await context.startActivationUnsafe(order.id,'{"fixture":true}');
+assert.equal(stored.externalFulfillmentOwner,"pulse-siteplus-v1");
+assert.equal(stored.activationSiteUrl,"https://zovocard.com");
+assert.equal(stored.status,"processing");assert.equal(context.requiresActivationKey(stored),false);
+assert.equal(reservations,0);assert.equal(providerCalls,0);
+const routeAt=stored.lastProviderPayload.routeAssignedAt;
+await context.startActivationUnsafe(order.id,'{"fixture":true}');
+assert.equal(stored.lastProviderPayload.routeAssignedAt,routeAt);
+for(const plan of ["plus","go","pro",""]) {
+ assert.equal(context.resolveExternalCodexOwner({source:"site",productKey:"chatgpt-plus-1",activationSiteUrl:"https://vip.sxzfd.com",accountPlan:plan}),null);
+}
+for(const record of [{cdk:"allocated"},{taskId:"already-started"},{attempts:1},{reservedCandidates:[{keyId:"allocated"}]}]) {
+ assert.equal(context.resolveExternalCodexOwner({source:"site",productKey:"chatgpt-plus-1",activationSiteUrl:"",accountPlan:"free",record}),null);
+}
+assert.equal(context.resolveExternalCodexOwner({source:"telegram",productKey:"chatgpt-plus-1",activationSiteUrl:"",accountPlan:"free"}),null);

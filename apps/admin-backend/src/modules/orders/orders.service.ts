@@ -1076,7 +1076,7 @@ export const ordersService = {
       if (current?.status === "success") {
         throw new AppError("Activation is already completed", 409);
       }
-      if (isCodexCreditsProductKey(activationInfo?.productSlug || current?.productKey) || /^(?:chatgpt-go-1|chatgpt-pro-(5|20|25)x-1)$/.test(String(activationInfo?.productSlug || current?.productKey || ""))) {
+      if (isCodexCreditsProductKey(activationInfo?.productSlug || current?.productKey) || /^(?:chatgpt-plus-1|chatgpt-go-1|chatgpt-pro-(5|20|25)x-1)$/.test(String(activationInfo?.productSlug || current?.productKey || ""))) {
         const fullOrder = await getOrderWithFirstItem(order.id);
         if (resolveExternalCodexOwner({ source: fullOrder?.source, productKey: activationInfo?.productSlug || current?.productKey,
           activationSiteUrl: readActivationSiteUrlFromOrderDetails(fullOrder?.orderDetails), record: current })) {
@@ -2203,6 +2203,7 @@ async function ensureActivationRecordForTokenFlow(
       ) &&
       !String(existing.productKey || "").startsWith("tgbot-");
     const needsActivationSitePatch =
+      existing.externalFulfillmentOwner !== "pulse-siteplus-v1" &&
       !String(existing.cdk || "").trim() &&
       String(existing.activationSiteUrl || "") !== String(activationSiteUrl || "");
     if (
@@ -2380,16 +2381,21 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   if (isTokenBoundToAnotherFingerprint(latestBeforeStart.tokenMeta, buildTokenMeta(tokenInfo))) {
     throw new AppError("Order is already bound to another token", 409);
   }
-  if (isCodexCreditsProductKey(activationInfo?.productSlug || stored.productKey) || /^(?:chatgpt-go-1|chatgpt-pro-(5|20|25)x-1)$/.test(String(activationInfo?.productSlug || stored.productKey || ""))) {
+  if (isCodexCreditsProductKey(activationInfo?.productSlug || stored.productKey) || (String(stored.productKey) === CHATGPT_PLUS_PRODUCT_KEY && !latestBeforeStart.cdk && !latestBeforeStart.taskId && !latestBeforeStart.attempts) || /^(?:chatgpt-go-1|chatgpt-pro-(5|20|25)x-1)$/.test(String(activationInfo?.productSlug || stored.productKey || ""))) {
     const fullOrder = await getOrderWithFirstItem(orderId);
     const owner = resolveExternalCodexOwner({ source: fullOrder?.source, productKey: activationInfo?.productSlug || stored.productKey,
-      activationSiteUrl: readActivationSiteUrlFromOrderDetails(fullOrder?.orderDetails), record: latestBeforeStart });
+      activationSiteUrl: readActivationSiteUrlFromOrderDetails(fullOrder?.orderDetails), accountPlan: resolveChatGptPlanType(tokenInfo), record: latestBeforeStart });
     if (owner) {
+      if (owner === "pulse-siteplus-v1" && !String(tokenInfo.json?.sessionToken || "").trim()) {
+        throw new AppError("Для активации Plus вставьте полный JSON с sessionToken со страницы ChatGPT session.", 400);
+      }
       activationStore.upsert({
         ...latestBeforeStart, ...storagePatch, tokenMeta: buildTokenMeta(tokenInfo), externalFulfillmentOwner: owner,
+        ...(owner === "pulse-siteplus-v1" ? { activationSiteUrl: "https://zovocard.com" } : {}),
         status: "processing", verificationState: "pending", lastTokenValidatedAt: nowIso,
         tokenValidationAttempts: Math.max(0, Number(latestBeforeStart.tokenValidationAttempts || 0)) + 1,
-        lastProviderPayload: { ...(latestBeforeStart.lastProviderPayload || {}), source: owner },
+        lastProviderPayload: { ...(latestBeforeStart.lastProviderPayload || {}), source: owner,
+          ...(owner === "pulse-siteplus-v1" ? { routeAssignedAt: latestBeforeStart.lastProviderPayload?.routeAssignedAt || nowIso } : {}), },
         lastProviderMessage: latestBeforeStart.lastProviderMessage || "Данные сохранены. Выполняем автоматическую активацию.",
         updatedAt: nowIso,
       });

@@ -6,17 +6,22 @@ export function resolveExternalCodexOwner(input: {
   source: unknown;
   productKey: unknown;
   activationSiteUrl: unknown;
+  accountPlan?: unknown;
   record?: ActivationRecord | null;
 }) {
   const key = String(input.productKey || "").trim().toLowerCase();
   const match = /^codex-(250|1000)$/.exec(key);
   const pro = /^chatgpt-pro-(5|20|25)x-1$/.exec(key);
   const go = key === "chatgpt-go-1";
-  if (input.source !== "site" || (!match && !pro && !go)) return null;
+  const plus = key === "chatgpt-plus-1";
+  if (input.source !== "site" || (!match && !pro && !go && !plus)) return null;
   const record = input.record;
   if (record?.cdk || record?.taskId || Number(record?.attempts || 0) > 0) return null;
-  const owner = go ? "pulse-sitego-v1" : pro ? (pro[1] === "25" ? "pulse-sitepro500-v1" : `pulse-sitepro${pro[1]}x-v1`) : `pulse-site${match![1]}-v1`;
-  if (normalizeActivationSiteUrl(input.activationSiteUrl) === "https://zovocard.com" ||
+  if (plus && (record?.reservedCandidates?.length ||
+      (String(input.accountPlan || "").trim().toLowerCase() !== "free" &&
+       record?.externalFulfillmentOwner !== "pulse-siteplus-v1" && record?.lastProviderPayload?.source !== "pulse-siteplus-v1"))) return null;
+  const owner = plus ? "pulse-siteplus-v1" : go ? "pulse-sitego-v1" : pro ? (pro[1] === "25" ? "pulse-sitepro500-v1" : `pulse-sitepro${pro[1]}x-v1`) : `pulse-site${match![1]}-v1`;
+  if (plus || normalizeActivationSiteUrl(input.activationSiteUrl) === "https://zovocard.com" ||
       record?.externalFulfillmentOwner === owner || record?.lastProviderPayload?.source === owner) return owner;
   return null;
 }
