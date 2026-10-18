@@ -3682,13 +3682,13 @@
           serviceKey: normalizedKey,
         });
         if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Безопасный предпросмотр страницы после успешной оплаты.';
-        applyProActivationMode(config.name);
-      setStatus('pending', 'Предпросмотр: данные не отправляются.', false);
+        setStatus('pending', 'Предпросмотр: данные не отправляются.', false);
       } else {
         applyTokenFlowMode(!config.tokenFlow, config.flow);
         hideVpnOffer(false);
         setStatus('pending', 'Предпросмотр: данные не отправляются.', false);
       }
+      applyProActivationMode(config.name);
 
       [startBtn, checkBtn, retryNewKeyBtn, stopPollingBtn].forEach((button) => {
         if (button) button.disabled = true;
