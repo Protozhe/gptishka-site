@@ -1373,6 +1373,7 @@
             <button id="clearBtn" type="button" class="redeem-btn">Clear</button>
           </div>
 
+          <p id="proActivationNote" class="redeem-manual-hint" hidden>Use a free ChatGPT account. After starting, wait for the result on this page; you do not need to pay again.</p>
           <textarea id="tokenInput" class="redeem-input masked" placeholder="Account token" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
 
           <div class="redeem-meta">
@@ -1464,7 +1465,7 @@
     (() => {
     const params = new URLSearchParams(window.location.search);
     const previewServiceKey = String(params.get('service') || '').trim().toLowerCase().replace(/[\s_-]+/g, '');
-    const previewServices = new Set(['codex250', 'codex500', 'codex1000', 'claude', 'grok', 'supergrok', 'perplexity', 'pplx']);
+    const previewServices = new Set(['chatgptpro5x', 'chatgptpro20x', 'codex250', 'codex500', 'codex1000', 'claude', 'grok', 'supergrok', 'perplexity', 'pplx']);
     const previewMode = params.get('preview') === '1' && previewServices.has(previewServiceKey);
     const orderId = previewMode ? 'PREVIEW' : String(params.get('order_id') || params.get('orderId') || '').trim();
     let orderLinkToken = String(params.get('t') || '').trim();
@@ -2027,6 +2028,18 @@
         deliveryMode === 'support' || Boolean(forcedSupportFlow),
         forcedSupportFlow || activationFlow
       );
+      applyProActivationMode(chatGptPlanName);
+    }
+
+    function applyProActivationMode(name) {
+      const isPro = /^ChatGPT Pro (5|20)x$/.test(name || '');
+      const note = document.getElementById('proActivationNote');
+      if (note) note.hidden = !isPro;
+      if (!isPro) return;
+      if (tokenLabelEl) tokenLabelEl.textContent = 'ChatGPT account session';
+      if (tokenInput) tokenInput.placeholder = 'Paste the full JSON from ChatGPT /api/auth/session';
+      if (startBtn) startBtn.textContent = 'Activate ' + name;
+      if (retryNewKeyBtn) retryNewKeyBtn.style.display = 'none';
     }
 
     function isClaudeSupportFlow() {
@@ -2036,6 +2049,8 @@
     function applyTokenFlowMode(isSupportMode, flow) {
       isPerplexityManualFlow = false;
       isSupportTokenDelivery = Boolean(isSupportMode);
+      const proNote = document.getElementById('proActivationNote');
+      if (proNote) proNote.hidden = true;
       supportActivationFlow = isSupportTokenDelivery
         ? normalizeSupportActivationFlow(flow || supportActivationFlow)
         : SUPPORT_ACTIVATION_FLOW_GROK;
@@ -2104,6 +2119,8 @@
         ? 'grok'
         : (serviceKey === 'pplx' ? 'perplexity' : serviceKey);
       const configs = {
+        chatgptpro5x: { name: 'ChatGPT Pro 5x', tokenFlow: true },
+        chatgptpro20x: { name: 'ChatGPT Pro 20x', tokenFlow: true },
         codex250: { name: '250 Codex credits', credits: 250, tokenFlow: true },
         codex500: { name: '500 Codex credits', credits: 500, tokenFlow: true },
         codex1000: { name: '1000 Codex credits', credits: 1000, tokenFlow: true },
@@ -2141,6 +2158,7 @@
         applyTokenFlowMode(!config.tokenFlow, config.flow);
       }
 
+      applyProActivationMode(config.name);
       setStatus('pending', 'Preview only: no data is sent.', false);
       [startBtn, checkBtn, retryNewKeyBtn, stopPollingBtn].forEach((button) => {
         if (button) button.disabled = true;

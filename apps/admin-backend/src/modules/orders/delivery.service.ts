@@ -136,7 +136,7 @@ export async function deliverProduct(order: Order) {
   activationStore.ensure();
 
   const existing = activationStore.findByOrderId(order.id);
-  const externalOwner = /^codex-(250|1000)$/.test(product?.slug || "") ? resolveExternalCodexOwner({
+  const externalOwner = /^(?:codex-(250|1000)|chatgpt-pro-(5|20)x-1)$/.test(product?.slug || "") ? resolveExternalCodexOwner({
     source: fullOrder.source,
     productKey: product?.slug,
     activationSiteUrl: readActivationSiteUrlFromOrderDetails(fullOrder.orderDetails),
@@ -152,7 +152,7 @@ export async function deliverProduct(order: Order) {
         status: existing?.clientTokenCiphertext ? "processing" : "issued",
         verificationState: existing?.clientTokenCiphertext ? "pending" : "unknown",
         attempts: 0, taskId: null,
-        lastProviderMessage: existing?.lastProviderMessage || "Ожидаем данные аккаунта для автоматического пополнения.",
+        lastProviderMessage: existing?.lastProviderMessage || "Ожидаем данные аккаунта для автоматической активации.",
         lastProviderPayload: { ...(existing?.lastProviderPayload || {}), source: externalOwner },
         issuedAt: existing?.issuedAt || nowIso, updatedAt: nowIso,
       });

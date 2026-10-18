@@ -2652,6 +2652,7 @@
             <button id="clearBtn" type="button" class="redeem-btn">Очистить</button>
           </div>
 
+          <p id="proActivationNote" class="redeem-manual-hint" hidden>Для активации нужен бесплатный аккаунт ChatGPT. После запуска дождитесь результата на этой странице — повторная оплата не требуется.</p>
           <textarea id="tokenInput" class="redeem-input masked" placeholder="Токен аккаунта" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
 
           <div class="redeem-meta">
@@ -3515,6 +3516,18 @@
         deliveryMode === 'support' || Boolean(forcedSupportFlow),
         forcedSupportFlow || activationFlow
       );
+      applyProActivationMode(chatGptPlanName);
+    }
+
+    function applyProActivationMode(name) {
+      const isPro = /^ChatGPT Pro (5|20)x$/.test(name || '');
+      const note = document.getElementById('proActivationNote');
+      if (note) note.hidden = !isPro;
+      if (!isPro) return;
+      if (tokenLabelEl) tokenLabelEl.textContent = 'Данные аккаунта ChatGPT';
+      if (tokenInput) tokenInput.placeholder = 'Вставьте полный JSON со страницы ChatGPT /api/auth/session';
+      if (startBtn) startBtn.textContent = 'Активировать ' + name;
+      if (retryNewKeyBtn) retryNewKeyBtn.style.display = 'none';
     }
 
     function isClaudeSupportFlow() {
@@ -3526,6 +3539,8 @@
       currentGeminiActivationUrl = '';
       isPerplexityManualFlow = false;
       isSupportTokenDelivery = Boolean(isSupportMode);
+      const proNote = document.getElementById('proActivationNote');
+      if (proNote) proNote.hidden = true;
       supportActivationFlow = isSupportTokenDelivery
         ? normalizeSupportActivationFlow(flow || supportActivationFlow)
         : SUPPORT_ACTIVATION_FLOW_GROK;
@@ -3667,7 +3682,8 @@
           serviceKey: normalizedKey,
         });
         if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Безопасный предпросмотр страницы после успешной оплаты.';
-        setStatus('pending', 'Предпросмотр: данные не отправляются.', false);
+        applyProActivationMode(config.name);
+      setStatus('pending', 'Предпросмотр: данные не отправляются.', false);
       } else {
         applyTokenFlowMode(!config.tokenFlow, config.flow);
         hideVpnOffer(false);

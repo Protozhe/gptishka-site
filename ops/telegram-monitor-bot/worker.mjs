@@ -457,9 +457,11 @@ async function emptyKeyNotification(record) {
 
 function requiresActivationKey(record) {
   if (activationState(record) === "success") return false;
-  const match = /^codex-(250|1000)$/.exec(String(record?.productKey || ""));
-  if (match) {
-    const owner = `pulse-site${match[1]}-v1`;
+  const key = String(record?.productKey || "");
+  const match = /^codex-(250|1000)$/.exec(key);
+  const pro = /^chatgpt-pro-(5|20)x-1$/.exec(key);
+  if (match || pro) {
+    const owner = pro ? `pulse-sitepro${pro[1]}x-v1` : `pulse-site${match[1]}-v1`;
     if (record.externalFulfillmentOwner === owner || record.lastProviderPayload?.source === owner ||
         String(record.activationSiteUrl || "").replace(/\/+$/, "") === "https://zovocard.com") return false;
   }

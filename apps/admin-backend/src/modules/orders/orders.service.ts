@@ -1076,7 +1076,7 @@ export const ordersService = {
       if (current?.status === "success") {
         throw new AppError("Activation is already completed", 409);
       }
-      if (isCodexCreditsProductKey(activationInfo?.productSlug || current?.productKey)) {
+      if (isCodexCreditsProductKey(activationInfo?.productSlug || current?.productKey) || /^chatgpt-pro-(5|20)x-1$/.test(String(activationInfo?.productSlug || current?.productKey || ""))) {
         const fullOrder = await getOrderWithFirstItem(order.id);
         if (resolveExternalCodexOwner({ source: fullOrder?.source, productKey: activationInfo?.productSlug || current?.productKey,
           activationSiteUrl: readActivationSiteUrlFromOrderDetails(fullOrder?.orderDetails), record: current })) {
@@ -2351,7 +2351,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   if (!tokenInfo.raw) throw new AppError("Token is required", 400);
   if (tokenInfo.extracted === orderId) throw new AppError("Вставлен номер заказа. Скопируйте полный JSON со страницы ChatGPT /api/auth/session.", 400);
   if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
-  if (isCodexCreditsProductKey(activationInfo?.productSlug || stored.productKey)) {
+  if (isCodexCreditsProductKey(activationInfo?.productSlug || stored.productKey) || /^chatgpt-pro-(5|20)x-1$/.test(String(activationInfo?.productSlug || stored.productKey || ""))) {
     const sessionError = validateAieeSessionJson(tokenInfo);
     if (sessionError) throw new AppError(sessionError, 400);
   }
@@ -2380,7 +2380,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   if (isTokenBoundToAnotherFingerprint(latestBeforeStart.tokenMeta, buildTokenMeta(tokenInfo))) {
     throw new AppError("Order is already bound to another token", 409);
   }
-  if (isCodexCreditsProductKey(activationInfo?.productSlug || stored.productKey)) {
+  if (isCodexCreditsProductKey(activationInfo?.productSlug || stored.productKey) || /^chatgpt-pro-(5|20)x-1$/.test(String(activationInfo?.productSlug || stored.productKey || ""))) {
     const fullOrder = await getOrderWithFirstItem(orderId);
     const owner = resolveExternalCodexOwner({ source: fullOrder?.source, productKey: activationInfo?.productSlug || stored.productKey,
       activationSiteUrl: readActivationSiteUrlFromOrderDetails(fullOrder?.orderDetails), record: latestBeforeStart });
@@ -2390,7 +2390,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
         status: "processing", verificationState: "pending", lastTokenValidatedAt: nowIso,
         tokenValidationAttempts: Math.max(0, Number(latestBeforeStart.tokenValidationAttempts || 0)) + 1,
         lastProviderPayload: { ...(latestBeforeStart.lastProviderPayload || {}), source: owner },
-        lastProviderMessage: latestBeforeStart.lastProviderMessage || "Данные сохранены. Выполняем автоматическое пополнение.",
+        lastProviderMessage: latestBeforeStart.lastProviderMessage || "Данные сохранены. Выполняем автоматическую активацию.",
         updatedAt: nowIso,
       });
       return { taskId: `reconcile-${orderId}`, reused: true };

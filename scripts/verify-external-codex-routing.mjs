@@ -83,6 +83,30 @@ for (const packageSize of [250, 1000]) {
   assert.equal(JSON.stringify(stored), before);
 }
 reset(250, "https://aiee.fun");
+for (const size of [5, 20]) {
+  reset(250);
+  order.items[0].product.slug = `chatgpt-pro-${size}x-1`;
+  await context.deliverProduct(order);
+  assert.equal(stored.externalFulfillmentOwner, `pulse-sitepro${size}x-v1`);
+  assert.equal(stored.status, "issued");
+  assert.equal(context.requiresActivationKey(stored), false);
+  await context.startActivationUnsafe(order.id, '{"fixture":true}');
+  await context.startActivationUnsafe(order.id, '{"fixture":true}');
+  assert.equal(stored.status, "processing");
+  assert.equal(stored.attempts, 0);
+  assert.equal(reservations, 0);
+  assert.equal(providerCalls, 0);
+  const before = JSON.stringify(stored); wrongToken = true;
+  await assert.rejects(context.startActivationUnsafe(order.id, '{"fixture":true}'), e => e.status === 409);
+  assert.equal(JSON.stringify(stored), before);
+  assert.equal(context.resolveExternalCodexOwner({ source: "site", productKey: `chatgpt-pro-${size}x-1-month-login`,
+    activationSiteUrl: "https://zovocard.com" }), null);
+  for (const record of [{cdk: "old"}, {taskId: "old"}, {attempts: 1}]) {
+    assert.equal(context.resolveExternalCodexOwner({ source: "site", productKey: `chatgpt-pro-${size}x-1`,
+      activationSiteUrl: "https://zovocard.com", record }), null);
+  }
+}
+reset(250, "https://aiee.fun");
 await context.deliverProduct(order);
 assert.equal(reservations, 1, "Historical AIEE routing still allocates its own key");
 assert.equal(stored.cdk, "legacy-key");
