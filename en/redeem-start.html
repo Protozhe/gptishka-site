@@ -1465,7 +1465,7 @@
     (() => {
     const params = new URLSearchParams(window.location.search);
     const previewServiceKey = String(params.get('service') || '').trim().toLowerCase().replace(/[\s_-]+/g, '');
-    const previewServices = new Set(['chatgptpro5x', 'chatgptpro20x', 'chatgptpro25x', 'codex250', 'codex500', 'codex1000', 'claude', 'grok', 'supergrok', 'perplexity', 'pplx']);
+    const previewServices = new Set(['chatgptgo', 'chatgptpro5x', 'chatgptpro20x', 'chatgptpro25x', 'codex250', 'codex500', 'codex1000', 'claude', 'grok', 'supergrok', 'perplexity', 'pplx']);
     const previewMode = params.get('preview') === '1' && previewServices.has(previewServiceKey);
     const orderId = previewMode ? 'PREVIEW' : String(params.get('order_id') || params.get('orderId') || '').trim();
     let orderLinkToken = String(params.get('t') || '').trim();
@@ -2121,6 +2121,7 @@
         ? 'grok'
         : (serviceKey === 'pplx' ? 'perplexity' : serviceKey);
       const configs = {
+        chatgptgo: { name: 'ChatGPT GO', tokenFlow: true },
         chatgptpro25x: { name: 'ChatGPT Pro 25x / Pro 500', tokenFlow: true },
         chatgptpro5x: { name: 'ChatGPT Pro 5x / Pro 100', tokenFlow: true },
         chatgptpro20x: { name: 'ChatGPT Pro 20x / Pro 200', tokenFlow: true },

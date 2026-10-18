@@ -83,11 +83,11 @@ for (const packageSize of [250, 1000]) {
   assert.equal(JSON.stringify(stored), before);
 }
 reset(250, "https://aiee.fun");
-for (const size of [5, 20, 25]) {
+for (const size of ["go", 5, 20, 25]) {
   reset(250);
-  order.items[0].product.slug = `chatgpt-pro-${size}x-1`;
+  order.items[0].product.slug = size === "go" ? "chatgpt-go-1" : `chatgpt-pro-${size}x-1`;
   await context.deliverProduct(order);
-  assert.equal(stored.externalFulfillmentOwner, size === 25 ? "pulse-sitepro500-v1" : `pulse-sitepro${size}x-v1`);
+  assert.equal(stored.externalFulfillmentOwner, size === "go" ? "pulse-sitego-v1" : size === 25 ? "pulse-sitepro500-v1" : `pulse-sitepro${size}x-v1`);
   assert.equal(stored.status, "issued");
   assert.equal(context.requiresActivationKey(stored), false);
   await context.startActivationUnsafe(order.id, '{"fixture":true}');
@@ -102,7 +102,7 @@ for (const size of [5, 20, 25]) {
   assert.equal(context.resolveExternalCodexOwner({ source: "site", productKey: `chatgpt-pro-${size}x-1-month-login`,
     activationSiteUrl: "https://zovocard.com" }), null);
   for (const record of [{cdk: "old"}, {taskId: "old"}, {attempts: 1}]) {
-    assert.equal(context.resolveExternalCodexOwner({ source: "site", productKey: `chatgpt-pro-${size}x-1`,
+    assert.equal(context.resolveExternalCodexOwner({ source: "site", productKey: order.items[0].product.slug,
       activationSiteUrl: "https://zovocard.com", record }), null);
   }
 }

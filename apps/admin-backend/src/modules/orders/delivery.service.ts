@@ -136,7 +136,7 @@ export async function deliverProduct(order: Order) {
   activationStore.ensure();
 
   const existing = activationStore.findByOrderId(order.id);
-  const externalOwner = /^(?:codex-(250|1000)|chatgpt-pro-(5|20|25)x-1)$/.test(product?.slug || "") ? resolveExternalCodexOwner({
+  const externalOwner = /^(?:codex-(250|1000)|chatgpt-pro-(5|20|25)x-1|chatgpt-go-1)$/.test(product?.slug || "") ? resolveExternalCodexOwner({
     source: fullOrder.source,
     productKey: product?.slug,
     activationSiteUrl: readActivationSiteUrlFromOrderDetails(fullOrder.orderDetails),

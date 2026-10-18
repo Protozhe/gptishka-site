@@ -460,8 +460,9 @@ function requiresActivationKey(record) {
   const key = String(record?.productKey || "");
   const match = /^codex-(250|1000)$/.exec(key);
   const pro = /^chatgpt-pro-(5|20|25)x-1$/.exec(key);
-  if (match || pro) {
-    const owner = pro ? (pro[1] === "25" ? "pulse-sitepro500-v1" : `pulse-sitepro${pro[1]}x-v1`) : `pulse-site${match[1]}-v1`;
+  const go = key === "chatgpt-go-1";
+  if (match || pro || go) {
+    const owner = go ? "pulse-sitego-v1" : pro ? (pro[1] === "25" ? "pulse-sitepro500-v1" : `pulse-sitepro${pro[1]}x-v1`) : `pulse-site${match[1]}-v1`;
     if (record.externalFulfillmentOwner === owner || record.lastProviderPayload?.source === owner ||
         String(record.activationSiteUrl || "").replace(/\/+$/, "") === "https://zovocard.com") return false;
   }
