@@ -942,6 +942,7 @@ export const ordersService = {
     const nowIso = new Date().toISOString();
     const storagePatch = buildStoredClientTokenPatch(tokenInfo.raw);
     const next: ActivationRecord = {
+      ...(existing || {}),
       orderId: order.id,
       email: order.email,
       productKey,

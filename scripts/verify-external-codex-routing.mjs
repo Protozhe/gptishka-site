@@ -9,6 +9,7 @@ function functions(text) {
   const result = new Map();
   function visit(node) {
     if (ts.isFunctionDeclaration(node) && node.name) result.set(node.name.text, node.getText(source));
+    if (ts.isMethodDeclaration(node) && node.name?.getText(source) === "storeActivationClientToken") result.set("storeActivationClientToken", "async function " + node.getText(source).replace(/^async\s+/, ""));
     ts.forEachChild(node, visit);
   }
   visit(source);
@@ -21,6 +22,10 @@ const bot = functions(read("../ops/telegram-monitor-bot/worker.mjs"));
 let order, stored, reservations = 0, providerCalls = 0, wrongToken = false, accountPlan = "free";
 class AppError extends Error { constructor(message, status) { super(message); this.status = status; } }
 const context = vm.createContext({
+  assertOrderTokenAccess: async () => order,
+  isVerificationSupportProduct: () => false, isDevinProductSlug: () => false,
+  resolveTokenActivationFlowForProduct: () => "chatgpt_token", isSupportActivationFlow: () => false, isSupportLikeDeliveryType: () => false,
+  resolveActivationPoolProductKeyForOrder: () => order.items[0].product.slug,
   exports: {}, console: { info() {}, warn() {} }, AppError,
   CHATGPT_PLUS_PRODUCT_KEY: "chatgpt-plus-1",
   OrderStatus: { PAID: "PAID" }, PaymentStatus: { SUCCESS: "SUCCESS" },
@@ -51,7 +56,7 @@ const context = vm.createContext({
 for (const [table, names] of [
   [helper, ["resolveExternalCodexOwner"]],
   [delivery, ["hasTrustedPaidPayment", "resolveActivationKeyPoolProductKey", "deliverProduct"]],
-  [service, ["startActivationUnsafe"]],
+  [service, ["startActivationUnsafe", "storeActivationClientToken"]],
   [bot, ["activationState", "requiresActivationKey"]],
 ]) for (const name of names) vm.runInContext(ts.transpileModule(table.get(name), {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
@@ -143,3 +148,15 @@ for(const record of [{cdk:"allocated"},{taskId:"already-started"},{attempts:1},{
  assert.equal(context.resolveExternalCodexOwner({source:"site",productKey:"chatgpt-plus-1",activationSiteUrl:"",accountPlan:"free",record}),null);
 }
 assert.equal(context.resolveExternalCodexOwner({source:"telegram",productKey:"chatgpt-plus-1",activationSiteUrl:"",accountPlan:"free"}),null);
+
+// Repeated form submissions must retain fulfillment ownership and key reservations.
+const ownerBefore=stored.externalFulfillmentOwner;
+const routeBefore=stored.lastProviderPayload.routeAssignedAt;
+stored.reservedCandidates=[{keyId:"private-reservation",code:"fixture",activationSiteUrl:"https://vip.sxzfd.com"}];
+stored.keyAllocationState="selected";stored.keyAllocationSite="https://vip.sxzfd.com";
+await context.storeActivationClientToken(order.id,'{"fixture":true}');
+assert.equal(stored.externalFulfillmentOwner,ownerBefore);
+assert.equal(stored.lastProviderPayload.routeAssignedAt,routeBefore);
+assert.equal(stored.reservedCandidates[0].keyId,"private-reservation");
+assert.equal(stored.keyAllocationState,"selected");assert.equal(stored.keyAllocationSite,"https://vip.sxzfd.com");
+assert.equal(stored.status,"processing");assert.equal(stored.clientTokenCiphertext,"encrypted-fixture");
