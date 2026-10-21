@@ -9,7 +9,7 @@ function functions(text) {
   const result = new Map();
   function visit(node) {
     if (ts.isFunctionDeclaration(node) && node.name) result.set(node.name.text, node.getText(source));
-    if (ts.isMethodDeclaration(node) && node.name?.getText(source) === "storeActivationClientToken") result.set("storeActivationClientToken", "async function " + node.getText(source).replace(/^async\s+/, ""));
+    if (ts.isMethodDeclaration(node) && ["storeActivationClientToken", "getActivationProof"].includes(node.name?.getText(source))) result.set(node.name.getText(source), "async function " + node.getText(source).replace(/^async\s+/, ""));
     ts.forEachChild(node, visit);
   }
   visit(source);
@@ -56,7 +56,7 @@ const context = vm.createContext({
 for (const [table, names] of [
   [helper, ["resolveExternalCodexOwner"]],
   [delivery, ["hasTrustedPaidPayment", "resolveActivationKeyPoolProductKey", "deliverProduct"]],
-  [service, ["startActivationUnsafe", "storeActivationClientToken"]],
+  [service, ["startActivationUnsafe", "storeActivationClientToken", "getActivationProof"]],
   [bot, ["activationState", "requiresActivationKey"]],
 ]) for (const name of names) vm.runInContext(ts.transpileModule(table.get(name), {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
@@ -160,3 +160,34 @@ assert.equal(stored.lastProviderPayload.routeAssignedAt,routeBefore);
 assert.equal(stored.reservedCandidates[0].keyId,"private-reservation");
 assert.equal(stored.keyAllocationState,"selected");assert.equal(stored.keyAllocationSite,"https://vip.sxzfd.com");
 assert.equal(stored.status,"processing");assert.equal(stored.clientTokenCiphertext,"encrypted-fixture");
+
+// Force-check must not overwrite externally owned progress or query CDK APIs.
+let proofErrors=0, proofChecks=0;
+Object.assign(context, {
+  assertOrderId() {}, maskEmail: value => value,
+  deriveActivationCertainty: () => ({code:"ACTIVATION_PROCESSING"}),
+  isChongzhiActivationRecord: () => false,
+  deriveActivationProviderProductCandidates: () => ["fixture"],
+  async fetchActivationCdkCheckPayload() { proofChecks++;return {productId:"fixture",payload:{}}; },
+  updateActivationFromProviderCdkPayload() {},
+  updateActivationProviderCheckError() { proofErrors++;stored.lastProviderMessage="Activation key is missing"; },
+  hasStoredClientToken: record => Boolean(record.clientTokenCiphertext),
+});
+for(const [slug,owner] of [
+  ["chatgpt-plus-1","pulse-siteplus-v1"], ["chatgpt-go-1","pulse-sitego-v1"],
+  ["codex-250","pulse-site250-v1"], ["codex-1000","pulse-site1000-v1"],
+  ["chatgpt-pro-5x-1","pulse-sitepro5x-v1"], ["chatgpt-pro-20x-1","pulse-sitepro20x-v1"],
+  ["chatgpt-pro-25x-1","pulse-sitepro500-v1"],
+]) {
+  reset(250);order.items[0].product.slug=slug;
+  stored={orderId:order.id,productKey:slug,externalFulfillmentOwner:owner,activationSiteUrl:"https://zovocard.com",status:"processing",verificationState:"pending",attempts:0,lastProviderMessage:"Подписка активирована; подтверждаем отключение автопродления.",lastProviderPayload:{source:"diagnostic-overwrite"}};
+  const before=JSON.stringify(stored);
+  const proof=await context.getActivationProof(order.id,{forceCheck:true});
+  assert.equal(JSON.stringify(stored),before,slug+": status refresh preserves worker state");
+  assert.equal(proof.activation.status,"processing");assert.equal(proofChecks,0);assert.equal(proofErrors,0);
+}
+reset(250,"https://aiee.fun");stored={orderId:order.id,productKey:"codex-250",status:"issued",cdk:"legacy-key",attempts:0};
+await context.getActivationProof(order.id,{forceCheck:true});assert.equal(proofChecks,1,"Legacy CDK orders still query their own provider");
+stored={orderId:order.id,productKey:"chatgpt-plus-1",status:"issued",attempts:0};order.items[0].product.slug="chatgpt-plus-1";
+await context.getActivationProof(order.id,{forceCheck:true});assert.equal(proofErrors,1,"Unowned missing-key failures remain visible");
+console.log("External fulfillment proof refresh: all owned product routes preserve progress; legacy provider checks remain active.");

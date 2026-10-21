@@ -1598,7 +1598,18 @@ export const ordersService = {
 
     const activationAlreadyConfirmed =
       activation?.status === "success" || activation?.verificationState === "success";
-    if (activation && options?.forceCheck && !activationAlreadyConfirmed) {
+    // Card-worker jobs are reconciled by their persistent owner. An admin or
+    // browser status refresh must never query a legacy CDK provider or replace
+    // its authoritative progress with "Activation key is missing".
+    const externalFulfillmentOwner = order.status === OrderStatus.PAID
+      ? resolveExternalCodexOwner({
+          source: order.source,
+          productKey: product?.slug || activation?.productKey,
+          activationSiteUrl: activation?.activationSiteUrl || readActivationSiteUrlFromOrderDetails(order.orderDetails),
+          record: activation,
+        })
+      : null;
+    if (activation && options?.forceCheck && !activationAlreadyConfirmed && !externalFulfillmentOwner) {
       if (isChongzhiActivationRecord(activation) && activation.cdk) {
         try {
           const statusBaseUrl = isCodexCreditsProductKey(activation.productKey)
