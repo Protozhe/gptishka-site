@@ -67,6 +67,33 @@
     return raw ? `@${raw.replace(/^@+/, "")}` : "";
   }
 
+  function getMarketingAttribution() {
+    try {
+      const attribution = window.gptishkaGetAttribution?.();
+      if (!attribution || typeof attribution !== "object") return null;
+      return {
+        version: 1,
+        firstTouch: attribution.firstTouch || null,
+        lastTouch: attribution.lastTouch || attribution.session || null
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function trackCheckout(productId, price) {
+    try {
+      window.gptishkaTrackEvent?.("checkout_start", {
+        source: "codex_credits_page",
+        service_key: "codex",
+        product_id: productId,
+        amount: price
+      });
+    } catch (_) {
+      // Analytics must never prevent a customer from opening payment.
+    }
+  }
+
   function getCreditAmount(item) {
     const tags = Array.isArray(item && item.tags) ? item.tags : [];
     const tag = tags.find((value) => /^credits:(250|500|1000)$/i.test(String(value || "")));
@@ -133,13 +160,14 @@
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (submitEl.disabled) return;
     const emailInput = form.elements.email;
     const telegramInput = form.elements.telegram;
     const email = String(emailInput.value || "").trim().toLowerCase();
     const telegram = normalizeTelegram(telegramInput.value);
     const option = selectedOption();
     const credits = Number(option.dataset.slug && option.value || 0);
-      const slug = String(option.dataset.slug || "");
+    const slug = String(option.dataset.slug || "");
     const paymentMethod = String(form.elements.paymentMethod.value || "pally").toLowerCase();
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -166,12 +194,15 @@
         contact: { email, telegram },
         account: { status: "eligibility_review_pending", note: "GPTishka verifies account eligibility after payment. No login or password requested." }
       };
+      const attribution = getMarketingAttribution();
+      if (attribution) orderDetails.attribution = attribution;
       try {
         localStorage.setItem("checkout_email", email);
         localStorage.setItem("checkout_telegram", telegram);
         localStorage.setItem("gptishka_site_checkout_context", JSON.stringify({ source: "codex_credits_page", productId, productSlug: slug, credits, createdAt: Date.now() }));
       } catch (_) {}
 
+      trackCheckout(productId, price);
       const response = await fetch(`/api/payments/${encodeURIComponent(paymentMethod)}/create`, {
         method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, contactEmail: email, telegram, plan_id: productId, planId: productId, product_id: productId, productId, qty: 1, quantity: 1, payment_method: paymentMethod, paymentMethod, product: "Codex", plan: creditLabel, duration: creditLabel, deliveryMethod: "link", activationVariant: "withoutLogin", serverDeliveryType: "activation", order_details: orderDetails, orderDetails })

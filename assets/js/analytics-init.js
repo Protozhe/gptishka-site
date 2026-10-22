@@ -43,6 +43,24 @@
     }
   }
 
+  function analyticsUrl(value) {
+    try {
+      var url = new URL(String(value || ""));
+      var campaign = new URLSearchParams();
+      for (var i = 0; i < ATTRIBUTION_PARAMS.length; i += 1) {
+        var key = ATTRIBUTION_PARAMS[i];
+        var parameter = clipped(url.searchParams.get(key), 200);
+        if (parameter) campaign.set(key, parameter);
+      }
+      // Keep advertising identifiers while excluding account/order parameters.
+      url.search = campaign.toString();
+      url.hash = "";
+      return url.toString();
+    } catch (_) {
+      return cleanUrl(value, 1000);
+    }
+  }
+
   function buildAttributionTouch() {
     var pageUrl;
     try {
@@ -161,7 +179,7 @@
     clickmap: true,
     ecommerce: "dataLayer",
     referrer: cleanUrl(document.referrer, 1000),
-    url: cleanUrl(location.href, 1000),
+    url: analyticsUrl(location.href),
     accurateTrackBounce: true,
     trackLinks: true
   });

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
+import { assertAssetReference } from "./release-assets.mjs";
 
 const root = process.cwd();
 const script = fs.readFileSync(path.join(root, "assets", "js", "analytics-init.js"), "utf8");
@@ -87,10 +88,7 @@ assert.equal(timers.size, 0, "Interaction must cancel the delayed timer.");
 const pages = tracked.filter(file => fs.readFileSync(file, "utf8").includes("/assets/js/analytics-init.js"));
 assert.ok(pages.length >= 48, `Expected at least 48 analytics pages, found ${pages.length}.`);
 for (const file of pages) {
-  assert.ok(
-    fs.readFileSync(file, "utf8").includes("/assets/js/analytics-init.js?v=20261016-private-links1"),
-    `${path.relative(root, file)} has a stale analytics cache version.`,
-  );
+  assertAssetReference(fs.readFileSync(file, "utf8"), "assets/js/analytics-init.js", path.relative(root, file));
 }
 
 console.log(`Deferred analytics wiring verified across ${pages.length} HTML pages.`);

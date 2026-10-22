@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
+import { assertAssetReference } from "./release-assets.mjs";
 
 const analyticsSource = fs.readFileSync("assets/js/analytics-init.js", "utf8");
 const appSource = fs.readFileSync("assets/js/app.js", "utf8");
@@ -60,10 +61,11 @@ function runAnalytics({ href, referrer, localSeed = new Map(), sessionSeed = new
     document: documentMock,
     location: windowMock.location,
     URL,
+    URLSearchParams,
     Date,
   });
 
-  return { snapshot: windowMock.gptishkaGetAttribution(), localSeed, sessionSeed };
+  return { snapshot: windowMock.gptishkaGetAttribution(), init: windowMock.ym.a[0][2], localSeed, sessionSeed };
 }
 
 const localSeed = new Map();
@@ -84,6 +86,10 @@ assert.equal(campaignLanding.snapshot.lastTouch.yclid, "abc123");
 assert.equal(campaignLanding.snapshot.lastTouch.landingPage.includes("#"), false);
 assert.equal(campaignLanding.snapshot.lastTouch.landingPage.includes("?"), false);
 assert.equal(campaignLanding.snapshot.lastTouch.referrer.includes("?"), false);
+const metrikaLanding = new URL(campaignLanding.init.url);
+assert.equal(metrikaLanding.searchParams.get("utm_campaign"), "42");
+assert.equal(metrikaLanding.searchParams.get("yclid"), "abc123");
+assert.equal(metrikaLanding.hash, "");
 
 const internalPage = runAnalytics({
   href: "https://gptishka.shop/payment.html",
@@ -161,10 +167,10 @@ collectHtml(".");
 for (const file of htmlFiles) {
   const html = fs.readFileSync(file, "utf8");
   if (html.includes("/assets/js/analytics-init.js?v=")) {
-    assert.ok(html.includes("analytics-init.js?v=20260813-yandex-attribution1"), `${file}: stale analytics asset`);
+    assertAssetReference(html, "assets/js/analytics-init.js", file);
   }
   if (html.includes("app.min.js?v=")) {
-    assert.ok(html.includes("app.min.js?v=20260825-enot-routing1"), `${file}: stale storefront asset`);
+    assertAssetReference(html, "assets/js/app.min.js", file);
   }
 }
 
