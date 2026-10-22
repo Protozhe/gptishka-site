@@ -68,7 +68,7 @@ function reset(packageSize, site = "https://zovocard.com") {
     payments: [{ status: "SUCCESS", provider: "pally" }], orderDetails: { selection: { serverActivationSiteUrl: site } },
     items: [{ product: { slug: `codex-${packageSize}`, id: "fixture-product", tags: [] } }] };
 }
-for (const packageSize of [250, 1000]) {
+for (const packageSize of [250, 500, 1000]) {
   reset(packageSize);
   await context.deliverProduct(order);
   assert.equal(reservations, 0);
@@ -175,7 +175,7 @@ Object.assign(context, {
 });
 for(const [slug,owner] of [
   ["chatgpt-plus-1","pulse-siteplus-v1"], ["chatgpt-go-1","pulse-sitego-v1"],
-  ["codex-250","pulse-site250-v1"], ["codex-1000","pulse-site1000-v1"],
+  ["codex-250","pulse-site250-v1"], ["codex-500","pulse-site500-v1"], ["codex-1000","pulse-site1000-v1"],
   ["chatgpt-pro-5x-1","pulse-sitepro5x-v1"], ["chatgpt-pro-20x-1","pulse-sitepro20x-v1"],
   ["chatgpt-pro-25x-1","pulse-sitepro500-v1"],
 ]) {
@@ -191,3 +191,5 @@ await context.getActivationProof(order.id,{forceCheck:true});assert.equal(proofC
 stored={orderId:order.id,productKey:"chatgpt-plus-1",status:"issued",attempts:0};order.items[0].product.slug="chatgpt-plus-1";
 await context.getActivationProof(order.id,{forceCheck:true});assert.equal(proofErrors,1,"Unowned missing-key failures remain visible");
 console.log("External fulfillment proof refresh: all owned product routes preserve progress; legacy provider checks remain active.");
+
+reset(500,"https://aiee.fun");await context.deliverProduct(order);assert.equal(reservations,1);assert.equal(stored.cdk,"legacy-key");

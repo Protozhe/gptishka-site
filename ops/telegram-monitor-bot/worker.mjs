@@ -458,7 +458,7 @@ async function emptyKeyNotification(record) {
 function requiresActivationKey(record) {
   if (activationState(record) === "success") return false;
   const key = String(record?.productKey || "");
-  const match = /^codex-(250|1000)$/.exec(key);
+  const match = /^codex-(250|500|1000)$/.exec(key);
   const pro = /^chatgpt-pro-(5|20|25)x-1$/.exec(key);
   const go = key === "chatgpt-go-1";
   const plus = key === "chatgpt-plus-1";
