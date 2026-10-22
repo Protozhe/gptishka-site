@@ -1,0 +1,17 @@
+[Unit]
+Description=Confirmed Codex purchases for Yandex Metrika (campaign 714510350 only)
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/var/www/gptishka-new
+ExecStart=/usr/bin/node /var/www/gptishka-new/apps/admin-backend/scripts/sync-codex-metrika.mjs --upload
+Environment=NODE_ENV=production
+UMask=0077
+TimeoutStartSec=240
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/gptishka-runtime/codex-metrika

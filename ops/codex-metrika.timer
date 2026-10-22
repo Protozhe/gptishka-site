@@ -1,0 +1,10 @@
+[Unit]
+Description=Check confirmed Codex payments every five minutes
+
+[Timer]
+OnCalendar=*:0/5
+Persistent=true
+Unit=codex-metrika.service
+
+[Install]
+WantedBy=timers.target
