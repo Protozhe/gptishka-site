@@ -1,7 +1,10 @@
 # Codex advertising attribution correction — 23 October 2026
 
-Status: prepared and verified locally; **not published**. No Direct, Metrika,
-database, payment-provider or server changes were made by this release.
+Status: **published**, commit `98eb1d30d5239fccb56c79dd8c1022ba357e8016`.
+The user explicitly approved publication on 23 October 2026 (Europe/Berlin).
+See `deployment-20261023-codex-attribution.json` for the workflow, backup and
+public verification receipt. No Direct settings, Metrika settings, database
+records or payment-provider configuration were changed by this release.
 
 ## Baseline and scope
 
@@ -59,11 +62,12 @@ This release restores marketing identifiers and checkout-intent events. It does
 payment/activation pages retain their analytics exclusion. Server-confirmed
 conversion delivery remains deferred and no historical conversions were uploaded.
 
-Publication requires the separate explicit request specified in the workspace
-AGENTS.md. Before publishing, recheck the active server commit, integrate any
-new production changes, commit the candidate on `main`, run all release gates,
-and use the protected `production` deployment path. Do not copy individual
-files into the active site.
+The separate explicit publication request required by workspace AGENTS.md was
+received. The active server baseline was rechecked, all 44 checks passed locally
+and in CI, and the protected production workflow passed server verification,
+builds, tests, backup and live checks. No individual source files were copied
+over the active site. Future changes must compare against this published commit
+and repeat the protected release flow.
 
 References:
 

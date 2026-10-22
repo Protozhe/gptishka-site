@@ -1,0 +1,61 @@
+{
+  "status": "published",
+  "localDate": "2026-10-23",
+  "timezone": "Europe/Berlin",
+  "commit": "98eb1d30d5239fccb56c79dd8c1022ba357e8016",
+  "base": "8003c17ab7b3853c43d8ae8e303586752d27c874",
+  "branch": "production",
+  "localSource": "versions/codex-attribution-fix-20261023",
+  "workflow": {
+    "id": 39869963860,
+    "url": "https://github.com/Protozhe/gptishka-site/actions/runs/39869963860",
+    "conclusion": "success",
+    "completedUtc": "2026-10-22T23:12:44Z"
+  },
+  "verifiedUtc": "2026-10-22T23:14:51Z",
+  "releaseDirectory": "/var/www/gptishka-releases/release-98eb1d30d5239fccb56c79dd8c1022ba357e8016",
+  "previousRelease": "/var/www/gptishka-releases/release-8003c17ab7b3853c43d8ae8e303586752d27c874",
+  "backupDirectory": "/var/backups/gptishka/design-98eb1d30d523-20261022T231234Z",
+  "scope": [
+    "Allowlisted marketing parameters in Metrika initialization URL",
+    "Codex order attribution and checkout-start event",
+    "Duplicate-submit guard with payment retry preserved",
+    "RU/EN credit eligibility and 12-month expiry terms",
+    "HTML fallback prices synchronized with unchanged public catalog",
+    "Analytics cache references refreshed across 62 HTML pages"
+  ],
+  "checks": {
+    "localProductionChecks": 44,
+    "ciProductionChecks": 44,
+    "serverWorkflow": "Verification, backend/admin builds, HTTP/TypeScript tests, backup, nginx validation and post-switch health checks passed",
+    "yandexAttributionVerifier": "passed locally",
+    "serverGitClean": true,
+    "adminHealth": "200 / ok",
+    "nginxConfig": "valid",
+    "publicPages": {
+      "hosts": ["gptishka.shop", "www.gptishka.shop"],
+      "routes": ["/codex-credits", "/chatgpt", "/en/codex-credits", "/en/chatgpt.html"],
+      "httpStatus": 200,
+      "expiryMonths": 12,
+      "fallbackPricesRub": [1500, 2500, 4500],
+      "assetReferences": "match committed content hashes"
+    },
+    "publicCatalog": "Codex 250/500/1000 remain 1500/2500/4500 RUB",
+    "landingQueryPreserved": true,
+    "publicAssetSha256": {
+      "assets/js/analytics-init.js": "a31172e573208ce2e1ffba6199752a8fb1c9a8f1806c19b1c68f49141239675d",
+      "assets/js/codex-credits.js": "813abe19104b3899360c01884dd0aca85da5a95189fa17812d28f1a044048303"
+    }
+  },
+  "realTestOrders": 0,
+  "realTestPayments": 0,
+  "offlineConversionUploads": 0,
+  "directSettingsChanged": false,
+  "metrikaSettingsChanged": false,
+  "databaseMigrations": false,
+  "limitations": [
+    "Direct browser controls unavailable; campaign budget, bids, queries, moderation and ad price not reverified",
+    "No visual browser or real payment smoke test performed",
+    "Restored source attribution and checkout intent do not confirm successful-payment conversion delivery; private activation/payment pages remain excluded from external analytics"
+  ]
+}
