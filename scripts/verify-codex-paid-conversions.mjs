@@ -20,6 +20,7 @@ for (const change of [{ status: 'PENDING' }, { status: 'REFUNDED' }, { source: '
   { orderDetails: { attribution: { lastTouch: { ...order.orderDetails.attribution.lastTouch, capturedAt: '2026-09-01' } } } },
   { createdAt: new Date('2026-10-22') }]) assert.equal(codexConversion({ ...order, ...change }, { since, now }), null);
 assert.throws(() => codexConversion(order, { since: new Date('invalid'), now }));
+assert.deepEqual(codexConversion({ ...order, createdAt: new Date('2026-10-22T23:00:00Z') }, { since: new Date('2026-10-22T23:00:00Z'), now }), event);
 const temporary = await mkdtemp(path.join(os.tmpdir(), 'codex-conversions-'));
 try {
   let posts = 0;

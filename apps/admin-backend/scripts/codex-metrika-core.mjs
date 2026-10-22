@@ -10,7 +10,8 @@ const DAY = 86400000;
 const API = `https://api-metrika.yandex.net/management/v1/counter/${COUNTER}/offline_conversions`;
 
 export function codexConversion(order, { since, now = new Date() }) {
-  if (!Number.isFinite(+since) || +since > +now || +since < +new Date('2026-10-23T00:00:00Z')) throw new Error('Explicit prospective Codex start time required');
+  // 23 October in the customer's Europe/Berlin timezone starts on 22 October UTC.
+  if (!Number.isFinite(+since) || +since > +now || +since < +new Date('2026-10-22T22:00:00Z')) throw new Error('Explicit prospective Codex start time required');
   if (order.status !== 'PAID' || order.source !== 'site' || !order.id || !Number.isFinite(+new Date(order.createdAt))
     || +new Date(order.createdAt) < +since || +new Date(order.createdAt) > +now) return null;
   if (!order.items?.length || order.items.some(item => !CODEX_SLUGS.includes(item.product?.slug))) return null;
