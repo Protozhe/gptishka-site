@@ -3018,7 +3018,7 @@ function initActivationResumeShortcut() {
     if (servicePageRootEl.dataset.defaultSection === "credits") {
       document.title = isEnPage ? "Codex credit top-up | GPTishka" : "Пополнение кредитов Codex | GPTishka";
     } else if (key === "chatgpt" && !isEnPage) {
-      document.title = "Купить ChatGPT Plus — 2 190 ₽ за месяц";
+      document.title = "Купить ChatGPT Plus — 2 290 ₽ за месяц";
     } else if (payload.meta && payload.meta.title) {
       document.title = payload.meta.title;
     }
@@ -7204,10 +7204,10 @@ function initActivationResumeShortcut() {
     if (isChatgpt) {
       const title = en
         ? "ChatGPT assistance — independent GPTishka service"
-        : "Купить ChatGPT Plus — 2 190 ₽ за месяц";
+        : "Купить ChatGPT Plus — 2 290 ₽ за месяц";
       const description = en
         ? "GPTishka provides independent purchase and activation assistance for AI services. We are not an official OpenAI website and do not represent OpenAI."
-        : "Купить ChatGPT Plus за 2 190 ₽ на месяц. Подключение на ваш аккаунт без передачи логина и пароля, оплата в рублях, поддержка и гарантия. Также доступны Go, Pro 5x и Pro 20x.";
+        : "Купить ChatGPT Plus за 2 290 ₽ на месяц. Подключение на ваш аккаунт без передачи логина и пароля, оплата в рублях, поддержка и гарантия. Также доступны Go, Pro 5x и Pro 20x.";
       document.title = title;
       setMeta("description", description);
       setMeta("og:title", title, "property");
