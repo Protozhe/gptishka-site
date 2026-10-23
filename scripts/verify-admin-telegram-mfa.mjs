@@ -16,7 +16,7 @@ function load(name, deps, globals = {}) {
   vm.runInContext(ts.transpileModule(source(name), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true } }).outputText, context);
   return context.exports;
 }
-let targetType = "private", transportFails = false, sent = 0;
+let targetType = "private", transportFails = false, sent = 0, lastMessage = null;
 const mfa = load("telegram-mfa.service", {
   "node:fs": fs, "node:path": path, "node:crypto": crypto, sqlite3, zod: { z },
   "../../config/env": { env: { NODE_ENV: "test", JWT_REFRESH_SECRET: "fixture-secret-for-hashing" } },
@@ -26,7 +26,10 @@ const mfa = load("telegram-mfa.service", {
     fetch: async url => {
       if (transportFails) throw Error("transport offline");
       const endpoint = new URL(url).pathname.split("/").pop();
-      if (endpoint === "sendMessage") sent++;
+      if (endpoint === "sendMessage") {
+        sent++;
+        lastMessage = Object.fromEntries(new URL(url).searchParams);
+      }
       return { ok: true, json: async () => ({ ok: true, result: endpoint === "getMe" ? { username: "myadminiibot" } : endpoint === "getChat" ? { type: targetType } : { message_id: 1 } }) };
     },
   },
@@ -63,8 +66,18 @@ try {
   await assert.rejects(mfa.sendCode(channel, "1", "123456"));
   assert.equal(sent, 0);
   transportFails = false;
-  await mfa.sendCode(channel, "1", "123456");
+  await mfa.sendCode(channel, "1", "012345");
   assert.equal(sent, 1);
+  assert.equal(lastMessage.parse_mode, "HTML");
+  assert.equal(lastMessage.protect_content, "false", "The owner must be able to copy the login code");
+  assert.ok(lastMessage.text.includes("<code>012345</code>"), "A code with a leading zero remains selectable as code");
+  assert.deepEqual(JSON.parse(lastMessage.reply_markup), {
+    inline_keyboard: [[{ text: "📋 Скопировать код", copy_text: { text: "012345" } }]],
+  }, "Copy only the six-digit code, without a callback, order data or the whole message");
+  for (const invalid of ["12345", "1234567", "<b>x</b>", "１２３４５６"]) {
+    await assert.rejects(mfa.sendCode(channel, "1", invalid), /invalid_mfa_code/);
+  }
+  assert.equal(sent, 1, "Invalid codes must not reach Telegram");
 } finally { fs.rmSync(temp, { recursive: true, force: true }); }
 
 let consumed = false, issued = 0;
@@ -96,4 +109,4 @@ assert.equal(issued, 1); assert.equal(second.body.accessToken, "access");
 assert.ok(second.cookies.some(([name, , options]) => name === "__Host-gptishka_panel" && options.httpOnly && options.secure && options.sameSite === "strict" && options.path === "/"));
 await assert.rejects(handlers.verifyTelegram({ ...req, body: { challengeId: "challenge", code: "123456" } }, response()));
 assert.equal(issued, 1);
-console.log("Telegram MFA: password gate, private delivery, expiry, binding, five-attempt limit, replacement and concurrent replay checks passed.");
+console.log("Telegram MFA: copy button, selectable code, password gate, private delivery, expiry, binding, five-attempt limit, replacement and concurrent replay checks passed.");

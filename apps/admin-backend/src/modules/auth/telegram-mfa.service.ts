@@ -116,6 +116,7 @@ export class ChallengeStore {
 }
 
 export async function sendCode(config: Config, chatId: string, code: string) {
+  if (!/^[0-9]{6}$/.test(code)) throw new Error("invalid_mfa_code");
   const dispatcher = new ProxyAgent(config.proxyUrl);
   async function call(method: string, params: Record<string, string> = {}) {
     const response = await fetch(`https://api.telegram.org/bot${config.botToken}/${method}?${new URLSearchParams(params)}`, {
@@ -131,8 +132,11 @@ export async function sendCode(config: Config, chatId: string, code: string) {
     if (String(identity.username).toLowerCase() !== "myadminiibot" || chat.type !== "private") throw new Error("telegram_destination_invalid");
     await call("sendMessage", {
       chat_id: chatId,
-      text: `GPTishka · Вход в админку\n\nКод: ${code}\nДействует 5 минут. Вводите только на https://gptishka.shop/admin/login\nНикому не сообщайте этот код. Если вы не входили, смените пароль.`,
-      protect_content: "true", disable_web_page_preview: "true",
+      text: `GPTishka · Вход в админку\n\nКод: <code>${code}</code>\nДействует 5 минут. Вводите только на https://gptishka.shop/admin/login\nНикому не сообщайте этот код. Если вы не входили, смените пароль.`,
+      parse_mode: "HTML", protect_content: "false", disable_web_page_preview: "true",
+      reply_markup: JSON.stringify({
+        inline_keyboard: [[{ text: "📋 Скопировать код", copy_text: { text: code } }]],
+      }),
     });
   } finally { await dispatcher.close(); }
 }
