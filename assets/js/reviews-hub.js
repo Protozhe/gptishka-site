@@ -106,7 +106,8 @@
     top.append(create("span", "review-card__source", reviewSourceLabel(item)), rating);
     if (item.sourceType === "customer" && !Number(item.rating)) rating.hidden = true;
 
-    var text = create("p", "review-card__text", item.text || "Оценка без комментария");
+    var emptyComment = /^en\b/i.test((document.documentElement && document.documentElement.lang) || "") ? "Rating without a comment" : "Оценка без комментария";
+    var text = create("p", "review-card__text", item.text || emptyComment);
     var footer = create("div", "review-card__footer");
     var meta = create("span", "review-card__meta");
     meta.append(create("strong", "review-card__nickname", reviewNickname(item)));

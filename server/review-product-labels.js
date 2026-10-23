@@ -24,4 +24,13 @@ function reviewProductLabel(value) {
   return original || "Цифровая подписка";
 }
 
-module.exports = { reviewProductLabel };
+// An old imported record used the entire advert title as its comment. Keep the
+// buyer's score and metadata, but do not present seller copy as customer feedback.
+function presentReview(item) {
+  const words = String(item?.text || "").normalize("NFKC").toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  if (words !== "chatgpt plus готовый или ваш аккаунт 30 дней автоподключение") return item;
+  return { ...item, text: "", detail: reviewProductLabel(item.text) };
+}
+
+module.exports = { reviewProductLabel, presentReview };

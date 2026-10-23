@@ -111,6 +111,7 @@ const NOINDEX_PUBLIC_PATHS = new Set([
 const dataDir = path.join(__dirname, "data");
 if (IS_PRODUCTION) process.umask(0o027);
 const { mergePreservedReviews } = require("./server/preserved-reviews");
+const { presentReview } = require("./server/review-product-labels");
 const PRESERVED_REVIEWS_PATH = IS_PRODUCTION
   ? "/var/lib/gptishka-runtime/preserved-reviews.json"
   : path.join(dataDir, "preserved-reviews.json");
@@ -2350,7 +2351,8 @@ function createApp() {
       } catch (error) {
         if (error.code !== "ENOENT") throw error;
       }
-      return res.json(mergePreservedReviews(mergedPayload, preserved));
+      const presented = mergePreservedReviews(mergedPayload, preserved);
+      return res.json({ ...presented, items: presented.items.map(presentReview) });
     } catch (error) {
       logError("Public reviews request failed", error);
       return res.status(503).json({
