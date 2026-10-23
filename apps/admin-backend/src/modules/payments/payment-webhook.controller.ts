@@ -17,7 +17,7 @@ export const handlePaymentWebhook = asyncHandler(async (req: Request, res: Respo
 
   let result;
   try {
-    result = await paymentWebhookService.handle(payload as any);
+    result = await paymentWebhookService.handle(payload as any, req.path.endsWith("/lava") ? "lava" : "gateway");
   } catch (error) {
     console.error("[payment-webhook] processing error", error);
     throw error;

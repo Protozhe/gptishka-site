@@ -10,6 +10,7 @@ const checks = [
   "scripts/verify-checkout-language.cjs",
   "scripts/verify-activation-confidentiality.mjs",
   "scripts/verify-pally-settlement.mjs",
+  "scripts/verify-payment-concurrency.mjs",
   "scripts/verify-kyc-price.cjs",
   "scripts/verify-aiee-proxy.mjs",
   "scripts/verify-review-product-labels.cjs",

@@ -89,7 +89,7 @@ function firstNumberLike(...values: unknown[]): number | string | undefined {
 }
 
 export const paymentWebhookService = {
-  async handle(rawPayload: WebhookPayload) {
+  async handle(rawPayload: WebhookPayload, expectedProvider?: string) {
     const payload = normalizeWebhookPayload(rawPayload);
     const paymentRef = String(payload.paymentId || payload.payment_id || payload.invoiceId || payload.invoice_id || payload.id || "").trim();
     const orderId = String(payload.orderId || payload.order_id || "").trim();
@@ -106,6 +106,8 @@ export const paymentWebhookService = {
         })
       : null;
 
+    if (paymentRef && !payment) throw new AppError("Payment reference not found", 404);
+
     const fallbackOrder = !payment && orderId ? await prisma.order.findUnique({ where: { id: orderId } }) : null;
     const order = payment?.order || fallbackOrder;
     if (!order) throw new AppError("Order not found", 404);
@@ -117,6 +119,9 @@ export const paymentWebhookService = {
         orderBy: { createdAt: "desc" },
       }));
     if (!targetPayment) throw new AppError("Payment not found", 404);
+    if (expectedProvider && targetPayment.provider !== expectedProvider) {
+      throw new AppError("Webhook provider mismatch", 409);
+    }
     if (orderId && targetPayment.orderId !== orderId) {
       throw new AppError("Webhook order mismatch", 409);
     }
@@ -192,56 +197,83 @@ export const paymentWebhookService = {
       });
     }
 
-    await prisma.$transaction([
-      prisma.payment.update({
+    if (isRefund && targetPayment.provider === "gateway") {
+      const refundedAmount = parseAmount(payload.refund_amount);
+      if (refundedAmount === null || Math.round(refundedAmount * 100) !== Math.round(Number(order.totalAmount) * 100)) {
+        throw new AppError("Partial or missing refund amount requires reconciliation", 409);
+      }
+    }
+
+    // Lock the order before re-reading state. Initial lookups and provider checks
+    // may race another callback; only this transaction's winner owns effects.
+    const settlement = await prisma.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${order.id} FOR UPDATE`;
+      const currentOrder = await tx.order.findUnique({ where: { id: order.id } });
+      const currentPayment = await tx.payment.findUnique({ where: { id: targetPayment.id } });
+      if (!currentOrder || !currentPayment) throw new AppError("Payment not found", 404);
+      if (currentOrder.status === OrderStatus.REFUNDED || currentPayment.status === PaymentStatus.REFUNDED ||
+          (currentOrder.status === OrderStatus.PAID && !isRefund) ||
+          (currentPayment.status === PaymentStatus.SUCCESS && !isRefund)) {
+        return { duplicate: true };
+      }
+      if (currentPayment.providerRef !== targetPayment.providerRef) {
+        throw new AppError("Payment reference changed during verification", 409);
+      }
+      await tx.payment.update({
         where: { id: targetPayment.id },
         data: {
           status: nextPaymentStatus,
-          providerRef: paymentRef || targetPayment.providerRef,
+          providerRef: paymentRef || currentPayment.providerRef,
           processedAt: mapped === "processing" ? null : new Date(),
-          payload: preserveCheckoutDetailsOnWebhook(rawPayload, targetPayment.payload) as any,
+          payload: preserveCheckoutDetailsOnWebhook(rawPayload, currentPayment.payload) as any,
         },
-      }),
-      prisma.order.update({
+      });
+      await tx.order.update({
         where: { id: order.id },
-        data: {
-          status: nextOrderStatus,
-          paymentId: paymentRef || targetPayment.providerRef || targetPayment.id,
-        },
-      }),
-    ]);
-
-    if (nextOrderStatus === OrderStatus.PAID && order.status !== OrderStatus.PAID) {
-      if (order.promoCodeId) {
-        await prisma.promoCode.update({
-          where: { id: order.promoCodeId },
-          data: { usedCount: { increment: 1 } },
-        });
-      }
-
-      if (order.partnerId) {
-        const partner = await prisma.partner.findUnique({ where: { id: order.partnerId } });
-        if (partner) {
-          const commission = Number(((Number(order.totalAmount) * Number(partner.payoutPercent)) / 100).toFixed(2));
-          await prisma.partnerEarning.upsert({
-            where: { orderId: order.id },
-            create: {
-              orderId: order.id,
-              partnerId: partner.id,
-              commissionRate: partner.payoutPercent,
-              commissionAmount: commission,
-              status: PartnerEarningStatus.PENDING,
-            },
-            update: {
-              commissionRate: partner.payoutPercent,
-              commissionAmount: commission,
-              status: PartnerEarningStatus.PENDING,
-            },
+        data: { status: nextOrderStatus, paymentId: paymentRef || currentPayment.providerRef || targetPayment.id },
+      });
+      if (nextOrderStatus === OrderStatus.PAID) {
+        if (currentOrder.promoCodeId) {
+          await tx.promoCode.update({
+            where: { id: currentOrder.promoCodeId },
+            data: { usedCount: { increment: 1 } },
           });
-          console.info(`[partner] earning created order=${order.id} partner=${partner.id} amount=${commission}`);
+        }
+
+        if (currentOrder.partnerId) {
+          const partner = await tx.partner.findUnique({ where: { id: currentOrder.partnerId } });
+          if (partner) {
+            const commission = Number(((Number(currentOrder.totalAmount) * Number(partner.payoutPercent)) / 100).toFixed(2));
+            await tx.partnerEarning.upsert({
+              where: { orderId: currentOrder.id },
+              create: {
+                orderId: currentOrder.id,
+                partnerId: partner.id,
+                commissionRate: partner.payoutPercent,
+                commissionAmount: commission,
+                status: PartnerEarningStatus.PENDING,
+              },
+              update: {
+                commissionRate: partner.payoutPercent,
+                commissionAmount: commission,
+                status: PartnerEarningStatus.PENDING,
+              },
+            });
+            console.info(`[partner] earning created order=${currentOrder.id} partner=${partner.id} amount=${commission}`);
+          }
         }
       }
+      if (isRefund) {
+        await tx.partnerEarning.updateMany({
+          where: { orderId: order.id, status: { not: PartnerEarningStatus.REVERSED } },
+          data: { status: PartnerEarningStatus.REVERSED },
+        });
+      }
+      return { duplicate: false };
+    });
+    if (settlement.duplicate) return { ok: true, duplicate: true, orderId: order.id };
 
+    if (nextOrderStatus === OrderStatus.PAID) {
       const sideEffects = await Promise.allSettled([
         sendOrderPaidEmail(order.email, {
           orderId: order.id,
@@ -272,18 +304,6 @@ export const paymentWebhookService = {
       console.info(`[payment] order ${order.id} marked as FAILED via webhook`);
     }
 
-    if (nextOrderStatus === OrderStatus.REFUNDED) {
-      await prisma.partnerEarning.updateMany({
-        where: {
-          orderId: order.id,
-          status: { not: PartnerEarningStatus.REVERSED },
-        },
-        data: {
-          status: PartnerEarningStatus.REVERSED,
-        },
-      });
-      console.info(`[partner] earning reversed for order=${order.id}`);
-    }
 
     return { ok: true, duplicate: false, orderId: order.id };
   },
@@ -319,6 +339,7 @@ async function verifyGatewayInvoice(input: {
       Accept: "application/json",
       "x-api-key": apiKey,
     },
+    signal: AbortSignal.timeout(10000),
   });
   if (!response.ok) {
     throw new AppError("Payment provider verification failed", 409);
@@ -422,6 +443,7 @@ async function verifyLavaInvoice(input: {
       Signature: signature,
     },
     body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(10000),
   });
   if (!response.ok) {
     throw new AppError("Payment provider verification failed", 409);

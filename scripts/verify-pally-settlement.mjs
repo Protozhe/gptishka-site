@@ -53,10 +53,12 @@ function resetOrder(provider = "pally") {
 const prisma = {
   payment: {
     findFirst: async query => query.where.id?.not ? null : payment,
+    findUnique: async () => payment,
     update: async query => (payment = { ...payment, ...query.data }),
   },
-  order: { update: async query => (order = { ...order, ...query.data }) },
-  $transaction: async values => Promise.all(values),
+  order: { findUnique: async () => order, update: async query => (order = { ...order, ...query.data }) },
+  $queryRaw: async () => [],
+  $transaction: async values => typeof values === "function" ? values(prisma) : Promise.all(values),
 };
 const statuses = Object.fromEntries(["PENDING", "PAID", "FAILED", "REFUNDED", "SUCCESS", "PROCESSING"].map(x => [x, x]));
 const { paymentWebhookService } = load("apps/admin-backend/src/modules/payments/payment-webhook.service.ts", {

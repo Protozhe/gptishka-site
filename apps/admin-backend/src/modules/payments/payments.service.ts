@@ -520,36 +520,60 @@ export const paymentsService = {
   },
 
   async refund(orderId: string, actor?: { userId?: string; ip?: string; userAgent?: string }) {
-    const order = await prisma.order.findUnique({
-      where: { id: orderId },
-      include: { payments: { orderBy: { createdAt: "desc" } } },
+    // Persist intent before crossing the provider boundary. A timeout or crash
+    // leaves the intent in place: another request must reconcile, never resend.
+    const claim = await prisma.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+        include: { payments: { orderBy: { createdAt: "desc" } } },
+      });
+      if (!order) throw new AppError("Order not found", 404);
+      if (order.status === OrderStatus.REFUNDED) return null;
+      if (order.status !== OrderStatus.PAID) throw new AppError("Only paid orders can be refunded", 409);
+      const successful = order.payments.filter(payment => payment.status === PaymentStatus.SUCCESS);
+      if (successful.length !== 1) throw new AppError("Payment requires reconciliation before refund", 409);
+      const payment = successful[0];
+      if (!payment.providerRef || payment.currency !== order.currency ||
+          Number(payment.amount) !== Number(order.totalAmount)) {
+        throw new AppError("Payment does not match the order", 409);
+      }
+      if (payment.provider !== "gateway") throw new AppError("Provider refunds are not configured", 503);
+      const existing = await tx.auditLog.findFirst({
+        where: { entityType: "order", entityId: order.id, action: "refund_requested" },
+      });
+      if (existing) throw new AppError("Refund already requested; reconcile with provider before retrying", 409);
+      await tx.auditLog.create({ data: {
+        entityType: "order", entityId: order.id, action: "refund_requested",
+        userId: actor?.userId, ip: actor?.ip, userAgent: actor?.userAgent,
+        after: { paymentId: payment.id, provider: payment.provider, providerRef: payment.providerRef,
+          amount: Number(payment.amount), currency: payment.currency },
+      } });
+      return { order, payment };
     });
-
-    if (!order) throw new AppError("Order not found", 404);
-    const payment = order.payments[0];
-    if (!payment) throw new AppError("Payment not found", 404);
-
+    if (!claim) return { ok: true, duplicate: true };
+    const { order, payment } = claim;
     const provider = getProviderByCode(payment.provider);
-    const refundResult = await provider.refundPayment(payment.providerRef || payment.id, Number(order.totalAmount));
-    if (!refundResult.ok) throw new AppError("Refund failed", 400);
+    const refundResult = await provider.refundPayment(payment.providerRef!, Number(payment.amount));
+    if (!refundResult.ok) throw new AppError("Refund not confirmed; reconcile with provider before retrying", 409);
 
-    await prisma.$transaction([
-      prisma.payment.update({
+    await prisma.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${order.id} FOR UPDATE`;
+      await tx.payment.update({
         where: { id: payment.id },
         data: { status: PaymentStatus.REFUNDED, processedAt: new Date() },
-      }),
-      prisma.order.update({ where: { id: order.id }, data: { status: OrderStatus.REFUNDED } }),
-    ]);
-
-    await writeAuditLog({
-      userId: actor?.userId,
-      entityType: "order",
-      entityId: order.id,
-      action: "refund",
-      before: { status: order.status },
-      after: { status: OrderStatus.REFUNDED, refundRef: refundResult.providerRef },
-      ip: actor?.ip,
-      userAgent: actor?.userAgent,
+      });
+      await tx.order.update({ where: { id: order.id }, data: { status: OrderStatus.REFUNDED } });
+      await tx.partnerEarning.updateMany({
+        where: { orderId: order.id, status: { not: PartnerEarningStatus.REVERSED } },
+        data: { status: PartnerEarningStatus.REVERSED },
+      });
+      await tx.auditLog.create({ data: {
+        userId: actor?.userId, entityType: "order", entityId: order.id, action: "refund",
+        before: { status: order.status },
+        after: { status: OrderStatus.REFUNDED, refundRef: refundResult.providerRef || null },
+        ip: actor?.ip, userAgent: actor?.userAgent,
+      } });
     });
 
     return { ok: true, refundRef: refundResult.providerRef };

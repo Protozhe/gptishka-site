@@ -66,6 +66,7 @@ export class GatewayProvider implements PaymentProvider {
         "x-api-key": apiKey,
       },
       body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(10000),
     });
 
     if (!response.ok) {
@@ -126,6 +127,7 @@ export class GatewayProvider implements PaymentProvider {
         "x-api-key": apiKey,
       },
       body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(10000),
     });
 
     if (!response.ok) {
@@ -139,7 +141,7 @@ export class GatewayProvider implements PaymentProvider {
       refund_id?: string;
       id?: string;
     };
-    if (json.status_check === false) {
+    if (json.status_check !== true) {
       return { ok: false };
     }
     return {
