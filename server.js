@@ -4,6 +4,7 @@ const fs = require("fs");
 const { execFile } = require("child_process");
 const sqlite3 = require("sqlite3").verbose();
 const helmet = require("helmet");
+const { applyContentSecurityPolicy } = require("./server/security-headers");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
 const {
@@ -1119,6 +1120,7 @@ function createApp() {
     })
   );
   app.use(compression());
+  app.use(applyContentSecurityPolicy);
   app.use(
     "/api",
     rateLimit({

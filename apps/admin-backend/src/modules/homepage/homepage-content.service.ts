@@ -370,8 +370,8 @@ export const homepageContentService = {
     return content;
   },
 
-  uploadImage(file: Express.Multer.File) {
+  async uploadImage(file: Express.Multer.File) {
     if (!file) throw new Error("Image is required");
-    return { imageUrl: saveProductImage(file) };
+    return { imageUrl: await saveProductImage(file) };
   },
 };

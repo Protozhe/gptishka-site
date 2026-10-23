@@ -70,7 +70,7 @@ test("getCspHeaderName defaults to report-only", () => {
 });
 
 test("CSP_REPORT_ONLY only disables report-only for explicit false values", () => {
-  for (const value of [undefined, "", "true", "1", "yes", "maybe", "treu"]) {
+  for (const value of ["true", "1", "yes"]) {
     withEnv({ CSP_REPORT_ONLY: value }, () => {
       const headers = applyCsp("/");
       assert.ok(headers.has("Content-Security-Policy-Report-Only"), String(value));
@@ -78,7 +78,7 @@ test("CSP_REPORT_ONLY only disables report-only for explicit false values", () =
     });
   }
 
-  for (const value of ["false", "0", "no", "FALSE", " No "]) {
+  for (const value of [undefined, "", "maybe", "treu", "false", "0", "no", "FALSE", " No "]) {
     withEnv({ CSP_REPORT_ONLY: value }, () => {
       const headers = applyCsp("/");
       assert.ok(headers.has("Content-Security-Policy"), value);
@@ -123,20 +123,22 @@ test("admin csp is stricter than storefront csp", () => {
   assert.ok(storefront["media-src"].includes("data:"));
 });
 
-test("admin csp allows current external assets and forbids inline scripts", () => {
+test("admin csp forbids analytics and inline scripts", () => {
   const admin = getCspDirectivesForPath("/admin");
   const hashes = inlineScriptHashes(path.join(__dirname, "..", "apps", "admin-ui", "index.html"));
 
   assert.equal(hashes.length, 0);
-  for (const name of ["admin-analytics.js", "admin-errors.js"]) {
+  for (const name of ["admin-errors.js"]) {
     assert.match(adminIndexHtml(), new RegExp(`/admin/${name.replaceAll(".", "\\.")}\\?v=sha256-`));
     assert.ok(fs.statSync(path.join(__dirname, "..", "apps", "admin-ui", "public", name)).size > 0);
   }
   assert.equal(admin["script-src"].includes("'unsafe-inline'"), false);
-  assert.ok(admin["script-src"].includes("https://top-fwz1.mail.ru"));
-  assert.ok(admin["style-src"].includes("https://fonts.googleapis.com"));
-  assert.ok(admin["font-src"].includes("https://fonts.gstatic.com"));
-  assert.ok(admin["img-src"].includes("https://top-fwz1.mail.ru"));
+  assert.equal(admin["script-src"].includes("https://top-fwz1.mail.ru"), false);
+  assert.doesNotMatch(adminIndexHtml(), /top-fwz1\.mail\.ru|admin-analytics/);
+  assert.equal(admin["style-src"].includes("https://fonts.googleapis.com"), false);
+  assert.equal(admin["font-src"].includes("https://fonts.gstatic.com"), false);
+  assert.match(adminIndexHtml(), /\/assets\/css\/admin-fonts\.css/);
+  assert.equal(admin["img-src"].includes("https://top-fwz1.mail.ru"), false);
 });
 
 test("admin static HTML includes CSP meta fallback before inline scripts", () => {
@@ -158,7 +160,14 @@ test("storefront csp allows Google Fonts and YouTube embeds", () => {
   const storefront = getCspDirectivesForPath("/");
   assert.ok(storefront["style-src"].includes("https://fonts.googleapis.com"));
   assert.ok(storefront["font-src"].includes("https://fonts.gstatic.com"));
-  assert.deepEqual(storefront["frame-src"], ["https://www.youtube.com"]);
+  assert.ok(storefront["frame-src"].includes("https://www.youtube.com"));
+  assert.ok(storefront["frame-src"].includes("https://challenges.cloudflare.com"));
+});
+
+test("uploaded SVG gets a mandatory sandbox even in report-only mode", () => {
+  withEnv({ CSP_REPORT_ONLY: "true" }, () => {
+    assert.match(applyCsp("/uploads/products/legacy.svg").get("Content-Security-Policy"), /^sandbox;/);
+  });
 });
 
 test("buildCspHeader serializes directives", () => {

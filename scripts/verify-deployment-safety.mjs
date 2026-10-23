@@ -68,6 +68,8 @@ assert.equal(ecosystemContext.module.exports.apps.length, 3);
 for (const app of ecosystemContext.module.exports.apps) {
   assert.equal(app.uid, "gptishka-web");
   assert.equal(app.gid, "gptishka-web");
+  assert.equal(app.interpreter, "/usr/bin/setpriv");
+  assert.equal(JSON.stringify(app.node_args), JSON.stringify(["--no-new-privs", "/usr/bin/node"]));
   assert.equal(app.env.GPTISHKA_RUNTIME_DIR, "/var/lib/gptishka-runtime/website");
 }
 for (const phase of ["test-site-permissions.py", "prepare-site-permissions.py\" --prepare", "prepare-site-permissions.py\" --activate"]) {

@@ -14,10 +14,12 @@ import {
   Users,
   Wallet,
   Bot,
+  ShieldCheck,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { useAuth } from "../hooks/useAuth";
+import { useState } from "react";
 
 const TEXT = {
   dashboard: "\u0414\u0430\u0448\u0431\u043e\u0440\u0434",
@@ -59,20 +61,25 @@ const nav = [
   { to: "/account-tools", label: TEXT.accountTools, icon: UserSearch },
   { to: "/notifications", label: TEXT.notifications, icon: BellRing },
   { to: "/telegram-bots", label: TEXT.telegramBots, icon: Bot },
+  { to: "/sessions", label: "Устройства и входы", icon: ShieldCheck },
 ];
 
 export function AdminLayout() {
   const { user, logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-[270px_1fr]">
+    <div className="min-h-screen grid grid-cols-1 grid-rows-[auto_1fr] lg:grid-cols-[270px_1fr] lg:grid-rows-1">
       <aside className="border-r border-slate-200 bg-white/90 p-5 dark:border-slate-800 dark:bg-slate-950/80">
-        <div className="mb-8">
+        <div className="flex items-center justify-between lg:mb-8">
+          <div>
           <div className="text-xs uppercase tracking-[0.2em] text-cyan-600">GPTishka</div>
           <div className="mt-1 text-xl font-extrabold">{TEXT.panel}</div>
+          </div>
+          <button className="btn-secondary lg:hidden" aria-expanded={menuOpen} aria-controls="admin-navigation" onClick={() => setMenuOpen(!menuOpen)}>Меню</button>
         </div>
 
-        <nav className="space-y-1">
+        <nav id="admin-navigation" className={`${menuOpen ? "mt-4 block" : "hidden"} space-y-1 lg:block`}>
           {nav.map((item) => {
             const Icon = item.icon;
             return (
@@ -80,6 +87,7 @@ export function AdminLayout() {
                 key={item.to}
                 to={item.to}
                 end={item.to === "/"}
+                onClick={() => setMenuOpen(false)}
                 className={({ isActive }) =>
                   `flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition ${
                     isActive
@@ -95,7 +103,7 @@ export function AdminLayout() {
           })}
         </nav>
 
-        <div className="mt-10 rounded-2xl bg-slate-100 p-3 text-xs dark:bg-slate-900">
+        <div className={`${menuOpen ? "block" : "hidden"} mt-10 rounded-2xl bg-slate-100 p-3 text-xs dark:bg-slate-900 lg:block`}>
           <div className="font-semibold">{user?.email}</div>
           <div className="mt-1 text-slate-500">
             {TEXT.role}: {user?.role}

@@ -67,9 +67,10 @@ upload=pathlib.Path(p['uploads'])/'products/test.png';upload.write_bytes(b'fixtu
 assert upload.stat().st_gid==__import__('grp').getgrnam('www-data').gr_gid
 assert not os.access('/root/.ssh',os.R_OK)
 assert not os.access('/var/run/docker.sock',os.R_OK|os.W_OK)
+assert pathlib.Path('/proc/self/status').read_text().split('NoNewPrivs:',1)[1].splitlines()[0].strip()=='1'
 print(json.dumps({'ok':True,'uid':os.geteuid(),'atomic_write':True,'sqlite_write':True,'root_code_config_blocked':True}))
 '''
-    result = subprocess.run(['runuser', '-u', module.USER, '--', '/usr/bin/python3', '-c', script, json.dumps(paths)], capture_output=True, text=True)
+    result = subprocess.run(['runuser', '-u', module.USER, '--', '/usr/bin/setpriv', '--no-new-privs', '/usr/bin/python3', '-c', script, json.dumps(paths)], capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
     # Root maintenance reads/writes through compatibility paths without the
     # protected_regular failure caused by a shared sticky state directory.

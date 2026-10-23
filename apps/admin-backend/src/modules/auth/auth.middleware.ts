@@ -21,14 +21,15 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
 
   try {
     // Roles and account status can change before the signed token expires.
-    const user = await prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: { id: true, isActive: true, role: { select: { code: true } } },
+    const session = await prisma.refreshToken.findFirst({
+      where: { id: payload.sid, userId: payload.sub, revokedAt: null, expiresAt: { gt: new Date() } },
+      select: { user: { select: { id: true, isActive: true, role: { select: { code: true } } } } },
     });
+    const user = session?.user;
     if (!user?.isActive || !user.role?.code) {
       return next(new AppError("Unauthorized", 401));
     }
-    req.auth = { userId: user.id, role: user.role.code };
+    req.auth = { userId: user.id, role: user.role.code, sessionId: payload.sid };
     return next();
   } catch (error) {
     return next(error);

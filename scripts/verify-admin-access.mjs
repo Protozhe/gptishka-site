@@ -3,6 +3,7 @@ import fs from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 import jwt from "jsonwebtoken";
+import crypto from "node:crypto";
 
 class AppError extends Error { constructor(message, statusCode) { super(message); this.statusCode = statusCode; } }
 function load(file, dependencies) {
@@ -22,12 +23,14 @@ const roles = { OWNER: "OWNER", ADMIN: "ADMIN", MANAGER: "MANAGER", SUPPORT: "SU
 const tokens = load("modules/auth/token.service.ts", {
   jsonwebtoken: jwt, "../../config/env": { env: {
     JWT_ACCESS_SECRET: secret, JWT_REFRESH_SECRET: secret, JWT_ACCESS_TTL: "15m", JWT_REFRESH_TTL_DAYS: 30,
-  } }, "@prisma/client": { RoleCode: roles },
+  } }, "@prisma/client": { RoleCode: roles }, "node:crypto": crypto,
 });
-const access = tokens.signAccessToken("user-1", roles.OWNER);
+const access = tokens.signAccessToken("user-1", roles.OWNER, "session-1");
 const refresh = tokens.signRefreshToken("user-1");
 assert.equal(tokens.verifyAccessToken(access).sub, "user-1");
 assert.equal(tokens.verifyRefreshToken(refresh).sub, "user-1");
+assert.notEqual(tokens.signRefreshToken("user-1"), refresh, "Same-second refresh tokens must be distinct");
+assert.throws(() => tokens.verifyAccessToken(tokens.signAccessToken("user-1", roles.OWNER, "")));
 assert.throws(() => tokens.verifyAccessToken(refresh));
 assert.throws(() => tokens.verifyRefreshToken(access));
 for (const payload of [{ sub: "", role: "OWNER", type: "access" }, { sub: "user-1", role: "invented", type: "access" }, { sub: "user-1", role: "OWNER" }]) {
@@ -38,13 +41,14 @@ assert.throws(() => tokens.verifyAccessToken(jwt.sign({ sub: "user-1", role: "OW
 assert.throws(() => tokens.verifyAccessToken(access.slice(0, -8) + "tampered"));
 
 let user = { id: "user-1", isActive: true, role: { code: "OWNER" } };
-let dbError = null, queries = 0;
+let dbError = null, queries = 0, sessionRevoked = false;
 const { requireAuth, allowRoles } = load("modules/auth/auth.middleware.ts", {
   "../../common/errors/app-error": { AppError }, "./token.service": tokens,
-  "../../config/prisma": { prisma: { user: { findUnique: async args => {
-    queries++; assert.equal(args.where.id, "user-1");
+  "../../config/prisma": { prisma: { refreshToken: { findFirst: async args => {
+    queries++; assert.equal(args.where.id, "session-1"); assert.equal(args.where.userId, "user-1");
+    assert.equal(args.where.revokedAt, null); assert.ok(args.where.expiresAt.gt);
     if (dbError) throw dbError;
-    return user;
+    return sessionRevoked ? null : { user };
   } } } },
 });
 async function authenticate(token) {
@@ -55,6 +59,9 @@ async function authenticate(token) {
   return { req, error: calls[0] };
 }
 assert.equal((await authenticate(access)).req.auth.role, "OWNER");
+sessionRevoked = true;
+assert.equal((await authenticate(access)).error.statusCode, 401, "Revocation invalidates an already-issued access token");
+sessionRevoked = false;
 // The same already-issued OWNER token must use the current database role.
 user = { ...user, role: { code: "SUPPORT" } };
 let result = await authenticate(access);

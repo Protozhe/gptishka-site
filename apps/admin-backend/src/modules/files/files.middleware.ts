@@ -4,10 +4,9 @@ const ALLOWED_IMAGE_MIME_TYPES = new Set([
   "image/jpeg",
   "image/png",
   "image/webp",
-  "image/svg+xml",
 ]);
 
-const ALLOWED_IMAGE_EXTENSIONS = /\.(jpe?g|png|webp|svg)$/i;
+const ALLOWED_IMAGE_EXTENSIONS = /\.(jpe?g|png|webp)$/i;
 
 export const imageUpload = multer({
   storage: multer.memoryStorage(),

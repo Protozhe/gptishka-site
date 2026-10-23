@@ -33,7 +33,7 @@ homepageContentAdminRouter.post(
   allowRoles(["OWNER", "ADMIN", "MANAGER"]),
   imageUpload.single("image"),
   asyncHandler(async (req, res) => {
-    res.status(201).json(homepageContentService.uploadImage(req.file as Express.Multer.File));
+    res.status(201).json(await homepageContentService.uploadImage(req.file as Express.Multer.File));
   })
 );
 

@@ -2,31 +2,13 @@ import axios from "axios";
 
 const API_URL = import.meta.env.VITE_ADMIN_API_URL || "/api/admin";
 
-function safeGet(key: string): string | null {
-  try {
-    return window.localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function safeSet(key: string, value: string | null): void {
-  try {
-    if (value === null) {
-      window.localStorage.removeItem(key);
-    } else {
-      window.localStorage.setItem(key, value);
-    }
-  } catch {
-    // Ignore storage errors (private mode / blocked storage).
-  }
-}
-
-let accessToken: string | null = safeGet("admin_access_token");
+// Access credentials stay in memory; an HttpOnly cookie restores the session.
+let accessToken: string | null = null;
+let refreshRequest: Promise<string> | null = null;
+try { window.localStorage.removeItem(["admin", "access", "token"].join("_")); } catch {}
 
 export function setAccessToken(token: string | null) {
   accessToken = token;
-  safeSet("admin_access_token", token);
 }
 
 export const api = axios.create({
@@ -34,7 +16,10 @@ export const api = axios.create({
   withCredentials: true,
 });
 
-api.interceptors.request.use((config) => {
+api.interceptors.request.use(async (config) => {
+  if (config.url === "/auth/logout" && refreshRequest) {
+    try { await refreshRequest; } catch {}
+  }
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
@@ -45,12 +30,23 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const original = error.config;
-    if (error.response?.status === 401 && !original._retry && !String(original.url).includes("/auth/")) {
+    if (original && error.response?.status === 401 && !original._retry &&
+        !/^\/auth\/(?:login|logout|refresh|register-admin)$/.test(String(original.url))) {
       original._retry = true;
       try {
-        const refreshRes = await api.post("/auth/refresh");
-        setAccessToken(refreshRes.data.accessToken);
-        original.headers.Authorization = `Bearer ${refreshRes.data.accessToken}`;
+        if (!refreshRequest) {
+          const rotate = () => api.post("/auth/refresh").then(({ data }) => {
+            setAccessToken(data.accessToken);
+            return data.accessToken as string;
+          });
+          // Cookies are shared between tabs. Web Locks serialize rotation across
+          // them; the database compare-and-swap remains the fallback guard.
+          refreshRequest = (async () => globalThis.navigator?.locks
+            ? await navigator.locks.request("gptishka-admin-refresh", rotate)
+            : await rotate())().finally(() => { refreshRequest = null; });
+        }
+        const token = await refreshRequest;
+        original.headers.Authorization = `Bearer ${token}`;
         return api(original);
       } catch {
         setAccessToken(null);

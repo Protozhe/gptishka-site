@@ -285,7 +285,7 @@ export const productsService = {
 
     let iconPngUrl = "";
     try {
-      iconPngUrl = saveProductPngImage(file);
+      iconPngUrl = await saveProductPngImage(file);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Allowed image format: png";
       throw new AppError(message, 400);

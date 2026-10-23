@@ -42,13 +42,14 @@ function getStorefrontDirectives() {
     "base-uri": ["'self'"],
     "object-src": ["'none'"],
     "frame-ancestors": ["'self'"],
-    "script-src": ["'self'", "'unsafe-inline'", "https://mc.yandex.ru", "https://top-fwz1.mail.ru"],
+    "script-src": ["'self'", "'unsafe-inline'", "https://mc.yandex.ru", "https://mc.yandex.com", "https://top-fwz1.mail.ru", "https://challenges.cloudflare.com"],
     "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
     "img-src": ["'self'", "data:", "blob:", "https:"],
     "font-src": ["'self'", "data:", "https://fonts.gstatic.com"],
     "media-src": ["'self'", "data:", "blob:"],
-    "connect-src": ["'self'", ...connectOrigins, "https://mc.yandex.ru", "https://top-fwz1.mail.ru", "https://api.telegram.org"],
-    "frame-src": ["https://www.youtube.com"],
+    "connect-src": ["'self'", ...connectOrigins, "https://mc.yandex.ru", "https://mc.yandex.com", "https://*.mc.yandex.ru", "https://*.mc.yandex.com", "https://top-fwz1.mail.ru", "https://challenges.cloudflare.com"],
+    "frame-src": ["https://www.youtube.com", "https://www.youtube-nocookie.com", "https://challenges.cloudflare.com"],
+    "worker-src": ["'self'", "blob:"],
     "form-action": ["'self'", "https:"],
     "upgrade-insecure-requests": [],
   };
@@ -61,10 +62,10 @@ function getAdminDirectives() {
     "base-uri": ["'self'"],
     "object-src": ["'none'"],
     "frame-ancestors": ["'self'"],
-    "script-src": ["'self'", ...ADMIN_INLINE_SCRIPT_HASHES, "https://top-fwz1.mail.ru"],
-    "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-    "img-src": ["'self'", "data:", "blob:", "https://top-fwz1.mail.ru"],
-    "font-src": ["'self'", "data:", "https://fonts.gstatic.com"],
+    "script-src": ["'self'", ...ADMIN_INLINE_SCRIPT_HASHES],
+    "style-src": ["'self'", "'unsafe-inline'"],
+    "img-src": ["'self'", "data:", "blob:"],
+    "font-src": ["'self'", "data:"],
     "connect-src": ["'self'", ...connectOrigins],
     "form-action": ["'self'"],
     "upgrade-insecure-requests": [],
@@ -86,7 +87,12 @@ function getCspHeaderName(options = {}) {
 }
 
 function applyContentSecurityPolicy(req, res, next) {
-  const reportOnly = parseReportOnly(process.env.CSP_REPORT_ONLY, true);
+  const reportOnly = parseReportOnly(process.env.CSP_REPORT_ONLY, false);
+  if (/^\/uploads\/.*\.svg$/i.test(req.path)) {
+    res.setHeader("Content-Security-Policy", "sandbox; default-src 'none'; style-src 'unsafe-inline'");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    return next();
+  }
   res.setHeader(getCspHeaderName({ reportOnly }), buildCspHeader(getCspDirectivesForPath(req.path)));
   next();
 }

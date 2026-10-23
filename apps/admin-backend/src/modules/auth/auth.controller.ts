@@ -24,9 +24,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const user = await validateUserCredentials(email, password);
 
   const refreshToken = signRefreshToken(user.id);
-  const accessToken = signAccessToken(user.id, user.role.code);
-
-  await prisma.refreshToken.create({
+  const session = await prisma.refreshToken.create({
     data: {
       tokenHash: sha256(refreshToken),
       userId: user.id,
@@ -35,6 +33,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
       expiresAt: new Date(Date.now() + env.JWT_REFRESH_TTL_DAYS * 24 * 60 * 60 * 1000),
     },
   });
+  const accessToken = signAccessToken(user.id, user.role.code, session.id);
 
   res.cookie(env.REFRESH_COOKIE_NAME, refreshToken, refreshCookieOptions());
 
@@ -90,9 +89,7 @@ export const registerAdmin = asyncHandler(async (req: Request, res: Response) =>
   });
 
   const refreshToken = signRefreshToken(user.id);
-  const accessToken = signAccessToken(user.id, user.role.code);
-
-  await prisma.refreshToken.create({
+  const session = await prisma.refreshToken.create({
     data: {
       tokenHash: sha256(refreshToken),
       userId: user.id,
@@ -101,6 +98,7 @@ export const registerAdmin = asyncHandler(async (req: Request, res: Response) =>
       expiresAt: new Date(Date.now() + env.JWT_REFRESH_TTL_DAYS * 24 * 60 * 60 * 1000),
     },
   });
+  const accessToken = signAccessToken(user.id, user.role.code, session.id);
 
   res.cookie(env.REFRESH_COOKIE_NAME, refreshToken, refreshCookieOptions());
   res.status(201).json({
@@ -140,20 +138,13 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
   if (!stored || !stored.user.isActive) throw new AppError("Unauthorized", 401);
 
   const nextRefresh = signRefreshToken(stored.userId);
-  const nextAccess = signAccessToken(stored.userId, stored.user.role.code);
-
-  await prisma.$transaction([
-    prisma.refreshToken.update({ where: { id: stored.id }, data: { revokedAt: new Date() } }),
-    prisma.refreshToken.create({
-      data: {
-        tokenHash: sha256(nextRefresh),
-        userId: stored.userId,
-        userAgent: String(req.headers["user-agent"] || ""),
-        ip: req.ip,
-        expiresAt: new Date(Date.now() + env.JWT_REFRESH_TTL_DAYS * 24 * 60 * 60 * 1000),
-      },
-    }),
-  ]);
+  // Compare-and-swap cannot resurrect a concurrently revoked device session.
+  const rotated = await prisma.refreshToken.updateMany({
+    where: { id: stored.id, tokenHash: hashed, revokedAt: null, expiresAt: { gt: new Date() } },
+    data: { tokenHash: sha256(nextRefresh) },
+  });
+  if (rotated.count !== 1) throw new AppError("Unauthorized", 401);
+  const nextAccess = signAccessToken(stored.userId, stored.user.role.code, stored.id);
 
   res.cookie(env.REFRESH_COOKIE_NAME, nextRefresh, refreshCookieOptions());
   res.json({ accessToken: nextAccess });
@@ -189,4 +180,34 @@ export const me = asyncHandler(async (req: Request, res: Response) => {
     firstName: user.firstName,
     lastName: user.lastName,
   });
+});
+
+export const listSessions = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.auth) throw new AppError("Unauthorized", 401);
+  const sessions = await prisma.refreshToken.findMany({
+    where: { userId: req.auth.userId, revokedAt: null, expiresAt: { gt: new Date() } },
+    select: { id: true, userAgent: true, ip: true, createdAt: true, expiresAt: true },
+    orderBy: { createdAt: "desc" },
+  });
+  res.setHeader("Cache-Control", "no-store");
+  res.json(sessions.map(session => ({ ...session, current: session.id === req.auth!.sessionId })));
+});
+
+export const revokeSession = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.auth) throw new AppError("Unauthorized", 401);
+  await prisma.refreshToken.updateMany({
+    where: { id: String(req.params.id), userId: req.auth.userId, revokedAt: null },
+    data: { revokedAt: new Date() },
+  });
+  if (req.params.id === req.auth.sessionId) res.clearCookie(env.REFRESH_COOKIE_NAME, refreshCookieOptions());
+  res.status(204).send();
+});
+
+export const revokeOtherSessions = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.auth) throw new AppError("Unauthorized", 401);
+  await prisma.refreshToken.updateMany({
+    where: { userId: req.auth.userId, id: { not: req.auth.sessionId }, revokedAt: null },
+    data: { revokedAt: new Date() },
+  });
+  res.status(204).send();
 });

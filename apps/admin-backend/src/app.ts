@@ -55,7 +55,13 @@ export function createApp() {
   app.use(verifyAdminOrigin);
 
   const uploadsPath = path.join(process.cwd(), "apps", "admin-backend", "uploads");
-  app.use("/uploads", express.static(uploadsPath));
+  app.use("/uploads", (_req, res, next) => {
+    // Legacy vector artwork can still render as images; opening it directly
+    // cannot execute scripts or inherit the shop's origin.
+    res.setHeader("Content-Security-Policy", "sandbox; default-src 'none'; style-src 'unsafe-inline'");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    next();
+  }, express.static(uploadsPath));
 
   app.get("/", (_req, res) => {
     res.json({ ok: true, service: "admin-backend", health: "/api/admin/health" });

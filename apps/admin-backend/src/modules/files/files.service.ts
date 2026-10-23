@@ -5,7 +5,7 @@ import { v4 as uuid } from "uuid";
 
 const uploadsRoot = path.join(process.cwd(), "apps", "admin-backend", "uploads");
 const productsDir = path.join(uploadsRoot, "products");
-const allowedImageExtensions = new Set([".jpg", ".jpeg", ".png", ".webp", ".svg"]);
+const allowedImageExtensions = new Set([".jpg", ".jpeg", ".png", ".webp"]);
 const pngExtension = ".png";
 const normalizedCardImageExtension = ".webp";
 const normalizedCardImageSize = 1024;
@@ -16,15 +16,16 @@ function ensureDirs() {
   }
 }
 
-export function saveProductImage(file: Express.Multer.File) {
+export async function saveProductImage(file: Express.Multer.File) {
   ensureDirs();
   const ext = path.extname(file.originalname || "").toLowerCase() || ".bin";
   if (!allowedImageExtensions.has(ext)) {
-    throw new Error("Allowed image formats: jpg, jpeg, png, webp, svg");
+    throw new Error("Allowed image formats: jpg, jpeg, png, webp");
   }
-  const fileName = `${uuid()}${ext}`;
+  const buffer = await verifiedRaster(file.buffer);
+  const fileName = `${uuid()}.webp`;
   const targetPath = path.join(productsDir, fileName);
-  fs.writeFileSync(targetPath, file.buffer);
+  await sharp(buffer).webp({ quality: 92 }).toFile(targetPath);
   return `/uploads/products/${fileName}`;
 }
 
@@ -33,14 +34,10 @@ export async function saveNormalizedProductCardImage(file: Express.Multer.File) 
   const ext = path.extname(file.originalname || "").toLowerCase() || ".bin";
   const mime = String(file.mimetype || "").toLowerCase();
   if (!allowedImageExtensions.has(ext)) {
-    throw new Error("Allowed image formats: jpg, jpeg, png, webp, svg");
+    throw new Error("Allowed image formats: jpg, jpeg, png, webp");
   }
 
-  // SVG is vector and should be prepared with a correct viewBox at export time.
-  // TODO: add SVG viewBox normalization if SVG uploads become common for product cards.
-  if (ext === ".svg" || mime === "image/svg+xml") {
-    return saveProductImage(file);
-  }
+  await verifiedRaster(file.buffer);
 
   const fileName = `${uuid()}${normalizedCardImageExtension}`;
   const targetPath = path.join(productsDir, fileName);
@@ -114,7 +111,7 @@ async function normalizeRasterProductCardImage(buffer: Buffer) {
     .toBuffer();
 }
 
-export function saveProductPngImage(file: Express.Multer.File) {
+export async function saveProductPngImage(file: Express.Multer.File) {
   ensureDirs();
   const ext = path.extname(file.originalname || "").toLowerCase();
   const mime = String(file.mimetype || "").toLowerCase();
@@ -123,8 +120,20 @@ export function saveProductPngImage(file: Express.Multer.File) {
   }
   const fileName = `${uuid()}${pngExtension}`;
   const targetPath = path.join(productsDir, fileName);
-  fs.writeFileSync(targetPath, file.buffer);
+  await sharp(await verifiedRaster(file.buffer)).png().toFile(targetPath);
   return `/uploads/products/${fileName}`;
+}
+
+export async function verifiedRaster(buffer: Buffer) {
+  // MIME/extension alone can be forged. Fully decode and re-encode a bounded
+  // raster so embedded HTML, SVG scripts and trailing polyglot bytes never ship.
+  const image = sharp(buffer, { failOn: "error", limitInputPixels: 25_000_000 });
+  const metadata = await image.metadata();
+  if (!["jpeg", "png", "webp"].includes(metadata.format || "") || !metadata.width || !metadata.height ||
+      metadata.width * metadata.height > 25_000_000 || (metadata.pages || 1) > 1) {
+    throw new Error("Only valid JPG, PNG and WebP raster images are allowed");
+  }
+  return image.rotate().png().toBuffer();
 }
 
 export function deleteProductImageByUrl(imageUrl: string) {

@@ -24,6 +24,7 @@ const NotificationsPage = React.lazy(() => import("./pages/NotificationsPage"));
 const AccountToolsPage = React.lazy(() => import("./pages/AccountToolsPage"));
 const TelegramBotsPage = React.lazy(() => import("./pages/TelegramBotsPage"));
 const TelegramCdkPage = React.lazy(() => import("./pages/TelegramCdkPage"));
+const SessionsPage = React.lazy(() => import("./pages/SessionsPage"));
 
 const queryClient = new QueryClient();
 const routerBaseEnv = import.meta.env.VITE_ADMIN_BASE_PATH as string | undefined;
@@ -88,6 +89,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                     <Route path="account-tools" element={<AccountToolsPage />} />
                     <Route path="telegram-bots" element={<TelegramBotsPage />} />
                     <Route path="telegram-cdks" element={<TelegramCdkPage />} />
+                    <Route path="sessions" element={<SessionsPage />} />
                   </Route>
                 </Route>
                 <Route path="*" element={<Navigate to="/login" replace />} />

@@ -4,6 +4,8 @@ module.exports = {
       name: "gptishka-storefront",
       uid: "gptishka-web",
       gid: "gptishka-web",
+      interpreter: "/usr/bin/setpriv",
+      node_args: ["--no-new-privs", "/usr/bin/node"],
       script: "./server.js",
       cwd: "/var/www/gptishka-new",
       env: {
@@ -27,6 +29,8 @@ module.exports = {
       name: "gptishka-admin-api",
       uid: "gptishka-web",
       gid: "gptishka-web",
+      interpreter: "/usr/bin/setpriv",
+      node_args: ["--no-new-privs", "/usr/bin/node"],
       script: "./apps/admin-backend/dist/main.js",
       cwd: "/var/www/gptishka-new",
       env: {
@@ -49,6 +53,8 @@ module.exports = {
       name: "gptishka-telegram-bots",
       uid: "gptishka-web",
       gid: "gptishka-web",
+      interpreter: "/usr/bin/setpriv",
+      node_args: ["--no-new-privs", "/usr/bin/node"],
       script: "./apps/admin-backend/dist/telegram-bots.main.js",
       cwd: "/var/www/gptishka-new",
       env: {
