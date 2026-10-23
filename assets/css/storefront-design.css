@@ -331,3 +331,10 @@ html body#storefrontBody #storefrontHeader .header-product-pill:hover { backgrou
 @media (max-width: 359px) {
   html body#storefrontBody #storefrontHeader .logo-img { width: 150px !important; max-width: 150px !important; }
 }
+
+/* Compact vertical rhythm around the shared header divider. */
+html body#storefrontBody #storefrontHeader { height: 80px !important; min-height: 80px !important; }
+@media (max-width: 760px) {
+  html body#storefrontBody #storefrontHeader { height: 104px !important; min-height: 104px !important; }
+  html body#storefrontBody #storefrontHeader .nav.nav-shell { grid-template-rows: 52px 48px !important; }
+}

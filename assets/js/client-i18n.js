@@ -264,19 +264,24 @@
     },
     "/podklyuchenie-chatgpt-online.html": {
       title: "Connect ChatGPT online — GPTishka",
-      description: "Online ChatGPT connection with step-by-step instructions and support.",
+      description: "Online ChatGPT activation with step-by-step instructions and support.",
       html: `
-        <a href="/en/">← Back to home</a>
-        <h1>Connect ChatGPT online</h1>
-        <p>Place an order on the site and receive the next activation step online. No office visit or long manual correspondence is required.</p>
-        <div class="seo-note">Most orders move forward within 5–15 minutes after payment confirmation.</div>
-        <h2>How online connection works</h2>
-        <ol><li>Choose a plan and place an order.</li><li>After payment, open the provided activation instructions.</li><li>The connection runs automatically or with support assistance.</li><li>Check the result in your account.</li></ol>
-        <h2>What you receive</h2>
-        <ul><li>A clear order status and next-step instructions.</li><li>Support if assistance is required.</li><li>Warranty for the paid subscription term.</li></ul>
-        <h2>If activation is delayed</h2>
-        <p>Send your order number to support. This is the fastest way for us to check the status and complete the connection.</p>
-        <p><a href="/en/#pricing">Connect now</a> · <a href="/en/contact.html">Contact support</a></p>`
+  <nav class="connection-breadcrumb" aria-label="Breadcrumb"><a href="/en/">Home</a><span aria-hidden="true">/</span><span>ChatGPT activation</span></nav>
+  <div class="connection-intro">
+    <div class="connection-heading">
+      <p class="connection-eyebrow"><span class="connection-symbol" aria-hidden="true"></span>CHATGPT · ONLINE ACTIVATION</p>
+      <h1>ChatGPT online.<span>Support at every step.</span></h1>
+      <p class="connection-lead">Choose a plan, pay online and follow the activation instructions. We’ll help you get connected and answer questions about your order.</p>
+      <div class="connection-actions"><a class="connection-button" href="/en/chatgpt.html?plan=plus">Choose a plan<span aria-hidden="true">↗</span></a><a class="connection-support" href="/en/contact.html">Contact support<span aria-hidden="true">↗</span></a></div>
+    </div>
+    <aside class="connection-summary"><p>Activation time</p><strong>5–15 minutes</strong><p>after payment confirmation. The exact steps and timing depend on the selected plan.</p><div class="connection-summary-note">Instructions and support are included.</div></aside>
+  </div>
+  <section class="connection-process"><h2>How online activation works</h2><ol><li><span class="connection-step-number" aria-hidden="true">01</span><h3>Choose a plan</h3><p>Check the subscription term, activation method and final price before ordering.</p></li><li><span class="connection-step-number" aria-hidden="true">02</span><h3>Complete payment</h3><p>After confirmation, open the instructions for your order.</p></li><li><span class="connection-step-number" aria-hidden="true">03</span><h3>Follow the instructions</h3><p>Activation runs automatically or with support assistance, depending on the plan.</p></li><li><span class="connection-step-number" aria-hidden="true">04</span><h3>Check your access</h3><p>Make sure the subscription is active and the selected features are available.</p></li></ol></section>
+  <div class="connection-columns"><section><h2>What you receive</h2><ul><li>Clear order status and instructions for the next step.</li><li>Help from support if you need assistance.</li><li>Warranty for the paid subscription term.</li><li>A contact channel for questions about your order.</li></ul></section><section><h2>What to check after activation</h2><ul><li>An active subscription in your account.</li><li>Access to the features included in your chosen plan.</li><li>Continued access during your first sessions.</li></ul></section></div>
+  <section class="connection-help"><div><h2>If activation is delayed</h2><p>An incomplete instruction step or missing order details can cause a delay. Send your order number to support so we can check the status and help you finish activation.</p></div><a class="connection-support" href="/en/contact.html">Contact support<span aria-hidden="true">↗</span></a></section>
+  <section class="connection-faq"><h2>Questions about activation</h2><details><summary>Can ChatGPT Plus be activated entirely online?</summary><p>Yes. You place the order online and receive the activation instructions after payment.</p></details><details><summary>What if I do not understand the next instruction step?</summary><p>Contact support with your order number. We will explain the next step for your selected plan.</p></details><details><summary>Is support available after activation?</summary><p>Yes. Support can help with questions during the paid subscription term.</p></details></section>
+  <aside class="connection-related"><h2>Related guides</h2><div><a href="/chatgpt-plus-kupit.html?lang=en">Buying ChatGPT Plus<span aria-hidden="true">↗</span></a><a href="/chatgpt-plus-cena.html?lang=en">Prices and plans<span aria-hidden="true">↗</span></a><a href="/kak-oplatit-chatgpt-v-rossii.html?lang=en">Payment guide<span aria-hidden="true">↗</span></a></div></aside>
+`
     }
   };
 

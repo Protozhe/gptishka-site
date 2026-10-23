@@ -1,0 +1,85 @@
+/* ChatGPT activation guide, using the shared storefront palette and header. */
+html body#storefrontBody.connection-body { --store-bg:#15191b; --store-surface:#22292c; --store-text:#f5f4ed; --store-muted:#b5bec1; --store-line:#39464a; background:var(--store-bg) !important; font-family:'Manrope',system-ui,sans-serif !important; }
+html body#storefrontBody .connection-page { box-sizing:border-box; width:min(1320px,calc(100% - 48px)); max-width:none; margin:0 auto; padding:12px 0 64px; color:var(--store-text); line-height:1.65; background:transparent !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; }
+.connection-page *, .connection-page *::before, .connection-page *::after { box-sizing:border-box; }
+html body#storefrontBody .connection-page :is(h1,h2,h3,p,ul,ol) { margin:0; }
+html body#storefrontBody .connection-page a { color:var(--store-accent); text-decoration:none; }
+html body#storefrontBody .connection-page a:hover { color:var(--store-focus); }
+.connection-breadcrumb { display:flex; align-items:center; flex-wrap:wrap; gap:12px; color:var(--store-muted); font-size:14px; }
+html body#storefrontBody .connection-breadcrumb a { color:var(--store-muted); }
+.connection-intro { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr); gap:64px; align-items:center; padding:28px 0 48px; }
+html body#storefrontBody .connection-eyebrow { display:flex; align-items:center; gap:12px; color:var(--store-muted); font-size:12px; font-weight:650; letter-spacing:.07em; margin-bottom:20px; }
+.connection-symbol { display:block; width:28px; height:28px; flex:0 0 28px; background:var(--store-accent); mask:url('/assets/img/services/chatgpt-symbol-mask-v2.webp') center/contain no-repeat; }
+html body#storefrontBody .connection-page h1 { color:var(--store-text); font:800 clamp(32px,3.6vw,52px)/1.16 'Manrope',sans-serif; letter-spacing:-.045em; }
+.connection-heading h1 span { display:block; color:var(--store-accent); }
+html body#storefrontBody .connection-lead { max-width:650px; margin-top:22px; color:var(--store-muted); font-size:19px; line-height:1.7; }
+.connection-actions { display:flex; flex-wrap:wrap; align-items:center; gap:16px 28px; margin-top:28px; }
+html body#storefrontBody .connection-page .connection-button { display:inline-flex; align-items:center; justify-content:space-between; gap:28px; min-height:54px; padding:12px 22px; border-radius:12px; background:var(--store-accent); color:#153330; font-weight:750; font-size:16px; transition:background .16s ease; }
+html body#storefrontBody .connection-page .connection-button:hover { background:#8be7dc; color:#153330; }
+.connection-support { display:inline-flex; align-items:center; gap:12px; min-height:48px; font-size:16px; font-weight:650; }
+.connection-summary { padding:30px; border:1px solid var(--store-line); border-radius:22px; background:var(--store-surface); }
+html body#storefrontBody .connection-summary p { color:var(--store-muted); font-size:16px; }
+.connection-summary strong { display:block; padding:8px 0 12px; font-size:clamp(30px,3vw,40px); line-height:1.2; letter-spacing:-.035em; }
+.connection-summary-note { margin-top:24px; padding-top:20px; border-top:1px solid var(--store-line); font-size:15px; }
+html body#storefrontBody .connection-page h2 { color:var(--store-text); font-size:28px; font-weight:750; line-height:1.3; letter-spacing:-.03em; }
+.connection-process { padding:36px 0 40px; border-top:1px solid var(--store-line); }
+html body#storefrontBody .connection-process ol { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); list-style:none; padding:0; margin-top:28px; }
+.connection-process li { padding:0 24px; border-left:1px solid var(--store-line); }
+.connection-process li:first-child { border:0; padding-left:0; }
+.connection-process li:last-child { padding-right:0; }
+.connection-step-number { display:block; margin-bottom:18px; color:var(--store-accent); font:600 28px/1 'Space Grotesk','Manrope',sans-serif; }
+html body#storefrontBody .connection-page h3 { font-size:19px; font-weight:700; line-height:1.4; margin-bottom:12px; }
+.connection-process p { color:var(--store-muted); font-size:17px; }
+.connection-columns { display:grid; grid-template-columns:1fr 1fr; gap:64px; padding:32px 0 40px; border-top:1px solid var(--store-line); }
+html body#storefrontBody .connection-columns ul { margin-top:22px; padding-left:20px; color:var(--store-muted); font-size:18px; }
+.connection-columns li { padding:4px 0 8px 5px; }
+.connection-columns li::marker { color:var(--store-accent); }
+.connection-help { display:flex; align-items:center; justify-content:space-between; gap:40px; padding:28px 30px; margin:8px 0 44px; border:1px solid var(--store-line); border-radius:18px; background:var(--store-surface); }
+html body#storefrontBody .connection-help p { max-width:760px; margin-top:14px; color:var(--store-muted); font-size:18px; }
+.connection-help .connection-support { flex-shrink:0; }
+.connection-faq { max-width:900px; }
+.connection-faq details { margin-top:12px; border:1px solid var(--store-line); border-radius:12px; overflow:hidden; background:var(--store-surface); }
+.connection-faq details:first-of-type { margin-top:24px; }
+.connection-faq summary { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:20px; font-size:18px; font-weight:650; cursor:pointer; list-style:none; }
+.connection-faq summary::-webkit-details-marker { display:none; }
+.connection-faq summary::after { content:'+'; color:var(--store-accent); font-size:26px; line-height:1; font-weight:500; }
+.connection-faq details[open] summary::after { content:'−'; }
+.connection-faq summary:hover { background:#2b3437; }
+html body#storefrontBody .connection-faq details p { padding:0 20px 20px; color:var(--store-muted); font-size:17px; }
+.connection-related { margin-top:44px; padding-top:28px; border-top:1px solid var(--store-line); }
+html body#storefrontBody .connection-related h2 { font-size:20px; }
+.connection-related > div { display:flex; gap:12px 32px; flex-wrap:wrap; margin-top:12px; }
+.connection-related a { display:inline-flex; align-items:center; gap:14px; min-height:44px; font-size:16px; }
+@media (max-width:1100px) {
+  .connection-intro { gap:32px; grid-template-columns:minmax(0,1.5fr) minmax(240px,1fr); }
+  .connection-process ol { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:28px; }
+  .connection-process li { padding:0; border:0; }
+  .connection-help { flex-direction:column; align-items:flex-start; gap:12px; }
+  .connection-columns { gap:32px; }
+}
+@media (max-width:760px) {
+  html body#storefrontBody .connection-page { width:calc(100% - 28px); padding-top:8px; padding-bottom:40px; }
+  .connection-breadcrumb { font-size:13px; gap:8px; }
+  .connection-intro { grid-template-columns:minmax(0,1fr); padding:22px 0 32px; gap:26px; }
+  html body#storefrontBody .connection-page h1 { font-size:clamp(30px,7.8vw,42px); }
+  html body#storefrontBody .connection-eyebrow { font-size:10.5px; letter-spacing:.035em; gap:9px; margin-bottom:16px; }
+  html body#storefrontBody .connection-lead { font-size:17px; margin-top:18px; }
+  .connection-actions { gap:10px 22px; margin-top:22px; }
+  .connection-summary { padding:22px; border-radius:18px; }
+  .connection-summary-note { margin-top:18px; padding-top:16px; }
+  html body#storefrontBody .connection-page h2 { font-size:24px; }
+  .connection-process { padding:28px 0 32px; }
+  .connection-columns { grid-template-columns:1fr; gap:28px; padding:28px 0 32px; }
+  html body#storefrontBody .connection-columns ul { font-size:17px; margin-top:16px; }
+  .connection-help { padding:22px; margin-bottom:32px; }
+  html body#storefrontBody .connection-help p { font-size:17px; }
+  .connection-faq summary { font-size:17px; padding:18px; }
+  html body#storefrontBody .connection-faq details p { padding:0 18px 18px; }
+  .connection-related > div { flex-direction:column; gap:4px; }
+}
+@media (max-width:520px) {
+  html body#storefrontBody .connection-process ol { grid-template-columns:1fr !important; gap:24px; }
+  .connection-process li { display:grid; grid-template-columns:36px minmax(0,1fr); column-gap:14px; }
+  .connection-step-number { grid-row:1/3; font-size:24px; margin-top:3px; }
+  html body#storefrontBody .connection-page h3 { font-size:18px; margin-bottom:6px; }
+}
