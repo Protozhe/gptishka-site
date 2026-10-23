@@ -76,5 +76,7 @@ for (const phase of ["test-site-permissions.py", "prepare-site-permissions.py\" 
 assert.ok(deploy.indexOf("prepare-site-permissions.py\" --prepare") < liveSwitch);
 assert.ok(deploy.indexOf("prepare-site-permissions.py\" --activate") < liveSwitch);
 assert.match(deploy, /PAUSED_FOR_PERMISSIONS/);
+assert.match(deploy, /install -d -o root -g gptishka-web -m 0750 "\$CONFIG"/);
+assert.match(deploy, /install -o root -g gptishka-web -m 0640 "\$ACTIVE_REAL\/\$source" "\$CONFIG\/\$target"/);
 
 console.log("Production deployment guard verified.");

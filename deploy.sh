@@ -40,12 +40,20 @@ ln -s "$ADMIN_DATA" "$RELEASE/apps/admin-backend/data"
 ln -s "$UPLOADS" "$RELEASE/uploads"
 ln -s "$UPLOADS" "$RELEASE/apps/admin-backend/uploads"
 CONFIG="$RUNTIME_DIR/shared-site/config"
-install -d -m 0700 "$CONFIG"
+if getent group gptishka-web >/dev/null; then
+  install -d -o root -g gptishka-web -m 0750 "$CONFIG"
+else
+  install -d -m 0700 "$CONFIG"
+fi
 for pair in ".env:root.env" "apps/admin-backend/.env:backend.env" "apps/admin-ui/.env.production:admin-ui.env"; do
   source="${pair%%:*}"; target="${pair##*:}"
   if [ -f "$ACTIVE_REAL/$source" ]; then
     if [ "$(readlink -f "$ACTIVE_REAL/$source")" != "$CONFIG/$target" ]; then
-      install -m 0600 "$ACTIVE_REAL/$source" "$CONFIG/$target"
+      if getent group gptishka-web >/dev/null; then
+        install -o root -g gptishka-web -m 0640 "$ACTIVE_REAL/$source" "$CONFIG/$target"
+      else
+        install -m 0600 "$ACTIVE_REAL/$source" "$CONFIG/$target"
+      fi
     fi
     ln -s "$CONFIG/$target" "$RELEASE/$source"
   fi
