@@ -25,7 +25,7 @@ assert.doesNotMatch(newsWorkflow, /git push origin HEAD:main/);
 
 const verification = deploy.indexOf("node scripts/verify-production-release.mjs");
 const liveSwitch = deploy.indexOf('mv -Tf "$APP_DIR.next" "$APP_DIR"');
-assert.ok(deploy.indexOf('ln -s "$ACTIVE_REAL/node_modules" "$RELEASE/node_modules"') < verification
+assert.ok(deploy.indexOf('ln -s "$DEPENDENCY_SOURCE/node_modules" "$RELEASE/node_modules"') < verification
   && deploy.indexOf("npm ci --include=dev") < verification,
   "Both dependency reuse and installation must precede TypeScript verification.");
 assert.ok(verification >= 0 && liveSwitch > verification, "Candidate checks must run before the live directory switches.");
@@ -39,6 +39,10 @@ assert.match(deploy, /Live health checks failed/);
 assert.match(deploy, /git -C "\$RELEASE" archive "\$COMMIT" \| tar -x -C "\$TEST_DIR"/);
 assert.match(deploy, /export NODE_ENV=test ADMIN_BACKEND_URL=http:\/\/127.0.0.1:9/);
 assert.match(deploy, /DATABASE_URL=postgresql:\/\/fixture:fixture@127.0.0.1:9\/fixture/);
+assert.match(deploy, /export GPTISHKA_RUNTIME_DIR="\$TEST_DIR\/data"/);
+assert.match(deploy, /python3 -B "\$RELEASE\/scripts\/test-site-permissions.py"/);
+assert.match(deploy, /cmp -s "\$PRIOR_RELEASE\/package-lock.json" "\$RELEASE\/package-lock.json"/);
+assert.match(deploy, /diff -qr "\$PRIOR_RELEASE\/apps\/admin-backend\/prisma" "\$RELEASE\/apps\/admin-backend\/prisma"/);
 assert.doesNotMatch(deploy, /git reset --hard|fuser -k|backfill-license|import-cdk-json/);
 assert.ok(!fs.existsSync(".github/workflows/deploy-static-ui-hotfix.yml"), "Legacy direct-copy deployment must be retired");
 assert.match(deploy, /DEPLOY_BRANCH="\$\{DEPLOY_BRANCH:-production\}"/);

@@ -65,9 +65,17 @@ fi
 SCHEMA_CHANGED=0
 if ! diff -qr "$ACTIVE_REAL/apps/admin-backend/prisma" "$RELEASE/apps/admin-backend/prisma" >/dev/null; then SCHEMA_CHANGED=1; fi
 REUSE_DEPS=0
-if [ "$SCHEMA_CHANGED" -eq 0 ] && cmp -s "$ACTIVE_REAL/package-lock.json" "$RELEASE/package-lock.json" && [ -x "$ACTIVE_REAL/node_modules/.bin/tsc" ] && [ -x "$ACTIVE_REAL/node_modules/.bin/vite" ]; then
+DEPENDENCY_SOURCE="$ACTIVE_REAL"
+# A failed pre-publication candidate can already have a complete, tested npm
+# installation. Reuse only the immediately preceding committed source with an
+# identical lockfile/schema and a root-owned checkout.
+PRIOR_RELEASE="$RELEASES_DIR/release-$(git -C "$REPO_DIR" rev-parse "$COMMIT^")"
+if [ "$SCHEMA_CHANGED" -eq 0 ] && ! cmp -s "$ACTIVE_REAL/package-lock.json" "$RELEASE/package-lock.json" && [ -d "$PRIOR_RELEASE" ] && [ "$(stat -c %u "$PRIOR_RELEASE")" = 0 ] && cmp -s "$PRIOR_RELEASE/package-lock.json" "$RELEASE/package-lock.json" && diff -qr "$PRIOR_RELEASE/apps/admin-backend/prisma" "$RELEASE/apps/admin-backend/prisma" >/dev/null; then
+  DEPENDENCY_SOURCE="$PRIOR_RELEASE"
+fi
+if [ "$SCHEMA_CHANGED" -eq 0 ] && cmp -s "$DEPENDENCY_SOURCE/package-lock.json" "$RELEASE/package-lock.json" && [ -x "$DEPENDENCY_SOURCE/node_modules/.bin/tsc" ] && [ -x "$DEPENDENCY_SOURCE/node_modules/.bin/vite" ]; then
   REUSE_DEPS=1
-  ln -s "$ACTIVE_REAL/node_modules" "$RELEASE/node_modules"
+  ln -s "$DEPENDENCY_SOURCE/node_modules" "$RELEASE/node_modules"
 else
   (cd "$RELEASE" && npm ci --include=dev --prefer-offline && npm run prisma:generate --workspace @gptishka/admin-backend)
 fi
@@ -89,6 +97,7 @@ ln -s "$(readlink -f "$RELEASE/node_modules")" "$TEST_DIR/node_modules"
   export APP_URL=http://fixture.invalid ADMIN_UI_URL=http://fixture.invalid/admin
   export DATABASE_URL=postgresql://fixture:fixture@127.0.0.1:9/fixture
   export JWT_ACCESS_SECRET=fixture-access-secret-at-least-16 JWT_REFRESH_SECRET=fixture-refresh-secret-at-least-16
+  export GPTISHKA_RUNTIME_DIR="$TEST_DIR/data"
   node --test server/*.test.js apps/admin-backend/scripts/*.test.js
   find apps/admin-backend/src -name '*.test.ts' -print0 | xargs -0 node --import tsx --test
 )
@@ -103,7 +112,7 @@ fi
 nginx -t
 # Set up the locked service identity and writable data before publication.
 # Code and secrets remain owned by root; no source is made service-writable.
-python3 "$RELEASE/scripts/test-site-permissions.py"
+python3 -B "$RELEASE/scripts/test-site-permissions.py"
 python3 "$RELEASE/scripts/prepare-site-permissions.py" --prepare
 git -C "$RELEASE" diff --exit-code
 [[ -z "$(git -C "$RELEASE" status --porcelain)" ]] || { echo "Release contains unexpected local files"; exit 1; }
@@ -118,7 +127,7 @@ if [ ! -L "$APP_DIR" ]; then
   ACTIVE_REAL="$LEGACY"
 fi
 if [ "$REUSE_DEPS" -eq 1 ]; then
-  DEPENDENCIES="$(readlink -f "$ACTIVE_REAL/node_modules")"
+  DEPENDENCIES="$(readlink -f "$DEPENDENCY_SOURCE/node_modules")"
   ln -s "$DEPENDENCIES" "$RELEASE/node_modules.next"
   mv -Tf "$RELEASE/node_modules.next" "$RELEASE/node_modules"
 fi
