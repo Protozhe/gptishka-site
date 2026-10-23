@@ -15,6 +15,7 @@ module.exports = {
         TELEGRAM_REVIEWS_RUNTIME_PATH: "/var/lib/gptishka-runtime/website/telegram-reviews.json",
         TELEGRAM_REVIEWS_POLLING_ENABLED: "false",
         TELEGRAM_REVIEWS_PROXY_URL: process.env.TELEGRAM_REVIEWS_PROXY_URL || "http://127.0.0.1:18082",
+        TELEGRAM_NEWS_PROXY_URL: process.env.TELEGRAM_NEWS_PROXY_URL || process.env.TELEGRAM_PROXY_URL || "http://127.0.0.1:18082",
         PORT: 4000,
         HOST: "127.0.0.1",
         BIND_HOST: "127.0.0.1",

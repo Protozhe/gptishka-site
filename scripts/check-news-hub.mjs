@@ -12,7 +12,11 @@ const payload = JSON.parse(read("data/public-news.json"));
 const publicPayload = JSON.parse(read("assets/data/public-news.json"));
 
 function structuralSignature(html) {
-  return [...html.matchAll(/<\/?([a-z0-9-]+)([^>]*)>/gi)]
+  // Cyrillic font preloading and the selected language differ intentionally.
+  const sharedMarkup = html
+    .replace(/<link\b[^>]*href="\/assets\/fonts\/manrope-cyrillic\.woff2"[^>]*>\s*/gi, "")
+    .replace(/(class="language-menu__option lang-item) is-active"/g, '$1"');
+  return [...sharedMarkup.matchAll(/<\/?([a-z0-9-]+)([^>]*)>/gi)]
     .map(match => {
       const attributes = match[2];
       const className = attributes.match(/class=["']([^"']*)/)?.[1] || "";
@@ -24,6 +28,10 @@ function structuralSignature(html) {
 }
 
 assert.equal(structuralSignature(ru), structuralSignature(en), "RU and EN news layouts differ");
+assert.match(ru, /class="language-menu__option lang-item is-active" href="\/news\/"/);
+assert.match(en, /class="language-menu__option lang-item is-active" href="\/en\/news\/"/);
+assert.match(ru, /href="\/assets\/fonts\/manrope-cyrillic\.woff2"/);
+assert.doesNotMatch(en, /href="\/assets\/fonts\/manrope-cyrillic\.woff2"/);
 assert.match(ru, /href="https:\/\/gptishka\.shop\/news\/"/);
 assert.match(en, /href="https:\/\/gptishka\.shop\/en\/news\/"/);
 assert.match(server, /app\.get\("\/api\/public\/news"/);

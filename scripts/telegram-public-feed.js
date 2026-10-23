@@ -7,6 +7,15 @@ const DEFAULT_USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
   "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 GPTishkaNews/1.0";
 
+function createTelegramDispatcher(options) {
+  const proxyUrl = String(
+    options.proxyUrl ?? process.env.TELEGRAM_NEWS_PROXY_URL ?? process.env.TELEGRAM_PROXY_URL ?? ""
+  ).trim();
+  if (!proxyUrl) return null;
+  const { ProxyAgent } = require("undici");
+  return new ProxyAgent(proxyUrl);
+}
+
 function decodeHtml(input) {
   return String(input || "")
     .replace(/&#(\d+);/g, (match, value) => {
@@ -70,6 +79,8 @@ function parseTelegramPublicFeed(html, channel) {
   const items = [];
 
   for (const chunk of chunks) {
+    // Pin notifications and other channel service events are not news articles.
+    if (/class="tgme_widget_message\b[^"]*\bservice_message\b/i.test(chunk)) continue;
     const postPath = chunk.match(/data-post="([^"]+)"/i)?.[1] || "";
     const normalizedPath = decodeHtml(postPath).replace(/^@/, "");
     const postChannel = normalizedPath.split("/")[0] || "";
@@ -133,6 +144,7 @@ async function fetchTelegramPublicFeed(channel, options = {}) {
   }
 
   const timeoutMs = Math.max(1500, Number(options.timeoutMs || DEFAULT_TIMEOUT_MS));
+  const dispatcher = createTelegramDispatcher(options);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -145,6 +157,7 @@ async function fetchTelegramPublicFeed(channel, options = {}) {
       },
       redirect: "follow",
       signal: controller.signal,
+      ...(dispatcher ? { dispatcher } : {}),
     });
 
     if (!response.ok) {
@@ -159,6 +172,7 @@ async function fetchTelegramPublicFeed(channel, options = {}) {
     return payload;
   } finally {
     clearTimeout(timeout);
+    if (dispatcher) await dispatcher.destroy().catch(() => {});
   }
 }
 
@@ -180,53 +194,59 @@ async function cacheTelegramFeedMedia(payload, options = {}) {
   if (!items.some(item => item?.imageUrl)) return payload;
   await fs.promises.mkdir(imageDirectory, { recursive: true });
   const existingFiles = await fs.promises.readdir(imageDirectory);
+  const dispatcher = createTelegramDispatcher(options);
 
-  await Promise.all(items.map(async item => {
-    const remoteUrl = safeTelegramMediaUrl(item?.imageUrl);
-    const postId = Number.parseInt(String(item?.postId || ""), 10);
-    if (!remoteUrl || !postId) return;
+  try {
+    await Promise.all(items.map(async item => {
+      const remoteUrl = safeTelegramMediaUrl(item?.imageUrl);
+      const postId = Number.parseInt(String(item?.postId || ""), 10);
+      if (!remoteUrl || !postId) return;
 
-    const filenamePrefix = `${String(payload?.channel || "telegram").replace(/[^a-z0-9_-]/gi, "-")}-${postId}`;
-    const existingName = existingFiles.find(name => name.startsWith(`${filenamePrefix}.`));
-    if (existingName) {
-      item.imageUrl = `${publicBasePath}/${existingName}`;
-      return;
-    }
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const response = await fetch(remoteUrl, {
-        headers: { "User-Agent": DEFAULT_USER_AGENT, Accept: "image/avif,image/webp,image/*,*/*;q=0.8" },
-        redirect: "follow",
-        signal: controller.signal,
-      });
-      if (!response.ok) throw new Error(`Telegram media returned HTTP ${response.status}`);
-
-      const contentType = String(response.headers.get("content-type") || "")
-        .split(";")[0]
-        .trim()
-        .toLowerCase();
-      const extension = extensionByType.get(contentType);
-      if (!extension) throw new Error(`Unsupported Telegram media type: ${contentType || "unknown"}`);
-
-      const bytes = Buffer.from(await response.arrayBuffer());
-      if (!bytes.length || bytes.length > 8 * 1024 * 1024) {
-        throw new Error("Telegram media size is invalid");
+      const filenamePrefix = `${String(payload?.channel || "telegram").replace(/[^a-z0-9_-]/gi, "-")}-${postId}`;
+      const existingName = existingFiles.find(name => name.startsWith(`${filenamePrefix}.`));
+      if (existingName) {
+        item.imageUrl = `${publicBasePath}/${existingName}`;
+        return;
       }
 
-      const filename = `${filenamePrefix}.${extension}`;
-      const destination = path.join(imageDirectory, filename);
-      const temporary = `${destination}.${process.pid}.tmp`;
-      await fs.promises.writeFile(temporary, bytes);
-      await fs.promises.rename(temporary, destination);
-      item.imageUrl = `${publicBasePath}/${filename}`;
-    } catch (_) {
-      // Keep the current remote URL when Telegram media cannot be cached yet.
-    } finally {
-      clearTimeout(timeout);
-    }
-  }));
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const response = await fetch(remoteUrl, {
+          headers: { "User-Agent": DEFAULT_USER_AGENT, Accept: "image/avif,image/webp,image/*,*/*;q=0.8" },
+          redirect: "follow",
+          signal: controller.signal,
+          ...(dispatcher ? { dispatcher } : {}),
+        });
+        if (!response.ok) throw new Error(`Telegram media returned HTTP ${response.status}`);
+
+        const contentType = String(response.headers.get("content-type") || "")
+          .split(";")[0]
+          .trim()
+          .toLowerCase();
+        const extension = extensionByType.get(contentType);
+        if (!extension) throw new Error(`Unsupported Telegram media type: ${contentType || "unknown"}`);
+
+        const bytes = Buffer.from(await response.arrayBuffer());
+        if (!bytes.length || bytes.length > 8 * 1024 * 1024) {
+          throw new Error("Telegram media size is invalid");
+        }
+
+        const filename = `${filenamePrefix}.${extension}`;
+        const destination = path.join(imageDirectory, filename);
+        const temporary = `${destination}.${process.pid}.tmp`;
+        await fs.promises.writeFile(temporary, bytes);
+        await fs.promises.rename(temporary, destination);
+        item.imageUrl = `${publicBasePath}/${filename}`;
+      } catch (_) {
+        // Keep the current remote URL when Telegram media cannot be cached yet.
+      } finally {
+        clearTimeout(timeout);
+      }
+    }));
+  } finally {
+    if (dispatcher) await dispatcher.destroy().catch(() => {});
+  }
 
   return payload;
 }
