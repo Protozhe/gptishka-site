@@ -309,8 +309,8 @@ html body#storefrontBody #storefrontHeader { height: 96px !important; min-height
 html body#storefrontBody #storefrontHeader .logo-img { width: 184px !important; max-width: 184px !important; max-height: 62px !important; }
 html body#storefrontBody #storefrontHeader .header-quick-link { min-height: 48px !important; font-size: 15px !important; padding-inline: 11px !important; }
 html body#storefrontBody #storefrontHeader .lang-current { min-height: 48px !important; font-size: 14px !important; padding-inline: 14px !important; }
-html body#storefrontBody #storefrontHeader .header-product-pill { min-height: 46px !important; padding-inline: 16px !important; font-size: 14px !important; background: #25332f !important; border-color: #435b50 !important; color: #c3e0d1 !important; }
-html body#storefrontBody #storefrontHeader .header-product-pill:hover { background: #30443b !important; border-color: #709d86 !important; color: #e0f0e6 !important; }
+html body#storefrontBody #storefrontHeader .header-product-pill { min-height: 46px !important; padding-inline: 16px !important; font-size: 14px !important; background: #e5e0d3 !important; border-color: #e5e0d3 !important; color: #232a2b !important; }
+html body#storefrontBody #storefrontHeader .header-product-pill:hover { background: #f2ede1 !important; border-color: #f2ede1 !important; color: #232a2b !important; }
 @media (min-width: 761px) and (max-width: 1250px) {
   html body#storefrontBody #storefrontHeader .header-product-pill { display: none !important; }
   html body#storefrontBody #storefrontHeader .nav.nav-shell { grid-template-columns: auto minmax(0,1fr) auto !important; gap: 14px !important; }
