@@ -28,6 +28,7 @@ const context = vm.createContext({
   assertTokenActivationDeliveryMode() {}, ensureActivationRecordForTokenFlow: async () => stored,
   parseClientTokenInput: raw => ({raw, extracted: "fixture-session", json: {account: {planType: "free"}}}),
   isCodexCreditsProductKey: () => false, isSupportTokenActivationMode: () => false,
+  isIosProviderBase: () => false,
   buildStoredClientTokenPatch: () => ({clientTokenCiphertext: "fixture-encrypted"}),
   normalizeActivationRecordForRead: value => value, buildTokenMeta: () => ({}),
   isTokenBoundToAnotherFingerprint: () => wrongToken,

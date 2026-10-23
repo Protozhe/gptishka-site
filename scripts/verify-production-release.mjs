@@ -16,6 +16,7 @@ const checks = [
   "scripts/verify-payment-concurrency.mjs",
   "scripts/verify-kyc-price.cjs",
   "scripts/verify-aiee-proxy.mjs",
+  "scripts/verify-ios-renewal.mjs",
   "scripts/verify-review-product-labels.cjs",
   "scripts/verify-preserved-reviews.cjs",
   "scripts/verify-public-news-sync.cjs",
