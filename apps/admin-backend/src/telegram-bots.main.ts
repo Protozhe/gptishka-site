@@ -1,3 +1,4 @@
+if (process.env.NODE_ENV === "production") process.umask(0o027);
 import { prisma } from "./config/prisma";
 import { startTelegramBotsWorker } from "./modules/telegram-bots/telegram-bots.worker";
 

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import {spawnSync} from "node:child_process";
+import vm from "node:vm";
 
 const workflow = fs.readFileSync(".github/workflows/deploy.yml", "utf8");
 const newsWorkflow = fs.readFileSync(".github/workflows/refresh-news.yml", "utf8");
@@ -55,5 +56,20 @@ assert.deepEqual(ignoredLinks.stdout.trim().split(/\r?\n/), runtimeLinks, "Runti
 assert.match(deploy, /git -C "\$RELEASE" status --porcelain/);
 assert.match(agentRules, /Production is deployed only from the `production` branch/);
 assert.match(agentRules, /production-stable-2026-08-25-r2/);
+
+const ecosystemContext = { module: { exports: {} }, process: { env: {} } };
+vm.runInNewContext(fs.readFileSync("ecosystem.config.js", "utf8"), ecosystemContext);
+assert.equal(ecosystemContext.module.exports.apps.length, 3);
+for (const app of ecosystemContext.module.exports.apps) {
+  assert.equal(app.uid, "gptishka-web");
+  assert.equal(app.gid, "gptishka-web");
+  assert.equal(app.env.GPTISHKA_RUNTIME_DIR, "/var/lib/gptishka-runtime/website");
+}
+for (const phase of ["test-site-permissions.py", "prepare-site-permissions.py\" --prepare", "prepare-site-permissions.py\" --activate"]) {
+  assert.ok(deploy.includes(phase), `Deployment must preserve service permission gate ${phase}`);
+}
+assert.ok(deploy.indexOf("prepare-site-permissions.py\" --prepare") < liveSwitch);
+assert.ok(deploy.indexOf("prepare-site-permissions.py\" --activate") < liveSwitch);
+assert.match(deploy, /PAUSED_FOR_PERMISSIONS/);
 
 console.log("Production deployment guard verified.");

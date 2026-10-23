@@ -11,13 +11,20 @@ export function verifyAdminOrigin(req: Request, _res: Response, next: NextFuncti
   if (SAFE_METHODS.has(String(req.method || "").toUpperCase())) return next();
 
   const allowedOrigins = getConfiguredAllowedOrigins();
-  const origin = normalizeOrigin(String(req.headers.origin || ""));
-  const refererOrigin = getRefererOrigin(String(req.headers.referer || ""));
+  const originHeader = req.headers.origin;
+  const refererHeader = req.headers.referer;
+  const origin = normalizeOrigin(String(originHeader || ""));
+  const refererOrigin = getRefererOrigin(String(refererHeader || ""));
   const requestOrigin = getRequestOrigin(req);
 
-  if (origin && allowedOrigins.has(origin)) return next();
-  if (refererOrigin && allowedOrigins.has(refererOrigin)) return next();
-  if (!origin && !refererOrigin && requestOrigin && allowedOrigins.has(requestOrigin)) return next();
+  // A present but rejected Origin must not fall back to Referer or Host.
+  if (originHeader !== undefined) {
+    return origin && allowedOrigins.has(origin) ? next() : next(new AppError("CSRF origin check failed", 403));
+  }
+  if (refererHeader !== undefined) {
+    return refererOrigin && allowedOrigins.has(refererOrigin) ? next() : next(new AppError("CSRF origin check failed", 403));
+  }
+  if (requestOrigin && allowedOrigins.has(requestOrigin)) return next();
 
   return next(new AppError("CSRF origin check failed", 403));
 }

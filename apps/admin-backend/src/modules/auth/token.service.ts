@@ -18,9 +18,20 @@ export function signRefreshToken(userId: string) {
 }
 
 export function verifyAccessToken(token: string): AccessPayload {
-  return jwt.verify(token, env.JWT_ACCESS_SECRET) as AccessPayload;
+  const payload = jwt.verify(token, env.JWT_ACCESS_SECRET, { algorithms: ["HS256"] });
+  if (typeof payload === "string" || payload.type !== "access" ||
+      typeof payload.sub !== "string" || !payload.sub.trim() ||
+      !Object.values(RoleCode).includes(payload.role)) {
+    throw new Error("Invalid access token claims");
+  }
+  return payload as AccessPayload;
 }
 
 export function verifyRefreshToken(token: string): RefreshPayload {
-  return jwt.verify(token, env.JWT_REFRESH_SECRET) as RefreshPayload;
+  const payload = jwt.verify(token, env.JWT_REFRESH_SECRET, { algorithms: ["HS256"] });
+  if (typeof payload === "string" || payload.type !== "refresh" ||
+      typeof payload.sub !== "string" || !payload.sub.trim()) {
+    throw new Error("Invalid refresh token claims");
+  }
+  return payload as RefreshPayload;
 }

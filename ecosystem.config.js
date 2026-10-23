@@ -2,10 +2,15 @@ module.exports = {
   apps: [
     {
       name: "gptishka-storefront",
+      uid: "gptishka-web",
+      gid: "gptishka-web",
       script: "./server.js",
       cwd: "/var/www/gptishka-new",
       env: {
         NODE_ENV: "production",
+        GPTISHKA_RUNTIME_DIR: "/var/lib/gptishka-runtime/website",
+        PUBLIC_REVIEWS_CACHE_PATH: "/var/lib/gptishka-runtime/website/public-reviews.json",
+        TELEGRAM_REVIEWS_RUNTIME_PATH: "/var/lib/gptishka-runtime/website/telegram-reviews.json",
         TELEGRAM_REVIEWS_POLLING_ENABLED: "false",
         TELEGRAM_REVIEWS_PROXY_URL: process.env.TELEGRAM_REVIEWS_PROXY_URL || "http://127.0.0.1:18082",
         PORT: 4000,
@@ -20,6 +25,8 @@ module.exports = {
     },
     {
       name: "gptishka-admin-api",
+      uid: "gptishka-web",
+      gid: "gptishka-web",
       script: "./apps/admin-backend/dist/main.js",
       cwd: "/var/www/gptishka-new",
       env: {
@@ -27,7 +34,8 @@ module.exports = {
         PORT: 4100,
         HOST: "127.0.0.1",
         BIND_HOST: "127.0.0.1",
-        AI_BATTLE_STATS_FILE: "/var/lib/gptishka-runtime/ai-battle-stats.json",
+        GPTISHKA_RUNTIME_DIR: "/var/lib/gptishka-runtime/website",
+        AI_BATTLE_STATS_FILE: "/var/lib/gptishka-runtime/website/ai-battle-stats.json",
         ACTIVATION_CHONGZHI_IP: process.env.ACTIVATION_CHONGZHI_IP || "172.105.209.180",
         ACTIVATION_GROK_BASE_URL:
           process.env.ACTIVATION_GROK_BASE_URL || "https://aichongzhi.fun/?product=grok",
@@ -39,10 +47,13 @@ module.exports = {
     },
     {
       name: "gptishka-telegram-bots",
+      uid: "gptishka-web",
+      gid: "gptishka-web",
       script: "./apps/admin-backend/dist/telegram-bots.main.js",
       cwd: "/var/www/gptishka-new",
       env: {
         NODE_ENV: "production",
+        GPTISHKA_RUNTIME_DIR: "/var/lib/gptishka-runtime/website",
       },
       max_memory_restart: "250M",
       autorestart: true,

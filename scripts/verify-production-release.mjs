@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 
 const checks = [
+  "scripts/verify-admin-access.mjs",
   "scripts/verify-codex-paid-conversions.mjs",
   "scripts/verify-codex-attribution.mjs",
   "scripts/verify-chatgpt-ad-price-meta.mjs",

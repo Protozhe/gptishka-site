@@ -109,6 +109,7 @@ const NOINDEX_PUBLIC_PATHS = new Set([
 ]);
 
 const dataDir = path.join(__dirname, "data");
+if (IS_PRODUCTION) process.umask(0o027);
 const { mergePreservedReviews } = require("./server/preserved-reviews");
 const PRESERVED_REVIEWS_PATH = IS_PRODUCTION
   ? "/var/lib/gptishka-runtime/preserved-reviews.json"
@@ -132,7 +133,7 @@ const TELEGRAM_REVIEWS_RUNTIME_PATH = String(
       ? "/var/lib/gptishka-runtime/telegram-reviews.json"
       : path.join(dataDir, "telegram-reviews.runtime.json"))
 ).trim();
-const PUBLIC_NEWS_MEDIA_DIR = path.join(__dirname, "assets", "img", "news");
+const PUBLIC_NEWS_MEDIA_DIR = path.join(dataDir, "news-media");
 const LEGACY_PRODUCT_MODAL_BACKUP_PATH = path.join(__dirname, "_tmp_products_ru.json");
 const STOREFRONT_PRODUCTS_FALLBACK_PATH = path.join(__dirname, "_tmp_products_ru.json");
 const STOREFRONT_PRODUCTS_FALLBACK_CACHE_TTL_MS = Math.max(
@@ -888,7 +889,7 @@ async function refreshPublicNewsCache() {
     });
     await cacheTelegramFeedMedia(fetched, {
       imageDirectory: PUBLIC_NEWS_MEDIA_DIR,
-      publicBasePath: "/assets/img/news",
+      publicBasePath: "/news-media",
       timeoutMs: TELEGRAM_NEWS_FETCH_TIMEOUT_MS,
     });
     const next = normalizePublicNewsPayload(fetched);
@@ -1199,6 +1200,8 @@ function createApp() {
     res.redirect(303, req.originalUrl);
   });
 
+  // Fresh feed images are mutable runtime data; bundled images remain a fallback.
+  app.use("/news-media", express.static(PUBLIC_NEWS_MEDIA_DIR, { dotfiles: "deny", index: false, maxAge: IS_PRODUCTION ? "30d" : 0 }));
   app.use(
     express.static(__dirname, {
       dotfiles: "ignore",

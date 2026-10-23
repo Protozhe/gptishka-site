@@ -60,7 +60,7 @@ assert.match(css, /\.ai-directory-card--perplexity\s*\{[\s\S]*?--directory-butto
 assert.match(routes, /homepageContentPublicRouter\.post\([\s\S]*?\/ai-battle/);
 assert.match(statsService, /process\.env\.AI_BATTLE_STATS_FILE/);
 assert.match(statsService, /dataFile !== legacyDataFile/);
-assert.match(ecosystem, /AI_BATTLE_STATS_FILE:\s*"\/var\/lib\/gptishka-runtime\/ai-battle-stats\.json"/);
+  assert.match(ecosystem, /AI_BATTLE_STATS_FILE:\s*"\/var\/lib\/gptishka-runtime\/website\/ai-battle-stats\.json"/);
 assert.match(deploy, /install -d -m 0755 [^\n]*"\$RUNTIME_DIR"/);
 assert.match(deploy, /install -m 0644 "\$LEGACY_AI_BATTLE_STATS" "\$RUNTIME_AI_BATTLE_STATS"/);
 assert.ok(

@@ -38,6 +38,7 @@ done
 ln -s "$DATA" "$RELEASE/data"
 ln -s "$ADMIN_DATA" "$RELEASE/apps/admin-backend/data"
 ln -s "$UPLOADS" "$RELEASE/uploads"
+ln -s "$UPLOADS" "$RELEASE/apps/admin-backend/uploads"
 CONFIG="$RUNTIME_DIR/shared-site/config"
 install -d -m 0700 "$CONFIG"
 for pair in ".env:root.env" "apps/admin-backend/.env:backend.env" "apps/admin-ui/.env.production:admin-ui.env"; do
@@ -97,6 +98,10 @@ if [ "$SCHEMA_CHANGED" -eq 1 ]; then
   (cd "$RELEASE" && npm run prisma:deploy --workspace @gptishka/admin-backend)
 fi
 nginx -t
+# Set up the locked service identity and writable data before publication.
+# Code and secrets remain owned by root; no source is made service-writable.
+python3 "$RELEASE/scripts/test-site-permissions.py"
+python3 "$RELEASE/scripts/prepare-site-permissions.py" --prepare
 git -C "$RELEASE" diff --exit-code
 [[ -z "$(git -C "$RELEASE" status --porcelain)" ]] || { echo "Release contains unexpected local files"; exit 1; }
 
@@ -119,17 +124,27 @@ if [ -d "$ACTIVE_REAL/assets/downloads" ]; then
 fi
 
 SWITCHED=0
+PAUSED_FOR_PERMISSIONS=0
 rollback() {
   status=$?
-  if [ "$status" -ne 0 ] && [ "$SWITCHED" -eq 1 ]; then
-    ln -s "$ACTIVE_REAL" "$APP_DIR.rollback"
-    mv -Tf "$APP_DIR.rollback" "$APP_DIR"
+  if [ "$status" -ne 0 ] && { [ "$SWITCHED" -eq 1 ] || [ "$PAUSED_FOR_PERMISSIONS" -eq 1 ]; }; then
+    if [ "$SWITCHED" -eq 1 ]; then
+      ln -s "$ACTIVE_REAL" "$APP_DIR.rollback"
+      mv -Tf "$APP_DIR.rollback" "$APP_DIR"
+    fi
     (cd "$APP_DIR" && pm2 startOrReload ecosystem.config.js --update-env) || true
     echo "Release failed; previous complete directory restored"
   fi
   exit "$status"
 }
 trap rollback EXIT
+if ! python3 "$RELEASE/scripts/prepare-site-permissions.py" --check; then
+  # Initial state migration must not race an atomic writer. This is needed only
+  # once; later releases keep the normal PM2 reload path.
+  PAUSED_FOR_PERMISSIONS=1
+  pm2 stop gptishka-admin-api gptishka-telegram-bots gptishka-storefront
+  python3 "$RELEASE/scripts/prepare-site-permissions.py" --activate
+fi
 ln -s "$RELEASE" "$APP_DIR.next"
 mv -Tf "$APP_DIR.next" "$APP_DIR"
 SWITCHED=1
