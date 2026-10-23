@@ -34,6 +34,7 @@ const handlers = load("modules/auth/auth.controller.ts", {
     signRefreshToken: () => `next-${++seq}`,
     signAccessToken: (_id, _role, sid) => `access:${sid}`,
   },
+  "./telegram-mfa.service": { telegramMfaRequired: () => false },
   "../../common/utils/hash": { sha256: x => `hash:${x}` },
   "../../common/errors/app-error": { AppError }, bcrypt: {}, "@prisma/client": { RoleCode: {} },
 });

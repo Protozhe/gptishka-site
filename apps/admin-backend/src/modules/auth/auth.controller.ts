@@ -3,11 +3,20 @@ import { prisma } from "../../config/prisma";
 import { env } from "../../config/env";
 import { asyncHandler } from "../../common/http/async-handler";
 import { validateUserCredentials } from "./auth.service";
-import { signAccessToken, signRefreshToken, verifyRefreshToken } from "./token.service";
+import { signAccessToken, signRefreshToken, verifyRefreshToken, signPanelToken, verifyPanelToken } from "./token.service";
+import { telegramMfaRequired, beginTelegramChallenge, consumeTelegramChallenge, requestBinding } from "./telegram-mfa.service";
 import { sha256 } from "../../common/utils/hash";
 import { AppError } from "../../common/errors/app-error";
 import bcrypt from "bcrypt";
 import { RoleCode } from "@prisma/client";
+
+const PANEL_COOKIE = "__Host-gptishka_panel";
+function panelCookieOptions() {
+  return { httpOnly: true, secure: true, sameSite: "strict" as const, path: "/" };
+}
+function setPanelCookie(res: Response, userId: string, sessionId: string, expiresAt: Date, mfa: boolean) {
+  if (mfa) res.cookie(PANEL_COOKIE, signPanelToken(userId, sessionId, expiresAt), { ...panelCookieOptions(), expires: expiresAt });
+}
 
 function refreshCookieOptions() {
   return {
@@ -22,8 +31,15 @@ function refreshCookieOptions() {
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body as { email: string; password: string };
   const user = await validateUserCredentials(email, password);
+  res.setHeader("Cache-Control", "no-store");
+  if (telegramMfaRequired()) {
+    return res.json(await beginTelegramChallenge(user.id, requestBinding(req.ip || "", String(req.headers["user-agent"] || ""))));
+  }
+  await createLoginSession(req, res, user, false);
+});
 
-  const refreshToken = signRefreshToken(user.id);
+async function createLoginSession(req: Request, res: Response, user: Awaited<ReturnType<typeof validateUserCredentials>>, mfa: boolean) {
+  const refreshToken = signRefreshToken(user.id, mfa);
   const session = await prisma.refreshToken.create({
     data: {
       tokenHash: sha256(refreshToken),
@@ -33,9 +49,10 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
       expiresAt: new Date(Date.now() + env.JWT_REFRESH_TTL_DAYS * 24 * 60 * 60 * 1000),
     },
   });
-  const accessToken = signAccessToken(user.id, user.role.code, session.id);
+  const accessToken = signAccessToken(user.id, user.role.code, session.id, mfa);
 
   res.cookie(env.REFRESH_COOKIE_NAME, refreshToken, refreshCookieOptions());
+  setPanelCookie(res, user.id, session.id, session.expiresAt, mfa);
 
   res.json({
     accessToken,
@@ -47,9 +64,33 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
       lastName: user.lastName,
     },
   });
+}
+
+export const verifyTelegram = asyncHandler(async (req: Request, res: Response) => {
+  const { challengeId, code } = req.body as { challengeId: string; code: string };
+  const userId = await consumeTelegramChallenge(challengeId, code, requestBinding(req.ip || "", String(req.headers["user-agent"] || "")));
+  const user = await prisma.user.findUnique({ where: { id: userId }, include: { role: true } });
+  if (!user?.isActive) throw new AppError("Unauthorized", 401);
+  res.setHeader("Cache-Control", "no-store");
+  await createLoginSession(req, res, user, true);
+});
+
+export const panelCheck = asyncHandler(async (req: Request, res: Response) => {
+  res.setHeader("Cache-Control", "no-store");
+  let payload;
+  try { payload = verifyPanelToken(String(req.cookies?.[PANEL_COOKIE] || "")); }
+  catch { throw new AppError("Unauthorized", 401); }
+  const session = await prisma.refreshToken.findFirst({
+    where: { id: payload.sid, userId: payload.sub, revokedAt: null, expiresAt: { gt: new Date() } },
+    select: { user: { select: { isActive: true, role: { select: { code: true } } } } },
+  });
+  if (!session?.user.isActive || !["OWNER", "ADMIN"].includes(session.user.role.code)) throw new AppError("Unauthorized", 401);
+  res.status(204).send();
 });
 
 export const registerAdmin = asyncHandler(async (req: Request, res: Response) => {
+  // Production users are provisioned out of band with an individual MFA chat.
+  if (telegramMfaRequired()) throw new AppError("Bootstrap registration is disabled", 403);
   const { email, password, firstName, lastName } = req.body as {
     email: string;
     password: string;
@@ -123,6 +164,7 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
   } catch {
     throw new AppError("Unauthorized", 401);
   }
+  if (telegramMfaRequired() && payload.mfa !== true) throw new AppError("Unauthorized", 401);
 
   const hashed = sha256(token);
   const stored = await prisma.refreshToken.findFirst({
@@ -137,16 +179,17 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
 
   if (!stored || !stored.user.isActive) throw new AppError("Unauthorized", 401);
 
-  const nextRefresh = signRefreshToken(stored.userId);
+  const nextRefresh = signRefreshToken(stored.userId, payload.mfa === true);
   // Compare-and-swap cannot resurrect a concurrently revoked device session.
   const rotated = await prisma.refreshToken.updateMany({
     where: { id: stored.id, tokenHash: hashed, revokedAt: null, expiresAt: { gt: new Date() } },
     data: { tokenHash: sha256(nextRefresh) },
   });
   if (rotated.count !== 1) throw new AppError("Unauthorized", 401);
-  const nextAccess = signAccessToken(stored.userId, stored.user.role.code, stored.id);
+  const nextAccess = signAccessToken(stored.userId, stored.user.role.code, stored.id, payload.mfa === true);
 
   res.cookie(env.REFRESH_COOKIE_NAME, nextRefresh, refreshCookieOptions());
+  setPanelCookie(res, stored.userId, stored.id, stored.expiresAt, payload.mfa === true);
   res.json({ accessToken: nextAccess });
 });
 
@@ -160,6 +203,7 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
   }
 
   res.clearCookie(env.REFRESH_COOKIE_NAME, refreshCookieOptions());
+  res.clearCookie(PANEL_COOKIE, panelCookieOptions());
   res.status(204).send();
 });
 
@@ -199,7 +243,10 @@ export const revokeSession = asyncHandler(async (req: Request, res: Response) =>
     where: { id: String(req.params.id), userId: req.auth.userId, revokedAt: null },
     data: { revokedAt: new Date() },
   });
-  if (req.params.id === req.auth.sessionId) res.clearCookie(env.REFRESH_COOKIE_NAME, refreshCookieOptions());
+  if (req.params.id === req.auth.sessionId) {
+    res.clearCookie(env.REFRESH_COOKIE_NAME, refreshCookieOptions());
+    res.clearCookie(PANEL_COOKIE, panelCookieOptions());
+  }
   res.status(204).send();
 });
 

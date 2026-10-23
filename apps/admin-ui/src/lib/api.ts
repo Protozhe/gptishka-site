@@ -31,7 +31,7 @@ api.interceptors.response.use(
   async (error) => {
     const original = error.config;
     if (original && error.response?.status === 401 && !original._retry &&
-        !/^\/auth\/(?:login|logout|refresh|register-admin)$/.test(String(original.url))) {
+        !/^\/auth\/(?:login|verify-telegram|logout|refresh|register-admin)$/.test(String(original.url))) {
       original._retry = true;
       try {
         if (!refreshRequest) {

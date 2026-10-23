@@ -12,7 +12,8 @@ type User = {
 type AuthCtx = {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ challengeId: string; expiresIn: number } | null>;
+  verifyTelegram: (challengeId: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshMe: () => Promise<void>;
 };
@@ -45,6 +46,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const { data } = await api.post("/auth/login", { email, password });
+    if (data.requiresMfa) return { challengeId: String(data.challengeId), expiresIn: Number(data.expiresIn) };
+    setAccessToken(data.accessToken);
+    setUser(data.user);
+    return null;
+  }, []);
+
+  const verifyTelegram = useCallback(async (challengeId: string, code: string) => {
+    const { data } = await api.post("/auth/verify-telegram", { challengeId, code });
     setAccessToken(data.accessToken);
     setUser(data.user);
   }, []);
@@ -97,10 +106,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       loading,
       login,
+      verifyTelegram,
       logout,
       refreshMe,
     }),
-    [user, loading, login, logout, refreshMe]
+    [user, loading, login, verifyTelegram, logout, refreshMe]
   );
 
   return <Context.Provider value={value}>{children}</Context.Provider>;

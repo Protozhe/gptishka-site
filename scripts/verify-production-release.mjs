@@ -4,6 +4,7 @@ const checks = [
   "scripts/verify-dependency-compatibility.mjs",
   "scripts/verify-admin-access.mjs",
   "scripts/verify-admin-sessions-uploads.mjs",
+  "scripts/verify-admin-telegram-mfa.mjs",
   "scripts/verify-codex-paid-conversions.mjs",
   "scripts/verify-codex-attribution.mjs",
   "scripts/verify-chatgpt-ad-price-meta.mjs",

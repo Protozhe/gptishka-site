@@ -39,11 +39,18 @@ for (const payload of [{ sub: "", role: "OWNER", type: "access" }, { sub: "user-
 assert.throws(() => tokens.verifyAccessToken(jwt.sign({ sub: "user-1", role: "OWNER", type: "access" }, secret, { algorithm: "HS384" })));
 assert.throws(() => tokens.verifyAccessToken(jwt.sign({ sub: "user-1", role: "OWNER", type: "access" }, secret, { expiresIn: -1 })));
 assert.throws(() => tokens.verifyAccessToken(access.slice(0, -8) + "tampered"));
+const panel = tokens.signPanelToken("user-1", "session-1", new Date(Date.now() + 60_000));
+assert.equal(tokens.verifyPanelToken(panel).sid, "session-1");
+assert.throws(() => tokens.verifyPanelToken(access));
+assert.throws(() => tokens.verifyPanelToken(refresh));
+assert.throws(() => tokens.verifyAccessToken(panel));
+assert.throws(() => tokens.verifyRefreshToken(panel));
 
 let user = { id: "user-1", isActive: true, role: { code: "OWNER" } };
-let dbError = null, queries = 0, sessionRevoked = false;
+let dbError = null, queries = 0, sessionRevoked = false, mfaRequired = false;
 const { requireAuth, allowRoles } = load("modules/auth/auth.middleware.ts", {
   "../../common/errors/app-error": { AppError }, "./token.service": tokens,
+  "./telegram-mfa.service": { telegramMfaRequired: () => mfaRequired },
   "../../config/prisma": { prisma: { refreshToken: { findFirst: async args => {
     queries++; assert.equal(args.where.id, "session-1"); assert.equal(args.where.userId, "user-1");
     assert.equal(args.where.revokedAt, null); assert.ok(args.where.expiresAt.gt);
@@ -59,6 +66,10 @@ async function authenticate(token) {
   return { req, error: calls[0] };
 }
 assert.equal((await authenticate(access)).req.auth.role, "OWNER");
+mfaRequired = true;
+assert.equal((await authenticate(access)).error.statusCode, 401, "Old password-only access cannot bypass MFA");
+assert.equal((await authenticate(tokens.signAccessToken("user-1", roles.OWNER, "session-1", true))).req.auth.role, "OWNER");
+mfaRequired = false;
 sessionRevoked = true;
 assert.equal((await authenticate(access)).error.statusCode, 401, "Revocation invalidates an already-issued access token");
 sessionRevoked = false;

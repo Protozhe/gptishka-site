@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { AppError } from "../../common/errors/app-error";
 import { verifyAccessToken } from "./token.service";
 import { prisma } from "../../config/prisma";
+import { telegramMfaRequired } from "./telegram-mfa.service";
 
 export async function requireAuth(req: Request, _res: Response, next: NextFunction) {
   req.auth = undefined;
@@ -20,6 +21,7 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
   }
 
   try {
+    if (telegramMfaRequired() && payload.mfa !== true) return next(new AppError("Unauthorized", 401));
     // Roles and account status can change before the signed token expires.
     const session = await prisma.refreshToken.findFirst({
       where: { id: payload.sid, userId: payload.sub, revokedAt: null, expiresAt: { gt: new Date() } },

@@ -1,5 +1,5 @@
 ﻿import { FormEvent, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -9,16 +9,32 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const { login } = useAuth();
+  const [challengeId, setChallengeId] = useState<string | null>(null);
+  const [code, setCode] = useState("");
+  const { login, verifyTelegram } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  function finishLogin() {
+    const next = new URLSearchParams(location.search).get("next") || "";
+    if (/^\/(?:ops|chats|profit|capital)(?:\/|$)/.test(next) || next === "/subscription-reminders.html") window.location.assign(next);
+    else navigate("/", { replace: true });
+  }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setPending(true);
     setError(null);
     try {
-      await login(email, password);
-      navigate("/");
+      if (challengeId) {
+        await verifyTelegram(challengeId, code);
+        finishLogin();
+      } else {
+        const challenge = await login(email, password);
+        setPassword("");
+        if (challenge) setChallengeId(challenge.challengeId);
+        else finishLogin();
+      }
     } catch (e: any) {
       const payload = e?.response?.data;
       const message =
@@ -35,12 +51,15 @@ export default function LoginPage() {
     <div className="min-h-screen grid place-items-center bg-[radial-gradient(circle_at_top_left,#22d3ee40,transparent_55%),radial-gradient(circle_at_bottom_right,#06b6d440,transparent_45%)] px-4">
       <form className="card w-full max-w-md p-6" onSubmit={onSubmit}>
         <h1 className="text-2xl font-bold">Вход в админ-панель</h1>
-        <p className="mt-1 text-sm text-slate-500">Доступ только для выданных администраторских аккаунтов</p>
+        <p className="mt-1 text-sm text-slate-500">{challengeId ? "Введите код из личного чата с @myadminiibot. Он действует 5 минут." : "Войдите с паролем и подтвердите вход кодом из Telegram"}</p>
 
-        <div className="mt-5 space-y-3">
+        {challengeId ? <div className="mt-5">
+          <label className="mb-1 block text-sm" htmlFor="telegram-code">Код из Telegram</label>
+          <input id="telegram-code" className="input text-center text-2xl tracking-[0.4em]" type="text" inputMode="numeric" autoComplete="one-time-code" autoFocus required pattern="[0-9]{6}" maxLength={6} value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ""))} />
+        </div> : <div className="mt-5 space-y-3">
           <div>
             <label className="mb-1 block text-sm">Email</label>
-            <input className="input" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input className="input" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div>
             <label className="mb-1 block text-sm">Пароль</label>
@@ -48,6 +67,8 @@ export default function LoginPage() {
               <input
                 className="input pr-10"
                 type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -61,13 +82,14 @@ export default function LoginPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>}
 
-        {error ? <div className="mt-3 text-sm text-rose-600">{error}</div> : null}
+        {error ? <div role="alert" className="mt-3 text-sm text-rose-600">{error}</div> : null}
 
         <button className="btn-primary mt-5 w-full" disabled={pending}>
-          {pending ? "Входим..." : "Войти"}
+          {pending ? "Проверяем..." : challengeId ? "Подтвердить вход" : "Получить код в Telegram"}
         </button>
+        {challengeId ? <button type="button" className="mt-4 w-full text-sm text-slate-500" disabled={pending} onClick={() => { setChallengeId(null); setCode(""); setError(null); }}>Начать вход заново</button> : null}
       </form>
     </div>
   );

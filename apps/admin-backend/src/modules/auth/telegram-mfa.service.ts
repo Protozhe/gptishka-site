@@ -1,0 +1,160 @@
+import fs from "node:fs";
+import path from "node:path";
+import { createHmac, randomInt, randomUUID, timingSafeEqual } from "node:crypto";
+import sqlite3 from "sqlite3";
+import { ProxyAgent, fetch } from "undici";
+import { z } from "zod";
+import { env } from "../../config/env";
+import { AppError } from "../../common/errors/app-error";
+
+const schema = z.object({
+  enabled: z.literal(true),
+  botToken: z.string().regex(/^\d+:[A-Za-z0-9_-]+$/),
+  users: z.record(z.string().regex(/^[1-9][0-9]+$/)),
+  proxyUrl: z.literal("http://127.0.0.1:18082"),
+  database: z.string().startsWith("/var/lib/gptishka-runtime/website/"),
+});
+type Config = z.infer<typeof schema>;
+let cached: Config | null | undefined;
+
+function configuration(): Config | null {
+  if (cached !== undefined) return cached;
+  const file = process.env.ADMIN_MFA_CONFIG_FILE || (env.NODE_ENV === "production" ? "/etc/gptishka-admin-mfa.json" : "");
+  if (!file) return (cached = null);
+  try {
+    const stat = fs.statSync(file);
+    if ((stat.mode & 0o007) !== 0) throw new Error("Public configuration");
+    return (cached = schema.parse(JSON.parse(fs.readFileSync(file, "utf8"))));
+  } catch {
+    throw new AppError("Вход временно недоступен: проверьте настройку второго фактора", 503);
+  }
+}
+
+export function telegramMfaRequired() { return configuration() !== null; }
+
+function digest(value: string) {
+  return createHmac("sha256", env.JWT_REFRESH_SECRET).update(value).digest("hex");
+}
+
+export function requestBinding(ip: string, userAgent: string) {
+  return digest(JSON.stringify([ip, userAgent]));
+}
+
+type Challenge = { id: string; user_id: string; code_hash: string; binding: string; expires: number; attempts: number; used: number };
+const databaseQueues = new Map<string, Promise<void>>();
+
+// Each transaction owns a connection, so concurrent requests cannot interleave
+// BEGIN/COMMIT on one shared SQLite connection. No clear-text codes are stored.
+export class ChallengeStore {
+  constructor(private file: string, private hash = digest) {}
+
+  private async connection() {
+    fs.mkdirSync(path.dirname(this.file), { recursive: true, mode: 0o700 });
+    // Create the file with restrictive permissions before SQLite opens it.
+    fs.closeSync(fs.openSync(this.file, "a", 0o600));
+    if (process.platform !== "win32") fs.chmodSync(this.file, 0o600);
+    const db = await new Promise<sqlite3.Database>((resolve, reject) => {
+      const opened = new sqlite3.Database(this.file, error => error ? reject(error) : resolve(opened));
+    });
+    db.configure("busyTimeout", 5000);
+    return db;
+  }
+
+  private run(db: sqlite3.Database, sql: string, params: unknown[] = []) {
+    return new Promise<void>((resolve, reject) => db.run(sql, params, error => error ? reject(error) : resolve()));
+  }
+  private get<T>(db: sqlite3.Database, sql: string, params: unknown[] = []) {
+    return new Promise<T | undefined>((resolve, reject) => db.get<T>(sql, params, (error, row) => error ? reject(error) : resolve(row)));
+  }
+  private close(db: sqlite3.Database) {
+    return new Promise<void>((resolve, reject) => db.close(error => error ? reject(error) : resolve()));
+  }
+  private async transaction<T>(fn: (db: sqlite3.Database) => Promise<T>): Promise<T> {
+    // Avoid filling Node's SQLite thread pool with connections waiting for
+    // another connection's COMMIT. BEGIN IMMEDIATE also guards other processes.
+    const previous = databaseQueues.get(this.file) || Promise.resolve();
+    const task = previous.then(() => this.performTransaction(fn));
+    databaseQueues.set(this.file, task.then(() => undefined, () => undefined));
+    return task;
+  }
+  private async performTransaction<T>(fn: (db: sqlite3.Database) => Promise<T>): Promise<T> {
+    const db = await this.connection();
+    try {
+      await this.run(db, "CREATE TABLE IF NOT EXISTS challenges(id TEXT PRIMARY KEY,user_id TEXT NOT NULL,code_hash TEXT NOT NULL,binding TEXT NOT NULL,created INTEGER NOT NULL,expires INTEGER NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,used INTEGER NOT NULL DEFAULT 0)");
+      await this.run(db, "BEGIN IMMEDIATE");
+      try {
+        const value = await fn(db);
+        await this.run(db, "COMMIT");
+        return value;
+      } catch (error) { await this.run(db, "ROLLBACK"); throw error; }
+    } finally { await this.close(db); }
+  }
+  async create(userId: string, binding: string, code: string, now = Date.now()) {
+    return this.transaction(async db => {
+      await this.run(db, "DELETE FROM challenges WHERE expires < ?", [now - 300_000]);
+      const recent = await this.get<{ created: number }>(db, "SELECT created FROM challenges WHERE user_id=? ORDER BY created DESC LIMIT 1", [userId]);
+      if (recent && recent.created > now - 60_000) throw new AppError("Код уже отправлен. Повторите вход через минуту", 429);
+      await this.run(db, "UPDATE challenges SET used=1 WHERE user_id=?", [userId]);
+      const id = randomUUID();
+      await this.run(db, "INSERT INTO challenges(id,user_id,code_hash,binding,created,expires) VALUES(?,?,?,?,?,?)", [id, userId, this.hash(`${id}:${code}`), binding, now, now + 300_000]);
+      return id;
+    });
+  }
+  async invalidate(id: string) {
+    await this.transaction(db => this.run(db, "UPDATE challenges SET used=1 WHERE id=?", [id]));
+  }
+  async consume(id: string, code: string, binding: string, now = Date.now()): Promise<string | null> {
+    return this.transaction(async db => {
+      const row = await this.get<Challenge>(db, "SELECT * FROM challenges WHERE id=?", [id]);
+      if (!row || row.used || row.expires <= now || row.attempts >= 5) return null;
+      const expected = Buffer.from(row.code_hash, "hex"), actual = Buffer.from(this.hash(`${id}:${code}`), "hex");
+      const ok = row.binding === binding && expected.length === actual.length && timingSafeEqual(expected, actual);
+      await this.run(db, "UPDATE challenges SET attempts=attempts+1,used=? WHERE id=?", [ok || row.attempts >= 4 ? 1 : 0, id]);
+      return ok ? row.user_id : null;
+    });
+  }
+}
+
+export async function sendCode(config: Config, chatId: string, code: string) {
+  const dispatcher = new ProxyAgent(config.proxyUrl);
+  async function call(method: string, params: Record<string, string> = {}) {
+    const response = await fetch(`https://api.telegram.org/bot${config.botToken}/${method}?${new URLSearchParams(params)}`, {
+      dispatcher, signal: AbortSignal.timeout(15_000), redirect: "error",
+    });
+    const body = await response.json() as { ok?: boolean; result?: any };
+    if (!response.ok || !body.ok) throw new Error("telegram_delivery_failed");
+    return body.result;
+  }
+  try {
+    const identity = await call("getMe");
+    const chat = await call("getChat", { chat_id: chatId });
+    if (String(identity.username).toLowerCase() !== "myadminiibot" || chat.type !== "private") throw new Error("telegram_destination_invalid");
+    await call("sendMessage", {
+      chat_id: chatId,
+      text: `GPTishka · Вход в админку\n\nКод: ${code}\nДействует 5 минут. Вводите только на https://gptishka.shop/admin/login\nНикому не сообщайте этот код. Если вы не входили, смените пароль.`,
+      protect_content: "true", disable_web_page_preview: "true",
+    });
+  } finally { await dispatcher.close(); }
+}
+
+export async function beginTelegramChallenge(userId: string, binding: string) {
+  const config = configuration();
+  if (!config || !config.users[userId]) throw new AppError("Для аккаунта не настроен личный чат второго фактора", 503);
+  const store = new ChallengeStore(config.database);
+  const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
+  const id = await store.create(userId, binding, code);
+  try { await sendCode(config, config.users[userId], code); }
+  catch {
+    await store.invalidate(id);
+    throw new AppError("Не удалось доставить код в Telegram. Повторите вход через минуту", 503);
+  }
+  return { requiresMfa: true as const, challengeId: id, expiresIn: 300 };
+}
+
+export async function consumeTelegramChallenge(id: string, code: string, binding: string) {
+  const config = configuration();
+  if (!config) throw new AppError("Unauthorized", 401);
+  const userId = await new ChallengeStore(config.database).consume(id, code, binding);
+  if (!userId || !config.users[userId]) throw new AppError("Неверный или истёкший код. Повторите вход, если использованы все попытки", 401);
+  return userId;
+}
