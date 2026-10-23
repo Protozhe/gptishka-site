@@ -33,6 +33,8 @@ try:
     (base / 'server.js').write_text('// immutable fixture\n')
     module.main('prepare')
     assert not module.migration_complete()
+    # Database-backed installations may retain this exact empty legacy alias.
+    (module.SHARED / 'data' / 'cdk-keys.json').unlink()
     module.main('activate')
     assert module.migration_complete()
     module.main('activate')  # Idempotency must preserve one state copy.
