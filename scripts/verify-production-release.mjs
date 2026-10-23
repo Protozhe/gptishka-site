@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 
 const checks = [
+  "scripts/verify-dependency-compatibility.mjs",
   "scripts/verify-admin-access.mjs",
   "scripts/verify-codex-paid-conversions.mjs",
   "scripts/verify-codex-attribution.mjs",
