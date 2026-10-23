@@ -29,6 +29,9 @@ jobs:
       - name: Install verification dependencies
         run: npm ci --include=dev --ignore-scripts --no-audit --no-fund
 
+      - name: Build native modules used by compatibility checks
+        run: npm rebuild bcrypt sqlite3
+
       - name: Run production regression checks
         run: npm run verify:production
 
