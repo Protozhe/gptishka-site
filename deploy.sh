@@ -145,6 +145,7 @@ fi
 
 SWITCHED=0
 PAUSED_FOR_PERMISSIONS=0
+NOTIFIERS_RELOADED=0
 rollback() {
   status=$?
   if [ "$status" -ne 0 ] && { [ "$SWITCHED" -eq 1 ] || [ "$PAUSED_FOR_PERMISSIONS" -eq 1 ]; }; then
@@ -153,6 +154,9 @@ rollback() {
       mv -Tf "$APP_DIR.rollback" "$APP_DIR"
     fi
     (cd "$APP_DIR" && pm2 startOrReload ecosystem.config.js --update-env) || true
+    if [ "$NOTIFIERS_RELOADED" -eq 1 ]; then
+      pm2 startOrReload /etc/gptishka-notifiers/ecosystem.json --update-env || true
+    fi
     echo "Release failed; previous complete directory restored"
   fi
   exit "$status"
@@ -177,6 +181,11 @@ for attempt in $(seq 1 20); do
   sleep 1
 done
 [[ "$HEALTH_OK" -eq 1 ]] || { echo "Live health checks failed"; exit 1; }
+if [ "$REUSE_DEPS" -eq 0 ] && [ -f /etc/gptishka-notifiers/ecosystem.json ]; then
+  # These consumers share the site's generated client and HTTP dependencies.
+  NOTIFIERS_RELOADED=1
+  pm2 startOrReload /etc/gptishka-notifiers/ecosystem.json --update-env
+fi
 systemctl reload nginx
 pm2 save
 printf '%s\n' "$COMMIT" > "$RUNTIME_DIR/current-release-commit"

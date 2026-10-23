@@ -149,7 +149,7 @@ export default function HomepageBannersPage() {
   return (
     <div className="space-y-5">
       <section className="card overflow-hidden">
-        <div className="bg-gradient-to-r from-slate-950 via-emerald-950 to-cyan-900 px-5 py-4 text-white">
+        <div className="bg-linear-to-r from-slate-950 via-emerald-950 to-cyan-900 px-5 py-4 text-white">
           <h2 className="text-lg font-bold">Главная: баннеры и новости</h2>
           <p className="mt-1 max-w-3xl text-sm text-emerald-50">
             Управляйте большим баннером на первом экране: новости, акции, важные обновления, фоновые картинки и кнопки.
@@ -291,7 +291,7 @@ export default function HomepageBannersPage() {
                       color: draft.textColor || "#ffffff",
                     }}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-black/5 via-black/20 to-black/60" />
+                    <div className="absolute inset-0 bg-linear-to-br from-black/5 via-black/20 to-black/60" />
                     <div className="relative z-10 mt-auto max-w-[92%]">
                       {draft.badge ? (
                         <div className="mb-4 inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-white/80">

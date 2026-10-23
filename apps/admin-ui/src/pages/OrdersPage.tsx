@@ -520,7 +520,7 @@ export default function OrdersPage() {
                             {clientPreviewRows.map(([label, value]) => (
                               <div className="grid grid-cols-[80px_minmax(0,1fr)] gap-2" key={`${label}:${value}`}>
                                 <dt className="text-slate-500">{label}</dt>
-                                <dd className="break-words font-medium">
+                                <dd className="wrap-break-word font-medium">
                                   {label === "Telegram" && resolveTelegramContactUrl(value) ? (
                                     <a className="text-cyan-700 underline" href={resolveTelegramContactUrl(value)} target="_blank" rel="noreferrer">
                                       {value}
@@ -665,7 +665,7 @@ export default function OrdersPage() {
             <div className="mb-3 flex items-center justify-between gap-3">
               <div className="min-w-0 px-5 pt-5">
                 <div className="text-lg font-semibold">Данные клиента</div>
-                <div className="break-words text-xs text-slate-500">Заказ {clientInfoDialog.orderId}</div>
+                <div className="wrap-break-word text-xs text-slate-500">Заказ {clientInfoDialog.orderId}</div>
               </div>
               <button className="btn-secondary mr-5 mt-5" onClick={() => setClientInfoDialog(null)}>
                 Закрыть
@@ -680,7 +680,7 @@ export default function OrdersPage() {
                     <div className="font-medium">Почта</div>
                     <div className="text-xs text-slate-500">Нужна для связи по заказу</div>
                     {clientInfoDialog.details?.contact?.email ? (
-                      <a className="mt-2 block break-words font-semibold text-cyan-700 underline" href={`mailto:${clientInfoDialog.details.contact.email}`}>
+                      <a className="mt-2 block wrap-break-word font-semibold text-cyan-700 underline" href={`mailto:${clientInfoDialog.details.contact.email}`}>
                         {clientInfoDialog.details.contact.email}
                       </a>
                     ) : <div className="mt-2 font-semibold">Не указана</div>}
@@ -690,7 +690,7 @@ export default function OrdersPage() {
                     <div className="text-xs text-slate-500">Ник с @</div>
                     {resolveTelegramContactUrl(clientInfoDialog.details?.contact?.telegram) ? (
                       <a
-                        className="mt-2 block break-words font-semibold text-cyan-700 underline"
+                        className="mt-2 block wrap-break-word font-semibold text-cyan-700 underline"
                         href={resolveTelegramContactUrl(clientInfoDialog.details.contact.telegram)}
                         target="_blank"
                         rel="noreferrer"
@@ -711,7 +711,7 @@ export default function OrdersPage() {
                       .map(([label, value]) => (
                         <div className="min-w-0 rounded-xl border border-slate-200 p-3 dark:border-slate-700" key={`${label}:${value}`}>
                           <dt className="text-xs text-slate-500">{label}</dt>
-                          <dd className="mt-1 break-words font-semibold">{value}</dd>
+                          <dd className="mt-1 wrap-break-word font-semibold">{value}</dd>
                         </div>
                       ))}
                   </dl>
@@ -775,14 +775,14 @@ export default function OrdersPage() {
                       Пришёл по рекомендации: {clientInfoDialog.details?.recommendation?.cameByRecommendation ? "Да" : "Нет"}
                     </div>
                     {clientInfoDialog.details?.recommendation?.cameByRecommendation ? (
-                      <div className="mt-1 break-words text-slate-600 dark:text-slate-300">
+                      <div className="mt-1 wrap-break-word text-slate-600 dark:text-slate-300">
                         Кто пригласил: {clientInfoDialog.details.recommendation.referrerContact || "Не указан"}
                       </div>
                     ) : null}
                   </div>
                   <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
                     <div className="font-semibold">Комментарий к заказу</div>
-                    <div className="mt-1 whitespace-pre-wrap break-words text-slate-600 dark:text-slate-300">
+                    <div className="mt-1 whitespace-pre-wrap wrap-break-word text-slate-600 dark:text-slate-300">
                       {clientInfoDialog.details?.comment || "Комментарий не оставлен"}
                     </div>
                   </div>

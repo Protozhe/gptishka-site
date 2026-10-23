@@ -141,7 +141,7 @@ export default function StorefrontTickerPage() {
   return (
     <div className="space-y-4">
       <section className="card overflow-hidden">
-        <div className="bg-gradient-to-r from-cyan-600 via-cyan-500 to-blue-600 px-5 py-4 text-white">
+        <div className="bg-linear-to-r from-cyan-600 via-cyan-500 to-blue-600 px-5 py-4 text-white">
           <h2 className="text-lg font-bold">Плашка клиентов на главной</h2>
           <p className="mt-1 text-sm text-cyan-50">
             Управляйте email, которые попадают в публичную ленту. Тестовые адреса можно скрыть без удаления заказа.

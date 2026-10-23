@@ -873,7 +873,7 @@ export default function ShowcasePage() {
                     color: draftCard.textColor || "#ffffff",
                   }}
                 >
-                  <div className="mb-3 aspect-[16/10] overflow-hidden rounded-lg bg-black/20">
+                  <div className="mb-3 aspect-16/10 overflow-hidden rounded-lg bg-black/20">
                     {draftCard.imageUrl ? (
                       <img className="h-full w-full object-cover" src={draftCard.imageUrl} alt={draftCard.imageAlt || draftCard.title} />
                     ) : (
