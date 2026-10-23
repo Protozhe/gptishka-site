@@ -24,6 +24,8 @@ try:
         (module.SHARED / name).mkdir(parents=True)
     for name in ('root.env', 'backend.env', 'admin-ui.env'):
         (module.SHARED / 'config' / name).write_text('FIXTURE=yes\n')
+    (module.SHARED / 'data' / 'cdk-keys.json').write_text('{"fixture":true}')
+    (module.SHARED / 'admin-data' / 'cdk-keys.json').symlink_to(module.SHARED / 'data' / 'cdk-keys.json')
     for name in module.ACTIVE_FILES:
         (module.RUNTIME / name).write_text('{"fixture":true}')
     (module.RUNTIME / 'order-locks').mkdir()
@@ -34,6 +36,15 @@ try:
     module.main('activate')
     assert module.migration_complete()
     module.main('activate')  # Idempotency must preserve one state copy.
+    hostile = module.SHARED / 'data' / 'outside-link'
+    hostile.symlink_to('/etc/passwd')
+    try:
+        module.own_tree(module.SHARED / 'data', pwd.getpwnam(module.USER).pw_uid,
+                        pwd.getpwnam(module.USER).pw_gid, 0o750, 0o640)
+        raise AssertionError('An arbitrary symlink was accepted')
+    except RuntimeError:
+        pass
+    hostile.unlink()
     paths = {'state': str(module.WEB_STATE), 'root': str(module.RUNTIME),
              'config': str(module.SHARED / 'config' / 'backend.env'),
              'data': str(module.SHARED / 'data'), 'uploads': str(module.SHARED / 'uploads'),

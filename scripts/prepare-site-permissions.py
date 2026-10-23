@@ -34,6 +34,11 @@ def own_tree(directory, uid, gid, directory_mode, file_mode):
         for name in dirs + files:
             p = root / name
             if p.is_symlink():
+                # A retained legacy key-store alias stays inside the site's
+                # data tree. Never follow an upload or arbitrary private link.
+                if (p == SHARED / 'admin-data' / 'cdk-keys.json' and
+                        p.resolve() == SHARED / 'data' / 'cdk-keys.json' and p.is_file()):
+                    continue
                 raise RuntimeError('Unexpected symlink in runtime tree: ' + str(p))
             if p.is_file():
                 os.chown(p, uid, gid)
