@@ -132,7 +132,7 @@ export async function sendCode(config: Config, chatId: string, code: string) {
     if (String(identity.username).toLowerCase() !== "myadminiibot" || chat.type !== "private") throw new Error("telegram_destination_invalid");
     await call("sendMessage", {
       chat_id: chatId,
-      text: `GPTishka · Вход в админку\n\nКод: <code>${code}</code>\nДействует 5 минут. Вводите только на https://gptishka.shop/admin/login\nНикому не сообщайте этот код. Если вы не входили, смените пароль.`,
+      text: `🔐 <b>GPTishka · Вход в админку</b>\n\n<b>Код подтверждения</b>\n<code>${code}</code>\n⏳ Действует <b>5 минут</b>.\n\n🔗 Вводите только на <a href="https://gptishka.shop/admin/login">странице входа GPTishka</a>.\n\n🛡 Никому не сообщайте код.\nЕсли вы не входили, смените пароль.`,
       parse_mode: "HTML", protect_content: "false", disable_web_page_preview: "true",
       reply_markup: JSON.stringify({
         inline_keyboard: [[{ text: "📋 Скопировать код", copy_text: { text: code } }]],

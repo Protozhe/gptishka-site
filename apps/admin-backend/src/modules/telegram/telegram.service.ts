@@ -8,6 +8,7 @@ import {
   editTelegramNotification,
 } from "../notifications/notifications.service";
 import { telegramSender } from "./telegram.sender";
+import { activationReviewCard } from "../notifications/telegram-presentation";
 
 function extractTextMessage(update: any) {
   const message = update?.message || update?.edited_message || null;
@@ -76,9 +77,6 @@ export const telegramService = {
       }
 
       const approved = result.review.moderationStatus === "approved";
-      const statusText = approved ? "✅ ОДОБРЕН И ОПУБЛИКОВАН" : "❌ ОТКЛОНЁН";
-      const originalText = String(callbackQuery.message?.text || "⭐ Отзыв").trim();
-      const cleanText = originalText.replace(/\n\n(?:✅ ОДОБРЕН И ОПУБЛИКОВАН|❌ ОТКЛОНЁН).*$/s, "");
       const messageId = Number(callbackQuery.message?.message_id || 0);
       await Promise.all([
         answerTelegramCallbackQuery(
@@ -90,7 +88,7 @@ export const telegramService = {
         editTelegramNotification({
           chatId: callbackChatId,
           messageId,
-          text: `${cleanText}\n\n${statusText}`,
+          text: activationReviewCard(result.review, approved ? "approved" : "rejected"),
         }).catch((error) => {
           console.error(`[activation-review] failed to update moderation message review=${publicId}`, error);
         }),

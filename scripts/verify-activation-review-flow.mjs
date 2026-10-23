@@ -9,6 +9,7 @@ const service = fs.readFileSync("apps/admin-backend/src/modules/orders/orders.se
 const store = fs.readFileSync("apps/admin-backend/src/modules/orders/activation-reviews.store.ts", "utf8");
 const moderation = fs.readFileSync("apps/admin-backend/src/modules/orders/activation-review-moderation.ts", "utf8");
 const telegram = fs.readFileSync("apps/admin-backend/src/modules/telegram/telegram.service.ts", "utf8");
+const presentation = fs.readFileSync("apps/admin-backend/src/modules/notifications/telegram-presentation.ts", "utf8");
 
 assert.match(page, /id="activationReviewStars"/);
 assert.match(page, /id="activationReviewText"/);
@@ -49,7 +50,9 @@ assert.match(store, /activation-reviews\.json/);
 assert.match(store, /sourceLabel: "Отзыв оставлен на сайте"/);
 assert.match(store, /moderationStatus: "pending" \| "approved" \| "rejected"/);
 assert.match(store, /filter\(\(item\) => item\.moderationStatus === "approved"\)/);
-assert.match(service, /Новый отзыв ожидает модерации/);
+assert.match(service, /activationReviewCard\(review\)/);
+assert.match(presentation, /pending: "Ожидает модерации"/);
+assert.match(telegram, /activationReviewCard\(result\.review, approved \? "approved" : "rejected"\)/);
 assert.match(service, /buildActivationReviewModerationCallback\(review\.publicId, "approved"\)/);
 assert.match(service, /buildActivationReviewModerationCallback\(review\.publicId, "rejected"\)/);
 assert.match(moderation, /createHmac\("sha256"/);

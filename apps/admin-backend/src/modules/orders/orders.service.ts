@@ -8,6 +8,7 @@ import {
   sendOrderPaidManagerNotification,
   sendTelegramNotification,
 } from "../notifications/notifications.service";
+import { activationReviewCard } from "../notifications/telegram-presentation";
 import { paymentsService } from "../payments/payments.service";
 import { env } from "../../config/env";
 import { paymentWebhookService } from "../payments/payment-webhook.service";
@@ -1906,17 +1907,8 @@ export const ordersService = {
     const productTitle = String(firstItem?.product?.title || (firstItem?.product as any)?.name || "Подписка").trim();
     const review = await activationReviewsStore.upsert({ orderId: order.id, productTitle, rating, text });
     if (review.isNew) {
-      const stars = "★".repeat(review.rating) + "☆".repeat(5 - review.rating);
       await sendTelegramNotification(
-        [
-          "⭐ Новый отзыв ожидает модерации",
-          "",
-          `${stars} · ${review.rating} из 5`,
-          `Товар: ${review.productTitle}`,
-          `Заказ: ${review.orderId}`,
-          "",
-          review.text || "Без комментария",
-        ].join("\n"),
+        activationReviewCard(review),
         {
           inline_keyboard: [[
             { text: "✅ Одобрить", callback_data: buildActivationReviewModerationCallback(review.publicId, "approved") },

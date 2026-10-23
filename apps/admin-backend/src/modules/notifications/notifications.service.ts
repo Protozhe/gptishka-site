@@ -5,6 +5,7 @@ import { env } from "../../config/env";
 import { prisma } from "../../config/prisma";
 import { buildOrderActivationRecoveryLink } from "../orders/activation-recovery.service";
 import { ManagerNotificationsOutbox } from "./manager-notifications.outbox";
+import { paidManagerCard } from "./telegram-presentation";
 
 const telegramDispatcher = env.TELEGRAM_PROXY_URL ? new ProxyAgent(env.TELEGRAM_PROXY_URL) : undefined;
 const managerOutbox = new ManagerNotificationsOutbox(path.join(
@@ -329,6 +330,7 @@ export async function sendTelegramNotification(
   const result = await callAdminTelegramApi("sendMessage", {
     chat_id: env.TELEGRAM_CHAT_ID,
     text: message,
+    parse_mode: "HTML",
     disable_web_page_preview: true,
     ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
   });
@@ -357,15 +359,7 @@ async function deliverPaidManagerNotification(orderId: string) {
   if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) throw new Error("Manager Telegram is not configured");
   const recovery = await buildOrderActivationRecoveryLink(orderId);
   const messageId = await sendTelegramNotification(
-    [
-      "Оплата подтверждена",
-      `Заказ: ${order.id}`,
-      `Клиент: ${order.email}`,
-      `Сумма: ${Number(order.totalAmount).toLocaleString("ru-RU")} ${order.currency}`,
-      "",
-      "Резервная ссылка активации для клиента:",
-      recovery.activationUrl,
-    ].join("\n")
+    paidManagerCard(order, recovery.activationUrl)
   );
   if (!messageId) throw new Error("Telegram did not confirm delivery");
   return messageId;
@@ -409,6 +403,7 @@ export async function editTelegramNotification(input: {
     chat_id: input.chatId,
     message_id: input.messageId,
     text: input.text,
+    parse_mode: "HTML",
     disable_web_page_preview: true,
     reply_markup: { inline_keyboard: [] },
   });

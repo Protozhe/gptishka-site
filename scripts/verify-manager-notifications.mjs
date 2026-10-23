@@ -14,7 +14,12 @@ function visit(node) {
 }
 visit(source);
 const dispatcher = {fixture: true}; let requests = 0, observed, order;
+const presentation = {exports: {}};
+vm.runInNewContext(ts.transpileModule(fs.readFileSync("apps/admin-backend/src/modules/notifications/telegram-presentation.ts", "utf8"), {
+  compilerOptions: {target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS},
+}).outputText, presentation);
 const context = vm.createContext({
+  paidManagerCard: presentation.exports.paidManagerCard,
   env: {TELEGRAM_BOT_TOKEN: "fixture-token", TELEGRAM_CHAT_ID: "fixture-chat"},
   telegramDispatcher: dispatcher, AbortSignal,
   async telegramFetch(_url, options) {

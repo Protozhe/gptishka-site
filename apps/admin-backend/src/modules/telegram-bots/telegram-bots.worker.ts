@@ -6,6 +6,7 @@ import { ordersService } from "../orders/orders.service";
 import { TelegramBotType, telegramOrdersService } from "../orders/telegram-orders.service";
 import { telegramBotEventsService } from "./telegram-bot-events.service";
 import { sendTelegramNotification } from "../notifications/notifications.service";
+import { botAdminEventCard } from "../notifications/telegram-presentation";
 
 type TelegramUpdate = { update_id: number; message?: any; callback_query?: any };
 type BotConfig = { botType: TelegramBotType; serviceName: string; token: string };
@@ -136,7 +137,7 @@ function parseStartPayload(text: string) {
   return { payload, attribution: Object.keys(result).length ? result : null };
 }
 async function notifyAdmin(eventTitle: string, lines: string[]) {
-  const text = [eventTitle, ...lines].filter(Boolean).join("\n");
+  const text = botAdminEventCard(eventTitle, lines);
   await sendTelegramNotification(text).catch((error) => {
     console.error(`[telegram-bots] admin notification failed event=${eventTitle}`, error);
   });
