@@ -422,16 +422,25 @@ html body#storefrontBody .launch-category strong { font-size: 21px; line-height:
   .launch-category-icon { margin-top: 0; }
 }
 
-/* Use the desktop work area, with the category row near its lower edge. */
+/* The hero uses the available height; its artwork ends just above the bottom links. */
 @media (min-width: 1101px) {
   html body#storefrontBody .home-wide-page .home-opening-frame.home-launch {
     min-height: calc(100svh - 80px) !important;
+    justify-content: flex-start;
     padding: 24px 0 16px !important;
-    gap: 20px;
+    gap: clamp(24px,3svh,36px);
   }
-  .launch-hero { flex: 0 0 auto; min-height: 0; }
-  .launch-art { max-width: min(590px,max(420px,calc((100svh - 310px) * 1.18))); }
-  .launch-categories { margin-top: auto; }
+  .launch-hero { flex: 1 0 auto; min-height: min-content; align-items: center; }
+  .launch-copy { align-self: center; }
+  .launch-art {
+    --launch-art-height: clamp(356px,calc(100svh - 310px),640px);
+    width: min(100%,calc(var(--launch-art-height) * 1.18));
+    max-width: none;
+    height: var(--launch-art-height);
+    aspect-ratio: auto;
+    align-self: end;
+  }
+  .launch-categories { margin-top: 0; }
 }
 @media (max-width: 1100px) {
   html body#storefrontBody .home-wide-page .home-opening-frame.home-launch { padding-top: 24px !important; }
@@ -440,3 +449,38 @@ html body#storefrontBody .launch-category strong { font-size: 21px; line-height:
   html body#storefrontBody .home-wide-page .home-opening-frame.home-launch { padding-top: 18px !important; }
 }
 html body#storefrontBody.home-wide-body .pricing { padding-top: 24px !important; }
+
+/* Use each catalog group's own visible heading in both languages. */
+#storefrontBody.home-wide-body #pricing > .pricing-header {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+
+/* Soft face highlights and a continuous lift with a moving cast shadow. */
+.launch-pass {
+  background-image: linear-gradient(150deg,#cee4d4 0%,#bfd9ca 56%,#afcbbb 100%);
+  box-shadow: inset 0 1px 0 #ffffff9c,inset 0 -2px 0 #243f3426,0 3px 0 #0a111340,0 18px 34px -8px #00000066;
+}
+html body#storefrontBody a.launch-tile {
+  background-image: linear-gradient(145deg,#ffffff10 0%,#ffffff00 48%,#00000012 100%);
+  border-color: #ffffff24;
+  box-shadow: inset 0 1px 0 #ffffff50,inset 0 -2px 0 #00000024,0 3px 0 #00000042,0 14px 24px -5px #00000073;
+  transition: translate 480ms cubic-bezier(.22,1,.36,1),box-shadow 480ms cubic-bezier(.22,1,.36,1),border-color 400ms ease;
+}
+html body#storefrontBody a.launch-tile:is(:hover,:focus-visible) {
+  translate: 0 -7px;
+  border-color: #ffffff38;
+  box-shadow: inset 0 1px 0 #ffffff66,inset 0 -2px 0 #00000024,0 3px 0 #00000035,6px 26px 34px -6px #00000085;
+}
+@media (prefers-reduced-motion: reduce) {
+  html body#storefrontBody a.launch-tile { transition: none; }
+  html body#storefrontBody a.launch-tile:is(:hover,:focus-visible) { translate: none; }
+}
