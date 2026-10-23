@@ -1,0 +1,83 @@
+/* Long-form service guides share the homepage palette, typography and controls. */
+html body#storefrontBody.service-guide-body { --store-bg:#15191b; --store-surface:#22292c; --store-text:#f5f4ed; --store-muted:#b5bec1; --store-line:#39464a; background:var(--store-bg) !important; font-family:'Manrope',system-ui,sans-serif !important; }
+html body#storefrontBody .service-guide { box-sizing:border-box; width:min(1320px,calc(100% - 48px)); max-width:none; margin:0 auto; padding:12px 0 64px; color:var(--store-text); line-height:1.7; background:transparent !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; }
+.service-guide *, .service-guide *::before, .service-guide *::after { box-sizing:border-box; }
+html body#storefrontBody .service-guide :where(h1,h2,h3,p,ul,ol) { margin:0; }
+html body#storefrontBody .service-guide a { color:var(--store-accent); text-decoration:none; }
+html body#storefrontBody .service-guide a:hover { color:var(--store-focus); }
+.guide-breadcrumb { display:flex; flex-wrap:wrap; align-items:center; gap:12px; font-size:14px; color:var(--store-muted); }
+html body#storefrontBody .guide-breadcrumb a { color:var(--store-muted); }
+.guide-intro { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(260px,1fr); align-items:center; gap:64px; padding:32px 0 44px; }
+html body#storefrontBody .guide-eyebrow { display:flex; align-items:center; gap:12px; margin-bottom:20px; color:var(--store-muted); font-size:12px; font-weight:650; letter-spacing:.07em; }
+.guide-symbol { display:block; width:28px; height:28px; flex:0 0 28px; background:var(--store-accent); mask:url('/assets/img/services/chatgpt-symbol-mask-v2.webp') center/contain no-repeat; }
+html body#storefrontBody .service-guide h1 { color:var(--store-text); font:800 clamp(32px,3.6vw,52px)/1.16 'Manrope',sans-serif; letter-spacing:-.045em; }
+.guide-heading h1 span { color:var(--store-accent); }
+html body#storefrontBody .guide-lead { max-width:760px; margin-top:22px; font-size:19px; line-height:1.75; color:var(--store-muted); }
+.guide-actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px 28px; margin-top:28px; }
+html body#storefrontBody .service-guide .guide-button { display:inline-flex; align-items:center; justify-content:space-between; gap:28px; min-height:54px; padding:12px 22px; border-radius:12px; background:var(--store-accent); color:#153330; font-size:16px; font-weight:750; transition:background .16s ease; }
+html body#storefrontBody .service-guide .guide-button:hover { background:#8be7dc; color:#153330; }
+.guide-support { display:inline-flex; align-items:center; gap:12px; min-height:48px; font-size:16px; font-weight:650; }
+.guide-summary { padding:28px; border:1px solid var(--store-line); border-radius:22px; background:var(--store-surface); }
+html body#storefrontBody .guide-summary p { color:var(--store-muted); font-size:16px; }
+.guide-summary strong { display:block; padding:8px 0 18px; font-size:clamp(26px,2.5vw,34px); line-height:1.25; letter-spacing:-.035em; }
+.guide-layout { display:grid; grid-template-columns:minmax(0,860px) minmax(240px,1fr); gap:64px; align-items:start; }
+.guide-content { min-width:0; }
+.guide-section { padding:28px 0 32px; border-top:1px solid var(--store-line); scroll-margin-top:104px; }
+html body#storefrontBody .service-guide h2 { color:var(--store-text); font-size:28px; font-weight:750; line-height:1.35; letter-spacing:-.03em; }
+html body#storefrontBody .guide-section > h2 { margin-bottom:18px; }
+html body#storefrontBody .guide-section p { margin:12px 0; font-size:18px; color:var(--store-muted); }
+html body#storefrontBody .guide-section :is(ul,ol) { padding-left:24px; margin:14px 0 0; font-size:18px; color:var(--store-muted); }
+.guide-section li { padding:4px 0 8px 6px; }
+.guide-section li::marker { color:var(--store-accent); font-weight:650; }
+.guide-sidebar { position:sticky; top:104px; padding-top:28px; }
+html body#storefrontBody .guide-sidebar h2 { font-size:18px; letter-spacing:-.02em; }
+.guide-toc { padding-left:22px; border-left:1px solid var(--store-line); }
+.guide-toc > a { display:block; padding:10px 0; font-size:15px; line-height:1.5; }
+.guide-toc > a:first-of-type { margin-top:10px; }
+.guide-help { margin-top:28px; padding:22px; border:1px solid var(--store-line); border-radius:16px; background:var(--store-surface); }
+html body#storefrontBody .guide-help p { margin:12px 0 10px; color:var(--store-muted); font-size:15px; line-height:1.65; }
+.guide-help .guide-support { font-size:14px; gap:8px; }
+.guide-table { max-width:100%; overflow-x:auto; margin:24px 0 8px; border:1px solid var(--store-line); border-radius:12px; }
+html body#storefrontBody .guide-table table { width:100%; min-width:480px; margin:0; border-collapse:collapse; border:0; background:transparent; box-shadow:none; font-size:16px; line-height:1.65; }
+html body#storefrontBody .guide-table :is(th,td) { padding:16px 18px; border:0; border-bottom:1px solid var(--store-line); color:var(--store-muted); background:transparent; text-align:left; vertical-align:top; }
+html body#storefrontBody .guide-table th { color:var(--store-text); background:var(--store-surface); font-weight:700; }
+.guide-table tr:last-child td { border-bottom:0 !important; }
+.guide-question { margin-top:12px; border:1px solid var(--store-line); border-radius:12px; overflow:hidden; background:var(--store-surface); }
+.guide-question summary { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:18px 20px; color:var(--store-text); font-size:18px; font-weight:650; cursor:pointer; list-style:none; }
+.guide-question summary::-webkit-details-marker { display:none; }
+.guide-question summary::after { content:'+'; flex-shrink:0; color:var(--store-accent); font-size:26px; font-weight:500; line-height:1; }
+.guide-question[open] summary::after { content:'−'; }
+.guide-question summary:hover { background:#2b3437; }
+html body#storefrontBody .guide-question p { margin:0; padding:0 20px 20px; font-size:17px; }
+.guide-related { margin-top:12px; padding-top:28px; border-top:1px solid var(--store-line); }
+html body#storefrontBody .guide-related h2 { font-size:20px; }
+.guide-related > div { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0 28px; margin-top:12px; }
+.guide-related a { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:60px; padding:10px 0; font-size:16px; }
+@media (max-width:1100px) {
+  .guide-intro { grid-template-columns:minmax(0,1.6fr) minmax(230px,1fr); gap:32px; }
+  .guide-layout { grid-template-columns:minmax(0,1fr); gap:0; }
+  .guide-sidebar { position:static; padding:0 0 30px; grid-row:1; }
+  .guide-toc { padding:18px 0; border:0; border-top:1px solid var(--store-line); border-bottom:1px solid var(--store-line); }
+  .guide-toc > a { display:inline-block; padding:6px 0; margin:6px 22px 0 0; }
+  .guide-help { display:none; }
+}
+@media (max-width:760px) {
+  html body#storefrontBody .service-guide { width:calc(100% - 28px); padding:8px 0 40px; }
+  .guide-breadcrumb { font-size:13px; gap:8px; }
+  .guide-intro { grid-template-columns:minmax(0,1fr); gap:24px; padding:22px 0 28px; }
+  html body#storefrontBody .service-guide h1 { font-size:clamp(30px,7.8vw,42px); }
+  html body#storefrontBody .guide-eyebrow { margin-bottom:16px; font-size:11px; }
+  html body#storefrontBody .guide-lead { margin-top:18px; font-size:17px; }
+  .guide-actions { margin-top:22px; gap:8px 22px; }
+  .guide-summary { padding:22px; border-radius:18px; }
+  .guide-section { padding:24px 0 28px; scroll-margin-top:124px; }
+  html body#storefrontBody .service-guide h2 { font-size:24px; }
+  html body#storefrontBody .guide-section :is(p,ul,ol) { font-size:17px; }
+  html body#storefrontBody .guide-sidebar h2 { font-size:17px; }
+  .guide-toc > a { display:block; margin:6px 0 0; padding:6px 0; font-size:14.5px; }
+  .guide-toc > a:first-of-type { margin-top:10px; }
+  .guide-sidebar { padding-bottom:4px; }
+  .guide-question summary { padding:18px; font-size:17px; }
+  html body#storefrontBody .guide-question p { padding:0 18px 18px; }
+  .guide-related > div { grid-template-columns:minmax(0,1fr); gap:0; }
+}

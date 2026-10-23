@@ -207,60 +207,69 @@
       title: "Buy ChatGPT Plus online — GPTishka",
       description: "A practical guide to purchasing ChatGPT Plus online with clear order status, support and warranty.",
       html: `
-        <a href="/en/">← Back to home</a>
-        <h1>Buy ChatGPT Plus online</h1>
-        <p>GPTishka helps you place an order online, follow a clear activation flow and receive support throughout the paid subscription period.</p>
-        <div class="seo-note">Most orders move to the next activation step within 5–15 minutes after payment confirmation.</div>
-        <h2>Who this service is for</h2>
+  <nav class="guide-breadcrumb" aria-label="Breadcrumb"><a href="/en/">Home</a><span aria-hidden="true">/</span><span>Buying ChatGPT Plus</span></nav>
+  <div class="guide-intro">
+    <div class="guide-heading"><p class="guide-eyebrow"><span class="guide-symbol" aria-hidden="true"></span>CHATGPT · GUIDES</p><h1>Buy <span>ChatGPT Plus</span> online</h1><p class="guide-lead">GPTishka helps you place an order online, follow a clear activation flow and receive support throughout the paid subscription period.</p><div class="guide-actions"><a class="guide-button" href="/en/chatgpt.html?plan=plus">Choose a plan<span aria-hidden="true">↗</span></a><a class="guide-support" href="/en/contact.html">Contact support<span aria-hidden="true">↗</span></a></div></div>
+    <aside class="guide-summary"><p>Subscription</p><strong>ChatGPT Plus</strong><p>Most orders move to the next activation step within 5–15 minutes after payment confirmation.</p></aside>
+  </div>
+  <div class="guide-layout"><article class="guide-content"><section class="guide-section" id="guide-section-1"><h2>Who this service is for</h2>
         <ul><li>Customers who need ChatGPT Plus for work or everyday tasks.</li><li>Users who prefer activation without sharing an account password.</li><li>Customers who want assistance if activation requires an extra step.</li></ul>
-        <h2>What is included</h2>
+        </section><section class="guide-section" id="guide-section-2"><h2>What is included</h2>
         <ul><li>Order processing after payment.</li><li>Step-by-step activation instructions.</li><li>Telegram and email support.</li><li>Warranty support for the paid term.</li></ul>
-        <h2>How to order</h2>
+        </section><section class="guide-section" id="guide-section-3"><h2>How to order</h2>
         <ol><li>Choose a suitable plan.</li><li>Check your contact details.</li><li>Pay using an available payment method.</li><li>Follow the activation instructions and contact support if needed.</li></ol>
-        <h2>Before payment</h2>
+        </section><section class="guide-section" id="guide-section-4"><h2>Before payment</h2>
         <p>Check the selected plan, subscription term and activation method. If you are unsure, ask support before paying.</p>
-        <h2>Frequently asked questions</h2>
-        <p><strong>Do I need to share my password?</strong><br>No. Available plans use a flow that does not request your account password.</p>
-        <p><strong>How long does activation take?</strong><br>Most orders proceed within 5–15 minutes after payment confirmation.</p>
-        <p><strong>What if activation fails?</strong><br>Contact support with your order number. We will check the status and help complete the order.</p>
-        <p><a href="/en/#pricing">Choose a plan</a> · <a href="/en/contact.html">Contact support</a></p>`
+        </section><section class="guide-section" id="guide-section-5"><h2>Frequently asked questions</h2>
+        <details class="guide-question"><summary>Do I need to share my password?</summary><p>No. Available plans use a flow that does not request your account password.</p></details>
+        <details class="guide-question"><summary>How long does activation take?</summary><p>Most orders proceed within 5–15 minutes after payment confirmation.</p></details>
+        <details class="guide-question"><summary>What if activation fails?</summary><p>Contact support with your order number. We will check the status and help complete the order.</p></details>
+        </section></article><aside class="guide-sidebar"><nav class="guide-toc" aria-label="On this page"><h2>On this page</h2><a href="#guide-section-1">Who this service is for</a><a href="#guide-section-2">What is included</a><a href="#guide-section-3">How to order</a><a href="#guide-section-4">Before payment</a><a href="#guide-section-5">Frequently asked questions</a></nav><div class="guide-help"><h2>Need help choosing?</h2><p>Support can explain the plan and the next steps for your order.</p><a class="guide-support" href="/en/contact.html">Contact support<span aria-hidden="true">↗</span></a></div></aside></div>
+  <aside class="guide-related"><h2>Related guides</h2><div><a href="/chatgpt-plus-cena.html?lang=en">Prices and plans<span aria-hidden="true">↗</span></a><a href="/kak-oplatit-chatgpt-v-rossii.html?lang=en">Payment guide<span aria-hidden="true">↗</span></a><a href="/podklyuchenie-chatgpt-online.html?lang=en">Online activation<span aria-hidden="true">↗</span></a></div></aside>
+`
     },
     "/chatgpt-plus-cena.html": {
       title: "ChatGPT Plus price and plans — GPTishka",
       description: "How to compare ChatGPT Plus plans, terms and support before ordering.",
       html: `
-        <a href="/en/">← Back to home</a>
-        <h1>ChatGPT Plus price and connection</h1>
-        <p>When comparing plans, consider not only the final price but also the subscription term, activation method, support and warranty conditions.</p>
-        <div class="seo-note">Use the checkout page for current prices and available plans.</div>
-        <h2>What affects the price</h2>
+  <nav class="guide-breadcrumb" aria-label="Breadcrumb"><a href="/en/">Home</a><span aria-hidden="true">/</span><span>Prices and plans</span></nav>
+  <div class="guide-intro">
+    <div class="guide-heading"><p class="guide-eyebrow"><span class="guide-symbol" aria-hidden="true"></span>CHATGPT · GUIDES</p><h1><span>ChatGPT Plus</span> price and connection</h1><p class="guide-lead">When comparing plans, consider not only the final price but also the subscription term, activation method, support and warranty conditions.</p><div class="guide-actions"><a class="guide-button" href="/en/chatgpt.html?plan=plus">Choose a plan<span aria-hidden="true">↗</span></a><a class="guide-support" href="/en/contact.html">Contact support<span aria-hidden="true">↗</span></a></div></div>
+    <aside class="guide-summary"><p>Plans and terms</p><strong>Price before payment</strong><p>Use the checkout page for current prices and available plans.</p></aside>
+  </div>
+  <div class="guide-layout"><article class="guide-content"><section class="guide-section" id="guide-section-1"><h2>What affects the price</h2>
         <ul><li>The subscription plan and term.</li><li>The available payment infrastructure.</li><li>Support and warranty conditions.</li><li>The selected activation method.</li></ul>
-        <h2>How to choose a plan</h2>
+        </section><section class="guide-section" id="guide-section-2"><h2>How to choose a plan</h2>
         <p>Choose a shorter term to test the service or a plan that matches your regular workload. All current conditions are displayed before payment.</p>
-        <h2>How to place an order</h2>
+        </section><section class="guide-section" id="guide-section-3"><h2>How to place an order</h2>
         <ol><li>Select a plan.</li><li>Provide the required activation details.</li><li>Pay and wait for confirmation.</li></ol>
-        <h2>Frequently asked questions</h2>
-        <p><strong>Are there hidden charges?</strong><br>No. Use the final amount shown during checkout and the selected plan description.</p>
-        <p><strong>How do I know which plan fits?</strong><br>Consider how often you use the service and the required subscription term. Support can help before payment.</p>
-        <p><a href="/en/#pricing">View current plans</a> · <a href="/en/contact.html">Ask support</a></p>`
+        </section><section class="guide-section" id="guide-section-4"><h2>Frequently asked questions</h2>
+        <details class="guide-question"><summary>Are there hidden charges?</summary><p>No. Use the final amount shown during checkout and the selected plan description.</p></details>
+        <details class="guide-question"><summary>How do I know which plan fits?</summary><p>Consider how often you use the service and the required subscription term. Support can help before payment.</p></details>
+        </section></article><aside class="guide-sidebar"><nav class="guide-toc" aria-label="On this page"><h2>On this page</h2><a href="#guide-section-1">What affects the price</a><a href="#guide-section-2">How to choose a plan</a><a href="#guide-section-3">How to place an order</a><a href="#guide-section-4">Frequently asked questions</a></nav><div class="guide-help"><h2>Need help choosing?</h2><p>Support can explain the plan and the next steps for your order.</p><a class="guide-support" href="/en/contact.html">Contact support<span aria-hidden="true">↗</span></a></div></aside></div>
+  <aside class="guide-related"><h2>Related guides</h2><div><a href="/chatgpt-plus-kupit.html?lang=en">Buying ChatGPT Plus<span aria-hidden="true">↗</span></a><a href="/kak-oplatit-chatgpt-v-rossii.html?lang=en">Payment guide<span aria-hidden="true">↗</span></a><a href="/podklyuchenie-chatgpt-online.html?lang=en">Online activation<span aria-hidden="true">↗</span></a></div></aside>
+`
     },
     "/kak-oplatit-chatgpt-v-rossii.html": {
       title: "How to pay for a ChatGPT order — GPTishka",
       description: "A step-by-step payment guide with available methods and support.",
       html: `
-        <a href="/en/">← Back to home</a>
-        <h1>How to pay for a ChatGPT order</h1>
-        <p>This guide covers the payment stage, from choosing a plan to confirming that the order was processed.</p>
-        <div class="seo-note">Before payment, make sure the contact email for order updates is correct.</div>
-        <h2>Available payment methods</h2>
+  <nav class="guide-breadcrumb" aria-label="Breadcrumb"><a href="/en/">Home</a><span aria-hidden="true">/</span><span>Payment guide</span></nav>
+  <div class="guide-intro">
+    <div class="guide-heading"><p class="guide-eyebrow"><span class="guide-symbol" aria-hidden="true"></span>CHATGPT · GUIDES</p><h1>How to pay for a ChatGPT order</h1><p class="guide-lead">This guide covers the payment stage, from choosing a plan to confirming that the order was processed.</p><div class="guide-actions"><a class="guide-button" href="/en/chatgpt.html?plan=plus">Choose a plan<span aria-hidden="true">↗</span></a><a class="guide-support" href="/en/contact.html">Contact support<span aria-hidden="true">↗</span></a></div></div>
+    <aside class="guide-summary"><p>Payment methods</p><strong>Cards and SBP</strong><p>Before payment, make sure the contact email for order updates is correct.</p></aside>
+  </div>
+  <div class="guide-layout"><article class="guide-content"><section class="guide-section" id="guide-section-1"><h2>Available payment methods</h2>
         <ul><li>SBP</li><li>Bank cards supported by the selected gateway</li><li>Secure hosted payment forms</li></ul>
-        <h2>Payment steps</h2>
+        </section><section class="guide-section" id="guide-section-2"><h2>Payment steps</h2>
         <ol><li>Choose a plan.</li><li>Check the term, amount and contact details.</li><li>Select a payment method and complete payment.</li><li>Wait for confirmation and follow the next instructions.</li></ol>
-        <h2>If payment does not complete</h2>
+        </section><section class="guide-section" id="guide-section-3"><h2>If payment does not complete</h2>
         <p>Do not create multiple duplicate orders. Contact support with the order number and payment details so we can check the transaction.</p>
-        <h2>Payment security</h2>
+        </section><section class="guide-section" id="guide-section-4"><h2>Payment security</h2>
         <p>Payment is processed by the selected payment gateway. GPTishka does not store bank-card details.</p>
-        <p><a href="/en/#pricing">Choose ChatGPT Plus</a> · <a href="/en/contact.html">Contact support</a></p>`
+        </section></article><aside class="guide-sidebar"><nav class="guide-toc" aria-label="On this page"><h2>On this page</h2><a href="#guide-section-1">Available payment methods</a><a href="#guide-section-2">Payment steps</a><a href="#guide-section-3">If payment does not complete</a><a href="#guide-section-4">Payment security</a></nav><div class="guide-help"><h2>Need help choosing?</h2><p>Support can explain the plan and the next steps for your order.</p><a class="guide-support" href="/en/contact.html">Contact support<span aria-hidden="true">↗</span></a></div></aside></div>
+  <aside class="guide-related"><h2>Related guides</h2><div><a href="/chatgpt-plus-kupit.html?lang=en">Buying ChatGPT Plus<span aria-hidden="true">↗</span></a><a href="/chatgpt-plus-cena.html?lang=en">Prices and plans<span aria-hidden="true">↗</span></a><a href="/podklyuchenie-chatgpt-online.html?lang=en">Online activation<span aria-hidden="true">↗</span></a></div></aside>
+`
     },
     "/podklyuchenie-chatgpt-online.html": {
       title: "Connect ChatGPT online — GPTishka",
