@@ -38,6 +38,7 @@ assert.match(deploy, /trap rollback EXIT/);
 assert.match(deploy, /Live health checks failed/);
 assert.match(deploy, /git -C "\$RELEASE" archive "\$COMMIT" \| tar -x -C "\$TEST_DIR"/);
 assert.match(deploy, /export NODE_ENV=test ADMIN_BACKEND_URL=http:\/\/127.0.0.1:9/);
+assert.match(deploy, /DATABASE_URL=postgresql:\/\/fixture:fixture@127.0.0.1:9\/fixture/);
 assert.doesNotMatch(deploy, /git reset --hard|fuser -k|backfill-license|import-cdk-json/);
 assert.ok(!fs.existsSync(".github/workflows/deploy-static-ui-hotfix.yml"), "Legacy direct-copy deployment must be retired");
 assert.match(deploy, /DEPLOY_BRANCH="\$\{DEPLOY_BRANCH:-production\}"/);

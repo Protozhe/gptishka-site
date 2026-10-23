@@ -86,6 +86,9 @@ ln -s "$(readlink -f "$RELEASE/node_modules")" "$TEST_DIR/node_modules"
 (
   cd "$TEST_DIR"
   export NODE_ENV=test ADMIN_BACKEND_URL=http://127.0.0.1:9 ADMIN_BACKEND_FALLBACK_URLS=http://127.0.0.1:9
+  export APP_URL=http://fixture.invalid ADMIN_UI_URL=http://fixture.invalid/admin
+  export DATABASE_URL=postgresql://fixture:fixture@127.0.0.1:9/fixture
+  export JWT_ACCESS_SECRET=fixture-access-secret-at-least-16 JWT_REFRESH_SECRET=fixture-refresh-secret-at-least-16
   node --test server/*.test.js apps/admin-backend/scripts/*.test.js
   find apps/admin-backend/src -name '*.test.ts' -print0 | xargs -0 node --import tsx --test
 )
