@@ -58,7 +58,7 @@ def install(payload):
             (backup/'manifest.json').write_text(json.dumps({'originals':originals,'installed':installed}))
         except Exception:
             for p,saved in originals.items():
-                if saved:shutil.copy2(saved,p)
+                if saved:shutil.copyfile(saved,p)
                 else:Path(p).unlink(missing_ok=True)
             raise
         return {'installed':True,'backup':str(backup),'capUsd':4000,'claudeCutoff':cfg['claude_site']['enabled_after']}
