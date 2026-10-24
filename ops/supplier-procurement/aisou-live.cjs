@@ -193,14 +193,16 @@ async function procureWebsiteKey({ prisma, activationStore, orderId, productKey,
 
 module.exports = { merchant, curlJson, providerEvidence, verifyProvider, finance, assertPaidWebsiteOrder, procureWebsiteKey, loadSettings };
 
-async function pendingNativeOrders(activeOrderIds) {
-  let settings; try { settings = loadSettings(); } catch { return []; }
-  if (!settings || !fs.existsSync(path.join(STATE_DIR,"journal.sqlite"))) return [];
-  const j = new Journal(path.join(STATE_DIR,"journal.sqlite"), settings.encryptionKey);
+async function pendingNativeOrders(activeOrderIds, suppliedSettings) {
+  let settings; try { settings = suppliedSettings || loadSettings(); } catch { return []; }
+  const dir=settings?.stateDir||STATE_DIR;
+  if (!settings || !fs.existsSync(path.join(dir,"journal.sqlite"))) return [];
+  const j = new Journal(path.join(dir,"journal.sqlite"), settings.encryptionKey);
   try {
     await j.initialize();
     await j.run("CREATE TABLE IF NOT EXISTS demands(scope TEXT PRIMARY KEY,product TEXT NOT NULL,created_at TEXT NOT NULL)");
-    const rows = await new Promise((resolve,reject)=>j.db.all("SELECT scope FROM demands WHERE product IN ('plus_ios','plus_free','codex-250','codex-500','codex-1000') ORDER BY rowid DESC",[],(e,r)=>e?reject(e):resolve(r)));
+    const products=['plus_ios','plus_free','go_ios','go_free','codex-250','codex-500','codex-1000','pro_5x_ios','pro_5x_free','pro_20x_ios','pro_20x_free','pro_25x_free','grok_plus_monthly','grok_premium_monthly','grok_super_monthly','grok_ultra_monthly'];
+    const rows = await new Promise((resolve,reject)=>j.db.all('SELECT scope FROM demands WHERE product IN ('+products.map(()=>'?').join(',')+') ORDER BY rowid DESC',products,(e,r)=>e?reject(e):resolve(r)));
     const active=new Set(activeOrderIds||[]);
     return rows.map(r=>r.scope.match(/^website:([a-z0-9]{20,40})$/)?.[1]).filter(id=>id&&active.has(id)).slice(0,20);
   } finally { await j.close(); }

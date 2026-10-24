@@ -79,6 +79,17 @@ test('Grok registry layers require a matching plan name for ambiguous Plus/Super
  assert.equal(providerEvidence('https://aiee.fun',q,{...v,plan_type:'grok_plus'}),null);
  assert.equal(providerEvidence('https://aiee.fun',q,{...v,plan_type:'grok_premium',plan_name:'Grok Plus'}),null);
 });
+
+test('pending GO, Pro and Grok demands resume only while their native activation remains eligible',async t=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'aisou-resume-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
+ const key=crypto.randomBytes(32),{Journal}=require('./aisou-core.cjs'),{pendingNativeOrders}=require('./aisou-live.cjs');
+ const j=new Journal(path.join(dir,'journal.sqlite'),key);await j.initialize();await j.run('CREATE TABLE demands(scope TEXT PRIMARY KEY,product TEXT,created_at TEXT)');
+ const types=['go_ios','go_free','pro_5x_ios','pro_20x_free','pro_25x_free','grok_plus_monthly','grok_premium_monthly','grok_super_monthly','grok_ultra_monthly','unmapped'];
+ const ids=types.map((x,i)=>'fixtureorder'+String(i).padStart(10,'0'));
+ for(let i=0;i<types.length;i++)await j.run('INSERT INTO demands VALUES(?,?,?)',['website:'+ids[i],types[i],new Date().toISOString()]);await j.close();
+ const all=await pendingNativeOrders(ids,{stateDir:dir,encryptionKey:key});assert.equal(all.length,9);assert.ok(!all.includes(ids[9]));
+ assert.deepEqual(await pendingNativeOrders([ids[0]],{stateDir:dir,encryptionKey:key}),[ids[0]]);
+});
 test('production transport pins merchant destination and signed balance purchase quantity',async()=>{
  const calls=[];const m=merchant({app_id:'7',app_key:'fixture'},async(...a)=>{calls.push(a);return {code:200,data:{}}});
  await assert.rejects(m.buy({num:2,request_no:'gpi-'+'a'.repeat(40)}),/dispatch/);
