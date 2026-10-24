@@ -31,6 +31,7 @@ def candidates(files):
     s=patched(s,"total=Decimal(v['cost_bound_rub'])+extra", "key_cost=Decimal(str(proof.get('aisou_key_cost_rub',v['cost_bound_rub'])))\n    if not key_cost.is_finite() or key_cost<=0:raise ValueError('reserve_acquisition_cost_invalid')\n    total=key_cost+extra")
     s=patched(s,"if Decimal(v['profit_bound_rub'])-extra<Decimal(str(policy.get('minimum_profit_rub',0))):", "if Decimal(v['profit_bound_rub'])+Decimal(v['cost_bound_rub'])-total<Decimal(str(policy.get('minimum_profit_rub',0))):")
     s=patched(s,"value=decrypted(a,r['encrypted_key']);url=a._provider_url(r['provider'])", "if json.loads(r['proof']).get('aisou_key_id') and str(json.loads(r['proof'])['aisou_key_id'])!=str(r['key_id']):raise ValueError('reserve_acquisition_key_mismatch')\n    value=decrypted(a,r['encrypted_key']);url=a._provider_url(r['provider'])")
+    s=patched(s,"update(a,j['id'],key_id=k['key_id'],encrypted_key=encrypted(a,k['key']),state='validating');return True", "from aisou_stock import subscription_cost\n        cost_proof=subscription_cost(j,k['key_id'],json.loads(r['proof']))\n        update(a,j['id'],key_id=k['key_id'],encrypted_key=encrypted(a,k['key']),proof=json.dumps(cost_proof),state='validating');return True")
     # Error messages contain only guarded machine codes, never provider bodies.
     s=s.replace("str(e).startswith('reserve_')", "str(e).startswith(('reserve_','supplier_'))")
     result['subscription_reserve_auto.py']=s
@@ -39,8 +40,12 @@ def candidates(files):
 
 def install():
     files={name:(ROOT/name).read_text() for name in ('site_aiee_fallback.py','subscription_reserve_auto.py')}
-    if all('from aisou_stock import' in value for value in files.values()):return {'already_installed':True}
-    output=candidates(files)
+    if all('from aisou_stock import' in value for value in files.values()):
+        output={}
+        if 'from aisou_stock import subscription_cost' not in files['subscription_reserve_auto.py']:
+            updated=patched(files['subscription_reserve_auto.py'],"update(a,j['id'],key_id=k['key_id'],encrypted_key=encrypted(a,k['key']),state='validating');return True", "from aisou_stock import subscription_cost\n        cost_proof=subscription_cost(j,k['key_id'],json.loads(r['proof']))\n        update(a,j['id'],key_id=k['key_id'],encrypted_key=encrypted(a,k['key']),proof=json.dumps(cost_proof),state='validating');return True")
+            compile(updated,'subscription_reserve_auto.py','exec');output={'subscription_reserve_auto.py':updated}
+    else:output=candidates(files)
     backup=ROOT/'data'/('aisou-code-backup-'+datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ'));backup.mkdir(mode=0o700)
     for name in files:shutil.copy2(ROOT/name,backup/name)
     output['aisou_stock.py']=(HERE/'pulse-stock.py').read_text()

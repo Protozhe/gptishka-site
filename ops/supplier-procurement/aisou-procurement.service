@@ -1,0 +1,30 @@
+[Unit]
+Description=GPTishka guarded AISOU stock procurement
+After=postgresql.service
+
+[Service]
+Type=simple
+User=gptishka-web
+Group=gptishka-pulse
+SupplementaryGroups=gptishka-web
+EnvironmentFile=/etc/gptishka-marketplace/reserve-site.env
+WorkingDirectory=/var/www/gptishka-new
+ExecStart=/usr/bin/python3 -B /var/www/gptishka-new/ops/supplier-procurement/procurement-broker.py
+RuntimeDirectory=gptishka-aisou
+RuntimeDirectoryMode=0750
+UMask=0077
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/gptishka-runtime/website /var/lib/gptishka-runtime/order-locks /var/lib/gptishka-runtime/aisou-procurement
+
+[Install]
+WantedBy=multi-user.target

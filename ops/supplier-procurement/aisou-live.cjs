@@ -1,6 +1,6 @@
 "use strict";
 const fs = require("node:fs"), cp = require("node:child_process"), path = require("node:path");
-const { contract, sign, AisouClient, Journal, quoteFromReads, buyWithOneCorrection } = require("./aisou-core.cjs");
+const { contract, sign, AisouClient, Journal, quoteFromValuation, buyWithOneCorrection } = require("./aisou-core.cjs");
 
 const SECRET_DIR = "/var/lib/gptishka-runtime/supplier-secrets";
 const STATE_DIR = "/var/lib/gptishka-runtime/aisou-procurement";
@@ -15,7 +15,7 @@ function protectedJson(file) {
 function curlJson(url, body, contentType = "application/x-www-form-urlencoded", timeout = 12000) {
   if (!["https://aisou.pro", "https://aiee.fun", "https://vip.sxzfd.com"].includes(new URL(url).origin)) throw Error("supplier_origin_refused");
   return new Promise((resolve, reject) => {
-    const child = cp.spawn("/usr/bin/curl", ["--disable", "--silent", "--show-error", "--proto", "=https", "--max-time", String(Math.ceil(timeout / 1000)), "--request", "POST", "--header", "Content-Type: " + contentType, "--data-binary", "@-", "--write-out", "\n%{http_code}", url], { stdio: ["pipe", "pipe", "pipe"] });
+    const child = cp.spawn("/usr/bin/curl", ["--disable", "--http1.1", "--silent", "--show-error", "--proto", "=https", "--max-time", String(Math.ceil(timeout / 1000)), "--request", "POST", "--header", "Content-Type: " + contentType, "--data-binary", "@-", "--write-out", "\n%{http_code}", url], { stdio: ["pipe", "pipe", "pipe"] });
     let output = Buffer.alloc(0), done = false;
     const fail = () => { if (!done) { done = true; reject(Error("supplier_response_unconfirmed")); } };
     const timer = setTimeout(() => { child.kill("SIGKILL"); fail(); }, timeout + 1500);
@@ -34,15 +34,18 @@ function curlJson(url, body, contentType = "application/x-www-form-urlencoded", 
 }
 
 function merchant(credentials, transport = curlJson) {
-  const fetchImpl = async (url, options) => ({ ok: true, json: () => transport(url, options.body.toString()) });
+  const fetchImpl = async (url, options) => ({ ok: true, json: () => transport(url, options.body.toString(), "application/x-www-form-urlencoded", 30000) });
   const reader = new AisouClient({ appId: credentials.app_id, appKey: credentials.app_key, fetchImpl });
   return {
-    read: (action, fields) => reader.request(action, fields),
+    async read(action, fields) {
+      try { return await reader.request(action, fields); }
+      catch { return reader.request(action, fields); } // authenticated reads only
+    },
     async buy(fields) {
       // No generic URL, action, quantity or payment-method override is exposed.
       if (fields.num !== 1 || !/^gpi-[a-f0-9]{40}$/.test(fields.request_no)) throw Error("supplier_dispatch_invalid");
       const data = { ...fields, app_id: String(credentials.app_id) }; data.sign = sign(data, credentials.app_key);
-      const result = await transport("https://aisou.pro/shared/commodity/trade", new URLSearchParams(data).toString());
+      const result = await transport("https://aisou.pro/shared/commodity/trade", new URLSearchParams(data).toString(), "application/x-www-form-urlencoded", 45000);
       if (result?.code !== 200 || !result.data) throw Error("supplier_trade_unconfirmed");
       return result.data;
     },
@@ -65,8 +68,10 @@ function providerEvidence(site, query, verified) {
 async function verifyProvider(key, site, transport = curlJson) {
   // Only read-only code checks; no session token, validate_token or recharge.
   const endpoint = site === "https://aiee.fun" ? "/api/auth.php" : "/api.php";
-  const query = await transport(site + endpoint, JSON.stringify({ action: "query_code", cdk: key, ...(site.includes("sxzfd") ? { polling: 1, silent_log: 1 } : {}) }), "application/json");
-  const verify = await transport(site + endpoint, JSON.stringify({ action: "verify_code", cdk: key }), "application/json");
+  const [query, verify] = await Promise.all([
+    transport(site + endpoint, JSON.stringify({ action: "query_code", cdk: key, ...(site.includes("sxzfd") ? { polling: 1, silent_log: 1 } : {}) }), "application/json", 20000),
+    transport(site + endpoint, JSON.stringify({ action: "verify_code", cdk: key }), "application/json", 20000),
+  ]);
   return providerEvidence(site, query, verify);
 }
 
@@ -114,6 +119,7 @@ async function procureWebsiteKey({ prisma, activationStore, orderId, productKey,
   if (order && +new Date(order.createdAt) < Date.parse(policy.enabledAfter)) return null;
   const bound = (order?.licenseKeys || []).filter(k => k.productKey === productKey && k.activationSiteUrl === activationSiteUrl && k.orderId === orderId && k.status === "used");
   if (!stockOnly && bound.length === 1 && (!activation?.externalFulfillmentOwner || reserveProof?.state === "fallback_sealed") && !activation?.taskId && !Number(activation?.attempts || 0) && activation?.status !== "success") {
+    assertPaidWebsiteOrder({...order,licenseKeys:[]},{...activation,cdk:""},productKey,expected,policy);
     const audit = await prisma.licenseKeyAuditLog.findFirst({ where: { keyId: bound[0].id, action: "aisou_purchase" } });
     if (audit?.meta?.orderId === orderId) return { keyId: bound[0].id, code: bound[0].keyValue, activationSiteUrl, costRub: audit.meta.costRub };
   }
@@ -137,10 +143,13 @@ async function procureWebsiteKey({ prisma, activationStore, orderId, productKey,
       // stock or balance. A purchase was already claimed and cannot be replayed.
       quote={amountMinor:prior.quoted_minor,itemId:expected.itemId,code:expected.code,race:expected.race,quantity:1,currency:"CNY",available:true};
     } else {
-      const item = await api.read("item", { code: expected.code });
-      const stock = await api.read("inventory", { sharedCode: expected.code, race: expected.race });
-      quote = quoteFromReads(expected, item, stock);
-      const balance = await api.read("connect");
+      const [catalog, stock, valuation, balance] = await Promise.all([
+        api.read("items"),
+        api.read("inventory", { sharedCode: expected.code, race: expected.race }),
+        api.read("valuation", { code: expected.code, num: 1, card_id: 0, race: expected.race }),
+        api.read("connect"),
+      ]);
+      quote = quoteFromValuation(expected, catalog, stock, valuation);
       if (!/^\d+(?:\.\d+)?$/.test(String(balance?.balance)) || Number(balance.balance)*100<quote.amountMinor) throw Error("supplier_balance_insufficient");
     }
     order = await load(); activation = activationStore.findByOrderId(orderId);
@@ -151,7 +160,8 @@ async function procureWebsiteKey({ prisma, activationStore, orderId, productKey,
     const asset = await journal.get("SELECT * FROM assets WHERE scope=? AND state='verified'", [scope + (result.requestNo === "gpi-" + require("node:crypto").createHash("sha256").update(scope + ":primary").digest("hex").slice(0,40) ? ":primary" : ":correction-1")]);
     if (!asset) throw Error("supplier_asset_unconfirmed");
     const keyValue = journal.open(asset.encrypted_key).toUpperCase();
-    const spent = await journal.get("SELECT SUM(quoted_minor) total FROM purchases WHERE scope IN (?,?)", [scope + ":primary", scope + ":correction-1"]);
+    const spent = await journal.get("SELECT SUM(charged_minor) total,COUNT(*) count,COUNT(charged_minor) known FROM purchases WHERE scope IN (?,?)", [scope + ":primary", scope + ":correction-1"]);
+    if(spent.count!==spent.known || !(spent.total>0)) throw Error("supplier_cost_unconfirmed");
     const actualCostRub = Math.ceil(spent.total * cost.rateRubPerCny) / 100;
     if (destination === "pulse-site-codex") {
       if (!/^codex-(250|500|1000)$/.test(productKey) || !reserveProof || activation.externalFulfillmentOwner !== `pulse-site${productKey.slice(6)}-v1`) throw Error("supplier_destination_refused");

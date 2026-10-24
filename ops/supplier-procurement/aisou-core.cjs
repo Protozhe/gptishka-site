@@ -50,6 +50,42 @@ function quoteFromReads(expected, item, inventory) {
   return { amountMinor, itemId: expected.itemId, code: expected.code, race: expected.race, quantity: 1, currency: "CNY", available: Number(inventory.count) > 0 };
 }
 
+function quoteFromValuation(expected, catalog, inventory, valuation) {
+  const matches=[];
+  function walk(rows) {
+    if (!Array.isArray(rows)) return;
+    for (const row of rows) {
+      if (Number(row?.id)===expected.itemId && row?.code===expected.code) matches.push(row);
+      walk(row?.children);
+    }
+  }
+  walk(catalog);
+  const item=matches[0];
+  if (matches.length!==1 || Number(item.api_status)!==1 || Number(item.status)!==1 || Number(inventory?.delivery_way)!==0) throw Error("merchant_quote_contract_mismatch");
+  if (expected.race) {
+    let names=Object.keys(typeof item.config?.category==='object'?item.config.category:{});
+    if(typeof item.config==='string') {
+      let section='';names=[];
+      for(const raw of item.config.split(/\r?\n/)) {
+        const line=raw.trim(),heading=/^\[([^\]]+)\]$/.exec(line);
+        if(heading){section=heading[1];continue}
+        if(section==='category'&&line.includes('=')) names.push(line.slice(0,line.indexOf('=')).trim().replace(/^["']|["']$/g,''));
+      }
+    }
+    if(!names.includes(expected.race)) throw Error("quote_variant_unconfirmed");
+  }
+  // AISOU's installed API omits currency_code; its owner-funded balance and
+  // documented catalog are CNY. Refuse any explicit different currency.
+  if(valuation?.currency_code && valuation.currency_code!=="CNY") throw Error("quote_currency_mismatch");
+  const valuedMinor=moneyMinor(valuation?.price);
+  // The IOS quote endpoint can expose a wholesale teaser (122) while the
+  // authenticated one-unit inventory quote is 124. Budget the higher quote;
+  // a lower actual receipt is accepted and booked at its actual amount.
+  const amountMinor=expected.race?valuedMinor:Math.max(valuedMinor,moneyMinor(inventory.factory_price));
+  if(amountMinor>expected.ceilingMinor) throw Error("quote_price_over_ceiling");
+  return {amountMinor,itemId:expected.itemId,code:expected.code,race:expected.race,quantity:1,currency:"CNY",available:Number(inventory.count)>0};
+}
+
 function keyHint(raw) {
   const value = String(raw || "").trim().toUpperCase();
   let m = /^C(2500|1000|500|250)-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.exec(value);
@@ -93,7 +129,7 @@ class AisouClient {
     this.appId = String(appId); this.appKey = appKey; this.fetch = fetchImpl;
   }
   async request(action, parameters = {}) {
-    const paths = { connect: "/shared/authentication/connect", items: "/shared/commodity/items", item: "/shared/commodity/item", inventory: "/shared/commodity/inventory", query: "/shared/commodity/query" };
+    const paths = { connect: "/shared/authentication/connect", items: "/shared/commodity/items", item: "/shared/commodity/item", inventory: "/shared/commodity/inventory", valuation: "/shared/commodity/valuation", query: "/shared/commodity/query" };
     if (!paths[action]) throw Error("read_only_action_required");
     return this.#post(paths[action], parameters);
   }
@@ -121,7 +157,9 @@ class Journal {
   run(sql, params = []) { return new Promise((resolve, reject) => this.db.run(sql, params, function (e) { e ? reject(e) : resolve({ changes: this.changes }); })); }
   get(sql, params = []) { return new Promise((resolve, reject) => this.db.get(sql, params, (e, row) => e ? reject(e) : resolve(row))); }
   async initialize() {
-    await this.run("CREATE TABLE IF NOT EXISTS purchases(scope TEXT PRIMARY KEY, contract TEXT NOT NULL, request_no TEXT NOT NULL UNIQUE, state TEXT NOT NULL, encrypted_receipt TEXT, trade_no TEXT, reason TEXT, quoted_minor INTEGER NOT NULL)");
+    await this.run("CREATE TABLE IF NOT EXISTS purchases(scope TEXT PRIMARY KEY, contract TEXT NOT NULL, request_no TEXT NOT NULL UNIQUE, state TEXT NOT NULL, encrypted_receipt TEXT, trade_no TEXT, reason TEXT, quoted_minor INTEGER NOT NULL, charged_minor INTEGER)");
+    const columns=await new Promise((resolve,reject)=>this.db.all("PRAGMA table_info(purchases)",[],(e,r)=>e?reject(e):resolve(r)));
+    if(!columns.some(c=>c.name==='charged_minor')) await this.run("ALTER TABLE purchases ADD COLUMN charged_minor INTEGER");
     await this.run("CREATE TABLE IF NOT EXISTS assets(fingerprint TEXT PRIMARY KEY, scope TEXT NOT NULL, encrypted_key TEXT NOT NULL, state TEXT NOT NULL, product TEXT, site TEXT)");
     if (this.file !== ":memory:") fs.chmodSync(this.file, 0o600);
   }
@@ -160,15 +198,16 @@ class Journal {
     const fingerprint = digest(rawKey.toUpperCase());
     await this.run("INSERT OR IGNORE INTO assets(fingerprint,scope,encrypted_key,state) VALUES(?,?,?,'quarantined')", [fingerprint, scope, this.seal(rawKey)]);
     const asset = await this.get("SELECT scope FROM assets WHERE fingerprint=?", [fingerprint]);
+    const charged=moneyMinor(receipt.amount);
     let decision;
     if (asset.scope !== scope) decision = { state: "quarantined", reason: "key_already_in_inventory" };
-    else if (Math.round(Number(receipt.amount) * 100) !== row.quoted_minor) decision = { state: "quarantined", reason: "charged_amount_differs_from_quote" };
+    else if (charged > row.quoted_minor) decision = { state: "quarantined", reason: "charged_amount_differs_from_quote" };
     else {
       let evidence;
       try { evidence = await verifyKey(rawKey, expected.site); } catch { /* retain key and receipt */ }
       decision = disposition(expected, rawKey, evidence);
     }
-    await this.run("UPDATE purchases SET state=?,reason=? WHERE scope=?", [decision.state, decision.reason, scope]);
+    await this.run("UPDATE purchases SET state=?,reason=?,charged_minor=? WHERE scope=?", [decision.state, decision.reason, charged, scope]);
     // Wrong/unknown keys stay encrypted and unavailable to customer workers.
     if (asset.scope === scope) await this.run("UPDATE assets SET state=?,product=?,site=? WHERE fingerprint=?", [decision.state === "verified" ? "verified" : "quarantined", decision.actualProduct || (decision.state === "verified" ? expected.product : null), decision.actualSite || (decision.state === "verified" ? expected.site : null), fingerprint]);
     return { ...decision, requestNo: row.request_no, tradeNo: row.trade_no };
@@ -200,4 +239,4 @@ async function buyWithOneCorrection(args) {
   return buyOnce({ ...args, scope: args.scope + ":correction-1" });
 }
 
-module.exports = { contract, quoteFromReads, keyHint, disposition, sign, AisouClient, Journal, buyOnce, buyWithOneCorrection };
+module.exports = { contract, quoteFromReads, quoteFromValuation, keyHint, disposition, sign, AisouClient, Journal, buyOnce, buyWithOneCorrection };

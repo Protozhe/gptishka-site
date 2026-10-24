@@ -67,8 +67,9 @@ const STORED_CLIENT_TOKEN_TTL_HOURS = Math.max(
 );
 const STORED_CLIENT_TOKEN_TTL_MS = STORED_CLIENT_TOKEN_TTL_HOURS * 60 * 60 * 1000;
 const activationOrderLocks = new Map<string, Promise<void>>();
+let aisouResumeRunning = false;
 const ORDER_FILE_LOCK_TIMEOUT_MS = 45_000;
-const ORDER_FILE_LOCK_STALE_MS = 2 * 60 * 1000;
+const ORDER_FILE_LOCK_STALE_MS = 5 * 60 * 1000;
 const ORDER_FILE_LOCK_POLL_MS = 120;
 const activationLockDir = path.join(resolveRuntimeDir(), "order-locks");
 const DEFAULT_SUPPORT_URL = "https://quickplus.vip/public/grok/";
@@ -788,7 +789,9 @@ export const ordersService = {
   },
 
   async resumePendingAisouPurchases() {
-    for (const orderId of await pendingAisouNativeOrders()) {
+    if (aisouResumeRunning) return;
+    aisouResumeRunning = true;
+    try { for (const orderId of await pendingAisouNativeOrders()) {
       try {
         await withActivationOrderLock(orderId, async () => {
           const record = activationStore.findByOrderId(orderId);
@@ -799,7 +802,7 @@ export const ordersService = {
           if (token) await startActivationUnsafe(orderId, token, undefined, true);
         });
       } catch { /* held purchase remains durable; never issue another POST */ }
-    }
+    } } finally { aisouResumeRunning = false; }
   },
 
   async startActivationFromAdmin(

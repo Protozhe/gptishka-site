@@ -45,6 +45,16 @@ code backups. It does not enable policies, buy keys or activate customer account
   supplies all four denominations and their prices (75/145/276/680 CNY).
   `quoteFromReads` binds the exact selected race in that map; a base `price=75`
   or an omitted denomination is never substituted for a larger denomination.
+- The installed read-only `valuation` endpoint was verified for all seven
+  enabled route/denomination combinations. Production uses lightweight `items`
+  + exact-race one-unit `valuation` + inventory, avoiding `item`'s slow upstream
+  synchronization. For IOS, inventory can quote 124 while valuation exposes
+  122; the higher authenticated quote bounds the purchase. A lower positive
+  actual charge is accepted and recorded; an overcharge remains quarantined.
+- Reads have a 30-second timeout and one bounded retry. Balance purchase has
+  a 45-second timeout and no retry. Provider key checks run concurrently.
+  Procurement uses a separate peer-authenticated Unix service so a slow
+  supplier does not block existing reserve/completion RPC or status polling.
 
 ## Key evidence
 

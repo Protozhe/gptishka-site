@@ -15,11 +15,12 @@ def enabled(job):
         and _time(job['source_created_at'] or job['created_at'])>=_time(cfg['enabled_after'])
         and _time(job['created_at'])>=_time(cfg['enabled_after']))
 
-def rpc(job,proof):
+def rpc(job,proof,**extra):
     fields='order_id platform account_id product_type package id'.split()
     request={'action':'procure','order_id':job['order_id'],'context':{'job':{k:job[k] for k in fields},'reserve':{'proof':json.dumps(proof)}}}
+    request['context'].update(extra)
     with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as s:
-        s.settimeout(115);s.connect('/run/gptishka-reserve-site/rpc.sock');s.sendall(json.dumps(request).encode());s.shutdown(socket.SHUT_WR)
+        s.settimeout(245);s.connect('/run/gptishka-aisou/rpc.sock');s.sendall(json.dumps(request).encode());s.shutdown(socket.SHUT_WR)
         raw=b''
         while True:
             p=s.recv(4096)
@@ -71,3 +72,12 @@ def subscription(a,job,r):
         proof['aisou_key_cost_rub']=result['costRub'];proof['aisou_key_id']=result['keyId']
         with a.connect() as c:c.execute('UPDATE subscription_reserve_attempts SET proof=? WHERE job_id=?',(json.dumps(proof),job['id']))
     return True
+
+def subscription_cost(job,key_id,proof):
+    if not enabled(job):return proof
+    result=rpc(job,proof,mode='cost',keyId=key_id)
+    if result.get('keyId')!=key_id:raise ValueError('supplier_cost_binding_invalid')
+    if result.get('costRub') is not None:
+        if result['costRub']<=0:raise ValueError('supplier_cost_binding_invalid')
+        return {**proof,'aisou_key_cost_rub':result['costRub'],'aisou_key_id':key_id}
+    return proof

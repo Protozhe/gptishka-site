@@ -39,4 +39,11 @@ class Fixture(unittest.TestCase):
   supply.rpc=lambda *a:{'code':'C500-TEST-TEST-TEST','tradeNo':'fixture','amountCny':145,'costRub':1914}
   with self.assertRaises(ValueError):supply.codex(self.a,self.j,self.mod)
   self.assertEqual(self.db.execute('SELECT COUNT(*) FROM codex_keys').fetchone()[0],0)
+ def test_cost_recovery_is_read_only_and_bound_to_the_assigned_key(self):
+  def rpc(j,p,**extra):
+   self.assertEqual(extra,{'mode':'cost','keyId':'fixture-key'});return {'keyId':'fixture-key','costRub':1636.8}
+  supply.rpc=rpc
+  result=supply.subscription_cost({**self.j,'product_type':'chatgpt_plus'},'fixture-key',{'state':'fallback_sealed'})
+  self.assertEqual(result['aisou_key_id'],'fixture-key');self.assertEqual(result['aisou_key_cost_rub'],1636.8)
+  self.assertEqual(self.db.execute('SELECT COUNT(*) FROM codex_keys').fetchone()[0],0)
 if __name__=='__main__':unittest.main()

@@ -19,6 +19,15 @@ function decrypt(a){
  try{
   fd=fs.openSync(f,'wx');fs.writeFileSync(fd,JSON.stringify({pid:process.pid,at:new Date().toISOString(),orderId:oid}));
   const a=activationStore.findByOrderId(oid);if(!a)throw Error('supplier_session_required');
+  if(req.context.mode==='cost'){
+   const keyId=req.context.keyId;
+   if(typeof keyId!=='string'||keyId.length>80)throw Error('supplier_request_invalid');
+   const key=await prisma.licenseKey.findUnique({where:{id:keyId}});
+   const order=await prisma.order.findUnique({where:{id:oid},include:{items:{include:{product:true}}}});
+   if(!key||key.orderId!==oid||key.status!=='used'||order?.source!=='site'||order.status!=='PAID'||order.items.length!==1||order.items[0].quantity!==1||order.items[0].product.slug!==key.productKey)throw Error('supplier_cost_binding_invalid');
+   const audit=await prisma.licenseKeyAuditLog.findFirst({where:{keyId,action:'aisou_purchase'},orderBy:{id:'desc'}});
+   console.log(JSON.stringify(audit?.meta?.orderId===oid?{keyId,costRub:audit.meta.costRub}:{keyId,costRub:null}));return;
+  }
   const sessionRaw=decrypt(a),s=JSON.parse(sessionRaw),plan=String(s.account?.planType||'').trim().toLowerCase();
   const proof=JSON.parse(r?.proof||'null');
   if(proof?.state!=='fallback_sealed'||proof.source_id!=='gptishka:site:'+oid||!Number.isSafeInteger(proof.prior_attempt_opening_usd_minor)||proof.prior_attempt_opening_usd_minor<0)throw Error('supplier_primary_seal_required');
