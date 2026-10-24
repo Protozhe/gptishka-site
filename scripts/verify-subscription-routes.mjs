@@ -31,12 +31,13 @@ function walk(n){if(ts.isFunctionDeclaration(n)&&n.name)fns.set(n.name.text,n.ge
 const validation=vm.createContext({});
 for(const n of ['isAisouGrokProduct','validateGrokSsoSession'])vm.runInContext(ts.transpileModule(fns.get(n),{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,validation);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-async function page(payload){
- const errors=[],calls=[],intervals=[];let clock=Date.now();
+async function page(payload,url='http://127.0.0.1/redeem-start.html?order_id=fixtureorder0000000001&t=fixture-link'){
+ const errors=[],calls=[],requests=[],intervals=[];let clock=Date.now();
  const vc=new VirtualConsole();vc.on('jsdomError',e=>{if(!/Could not parse CSS/.test(e.message))errors.push(e.message)});
- const dom=new JSDOM(html,{url:'http://127.0.0.1/redeem-start.html?order_id=fixtureorder0000000001&t=fixture-link',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc}),w=dom.window;
+ const dom=new JSDOM(html,{url,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc}),w=dom.window;
  w.Date.now=()=>clock;w.setInterval=(fn)=>{const timer={fn,active:true};intervals.push(timer);return timer};w.clearInterval=t=>{if(t)t.active=false};w.scrollTo=()=>{};
  w.fetch=async(url,options={})=>{
+  requests.push(String(url));
   if(String(url).includes('/store-token')){
    const raw=JSON.parse(options.body).token;calls.push(raw);
    const reason=payload.activationFlow==='claude_zovo'?native.validate(raw):payload.activationFlow==='grok_sso'?validation.validateGrokSsoSession({json:JSON.parse(raw)}):'';
@@ -46,7 +47,23 @@ async function page(payload){
   return {ok:true,status:200,json:async()=>payload};
  };
  w.eval(script);await sleep(30);
- return {w,dom,errors,calls,intervals,advance:ms=>{clock+=ms}};
+ return {w,dom,errors,calls,requests,intervals,advance:ms=>{clock+=ms}};
+}
+for(const tier of ['plus','premium','super','ultra']){
+ const p=await page(null,'http://127.0.0.1/redeem-start.html?preview=1&service=grok'+tier);
+ try{
+  const d=p.w.document;
+  assert.equal(p.errors.length,0,p.errors.join('\n'));
+  assert.match(d.getElementById('tokenGuideList').textContent,/cookie sso/);
+  assert.match(d.getElementById('tokenLabel').textContent,/Grok/);
+  assert.match(d.getElementById('orderId').textContent,/ПРЕДПРОСМОТР/);
+  const input=d.getElementById('tokenInput');input.value='preview-session-not-real';input.dispatchEvent(new p.w.Event('input',{bubbles:true}));await sleep(50);
+  assert.equal(d.getElementById('startBtn').disabled,true);
+  assert.equal(d.getElementById('checkBtn').disabled,true);
+  assert.equal(p.requests.length,0,'preview cannot send order/session requests');
+  assert.equal(p.calls.length,0);
+  for(let i=0;i<p.w.localStorage.length;i++)assert.ok(!String(p.w.localStorage.getItem(p.w.localStorage.key(i))).includes(input.value));
+ }finally{p.dom.window.close()}
 }
 for(const tier of ['plus','premium','super','ultra']){
  const p=await page({deliveryMode:'activation',activationFlow:'grok_sso',product:'grok-'+tier+'-1',productSlug:'grok-'+tier+'-1',productTitle:'Grok '+tier,status:'issued'});

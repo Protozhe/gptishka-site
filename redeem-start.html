@@ -2782,7 +2782,7 @@
     const dedicatedSuperGrokPage = /\/supergrok-activation(?:\.html)?\/?$/i.test(window.location.pathname);
     const previewServiceKey = String(params.get('service') || (dedicatedSuperGrokPage ? 'supergrok' : '')).trim().toLowerCase().replace(/[\s_-]+/g, '');
     const previewMode = ['1', 'true', 'yes'].includes(String(params.get('preview') || '').trim().toLowerCase())
-      && ['chatgptgo', 'chatgptplus', 'chatgptpro5x', 'chatgptpro20x', 'chatgptpro25x', 'codex250', 'codex500', 'codex1000', 'claude', 'grok', 'supergrok', 'perplexity', 'pplx'].includes(previewServiceKey);
+      && ['chatgptgo', 'chatgptplus', 'chatgptpro5x', 'chatgptpro20x', 'chatgptpro25x', 'codex250', 'codex500', 'codex1000', 'claude', 'grok', 'supergrok', 'grokplus', 'grokpremium', 'groksuper', 'grokultra', 'perplexity', 'pplx'].includes(previewServiceKey);
     const orderId = previewMode
       ? `preview-${previewServiceKey}`
       : String(params.get('order_id') || params.get('orderId') || '').trim();
@@ -3642,6 +3642,10 @@
         ? 'grok'
         : (serviceKey === 'pplx' ? 'perplexity' : serviceKey);
       const configs = {
+        grokplus: { name: 'Grok Plus — 1 месяц', productSlug: 'grok-plus-1' },
+        grokpremium: { name: 'Grok Premium — 1 месяц', productSlug: 'grok-premium-1' },
+        groksuper: { name: 'Grok Super — 1 месяц', productSlug: 'grok-super-1' },
+        grokultra: { name: 'Grok Ultra — 1 месяц', productSlug: 'grok-ultra-1' },
         chatgptpro25x: { name: 'ChatGPT Pro 25x / Pro 500', tokenFlow: true },
         chatgptgo: {
           name: 'ChatGPT GO',
@@ -3713,7 +3717,13 @@
         if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Безопасный предпросмотр страницы после успешной оплаты.';
         setStatus('pending', 'Предпросмотр: данные не отправляются.', false);
       } else {
-        applyTokenFlowMode(!config.tokenFlow, config.flow);
+        if (config.productSlug) {
+          applyActivationPayloadMode({ activationFlow: 'grok_sso', product: config.productSlug, productSlug: config.productSlug, productTitle: config.name }, 'activation');
+          if (redeemTitleEl) redeemTitleEl.textContent = `Подключение ${config.name}`;
+          if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Безопасный предпросмотр страницы после успешной оплаты.';
+        } else {
+          applyTokenFlowMode(!config.tokenFlow, config.flow);
+        }
         hideVpnOffer(false);
         setStatus('pending', 'Предпросмотр: данные не отправляются.', false);
       }

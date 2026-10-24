@@ -21,7 +21,102 @@
 .grok-plan-comparison thead tr:last-child > * { border-bottom: 1px solid #ffffff1a; }
 .grok-offer-note { margin: 16px 0 0; color: #aeb8c6; font-size: 15px; line-height: 1.65; }
 .grok-plan-comparison:focus-visible { outline: 2px solid #6ddace; outline-offset: 4px; }
+html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-list {
+  display: grid;
+  gap: 12px;
+}
+html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-item {
+  margin: 0;
+  padding: 0;
+  border: 1px solid #ffffff26 !important;
+  border-radius: 14px;
+  background: #1b2229;
+  overflow: hidden;
+  box-shadow: none !important;
+}
+html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-question {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  min-height: 78px;
+  padding: 20px 24px;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+  color: #f3f6fa !important;
+  font-family: inherit;
+  font-size: 20px !important;
+  font-weight: 650;
+  line-height: 1.5;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  animation: none !important;
+  transform: none !important;
+}
+html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-question:hover {
+  background: #252e38 !important;
+  color: #ffffff !important;
+}
+html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-question:focus-visible {
+  outline: 2px solid #b8c8db;
+  outline-offset: -3px;
+}
+html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-question > span {
+  position: static;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #ffffff40;
+  border-radius: 9px;
+  background: #ffffff06;
+  color: #e1e9f2;
+  box-shadow: none;
+}
+html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-question > span::before {
+  content: "";
+  position: static;
+  display: block;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border: 0;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  background: transparent;
+  transform: rotate(45deg);
+}
+html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-question > span::after { content: none; }
+html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-item.active .service-faq-question > span::before {
+  margin-top: 4px;
+  transform: rotate(225deg);
+}
+html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-answer {
+  display: none;
+  padding: 0 24px 24px;
+  height: auto;
+  max-height: none;
+  opacity: 1;
+  background: transparent;
+}
+html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-item.active .service-faq-answer { display: block; }
+html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-answer p {
+  margin: 0 0 12px;
+  color: #cbd5e1 !important;
+  font-size: 18px !important;
+  line-height: 1.7 !important;
+}
+html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-answer p:last-child { margin-bottom: 0; }
 @media (max-width: 700px) {
   .service-page[data-service-page="grok"] .grok-account-requirement { padding: 14px; font-size: 14px; }
   .grok-plan-comparison th, .grok-plan-comparison td { padding: 14px 16px; }
+  html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-question { padding: 18px; gap: 14px; font-size: 18px !important; }
+  html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-answer { padding: 0 18px 20px; }
+  html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-answer p { font-size: 17px !important; }
 }
