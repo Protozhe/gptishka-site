@@ -5485,7 +5485,7 @@ function initActivationResumeShortcut() {
       const modern=/^grok-(plus|premium|super|ultra)-1$/.test(String(selectedItem?.baseSlug||''));
       const texts=[['.service-constructor-brand h1',selectedItem?.title],['.service-constructor-description h3',selectedItem?.title],['.service-constructor-description p',selectedItem?.modalDescription]];
       for(const [selector,value] of texts){const el=servicePageRootEl.querySelector(selector);if(el){if(el.dataset.grokOriginal===undefined)el.dataset.grokOriginal=el.textContent;el.textContent=modern?String(value||''):el.dataset.grokOriginal;}}
-      for(const el of servicePageRootEl.querySelectorAll('.service-info-section,.service-faq-section'))el.hidden=modern;
+      for(const el of servicePageRootEl.querySelectorAll('.service-info-section,.service-faq-section'))el.hidden=false;
     }
     const accountNote = servicePageRootEl?.querySelector('[data-service-account-note]');
     if (accountNote) accountNote.textContent = pageNewAccount?.checked

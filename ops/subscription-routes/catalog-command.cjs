@@ -12,12 +12,15 @@ const {install,slugs}=require('./grok-catalog.cjs');
 async function main(){
  const mode=process.argv[2],backup=process.argv[3];
  if(mode==='monthly-inspect')return require('./grok-monthly-catalog.cjs').retire(db);
+ if(mode==='copy-inspect')return require('./grok-product-copy.cjs').updateCopy(db);
  if(mode==='inspect'){
    const r=await install(db);const products=await db.product.findMany({where:{slug:{in:['claude-5x-max','claude-20x-max']}},select:{id:true,slug:true,isActive:true}});
    if(products.length!==2||products.some(p=>!p.isActive))throw Error('claude_products_missing');
    return {newSlugs:r.newSlugs,prices:r.prices,claudeProducts:products};
  }
  if(!path.isAbsolute(backup)||!backup.startsWith('/var/lib/gptishka-runtime/subscription-backups/'))throw Error('backup_path_invalid');
+ if(mode==='copy-apply')return require('./grok-product-copy.cjs').updateCopy(db,{apply:true,backup:async data=>fs.writeFileSync(backup,JSON.stringify(data),{mode:0o600,flag:'wx'})});
+ if(mode==='copy-rollback')return require('./grok-product-copy.cjs').rollbackCopy(db,JSON.parse(fs.readFileSync(backup,'utf8')));
  if(mode==='monthly-apply')return require('./grok-monthly-catalog.cjs').retire(db,{apply:true,backup:async data=>fs.writeFileSync(backup,JSON.stringify(data),{mode:0o600,flag:'wx'})});
  if(mode==='monthly-rollback')return require('./grok-monthly-catalog.cjs').rollback(db,JSON.parse(fs.readFileSync(backup,'utf8')));
  if(mode==='apply')return install(db,{apply:true,backup:async data=>{if(!fs.existsSync(backup))fs.writeFileSync(backup,JSON.stringify(data),{mode:0o600,flag:'wx'})}});

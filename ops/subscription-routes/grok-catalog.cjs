@@ -7,13 +7,11 @@ const PLANS=Object.freeze([
   {tier:'ultra',price:30635,supplierItem:83},
 ]);
 const slugs=PLANS.map(x=>'grok-'+x.tier+'-1');
+const {copyFor}=require('./grok-product-copy.cjs');
 const data=plan=>{
   const name='Grok '+plan.tier[0].toUpperCase()+plan.tier.slice(1);
   return {slug:'grok-'+plan.tier+'-1',title:name+' — 1 месяц',titleEn:name+' — 1 month',
-    description:'Подписка на ваш аккаунт Grok без действующего платного тарифа.\nАктивация по sso после оплаты.\nСрок: 1 месяц',
-    descriptionEn:'A subscription for your Grok account with no active paid plan.\nActivate using sso after payment.\nDuration: 1 month',
-    modalDescription:'Нужен аккаунт Grok без действующей подписки. После оплаты потребуется только sso с grok.com.',
-    modalDescriptionEn:'Requires a Grok account without an active subscription. Only the sso value from grok.com is required after payment.',
+    ...copyFor(plan.tier),
     price:plan.price,currency:'RUB',category:'Подписки ИИ',isActive:true,isArchived:false,stock:null,
     tags:['grok','month:1','activation','grok-sso','align:title:center','align:description:center','align:price:center','align:duration:center','align:features:center','align:meta:center'],
     activationVariants:{withoutLogin:{enabled:true,price:plan.price,deliveryType:'activation',activationSiteUrl:'https://aiee.fun'},withLogin:{enabled:false,price:plan.price,deliveryType:'manual_login',activationSiteUrl:''}},
