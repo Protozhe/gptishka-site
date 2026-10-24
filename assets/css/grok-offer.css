@@ -21,11 +21,11 @@
 .grok-plan-comparison thead tr:last-child > * { border-bottom: 1px solid #ffffff1a; }
 .grok-offer-note { margin: 16px 0 0; color: #aeb8c6; font-size: 15px; line-height: 1.65; }
 .grok-plan-comparison:focus-visible { outline: 2px solid #6ddace; outline-offset: 4px; }
-html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-list {
+html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-list {
   display: grid;
   gap: 12px;
 }
-html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-item {
+html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-item {
   margin: 0;
   padding: 0;
   border: 1px solid #ffffff26 !important;
@@ -34,7 +34,7 @@ html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-it
   overflow: hidden;
   box-shadow: none !important;
 }
-html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-question {
+html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-question {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 34px;
   align-items: center;
@@ -58,15 +58,15 @@ html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-qu
   animation: none !important;
   transform: none !important;
 }
-html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-question:hover {
+html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-question:hover {
   background: #252e38 !important;
   color: #ffffff !important;
 }
-html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-question:focus-visible {
+html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-question:focus-visible {
   outline: 2px solid #b8c8db;
   outline-offset: -3px;
 }
-html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-question > span {
+html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-question > span {
   position: static;
   display: grid;
   place-items: center;
@@ -79,7 +79,7 @@ html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-qu
   color: #e1e9f2;
   box-shadow: none;
 }
-html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-question > span::before {
+html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-question > span::before {
   content: "";
   position: static;
   display: block;
@@ -92,12 +92,12 @@ html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-qu
   background: transparent;
   transform: rotate(45deg);
 }
-html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-question > span::after { content: none; }
-html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-item.active .service-faq-question > span::before {
+html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-question > span::after { content: none; }
+html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-item.active .service-faq-question > span::before {
   margin-top: 4px;
   transform: rotate(225deg);
 }
-html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-answer {
+html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-answer {
   display: none;
   padding: 0 24px 24px;
   height: auto;
@@ -105,18 +105,18 @@ html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-an
   opacity: 1;
   background: transparent;
 }
-html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-item.active .service-faq-answer { display: block; }
-html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-answer p {
+html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-item.active .service-faq-answer { display: block; }
+html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-answer p {
   margin: 0 0 12px;
   color: #cbd5e1 !important;
   font-size: 18px !important;
   line-height: 1.7 !important;
 }
-html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-answer p:last-child { margin-bottom: 0; }
+html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-answer p:last-child { margin-bottom: 0; }
 @media (max-width: 700px) {
   .service-page[data-service-page="grok"] .grok-account-requirement { padding: 14px; font-size: 14px; }
   .grok-plan-comparison th, .grok-plan-comparison td { padding: 14px 16px; }
-  html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-question { padding: 18px; gap: 14px; font-size: 18px !important; }
-  html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-answer { padding: 0 18px 20px; }
-  html body#storefrontBody .service-page[data-service-page="grok"] .service-faq-answer p { font-size: 17px !important; }
+  html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-question { padding: 18px; gap: 14px; font-size: 18px !important; }
+  html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-answer { padding: 0 18px 20px; }
+  html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-answer p { font-size: 17px !important; }
 }
