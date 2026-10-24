@@ -35,11 +35,11 @@ function processingRecords() {
 }
 
 async function runCycle() {
+  // Deadline notices still tick while a previous supplier poll is taking time.
+  void notifyPendingAisouFunds().catch(() => {});
   if (running) return;
   running = true;
   try {
-    // Independent of slow supplier reads in the procurement resume loop.
-    void notifyPendingAisouFunds().catch(() => {});
     void ordersService.resumePendingAisouPurchases().catch(() => {});
     void ordersService.resumeClaudeZovoJobs().catch(() => {});
     for (const record of processingRecords()) {
