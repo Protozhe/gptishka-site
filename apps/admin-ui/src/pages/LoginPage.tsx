@@ -51,7 +51,7 @@ export default function LoginPage() {
     <div className="min-h-screen grid place-items-center bg-[radial-gradient(circle_at_top_left,#22d3ee40,transparent_55%),radial-gradient(circle_at_bottom_right,#06b6d440,transparent_45%)] px-4">
       <form className="card w-full max-w-md p-6" onSubmit={onSubmit}>
         <h1 className="text-2xl font-bold">Вход в админ-панель</h1>
-        <p className="mt-1 text-sm text-slate-500">{challengeId ? "Введите код из личного чата с @myadminiibot. Он действует 5 минут." : "Войдите с паролем и подтвердите вход кодом из Telegram"}</p>
+        <p className="mt-1 text-sm text-slate-500">{challengeId ? "Подтвердите новый IP кодом из личного чата с @myadminiibot. Код действует 5 минут." : "Войдите с паролем. Код из Telegram понадобится только при входе с нового IP."}</p>
 
         {challengeId ? <div className="mt-5">
           <label className="mb-1 block text-sm" htmlFor="telegram-code">Код из Telegram</label>
@@ -87,7 +87,7 @@ export default function LoginPage() {
         {error ? <div role="alert" className="mt-3 text-sm text-rose-600">{error}</div> : null}
 
         <button className="btn-primary mt-5 w-full" disabled={pending}>
-          {pending ? "Проверяем..." : challengeId ? "Подтвердить вход" : "Получить код в Telegram"}
+          {pending ? "Проверяем..." : challengeId ? "Подтвердить вход" : "Войти"}
         </button>
         {challengeId ? <button type="button" className="mt-4 w-full text-sm text-slate-500" disabled={pending} onClick={() => { setChallengeId(null); setCode(""); setError(null); }}>Начать вход заново</button> : null}
       </form>

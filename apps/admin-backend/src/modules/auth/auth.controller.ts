@@ -4,7 +4,7 @@ import { env } from "../../config/env";
 import { asyncHandler } from "../../common/http/async-handler";
 import { validateUserCredentials } from "./auth.service";
 import { signAccessToken, signRefreshToken, verifyRefreshToken, signPanelToken, verifyPanelToken } from "./token.service";
-import { telegramMfaRequired, beginTelegramChallenge, consumeTelegramChallenge, requestBinding } from "./telegram-mfa.service";
+import { telegramMfaRequired, beginTelegramChallenge, consumeTelegramChallenge, requestBinding, credentialVersion, hasTrustedIp, rememberVerifiedIp } from "./telegram-mfa.service";
 import { sha256 } from "../../common/utils/hash";
 import { AppError } from "../../common/errors/app-error";
 import bcrypt from "bcrypt";
@@ -33,7 +33,9 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const user = await validateUserCredentials(email, password);
   res.setHeader("Cache-Control", "no-store");
   if (telegramMfaRequired()) {
-    return res.json(await beginTelegramChallenge(user.id, requestBinding(req.ip || "", String(req.headers["user-agent"] || ""))));
+    const version = credentialVersion(user.id, user.passwordHash);
+    if (await hasTrustedIp(user.id, req.ip || "", version)) return createLoginSession(req, res, user, true);
+    return res.json(await beginTelegramChallenge(user.id, requestBinding(req.ip || "", String(req.headers["user-agent"] || "")), version));
   }
   await createLoginSession(req, res, user, false);
 });
@@ -68,9 +70,14 @@ async function createLoginSession(req: Request, res: Response, user: Awaited<Ret
 
 export const verifyTelegram = asyncHandler(async (req: Request, res: Response) => {
   const { challengeId, code } = req.body as { challengeId: string; code: string };
-  const userId = await consumeTelegramChallenge(challengeId, code, requestBinding(req.ip || "", String(req.headers["user-agent"] || "")));
-  const user = await prisma.user.findUnique({ where: { id: userId }, include: { role: true } });
+  const verified = await consumeTelegramChallenge(challengeId, code, requestBinding(req.ip || "", String(req.headers["user-agent"] || "")));
+  const user = await prisma.user.findUnique({ where: { id: verified.userId }, include: { role: true } });
   if (!user?.isActive) throw new AppError("Unauthorized", 401);
+  const version = credentialVersion(user.id, user.passwordHash);
+  if (verified.credentialVersion && verified.credentialVersion !== version) throw new AppError("Пароль изменился. Начните вход заново", 401);
+  // Codes issued before the rollout remain usable, but cannot enroll an IP
+  // because their challenge was not bound to the current password version.
+  if (verified.credentialVersion) await rememberVerifiedIp(user.id, req.ip || "", version);
   res.setHeader("Cache-Control", "no-store");
   await createLoginSession(req, res, user, true);
 });
