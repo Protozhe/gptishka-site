@@ -1,10 +1,17 @@
-# AISOU procurement preparation
+# AISOU procurement
 
-This directory is **not connected to production workers, stock pools, payments
-or customer messages**. Importing it performs no I/O. Real purchasing is not
-implemented in `AisouClient`: its public interface permits authenticated reads
-only. `buyOnce` accepts an injected buyer for isolated tests and a later reviewed
-integration; it defaults to disabled.
+Importing the libraries performs no I/O. `AisouClient` remains read-only;
+`aisou-live.cjs` supplies the separate signed balance buyer behind a protected
+runtime policy. The native Plus selector and Codex 250/500/1000 start call it
+only after selecting the account route and finding no local key. The scheduler resumes durable native
+demands; it never repeats a claimed purchase or an activation submission.
+
+`pulse-stock.py` supports new **website** Codex 250/500/1000 orders and website
+Plus/Go fallback. It uses the peer-authenticated website Unix broker; API
+credentials never enter the Pulse process. Marketplace procurement and other
+tariffs remain unsupported. Their existing activation paths are unchanged.
+`install-pulse.py` checks exact anchors before installing the adapter and keeps
+code backups. It does not enable policies, buy keys or activate customer accounts.
 
 ## Verified merchant facts (2026-10-24)
 
@@ -21,8 +28,10 @@ integration; it defaults to disabled.
   different version or add restrictions.
 - Authenticated `connect`, `items`, `item` and `inventory` reads succeeded using
   the existing account key held only in RAM. Sixteen relevant catalog goods
-  were API-enabled. The key was not saved locally or on the server. Production
-  source-IP permission and the actual trade path have not been exercised.
+  were API-enabled. The owner subsequently authorized protected server-side
+  storage and automatic procurement. Server authentication using curl succeeds;
+  Python urllib was rejected with HTTP 403. The actual charged trade path must
+  still be confirmed by a qualifying new paid order, not a synthetic purchase.
 - The documented `query` method needs `tradeNo`. No reliable lookup by our
   `request_no` alone has been confirmed. If a reply is lost before `tradeNo` is
   received, keep the purchase uncertain and reconcile owner purchase history;
@@ -64,13 +73,31 @@ uncertain purchase, an ambiguous key or a changed charge never permits it.
 The journal belongs outside the checkout, under a service-only directory. Its
 32-byte encryption key must come from a protected runtime secret. Journal file
 permissions are set to 0600; the parent directory must be 0700. The caller must
-verify the paid order, no existing/in-progress fulfilment, financial margin,
-overall spending allowance and the correct notification destination. Those
-integrations are not yet wired and must not be inferred from passing unit tests.
+verify the paid order, no existing/in-progress fulfilment, financial margin and
+the correct notification destination. `aisou-live.cjs` independently checks the
+new paid website order, exact product, quantity, payment amount, original payment
+commission, cost-reference freshness, session presence and prior fulfilment.
+Missing or uncertain evidence holds the order. Stock and merchant balance are
+checked before a new dispatch. Existing receipts are recovered independently of
+current stock/balance. Merchant quantity is always one.
+
+Policies and credentials: `/var/lib/gptishka-runtime/supplier-secrets/`, root
+owned, directory 0750, files 0640 readable only by the website group. Journal:
+`/var/lib/gptishka-runtime/aisou-procurement/`, website UID 0700, database 0600.
+The policy's `enabledAfter` applies to order creation and confirmed payment.
+The budget monitor and Zovo cumulative spending cap are not altered.
+
+Fallback procurement requires the existing remote `fallback_sealed` proof,
+bound source/session/product and the native order lock. It cannot start Zovo.
+Codex purchases enter the encrypted website-only reserve pool with acquisition
+costs. Subscription purchases are assigned in the website admin inventory.
+Wrong keys remain in encrypted quarantine. Unmapped products, ambiguous keys,
+unknown commissions, stale cost references and unresolved purchases stop rather
+than silently substitute a different tariff or issue another payment.
 
 ## Tests
 
-`node --test ops/supplier-procurement/aisou-core.test.cjs`
+`node scripts/verify-supplier-procurement.mjs`
 
 Tests use temporary SQLite databases, synthetic keys and mocked HTTP/buyers.
 They cover exact variants, eligibility, ambiguous prefixes, authenticated

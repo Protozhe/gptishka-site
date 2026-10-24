@@ -36,6 +36,7 @@ let available = true, existing = null, fullOrder;
 class AppError extends Error { constructor(message, status) { super(message); this.status = status; } }
 const context = vm.createContext({
   AppError, console: {info() {}, warn() {}},
+  procureSelectedWebsiteKey: async () => null,
   CHATGPT_PLUS_PRODUCT_KEY: "chatgpt-plus-1",
   CHATGPT_PLUS_FREE_SITE_URL: "https://aiee.fun", CHATGPT_PLUS_IOS_SITE_URL: "https://vip.sxzfd.com",
   OrderStatus: {PAID: "PAID"}, PaymentStatus: {SUCCESS: "SUCCESS"},

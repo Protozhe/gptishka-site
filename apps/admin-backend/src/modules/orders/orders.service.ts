@@ -24,6 +24,7 @@ import { resolveTelegramOrderContext } from "./telegram-order-context";
 import { manualCredentialsStore } from "../products/manual-credentials.store";
 import { toVpnMePayload, vpnService } from "../../services/vpn.service";
 import { licenseService } from "../../services/licenseService";
+import { procureSelectedWebsiteKey, pendingAisouNativeOrders } from "../../services/aisou-procurement";
 import { syncWebsiteCustomerToSheet } from "../customers/customer-sheet.service";
 import crypto from "crypto";
 import fs from "fs";
@@ -784,6 +785,21 @@ export const ordersService = {
     const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
     assertTokenActivationDeliveryMode(activationInfo);
     return withActivationOrderLock(orderId, async () => startActivationUnsafe(orderId, token, orderToken));
+  },
+
+  async resumePendingAisouPurchases() {
+    for (const orderId of await pendingAisouNativeOrders()) {
+      try {
+        await withActivationOrderLock(orderId, async () => {
+          const record = activationStore.findByOrderId(orderId);
+          // Only a never-submitted native activation with a durable purchase
+          // claim is resumable. Provider tasks are handled by query-only polling.
+          if (!record || record.externalFulfillmentOwner || record.taskId || Number(record.attempts || 0) > 0 || record.status === "success" || record.verificationState === "success") return;
+          const token = decryptStoredClientToken(record);
+          if (token) await startActivationUnsafe(orderId, token, undefined, true);
+        });
+      } catch { /* held purchase remains durable; never issue another POST */ }
+    }
   },
 
   async startActivationFromAdmin(
@@ -2286,12 +2302,18 @@ async function selectChatGptPlusCandidate(
       : null;
 
   if (!chosen) {
-    const reserved = await activationStore.reserveCdkRecordForOrder({
+    let reserved = await activationStore.reserveCdkRecordForOrder({
       productKey: CHATGPT_PLUS_PRODUCT_KEY,
       activationSiteUrl: desiredSite,
       orderId: stored.orderId,
       email: stored.email,
     });
+    if (!reserved) {
+      reserved = await procureSelectedWebsiteKey({
+        orderId: stored.orderId, productKey: CHATGPT_PLUS_PRODUCT_KEY,
+        accountPlan: pool.planType, activationSiteUrl: desiredSite,
+      });
+    }
     if (!reserved) {
       activationStore.upsert({
         ...stored,
@@ -2439,12 +2461,19 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     const paidOrder = trustedAdmin
       ? await assertPaidOrderForAdmin(orderId)
       : await assertPaidOrderAccess(orderId, orderToken);
-    const reserved = await activationStore.reserveCdkRecordForOrder({
+    let reserved = await activationStore.reserveCdkRecordForOrder({
       productKey: String(stored.productKey || "chatgpt"),
       activationSiteUrl: stored.activationSiteUrl || "",
       orderId: paidOrder.id,
       email: paidOrder.email,
     });
+    if (!reserved && /^codex-(250|500|1000)$/.test(String(stored.productKey || "")) && stored.activationSiteUrl === "https://aiee.fun") {
+      reserved = await procureSelectedWebsiteKey({
+        orderId: stored.orderId, productKey: stored.productKey,
+        accountPlan: String((tokenInfo.json?.account as any)?.planType || "").trim().toLowerCase(),
+        activationSiteUrl: stored.activationSiteUrl,
+      });
+    }
     if (reserved) {
       const latest = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
       activationStore.upsert({

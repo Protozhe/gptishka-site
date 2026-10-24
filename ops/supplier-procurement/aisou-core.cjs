@@ -21,6 +21,8 @@ function contract(product, accountPlan) {
     // Authenticated one-unit API quote, not the 122 CNY wholesale teaser.
     return Object.freeze({ product: "plus_ios", itemId: 30, code: "D024411F1D93A771", race: "", site: "https://vip.sxzfd.com", ceilingMinor: 12400 });
   }
+  if (product === "chatgpt-go-1" && accountPlan === "free") return Object.freeze({ product: "go_free", itemId: 29, code: "F286772962B67D84", race: "", site: "https://aiee.fun", ceilingMinor: 3200 });
+  if (product === "chatgpt-go-1" && accountPlan === "go") return Object.freeze({ product: "go_ios", itemId: 63, code: "985CC8DEB226854E", race: "", site: "https://vip.sxzfd.com", ceilingMinor: 3500 });
   throw Error("product_route_unmapped");
 }
 
