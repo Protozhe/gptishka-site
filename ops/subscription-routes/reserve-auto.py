@@ -80,13 +80,38 @@ def notice(a,j,suffix,text):
     prefix='GPTishka' if j['platform']=='gptishka' else 'FunPay' if j['platform']=='funpay' else 'Playerok'
     with a.connect() as c:c.execute("INSERT OR IGNORE INTO subscription_reserve_notices VALUES(?,?,?,?, 'pending',?)",(str(j['id'])+':'+suffix,j['id'],target,f'{prefix} · {j["order_id"]}\n'+text,time.time()))
 
+def funds_wait(a,j,cfg,now):
+    """Owner grace period only. This never prepares, funds or submits a payment."""
+    from zovocard_pulse_bridge import _time
+    cutoff=cfg.get('funds_wait_enabled_after')
+    if not cutoff or min(_time(j['source_created_at'] or j['created_at']),_time(j['created_at']))<_time(cutoff):return False
+    if j['status']!='manual_action' or j['key_id'] or j['aiee_order_id']:return False
+    reason=str(j['error'] or '')
+    if not any(x in reason for x in ('wallet_insufficient','Недостаточно доступных средств ZovoCard','Недостаточно средств на карте')):return False
+    with a.connect() as c:
+        c.execute('CREATE TABLE IF NOT EXISTS subscription_funds_wait(job_id INTEGER PRIMARY KEY,started_at REAL NOT NULL,deadline_at REAL NOT NULL)')
+        c.execute('INSERT OR IGNORE INTO subscription_funds_wait VALUES(?,?,?)',(j['id'],now,now+900))
+        row=c.execute('SELECT deadline_at FROM subscription_funds_wait WHERE job_id=?',(j['id'],)).fetchone()
+    waiting=now<row['deadline_at']
+    if waiting:
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+        deadline=datetime.fromtimestamp(row['deadline_at'],ZoneInfo('Europe/Berlin')).strftime('%d.%m, %H:%M')
+        text=f'⏳ Ожидает средств ZovoCard\n\nПричина: недостаточно доступного баланса для подготовки оплаты.\n\nНа устранение: 15 минут, до {deadline} (Берлин). После пополнения автоматика повторно проверит исходную заявку.\n\nДо окончания ожидания переход на резерв отложен; повторная оплата клиента не нужна.'
+    else:text='⚠️ Ожидание средств ZovoCard: прошло 15 минут\n\nПополните баланс поставщика. Заказ сохранён. Дальнейшая обработка и переход на подходящий резерв разрешены только после штатной проверки отсутствия списания.'
+    notice(a,j,'funds:initial' if waiting else 'funds:expired',text)
+    return waiting
+
 def reserve_notice_card(text):
     header, _, body = str(text).partition('\n')
     platform, _, order = header.partition(' · ')
     # Stored notice IDs and bodies are unchanged. Only the outgoing view changes.
     status = 'Выполнено' if body.startswith('✅') else 'В обработке' if body.startswith('⏳') else 'Требуется проверка'
     icon = '✅' if body.startswith('✅') else '⏳' if body.startswith('⏳') else '⚠️'
-    return (icon + ' <b>Активация · резервный канал</b>\n\n'
+    funds=body.startswith(('⏳ Ожидает средств ZovoCard','⚠️ Ожидание средств ZovoCard'))
+    if funds:status='Ожидает средств'
+    title='ZovoCard · Ожидает средств' if funds else 'Активация · резервный канал'
+    return (icon + ' <b>'+title+'</b>\n\n'
             '🧾 Заказ: <code>' + html.escape(order[:100]) + '</code>\n'
             '📍 Источник: ' + html.escape(platform[:60]) + '\n\n'
             'Статус: <b>' + status + '</b>\n\n'
@@ -302,8 +327,9 @@ def run(dry=False):
     if not cfg.get('enabled'):return {'enabled':False}
     init(a)
     with a.connect() as c:jobs=c.execute("SELECT * FROM codex_jobs WHERE status='manual_action' AND product_type LIKE 'chatgpt_%' ORDER BY id DESC LIMIT 100").fetchall()
-    jobs=[j for j in jobs if eligible(j,cfg,time.time())]
-    if dry:return {'eligible':len(jobs),'dry_run':True}
+    if dry:return {'eligible':sum(eligible(j,cfg,time.time()) for j in jobs),'dry_run':True}
+    waiting={j['id'] for j in jobs if funds_wait(a,j,cfg,time.time())}
+    jobs=[j for j in jobs if eligible(j,cfg,time.time()) and j['id'] not in waiting]
     for j in jobs[:5]:
         try:
             with a.connect() as c:
@@ -319,6 +345,7 @@ def run(dry=False):
             notice(a,j,'blocked:'+reason,'⚠️ Автоматический резерв ожидает проверки: '+reason+'. Повторную оплату не запускали.')
     with a.connect() as c:rows=c.execute("SELECT * FROM subscription_reserve_attempts WHERE state NOT IN ('completed','review') AND next_at<=? ORDER BY job_id LIMIT 5",(time.time(),)).fetchall()
     for r in rows:
+        if r['job_id'] in waiting and not r['proof'] and not r['dispatched']:continue
         with a.connect() as c:j=c.execute('SELECT * FROM codex_jobs WHERE id=?',(r['job_id'],)).fetchone()
         try:process(a,j,r)
         except Exception as e:
@@ -326,7 +353,7 @@ def run(dry=False):
             update(a,j['id'],next_at=time.time()+60,reason=reason)
             if reason!=r['reason']:
                 with a.connect() as c:a._log(c,j['id'],'warning','subscription_reserve_wait',reason)
-                notice(a,j,'wait:'+reason,'⚠️ Резерв ожидает безопасного подтверждения: '+reason+'. Повторная оплата заблокирована.')
+                if reason!='supplier_balance_insufficient':notice(a,j,'wait:'+reason,'⚠️ Резерв ожидает безопасного подтверждения: '+reason+'. Повторная оплата заблокирована.')
     try:notify_native_completions(a,cfg)
     except Exception:pass  # Website unavailability must not block marketplace notices.
     send_notices(a)

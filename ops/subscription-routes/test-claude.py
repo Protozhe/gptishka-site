@@ -5,6 +5,7 @@ sys.path.insert(0,str(HERE/'test-runtime'))
 def load(name,path):
  s=importlib.util.spec_from_file_location(name,HERE/path);m=importlib.util.module_from_spec(s);sys.modules[name]=m;s.loader.exec_module(m);return m
 load('zovocard_settled_cost','settled-cost.py');load('zovocard_card_pool','card-pool.py')
+direct=load('zovocard_direct_worker','direct-worker.py')
 worker=load('zovocard_claude','claude-worker.py')
 sys.modules['zovocard_fallback_guard']=types.SimpleNamespace(assert_unclaimed=lambda *a:None)
 class Cipher:
@@ -85,4 +86,15 @@ class Claude(unittest.TestCase):
   t=T();rid='pulse-'+'a'*48;t.create_order(full_session=self.raw,preflight_token='local',request_id=rid,card_id=101)
   args,kw=t.calls[0];body=args[2]
   self.assertEqual((body['product'],body['plan'],body['payment_country'],body['payment_currency']),('claude','max_5x','US','USD'));self.assertEqual(kw['idempotency_key'],rid);self.assertTrue(body['no_auto_card_switch']);self.assertNotIn('preflight_token',body)
+ def test_wallet_shortage_can_resume_only_an_unfunded_undispatched_attempt(self):
+  self.w.prepare(self.order,self.raw)
+  with self.w.connect() as c:c.execute("UPDATE zovo_direct_jobs SET state='failed_before_dispatch',reason='wallet_insufficient',funding_state=NULL")
+  self.assertEqual(self.w.resume(self.order,self.raw)['state'],'processing')
+  self.assertEqual(self.api.creates,1)
+  # The existing provider job is inspected, never submitted again.
+  self.w.poll=lambda source:{'state':'processing'}
+  self.w.resume(self.order,self.raw);self.assertEqual(self.api.creates,1)
+  with self.w.connect() as c:c.execute("UPDATE zovo_direct_jobs SET state='failed_before_dispatch',reason='wallet_insufficient',dispatched=0,provider_order_id=NULL,funding_state='uncertain'")
+  with self.assertRaises(worker.Refused):self.w.resume(self.order,self.raw)
+  self.assertEqual(self.api.creates,1)
 if __name__=='__main__':unittest.main()

@@ -4,9 +4,9 @@ Dry-run by default. It never submits an activation, buys keys or changes a limit
 from pathlib import Path
 import json,hashlib,base64,os,pwd,grp,subprocess,datetime,tempfile,shutil,sys,fcntl
 HERE=Path(__file__).resolve().parent;RELEASE=HERE.parent.parent
-PULSE={'subscription_reserve_auto.py':'reserve-auto.py','/opt/gptishka-reserve-site/helper.cjs':'reserve-helper.cjs','claude_zovo_broker.py':'claude-broker.py','/opt/pulse-web/aisou_stock.py':'../supplier-procurement/pulse-stock.py','/etc/systemd/system/gptishka-claude-zovo.service':'claude-zovo.service'}
-PULSE_BASE={'subscription_reserve_auto.py':'1b5155de246d9d52b8f803e6bf4c85f1979d45473526b91bddd116bfbd7ef04c','/opt/gptishka-reserve-site/helper.cjs':'bf38b746aef78489b89d578a47d135a22cdb6d0e8796991807c4504c062a8fa6','/opt/pulse-web/aisou_stock.py':'cb0de2a63c001777d1770e1c107b1bee6987bd8c14686e1a9bab1d83893cf757'}
-GATEWAY={'zovocard_gateway.py':'gateway.py','zovocard_claude.py':'claude-worker.py','zovocard_claude_gateway.py':'claude-gateway.py','zovocard_card_pool.py':'card-pool.py','zovocard_settled_cost.py':'settled-cost.py'}
+PULSE={'subscription_reserve_auto.py':'reserve-auto.py','site_aiee_fallback.py':'../supplier-procurement/site-aiee-fallback.py','/opt/gptishka-reserve-site/helper.cjs':'reserve-helper.cjs','claude_zovo_broker.py':'claude-broker.py','/opt/pulse-web/aisou_stock.py':'../supplier-procurement/pulse-stock.py','/etc/systemd/system/gptishka-claude-zovo.service':'claude-zovo.service'}
+PULSE_BASE={'subscription_reserve_auto.py':'dfc14ae53f0c2f9fd9fa35579de5a3cb139dbbc9a60a998923492d0a0bb117c5','site_aiee_fallback.py':'575aef24e6d2f75a0e064e9459aff07218f569ded887e1d055d03e763c000cd8','/opt/gptishka-reserve-site/helper.cjs':'bf38b746aef78489b89d578a47d135a22cdb6d0e8796991807c4504c062a8fa6','/opt/pulse-web/aisou_stock.py':'cb0de2a63c001777d1770e1c107b1bee6987bd8c14686e1a9bab1d83893cf757'}
+GATEWAY={'zovocard_gateway.py':'gateway.py','zovocard_direct_worker.py':'direct-worker.py','zovocard_claude.py':'claude-worker.py','zovocard_claude_gateway.py':'claude-gateway.py','zovocard_card_pool.py':'card-pool.py','zovocard_settled_cost.py':'settled-cost.py'}
 PRO=['chatgpt-pro-5x-1','chatgpt-pro-20x-1','chatgpt-pro-25x-1'];GROK=['grok-'+x+'-1' for x in ('plus','premium','super','ultra')]
 SSH=['ssh','-T','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','UserKnownHostsFile=/root/.ssh/pulse_zovocard_known_hosts','-o','ConnectTimeout=10','-i','/root/.ssh/playerok_de_ed25519','root@91.108.242.137','/opt/pulse-zovocard/venv/bin/python -']
 
@@ -30,7 +30,7 @@ def main(apply=False):
  expected=sys.argv[sys.argv.index('--sha')+1] if '--sha' in sys.argv else ''
  if sha!=expected:raise ValueError('release_sha_required')
  info=catalog('inspect');products={x['slug']:x['id'] for x in info['claudeProducts']}
- cutoff=datetime.datetime.now(datetime.timezone.utc).isoformat()
+ installed_at=datetime.datetime.now(datetime.timezone.utc).isoformat();cutoff=installed_at
  native=Path('/var/lib/gptishka-runtime/subscription-routes.json')
  if native.exists():cutoff=json.loads(native.read_text())['claude']['enabledAfter']
  candidates={str(Path(n) if n.startswith('/') else Path('/opt/pulse-web')/n):(HERE/src).read_bytes() for n,src in PULSE.items()}
@@ -65,6 +65,7 @@ def main(apply=False):
    if p==native:
     cfg.setdefault('claude',{'enabled':True,'enabledAfter':gw['claudeCutoff']})
    elif p.name=='subscription-reserve.json':
+    cfg.setdefault('funds_wait_enabled_after',installed_at)
     dates=cfg.setdefault('product_enabled_after',{})
     for product in ('chatgpt_pro_5x','chatgpt_pro_20x','chatgpt_pro_25x'):dates.setdefault(product,cutoff)
    else:

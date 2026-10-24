@@ -115,10 +115,40 @@ test('lost purchase reply cannot buy again after a new invocation',async t=>{
  const f=fixture(t,{lost:true});await assert.rejects(procureWebsiteKey(f.args),/supplier_uncertain/);await assert.rejects(procureWebsiteKey(f.args),/supplier_uncertain/);assert.equal(f.trades(),1);assert.equal(f.o.licenseKeys.length,0);
 });
 test('insufficient balance creates a resumable demand without a dispatch',async t=>{
- const f=fixture(t),real=f.args.transport;let funded=false;
+ const f=fixture(t),real=f.args.transport;let funded=false,clock=now;const messages=[];
+ f.args.now=()=>clock;f.args.notifyFunds=async text=>{messages.push(text);return messages.length};
  f.args.transport=async(url,...rest)=>url.endsWith('/connect')?{code:200,data:{balance:funded?'1000':'0'}}:real(url,...rest);
  await assert.rejects(procureWebsiteKey(f.args),/balance_insufficient/);assert.equal(f.trades(),0);
- funded=true;await procureWebsiteKey(f.args);assert.equal(f.trades(),1);
+ assert.equal(messages.length,1);assert.match(messages[0],/15 минут/);assert.match(messages[0],/Не хватает: <b>¥75.00/);
+ // A new invocation opens the same durable journal; it cannot restart the clock.
+ clock+=14*60000;await assert.rejects(procureWebsiteKey(f.args),/balance_insufficient/);assert.equal(messages.length,1);
+ clock+=60000;await assert.rejects(procureWebsiteKey(f.args),/balance_insufficient/);assert.equal(messages.length,2);assert.match(messages[1],/15 минут истекли/);
+ clock+=60000;await assert.rejects(procureWebsiteKey(f.args),/balance_insufficient/);assert.equal(messages.length,2);assert.equal(f.trades(),0);
+ funded=true;await procureWebsiteKey(f.args);assert.equal(f.trades(),1);assert.equal(messages.length,3);assert.match(messages[2],/Баланс восстановлен/);
+ await procureWebsiteKey(f.args);assert.equal(f.trades(),1);assert.equal(messages.length,3);
+});
+
+test('invalid balance is not treated as a genuine cash shortage; grace survives a failed notification',async t=>{
+ const f=fixture(t),real=f.args.transport;let balance='invalid',clock=now,calls=0;
+ f.args.now=()=>clock;f.args.notifyFunds=async()=>{calls++;throw Error('transport unknown')};
+ f.args.transport=async(url,...rest)=>url.endsWith('/connect')?{code:200,data:{balance}}:real(url,...rest);
+ await assert.rejects(procureWebsiteKey(f.args),/balance_unconfirmed/);assert.equal(calls,0);
+ balance='70.01';await assert.rejects(procureWebsiteKey(f.args),e=>e.fundsWait.deadlineAt===now+900000);assert.equal(calls,1);
+ clock+=60000;balance='74.99';await assert.rejects(procureWebsiteKey(f.args),e=>e.fundsWait.deadlineAt===now+900000);assert.equal(calls,1);
+ clock=now+900000;await assert.rejects(procureWebsiteKey(f.args),/balance_insufficient/);assert.equal(calls,2);assert.equal(f.trades(),0);
+});
+
+test('deadline notification works from the durable hold even if supplier reads are down',async t=>{
+ const f=fixture(t),{Journal}=require('./aisou-core.cjs'),funds=require('./funds-wait.cjs'),events=[];
+ const scope='website:'+oid,key=f.args.settings.encryptionKey;
+ let j=new Journal(path.join(f.stateDir,'journal.sqlite'),key);await j.initialize();
+ const row=await funds.hold(j,scope,7500,3000,now);await funds.notify(j,row,async t=>{events.push(t);return 1},now);await j.close();
+ // Process restart and outage: only the journal and owner notification transport are used.
+ j=new Journal(path.join(f.stateDir,'journal.sqlite'),key);await j.initialize();
+ await funds.due(j,[],async()=>assert.fail('inactive/refunded order must not notify'),now+900000);
+ await funds.due(j,[scope],async t=>{events.push(t);return 2},now+900000);
+ await funds.due(j,[scope],async()=>assert.fail('duplicate reminder'),now+990000);await j.close();
+ assert.equal(events.length,2);assert.match(events[1],/¥45.00/);assert.equal(f.calls.length,0);
 });
 test('a lower actual supplier charge releases the correct key and records the discount',async t=>{
  const f=fixture(t),original=f.args.transport;

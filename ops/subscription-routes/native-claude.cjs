@@ -31,6 +31,16 @@ async function notice(ctx,id,event,message){
   try{await ctx.notify(`🔔 <b>Claude · ${message.title}</b>\n\n🧾 Заказ: <code>${id}</code>\n\nСтатус: <b>${message.status}</b>\n\n<blockquote>${message.body}</blockquote>`);patch(ctx.activationStore,id,{notices:{...(state(ctx.activationStore.findByOrderId(id)).notices||{}),[event]:'sent'}})}
   catch{patch(ctx.activationStore,id,{notices:{...(state(ctx.activationStore.findByOrderId(id)).notices||{}),[event]:'uncertain'}})}
 }
+async function fundsWait(ctx,id){
+  const a=ctx.activationStore.findByOrderId(id),now=(ctx.now||Date.now)();
+  const wait=state(a).fundsWait||{startedAt:now,deadlineAt:now+900000};
+  patch(ctx.activationStore,id,{fundsWait:wait});
+  const expired=now>=wait.deadlineAt;
+  const deadline=new Date(wait.deadlineAt).toLocaleString('ru-RU',{timeZone:'Europe/Berlin',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  await notice(ctx,id,expired?'funds:expired':'funds:initial',{title:expired?'Ожидание больше 15 минут':'Нужно пополнить ZovoCard',status:'ожидает средств',body:expired
+    ?'15 минут истекли. Пополните баланс ZovoCard. Заказ сохранён; обработчик продолжит после безопасной проверки исходной заявки.'
+    :`Недостаточно доступного баланса ZovoCard. На устранение причины: 15 минут, до ${deadline} (Берлин). После пополнения продолжим автоматически. Повторная оплата клиента не требуется.`});
+}
 async function processOrder(ctx,id){
   const {prisma:db,activationStore:store}=ctx,a=store.findByOrderId(id);if(a?.externalFulfillmentOwner!==OWNER)return;
   const o=await db.order.findUnique({where:{id},include:{payments:true,items:{include:{product:true}},licenseKeys:true}});
@@ -46,15 +56,17 @@ async function processOrder(ctx,id){
     return response.result;
   };
   let result=await call('status');
+  if(result?.state==='failed_before_dispatch'&&['wallet_insufficient','wallet_balance_insufficient','insufficient_wallet_balance'].includes(result.reason))await fundsWait(ctx,id);
   const resume=result?.state==='failed_before_dispatch'&&result.can_resume_prepare===true;
-  if(resume&&Date.now()-Number(state(a).lastPrepareAt||0)<300000)return;
+  if(resume&&(ctx.now||Date.now)()-Number(state(a).lastPrepareAt||0)<300000)return;
   if(result?.state==='absent'||resume){
     if(!resume&&(a.attempts>0||state(a).providerOrderId))throw Error('claude_dispatch_requires_reconciliation');
     const raw=ctx.decrypt(a),error=validate(raw);if(error)throw Error('claude_session_required');
     const order={platform:'gptishka',account_id:'site',order_id:id,product_slug:slug,product_id:o.items[0].product.id,quantity:1,payment_status:'paid',created_at:new Date(o.createdAt).toISOString(),paid_at:new Date(p.processedAt||p.createdAt).toISOString(),job_id:parseInt(crypto.createHash('sha256').update('claude:'+id).digest('hex').slice(0,11),16),job_status:'ready',email:o.email,buyer_username:'site',has_prior_dispatch:false,has_external_fulfillment:false};
-    patch(store,id,{phase:'preparing',lastPrepareAt:Date.now()});result=await call('prepare',{order,session:raw});
+    patch(store,id,{phase:'preparing',lastPrepareAt:(ctx.now||Date.now)()});result=await call('prepare',{order,session:raw});
   }
   if(result?.state==='prepared'){
+    if(state(store.findByOrderId(id)).fundsWait)patch(store,id,{fundsWait:null});
     const raw=ctx.decrypt(store.findByOrderId(id));if(validate(raw))throw Error('claude_session_required');
     const order={platform:'gptishka',account_id:'site',order_id:id,product_slug:slug,product_id:o.items[0].product.id,quantity:1,payment_status:'paid',created_at:new Date(o.createdAt).toISOString(),paid_at:new Date(p.processedAt||p.createdAt).toISOString(),job_id:parseInt(crypto.createHash('sha256').update('claude:'+id).digest('hex').slice(0,11),16),job_status:'ready',email:o.email,buyer_username:'site',has_prior_dispatch:false,has_external_fulfillment:false};
     patch(store,id,{phase:'submit_claimed'},{attempts:1});result=await call('submit',{order,session:raw});
@@ -62,7 +74,8 @@ async function processOrder(ctx,id){
   if(!result)throw Error('claude_reply_unconfirmed');
   if(['failed_before_dispatch','terminal_failure','manual_review','funding_uncertain'].includes(result.state)){
     patch(store,id,{phase:result.state,reason:/^[a-z_]{1,80}$/.test(result.reason||'')?result.reason:'provider_review'});
-    await notice(ctx,id,'review:'+result.state,{title:'Требуется проверка',status:'оплата остановлена',body:'Поставщик не подтвердил активацию. Исходная заявка сохранена; повторное списание заблокировано. Подробности доступны в админке.'});return;
+    if(result.state==='failed_before_dispatch'&&['wallet_insufficient','wallet_balance_insufficient','insufficient_wallet_balance'].includes(result.reason))await fundsWait(ctx,id);
+    else await notice(ctx,id,'review:'+result.state,{title:'Требуется проверка',status:'оплата остановлена',body:'Поставщик не подтвердил активацию. Исходная заявка сохранена; повторное списание заблокировано. Подробности доступны в админке.'});return;
   }
   result=await call('poll');if(!result)throw Error('claude_reply_unconfirmed');
   patch(store,id,{phase:result.state,providerOrderId:result.provider_order_id||state(store.findByOrderId(id)).providerOrderId||null});
@@ -85,6 +98,7 @@ async function tick(ctx){
     for(const r of rows)try{await ctx.lock(r.orderId,()=>processOrder(ctx,r.orderId))}catch(e){
       const code=/^claude_[a-z_]{1,100}$/.test(e?.message||'')?e.message:'claude_worker_unavailable';
       patch(ctx.activationStore,r.orderId,{reason:code});
+      if(['claude_wallet_insufficient','claude_wallet_balance_insufficient','claude_insufficient_wallet_balance'].includes(code)) {await fundsWait(ctx,r.orderId);continue;}
       await notice(ctx,r.orderId,code,{title:'Ожидает проверки',status:'заявка сохранена',body:'Автоматическая обработка приостановлена: '+code+'. После восстановления доступности повторно проверим исходную заявку без повторной оплаты.'});
     }
   }finally{running=false}

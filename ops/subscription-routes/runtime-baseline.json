@@ -5,5 +5,6 @@
   "zovocard_transport.py": "c3c2acdc5eb9acf0ffe6d0d41c5e328109943874f88d81d8abca0a0de5eeafaf",
   "zovocard_gateway.py": "fcf38cf9a2e3f8cbdcf89987c0ede36d0bf5ac81fcbbecd6984b33a2aa75a91b",
   "zovocard_card_pool.py": "1b53de3be18255ce6ad367ddb87a1d8277d707e95d229a40e3a13588abda3c47",
-  "zovocard_settled_cost.py": "fd3d94fc194612a52e3db6b90d133fb73b098705f32ea10322ca84870d3bc67c"
+  "zovocard_settled_cost.py": "fd3d94fc194612a52e3db6b90d133fb73b098705f32ea10322ca84870d3bc67c",
+  "zovocard_claude_gateway.py": "bde50869fbba94637a938f06229d1576819f6f9320e6086e4c7b0654f15cb2cd"
 }

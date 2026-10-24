@@ -15,7 +15,7 @@ export async function procureSelectedWebsiteKey(input: {
   const modulePath = path.resolve(__dirname, "../../../../ops/supplier-procurement/aisou-live.cjs");
   const { procureWebsiteKey, notifyHoldOnce } = require(modulePath);
   try {
-    const result = await procureWebsiteKey({ ...input, prisma, activationStore });
+    const result = await procureWebsiteKey({ ...input, prisma, activationStore, notifyFunds: sendTelegramNotification });
     if (!result) return null;
     if (result.stockAvailable) return activationStore.reserveCdkRecordForOrder({
       productKey: input.productKey, activationSiteUrl: input.activationSiteUrl,
@@ -24,6 +24,17 @@ export async function procureSelectedWebsiteKey(input: {
     return { keyId: result.keyId as string, code: result.code as string, activationSiteUrl: result.activationSiteUrl as string };
   } catch (error) {
     const code = error instanceof Error && /^supplier_[a-z_]{1,70}$/.test(error.message) ? error.message : "supplier_requires_review";
+    if (code === "supplier_balance_insufficient") {
+      // No provider attempt has been made. Keep the native demand resumable;
+      // pending/processing here would short-circuit startActivationUnsafe.
+      const a = activationStore.findByOrderId(input.orderId);
+      if (a && !a.taskId && !a.attempts && a.status !== "success") activationStore.upsert({
+        ...a, lastProviderMessage: "Заказ сохранён. Автоматическая обработка продолжится после устранения задержки; повторная оплата не требуется.",
+        lastProviderPayload: { ...(a.lastProviderPayload || {}), fundsWait: (error as any).fundsWait },
+        updatedAt: new Date().toISOString(),
+      });
+      throw new AppError("Заказ сохранён. Автоматически продолжим после устранения задержки; повторная оплата не требуется.", 409);
+    }
     const reason = /balance_insufficient/.test(code) ? "Недостаточно баланса AISOU для нужного товара. После пополнения обработчик повторит проверку."
       : /uncertain|sending/.test(code) ? "Ответ на покупку не подтверждён. Повторная покупка остановлена."
       : /wrong_product|quarantined/.test(code) ? "Тип или состояние полученного ключа требует проверки. Ключ сохранён в закрытом журнале."
@@ -35,6 +46,19 @@ export async function procureSelectedWebsiteKey(input: {
     // Raw merchant errors can contain a secret receipt. Never expose them.
     throw new AppError("Автоматическая активация ожидает проверки. Заказ сохранён; повторная оплата не требуется.", 409);
   }
+}
+
+let fundsDeadlineRunning = false;
+export async function notifyPendingAisouFunds() {
+  if (fundsDeadlineRunning) return;
+  fundsDeadlineRunning = true;
+  try {
+    const waitingIds = activationStore.list().filter(r => r.status !== "success" && r.verificationState !== "success" && r.lastProviderPayload?.fundsWait).map(r=>r.orderId);
+    if (!waitingIds.length) return;
+    const paid = await prisma.order.findMany({where:{id:{in:waitingIds},source:"site",status:"PAID"},select:{id:true}});
+    const { notifyDueFunds } = require(path.resolve(__dirname,"../../../../ops/supplier-procurement/aisou-live.cjs"));
+    await notifyDueFunds(paid.map(r=>r.id),sendTelegramNotification);
+  } finally { fundsDeadlineRunning = false; }
 }
 
 export async function pendingAisouNativeOrders(): Promise<string[]> {

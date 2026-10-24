@@ -106,7 +106,7 @@ function loadSettings() {
 
 // Called only after account-type selection and an empty matching local pool.
 // The caller holds the website's existing cross-process activation order lock.
-async function procureWebsiteKey({ prisma, activationStore, orderId, productKey, accountPlan, activationSiteUrl, stockOnly = false, reserveProof = null, destination = "native", settings, transport = curlJson }) {
+async function procureWebsiteKey({ prisma, activationStore, orderId, productKey, accountPlan, activationSiteUrl, stockOnly = false, reserveProof = null, destination = "native", settings, transport = curlJson, notifyFunds, now = Date.now }) {
   if (!settings) {
     try { settings = loadSettings(); } catch (e) { if (e.code === "ENOENT") return null; throw e; }
   }
@@ -153,7 +153,18 @@ async function procureWebsiteKey({ prisma, activationStore, orderId, productKey,
         api.read("connect"),
       ]);
       quote = quoteFromValuation(expected, catalog, stock, valuation);
-      if (!/^\d+(?:\.\d+)?$/.test(String(balance?.balance)) || Number(balance.balance)*100<quote.amountMinor) throw Error("supplier_balance_insufficient");
+      if (!/^\d+(?:\.\d{1,2})?$/.test(String(balance?.balance))) throw Error("supplier_balance_unconfirmed");
+      const balanceMinor = Math.round(Number(balance.balance) * 100);
+      if (!Number.isSafeInteger(balanceMinor)) throw Error("supplier_balance_unconfirmed");
+      if (balanceMinor < quote.amountMinor) {
+        const funds = require('./funds-wait.cjs');
+        const wait = await funds.hold(journal, scope, quote.amountMinor, balanceMinor, now());
+        await funds.notify(journal, wait, notifyFunds, now());
+        const error = Error("supplier_balance_insufficient");
+        error.fundsWait = { startedAt: wait.started_at, deadlineAt: wait.deadline_at };
+        throw error;
+      }
+      await require('./funds-wait.cjs').resolve(journal, scope, notifyFunds, now());
     }
     order = await load(); activation = activationStore.findByOrderId(orderId);
     payment = assertPaidWebsiteOrder(order, activation, productKey, expected, policy);
@@ -208,6 +219,15 @@ async function pendingNativeOrders(activeOrderIds, suppliedSettings) {
   } finally { await j.close(); }
 }
 module.exports.pendingNativeOrders = pendingNativeOrders;
+
+async function notifyDueFunds(activeIds, send, suppliedSettings) {
+  let settings;try { settings=suppliedSettings||loadSettings(); } catch { return; }
+  if (!settings || !fs.existsSync(path.join(settings.stateDir||STATE_DIR,'journal.sqlite'))) return;
+  const j=new Journal(path.join(settings.stateDir||STATE_DIR,'journal.sqlite'),settings.encryptionKey);
+  try {await j.initialize();await require('./funds-wait.cjs').due(j,activeIds.map(id=>'website:'+id),send);}
+  finally {await j.close();}
+}
+module.exports.notifyDueFunds=notifyDueFunds;
 
 async function notifyHoldOnce(orderId, reason, send) {
   if (!/^[a-z0-9]{20,40}$/.test(orderId) || !/^[a-z_]{1,90}$/.test(reason)) return;

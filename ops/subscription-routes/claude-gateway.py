@@ -21,7 +21,7 @@ def handle(req,root,config,cipher):
             if r['plan']!=worker.PLAN or r['created_at']<epoch(config['claude_site']['enabled_after']):raise Refused('order_ineligible')
         if action in ('prepare','submit'):
             if req.get('order',{}).get('product_slug')!=slug or worker._eligible(req['order'])!=source:raise Refused('order_ineligible')
-            result=(worker.resume_prepared if action=='submit' else worker.prepare)(req['order'],req['session'])
+            result=(worker.resume if action=='submit' else worker.prepare)(req['order'],req['session'])
         elif action=='status':
             with worker.connect() as c:opening=c.execute('SELECT state FROM zovo_card_open_intents WHERE source_id=?',(source,)).fetchone()
             result=current or {'state':'absent','attempt_absent':True,'opening_absent':opening is None}
@@ -43,7 +43,7 @@ def handle(req,root,config,cipher):
                 row=c.execute('SELECT * FROM zovo_direct_jobs WHERE source_id=?',(source,)).fetchone()
                 opening=c.execute('SELECT state FROM zovo_card_open_intents WHERE source_id=?',(source,)).fetchone()
             # Only an authoritative, unfunded and undispatched local attempt can prepare again.
-            result['can_resume_prepare']=bool(row and not row['dispatched'] and not row['provider_order_id'] and row['funding_state'] is None and (not opening or opening['state']=='confirmed') and row['reason'] in ('preparation_expired','pool_waiting_for_card','history_unverified','card_activity_unverified','provider_preparation_error','wallet_balance_insufficient','insufficient_wallet_balance'))
+            result['can_resume_prepare']=bool(row and not row['dispatched'] and not row['provider_order_id'] and row['funding_state'] is None and (not opening or opening['state']=='confirmed') and row['reason'] in ('preparation_expired','pool_waiting_for_card','history_unverified','card_activity_unverified','provider_preparation_error','wallet_insufficient','wallet_balance_insufficient','insufficient_wallet_balance'))
         if result and result.get('state')=='completed':
             cost=worker.frozen_cost(source)
             if cost:result.update(total_cost_usd_minor=cost['total_cost_minor'],card_charge_usd_minor=cost['card_charge_minor'],open_fee_usd_minor=cost['open_fee_minor'])

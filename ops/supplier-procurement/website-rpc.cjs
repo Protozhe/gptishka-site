@@ -5,6 +5,7 @@ const {env}=require(root+'/apps/admin-backend/dist/config/env.js');
 const {prisma}=require(root+'/apps/admin-backend/dist/config/prisma.js');
 const {activationStore}=require(root+'/apps/admin-backend/dist/modules/orders/activation.store.js');
 const {procureWebsiteKey,loadSettings}=require('./aisou-live.cjs');
+const {sendTelegramNotification}=require(root+'/apps/admin-backend/dist/modules/notifications/notifications.service.js');
 function decrypt(a){
  const key=crypto.createHash('sha256').update('gptishka:activation-token:v1:'+String(env.ACTIVATION_TOKEN_ENCRYPTION_KEY||env.JWT_ACCESS_SECRET||'').trim()).digest();
  const d=crypto.createDecipheriv('aes-256-gcm',key,Buffer.from(a.clientTokenIv,'base64'));d.setAuthTag(Buffer.from(a.clientTokenAuthTag,'base64'));
@@ -42,7 +43,15 @@ function decrypt(a){
    if(proof.session_hash!==crypto.createHash('sha256').update(sessionRaw).digest('hex'))throw Error('supplier_session_changed');
    product={chatgpt_plus:'chatgpt-plus-1',chatgpt_go:'chatgpt-go-1',chatgpt_pro_5x:'chatgpt-pro-5x-1',chatgpt_pro_20x:'chatgpt-pro-20x-1',chatgpt_pro_25x:'chatgpt-pro-25x-1'}[j.product_type];site=plan==='free'?'https://aiee.fun':'https://vip.sxzfd.com';canonical=require('./aisou-core.cjs').contract(product,plan).product;
   }else throw Error('supplier_product_disabled');
-  const result=await procureWebsiteKey({prisma,activationStore,orderId:oid,productKey:product,accountPlan:plan,activationSiteUrl:site,destination,settings,reserveProof:{state:'fallback_sealed',orderId:oid,product:canonical,site,sessionFingerprint:a.tokenMeta?.fingerprint,priorOpeningRub:Math.ceil(proof.prior_attempt_opening_usd_minor*openingBound)/100}});
+  let result;
+  try {result=await procureWebsiteKey({prisma,activationStore,orderId:oid,productKey:product,accountPlan:plan,activationSiteUrl:site,destination,settings,notifyFunds:sendTelegramNotification,reserveProof:{state:'fallback_sealed',orderId:oid,product:canonical,site,sessionFingerprint:a.tokenMeta?.fingerprint,priorOpeningRub:Math.ceil(proof.prior_attempt_opening_usd_minor*openingBound)/100}});}
+  catch(e){
+   if(e.message==='supplier_balance_insufficient'&&e.fundsWait){
+    const current=activationStore.findByOrderId(oid);
+    activationStore.upsert({...current,lastProviderPayload:{...(current.lastProviderPayload||{}),fundsWait:e.fundsWait},updatedAt:new Date().toISOString()});
+   }
+   throw e;
+  }
   if(!result){console.log(JSON.stringify({enabled:false}));return}
   if(destination==='native'&&result.code){
    activationStore.upsert({...a,cdk:result.code,activationSiteUrl:site,externalFulfillmentOwner:'pulse-subscription-reserve-v1',status:'processing',verificationState:'pending',keyAllocationState:'selected',keyAllocationSite:site,lastProviderMessage:'Выполняем активацию подходящим резервным ключом.',lastProviderPayload:{...(a.lastProviderPayload||{}),source:'pulse-subscription-reserve-v1'},updatedAt:new Date().toISOString()});

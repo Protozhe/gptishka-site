@@ -39,6 +39,25 @@ test('missing fee and another fulfilment block all provider requests',async()=>{
  }
 });
 
+test('Claude funds deadline survives ticks, alerts once at 15 minutes, then resumes the same order',async()=>{
+ const f=fixture(),original=f.ctx.rpc;let funded=false,clock=Date.now(),prepareCount=0;
+ f.ctx.now=()=>clock;
+ f.ctx.rpc=async req=>{
+  if(req.action==='claude_prepare'){
+   prepareCount++;if(!funded)return {ok:false,reason:'wallet_insufficient'};
+  }
+  return original(req);
+ };
+ await mod.tick(f.ctx);assert.equal(f.events.length,1);assert.match(f.events[0],/15 минут/);assert.equal(f.submits,0);
+ const deadline=f.a.lastProviderPayload.claudeZovo.fundsWait.deadlineAt;
+ clock+=14*60000;await mod.tick(f.ctx);assert.equal(f.events.length,1);assert.equal(f.submits,0);
+ clock+=60000;await mod.tick(f.ctx);assert.equal(f.events.length,2);assert.match(f.events[1],/15 минут истекли/);
+ assert.equal(f.a.lastProviderPayload.claudeZovo.fundsWait.deadlineAt,deadline);
+ await mod.tick(f.ctx);assert.equal(f.events.length,2);
+ funded=true;await mod.tick(f.ctx);assert.equal(f.submits,1);assert.equal(f.a.lastProviderPayload.claudeZovo.fundsWait,null);
+ await mod.tick(f.ctx);assert.equal(f.submits,1);assert.ok(prepareCount>1);
+});
+
 test('only authoritative unfunded preparation may resume, with a five minute backoff',async()=>{
  const f=fixture(),base=f.ctx.rpc;let reads=0,prepares=0;
  f.ctx.rpc=async r=>{

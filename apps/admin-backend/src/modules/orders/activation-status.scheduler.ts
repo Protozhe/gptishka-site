@@ -1,5 +1,6 @@
 import { activationStore } from "./activation.store";
 import { ordersService } from "./orders.service";
+import { notifyPendingAisouFunds } from "../../services/aisou-procurement";
 
 const POLL_INTERVAL_MS = 30_000;
 const FIRST_POLL_DELAY_MS = 8_000;
@@ -37,6 +38,8 @@ async function runCycle() {
   if (running) return;
   running = true;
   try {
+    // Independent of slow supplier reads in the procurement resume loop.
+    void notifyPendingAisouFunds().catch(() => {});
     void ordersService.resumePendingAisouPurchases().catch(() => {});
     void ordersService.resumeClaudeZovoJobs().catch(() => {});
     for (const record of processingRecords()) {

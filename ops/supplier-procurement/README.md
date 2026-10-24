@@ -97,6 +97,17 @@ owned, directory 0750, files 0640 readable only by the website group. Journal:
 The policy's `enabledAfter` applies to order creation and confirmed payment.
 The budget monitor and Zovo cumulative spending cap are not altered.
 
+Confirmed AISOU balance shortages create a durable 15-minute owner grace period
+in the existing journal. The owner receives a structured alert with the exact
+CNY quote, available balance, shortfall and deadline, then one reminder after
+15 minutes if still unresolved. Deadlines survive process restarts; a separate
+local journal check can remind even during a supplier read outage. Only paid,
+unfinished orders are eligible. Funding restoration resumes the existing demand
+through the normal purchase claim; a previous uncertain dispatch is never retried.
+Website alerts use the website admin bot. Zovo subscription jobs have the same
+15-minute grace before reserve handoff; marketplace alerts use their own bot.
+Expiry never cancels/refunds an order or raises a spending limit.
+
 Fallback procurement requires the existing remote `fallback_sealed` proof,
 bound source/session/product and the native order lock. It cannot start Zovo.
 Codex purchases enter the encrypted website-only reserve pool with acquisition
