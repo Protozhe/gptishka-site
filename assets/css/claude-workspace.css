@@ -187,6 +187,7 @@ html body #claudeWorkspace .service-product-gallery { display:none !important; }
 .claude-account-age { margin:0 0 22px; padding:14px 16px; border:1px solid rgba(232,174,145,.3); border-radius:12px; background:rgba(232,174,145,.06); font-size:14px; line-height:1.5; }
 .claude-account-age[hidden] { display:none !important; }
 .claude-account-age strong { display:block; margin-bottom:3px; color:#f1c5ad; }
+.claude-account-age p { margin:8px 0 0; }
 @media(max-width:600px) { .claude-verification-card { padding:20px 16px; border-radius:16px; } .claude-verification-head h2,.claude-verification-head strong { font-size:20px; } }
 
 .claude-verification-description { margin:0 0 18px; font-size:18px; line-height:1.65; color:var(--workspace-muted); }

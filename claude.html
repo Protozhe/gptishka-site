@@ -41,7 +41,7 @@
 <link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
-<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-8a2a0ab3e60ea734">
+<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-ab45c7487f382add">
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
 </head>
 <body id="storefrontBody" class="claude-workspace-body">
@@ -132,7 +132,12 @@
           <div id="servicePlanFilters"></div>
           <div id="serviceDurationFilters"></div>
         </div>
-        <aside id="claudeAccountAgeNotice" class="claude-account-age" aria-live="polite" hidden><strong>Условие подключения Max</strong>Для Max 5x и Max 20x требуется аккаунт Claude старше 30 дней.</aside>
+        <aside id="claudeAccountAgeNotice" class="claude-account-age" aria-live="polite" hidden>
+          <strong>Перед подключением Max 5× и Max 20×</strong>
+          <p>Для подключения через наш сервис нужен аккаунт Claude старше 30 дней с уже пройденной проверкой личности (KYC). На аккаунте без KYC активация может не пройти.</p>
+          <p>Мы помогаем оплатить подписку, но не обходим проверку личности. Подключение не исключает дополнительных проверок, ограничений или блокировки со стороны Anthropic.</p>
+          <p>Если KYC ещё не пройден, завершите проверку до оформления заказа.</p>
+        </aside>
         <div class="service-selected-plan" id="servicePlansGrid" aria-live="polite">
           <div class="price-card price-card-skeleton" aria-hidden="true">
             <div class="price-card-skeleton__title"></div>
@@ -239,7 +244,8 @@
         <label class="claude-verification-option"><input type="radio" name="claude-verification" value="cvp"><span><b>CVP</b></span></label>
       </fieldset>
       <div id="claudeVerificationDetails" aria-live="polite">
-        <p class="claude-verification-description">Верификация KYC: объясним порядок проверки и поможем разобраться. Верификацию проходим мы и проводим без входа в аккаунт.</p>
+        <p class="claude-verification-description">Верификация KYC: объясним порядок проверки и поможем разобраться.</p>
+        <p class="claude-verification-description"><strong>Пройдите KYC до подключения Claude Max 5× или Max 20×.</strong></p>
       </div>
       <button id="claudeVerificationSubmit" class="claude-verification-submit" type="button" disabled>Оформить KYC</button>
     </section>
@@ -257,7 +263,7 @@
       <label><input type="radio" name="payment" value="enot">Карта / СБП — ENOT</label>
       <label><input type="radio" name="payment" value="lava">Зарубежная карта</label>
     </fieldset>
-    <p class="verification-support-checkout__hint">Для KYC верификацию проходим мы и проводим без входа в аккаунт. После подтверждения оплаты появится кнопка связи с менеджером.</p>
+    <p class="verification-support-checkout__hint">Завершите KYC до подключения Claude Max 5× или Max 20×. После подтверждения оплаты появится кнопка связи с менеджером.</p>
     <p class="verification-support-checkout__terms">Нажимая «Оплатить», вы принимаете <a href="/oferta.html" target="_blank" rel="noopener">оферту</a> и <a href="/politika.html" target="_blank" rel="noopener">политику конфиденциальности</a>.</p>
     <p data-support-payment-status role="status" aria-live="polite"></p>
     <button class="claude-verification-submit" type="submit" data-support-pay>Оплатить</button>
