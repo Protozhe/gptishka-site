@@ -1,0 +1,27 @@
+[Unit]
+Description=GPTishka private Claude Zovo bridge
+After=network-online.target
+[Service]
+Type=simple
+User=gptishka-pulse
+Group=gptishka-web
+SupplementaryGroups=gptishka-pulse
+WorkingDirectory=/opt/pulse-web
+ExecStart=/opt/playerok-connector/venv/bin/python -B /opt/pulse-web/claude_zovo_broker.py
+RuntimeDirectory=gptishka-claude-zovo
+RuntimeDirectoryMode=0750
+UMask=0077
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+ProtectSystem=strict
+ReadWritePaths=/opt/pulse-profit/data
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+[Install]
+WantedBy=multi-user.target

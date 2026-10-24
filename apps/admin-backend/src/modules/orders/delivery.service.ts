@@ -193,7 +193,7 @@ export async function deliverProduct(order: Order) {
   }
 
   const isWebsiteChatGptPlusDualPool =
-    productKey === CHATGPT_PLUS_PRODUCT_KEY &&
+    /^(?:chatgpt-plus-1|chatgpt-go-1|chatgpt-pro-(5|20|25)x-1|grok-(plus|premium|super|ultra)-1|codex-(250|500|1000))$/.test(productKey) &&
     deliveryType === "activation" &&
     !isTelegramOrderEmail(order.email);
 
@@ -208,7 +208,8 @@ export async function deliverProduct(order: Order) {
       email: order.email,
       productKey,
       cdk: "",
-      activationSiteUrl: "",
+      activationSiteUrl: /^(?:codex-|grok-)/.test(productKey) ? "https://aiee.fun" : "",
+      keyAllocationState: "awaiting_session",
       reservedCandidates: [],
       status: "issued",
       taskId: null,

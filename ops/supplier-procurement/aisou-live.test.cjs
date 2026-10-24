@@ -44,6 +44,13 @@ test('actual commission, margin and cost freshness gate all purchasing',()=>{
  assert.throws(()=>finance(o,o.payments[0],{amountMinor:7500},{...policy,costCheckedAt:'2000-01-01'}),/cost/);
  assert.throws(()=>finance({...o,totalAmount:500},o.payments[0],{amountMinor:7500},policy),/margin/);
 });
+
+test('a newly enabled product never acquires purchasing rights for an old order',()=>{
+ const expected=contract('codex-250','plus'),p={...policy,productEnabledAfter:{'codex-250':new Date(now-20000).toISOString()}};
+ assert.throws(()=>assertPaidWebsiteOrder(order(),activation(),'codex-250',expected,p),/ineligible/);
+ const o=order();o.createdAt=new Date(now-15000);assert.ok(assertPaidWebsiteOrder(o,activation(),'codex-250',expected,p));
+ assert.throws(()=>assertPaidWebsiteOrder(o,activation(),'codex-250',expected,{...p,productEnabledAfter:{'codex-250':'invalid'}}),/ineligible/);
+});
 test('exact one-unit valuation avoids heavy item synchronization and the base-variant price bug',()=>{
  const c=contract('codex-500','plus'),cat=[{id:69,code:c.code,status:1,api_status:1,config:'[category]\n250点数额度=75\n500点数额度=145'}];
  assert.equal(quoteFromValuation(c,cat,{delivery_way:0,count:2},{price:'145'}).amountMinor,14500);

@@ -21,7 +21,13 @@ export function resolveExternalCodexOwner(input: {
       (String(input.accountPlan || "").trim().toLowerCase() !== "free" &&
        record?.externalFulfillmentOwner !== "pulse-siteplus-v1" && record?.lastProviderPayload?.source !== "pulse-siteplus-v1"))) return null;
   const owner = plus ? "pulse-siteplus-v1" : go ? "pulse-sitego-v1" : pro ? (pro[1] === "25" ? "pulse-sitepro500-v1" : `pulse-sitepro${pro[1]}x-v1`) : `pulse-site${match![1]}-v1`;
-  if (plus || normalizeActivationSiteUrl(input.activationSiteUrl) === "https://zovocard.com" ||
+  // Preserve existing persistent owners for reconciliation. New subscriptions
+  // select their route only after session planType is known; credits never
+  // enter Zovo, even if an old catalog selection still names that provider.
+  if (record?.externalFulfillmentOwner === owner || record?.lastProviderPayload?.source === owner) return owner;
+  if (match) return null;
+  if (String(input.accountPlan || "").trim().toLowerCase() !== "free") return null;
+  if (plus || go || pro || normalizeActivationSiteUrl(input.activationSiteUrl) === "https://zovocard.com" ||
       record?.externalFulfillmentOwner === owner || record?.lastProviderPayload?.source === owner) return owner;
   return null;
 }

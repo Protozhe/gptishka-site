@@ -38,9 +38,9 @@ function decrypt(a){
   if(j.product_type==='codex'&&[250,500,1000].includes(j.package)){
    product='codex-'+j.package;site='https://aiee.fun';canonical=product;destination='pulse-site-codex';
    if(proof.plan!=='credit'+j.package)throw Error('supplier_primary_seal_required');
-  }else if(['chatgpt_plus','chatgpt_go'].includes(j.product_type)){
+  }else if(['chatgpt_plus','chatgpt_go','chatgpt_pro_5x','chatgpt_pro_20x','chatgpt_pro_25x'].includes(j.product_type)){
    if(proof.session_hash!==crypto.createHash('sha256').update(sessionRaw).digest('hex'))throw Error('supplier_session_changed');
-   product=j.product_type==='chatgpt_plus'?'chatgpt-plus-1':'chatgpt-go-1';site=plan==='free'?'https://aiee.fun':'https://vip.sxzfd.com';canonical=(j.product_type==='chatgpt_plus'?'plus':'go')+(plan==='free'?'_free':'_ios');
+   product={chatgpt_plus:'chatgpt-plus-1',chatgpt_go:'chatgpt-go-1',chatgpt_pro_5x:'chatgpt-pro-5x-1',chatgpt_pro_20x:'chatgpt-pro-20x-1',chatgpt_pro_25x:'chatgpt-pro-25x-1'}[j.product_type];site=plan==='free'?'https://aiee.fun':'https://vip.sxzfd.com';canonical=require('./aisou-core.cjs').contract(product,plan).product;
   }else throw Error('supplier_product_disabled');
   const result=await procureWebsiteKey({prisma,activationStore,orderId:oid,productKey:product,accountPlan:plan,activationSiteUrl:site,destination,settings,reserveProof:{state:'fallback_sealed',orderId:oid,product:canonical,site,sessionFingerprint:a.tokenMeta?.fingerprint,priorOpeningRub:Math.ceil(proof.prior_attempt_opening_usd_minor*openingBound)/100}});
   if(!result){console.log(JSON.stringify({enabled:false}));return}

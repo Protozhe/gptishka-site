@@ -44,7 +44,7 @@ assert(
 );
 assert(
   redeem.includes("const POLL_MAX_MS = 15 * 60 * 1000") &&
-    redeem.includes("Активация выполняется более 15 минут"),
+    redeem.includes("activationPollMaxMs = POLL_MAX_MS") && redeem.includes("activationPollMaxMs / 60000"),
   "long-running activation messaging must start after 15 minutes"
 );
 assert(

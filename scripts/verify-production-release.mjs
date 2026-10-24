@@ -19,6 +19,7 @@ const checks = [
   "scripts/verify-aiee-proxy.mjs",
   "scripts/verify-ios-renewal.mjs",
   "scripts/verify-supplier-procurement.mjs",
+  "scripts/verify-subscription-routes.mjs",
   "scripts/verify-review-product-labels.cjs",
   "scripts/verify-preserved-reviews.cjs",
   "scripts/verify-public-news-sync.cjs",

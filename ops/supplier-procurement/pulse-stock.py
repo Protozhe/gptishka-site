@@ -11,7 +11,7 @@ def enabled(job):
     try:cfg=json.loads(CONFIG.read_text())
     except (OSError,ValueError):return False
     return (cfg.get('enabled') is True and job['platform']=='gptishka' and job['account_id']=='site'
-        and job['product_type'] in ('codex','chatgpt_plus','chatgpt_go')
+        and job['product_type'] in ('codex','chatgpt_plus','chatgpt_go','chatgpt_pro_5x','chatgpt_pro_20x','chatgpt_pro_25x')
         and _time(job['source_created_at'] or job['created_at'])>=_time(cfg['enabled_after'])
         and _time(job['created_at'])>=_time(cfg['enabled_after']))
 

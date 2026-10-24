@@ -25,6 +25,7 @@ import { manualCredentialsStore } from "../products/manual-credentials.store";
 import { toVpnMePayload, vpnService } from "../../services/vpn.service";
 import { licenseService } from "../../services/licenseService";
 import { procureSelectedWebsiteKey, pendingAisouNativeOrders } from "../../services/aisou-procurement";
+import { CLAUDE_ZOVO_OWNER, isClaudeZovoProduct, isClaudeZovoOrder, validateClaudeZovoSession, tickClaudeZovo } from "../../services/claude-zovo";
 import { syncWebsiteCustomerToSheet } from "../customers/customer-sheet.service";
 import crypto from "crypto";
 import fs from "fs";
@@ -99,6 +100,14 @@ function isIosProviderBase(value: unknown) {
   }
 }
 
+function isAisouGrokProduct(value: unknown) {
+  return /^grok-(plus|premium|super|ultra)-1$/.test(String(value || ""));
+}
+function validateGrokSsoSession(tokenInfo: { json: Record<string, unknown> | null }) {
+  const s=tokenInfo.json;
+  return s && Object.keys(s).length===1 && typeof s.sso==='string' && s.sso.length<=40000 && /^eyJ0eXAi[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(s.sso)
+    ? '' : 'Вставьте только значение cookie sso с grok.com. Данные ChatGPT для этого тарифа не подходят.';
+}
 function isCodexCreditsProductKey(value: unknown) {
   return /^codex-(250|500|1000)$/.test(String(value || "").trim().toLowerCase());
 }
@@ -134,7 +143,7 @@ function resolveChatGptPlusPool(tokenInfo: { json: Record<string, unknown> | nul
   if (planType === "free") {
     return { planType, siteUrl: CHATGPT_PLUS_FREE_SITE_URL, forceOverwrite: false };
   }
-  if (["go", "plus", "prolight", "pro"].includes(planType)) {
+  if (["go", "plus", "prolight", "pro"].includes(planType) || ["prolite", "pro5x", "pro20x", "pro25x", "pro50x"].includes(planType)) {
     return { planType, siteUrl: CHATGPT_PLUS_IOS_SITE_URL, forceOverwrite: true };
   }
   return null;
@@ -173,6 +182,7 @@ function resolveTokenActivationFlowForProduct(input: {
   productTitle?: unknown;
   activationSiteUrl?: unknown;
 }) {
+  if (/^grok-(plus|premium|super|ultra)-1$/.test(String(input.productSlug || input.productKey || ""))) return "grok_sso";
   const deliveryType = String(input.deliveryType || "").trim().toLowerCase();
   if (isSupportLikeDeliveryType(deliveryType)) {
     return resolveSupportActivationFlowByDeliveryType(deliveryType);
@@ -681,6 +691,12 @@ export const ordersService = {
       };
     }
 
+    if (isClaudeZovoProduct(productSlug) && !needsNewAccount && await isClaudeZovoOrder(order.id)) {
+      const current=activationStore.findByOrderId(order.id);
+      return {orderId:order.id,deliveryMode:"activation",activationFlow:"claude_zovo",product:productSlug,productSlug,productTitle,
+        status:current?.status||"issued",taskId:current?.taskId||null,verificationState:current?.verificationState||"unknown",
+        tokenStored:hasStoredClientToken(current),lastProviderMessage:publicActivationMessage(current?.status,current?.verificationState)};
+    }
     if (deliveryType === "manual_login") {
       await deliverProduct(order);
       const supportEmail = resolveSupportEmail();
@@ -786,6 +802,11 @@ export const ordersService = {
     const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
     assertTokenActivationDeliveryMode(activationInfo);
     return withActivationOrderLock(orderId, async () => startActivationUnsafe(orderId, token, orderToken));
+  },
+
+  async resumeClaudeZovoJobs() {
+    return tickClaudeZovo({prisma,activationStore,decrypt:decryptStoredClientToken,lock:withActivationOrderLock,
+      notify:sendTelegramNotification,complete:async(id:string)=>ordersService.manuallyCompleteActivation(id,{note:"Claude: выбранный тариф подтверждён поставщиком. Автоматическая заявка Zovo, повторное списание заблокировано."},{userAgent:CLAUDE_ZOVO_OWNER})});
   },
 
   async resumePendingAisouPurchases() {
@@ -902,6 +923,17 @@ export const ordersService = {
     const activationSiteUrl = readActivationSiteUrlFromOrderDetails(orderWithItem?.orderDetails);
     const productSlug = String(firstItem?.product?.slug || "").trim().toLowerCase();
     if (isVerificationSupportProduct(productSlug)) throw new AppError("Для верификации свяжитесь с менеджером. Данные проверки здесь не принимаются.", 409);
+    if (isClaudeZovoProduct(productSlug) && await isClaudeZovoOrder(order.id)) {
+      await assertPaidOrderAccess(orderId,orderToken);
+      const error=validateClaudeZovoSession(token);if(error)throw new AppError(error,400);
+      const meta=buildTokenMeta(parseClientTokenInput(token)),prior=activationStore.findByOrderId(order.id),now=new Date().toISOString();
+      if(prior && (prior.cdk||prior.taskId||prior.attempts||prior.status==='success') && prior.externalFulfillmentOwner!==CLAUDE_ZOVO_OWNER)throw new AppError("Заказ уже обрабатывается другим каналом. Повторная оплата остановлена.",409);
+      if(prior && ['processing','success'].includes(prior.status) && isTokenBoundToAnotherFingerprint(prior.tokenMeta,meta))throw new AppError("Order is already bound to another token",409);
+      activationStore.upsert({...prior,orderId:order.id,email:order.email,productKey:productSlug,cdk:'',activationSiteUrl:'https://zovocard.com',externalFulfillmentOwner:CLAUDE_ZOVO_OWNER,
+        status:prior?.status||'issued',attempts:prior?.attempts||0,taskId:prior?.taskId||null,verificationState:prior?.verificationState||'unknown',
+        tokenMeta:meta,tokenValidationAttempts:(prior?.tokenValidationAttempts||0)+1,lastTokenValidatedAt:now,issuedAt:prior?.issuedAt||now,updatedAt:now,...buildStoredClientTokenPatch(token)});
+      return {ok:true,orderId:order.id,paid:true,status:prior?.status||'issued'};
+    }
     const isPerplexityManual = productSlug === "perplexity-pro" && deliveryType === "manual_login";
     const isMidjourneyLink = isMidjourneyProductSlug(productSlug);
     const isSunoLink = isSunoPaymentLinkOrder(productSlug, orderWithItem?.orderDetails);
@@ -934,6 +966,8 @@ export const ordersService = {
       if (!tokenInfo.json || typeof tokenInfo.json !== "object" || Array.isArray(tokenInfo.json) || !Object.keys(tokenInfo.json).length) {
         reasons.push("Paste the complete Perplexity session JSON");
       }
+    } else if (isAisouGrokProduct(productSlug)) {
+      const error=validateGrokSsoSession(tokenInfo);if(error) reasons.push(error);
     } else if (isCodexCreditsProductKey(productSlug) || productSlug === "chatgpt-go-1") {
       const sessionError = validateAieeSessionJson(tokenInfo);
       if (sessionError) reasons.push(sessionError);
@@ -1031,7 +1065,10 @@ export const ordersService = {
       if (sessionError) reasons.push(sessionError);
     }
 
-    if (!isCodexCreditsProductKey(activationInfo?.productSlug || activationInfo?.product) && tokenInfo.raw.startsWith("{")) {
+    if (isAisouGrokProduct(activationInfo?.productSlug || activationInfo?.product)) {
+      const error=validateGrokSsoSession(tokenInfo);if(error) reasons.push(error);
+    }
+    if (!isAisouGrokProduct(activationInfo?.productSlug || activationInfo?.product) && !isCodexCreditsProductKey(activationInfo?.productSlug || activationInfo?.product) && tokenInfo.raw.startsWith("{")) {
       if (!tokenInfo.json) {
         reasons.push("Token JSON is invalid");
       } else if (tokenInfo.extracted === tokenInfo.raw) {
@@ -1102,12 +1139,18 @@ export const ordersService = {
       if (current?.status === "success") {
         throw new AppError("Activation is already completed", 409);
       }
+      if((current?.lastProviderPayload?.submissionDiagnostics as any)?.phase === "submit_recharge" && Number(current?.attempts||0)>0){
+        throw new AppError("Исходная заявка уже отправлена поставщику. Проверяем её результат; повторная отправка и смена ключа заблокированы.",409);
+      }
       if (isCodexCreditsProductKey(activationInfo?.productSlug || current?.productKey) || /^(?:chatgpt-plus-1|chatgpt-go-1|chatgpt-pro-(5|20|25)x-1)$/.test(String(activationInfo?.productSlug || current?.productKey || ""))) {
         const fullOrder = await getOrderWithFirstItem(order.id);
         if (resolveExternalCodexOwner({ source: fullOrder?.source, productKey: activationInfo?.productSlug || current?.productKey,
           activationSiteUrl: readActivationSiteUrlFromOrderDetails(fullOrder?.orderDetails), record: current })) {
           return startActivationUnsafe(orderId, token, orderToken);
         }
+      }
+      if (isAisouGrokProduct(current?.productKey) && Number(current?.attempts || 0)>0) {
+        throw new AppError("Заявка уже передана. Проверяем исходную активацию; повторная отправка и покупка другого ключа заблокированы.",409);
       }
       if (current?.status === "processing") {
         throw new AppError("Activation is still processing", 409);
@@ -1197,6 +1240,10 @@ export const ordersService = {
       };
     }
 
+    if(stored?.externalFulfillmentOwner===CLAUDE_ZOVO_OWNER){
+      return {pending:stored.status==='processing'||stored.verificationState==='pending',success:false,
+        message:publicActivationMessage(stored.status,stored.verificationState),task_id:String(stored.taskId||taskId)};
+    }
     if (isChongzhiActivationRecord(stored) && String(stored?.cdk || "").trim()) {
       let current = stored;
       try {
@@ -1626,7 +1673,7 @@ export const ordersService = {
     // Card-worker jobs are reconciled by their persistent owner. An admin or
     // browser status refresh must never query a legacy CDK provider or replace
     // its authoritative progress with "Activation key is missing".
-    const externalFulfillmentOwner = order.status === OrderStatus.PAID
+    const externalFulfillmentOwner = activation?.externalFulfillmentOwner===CLAUDE_ZOVO_OWNER ? CLAUDE_ZOVO_OWNER : order.status === OrderStatus.PAID
       ? resolveExternalCodexOwner({
           source: order.source,
           productKey: product?.slug || activation?.productKey,
@@ -2282,11 +2329,15 @@ async function selectChatGptPlusCandidate(
   stored: ActivationRecord,
   tokenInfo: { json: Record<string, unknown> | null }
 ) {
-  if (canonicalProductKey(stored.productKey) !== CHATGPT_PLUS_PRODUCT_KEY) {
+  const productKey = canonicalProductKey(stored.productKey);
+  if (!/^(?:chatgpt-plus-1|chatgpt-go-1|chatgpt-pro-(5|20|25)x-1)$/.test(productKey)) {
     return { record: stored, forceOverwrite: false };
   }
 
   const pool = resolveChatGptPlusPool(tokenInfo);
+  if (productKey === "chatgpt-pro-25x-1" && pool?.forceOverwrite) {
+    throw new AppError("Для Pro 25× поставщик пока не подтвердил IOS-продление действующей подписки. Заказ сохранён, повторная оплата не запускается.", 409);
+  }
   if (!pool) {
     throw new AppError(
       "Не удалось определить Plan Type аккаунта. Вставьте полный JSON со страницы https://chatgpt.com/api/auth/session.",
@@ -2306,14 +2357,14 @@ async function selectChatGptPlusCandidate(
 
   if (!chosen) {
     let reserved = await activationStore.reserveCdkRecordForOrder({
-      productKey: CHATGPT_PLUS_PRODUCT_KEY,
+      productKey,
       activationSiteUrl: desiredSite,
       orderId: stored.orderId,
       email: stored.email,
     });
     if (!reserved) {
       reserved = await procureSelectedWebsiteKey({
-        orderId: stored.orderId, productKey: CHATGPT_PLUS_PRODUCT_KEY,
+        orderId: stored.orderId, productKey,
         accountPlan: pool.planType, activationSiteUrl: desiredSite,
       });
     }
@@ -2363,7 +2414,7 @@ async function selectChatGptPlusCandidate(
 
   if (String(stored.cdk || "").trim() && !currentMatches && stored.cdk !== chosen.code) {
     await licenseService.returnAssignedValueToAvailable(
-      CHATGPT_PLUS_PRODUCT_KEY,
+      productKey,
       stored.cdk,
       stored.orderId
     ).catch(() => false);
@@ -2381,6 +2432,19 @@ async function selectChatGptPlusCandidate(
 async function startActivationUnsafe(orderId: string, token: string, orderToken?: string, trustedAdmin = false) {
   const activationInfo = await ordersService.getActivation(orderId, orderToken, trustedAdmin);
   assertTokenActivationDeliveryMode(activationInfo);
+  if ((activationInfo as any).activationFlow==='claude_zovo') {
+    if(!await isClaudeZovoOrder(orderId))throw new AppError("Автоматический маршрут этого заказа недоступен.",409);
+    const error=validateClaudeZovoSession(token);if(error)throw new AppError(error,400);
+    const a=activationStore.findByOrderId(orderId),now=new Date().toISOString(),meta=buildTokenMeta(parseClientTokenInput(token));
+    if(!a || a.externalFulfillmentOwner!==CLAUDE_ZOVO_OWNER || a.cdk)throw new AppError("Сначала сохраните данные аккаунта Claude на странице активации.",409);
+    if(isTokenBoundToAnotherFingerprint(a.tokenMeta,meta))throw new AppError("Order is already bound to another token",409);
+    if(a.status==='success'||a.verificationState==='success')return {taskId:String(a.taskId||'claude-zovo-'+orderId),reused:true};
+    if(a.status==='processing')return {taskId:String(a.taskId||'claude-zovo-'+orderId),reused:true};
+    if(a.attempts||a.taskId)throw new AppError("Проверяем исходную заявку Claude. Повторная оплата остановлена.",409);
+    activationStore.upsert({...a,...buildStoredClientTokenPatch(token),tokenMeta:meta,status:'processing',verificationState:'pending',taskId:'claude-zovo-'+orderId,updatedAt:now});
+    void ordersService.resumeClaudeZovoJobs().catch(()=>{});
+    return {taskId:'claude-zovo-'+orderId,reused:false};
+  }
   let stored = await ensureActivationRecordForTokenFlow(orderId, orderToken, activationInfo, trustedAdmin);
   const tokenInfo = parseClientTokenInput(token);
   if (!tokenInfo.raw) throw new AppError("Token is required", 400);
@@ -2404,6 +2468,9 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
       throw new AppError(`Invalid token format: ${supportValidation.reasons.join("; ")}`, 400);
     }
   }
+  if (isAisouGrokProduct(activationInfo?.productSlug || stored.productKey)) {
+    const error=validateGrokSsoSession(tokenInfo);if(error) throw new AppError(error,400);
+  }
   const storagePatch = buildStoredClientTokenPatch(tokenInfo.raw);
   const nowIso = new Date().toISOString();
   const latestBeforeStart = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
@@ -2425,7 +2492,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
       }
       activationStore.upsert({
         ...latestBeforeStart, ...storagePatch, tokenMeta: buildTokenMeta(tokenInfo), externalFulfillmentOwner: owner,
-        ...(owner === "pulse-siteplus-v1" ? { activationSiteUrl: "https://zovocard.com" } : {}),
+        activationSiteUrl: "https://zovocard.com",
         status: "processing", verificationState: "pending", lastTokenValidatedAt: nowIso,
         tokenValidationAttempts: Math.max(0, Number(latestBeforeStart.tokenValidationAttempts || 0)) + 1,
         lastProviderPayload: { ...(latestBeforeStart.lastProviderPayload || {}), source: owner,
@@ -2438,6 +2505,9 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   }
   if (latestBeforeStart.status === "processing" || latestBeforeStart.verificationState === "pending") {
     return { taskId: String(latestBeforeStart.taskId || `reconcile-${orderId}`), reused: true };
+  }
+  if(latestBeforeStart.taskId && Number(latestBeforeStart.attempts||0)>0 && (latestBeforeStart.lastProviderPayload?.submissionDiagnostics as any)?.phase === "submit_recharge") {
+    return {taskId:latestBeforeStart.taskId,reused:true};
   }
   // A rejected retry must preserve the previous provider task and diagnostics.
   const attempts = Math.max(0, Number(latestBeforeStart.attempts || 0));
@@ -2460,6 +2530,10 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   const chatGptPlusSelection = await selectChatGptPlusCandidate(stored, tokenInfo);
   stored = chatGptPlusSelection.record;
 
+  if (isCodexCreditsProductKey(stored.productKey) && !stored.cdk && !stored.taskId && !stored.attempts) {
+    stored = { ...stored, activationSiteUrl: "https://aiee.fun" };
+    activationStore.upsert(stored);
+  }
   if (!String(stored.cdk || "").trim()) {
     const paidOrder = trustedAdmin
       ? await assertPaidOrderForAdmin(orderId)
@@ -2470,10 +2544,10 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
       orderId: paidOrder.id,
       email: paidOrder.email,
     });
-    if (!reserved && /^codex-(250|500|1000)$/.test(String(stored.productKey || "")) && stored.activationSiteUrl === "https://aiee.fun") {
+    if (!reserved && (/^codex-(250|500|1000)$/.test(String(stored.productKey || "")) || isAisouGrokProduct(stored.productKey)) && stored.activationSiteUrl === "https://aiee.fun") {
       reserved = await procureSelectedWebsiteKey({
         orderId: stored.orderId, productKey: stored.productKey,
-        accountPlan: String((tokenInfo.json?.account as any)?.planType || "").trim().toLowerCase(),
+        accountPlan: isAisouGrokProduct(stored.productKey) ? "free" : String((tokenInfo.json?.account as any)?.planType || "").trim().toLowerCase(),
         activationSiteUrl: stored.activationSiteUrl,
       });
     }
@@ -2511,6 +2585,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     return { taskId: String(stored.taskId || ""), reused: true };
   }
   const iosSubmission = isIosProviderBase(stored.activationSiteUrl);
+  const durableJsonSubmission = iosSubmission || isAieeProviderBase(stored.activationSiteUrl);
   let iosDispatchRecorded = false;
   const iosReconcileTask = `reconcile-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   let createResult = await startOutstockTaskWithRetry({
@@ -2522,7 +2597,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     productKey: String(stored.productKey || ""),
     activationSiteUrl: String(stored.activationSiteUrl || ""),
     forceOverwrite: chatGptPlusSelection.forceOverwrite,
-    beforeSubmit: iosSubmission ? () => {
+    beforeSubmit: durableJsonSubmission ? () => {
       const latest = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
       if (iosDispatchRecorded || latest.cdk !== stored.cdk || latest.status === "success"
           || latest.verificationState === "success" || latest.status === "processing") {
@@ -2531,7 +2606,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
       activationStore.upsert({
         ...latest, deviceId, tokenMeta, status: "processing", verificationState: "pending",
         taskId: iosReconcileTask, attempts: attempts + 1,
-        lastProviderMessage: "IOS: заявка отправляется. Проверяем результат автоматически.",
+        lastProviderMessage: "Заявка отправляется. Проверяем результат автоматически.",
         lastProviderPayload: { submissionDiagnostics: {
           phase: "submit_recharge", outcome: "in_flight", checkedAt: new Date().toISOString(),
         } },
@@ -2579,7 +2654,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   if (!createResult.ok) {
     const failedAt = new Date().toISOString();
     const latestFailed = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
-    if (iosSubmission && (latestFailed.status === "success" || latestFailed.verificationState === "success")) {
+    if (durableJsonSubmission && (latestFailed.status === "success" || latestFailed.verificationState === "success")) {
       return { taskId: String(latestFailed.taskId || iosReconcileTask), reused: true };
     }
     const providerName = isCodexCreditsProductKey(latestFailed.productKey) ? "AIEE" : "Activation provider";
@@ -2607,7 +2682,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   const latest = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
   // The status scheduler may confirm the provider while the submit response is
   // still pending. A late response must never downgrade that confirmation.
-  if (iosSubmission && (latest.status === "success" || latest.verificationState === "success")) {
+  if (durableJsonSubmission && (latest.status === "success" || latest.verificationState === "success")) {
     return { taskId: String(latest.taskId || taskId), reused: true };
   }
   activationStore.upsert({
@@ -3637,7 +3712,7 @@ function waitForIosSubmitResponse(request: Promise<{ status: number; raw: string
 }
 
 async function startChongzhiJsonTask(
-  input: { cdk: string; userCandidates: any[]; forceOverwrite?: boolean; beforeSubmit?: () => void },
+  input: { cdk: string; userCandidates: any[]; productKey?: string; forceOverwrite?: boolean; beforeSubmit?: () => void },
   base: string,
   sourceLabel?: string
 ) {
@@ -3695,6 +3770,10 @@ async function startChongzhiJsonTask(
     };
   }
 
+  if(input.productKey && isAisouGrokProduct(input.productKey)) {
+    const expected="grok_"+input.productKey.split('-')[1]+"_monthly";
+    if(verify.json?.plan_type!==expected) return {ok:false as const,taskId:"",status:409,body:"Provider key denomination mismatch",tries:1,immediateSuccess:false,message:"Тариф ключа не соответствует заказу. Активация и повторная покупка остановлены для проверки.",providerPayload:null};
+  }
   const verifyStatus = String(verify.json?.status || "").trim().toLowerCase();
   const rechargeStatus = String(verify.json?.recharge_status || "").trim().toLowerCase();
   const alreadyCompleted =
@@ -3907,7 +3986,7 @@ async function startChongzhiJsonTask(
 }
 
 async function startChongzhiTaskWithRetry(
-  input: { cdk: string; deviceId: string; userCandidates: any[]; forceOverwrite?: boolean; beforeSubmit?: () => void },
+  input: { cdk: string; deviceId: string; userCandidates: any[]; productKey?: string; forceOverwrite?: boolean; beforeSubmit?: () => void },
   options?: { baseUrl?: string; sourceLabel?: string }
 ) {
   const base = String(options?.baseUrl || env.ACTIVATION_CHONGZHI_BASE_URL || "https://vip.sxzfd.com")

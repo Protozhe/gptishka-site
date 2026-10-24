@@ -130,7 +130,7 @@ const state = load({
     stored = { ...stored, status: "success", verificationState: "success", taskId: "provider-1" };
     return { ok: true, taskId: "late-pending", immediateSuccess: false };
   },
-}, ["selectChatGptPlusCandidate", "startActivationUnsafe"]);
+}, ["isAisouGrokProduct", "selectChatGptPlusCandidate", "startActivationUnsafe"]);
 function reset() { stored = { orderId: "fixture-order", productKey: "chatgpt-plus-1", cdk: "fixture-key", activationSiteUrl: "https://vip.sxzfd.com", status: "issued", attempts: 0, reservedCandidates: [] }; posts = reserves = 0; }
 reset(); outcome = "crash";
 await assert.rejects(state.startActivationUnsafe("fixture-order", '{"fixture":true}'), /fixture process loss/);

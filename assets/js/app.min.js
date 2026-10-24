@@ -865,7 +865,7 @@ function initActivationResumeShortcut() {
   };
   const CHATGPT_ORDER_MODAL_PLAN_KEYS = new Set(["go", "plus", "pro-5x", "pro-20x", "pro-25x"]);
   const CLAUDE_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max-5x", "max-20x"]);
-  const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["supergrok", "supergrok-heavy"]);
+  const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["supergrok", "supergrok-heavy", "grok-plus", "grok-premium", "grok-super", "grok-ultra"]);
   const PERPLEXITY_ORDER_MODAL_PLAN_KEYS = new Set(["pro"]);
   const GEMINI_ORDER_MODAL_PLAN_KEYS = new Set(["pro"]);
   const SUNO_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "premier"]);
@@ -3136,6 +3136,8 @@ function initActivationResumeShortcut() {
     }
 
     if (key === "grok") {
+      const current=/\bgrok-(plus|premium|super|ultra)-1\b/.exec(text);
+      if(current) return 'grok-'+current[1];
       if (text.includes("supergrok-heavy") || text.includes("supergrok heavy") || joinedTags.includes("heavy")) return "supergrok-heavy";
       return "supergrok";
     }
@@ -3225,6 +3227,7 @@ function initActivationResumeShortcut() {
     const text = getProductSearchText(item);
     if (isStandaloneVpnProduct(item)) return "vpn";
     if (text.includes("midjourney") || text.includes("suno")) return "link";
+    if (/^grok-(plus|premium|super|ultra)-1$/.test(String(item?.baseSlug||''))) return "sso";
     if (activationVariant === "withoutlogin") return "id";
     if (text.includes("devin") && (normalizedTags.includes("delivery:manual_login") || activationVariant === "withlogin")) return "login";
     if ((deliveryType === "manual_login" || deliveryType === "credentials") && text.includes("devin")) return "login";
@@ -3255,7 +3258,7 @@ function initActivationResumeShortcut() {
         if (planKey === "pro" && deliveryKey !== "id") return false;
         if (["max-5x", "max-20x"].includes(planKey) && deliveryKey !== "support") return false;
       }
-      if (key === "grok" && deliveryKey !== "id") return false;
+      if (key === "grok" && !["id","sso"].includes(deliveryKey)) return false;
       if (key === "devin" && deliveryKey !== "login") return false;
       if (allowedDurations[key] && !allowedDurations[key].has(getServiceDurationKey(item))) return false;
       if (key === "claude" || key === "grok" || key === "devin") return true;
@@ -3293,6 +3296,7 @@ function initActivationResumeShortcut() {
         all: isEnPage ? "All plans" : "Все тарифы",
         supergrok: "SuperGrok",
         "supergrok-heavy": "SuperGrok Heavy",
+        "grok-plus":"Grok Plus", "grok-premium":"Grok Premium", "grok-super":"Grok Super", "grok-ultra":"Grok Ultra",
       },
       perplexity: {
         all: isEnPage ? "All plans" : "Все тарифы",
@@ -3331,6 +3335,7 @@ function initActivationResumeShortcut() {
   }
 
   function getServiceDeliveryLabel(deliveryKey) {
+    if(deliveryKey==='sso')return isEnPage?'By SSO':'По SSO';
     const labels = isEnPage
       ? { link: "Activation", id: "By ID", login: "Account login", vpn: "VLESS", support: "Support" }
       : { link: "Активация", id: "По ID", login: "Со входом в аккаунт", vpn: "VLESS", support: "Поддержка" };
@@ -3353,6 +3358,7 @@ function initActivationResumeShortcut() {
     const deliveryKey = getServiceDeliveryKey(item);
     if (key === "vpn") return "vpn";
     if (key === "devin" && deliveryKey === "login") return "login";
+    if(key==='grok'&&deliveryKey==='sso')return 'link';
     if ((key === "claude" || key === "grok") && deliveryKey === "id") return "link";
     return deliveryKey;
   }
@@ -3379,7 +3385,7 @@ function initActivationResumeShortcut() {
       return order[planKey] || 100;
     }
     if (key === "grok") {
-      const order = { supergrok: 10, "supergrok-heavy": 20 };
+      const order = { supergrok: 10, "supergrok-heavy": 20, "grok-plus":30, "grok-premium":40, "grok-super":50, "grok-ultra":60 };
       return order[planKey] || 100;
     }
     if (key === "perplexity") {
@@ -4153,7 +4159,7 @@ function initActivationResumeShortcut() {
         duration: ["1m"],
       },
       grok: {
-        plan: ["supergrok", "supergrok-heavy"],
+        plan: ["supergrok", "supergrok-heavy", "grok-plus", "grok-premium", "grok-super", "grok-ultra"],
         duration: ["1m", "2m", "3m"],
       },
       perplexity: {
@@ -5475,6 +5481,12 @@ function initActivationResumeShortcut() {
       ? Math.max(0, toAmount(selectedItem.price)) + (pageNewAccount?.checked ? getNewAccountSurcharge(serviceKey, selectedItem.product || selectedItem.slug) : 0)
       : 0;
     const selectedCurrency = String(selectedItem?.currency || "RUB").toUpperCase();
+    if(serviceKey==='grok') {
+      const modern=/^grok-(plus|premium|super|ultra)-1$/.test(String(selectedItem?.baseSlug||''));
+      const texts=[['.service-constructor-brand h1',selectedItem?.title],['.service-constructor-description h3',selectedItem?.title],['.service-constructor-description p',selectedItem?.modalDescription]];
+      for(const [selector,value] of texts){const el=servicePageRootEl.querySelector(selector);if(el){if(el.dataset.grokOriginal===undefined)el.dataset.grokOriginal=el.textContent;el.textContent=modern?String(value||''):el.dataset.grokOriginal;}}
+      for(const el of servicePageRootEl.querySelectorAll('.service-info-section,.service-faq-section'))el.hidden=modern;
+    }
     const accountNote = servicePageRootEl?.querySelector('[data-service-account-note]');
     if (accountNote) accountNote.textContent = pageNewAccount?.checked
       ? (serviceKey === "claude"
@@ -5600,6 +5612,12 @@ function initActivationResumeShortcut() {
 
     try {
       dynamicServicePagePayload = await fetchServicePageConfig(serviceKey);
+      let currentGrokItems=[];
+      if(serviceKey==='grok') {
+        const current=await fetchServicePageConfig('supergrok');
+        currentGrokItems=(current?.products||[]).filter(x=>/^grok-(plus|premium|super|ultra)-1$/.test(String(x.baseSlug||x.slug||'')));
+      }
+      const appendGrok=items=>[...items,...currentGrokItems.filter(x=>!items.some(y=>y.id===x.id&&y.activationVariant===x.activationVariant))];
       if (dynamicServicePagePayload) {
         applyServicePageTheme(dynamicServicePagePayload);
         applyServicePageContent(dynamicServicePagePayload);
@@ -5614,6 +5632,7 @@ function initActivationResumeShortcut() {
             return service && normalizeAiServiceKey(service.key) === serviceKey;
           });
         }
+        servicePageItems=appendGrok(servicePageItems);
         reconcileCartProductIds(servicePageItems);
         if (!servicePageItems.length) {
           updateServiceSummary([]);
@@ -5638,6 +5657,7 @@ function initActivationResumeShortcut() {
         return service && normalizeAiServiceKey(service.key) === serviceKey;
       });
 
+      servicePageItems=appendGrok(servicePageItems);
       if (!servicePageItems.length) {
         updateServiceSummary([]);
         servicePlansGridEl.innerHTML =

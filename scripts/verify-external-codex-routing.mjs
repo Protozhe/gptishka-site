@@ -23,6 +23,8 @@ let order, stored, reservations = 0, providerCalls = 0, wrongToken = false, acco
 class AppError extends Error { constructor(message, status) { super(message); this.status = status; } }
 const context = vm.createContext({
   assertOrderTokenAccess: async () => order,
+  CLAUDE_ZOVO_OWNER:"website-claude-zovo-v1",isClaudeZovoProduct:()=>false,
+  isAisouGrokProduct:()=>false,
   isVerificationSupportProduct: () => false, isDevinProductSlug: () => false,
   resolveTokenActivationFlowForProduct: () => "chatgpt_token", isSupportActivationFlow: () => false, isSupportLikeDeliveryType: () => false,
   resolveActivationPoolProductKeyForOrder: () => order.items[0].product.slug,
@@ -70,6 +72,8 @@ function reset(packageSize, site = "https://zovocard.com") {
 }
 for (const packageSize of [250, 500, 1000]) {
   reset(packageSize);
+  // Existing card-worker jobs remain inspectable; this must not authorize a new one.
+  stored={orderId:order.id,productKey:`codex-${packageSize}`,externalFulfillmentOwner:`pulse-site${packageSize}-v1`,status:"issued",attempts:0};
   await context.deliverProduct(order);
   assert.equal(reservations, 0);
   assert.equal(stored.status, "issued", "Keep the session form available before the first token");
@@ -93,9 +97,8 @@ for (const size of ["go", 5, 20, 25]) {
   reset(250);
   order.items[0].product.slug = size === "go" ? "chatgpt-go-1" : `chatgpt-pro-${size}x-1`;
   await context.deliverProduct(order);
-  assert.equal(stored.externalFulfillmentOwner, size === "go" ? "pulse-sitego-v1" : size === 25 ? "pulse-sitepro500-v1" : `pulse-sitepro${size}x-v1`);
+  assert.equal(stored.externalFulfillmentOwner, undefined, "Do not choose the card route before seeing planType");
   assert.equal(stored.status, "issued");
-  assert.equal(context.requiresActivationKey(stored), false);
   await context.startActivationUnsafe(order.id, '{"fixture":true}');
   await context.startActivationUnsafe(order.id, '{"fixture":true}');
   assert.equal(stored.status, "processing");
@@ -112,9 +115,22 @@ for (const size of ["go", 5, 20, 25]) {
       activationSiteUrl: "https://zovocard.com", record }), null);
   }
 }
+for(const size of [250,500,1000]) {
+  reset(size);await context.deliverProduct(order);
+  assert.equal(stored.externalFulfillmentOwner,undefined,"New Codex never enters Zovo");
+  assert.equal(reservations,0,"Wait for the account session before selecting or buying its denomination");
+  assert.equal(stored.activationSiteUrl,'https://aiee.fun');
+  assert.equal(context.requiresActivationKey(stored),false,'No empty-pool warning while waiting for the customer');
+  assert.equal(context.resolveExternalCodexOwner({source:"site",productKey:`codex-${size}`,activationSiteUrl:"https://zovocard.com",accountPlan:"plus"}),null);
+}
+for(const slug of ['chatgpt-plus-1','chatgpt-go-1','chatgpt-pro-5x-1','chatgpt-pro-20x-1','chatgpt-pro-25x-1']) {
+ for(const plan of ['plus','go','prolite','prolight','pro','pro_5x','unknown','']) assert.equal(context.resolveExternalCodexOwner({source:'site',productKey:slug,activationSiteUrl:'https://zovocard.com',accountPlan:plan}),null);
+ assert.ok(context.resolveExternalCodexOwner({source:'site',productKey:slug,activationSiteUrl:'',accountPlan:'free'}));
+}
 reset(250, "https://aiee.fun");
+stored={orderId:order.id,productKey:'codex-250',cdk:'legacy-key',status:'issued',attempts:0};
 await context.deliverProduct(order);
-assert.equal(reservations, 1, "Historical AIEE routing still allocates its own key");
+assert.equal(reservations, 0, "Historical AIEE routing preserves its existing key");
 assert.equal(stored.cdk, "legacy-key");
 for (const record of [{cdk: "old-key"}, {taskId: "old-task"}, {attempts: 1}]) {
   assert.equal(context.resolveExternalCodexOwner({source: "site", productKey: "codex-250",
@@ -192,4 +208,4 @@ stored={orderId:order.id,productKey:"chatgpt-plus-1",status:"issued",attempts:0}
 await context.getActivationProof(order.id,{forceCheck:true});assert.equal(proofErrors,1,"Unowned missing-key failures remain visible");
 console.log("External fulfillment proof refresh: all owned product routes preserve progress; legacy provider checks remain active.");
 
-reset(500,"https://aiee.fun");await context.deliverProduct(order);assert.equal(reservations,1);assert.equal(stored.cdk,"legacy-key");
+reset(500,"https://aiee.fun");await context.deliverProduct(order);assert.equal(reservations,0);assert.equal(stored.activationSiteUrl,"https://aiee.fun");assert.equal(stored.keyAllocationState,"awaiting_session");

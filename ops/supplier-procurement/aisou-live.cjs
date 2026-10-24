@@ -57,10 +57,11 @@ function providerEvidence(site, query, verified) {
   if (!unused || verified?.success !== true || !verified.sid || verified.can_submit === false) return null;
   let product;
   if (site === "https://aiee.fun" && Number(verified.require_cookie || 0) === 0) {
-    const plans = { plus: "plus_free", go: "go_free", codex250: "codex-250", codex500: "codex-500", codex1000: "codex-1000", codex2500: "codex-2500" };
+    const plans = { plus: "plus_free", go: "go_free", pro5x:"pro_5x_free",pro_5x:"pro_5x_free",pro20x:"pro_20x_free",pro_20x:"pro_20x_free",pro25x:"pro_25x_free",pro_25x:"pro_25x_free",pro50x:"pro_25x_free",pro_50x:"pro_25x_free", codex250: "codex-250", codex500: "codex-500", codex1000: "codex-1000", codex2500: "codex-2500" };
     product = plans[verified.plan_type];
+    if(/^grok_(plus|premium|super|ultra)_monthly$/.test(String(verified.plan_type||''))) product=verified.plan_type;
   } else if (site === "https://vip.sxzfd.com") {
-    product = { plus_month: "plus_ios", go_month: "go_ios" }[verified.type];
+    product = { plus_month: "plus_ios", go_month: "go_ios",pro_5x:"pro_5x_ios",pro5x:"pro_5x_ios",pro_5x_month:"pro_5x_ios",pro5x_month:"pro_5x_ios",pro_20x:"pro_20x_ios",pro20x:"pro_20x_ios",pro_20x_month:"pro_20x_ios",pro20x_month:"pro_20x_ios" }[verified.type];
   }
   return product ? { confirmed: true, unused: true, site, product } : null;
 }
@@ -86,7 +87,8 @@ function finance(order, payment, quote, policy, openingRub = 0, now = Date.now()
 }
 
 function assertPaidWebsiteOrder(order, activation, productKey, expected, policy, now = Date.now()) {
-  const start = Date.parse(policy.enabledAfter), o = order, a = activation;
+  const productStart = policy.productEnabledAfter?.[productKey];
+  const start = Math.max(Date.parse(policy.enabledAfter), productStart ? Date.parse(productStart) : 0), o = order, a = activation;
   if (!Number.isFinite(start) || start > now || !o || o.source !== "site" || o.status !== "PAID" || o.currency !== "RUB" || o.items?.length !== 1 || o.items[0].quantity !== 1 || o.items[0].product?.slug !== productKey || !(+new Date(o.createdAt) >= start)) throw Error("supplier_order_ineligible");
   const paid = (o.payments || []).filter(p => p.status === "SUCCESS");
   if (paid.length !== 1 || !["pally","lava","enot","gateway","enot.io"].includes(String(paid[0].provider || "").toLowerCase()) || o.paymentMethod === "stub" || paid[0].currency !== "RUB" || Number(paid[0].amount) !== Number(o.totalAmount) || !(+new Date(paid[0].processedAt || paid[0].createdAt) >= start)) throw Error("supplier_payment_unverified");
@@ -116,7 +118,8 @@ async function procureWebsiteKey({ prisma, activationStore, orderId, productKey,
   const load = () => prisma.order.findUnique({ where: { id: orderId }, include: { payments: true, items: { include: { product: true } }, licenseKeys: true } });
   let order = await load(), activation = activationStore.findByOrderId(orderId);
   // Old orders do not acquire automatic purchasing rights on retry.
-  if (order && +new Date(order.createdAt) < Date.parse(policy.enabledAfter)) return null;
+  const cutoff = Math.max(Date.parse(policy.enabledAfter), policy.productEnabledAfter?.[productKey] ? Date.parse(policy.productEnabledAfter[productKey]) : 0);
+  if (order && +new Date(order.createdAt) < cutoff) return null;
   const bound = (order?.licenseKeys || []).filter(k => k.productKey === productKey && k.activationSiteUrl === activationSiteUrl && k.orderId === orderId && k.status === "used");
   if (!stockOnly && bound.length === 1 && (!activation?.externalFulfillmentOwner || reserveProof?.state === "fallback_sealed") && !activation?.taskId && !Number(activation?.attempts || 0) && activation?.status !== "success") {
     assertPaidWebsiteOrder({...order,licenseKeys:[]},{...activation,cdk:""},productKey,expected,policy);

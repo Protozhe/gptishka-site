@@ -29,6 +29,7 @@ const context = vm.createContext({
   parseClientTokenInput: raw => ({raw, extracted: "fixture-session", json: {account: {planType: "free"}}}),
   isCodexCreditsProductKey: () => false, isSupportTokenActivationMode: () => false,
   isIosProviderBase: () => false,
+  isAieeProviderBase: value => String(value||'').includes('aiee.fun'),
   buildStoredClientTokenPatch: () => ({clientTokenCiphertext: "fixture-encrypted"}),
   normalizeActivationRecordForRead: value => value, buildTokenMeta: () => ({}),
   isTokenBoundToAnotherFingerprint: () => wrongToken,
@@ -43,7 +44,7 @@ const context = vm.createContext({
   buildUpstreamUserCandidates: () => ["fixture-user"],
   async startOutstockTaskWithRetry() { providerCalls++; throw new Error("fixture-provider-reached"); },
 });
-for (const name of ["selectChatGptPlusCandidate", "startActivationUnsafe"]) {
+for (const name of ["isAisouGrokProduct", "selectChatGptPlusCandidate", "startActivationUnsafe"]) {
   vm.runInContext(ts.transpileModule(functions.get(name), {compilerOptions: {target: ts.ScriptTarget.ES2022}}).outputText, context);
 }
 function reset(overrides = {}) {

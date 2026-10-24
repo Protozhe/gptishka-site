@@ -9,20 +9,42 @@ const sqlite3 = require("sqlite3");
 
 const CODEX = Object.freeze({ 250: 7500, 500: 14500, 1000: 27600, 2500: 68000 });
 function contract(product, accountPlan) {
+  accountPlan=String(accountPlan||'').trim().toLowerCase().replace(/[\s_-]+/g,'');
+  const active=['go','plus','pro','prolite','prolight','pro5x','pro20x','pro25x','pro50x'].includes(accountPlan);
+  const grok=/^grok-(plus|premium|super|ultra)-1$/.exec(product);
+  if(grok && accountPlan==='free') {
+    const rows={plus:[14,'434773D85FC1E512',6200],premium:[81,'1AC69028AEE5D03C',11500],super:[82,'65C9D2881C01EE6E',36000],ultra:[83,'9373F61CF4D595F7',70000]};
+    const [itemId,code,ceilingMinor]=rows[grok[1]];
+    return Object.freeze({product:`grok_${grok[1]}_monthly`,itemId,code,ceilingMinor,race:'',site:'https://aiee.fun'});
+  }
   const match = /^codex-(250|500|1000|2500)$/.exec(product);
   if (match) {
-    if (!["plus", "pro", "pro_5x", "pro_20x", "pro_25x"].includes(accountPlan)) throw Error("eligibility_unconfirmed");
+    if (!["plus", "pro", "prolight", "prolite", "pro5x", "pro20x", "pro25x", "pro50x"].includes(accountPlan)) throw Error("eligibility_unconfirmed");
     return Object.freeze({ product, itemId: 69, code: "2DF0B5724CBFF6BF", race: `${match[1]}点数额度`, site: "https://aiee.fun", ceilingMinor: CODEX[match[1]] });
   }
   if (product === "chatgpt-plus-1" && accountPlan === "free") {
     return Object.freeze({ product: "plus_free", itemId: 49, code: "D37C0FB7EC7A21F6", race: "", site: "https://aiee.fun", ceilingMinor: 11300 });
   }
-  if (product === "chatgpt-plus-1" && accountPlan === "plus") {
+  if (product === "chatgpt-plus-1" && active) {
     // Authenticated one-unit API quote, not the 122 CNY wholesale teaser.
     return Object.freeze({ product: "plus_ios", itemId: 30, code: "D024411F1D93A771", race: "", site: "https://vip.sxzfd.com", ceilingMinor: 12400 });
   }
   if (product === "chatgpt-go-1" && accountPlan === "free") return Object.freeze({ product: "go_free", itemId: 29, code: "F286772962B67D84", race: "", site: "https://aiee.fun", ceilingMinor: 3200 });
-  if (product === "chatgpt-go-1" && accountPlan === "go") return Object.freeze({ product: "go_ios", itemId: 63, code: "985CC8DEB226854E", race: "", site: "https://vip.sxzfd.com", ceilingMinor: 3500 });
+  if (product === "chatgpt-go-1" && active) return Object.freeze({ product: "go_ios", itemId: 63, code: "985CC8DEB226854E", race: "", site: "https://vip.sxzfd.com", ceilingMinor: 3500 });
+  const pro=/^chatgpt-pro-(5|20|25)x-1$/.exec(product);
+  if(pro && (active || accountPlan==='free')) {
+    const tier=pro[1],ios=active;
+    // No IOS 25x product exists in the authenticated catalog. Never substitute
+    // a 20x key or a Free-only key for that order.
+    if(tier==='25' && ios) throw Error('product_route_unmapped');
+    const rows={
+      '5:free':[23,'8DAEF4811D197D1D',67000], '5:ios':[46,'78C3E37DEFD17831',64500],
+      '20:free':[24,'72CA8BC21CF70BBD',105000], '20:ios':[32,'620851B24E7F85D0',135000],
+      '25:free':[75,'DB2670F66AF4DD30',308000],
+    };
+    const [itemId,code,ceilingMinor]=rows[tier+':'+(ios?'ios':'free')];
+    return Object.freeze({product:`pro_${tier}x_${ios?'ios':'free'}`,itemId,code,ceilingMinor,race:'',site:ios?'https://vip.sxzfd.com':'https://aiee.fun'});
+  }
   throw Error("product_route_unmapped");
 }
 

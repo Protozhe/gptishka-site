@@ -3,6 +3,8 @@ export type AichongzhiProduct = "grok" | "claude";
 export function resolveAichongzhiProduct(productKey?: string | null): AichongzhiProduct | null {
   const key = String(productKey || "").trim().toLowerCase();
   if (!key) return null;
+  // Current AISOU denominations use AIEE SSO, independent of legacy ID keys.
+  if (/^grok-(plus|premium|super|ultra)-1$/.test(key)) return null;
 
   if (
     (key.includes("grok") || key.includes("supergrok")) &&

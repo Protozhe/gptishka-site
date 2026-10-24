@@ -23,7 +23,17 @@ test("exact product, denomination and eligibility select the merchant variant", 
   assert.equal(contract("chatgpt-plus-1", "plus").itemId, 30);
   assert.throws(() => contract("codex-250", "free"), /eligibility/);
   assert.throws(() => contract("chatgpt-pro-20x", "free"), /unmapped/);
-  assert.throws(() => contract("chatgpt-plus-1", "pro"), /unmapped/);
+  for(const plan of ['go','plus','prolite','prolight','pro','pro_5x','pro_20x']) {
+    assert.equal(contract('chatgpt-plus-1',plan).product,'plus_ios');
+    assert.equal(contract('chatgpt-go-1',plan).product,'go_ios');
+    assert.equal(contract('chatgpt-pro-5x-1',plan).itemId,46);
+    assert.equal(contract('chatgpt-pro-20x-1',plan).itemId,32);
+    assert.throws(()=>contract('chatgpt-pro-25x-1',plan),/unmapped/);
+  }
+  assert.equal(contract('chatgpt-pro-5x-1','free').itemId,23);
+  assert.equal(contract('chatgpt-pro-20x-1','free').itemId,24);
+  assert.equal(contract('chatgpt-pro-25x-1','free').itemId,75);
+  assert.throws(()=>contract('chatgpt-go-1','unknown'),/unmapped/);
 });
 
 test("prefixes identify hints; IOS and duration-free Grok prefixes stay ambiguous", () => {

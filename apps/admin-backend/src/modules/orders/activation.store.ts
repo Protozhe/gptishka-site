@@ -9,7 +9,7 @@ export type ActivationRecord = {
   cdk: string;
   activationSiteUrl?: string | null;
   externalFulfillmentOwner?: string;
-  keyAllocationState?: "exhausted" | "selected";
+  keyAllocationState?: "exhausted" | "selected" | "awaiting_session";
   keyAllocationSite?: string;
   reservedCandidates?: Array<{
     keyId: string;

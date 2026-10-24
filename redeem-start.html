@@ -2655,6 +2655,7 @@
           <p id="proActivationNote" class="redeem-manual-hint" hidden>Для активации нужен бесплатный аккаунт ChatGPT. После запуска дождитесь результата на этой странице — повторная оплата не требуется.</p>
           <textarea id="tokenInput" class="redeem-input masked" placeholder="Токен аккаунта" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
 
+          <label id="claudeZovoConsentBox" class="redeem-manual-hint" hidden><input id="claudeZovoConsent" type="checkbox"> Подтверждаю: аккаунт Claude прошёл требуемую KYC-проверку. Я ознакомился с условиями подключения и понимаю, что решения Anthropic о проверке и блокировке аккаунта не зависят от магазина.</label>
           <div class="redeem-meta">
             <span id="tokenInfo">Символов: 0</span>
             <span id="tokenWarn">Данные защищены и используются только для заказа.</span>
@@ -2774,7 +2775,7 @@
     <span class="footer-copy">© 2026 GPTishka. Все права защищены, копирование запрещено.</span>
   </footer>
 
-  <script src="/assets/js/app.min.js?v=sha256-cfd443a3bfa5173e" defer></script>
+  <script src="/assets/js/app.min.js?v=sha256-571d9ff71dc72480" defer></script>
   <script>
     (() => {
     const params = new URLSearchParams(window.location.search);
@@ -2853,6 +2854,8 @@
     const POLL_INTERVAL_MS = 2000;
     // Provider processing may take a few minutes. Don't auto-restart tasks on short timeouts.
     const POLL_MAX_MS = 15 * 60 * 1000;
+    const CHATGPT_POLL_MAX_MS = 30 * 60 * 1000;
+    let activationPollMaxMs = POLL_MAX_MS;
     const RETRY_COOLDOWN_MS = 20000;
     const TOKEN_VALIDATE_DEBOUNCE_MS = 600;
     const LAST_PAID_ORDER_KEY = 'gptishka_last_paid_order_id';
@@ -2870,6 +2873,8 @@
     let pollTimer = null;
     let pollStartedAt = 0;
     let lastToken = '';
+    let isGrokSsoFlow = false;
+    let isClaudeZovoFlow = false;
     let restartAttempts = 0;
     let isRetryRunning = false;
     let lastRetryAt = 0;
@@ -3342,6 +3347,7 @@
     }
 
     function resolveSupportActivationFlow(payload) {
+      if(['grok_sso','claude_zovo'].includes(payload?.activationFlow)) return '';
       const directFlow = String(payload?.activationFlow || '').trim().toLowerCase();
       if (directFlow === SUPPORT_ACTIVATION_FLOW_CLAUDE || directFlow === SUPPORT_ACTIVATION_FLOW_GROK) {
         return directFlow;
@@ -3372,6 +3378,7 @@
     }
 
     function resolveForcedSupportActivationFlow(payload) {
+      if(['grok_sso','claude_zovo'].includes(payload?.activationFlow)) return '';
       const productKey = getActivationProductFingerprint(payload);
       if (productKey.includes('claude') || productKey.endsWith('-sdk5') || productKey.includes('sdk5')) {
         return SUPPORT_ACTIVATION_FLOW_CLAUDE;
@@ -3467,6 +3474,9 @@
       const activationFlow = resolveSupportActivationFlow(payload);
       const forcedSupportFlow = resolveForcedSupportActivationFlow(payload);
       const productKey = getActivationProductFingerprint(payload);
+      isGrokSsoFlow = /grok-(plus|premium|super|ultra)-1/.test(productKey);
+      isClaudeZovoFlow = payload?.activationFlow==='claude_zovo';
+      document.getElementById('claudeZovoConsentBox').hidden=!isClaudeZovoFlow;
       if (productKey.includes('gemini') || productKey.includes('google ai')) {
         applyGeminiActivationLinkFlow(payload);
         return;
@@ -3475,6 +3485,7 @@
         applyPerplexityManualFlow(payload);
         return;
       }
+      activationPollMaxMs = productKey.includes('chatgpt') && !productKey.includes('codex') ? CHATGPT_POLL_MAX_MS : POLL_MAX_MS;
       const codexCreditsMatch = productKey.includes('codex')
         ? productKey.match(/\b(250|500|1000)\b/)
         : null;
@@ -3518,16 +3529,31 @@
         deliveryMode === 'support' || Boolean(forcedSupportFlow),
         forcedSupportFlow || activationFlow
       );
+      if(isGrokSsoFlow) {
+        if(redeemTitleEl) redeemTitleEl.textContent='Подключение Grok';
+        if(redeemSubtitleEl) redeemSubtitleEl.textContent='Войдите в нужный аккаунт Grok без действующей подписки и передайте его sso.';
+        if(tokenGuideListEl) tokenGuideListEl.innerHTML='<li>На компьютере войдите на grok.com в нужный аккаунт.</li><li>Нажмите F12 → Application → Cookies → https://grok.com.</li><li>Скопируйте только Value у cookie sso и вставьте ниже.</li><li>Не передавайте пароль, другие cookies или сессию ChatGPT. После подтверждения автоматически подключим выбранный тариф.</li>';
+      }
+      if(isGrokSsoFlow && tokenLabelEl) tokenLabelEl.textContent='Сессия аккаунта Grok';
+      if(isGrokSsoFlow && tokenInput) tokenInput.placeholder='Значение cookie sso с grok.com';
+      if(isClaudeZovoFlow) {
+        if(redeemTitleEl) redeemTitleEl.textContent=String(payload?.productTitle||'Подключение Claude Max');
+        if(redeemSubtitleEl) redeemSubtitleEl.textContent='Оплата подтверждена. Передайте sessionKey нужного аккаунта — подключение продолжится автоматически.';
+        if(tokenLabelEl) tokenLabelEl.textContent='SessionKey аккаунта Claude';
+        if(tokenInput) tokenInput.placeholder='sk-ant-sid02-…';
+        if(tokenGuideListEl) tokenGuideListEl.innerHTML='<li>На компьютере войдите в нужный аккаунт на claude.ai. Завершите KYC, если Anthropic её запросил.</li><li>Откройте F12 → Application → Cookies → https://claude.ai.</li><li>Найдите sessionKey и скопируйте только его Value в поле ниже.</li><li>Это чувствительные данные аккаунта: не публикуйте их и не отправляйте API Key, пароль или токен ChatGPT.</li><li>Подтвердите условия ниже и нажмите «Активировать».</li>';
+      }
+      if(isClaudeZovoFlow||isGrokSsoFlow) {if(retryNewKeyBtn) retryNewKeyBtn.style.display='none';document.title=isClaudeZovoFlow?'Подключение Claude Max — GPTишка':'Подключение Grok — GPTишка';}
       applyProActivationMode(chatGptPlanName);
     }
 
     function applyProActivationMode(name) {
       const isPro = /^ChatGPT Pro (5|20|25)x(?: \/ Pro (100|200|500))?$/.test(name || '');
       const note = document.getElementById('proActivationNote');
-      if (note) note.hidden = !isPro;
+      if (note) {note.hidden = !isPro;note.textContent=/25x/.test(name||'')?'Для Pro 25× нужен аккаунт без действующей подписки. Дождитесь результата: повторная оплата не требуется.':'Передайте данные нужного аккаунта. Доступный способ подключения выберется автоматически; повторная оплата не требуется.';}
       if (!isPro) return;
       if (tokenLabelEl) tokenLabelEl.textContent = 'Данные аккаунта ChatGPT';
-      if (tokenInput) tokenInput.placeholder = 'Вставьте полный JSON со страницы ChatGPT /api/auth/session';
+      if (tokenInput) tokenInput.placeholder = isGrokSsoFlow ? 'Значение cookie sso с grok.com' : 'Вставьте полный JSON со страницы ChatGPT /api/auth/session';
       if (startBtn) startBtn.textContent = 'Активировать ' + name;
       if (retryNewKeyBtn) retryNewKeyBtn.style.display = 'none';
     }
@@ -3843,6 +3869,7 @@
     updateTokenMeta();
     scheduleValidateToken();
 
+    document.getElementById('claudeZovoConsent').addEventListener('change',()=>{scheduleValidateToken();});
     tokenInput.addEventListener('input', () => {
       updateTokenMeta();
       scheduleValidateToken();
@@ -4274,13 +4301,13 @@
       pollStartedAt = Date.now();
       pollTimer = setInterval(async () => {
         const done = await checkTaskStatus();
-        const timeout = Date.now() - pollStartedAt >= POLL_MAX_MS;
+        const timeout = Date.now() - pollStartedAt >= activationPollMaxMs;
         if (done || timeout) {
           stopPolling();
           if (!done && timeout) {
             const resolved = await resolveActivationSuccessFallback();
             if (resolved) return;
-            setStatus('pending', 'Активация выполняется более 15 минут. ID аккаунта сохранён — проверьте статус позже или напишите в поддержку.', false, 'process');
+            setStatus('pending', `Активация выполняется более ${activationPollMaxMs / 60000} минут. Данные сохранены, обработка продолжается автоматически. Можно обратиться в поддержку с номером заказа; повторно оплачивать или запускать активацию не нужно.`, false, 'process');
             retryNewKeyBtn.disabled = true;
           }
         }
@@ -4582,7 +4609,8 @@
 
     function getTokenForSubmit() {
       // Send raw input to backend; backend handles JSON vs token formats and retries safely.
-      return String(tokenInput.value || '').trim();
+      const raw=String(tokenInput.value || '').trim();
+      return isGrokSsoFlow ? JSON.stringify({sso:raw}) : isClaudeZovoFlow ? JSON.stringify({sessionKey:raw,riskAccepted:document.getElementById('claudeZovoConsent').checked}) : raw;
     }
 
     function extractTokenFromInput(raw) {
