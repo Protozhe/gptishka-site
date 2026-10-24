@@ -821,6 +821,20 @@ function initActivationResumeShortcut() {
       const requested = String(new URLSearchParams(window.location.search).get("plan") || "")
         .trim()
         .toLowerCase();
+      const serviceKey = String(servicePageRootEl?.getAttribute("data-service-page") || "").trim().toLowerCase();
+      // Claude plan links must select Claude tariffs, independently of ChatGPT aliases.
+      if (serviceKey === "claude") {
+        const claudeAliases = {
+          pro: "pro",
+          "max-5x": "max-5x",
+          max5x: "max-5x",
+          "5x": "max-5x",
+          "max-20x": "max-20x",
+          max20x: "max-20x",
+          "20x": "max-20x",
+        };
+        return Object.prototype.hasOwnProperty.call(claudeAliases, requested) ? claudeAliases[requested] : "pro";
+      }
       const aliases = {
         go: "go",
         plus: "plus",
@@ -839,7 +853,6 @@ function initActivationResumeShortcut() {
         pro500: "pro-25x",
       };
       if (aliases[requested]) return aliases[requested];
-      const serviceKey = String(servicePageRootEl?.getAttribute("data-service-page") || "").trim().toLowerCase();
       return serviceKey === "chatgpt" && !isEnglishRequest() ? "plus" : "all";
     } catch (_) {
       return "all";
