@@ -49,4 +49,9 @@ test('website polling uses the selected provider and confirms only its final suc
  api.updateActivationFromChongzhiCodePayload(stored.orderId,p);
  assert.equal(stored.status,'success');assert.equal(stored.verificationState,'success');assert.equal(stored.taskId,'fixture-provider-job');assert.equal(stored.lastProviderPayload.source,'aibuy-codex');
  assert.equal(notifications.length,1);assert.equal(notifications[0][2],true);
+ stored={...stored,status:'processing',verificationState:'pending',taskId:'reconcile-'+(Date.now()-6*60000)+'-aibuy'};
+ const unused={status:200,json:{success:true,status:'unused',recharge_status:'unused'}};
+ api.updateActivationFromChongzhiCodePayload(stored.orderId,unused);assert.equal(stored.status,'processing');assert.equal(notifications.length,1);
+ stored={...stored,taskId:'reconcile-'+(Date.now()-16*60000)+'-aibuy'};
+ api.updateActivationFromChongzhiCodePayload(stored.orderId,unused);assert.equal(stored.status,'failed');assert.equal(notifications.length,2);assert.equal(notifications[1][2],false);
 });

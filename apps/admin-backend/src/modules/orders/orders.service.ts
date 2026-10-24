@@ -2705,6 +2705,9 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   if (nextStatus === "success" && (stored.activationSiteUrl === "https://aichongzhi.fun")) {
     void notifyAibuyActivationResult(orderId,stored.productKey,true).catch(()=>{});
   }
+  if ((stored.activationSiteUrl === "https://aichongzhi.fun") && (createResult.providerPayload as any)?.needsReview === true) {
+    void notifyAibuyActivationResult(orderId,stored.productKey,false).catch(()=>{});
+  }
 
   return { taskId };
 }
@@ -4312,7 +4315,7 @@ function updateActivationFromChongzhiCodePayload(orderId: string, payload: { sta
   const reconcileExpired = Boolean(
     payload?.json?.success &&
     reconcileStartedAt &&
-    Date.now() - Number(reconcileStartedAt[1]) >= (isIosProviderBase(stored.activationSiteUrl) ? IOS_SUBMISSION_RECONCILE_MS : 5 * 60 * 1000) &&
+    Date.now() - Number(reconcileStartedAt[1]) >= (isIosProviderBase(stored.activationSiteUrl) ? IOS_SUBMISSION_RECONCILE_MS : stored.activationSiteUrl === "https://aichongzhi.fun" ? 15 * 60 * 1000 : 5 * 60 * 1000) &&
     !providerTaskId &&
     ["active", "available", "unused"].includes(rechargeStatus || codeStatus.toLowerCase())
   );
@@ -4354,7 +4357,7 @@ function updateActivationFromChongzhiCodePayload(orderId: string, payload: { sta
     },
     updatedAt: nowIso,
   });
-  if ((used || failed) && (stored.activationSiteUrl === "https://aichongzhi.fun")) {
+  if ((used || failed || reconcileExpired) && (stored.activationSiteUrl === "https://aichongzhi.fun")) {
     void notifyAibuyActivationResult(orderId,stored.productKey,used).catch(()=>{});
   }
 }

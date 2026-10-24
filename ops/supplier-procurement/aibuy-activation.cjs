@@ -20,7 +20,8 @@ async function status(code,productKey,fetchImpl){
  // Key text is not an oracle; every start independently checks workflow.
  const s=normalized(d);
  if(d.workflow&&credits&&d.workflow!=='codex_'+credits)throw Error('supplier_activation_product_mismatch');
- return {status:200,raw:'',json:{success:true,status:s.success?'used':s.failed?'failed':'processing',recharge_status:s.success?'success':s.failed?'failed':'pending',order_id:s.taskId||null}};
+ const unused=!s.taskId&&d.final!==true&&['unused','available','active','ready'].includes(String(d.status||''));
+ return {status:200,raw:'',json:{success:true,status:s.success?'used':s.failed?'failed':unused?'unused':'processing',recharge_status:s.success?'success':s.failed?'failed':unused?'unused':'pending',order_id:s.taskId||null}};
 }
 async function start(input,{fetchImpl,now=Date.now}={}){
  const credits=Number(String(input.productKey||'').match(/^codex-(250|500|1000)$/)?.[1]||0);
@@ -35,8 +36,8 @@ async function start(input,{fetchImpl,now=Date.now}={}){
   return {ok:true,taskId:task,status:202,body:'',tries:1,immediateSuccess:false,message:'Пополнение отправляется. Проверяем результат автоматически.',providerPayload:{source:'aibuy-codex',submissionDiagnostics:{phase:'submit_recharge',outcome:'uncertain'}}};
  }
  let s;try{s=normalized(response)}catch{
-  return {ok:true,taskId:task,status:202,body:'',tries:1,immediateSuccess:false,message:'Проверяем результат пополнения.',providerPayload:{source:'aibuy-codex',submissionDiagnostics:{phase:'submit_recharge',outcome:'uncertain'}}};
+  return {ok:true,taskId:task,status:202,body:'',tries:1,immediateSuccess:false,message:'Проверяем результат пополнения.',providerPayload:{source:'aibuy-codex',needsReview:true,submissionDiagnostics:{phase:'submit_recharge',outcome:'rejected'}}};
  }
- return {ok:true,taskId:s.taskId||task,status:200,body:'',tries:1,immediateSuccess:s.success,message:s.success?'Кредиты успешно зачислены.':'Пополняем кредиты. Пожалуйста, подождите.',providerPayload:{source:'aibuy-codex',submissionDiagnostics:{phase:'submit_recharge',outcome:s.failed?'failed':'accepted'}}};
+ return {ok:true,taskId:s.taskId||task,status:200,body:'',tries:1,immediateSuccess:s.success,message:s.success?'Кредиты успешно зачислены.':'Пополняем кредиты. Пожалуйста, подождите.',providerPayload:{source:'aibuy-codex',needsReview:s.failed,submissionDiagnostics:{phase:'submit_recharge',outcome:s.failed?'failed':'accepted'}}};
 }
 module.exports={isRoute,api,normalized,status,start};

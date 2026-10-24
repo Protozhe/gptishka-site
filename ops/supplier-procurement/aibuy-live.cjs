@@ -32,8 +32,8 @@ async function procure({prisma,activationStore,orderId,productKey,accountPlan,no
  const bound=(order.licenseKeys||[]).filter(k=>k.productKey===productKey&&k.activationSiteUrl===site&&k.orderId===orderId&&k.status==='used');
  if(bound.length===1&&!a.cdk&&!a.taskId&&!a.attempts){
   assertPaidWebsiteOrder({...order,licenseKeys:[]},a,productKey,expected,cfg);
-  const audit=await prisma.licenseKeyAuditLog.findFirst({where:{keyId:bound[0].id,action:'aibuy_purchase'}});
-  if(audit?.meta?.orderId===orderId)return {keyId:bound[0].id,code:bound[0].keyValue,activationSiteUrl:site};
+  const audit=await prisma.licenseKeyAuditLog.findFirst({where:{keyId:bound[0].id,action:{in:['aibuy_purchase','aibuy_stock_import']}}});
+  if(audit?.meta?.orderId===orderId||(audit?.action==='aibuy_stock_import'&&audit?.meta?.productKey===productKey))return {keyId:bound[0].id,code:bound[0].keyValue,activationSiteUrl:site};
  }
  assertPaidWebsiteOrder(order,a,productKey,expected,cfg);
  if(a.externalFulfillmentOwner)throw Error('supplier_prior_fulfillment');
