@@ -125,3 +125,49 @@ They cover exact variants, eligibility, ambiguous prefixes, authenticated
 request encoding, disabled defaults, concurrent callers, process loss,
 uncertain payments, encrypted quarantine, one correction, budget holds and
 unexpected/reused key deliveries. They make no supplier purchases or activations.
+
+## AI-BUY Codex on the website
+
+`aibuy-live.cjs` selects AI-BUY only for website Codex 250/500/1000 orders
+created AND paid after the separate `aibuy-policy.json` cutoff. Matching local
+AIEE stock is used first. ChatGPT, Claude, Grok and marketplace routes are not
+changed. Any existing AISOU purchase claim blocks a second supplier purchase.
+
+The ordinary storefront runs in real sandboxed Chrome as `gptishka-buy`, with
+the independently established, encrypted server session. No desktop cookies or
+passwords are imported. Root keeps the session and encrypted inventory; the
+website has a peer-UID checked Unix socket that accepts only an order ID. A
+separate website DB validator determines payment, product, session eligibility,
+cost ceiling and margin. Protected runtime settings/journals stay outside Git.
+
+Only item 75, quantity 1 and balance payment are permitted. Variants are exact
+`250点数额度` / `500点数额度` / `1000点数额度`, capped at ¥75 / ¥145 / ¥276.
+Before the one pay click, the broker fsyncs a durable claim; the ordinary form
+carries a stable opaque request number and contact correlation. Lost replies
+are recovered by authenticated own-order history, never by paying again. No
+CAPTCHA, TOTP or other verification is bypassed. An uncertain earlier debit
+blocks further debits from that account until resolved.
+
+The key is independently verified unused and `codex_<denomination>` at
+`aichongzhi.fun`. It never enters an AIEE pool. New activation submissions also
+have a durable boundary; a lost response leads to status polling only. Confirmed
+wrong/used keys remain encrypted in quarantine. Margin/verification failures
+hold the order for review without another charge. Native website notices use
+the website admin bot, including a 15-minute funds grace and confirmed outcome.
+
+Install `install-aibuy.py` from the deployed committed release; it starts with
+`enabled:false, paused:true`. Run `preflight-aibuy.py` (read-only) and confirm all
+three variants, balance and owner before enabling. Set a fresh cutoff when
+enabling; do not admit earlier orders implicitly. The Git deployment restarts
+an already installed broker, retaining its durable claims and encrypted stock.
+The Python runtime needs cryptography and Playwright, already provisioned on
+the production host, plus official Google Chrome with sandbox support.
+
+Keep ONE server login for procurement. For funding, use owner-only SSH helper
+`aibuy-topup.py --id <unique-reference> --amount 200 --network BEP20`. It creates
+one unpaid invoice in that existing session and returns an allowlisted
+`pay.ai-buy.vip` URL. The owner pays the external page without signing into the
+supplier; the helper never transfers money. Repeating the same reference
+returns the same invoice or holds an uncertain result. The account lock
+serializes invoice creation with purchases. A supplier-requested login/2FA
+renewal requires owner participation and never starts an automatic new login.

@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-const result = spawnSync(process.execPath, ["--test", "ops/supplier-procurement/aisou-core.test.cjs", "ops/supplier-procurement/aisou-live.test.cjs"], {
+const result = spawnSync(process.execPath, ["--test", "ops/supplier-procurement/aisou-core.test.cjs", "ops/supplier-procurement/aisou-live.test.cjs", "ops/supplier-procurement/aibuy.test.cjs", "ops/supplier-procurement/aibuy-order.test.cjs"], {
   cwd: process.cwd(), env: process.env, stdio: "inherit",
 });
 if (result.error) throw result.error;
@@ -9,6 +9,9 @@ const python = spawnSync(process.platform === "win32" ? "python" : "python3", ["
 });
 if (python.error) throw python.error;
 if (python.status !== 0) process.exit(python.status ?? 1);
+const aibuy=spawnSync(process.platform==='win32'?'python':'python3',['-B','ops/supplier-procurement/test-aibuy.py'],{cwd:process.cwd(),env:process.env,stdio:'inherit'});
+if(aibuy.error)throw aibuy.error;
+if(aibuy.status!==0)process.exit(aibuy.status??1);
 const reserve = spawnSync(process.platform === "win32" ? "python" : "python3", ["-B", "ops/subscription-routes/test-reserve.py"], {cwd:process.cwd(),env:process.env,stdio:"inherit"});
 if(reserve.error) throw reserve.error;
 if(reserve.status!==0) process.exit(reserve.status??1);

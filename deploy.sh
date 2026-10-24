@@ -146,6 +146,7 @@ fi
 SWITCHED=0
 PAUSED_FOR_PERMISSIONS=0
 NOTIFIERS_RELOADED=0
+AIBUY_RELOADED=0
 rollback() {
   status=$?
   if [ "$status" -ne 0 ] && { [ "$SWITCHED" -eq 1 ] || [ "$PAUSED_FOR_PERMISSIONS" -eq 1 ]; }; then
@@ -156,6 +157,9 @@ rollback() {
     (cd "$APP_DIR" && pm2 startOrReload ecosystem.config.js --update-env) || true
     if [ "$NOTIFIERS_RELOADED" -eq 1 ]; then
       pm2 startOrReload /etc/gptishka-notifiers/ecosystem.json --update-env || true
+    fi
+    if [ "$AIBUY_RELOADED" -eq 1 ]; then
+      systemctl restart gptishka-aibuy.service || true
     fi
     echo "Release failed; previous complete directory restored"
   fi
@@ -173,6 +177,10 @@ ln -s "$RELEASE" "$APP_DIR.next"
 mv -Tf "$APP_DIR.next" "$APP_DIR"
 SWITCHED=1
 (cd "$APP_DIR" && pm2 startOrReload ecosystem.config.js --update-env)
+if systemctl is-enabled --quiet gptishka-aibuy.service; then
+  AIBUY_RELOADED=1
+  systemctl restart gptishka-aibuy.service
+fi
 HEALTH_OK=0
 for attempt in $(seq 1 20); do
   if curl -fsS --max-time 5 http://127.0.0.1:4100/api/admin/health >/dev/null && curl -fsS --max-time 5 http://127.0.0.1:4000/ >/dev/null && curl -fsS --max-time 5 http://127.0.0.1:4000/api/public/products >/dev/null; then

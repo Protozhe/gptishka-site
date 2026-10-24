@@ -26,6 +26,14 @@ jobs:
         with:
           node-version: 20
 
+      - name: Use Python for durable procurement tests
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python verification dependency
+        run: python3 -m pip install --disable-pip-version-check --no-input -r ops/supplier-procurement/requirements-test.txt
+
       - name: Install verification dependencies
         run: npm ci --include=dev --ignore-scripts --no-audit --no-fund
 

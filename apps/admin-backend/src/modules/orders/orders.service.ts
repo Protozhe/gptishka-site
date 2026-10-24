@@ -24,7 +24,7 @@ import { resolveTelegramOrderContext } from "./telegram-order-context";
 import { manualCredentialsStore } from "../products/manual-credentials.store";
 import { toVpnMePayload, vpnService } from "../../services/vpn.service";
 import { licenseService } from "../../services/licenseService";
-import { procureSelectedWebsiteKey, pendingAisouNativeOrders, verifiedAieeGrokProduct } from "../../services/aisou-procurement";
+import { procureSelectedWebsiteKey, pendingAisouNativeOrders, verifiedAieeGrokProduct, notifyAibuyActivationResult } from "../../services/aisou-procurement";
 import { CLAUDE_ZOVO_OWNER, isClaudeZovoProduct, isClaudeZovoOrder, validateClaudeZovoSession, tickClaudeZovo } from "../../services/claude-zovo";
 import { syncWebsiteCustomerToSheet } from "../customers/customer-sheet.service";
 import crypto from "crypto";
@@ -99,6 +99,7 @@ function isIosProviderBase(value: unknown) {
     return false;
   }
 }
+
 
 function isAisouGrokProduct(value: unknown) {
   return /^grok-(plus|premium|super|ultra)-1$/.test(String(value || ""));
@@ -1248,7 +1249,7 @@ export const ordersService = {
       let current = stored;
       try {
         const statusBaseUrl = isCodexCreditsProductKey(stored?.productKey)
-          ? (isAieeProviderBase(stored?.activationSiteUrl) ? stored?.activationSiteUrl : DEFAULT_AIEE_URL)
+          ? (isAieeProviderBase(stored?.activationSiteUrl) || (stored?.activationSiteUrl === "https://aichongzhi.fun") ? stored?.activationSiteUrl : DEFAULT_AIEE_URL)
           : stored?.activationSiteUrl;
         const checked = await fetchChongzhiCodeStatus(String(stored?.cdk || ""), statusBaseUrl || "");
         updateActivationFromChongzhiCodePayload(orderId, checked);
@@ -1685,7 +1686,7 @@ export const ordersService = {
       if (isChongzhiActivationRecord(activation) && activation.cdk) {
         try {
           const statusBaseUrl = isCodexCreditsProductKey(activation.productKey)
-            ? (isAieeProviderBase(activation.activationSiteUrl) ? activation.activationSiteUrl : DEFAULT_AIEE_URL)
+            ? (isAieeProviderBase(activation.activationSiteUrl) || (activation.activationSiteUrl === "https://aichongzhi.fun") ? activation.activationSiteUrl : DEFAULT_AIEE_URL)
             : activation.activationSiteUrl;
           const checked = await fetchChongzhiCodeStatus(activation.cdk, statusBaseUrl || "");
           updateActivationFromChongzhiCodePayload(id, checked);
@@ -2586,7 +2587,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     return { taskId: String(stored.taskId || ""), reused: true };
   }
   const iosSubmission = isIosProviderBase(stored.activationSiteUrl);
-  const durableJsonSubmission = iosSubmission || isAieeProviderBase(stored.activationSiteUrl);
+  const durableJsonSubmission = iosSubmission || isAieeProviderBase(stored.activationSiteUrl) || (stored.activationSiteUrl === "https://aichongzhi.fun");
   let iosDispatchRecorded = false;
   const iosReconcileTask = `reconcile-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   let createResult = await startOutstockTaskWithRetry({
@@ -2701,6 +2702,10 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     updatedAt: new Date().toISOString(),
   });
 
+  if (nextStatus === "success" && (stored.activationSiteUrl === "https://aichongzhi.fun")) {
+    void notifyAibuyActivationResult(orderId,stored.productKey,true).catch(()=>{});
+  }
+
   return { taskId };
 }
 
@@ -2718,6 +2723,10 @@ async function startOutstockTaskWithRetry(input: {
   const aichongzhiProduct = resolveAichongzhiProduct(input.productKey);
   if (aichongzhiProduct) {
     return startAichongzhiTaskWithRetry({ ...input, product: aichongzhiProduct });
+  }
+  if (isCodexCreditsProductKey(input.productKey) && (input.activationSiteUrl === "https://aichongzhi.fun")) {
+    try { return await require(path.resolve(__dirname,"../../../../../ops/supplier-procurement/aibuy-activation.cjs")).start(input); }
+    catch { return {ok:false as const,taskId:"",status:409,body:"Provider key or denomination requires review",tries:0,immediateSuccess:false,message:"",providerPayload:null}; }
   }
   if (input.supportFlow) {
     return startQuickplusSupportTaskWithRetry(input);
@@ -4199,6 +4208,9 @@ function tryParseJson(raw: string) {
 }
 
 async function fetchChongzhiCodeStatus(cdk: string, activationSiteUrl?: string | null) {
+  if ((activationSiteUrl === "https://aichongzhi.fun")) {
+    return require(path.resolve(__dirname,"../../../../../ops/supplier-procurement/aibuy-activation.cjs")).status(cdk);
+  }
   const base = String(activationSiteUrl || env.ACTIVATION_CHONGZHI_BASE_URL || "https://vip.sxzfd.com")
     .trim()
     .replace(/\/+$/, "");
@@ -4333,7 +4345,7 @@ function updateActivationFromChongzhiCodePayload(orderId: string, payload: { sta
     lastProviderPayload: {
       ...(stored.lastProviderPayload?.submissionDiagnostics
         ? { submissionDiagnostics: stored.lastProviderPayload.submissionDiagnostics } : {}),
-      source: isAiee ? "aiee.fun/api/auth.php" : "chongzhi/status",
+      source: (stored.activationSiteUrl === "https://aichongzhi.fun") ? "aibuy-codex" : isAiee ? "aiee.fun/api/auth.php" : "chongzhi/status",
       providerStatus: Number(payload?.status || 0),
       code_status: codeStatus || null,
       recharge_status: String(payload?.json?.recharge_status || "").trim() || null,
@@ -4342,6 +4354,9 @@ function updateActivationFromChongzhiCodePayload(orderId: string, payload: { sta
     },
     updatedAt: nowIso,
   });
+  if ((used || failed) && (stored.activationSiteUrl === "https://aichongzhi.fun")) {
+    void notifyAibuyActivationResult(orderId,stored.productKey,used).catch(()=>{});
+  }
 }
 
 function buildStoredClientTokenPatch(token: string) {
