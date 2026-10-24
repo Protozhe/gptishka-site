@@ -459,12 +459,13 @@ function requiresActivationKey(record) {
   if (activationState(record) === "success") return false;
   if(record?.externalFulfillmentOwner === "website-claude-zovo-v1") return false;
   if(record?.keyAllocationState === "awaiting_session") return false;
+  if(record?.lastProviderPayload?.supplierProcurement?.managed === true) return false;
   const key = String(record?.productKey || "");
   const match = /^codex-(250|500|1000)$/.exec(key);
   const pro = /^chatgpt-pro-(5|20|25)x-1$/.exec(key);
   const go = key === "chatgpt-go-1";
   const plus = key === "chatgpt-plus-1";
-  if((pro||go||plus) && !record.cdk && !record.taskId && !Number(record.attempts||0) && record.keyAllocationState!=="exhausted") return false;
+  if((match||pro||go||plus) && !record.cdk && !record.taskId && !Number(record.attempts||0) && record.keyAllocationState!=="exhausted") return false;
   if (match || pro || go || plus) {
     const owner = plus ? "pulse-siteplus-v1" : go ? "pulse-sitego-v1" : pro ? (pro[1] === "25" ? "pulse-sitepro500-v1" : `pulse-sitepro${pro[1]}x-v1`) : `pulse-site${match[1]}-v1`;
     if (record.externalFulfillmentOwner === owner || record.lastProviderPayload?.source === owner ||

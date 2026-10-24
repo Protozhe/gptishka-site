@@ -4,6 +4,9 @@ const { contract, sign, AisouClient, Journal, quoteFromValuation, buyWithOneCorr
 
 const SECRET_DIR = "/var/lib/gptishka-runtime/supplier-secrets";
 const STATE_DIR = "/var/lib/gptishka-runtime/aisou-procurement";
+function requiresHumanVerification(value) {
+  return /人机验证|验证码(?:错误|不能为空|已过期)|captcha[_ -]?(?:required|invalid)|verify (?:that )?you are human|human verification required/i.test(String(value || '').slice(0, 12000));
+}
 function protectedJson(file) {
   const st = fs.lstatSync(file);
   if (!st.isFile() || st.isSymbolicLink() || (st.mode & 0o027)) throw Error("supplier_settings_permissions");
@@ -17,7 +20,7 @@ function curlJson(url, body, contentType = "application/x-www-form-urlencoded", 
   return new Promise((resolve, reject) => {
     const child = cp.spawn("/usr/bin/curl", ["--disable", "--http1.1", "--silent", "--show-error", "--proto", "=https", "--max-time", String(Math.ceil(timeout / 1000)), "--request", "POST", "--header", "Content-Type: " + contentType, "--data-binary", "@-", "--write-out", "\n%{http_code}", url], { stdio: ["pipe", "pipe", "pipe"] });
     let output = Buffer.alloc(0), done = false;
-    const fail = () => { if (!done) { done = true; reject(Error("supplier_response_unconfirmed")); } };
+    const fail = (reason = "supplier_response_unconfirmed") => { if (!done) { done = true; reject(Error(reason)); } };
     const timer = setTimeout(() => { child.kill("SIGKILL"); fail(); }, timeout + 1500);
     child.stdout.on("data", b => { output = Buffer.concat([output, b]); if (output.length > 1024 * 1024) { child.kill(); fail(); } });
     child.stderr.resume(); child.stdin.on("error", () => {}); child.on("error", () => { clearTimeout(timer); fail(); });
@@ -27,7 +30,7 @@ function curlJson(url, body, contentType = "application/x-www-form-urlencoded", 
         const text = output.toString("utf8"), end = text.lastIndexOf("\n");
         if (code !== 0 || text.slice(end + 1) !== "200") throw Error();
         const result = JSON.parse(text.slice(0, end)); done = true; resolve(result);
-      } catch { fail(); }
+      } catch { fail(requiresHumanVerification(output.toString('utf8')) ? 'supplier_human_verification_required' : 'supplier_response_unconfirmed'); }
     });
     child.stdin.end(body);
   });
@@ -46,7 +49,7 @@ function merchant(credentials, transport = curlJson) {
       if (fields.num !== 1 || !/^gpi-[a-f0-9]{40}$/.test(fields.request_no)) throw Error("supplier_dispatch_invalid");
       const data = { ...fields, app_id: String(credentials.app_id) }; data.sign = sign(data, credentials.app_key);
       const result = await transport("https://aisou.pro/shared/commodity/trade", new URLSearchParams(data).toString(), "application/x-www-form-urlencoded", 45000);
-      if (result?.code !== 200 || !result.data) throw Error("supplier_trade_unconfirmed");
+      if (result?.code !== 200 || !result.data) throw Error(requiresHumanVerification(result?.msg || result?.message) ? 'supplier_human_verification_required' : 'supplier_trade_unconfirmed');
       return result.data;
     },
   };
@@ -106,7 +109,7 @@ function loadSettings() {
 
 // Called only after account-type selection and an empty matching local pool.
 // The caller holds the website's existing cross-process activation order lock.
-async function procureWebsiteKey({ prisma, activationStore, orderId, productKey, accountPlan, activationSiteUrl, stockOnly = false, reserveProof = null, destination = "native", settings, transport = curlJson, notifyFunds, now = Date.now }) {
+async function procureWebsiteKey({ prisma, activationStore, orderId, productKey, accountPlan, activationSiteUrl, stockOnly = false, reserveProof = null, destination = "native", settings, transport = curlJson, notifyFunds, onProgress = async () => {}, now = Date.now }) {
   if (!settings) {
     try { settings = loadSettings(); } catch (e) { if (e.code === "ENOENT") return null; throw e; }
   }
@@ -138,6 +141,7 @@ async function procureWebsiteKey({ prisma, activationStore, orderId, productKey,
     await journal.initialize();
     await journal.run("CREATE TABLE IF NOT EXISTS demands(scope TEXT PRIMARY KEY,product TEXT NOT NULL,created_at TEXT NOT NULL)");
     await journal.run("INSERT OR IGNORE INTO demands VALUES(?,?,?)",[scope,expected.product,new Date().toISOString()]);
+    await onProgress({phase:'checking',product:expected.product});
     const api = merchant(settings.credentials, transport);
     const prior = await journal.get("SELECT * FROM purchases WHERE scope=?",[scope+":primary"]);
     let quote;
@@ -159,6 +163,7 @@ async function procureWebsiteKey({ prisma, activationStore, orderId, productKey,
       if (balanceMinor < quote.amountMinor) {
         const funds = require('./funds-wait.cjs');
         const wait = await funds.hold(journal, scope, quote.amountMinor, balanceMinor, now());
+        await onProgress({phase:'funds_wait',product:expected.product});
         await funds.notify(journal, wait, notifyFunds, now());
         const error = Error("supplier_balance_insufficient");
         error.fundsWait = { startedAt: wait.started_at, deadlineAt: wait.deadline_at };
@@ -169,8 +174,9 @@ async function procureWebsiteKey({ prisma, activationStore, orderId, productKey,
     order = await load(); activation = activationStore.findByOrderId(orderId);
     payment = assertPaidWebsiteOrder(order, activation, productKey, expected, policy);
     const cost = finance(order, payment, quote, policy, reserveProof?.priorOpeningRub || 0);
+    await onProgress({phase:prior && prior.state!=='wrong_product'?'reconcile':'purchasing',product:expected.product});
     const result = await buyWithOneCorrection({ enabled: true, journal, scope, expected, quote, totalBudgetMinor: cost.totalBudgetMinor, buyer: fields => api.buy(fields), verifyKey: (key, site) => verifyProvider(key, site, transport) });
-    if (result.state !== "verified") throw Error("supplier_" + result.state);
+    if (result.state !== "verified") throw Error(result.reason==='supplier_human_verification_required'?'supplier_human_verification_required':"supplier_" + result.state);
     const asset = await journal.get("SELECT * FROM assets WHERE scope=? AND state='verified'", [scope + (result.requestNo === "gpi-" + require("node:crypto").createHash("sha256").update(scope + ":primary").digest("hex").slice(0,40) ? ":primary" : ":correction-1")]);
     if (!asset) throw Error("supplier_asset_unconfirmed");
     const keyValue = journal.open(asset.encrypted_key).toUpperCase();
@@ -198,11 +204,12 @@ async function procureWebsiteKey({ prisma, activationStore, orderId, productKey,
     });
     await journal.run("CREATE TABLE IF NOT EXISTS releases(scope TEXT PRIMARY KEY,key_id TEXT NOT NULL,cost_rub REAL NOT NULL,released_at TEXT NOT NULL)");
     await journal.run("INSERT OR IGNORE INTO releases VALUES(?,?,?,?)", [scope, row.id, actualCostRub, new Date().toISOString()]);
+    await onProgress({phase:'received',product:expected.product});
     return { keyId: row.id, code: keyValue, activationSiteUrl, costRub: actualCostRub, stockAvailable: stockOnly };
   } finally { await journal.close(); }
 }
 
-module.exports = { merchant, curlJson, providerEvidence, verifyProvider, finance, assertPaidWebsiteOrder, procureWebsiteKey, loadSettings };
+module.exports = { merchant, curlJson, providerEvidence, verifyProvider, finance, assertPaidWebsiteOrder, procureWebsiteKey, loadSettings, requiresHumanVerification };
 
 async function pendingNativeOrders(activeOrderIds, suppliedSettings) {
   let settings; try { settings = suppliedSettings || loadSettings(); } catch { return []; }

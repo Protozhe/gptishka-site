@@ -223,10 +223,10 @@ class Journal {
     // Persist the entire delivered secret before parsing or validating it.
     await this.run("UPDATE purchases SET state='received',encrypted_receipt=?,trade_no=? WHERE scope=? AND state='sending'", [this.seal(stable(receipt)), String(receipt.tradeNo || ""), scope]);
   }
-  async unknown(scope) { await this.run("UPDATE purchases SET state='uncertain',reason='merchant_result_unconfirmed' WHERE scope=? AND state='sending'", [scope]); }
+  async unknown(scope, reason) { await this.run("UPDATE purchases SET state='uncertain',reason=? WHERE scope=? AND state='sending'", [reason==='supplier_human_verification_required'?reason:'merchant_result_unconfirmed',scope]); }
   async assess(scope, expected, verifyKey) {
     const row = await this.get("SELECT * FROM purchases WHERE scope=?", [scope]);
-    if (!row || !row.encrypted_receipt || !["received", "quarantined", "wrong_product", "verified"].includes(row.state)) return { state: row?.state || "missing" };
+    if (!row || !row.encrypted_receipt || !["received", "quarantined", "wrong_product", "verified"].includes(row.state)) return { state: row?.state || "missing", ...(row?.reason==='supplier_human_verification_required'?{reason:row.reason}:{}) };
     const receipt = JSON.parse(this.open(row.encrypted_receipt));
     const rawKey = typeof receipt.secret === "string" ? receipt.secret.trim() : "";
     if (!row.trade_no || !rawKey || /\s/.test(rawKey) || rawKey.length > 128 || !/^\d+(?:\.\d{1,2})?$/.test(String(receipt.amount))) {
@@ -263,7 +263,7 @@ async function buyOnce({ enabled = false, journal, scope, expected, quote, buyer
     try {
       const receipt = await buyer({ shared_code: expected.code, race: expected.race, num: 1, card_id: 0, device: 0, password: "", coupon: "", contact: "", request_no: row.request_no });
       await journal.receive(scope, receipt);
-    } catch { await journal.unknown(scope); return { state: "uncertain", requestNo: row.request_no }; }
+    } catch(e) { await journal.unknown(scope,e?.message); return { state: "uncertain", reason:e?.message==='supplier_human_verification_required'?e.message:'merchant_result_unconfirmed', requestNo: row.request_no }; }
   }
   return journal.assess(scope, expected, verifyKey);
 }

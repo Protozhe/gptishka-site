@@ -166,3 +166,24 @@ test('old orders, existing stock and an unsealed primary cannot spend',async t=>
  // Stock can belong to other orders, not be already assigned to this one.
  f.args.prisma.order.findUnique=async()=>({...f.o,licenseKeys:[]});assert.equal((await procureWebsiteKey(f.args)).stockAvailable,true);assert.equal(f.calls.length,0);
 });
+
+test('explicit human verification is diagnosed, persisted and never retried as a second purchase',async t=>{
+ const f=fixture(t),base=f.args.transport,phases=[];let sends=0;
+ f.args.onProgress=async x=>phases.push(x.phase);
+ f.args.transport=async(url,...rest)=>{
+  if(url.endsWith('/trade')){sends++;return {code:400,msg:'captcha_required',data:null};}
+  return base(url,...rest);
+ };
+ await assert.rejects(procureWebsiteKey(f.args),/supplier_human_verification_required/);
+ await assert.rejects(procureWebsiteKey(f.args),/supplier_human_verification_required/);
+ assert.equal(sends,1);assert.equal(f.o.licenseKeys.length,0);assert.ok(phases.includes('purchasing'));assert.ok(phases.includes('reconcile'));
+ const {requiresHumanVerification}=require('./aisou-live.cjs');
+ assert.ok(requiresHumanVerification('请完成人机验证'));assert.ok(requiresHumanVerification('验证码错误'));
+ assert.equal(requiresHumanVerification('timeout or ordinary validation failure'),false);
+});
+
+test('owner stock added after an uncertain purchase resumes without buying another key',async t=>{
+ const f=fixture(t,{lost:true});await assert.rejects(procureWebsiteKey(f.args),/supplier_uncertain/);
+ f.args.prisma.licenseKey.findFirst=async()=>({id:'owner-prepaid-key'});
+ const result=await procureWebsiteKey(f.args);assert.ok(result.stockAvailable);assert.equal(f.trades(),1);
+});

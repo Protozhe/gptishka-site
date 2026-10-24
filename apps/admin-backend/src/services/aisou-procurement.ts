@@ -14,9 +14,21 @@ export async function procureSelectedWebsiteKey(input: {
 }) {
   const modulePath = path.resolve(__dirname, "../../../../ops/supplier-procurement/aisou-live.cjs");
   const { procureWebsiteKey, notifyHoldOnce } = require(modulePath);
+  const progress = async (event: {phase:string;product?:string}) => {
+    const a = activationStore.findByOrderId(input.orderId);
+    if (!a || a.status === "success" || a.taskId) return;
+    activationStore.upsert({...a,lastProviderPayload:{...(a.lastProviderPayload||{}),supplierProcurement:{managed:true,provider:"aisou",phase:event.phase,product:event.product||input.productKey,updatedAt:new Date().toISOString()}},updatedAt:new Date().toISOString()});
+    if(event.phase==='purchasing') await notifyHoldOnce(input.orderId,'supplier_purchase_started',()=>sendTelegramNotification(
+      `🛒 <b>AISOU · Автозакупка ключа</b>\n\n🧾 Заказ: <code>${input.orderId}</code>\nТовар: <b>${input.productKey}</b>\n\nСтатус: <b>покупаем подходящий ключ</b>\n\nВ локальном пуле ключа нет. После получения и проверки номинала активация продолжится автоматически.`
+    )).catch(()=>{});
+  };
   try {
-    const result = await procureWebsiteKey({ ...input, prisma, activationStore, notifyFunds: sendTelegramNotification });
-    if (!result) return null;
+    const result = await procureWebsiteKey({ ...input, prisma, activationStore, notifyFunds: sendTelegramNotification, onProgress:progress });
+    if (!result) {
+      const a=activationStore.findByOrderId(input.orderId);
+      if(a?.lastProviderPayload?.supplierProcurement)activationStore.upsert({...a,lastProviderPayload:{...(a.lastProviderPayload||{}),supplierProcurement:{managed:false,phase:'disabled'}},updatedAt:new Date().toISOString()});
+      return null;
+    }
     if (result.stockAvailable) return activationStore.reserveCdkRecordForOrder({
       productKey: input.productKey, activationSiteUrl: input.activationSiteUrl,
       orderId: input.orderId, email: activationStore.findByOrderId(input.orderId)?.email || "",
@@ -24,6 +36,7 @@ export async function procureSelectedWebsiteKey(input: {
     return { keyId: result.keyId as string, code: result.code as string, activationSiteUrl: result.activationSiteUrl as string };
   } catch (error) {
     const code = error instanceof Error && /^supplier_[a-z_]{1,70}$/.test(error.message) ? error.message : "supplier_requires_review";
+    await progress({phase:code==='supplier_human_verification_required'?'human_required':code==='supplier_balance_insufficient'?'funds_wait':'requires_review'});
     if (code === "supplier_balance_insufficient") {
       // No provider attempt has been made. Keep the native demand resumable;
       // pending/processing here would short-circuit startActivationUnsafe.
@@ -35,13 +48,15 @@ export async function procureSelectedWebsiteKey(input: {
       });
       throw new AppError("Заказ сохранён. Автоматически продолжим после устранения задержки; повторная оплата не требуется.", 409);
     }
-    const reason = /balance_insufficient/.test(code) ? "Недостаточно баланса AISOU для нужного товара. После пополнения обработчик повторит проверку."
+    const reason = code==='supplier_human_verification_required' ? "AISOU запросил проверку человеком. Откройте AISOU и подтвердите покупку либо добавьте уже купленный ключ. Автоматический повтор закупки заблокирован до сверки исходного запроса."
+      : /balance_insufficient/.test(code) ? "Недостаточно баланса AISOU для нужного товара. После пополнения обработчик повторит проверку."
       : /uncertain|sending/.test(code) ? "Ответ на покупку не подтверждён. Повторная покупка остановлена."
       : /wrong_product|quarantined/.test(code) ? "Тип или состояние полученного ключа требует проверки. Ключ сохранён в закрытом журнале."
       : /cost|margin/.test(code) ? "Не удалось подтвердить стоимость, комиссию или положительную прибыль заказа."
       : "Не удалось безопасно завершить закупку подходящего ключа.";
     await notifyHoldOnce(input.orderId, code, () => sendTelegramNotification(
-      `⚠️ <b>AISOU · Требуется проверка</b>\n\n🧾 Заказ: <code>${input.orderId}</code>\n\n<b>Причина</b>\n<blockquote>${reason}</blockquote>\n\nСтатус: <b>повторная покупка заблокирована</b>`
+      `⚠️ <b>AISOU · ${code==='supplier_human_verification_required'?'Нужно подтверждение':/uncertain|sending/.test(code)?'Проверяем результат закупки':'Автозакупка приостановлена'}</b>\n\n🧾 Заказ: <code>${input.orderId}</code>\n\n<b>Причина</b>\n<blockquote>${reason}</blockquote>\n\nСтатус: <b>повторная покупка заблокирована</b>`,
+      code==='supplier_human_verification_required'?{inline_keyboard:[[{text:'Открыть AISOU',url:'https://aisou.pro/'}]]}:undefined
     )).catch(() => {});
     // Raw merchant errors can contain a secret receipt. Never expose them.
     throw new AppError("Автоматическая активация ожидает проверки. Заказ сохранён; повторная оплата не требуется.", 409);

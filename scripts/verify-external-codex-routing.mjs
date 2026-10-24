@@ -93,6 +93,13 @@ for (const packageSize of [250, 500, 1000]) {
   assert.equal(JSON.stringify(stored), before);
 }
 reset(250, "https://aiee.fun");
+for(const size of [250,500,1000]) {
+ const r={productKey:`codex-${size}`,status:'issued',attempts:0,cdk:'',taskId:null};
+ assert.equal(context.requiresActivationKey(r),false,'Do not infer manual key exhaustion during route selection');
+ assert.equal(context.requiresActivationKey({...r,keyAllocationState:'awaiting_session'}),false);
+ assert.equal(context.requiresActivationKey({...r,keyAllocationState:'exhausted'}),true,'A confirmed manual empty pool still alerts');
+ for(const phase of ['checking','purchasing','reconcile','funds_wait','human_required'])assert.equal(context.requiresActivationKey({...r,keyAllocationState:'exhausted',lastProviderPayload:{supplierProcurement:{managed:true,phase}}}),false);
+}
 for (const size of ["go", 5, 20, 25]) {
   reset(250);
   order.items[0].product.slug = size === "go" ? "chatgpt-go-1" : `chatgpt-pro-${size}x-1`;
@@ -138,7 +145,7 @@ for (const record of [{cdk: "old-key"}, {taskId: "old-task"}, {attempts: 1}]) {
 }
 assert.equal(context.resolveExternalCodexOwner({source: "telegram", productKey: "codex-250",
   activationSiteUrl: "https://zovocard.com"}), null);
-assert.equal(context.requiresActivationKey({productKey: "codex-250", status: "issued"}), true);
+assert.equal(context.requiresActivationKey({productKey: "codex-250", status: "issued"}), false, "Empty CDK before route selection is not confirmed manual stock exhaustion");
 assert.equal(context.requiresActivationKey({productKey: "codex-250", status: "success"}), false);
 reset(250); order.status = "PENDING";
 await context.deliverProduct(order);

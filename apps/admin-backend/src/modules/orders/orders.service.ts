@@ -2568,6 +2568,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     }
   }
   if (!String(stored.cdk || "").trim()) {
+    activationStore.upsert({...stored,keyAllocationState:"exhausted",updatedAt:new Date().toISOString()});
     throw new AppError("Activation key is not issued yet", 409);
   }
 
