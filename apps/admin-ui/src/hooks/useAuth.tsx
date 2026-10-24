@@ -5,6 +5,7 @@ type User = {
   id: string;
   email: string;
   role: "OWNER" | "ADMIN" | "MANAGER" | "SUPPORT";
+  canManageMarketplaceAccounts?: boolean;
   firstName?: string;
   lastName?: string;
 };
@@ -19,7 +20,9 @@ type AuthCtx = {
 };
 
 const Context = createContext<AuthCtx | null>(null);
-const AUTO_LOGOUT_MINUTES = Number(import.meta.env.VITE_AUTO_LOGOUT_MINUTES || 30);
+// The revocable HttpOnly session survives navigation and browser restarts.
+// Deployments may opt into a shorter idle timeout on shared workstations.
+const AUTO_LOGOUT_MINUTES = Number(import.meta.env.VITE_AUTO_LOGOUT_MINUTES || 0);
 const AUTO_LOGOUT_MS = Number.isFinite(AUTO_LOGOUT_MINUTES) && AUTO_LOGOUT_MINUTES > 0
   ? AUTO_LOGOUT_MINUTES * 60 * 1000
   : 0;
@@ -33,8 +36,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data } = await api.get("/auth/me");
       setUser(data);
-    } catch {
-      setUser(null);
+    } catch (error: any) {
+      // A transient network outage must not discard an otherwise valid login.
+      if (error?.response?.status === 401) setUser(null);
     } finally {
       setLoading(false);
     }
@@ -43,6 +47,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     refreshMe();
   }, [refreshMe]);
+
+  useEffect(() => {
+    if (!user) return;
+    const renew = () => { if (document.visibilityState === "visible") void refreshMe(); };
+    const timer = window.setInterval(renew, 5 * 60 * 1000);
+    window.addEventListener("focus", renew);
+    return () => { window.clearInterval(timer); window.removeEventListener("focus", renew); };
+  }, [user?.id, refreshMe]);
 
   const login = useCallback(async (email: string, password: string) => {
     const { data } = await api.post("/auth/login", { email, password });

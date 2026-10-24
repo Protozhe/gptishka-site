@@ -6,6 +6,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminLayout } from "./layout/AdminLayout";
 import "./styles/index.css";
+import "./styles/workspace.css";
 
 const LoginPage = React.lazy(() => import("./pages/LoginPage"));
 const DashboardPage = React.lazy(() => import("./pages/DashboardPage"));
@@ -24,6 +25,7 @@ const NotificationsPage = React.lazy(() => import("./pages/NotificationsPage"));
 const AccountToolsPage = React.lazy(() => import("./pages/AccountToolsPage"));
 const TelegramBotsPage = React.lazy(() => import("./pages/TelegramBotsPage"));
 const TelegramCdkPage = React.lazy(() => import("./pages/TelegramCdkPage"));
+const WorkspacePage = React.lazy(() => import("./pages/WorkspacePage"));
 const SessionsPage = React.lazy(() => import("./pages/SessionsPage"));
 
 const queryClient = new QueryClient();
@@ -73,6 +75,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                 <Route element={<ProtectedRoute />}>
                   <Route element={<AdminLayout />}>
                     <Route index element={<DashboardPage />} />
+                    <Route path="workspace/:section" element={<WorkspacePage />} />
                     <Route path="products" element={<ProductsPage />} />
                     <Route path="showcase" element={<ShowcasePage />} />
                     <Route path="homepage" element={<HomepageContentPage />} />

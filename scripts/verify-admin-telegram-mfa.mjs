@@ -18,7 +18,7 @@ function load(name, deps, globals = {}) {
   return context.exports;
 }
 let targetType = "private", transportFails = false, sent = 0, lastMessage = null;
-const mfa = load("telegram-mfa.service", {
+const mfaDependencies = {
   "node:fs": fs, "node:path": path, "node:crypto": crypto, "node:net": net, sqlite3, zod: { z },
   "../../config/env": { env: { NODE_ENV: "test", JWT_REFRESH_SECRET: "fixture-secret-for-hashing" } },
   "../../common/errors/app-error": { AppError },
@@ -34,7 +34,8 @@ const mfa = load("telegram-mfa.service", {
       return { ok: true, json: async () => ({ ok: true, result: endpoint === "getMe" ? { username: "myadminiibot" } : endpoint === "getChat" ? { type: targetType } : { message_id: 1 } }) };
     },
   },
-});
+};
+const mfa = load("telegram-mfa.service", mfaDependencies);
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "gptishka-mfa-"));
 try {
   const file = path.join(temp, "challenges.sqlite"), store = new mfa.ChallengeStore(file), time = Date.now();
@@ -107,16 +108,17 @@ try {
   assert.equal(sent, 1, "Invalid codes must not reach Telegram");
 } finally { fs.rmSync(temp, { recursive: true, force: true }); }
 
+let delegatedMaintenance = false;
 let consumed = false, issued = 0, trusted = false, remembered = 0, challenges = 0, credentialChecks = 0, challengeVersion = "version:fixture-hash";
 const fixtureUser = { id: "owner", email: "owner@example.invalid", passwordHash: "fixture-hash", isActive: true, role: { code: "OWNER" } };
 const handlers = load("auth.controller", {
-  "../../config/prisma": { prisma: { user: { findUnique: async () => fixtureUser }, refreshToken: { create: async () => { issued++; return { id: "session", expiresAt: new Date(Date.now() + 60000) }; } } } },
+  "../../config/prisma": { prisma: { user: { findUnique: async () => fixtureUser }, refreshToken: { findFirst: async () => ({ user: fixtureUser }), create: async () => { issued++; return { id: "session", expiresAt: new Date(Date.now() + 60000) }; } } } },
   "../../config/env": { env: { REFRESH_COOKIE_NAME: "refresh", JWT_REFRESH_TTL_DAYS: 30 } },
   "../../common/http/async-handler": { asyncHandler: fn => fn },
   "../../common/errors/app-error": { AppError }, "../../common/utils/hash": { sha256: x => "hash:" + x },
   "./auth.service": { validateUserCredentials: async (_email, password) => { credentialChecks++; if (password !== "fixture-password") throw new AppError("Invalid credentials", 401); return fixtureUser; } },
-  "./token.service": { verifyRefreshToken: () => ({ sub: "owner", mfa: false }), signAccessToken: (_u, _r, _s, mfa) => { assert.equal(mfa, true); return "access"; }, signRefreshToken: (_u, mfa) => { assert.equal(mfa, true); return "refresh"; }, signPanelToken: () => "panel" },
-  "./telegram-mfa.service": { telegramMfaRequired: () => true, requestBinding: () => "binding",
+  "./token.service": { verifyRefreshToken: () => ({ sub: "owner", mfa: false }), signAccessToken: (_u, _r, _s, mfa) => { assert.equal(mfa, true); return "access"; }, signRefreshToken: (_u, mfa) => { assert.equal(mfa, true); return "refresh"; }, signPanelToken: () => "panel", verifyPanelToken: () => ({ sub: "owner", sid: "session" }) },
+  "./telegram-mfa.service": { canMaintainMarketplaceAccounts: (id, role) => role === "OWNER" || (role === "ADMIN" && id === "owner" && delegatedMaintenance), telegramMfaRequired: () => true, requestBinding: () => "binding",
     credentialVersion: (_id, hash) => "version:" + hash,
     hasTrustedIp: async (_id, ip, version) => trusted && ip === "192.0.2.1" && version === "version:fixture-hash",
     rememberVerifiedIp: async (_id, ip) => { assert.equal(ip, "192.0.2.1"); remembered++; trusted = true; },
@@ -159,3 +161,48 @@ challengeVersion = ""; consumed = false;
 await handlers.verifyTelegram({ ...req, body: { challengeId: "legacy-challenge", code: "123456" } }, response());
 assert.equal(issued, 3); assert.equal(remembered, 1, "Legacy pending codes may log in once, but cannot enroll an IP");
 console.log("Telegram MFA: new-IP challenge, persistent per-user IP trust, required password, credential-change reset, copy button, private delivery, expiry and concurrent replay checks passed.");
+
+// Existing owner-only operations stay owner-only, including delegated admins.
+for (const [role, allowed] of [["OWNER", true], ["ADMIN", false], ["SUPPORT", false]]) {
+  fixtureUser.role.code = role;
+  const ownerReq = { path: "/panel-owner-check", cookies: { __Host_gptishka_panel: "fixture" } };
+  const res = { setHeader() {}, status(code) { assert.equal(code, 204); return this; }, send() {} };
+  if (allowed) await handlers.panelCheck(ownerReq, res);
+  else await assert.rejects(handlers.panelCheck(ownerReq, res), e => e.statusCode === 401);
+}
+fixtureUser.role.code = "ADMIN";
+await handlers.panelCheck({ path: "/panel-check", cookies: {} }, { setHeader() {}, status(code) { assert.equal(code, 204); return this; }, send() {} });
+console.log("Owner-only panel check rejects other panel roles.");
+
+const panelResponse = () => ({ setHeader() {}, status(code) { assert.equal(code, 204); return this; }, send() {} });
+const maintenanceRequest = { path: "/panel-marketplace-check", cookies: {} };
+await assert.rejects(handlers.panelCheck(maintenanceRequest, panelResponse()), e => e.statusCode === 401);
+delegatedMaintenance = true;
+await handlers.panelCheck(maintenanceRequest, panelResponse());
+const profile = response();
+await handlers.me({ auth: { userId: "owner" } }, profile);
+assert.equal(profile.body.canManageMarketplaceAccounts, true);
+fixtureUser.id = "other-admin";
+await assert.rejects(handlers.panelCheck(maintenanceRequest, panelResponse()), e => e.statusCode === 401);
+fixtureUser.id = "owner"; fixtureUser.role.code = "SUPPORT";
+await assert.rejects(handlers.panelCheck(maintenanceRequest, panelResponse()), e => e.statusCode === 401);
+fixtureUser.role.code = "OWNER";
+await handlers.panelCheck(maintenanceRequest, panelResponse());
+
+function maintenanceConfig(config) {
+  return load("telegram-mfa.service", {
+    ...mfaDependencies,
+    "node:fs": { ...fs, statSync: () => ({ mode: 0o640 }), readFileSync: () => JSON.stringify(config) },
+    "../../config/env": { env: { NODE_ENV: "production", JWT_REFRESH_SECRET: "fixture-only" } },
+  });
+}
+const privateConfig = { enabled: true, botToken: "1:fixture", users: { "delegated-admin": "11", "other-admin": "12" }, proxyUrl: "http://127.0.0.1:18082", database: "/var/lib/gptishka-runtime/website/fixture.sqlite" };
+const legacyConfig = maintenanceConfig(privateConfig);
+assert.equal(legacyConfig.canMaintainMarketplaceAccounts("delegated-admin", "ADMIN"), false);
+const delegated = maintenanceConfig({ ...privateConfig, marketplaceMaintainers: ["delegated-admin", "unbound-admin"] });
+assert.equal(delegated.canMaintainMarketplaceAccounts("delegated-admin", "ADMIN"), true);
+assert.equal(delegated.canMaintainMarketplaceAccounts("other-admin", "ADMIN"), false);
+assert.equal(delegated.canMaintainMarketplaceAccounts("unbound-admin", "ADMIN"), false);
+for (const role of ["SUPPORT", "MANAGER", "invented"]) assert.equal(delegated.canMaintainMarketplaceAccounts("delegated-admin", role), false);
+assert.equal(delegated.canMaintainMarketplaceAccounts("owner", "OWNER"), true);
+console.log("Marketplace key maintenance requires individual delegation, an MFA binding, a current admin role and a live session; other owner privileges remain closed.");

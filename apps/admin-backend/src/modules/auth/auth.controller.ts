@@ -4,7 +4,7 @@ import { env } from "../../config/env";
 import { asyncHandler } from "../../common/http/async-handler";
 import { validateUserCredentials } from "./auth.service";
 import { signAccessToken, signRefreshToken, verifyRefreshToken, signPanelToken, verifyPanelToken } from "./token.service";
-import { telegramMfaRequired, beginTelegramChallenge, consumeTelegramChallenge, requestBinding, credentialVersion, hasTrustedIp, rememberVerifiedIp } from "./telegram-mfa.service";
+import { telegramMfaRequired, beginTelegramChallenge, consumeTelegramChallenge, requestBinding, credentialVersion, hasTrustedIp, rememberVerifiedIp, canMaintainMarketplaceAccounts } from "./telegram-mfa.service";
 import { sha256 } from "../../common/utils/hash";
 import { AppError } from "../../common/errors/app-error";
 import bcrypt from "bcrypt";
@@ -62,6 +62,7 @@ async function createLoginSession(req: Request, res: Response, user: Awaited<Ret
       id: user.id,
       email: user.email,
       role: user.role.code,
+      canManageMarketplaceAccounts: canMaintainMarketplaceAccounts(user.id, user.role.code),
       firstName: user.firstName,
       lastName: user.lastName,
     },
@@ -89,9 +90,11 @@ export const panelCheck = asyncHandler(async (req: Request, res: Response) => {
   catch { throw new AppError("Unauthorized", 401); }
   const session = await prisma.refreshToken.findFirst({
     where: { id: payload.sid, userId: payload.sub, revokedAt: null, expiresAt: { gt: new Date() } },
-    select: { user: { select: { isActive: true, role: { select: { code: true } } } } },
+    select: { user: { select: { id: true, isActive: true, role: { select: { code: true } } } } },
   });
-  if (!session?.user.isActive || !["OWNER", "ADMIN"].includes(session.user.role.code)) throw new AppError("Unauthorized", 401);
+  const roles = req.path === "/panel-owner-check" ? ["OWNER"] : ["OWNER", "ADMIN"];
+  if (!session?.user.isActive || !roles.includes(session.user.role.code)) throw new AppError("Unauthorized", 401);
+  if (req.path === "/panel-marketplace-check" && !canMaintainMarketplaceAccounts(session.user.id, session.user.role.code)) throw new AppError("Unauthorized", 401);
   res.status(204).send();
 });
 
@@ -228,6 +231,7 @@ export const me = asyncHandler(async (req: Request, res: Response) => {
     id: user.id,
     email: user.email,
     role: user.role.code,
+    canManageMarketplaceAccounts: canMaintainMarketplaceAccounts(user.id, user.role.code),
     firstName: user.firstName,
     lastName: user.lastName,
   });

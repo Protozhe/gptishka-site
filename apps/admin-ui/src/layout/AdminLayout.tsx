@@ -16,10 +16,13 @@ import {
   Bot,
   ShieldCheck,
 } from "lucide-react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { useAuth } from "../hooks/useAuth";
 import { useState } from "react";
+import { Activity, MessageSquare, Clock3, Landmark, ChevronRight, LogOut } from "lucide-react";
+import { WorkspacePanels } from "../components/WorkspacePanels";
+import { workspacePanels, workspaceSection } from "../lib/workspace";
 
 const TEXT = {
   dashboard: "\u0414\u0430\u0448\u0431\u043e\u0440\u0434",
@@ -64,66 +67,40 @@ const nav = [
   { to: "/sessions", label: "Устройства и входы", icon: ShieldCheck },
 ];
 
+const operationsNav = [
+  { to: "/workspace/overview", label: "Обзор", icon: Activity },
+  { to: "/workspace/chats", label: "Чаты и активации", icon: MessageSquare },
+  { to: "/workspace/reminders", label: "Напоминания", icon: Clock3 },
+  { to: "/workspace/profit", label: "Прибыль", icon: Wallet },
+  { to: "/workspace/capital", label: "Капитал", icon: Landmark },
+];
+
 export function AdminLayout() {
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
-
-  return (
-    <div className="min-h-screen grid grid-cols-1 grid-rows-[auto_1fr] lg:grid-cols-[270px_1fr] lg:grid-rows-1">
-      <aside className="border-r border-slate-200 bg-white/90 p-5 dark:border-slate-800 dark:bg-slate-950/80">
-        <div className="flex items-center justify-between lg:mb-8">
-          <div>
-          <div className="text-xs uppercase tracking-[0.2em] text-cyan-600">GPTishka</div>
-          <div className="mt-1 text-xl font-extrabold">{TEXT.panel}</div>
-          </div>
-          <button className="btn-secondary lg:hidden" aria-expanded={menuOpen} aria-controls="admin-navigation" onClick={() => setMenuOpen(!menuOpen)}>Меню</button>
-        </div>
-
-        <nav id="admin-navigation" className={`${menuOpen ? "mt-4 block" : "hidden"} space-y-1 lg:block`}>
-          {nav.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === "/"}
-                onClick={() => setMenuOpen(false)}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition ${
-                    isActive
-                      ? "bg-cyan-600 text-white"
-                      : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900"
-                  }`
-                }
-              >
-                <Icon size={16} />
-                {item.label}
-              </NavLink>
-            );
-          })}
-        </nav>
-
-        <div className={`${menuOpen ? "block" : "hidden"} mt-10 rounded-2xl bg-slate-100 p-3 text-xs dark:bg-slate-900 lg:block`}>
-          <div className="font-semibold">{user?.email}</div>
-          <div className="mt-1 text-slate-500">
-            {TEXT.role}: {user?.role}
-          </div>
-        </div>
-      </aside>
-
-      <main className="p-4 lg:p-6">
-        <header className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">{TEXT.title}</h1>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <button className="btn-secondary" onClick={() => logout()}>
-              {TEXT.logout}
-            </button>
-          </div>
-        </header>
-
-        <Outlet />
-      </main>
-    </div>
-  );
+  const location = useLocation();
+  const section = workspaceSection(location.pathname);
+  const embedded = workspacePanels.some(p => p.id === section);
+  const title = operationsNav.find(item => item.to === location.pathname)?.label || nav.find(item => item.to === location.pathname)?.label || "Управление";
+  const allowedOps = user?.role === "OWNER" || user?.role === "ADMIN";
+  function links(items: typeof nav) { return items.map(item => {
+    const Icon = item.icon;
+    return <NavLink key={item.to} to={item.to} end={item.to === "/"} onClick={() => setMenuOpen(false)} className={({isActive}) => `workspace-nav-link ${isActive ? "selected" : ""}`}><Icon size={18} /><span>{item.label}</span><ChevronRight size={13} className="workspace-nav-chevron" /></NavLink>;
+  }); }
+  return <div className={`workspace-shell ${menuOpen ? "menu-open" : ""}`}>
+    <aside className="workspace-sidebar">
+      <NavLink to={allowedOps ? "/workspace/overview" : "/"} className="workspace-brand" onClick={() => setMenuOpen(false)}><span className="workspace-logo">G<span>•</span></span><div><strong>GPTishka</strong><small>Центр управления</small></div></NavLink>
+      <button className="workspace-mobile-menu btn-secondary" aria-expanded={menuOpen} aria-controls="admin-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? "Закрыть" : "Меню"}</button>
+      <nav id="admin-navigation" className="workspace-navigation">
+        {allowedOps && <><p className="workspace-nav-label">РАБОЧЕЕ ПРОСТРАНСТВО</p>{links(operationsNav)}</>}
+        <details className="workspace-site-menu" open={!section}><summary><Package size={17} /> Сайт и продажи <ChevronRight size={14} /></summary><div>{links(nav.filter(item => item.to !== "/sessions"))}</div></details>
+        <p className="workspace-nav-label">ДОСТУП</p>{links(nav.filter(item => item.to === "/sessions"))}
+      </nav>
+      <div className="workspace-user"><span className="workspace-avatar">{user?.email?.[0]?.toUpperCase() || "G"}</span><div><strong>{user?.firstName || "Мой профиль"}</strong><small>{user?.role === "OWNER" ? "Владелец" : user?.role}</small></div><span className="workspace-online" title="Сеанс активен" /></div>
+    </aside>
+    <main className="workspace-main">
+      <header className="workspace-header"><div className="workspace-breadcrumb"><span>Управление</span><ChevronRight size={14} /><h1>{title}</h1></div><div className="flex items-center gap-2"><span className="workspace-session"><ShieldCheck size={14} /> Единый вход</span><ThemeToggle /><button className="workspace-logout" aria-label="Выйти" onClick={() => void logout()}><LogOut size={17} /></button></div></header>
+      <div className={embedded ? "workspace-content embedded" : "workspace-content"}><Outlet />{allowedOps && <WorkspacePanels section={section} />}</div>
+    </main>
+  </div>;
 }
