@@ -9,16 +9,20 @@ const html=fs.readFileSync('redeem-start.html','utf8');
 for(const file of ['main.js','assets/js/app.js','assets/js/app.min.js']){
  const js=fs.readFileSync(file,'utf8'),ast=ts.createSourceFile('ui.js',js,ts.ScriptTarget.Latest,true),functions=new Map();
  function visit(n){if(ts.isFunctionDeclaration(n)&&n.name)functions.set(n.name.text,n.getText(ast));ts.forEachChild(n,visit)}visit(ast);
- const scope=vm.createContext({normalizeAiServiceKey:x=>x,getProductSearchText:x=>[x.slug,x.baseSlug,x.title,...(x.tags||[])].join(' ').toLowerCase(),resolveDeliveryType:x=>x,isStandaloneVpnProduct:()=>false});
- for(const name of ['getServicePlanKey','getServiceDeliveryKey','getServiceDurationKey','getPublicServiceItems'])vm.runInContext(functions.get(name),scope);
+ const scope=vm.createContext({isEnPage:false,GROK_ORDER_MODAL_PLAN_KEYS:new Set(['grok-plus','grok-premium','grok-super','grok-ultra']),normalizeAiServiceKey:x=>x,getProductSearchText:x=>[x.slug,x.baseSlug,x.title,...(x.tags||[])].join(' ').toLowerCase(),resolveDeliveryType:x=>x,isStandaloneVpnProduct:()=>false});
+ for(const name of ['getServicePlanKey','getServiceDeliveryKey','getServiceDurationKey','getPublicServiceItems','getConstructorFilterOptions'])vm.runInContext(functions.get(name),scope);
  for(const tier of ['plus','premium','super','ultra']){
   const item={baseSlug:'grok-'+tier+'-1',slug:'grok-'+tier+'-1-link',title:'Grok '+tier+' — 1 месяц',activationVariant:'withoutLogin',deliveryType:'activation',tags:['grok','month:1']};
   assert.equal(scope.getServicePlanKey(item,'grok'),'grok-'+tier,file);
   assert.equal(scope.getServiceDeliveryKey(item),'sso',file);
   assert.equal(scope.getPublicServiceItems([item],'grok').length,1,file);
+  for(const months of [2,3,12])assert.equal(scope.getPublicServiceItems([{...item,title:'Grok '+tier+' — '+months+' months',tags:['grok','month:'+months]}],'grok').length,0,file+': monthly only');
  }
  const legacy={slug:'supergrok-3-link',title:'SuperGrok',activationVariant:'withoutLogin',tags:['month:1']};
- assert.equal(scope.getServiceDeliveryKey(legacy),'id');assert.equal(scope.getPublicServiceItems([legacy],'grok').length,1);
+ assert.equal(scope.getServiceDeliveryKey(legacy),'id');assert.equal(scope.getPublicServiceItems([legacy],'grok').length,0,file+': retired offer hidden');
+ assert.equal(scope.getPublicServiceItems([{...legacy,slug:'supergrok-heavy-link'}],'grok').length,0);
+ assert.deepEqual(Array.from(scope.getConstructorFilterOptions('grok','plan',[]),x=>x.key),['grok-plus','grok-premium','grok-super','grok-ultra']);
+ assert.deepEqual(Array.from(scope.getConstructorFilterOptions('grok','duration',[]),x=>x.key),['1m']);
  assert.match(js,/fetchServicePageConfig\('supergrok'\)/,'new plans must load from the actual admin page slug');
 }
 const script=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map(x=>x[1]).find(x=>x.includes('function validateTokenNow'));

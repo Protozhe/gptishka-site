@@ -85,3 +85,22 @@ test('Grok install is additive, idempotent and preserves every old placement and
  await install(db,{apply:true,backup:async()=>backups++});await install(db,{apply:true,backup:async()=>backups++});
  assert.equal(rows.length,5);assert.equal(page.placements.length,5);assert.equal(visual.length,4);assert.equal(backups,2);assert.equal(JSON.stringify({old,cards,placement:page.placements[0]}),baseline);
 });
+
+test('Grok retirement disables old sales, preserves monthly prices and history, and can be restored',async()=>{
+ const {retire,rollback,MONTHLY,RETIRED}=require('./grok-monthly-catalog.cjs');
+ const products=[...MONTHLY.map((slug,i)=>({id:'new-'+i,slug,isActive:true,isArchived:false,tags:['month:1'],price:PLANS[i].price})),...RETIRED.map((slug,i)=>({id:'old-'+i,slug,isActive:i!==1}))];
+ const page={id:'page',slug:'supergrok',serviceKey:'grok',isActive:true,title:'SuperGrok',titleEn:'',heroTitle:'SuperGrok',constructorTitle:'SuperGrok',heroDescription:'old',constructorDescription:'old'};
+ const placements=products.map(p=>({id:'placement-'+p.id,productId:p.id,isActive:true})),cards=[{id:'card',serviceKey:'grok',title:'SuperGrok',planSummary:'old',imageAlt:'old',hoverImageAlt:'old'}];
+ const matches=(row,where)=>Object.entries(where||{}).every(([key,v])=>typeof v==='object'?v.in.includes(row[key]):row[key]===v);
+ const model=rows=>({findMany:async({where}={})=>structuredClone(rows.filter(x=>matches(x,where))),findUnique:async({where})=>structuredClone(rows.find(x=>matches(x,where))),update:async({where,data})=>Object.assign(rows.find(x=>matches(x,where)),data),updateMany:async({where,data})=>rows.filter(x=>matches(x,where)).forEach(x=>Object.assign(x,data))});
+ const db={product:model(products),servicePage:model([page]),servicePageProductPlacement:model(placements),productShowcasePlacement:model([]),productShowcaseServiceCard:model(cards),$transaction:fn=>fn(db)};
+ const old=structuredClone({products,page,placements,cards});let saved;
+ await retire(db);assert.deepEqual({products,page,placements,cards},old,'dry run cannot mutate');
+ await assert.rejects(retire(db,{apply:true}),/catalog_backup_required/);
+ await retire(db,{apply:true,backup:async value=>{saved=structuredClone(value)}});
+ assert.ok(products.filter(p=>RETIRED.includes(p.slug)).every(p=>!p.isActive));
+ assert.deepEqual(products.filter(p=>MONTHLY.includes(p.slug)),old.products.filter(p=>MONTHLY.includes(p.slug)));
+ assert.ok(placements.filter(p=>p.productId.startsWith('old-')).every(p=>!p.isActive));
+ const once=structuredClone({products,page,placements,cards});await retire(db,{apply:true,backup:async()=>{}});assert.deepEqual({products,page,placements,cards},once);
+ await rollback(db,saved);assert.deepEqual({products,page,placements,cards},old);
+});

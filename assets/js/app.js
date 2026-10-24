@@ -865,7 +865,7 @@ function initActivationResumeShortcut() {
   };
   const CHATGPT_ORDER_MODAL_PLAN_KEYS = new Set(["go", "plus", "pro-5x", "pro-20x", "pro-25x"]);
   const CLAUDE_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max-5x", "max-20x"]);
-  const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["supergrok", "supergrok-heavy", "grok-plus", "grok-premium", "grok-super", "grok-ultra"]);
+  const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["grok-plus", "grok-premium", "grok-super", "grok-ultra"]);
   const PERPLEXITY_ORDER_MODAL_PLAN_KEYS = new Set(["pro"]);
   const GEMINI_ORDER_MODAL_PLAN_KEYS = new Set(["pro"]);
   const SUNO_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "premier"]);
@@ -887,8 +887,8 @@ function initActivationResumeShortcut() {
       logo: "/assets/img/services/claude-card.png?v=20260618-claude-logo2",
     },
     grok: {
-      displayName: "SuperGrok",
-      fallbackTitle: "SuperGrok",
+      displayName: "Grok",
+      fallbackTitle: "Grok",
       fallbackPlan: "1m",
       logo: "/assets/img/services/grok-card.webp?v=20260721-heavy-cards-webp1",
     },
@@ -2606,11 +2606,11 @@ function initActivationResumeShortcut() {
     if (text.includes("supergrok") || text.includes("grok")) {
       return {
         key: "grok",
-        name: "SuperGrok",
+        name: "Grok",
         icon: "GX",
         description: isEnPage
-          ? "SuperGrok plans with fast activation on your account."
-          : "Тарифы SuperGrok с быстрой активацией на ваш аккаунт.",
+          ? "Grok monthly plans with activation on your account."
+          : "Тарифы Grok на 1 месяц с активацией на ваш аккаунт.",
         theme: "grok",
         sort: 30,
       };
@@ -2920,7 +2920,7 @@ function initActivationResumeShortcut() {
       infoSections: [], faqItems: []
     } : getEnglishServicePageContent(serviceKey);
     if (!content) {
-      const titles = {chatgpt: "ChatGPT plans and subscriptions | GPTishka", claude: "Claude Pro and Max plans | GPTishka", grok: "SuperGrok subscription | GPTishka"};
+      const titles = {chatgpt: "ChatGPT plans and subscriptions | GPTishka", claude: "Claude Pro and Max plans | GPTishka", grok: "Grok — monthly subscription plans | GPTishka"};
       const title = titles[normalizeAiServiceKey(serviceKey)];
       return title && payload && typeof payload === "object"
         ? {...payload, meta: {...(payload.meta || {}), title}}
@@ -3243,7 +3243,7 @@ function initActivationResumeShortcut() {
     const allowedDurations = {
       chatgpt: new Set(["1m"]),
       claude: new Set(["1m"]),
-      grok: new Set(["1m", "2m", "3m"]),
+      grok: new Set(["1m"]),
       perplexity: new Set(["1m"]),
       gemini: new Set(["12m", "18m"]),
       suno: new Set(["1m"]),
@@ -3258,7 +3258,7 @@ function initActivationResumeShortcut() {
         if (planKey === "pro" && deliveryKey !== "id") return false;
         if (["max-5x", "max-20x"].includes(planKey) && deliveryKey !== "support") return false;
       }
-      if (key === "grok" && !["id","sso"].includes(deliveryKey)) return false;
+      if (key === "grok" && (!GROK_ORDER_MODAL_PLAN_KEYS.has(getServicePlanKey(item, key)) || deliveryKey !== "sso")) return false;
       if (key === "devin" && deliveryKey !== "login") return false;
       if (allowedDurations[key] && !allowedDurations[key].has(getServiceDurationKey(item))) return false;
       if (key === "claude" || key === "grok" || key === "devin") return true;
@@ -3804,8 +3804,8 @@ function initActivationResumeShortcut() {
       grok: {
         imageUrl: "/assets/img/services/grok-card.webp?v=20260721-heavy-cards-webp1",
         hoverImageUrl: "/assets/img/services/grok-card-hover.webp?v=20260721-heavy-cards-webp1",
-        imageAlt: "SuperGrok",
-        hoverImageAlt: "SuperGrok",
+        imageAlt: "Grok",
+        hoverImageAlt: "Grok",
       },
       perplexity: {
         imageUrl: "/assets/img/services/perplexity-card.webp?v=20260809-perplexity1",
@@ -4159,8 +4159,8 @@ function initActivationResumeShortcut() {
         duration: ["1m"],
       },
       grok: {
-        plan: ["supergrok", "supergrok-heavy", "grok-plus", "grok-premium", "grok-super", "grok-ultra"],
-        duration: ["1m", "2m", "3m"],
+        plan: ["grok-plus", "grok-premium", "grok-super", "grok-ultra"],
+        duration: ["1m"],
       },
       perplexity: {
         plan: ["pro"],
