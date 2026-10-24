@@ -29,7 +29,7 @@ export async function procureSelectedWebsiteKey(input: {
       `⚠️ <b>AISOU · Требуется проверка</b>\n\n🧾 Заказ: <code>${input.orderId}</code>\n\n<b>Причина</b>\n<blockquote>${reason}</blockquote>\n\nСтатус: <b>повторная покупка заблокирована</b>`
     )).catch(() => {});
     // Raw merchant errors can contain a secret receipt. Never expose them.
-    throw new AppError("Закупка ключа проверяется автоматически. Повторная покупка при неподтверждённом результате заблокирована.", 409);
+    throw new AppError("Автоматическая активация ожидает проверки. Заказ сохранён; повторная оплата не требуется.", 409);
   }
 }
 
