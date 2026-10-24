@@ -6,6 +6,22 @@ spec=importlib.util.spec_from_file_location('broker',HERE/'aibuy-broker.py');b=i
 
 
 class Tests(unittest.TestCase):
+    @unittest.skipUnless(os.name=='posix','Unix socket directory permissions')
+    def test_private_service_umask_preserves_web_group_socket_access(self):
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as d:
+            directory=Path(d)/'runtime'
+            mask=os.umask(0o077)
+            try:
+                with patch.object(b,'SOCKET',str(directory/'rpc.sock')),patch.object(b.os,'chown') as chown:
+                    b.prepare_socket_directory(os.getgid())
+                    self.assertEqual(directory.stat().st_mode&0o777,0o750)
+                    chown.assert_called_once_with(directory,0,os.getgid())
+                    os.chmod(directory,0o700)
+                    b.prepare_socket_directory(os.getgid())
+                    self.assertEqual(directory.stat().st_mode&0o777,0o750)
+            finally:os.umask(mask)
+
     def fixture(self):
         from unittest.mock import patch
         directory=tempfile.TemporaryDirectory();self.addCleanup(directory.cleanup)

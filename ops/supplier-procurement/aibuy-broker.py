@@ -235,11 +235,19 @@ def procure(oid,policy,*,browser=child,order_validator=validate,oracle=verify_ke
     finally:vault.db.close()
 
 
+def prepare_socket_directory(gid):
+    directory=pathlib.Path(SOCKET).parent
+    directory.mkdir(mode=0o750,exist_ok=True)
+    os.chown(directory,0,gid)
+    # systemd's UMask=0077 otherwise removes the web group's traversal bit.
+    os.chmod(directory,0o750)
+
+
 def serve():
     import pwd,fcntl
     who=pwd.getpwnam('gptishka-web')
     STATE.mkdir(mode=0o700,exist_ok=True)
-    pathlib.Path(SOCKET).parent.mkdir(mode=0o750,exist_ok=True);os.chown(pathlib.Path(SOCKET).parent,0,who.pw_gid)
+    prepare_socket_directory(who.pw_gid)
     lock=open(STATE/'broker.lock','a');os.chmod(lock.name,0o600);fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
     if os.path.lexists(SOCKET):os.unlink(SOCKET)
     with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as server:
