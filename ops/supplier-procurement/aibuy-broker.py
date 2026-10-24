@@ -60,29 +60,39 @@ class Vault:
     def claim(self,oid,credits,amount,baseline):
         self.db.execute('BEGIN IMMEDIATE')
         try:
-            if self.db.execute("SELECT 1 FROM buys WHERE order_id<>? AND state<>'verified'",(oid,)).fetchone():
+            if self.db.execute("SELECT 1 FROM buys WHERE order_id<>? AND state NOT IN ('verified','not_sent','cancelled_no_charge')",(oid,)).fetchone():
                 raise ValueError('supplier_previous_purchase_unconfirmed')
             changed=self.db.execute("INSERT OR IGNORE INTO buys VALUES(?,?,?,'sending',?,NULL)",
                 (oid,credits,amount,self.seal(baseline,oid+'|baseline'))).rowcount
             row=self.db.execute('SELECT * FROM buys WHERE order_id=?',(oid,)).fetchone()
             if row['credits']!=credits:raise ValueError('supplier_order_contract_changed')
+            if row['state']=='not_sent':
+                self.db.execute("UPDATE buys SET state='sending',amount_minor=?,baseline=?,receipt=NULL WHERE order_id=?",
+                    (amount,self.seal(baseline,oid+'|baseline'),oid));changed=True
+                row=self.db.execute('SELECT * FROM buys WHERE order_id=?',(oid,)).fetchone()
             self.db.execute('COMMIT');return bool(changed),row
         except BaseException:
             self.db.execute('ROLLBACK');raise
 
     def receive(self,oid,result):
-        self.db.execute("UPDATE buys SET state='received',receipt=? WHERE order_id=?",(self.seal(result,oid+'|receipt'),oid))
+        state='not_sent' if result.get('dispatch_state')=='not_sent' else 'received'
+        self.db.execute("UPDATE buys SET state=?,receipt=? WHERE order_id=?",(state,self.seal(result,oid+'|receipt'),oid))
 
     def assigned(self,oid):return self.db.execute('SELECT * FROM assets WHERE order_id=? AND state=?',(oid,'assigned')).fetchone()
 
 
-def matching_receipt(row,rows,vault):
+def matching_receipt(row,rows,vault,reference_rows=None):
     baseline=vault.open(row['baseline'],row['order_id']+'|baseline')
     result=vault.open(row['receipt'],row['order_id']+'|receipt') if row['receipt'] else {}
     response=result.get('receipt') or {};data=(response.get('json') or {}).get('data') or {}
     trade=str(data.get('tradeNo') or '')
-    correlated=[r for r in rows if r.get('contact')==request_no(row['order_id']) and str(r.get('trade_no')) not in baseline]
-    matches=[r for r in correlated if str(r.get('trade_no'))==trade] if trade else correlated
+    # A captured response binds its exact trade number to this one dispatch.
+    # Lost responses require an exact owner-scoped request_no search; contact
+    # is randomized by the authenticated storefront and is never evidence.
+    if trade:matches=[r for r in rows if str(r.get('trade_no'))==trade and str(r.get('trade_no')) not in baseline]
+    else:
+        if reference_rows is None:raise ValueError('supplier_correlation_unconfirmed')
+        matches=[r for r in reference_rows if str(r.get('trade_no')) not in baseline]
     if len(matches)!=1:raise ValueError('supplier_purchase_unconfirmed')
     r=matches[0]
     if (int(r.get('commodity_id',0))!=75 or r.get('race')!=str(row['credits'])+'点数额度'
@@ -120,7 +130,8 @@ def child(data):
             env={'HOME':d,'XDG_CACHE_HOME':d,'XDG_CONFIG_HOME':d,'PATH':'/usr/bin:/bin'})
         if p.returncode or len(p.stdout)>4194304:raise ValueError('supplier_browser_unconfirmed')
         result=json.loads(p.stdout)
-        if result.get('error'):raise ValueError(result['error'])
+        if result.get('error') and not (data.get('mode')=='buy' and result.get('dispatch_state')=='not_sent'):
+            raise ValueError(result['error'])
         rows=result.pop('_cookies',None)
         if rows is not None:
             if not rows or any(r.get('domain','').lstrip('.')!='ai-buy.vip' for r in rows):raise ValueError('supplier_session_origin')
@@ -188,9 +199,12 @@ def procure(oid,policy,*,browser=child,order_validator=validate,oracle=verify_ke
             if changed:return asset_reply(vault,vault.assigned(oid))
             raise ValueError('supplier_stock_changed')
         prior=vault.db.execute('SELECT * FROM buys WHERE order_id=?',(oid,)).fetchone()
-        data={'mode':'history' if prior else 'prepare','cookies':cookies,'merchantId':saved['merchantId'],'credits':credits}
+        if prior and prior['state']=='cancelled_no_charge':raise ValueError('supplier_owner_completed')
+        retryable=prior is None or prior['state']=='not_sent'
+        data={'mode':'prepare' if retryable else 'history','cookies':cookies,'merchantId':saved['merchantId'],'credits':credits}
+        if not retryable:data['request_no']=request_no(oid)
         result=browser(data)
-        if prior:
+        if not retryable:
             if prior['credits']!=credits:raise ValueError('supplier_order_contract_changed')
         else:
             amount=result['amount_minor'];intent=order_validator(oid,amount)
@@ -210,12 +224,17 @@ def procure(oid,policy,*,browser=child,order_validator=validate,oracle=verify_ke
                 try:
                     result=browser({**data,'mode':'buy','amount_minor':amount,'baseline':baseline,'request_no':request_no(oid)})
                     vault.receive(oid,result)
+                    if result.get('dispatch_state')=='not_sent':
+                        code=result.get('error','supplier_checkout_not_ready')
+                        raise ValueError(code if re.fullmatch(r'supplier_[a-z_]{1,70}',code) else 'supplier_checkout_not_ready')
                 except Exception:
                     # The durable sending claim is deliberately never reset.
+                    saved=vault.db.execute('SELECT state FROM buys WHERE order_id=?',(oid,)).fetchone()
+                    if saved['state']=='not_sent':raise
                     raise ValueError('supplier_purchase_unconfirmed') from None
-            else:result=browser({**data,'mode':'history'})
+            else:result=browser({**data,'mode':'history','request_no':request_no(oid)})
             prior=vault.db.execute('SELECT * FROM buys WHERE order_id=?',(oid,)).fetchone()
-        receipt=matching_receipt(prior,result['history'],vault)
+        receipt=matching_receipt(prior,result['history'],vault,result.get('reference_history'))
         code=receipt.get('secret')
         if not isinstance(code,str) or not re.fullmatch(r'[A-Za-z0-9_.-]{12,256}',code.strip()):raise ValueError('supplier_delivery_pending')
         code=code.strip();fingerprint=sha256(code.encode()).hexdigest()

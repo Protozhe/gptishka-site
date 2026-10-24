@@ -41,7 +41,7 @@ export async function procureSelectedWebsiteKey(input: {
     return { keyId: result.keyId as string, code: result.code as string, activationSiteUrl: result.activationSiteUrl as string };
   } catch (error) {
     const code = error instanceof Error && /^supplier_[a-z_]{1,70}$/.test(error.message) ? error.message : "supplier_requires_review";
-    await progress({phase:code==='supplier_human_verification_required'?'human_required':code==='supplier_balance_insufficient'?'funds_wait':'requires_review'});
+    await progress({phase:code==='supplier_human_verification_required'?'human_required':code==='supplier_balance_insufficient'?'funds_wait':code==='supplier_checkout_not_ready'?'waiting_checkout':'requires_review'});
     if (code === "supplier_balance_insufficient") {
       // No provider attempt has been made. Keep the native demand resumable;
       // pending/processing here would short-circuit startActivationUnsafe.
@@ -53,7 +53,8 @@ export async function procureSelectedWebsiteKey(input: {
       });
       throw new AppError("Заказ сохранён. Автоматически продолжим после устранения задержки; повторная оплата не требуется.", 409);
     }
-    const reason = code==='supplier_owner_topup_pause' ? "Закупка временно приостановлена владельцем для пополнения. Заказ сохранён; после возобновления продолжим автоматически."
+    const reason = code==='supplier_checkout_not_ready' ? "Платёжная форма поставщика не успела загрузиться. Запрос оплаты не отправлен, списания нет. Обработчик автоматически повторит подготовку формы."
+      : code==='supplier_owner_topup_pause' ? "Закупка временно приостановлена владельцем для пополнения. Заказ сохранён; после возобновления продолжим автоматически."
       : code==='supplier_login_required' ? "Нужно восстановить единственную серверную сессию AI-BUY. Для пополнения используйте отдельную платёжную ссылку, чтобы не прерывать сессию закупок."
       : code==='supplier_human_verification_required' ? `${supplier} запросил проверку человеком. Требуется подтверждение владельца. Исходный запрос сохранён без повторной закупки.`
       : code==='supplier_api_ip_not_allowed' ? "AISOU отклонил доступ к покупкам по API с адреса сервера. Проверьте официальный белый список API в AISOU. Исходный запрос сохранён, повторная закупка заблокирована до сверки."

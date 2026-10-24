@@ -5,7 +5,6 @@ security overrides, cookie export from a desktop browser, or POST replay.
 Private input/output travels over pipes to the owner-only broker.
 """
 import json,re,sys
-from playwright.sync_api import sync_playwright
 
 ORIGIN='https://ai-buy.vip'
 PRICES={250:7500,500:14500,1000:27600}
@@ -22,13 +21,41 @@ def cookies(rows):
     return result
 
 
-def history(context):
-    r=context.request.post(ORIGIN+'/user/api/purchaseRecord/data',form={'page':1,'limit':100},
+def history(context,filters=None):
+    r=context.request.post(ORIGIN+'/user/api/purchaseRecord/data',form={'page':1,'limit':100,**(filters or {})},
         headers={'Referer':ORIGIN+'/user/personal/purchaseRecord','Origin':ORIGIN,'X-Requested-With':'XMLHttpRequest'},timeout=30000)
     d=r.json()
     if r.status!=200 or d.get('code')!=200 or not isinstance(d.get('data',{}).get('list'),list):
         raise ValueError('supplier_history_unconfirmed')
     return d['data']['list']
+
+
+def reference_history(context,reference):
+    if not re.fullmatch(r'ab-[a-f0-9]{40}',reference):raise ValueError('supplier_request_invalid')
+    # The authenticated shop replaces contact with a random value. Its own
+    # purchase-history search supports equal-* fields, including request_no.
+    # A negative control rejects an ignored/unsupported filter before trusting
+    # the result. The server still scopes both reads to this merchant account.
+    control='ab-'+('0'*40 if reference!='ab-'+'0'*40 else '1'*40)
+    if history(context,{'equal-request_no':control}):raise ValueError('supplier_correlation_unconfirmed')
+    return history(context,{'equal-request_no':reference})
+
+
+def select_purchase_ui(page,n):
+    # Payment methods are populated asynchronously, after the variant handlers
+    # have been registered. DOMContentLoaded alone does not mean they exist.
+    pay=page.locator('.pay-list .pay[data-id="1"]')
+    try:pay.wait_for(state='visible',timeout=45000)
+    except Exception:raise ValueError('supplier_checkout_not_ready') from None
+    race=str(n)+'点数额度'
+    variant=page.locator('.switch-race').filter(has_text=race)
+    if variant.count()!=1 or variant.get_attribute('data-sku')!=race:
+        raise ValueError('supplier_variant_unconfirmed')
+    variant.click()
+    try:page.wait_for_function("race => document.querySelector('.switch-race.is-primary')?.dataset.sku === race",arg=race,timeout=10000)
+    except Exception:raise ValueError('supplier_variant_unconfirmed') from None
+    num=page.locator('.vstack input[name=num]');num.fill('1');num.dispatch_event('change')
+    return race,variant,num,pay
 
 
 def topup(page,data):
@@ -65,7 +92,8 @@ def minor_text(v):
     return int(n) if n.is_finite() and n==n.to_integral_value() else None
 
 
-def main(data):
+def _main(data,dispatch):
+    from playwright.sync_api import sync_playwright
     n=data['credits']
     if type(n) is not int or n not in PRICES or data['mode'] not in ('prepare','buy','history','topup'):
         raise ValueError('supplier_request_invalid')
@@ -91,15 +119,12 @@ def main(data):
             if ids!=[data['merchantId']]:raise ValueError('supplier_login_required')
             if data['mode']=='topup':return result(topup(page,data))
             before=history(context)
-            if data['mode']=='history':return result({'history':before})
+            if data['mode']=='history':
+                out={'history':before}
+                if data.get('request_no'):out['reference_history']=reference_history(context,data['request_no'])
+                return result(out)
             page.goto(ORIGIN+'/item/75',wait_until='domcontentloaded',timeout=45000)
-            race=str(n)+'点数额度'
-            variant=page.locator('.switch-race').filter(has_text=race)
-            if variant.count()!=1 or variant.get_attribute('data-sku')!=race:
-                raise ValueError('supplier_variant_unconfirmed')
-            variant.click()
-            num=page.locator('.vstack input[name=num]')
-            num.fill('1');num.dispatch_event('change')
+            race,variant,num,pay=select_purchase_ui(page,n)
             fields={'item_id':75,'race':race,'num':1,'card_id':0,'coupon':''}
             reads={}
             for action in ('valuation','stock'):
@@ -116,7 +141,6 @@ def main(data):
                 raise ValueError('supplier_out_of_stock')
             if page.locator('input[name=captcha]:visible').count() or page.locator('iframe[src*="challenges.cloudflare.com"]:visible').count():
                 raise ValueError('supplier_human_verification_required')
-            pay=page.locator('.pay-list .pay[data-id="1"]')
             if pay.count()!=1 or not pay.is_visible():raise ValueError('supplier_balance_payment_unconfirmed')
             if data['mode']=='prepare':
                 balance=page.locator('#tokyoUserDropdown').inner_text()
@@ -128,8 +152,9 @@ def main(data):
             if not re.fullmatch(r'ab-[a-f0-9]{40}',request_no):raise ValueError('supplier_request_invalid')
             # These are documented optional order fields, unrelated to security
             # challenges. Ordinary storefront JS serializes them itself. This
-            # gives our own history a stable correlation and upstream duplicate
-            # guard without changing any anti-abuse field or network request.
+            # request_no gives the owner's history an exact search binding and
+            # upstream duplicate guard. Logged-in contact is overwritten by
+            # the shop and is deliberately not used for reconciliation.
             page.locator('.vstack').evaluate('''(form,reference)=>{
                 for(const name of ['request_no','contact']){
                     let input=form.querySelector('input[name="'+name+'"]');
@@ -146,6 +171,7 @@ def main(data):
             receipt=None
             try:
                 with page.expect_response(lambda r:r.url==ORIGIN+'/user/api/order/trade',timeout=50000) as event:
+                    dispatch['started']=True
                     pay.click(no_wait_after=True,timeout=10000)
                 response=event.value
                 try:receipt={'http_status':response.status,'json':response.json()}
@@ -153,8 +179,28 @@ def main(data):
             except Exception:
                 # No second click, even when the first response was lost.
                 pass
-            return result({'receipt':receipt,'history':history(context)})
+            out={'receipt':receipt,'dispatch_state':'sent_or_uncertain'}
+            # Retain the captured financial response even if later reads fail.
+            try:out['history']=history(context)
+            except Exception:out['history']=[];out['history_error']='supplier_history_unconfirmed'
+            receipt_data=((receipt or {}).get('json') or {}).get('data') or {}
+            trade=str(receipt_data.get('tradeNo') or '')
+            if not trade:
+                try:out['reference_history']=reference_history(context,request_no)
+                except Exception:out['history_error']='supplier_correlation_unconfirmed'
+            return result(out)
         finally:browser.close()
+
+
+def main(data):
+    dispatch={'started':False}
+    try:return _main(data,dispatch)
+    except Exception as e:
+        if data.get('mode')=='buy' and not dispatch['started']:
+            reason=str(e)
+            return {'error':reason if re.fullmatch(r'supplier_[a-z_]{1,70}',reason) else 'supplier_checkout_not_ready',
+                'dispatch_state':'not_sent'}
+        raise
 
 
 if __name__=='__main__':
