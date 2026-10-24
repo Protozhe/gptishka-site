@@ -4,6 +4,10 @@ import { activationStore } from "../modules/orders/activation.store";
 import { AppError } from "../common/errors/app-error";
 import { sendTelegramNotification } from "../modules/notifications/notifications.service";
 
+export function verifiedAieeGrokProduct(payload:unknown):string|null {
+  return require(path.resolve(__dirname,"../../../../ops/supplier-procurement/aisou-core.cjs")).grokProductFromProvider(payload);
+}
+
 /** Only the selected account-type route may request an empty-pool purchase. */
 export async function procureSelectedWebsiteKey(input: {
   orderId: string; productKey: string; accountPlan: string; activationSiteUrl: string;

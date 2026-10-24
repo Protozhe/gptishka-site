@@ -67,6 +67,18 @@ test('canonical IOS type and AIEE denomination are required; prefix alone is ins
  assert.equal(providerEvidence('https://vip.sxzfd.com',{...q,order_id:'old'},v),null);
  assert.equal(providerEvidence('https://aiee.fun',q,{success:true,sid:'private',plan_type:'codex1000',require_cookie:0}).product,'codex-1000');
 });
+
+test('Grok registry layers require a matching plan name for ambiguous Plus/Super types',()=>{
+ const q={success:true,status:'active'},v={success:true,sid:'fixture-private',require_cookie:0};
+ for(const [type,tier] of [['grok_lite','plus'],['grok_premium','premium'],['grok_plus','super'],['grok_heavy','ultra'],['grok_plus','plus'],['grok_super','super'],['grok_ultra','ultra']]){
+  assert.equal(providerEvidence('https://aiee.fun',q,{...v,plan_type:type,plan_name:'Grok '+tier}).product,'grok_'+tier+'_monthly');
+  assert.equal(providerEvidence('https://aiee.fun',q,{...v,plan_type:type,duration_months:12}),null);
+  assert.equal(providerEvidence('https://aiee.fun',q,{...v,plan_type:type,plan_name:'Annual'}),null);
+ }
+ assert.equal(providerEvidence('https://aiee.fun',q,{...v,plan_type:'grok_unknown'}),null);
+ assert.equal(providerEvidence('https://aiee.fun',q,{...v,plan_type:'grok_plus'}),null);
+ assert.equal(providerEvidence('https://aiee.fun',q,{...v,plan_type:'grok_premium',plan_name:'Grok Plus'}),null);
+});
 test('production transport pins merchant destination and signed balance purchase quantity',async()=>{
  const calls=[];const m=merchant({app_id:'7',app_key:'fixture'},async(...a)=>{calls.push(a);return {code:200,data:{}}});
  await assert.rejects(m.buy({num:2,request_no:'gpi-'+'a'.repeat(40)}),/dispatch/);

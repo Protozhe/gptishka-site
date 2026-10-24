@@ -8,6 +8,22 @@ const fs = require("node:fs");
 const sqlite3 = require("sqlite3");
 
 const CODEX = Object.freeze({ 250: 7500, 500: 14500, 1000: 27600, 2500: 68000 });
+// AIEE has a customer registry and a separate upstream registry. "grok_plus"
+// means different tiers in them. Bind the provider's human plan name as well.
+function grokProductFromProvider(verified) {
+  const types={grok_lite:['plus'],grok_plus:['plus','super'],grok_premium:['premium'],grok_super:['super'],grok_ultra:['ultra'],grok_heavy:['ultra']};
+  const allowed=types[verified?.plan_type];if(!allowed)return null;
+  const name=String(verified.plan_name||'').toLowerCase();
+  const names=[...new Set([...name.matchAll(/\b(plus|lite|premium|super|ultra|heavy)\b/g)].map(x=>({lite:'plus',heavy:'ultra'}[x[1]]||x[1])))];
+  if(names.length>1||names.length===1&&!allowed.includes(names[0]))return null;
+  const tier=names.length===1?names[0]:allowed.length===1?allowed[0]:null;
+  if(!tier)return null;
+  const months=verified.duration_months;
+  if(months!==undefined&&Number(months)!==1)return null;
+  const period=[verified.plan_name,verified.billing_cycle,verified.period].filter(Boolean).join(' ');
+  if(/year|annual|年|12\s*(?:month|месяц)|\b[2-9]\s*months?/iu.test(period))return null;
+  return 'grok_'+tier+'_monthly';
+}
 function contract(product, accountPlan) {
   accountPlan=String(accountPlan||'').trim().toLowerCase().replace(/[\s_-]+/g,'');
   const active=['go','plus','pro','prolite','prolight','pro5x','pro20x','pro25x','pro50x'].includes(accountPlan);
@@ -261,4 +277,4 @@ async function buyWithOneCorrection(args) {
   return buyOnce({ ...args, scope: args.scope + ":correction-1" });
 }
 
-module.exports = { contract, quoteFromReads, quoteFromValuation, keyHint, disposition, sign, AisouClient, Journal, buyOnce, buyWithOneCorrection };
+module.exports = { contract, grokProductFromProvider, quoteFromReads, quoteFromValuation, keyHint, disposition, sign, AisouClient, Journal, buyOnce, buyWithOneCorrection };

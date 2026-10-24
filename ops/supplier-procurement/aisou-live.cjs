@@ -59,7 +59,7 @@ function providerEvidence(site, query, verified) {
   if (site === "https://aiee.fun" && Number(verified.require_cookie || 0) === 0) {
     const plans = { plus: "plus_free", go: "go_free", pro5x:"pro_5x_free",pro_5x:"pro_5x_free",pro20x:"pro_20x_free",pro_20x:"pro_20x_free",pro25x:"pro_25x_free",pro_25x:"pro_25x_free",pro50x:"pro_25x_free",pro_50x:"pro_25x_free", codex250: "codex-250", codex500: "codex-500", codex1000: "codex-1000", codex2500: "codex-2500" };
     product = plans[verified.plan_type];
-    if(/^grok_(plus|premium|super|ultra)_monthly$/.test(String(verified.plan_type||''))) product=verified.plan_type;
+    if(String(verified.plan_type||'').startsWith('grok'))product=require('./aisou-core.cjs').grokProductFromProvider(verified);
   } else if (site === "https://vip.sxzfd.com") {
     product = { plus_month: "plus_ios", go_month: "go_ios",pro_5x:"pro_5x_ios",pro5x:"pro_5x_ios",pro_5x_month:"pro_5x_ios",pro5x_month:"pro_5x_ios",pro_20x:"pro_20x_ios",pro20x:"pro_20x_ios",pro_20x_month:"pro_20x_ios",pro20x_month:"pro_20x_ios" }[verified.type];
   }

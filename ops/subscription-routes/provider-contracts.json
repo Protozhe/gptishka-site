@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-10-24",
+  "source": "https://aiee.fun/assets/pages/AdminProtocol.grok-20261021.js?v=1",
+  "customerRegistryToUpstreamPlan": {
+    "grok_plus": "grok_lite",
+    "grok_premium": "grok_premium",
+    "grok_super": "grok_plus",
+    "grok_ultra": "grok_heavy"
+  },
+  "aisouItems": {"plus": 14, "premium": 81, "super": 82, "ultra": 83},
+  "note": "grok_plus means Plus in the customer registry and Super upstream. Require a matching provider plan_name for that ambiguous type. Unknown, conflicting or explicit non-monthly evidence is refused."
+}

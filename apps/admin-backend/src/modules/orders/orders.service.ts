@@ -24,7 +24,7 @@ import { resolveTelegramOrderContext } from "./telegram-order-context";
 import { manualCredentialsStore } from "../products/manual-credentials.store";
 import { toVpnMePayload, vpnService } from "../../services/vpn.service";
 import { licenseService } from "../../services/licenseService";
-import { procureSelectedWebsiteKey, pendingAisouNativeOrders } from "../../services/aisou-procurement";
+import { procureSelectedWebsiteKey, pendingAisouNativeOrders, verifiedAieeGrokProduct } from "../../services/aisou-procurement";
 import { CLAUDE_ZOVO_OWNER, isClaudeZovoProduct, isClaudeZovoOrder, validateClaudeZovoSession, tickClaudeZovo } from "../../services/claude-zovo";
 import { syncWebsiteCustomerToSheet } from "../customers/customer-sheet.service";
 import crypto from "crypto";
@@ -3772,7 +3772,7 @@ async function startChongzhiJsonTask(
 
   if(input.productKey && isAisouGrokProduct(input.productKey)) {
     const expected="grok_"+input.productKey.split('-')[1]+"_monthly";
-    if(verify.json?.plan_type!==expected) return {ok:false as const,taskId:"",status:409,body:"Provider key denomination mismatch",tries:1,immediateSuccess:false,message:"Тариф ключа не соответствует заказу. Активация и повторная покупка остановлены для проверки.",providerPayload:null};
+    if(verifiedAieeGrokProduct(verify.json)!==expected) return {ok:false as const,taskId:"",status:409,body:"Provider key denomination mismatch",tries:1,immediateSuccess:false,message:"Тариф ключа не соответствует заказу. Активация и повторная покупка остановлены для проверки.",providerPayload:null};
   }
   const verifyStatus = String(verify.json?.status || "").trim().toLowerCase();
   const rechargeStatus = String(verify.json?.recharge_status || "").trim().toLowerCase();
