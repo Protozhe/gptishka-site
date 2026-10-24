@@ -187,3 +187,12 @@ test('owner stock added after an uncertain purchase resumes without buying anoth
  f.args.prisma.licenseKey.findFirst=async()=>({id:'owner-prepaid-key'});
  const result=await procureWebsiteKey(f.args);assert.ok(result.stockAvailable);assert.equal(f.trades(),1);
 });
+
+test('merchant rejection details remain encrypted and do not grant another financial dispatch',async t=>{
+ const f=fixture(t),base=f.args.transport;let sends=0;
+ f.args.transport=async(url,...args)=>url.endsWith('/trade')?(sends++,{code:403,msg:'IP not allowed - fixture-private-detail',data:null}):base(url,...args);
+ for(let i=0;i<2;i++)await assert.rejects(procureWebsiteKey(f.args),/supplier_api_ip_not_allowed/);
+ assert.equal(sends,1);
+ const bytes=fs.readFileSync(path.join(f.stateDir,'journal.sqlite'));assert.ok(!bytes.includes(Buffer.from('fixture-private-detail')));
+ const {purchaseRejection}=require('./aisou-live.cjs');assert.equal(purchaseRejection('permission denied'),'supplier_api_access_refused');
+});

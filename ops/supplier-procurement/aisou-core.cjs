@@ -198,6 +198,8 @@ class Journal {
     await this.run("CREATE TABLE IF NOT EXISTS purchases(scope TEXT PRIMARY KEY, contract TEXT NOT NULL, request_no TEXT NOT NULL UNIQUE, state TEXT NOT NULL, encrypted_receipt TEXT, trade_no TEXT, reason TEXT, quoted_minor INTEGER NOT NULL, charged_minor INTEGER)");
     const columns=await new Promise((resolve,reject)=>this.db.all("PRAGMA table_info(purchases)",[],(e,r)=>e?reject(e):resolve(r)));
     if(!columns.some(c=>c.name==='charged_minor')) await this.run("ALTER TABLE purchases ADD COLUMN charged_minor INTEGER");
+    if(!columns.some(c=>c.name==='encrypted_diagnostic')) try {await this.run("ALTER TABLE purchases ADD COLUMN encrypted_diagnostic TEXT");}
+    catch(e) {if(!await this.get("SELECT name FROM pragma_table_info('purchases') WHERE name='encrypted_diagnostic'"))throw e;}
     await this.run("CREATE TABLE IF NOT EXISTS assets(fingerprint TEXT PRIMARY KEY, scope TEXT NOT NULL, encrypted_key TEXT NOT NULL, state TEXT NOT NULL, product TEXT, site TEXT)");
     if (this.file !== ":memory:") fs.chmodSync(this.file, 0o600);
   }
@@ -223,10 +225,13 @@ class Journal {
     // Persist the entire delivered secret before parsing or validating it.
     await this.run("UPDATE purchases SET state='received',encrypted_receipt=?,trade_no=? WHERE scope=? AND state='sending'", [this.seal(stable(receipt)), String(receipt.tradeNo || ""), scope]);
   }
-  async unknown(scope, reason) { await this.run("UPDATE purchases SET state='uncertain',reason=? WHERE scope=? AND state='sending'", [reason==='supplier_human_verification_required'?reason:'merchant_result_unconfirmed',scope]); }
+  async unknown(scope, reason, diagnostic) {
+    const known=['supplier_human_verification_required','supplier_api_ip_not_allowed','supplier_api_access_refused'];
+    await this.run("UPDATE purchases SET state='uncertain',reason=?,encrypted_diagnostic=? WHERE scope=? AND state='sending'", [known.includes(reason)?reason:'merchant_result_unconfirmed',diagnostic?this.seal(JSON.stringify(diagnostic)):null,scope]);
+  }
   async assess(scope, expected, verifyKey) {
     const row = await this.get("SELECT * FROM purchases WHERE scope=?", [scope]);
-    if (!row || !row.encrypted_receipt || !["received", "quarantined", "wrong_product", "verified"].includes(row.state)) return { state: row?.state || "missing", ...(row?.reason==='supplier_human_verification_required'?{reason:row.reason}:{}) };
+    if (!row || !row.encrypted_receipt || !["received", "quarantined", "wrong_product", "verified"].includes(row.state)) return { state: row?.state || "missing", ...(['supplier_human_verification_required','supplier_api_ip_not_allowed','supplier_api_access_refused'].includes(row?.reason)?{reason:row.reason}:{}) };
     const receipt = JSON.parse(this.open(row.encrypted_receipt));
     const rawKey = typeof receipt.secret === "string" ? receipt.secret.trim() : "";
     if (!row.trade_no || !rawKey || /\s/.test(rawKey) || rawKey.length > 128 || !/^\d+(?:\.\d{1,2})?$/.test(String(receipt.amount))) {
@@ -263,7 +268,7 @@ async function buyOnce({ enabled = false, journal, scope, expected, quote, buyer
     try {
       const receipt = await buyer({ shared_code: expected.code, race: expected.race, num: 1, card_id: 0, device: 0, password: "", coupon: "", contact: "", request_no: row.request_no });
       await journal.receive(scope, receipt);
-    } catch(e) { await journal.unknown(scope,e?.message); return { state: "uncertain", reason:e?.message==='supplier_human_verification_required'?e.message:'merchant_result_unconfirmed', requestNo: row.request_no }; }
+    } catch(e) { await journal.unknown(scope,e?.message,e?.supplierDiagnostic); return {...await journal.assess(scope,expected,verifyKey),requestNo:row.request_no}; }
   }
   return journal.assess(scope, expected, verifyKey);
 }

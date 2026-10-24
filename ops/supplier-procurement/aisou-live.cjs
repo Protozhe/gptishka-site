@@ -7,6 +7,13 @@ const STATE_DIR = "/var/lib/gptishka-runtime/aisou-procurement";
 function requiresHumanVerification(value) {
   return /人机验证|验证码(?:错误|不能为空|已过期)|captcha[_ -]?(?:required|invalid)|verify (?:that )?you are human|human verification required/i.test(String(value || '').slice(0, 12000));
 }
+function purchaseRejection(value) {
+  const text=String(value||'').slice(0,12000);
+  if(requiresHumanVerification(text))return 'supplier_human_verification_required';
+  if(/白名单|ip[^\n]{0,30}(?:denied|not allowed)|whitelist/i.test(text))return 'supplier_api_ip_not_allowed';
+  if(/密钥|签名|权限|signature|permission denied|unauthorized/i.test(text))return 'supplier_api_access_refused';
+  return 'supplier_trade_unconfirmed';
+}
 function protectedJson(file) {
   const st = fs.lstatSync(file);
   if (!st.isFile() || st.isSymbolicLink() || (st.mode & 0o027)) throw Error("supplier_settings_permissions");
@@ -20,8 +27,8 @@ function curlJson(url, body, contentType = "application/x-www-form-urlencoded", 
   return new Promise((resolve, reject) => {
     const child = cp.spawn("/usr/bin/curl", ["--disable", "--http1.1", "--silent", "--show-error", "--proto", "=https", "--max-time", String(Math.ceil(timeout / 1000)), "--request", "POST", "--header", "Content-Type: " + contentType, "--data-binary", "@-", "--write-out", "\n%{http_code}", url], { stdio: ["pipe", "pipe", "pipe"] });
     let output = Buffer.alloc(0), done = false;
-    const fail = (reason = "supplier_response_unconfirmed") => { if (!done) { done = true; reject(Error(reason)); } };
-    const timer = setTimeout(() => { child.kill("SIGKILL"); fail(); }, timeout + 1500);
+    const fail = (reason = "supplier_response_unconfirmed", diagnostic) => { if (!done) { done = true; const e=Error(reason);if(diagnostic)e.supplierDiagnostic=diagnostic;reject(e); } };
+    const timer = setTimeout(() => { child.kill("SIGKILL"); fail('supplier_response_unconfirmed',{kind:'transport_timeout'}); }, timeout + 1500);
     child.stdout.on("data", b => { output = Buffer.concat([output, b]); if (output.length > 1024 * 1024) { child.kill(); fail(); } });
     child.stderr.resume(); child.stdin.on("error", () => {}); child.on("error", () => { clearTimeout(timer); fail(); });
     child.on("close", code => {
@@ -30,7 +37,11 @@ function curlJson(url, body, contentType = "application/x-www-form-urlencoded", 
         const text = output.toString("utf8"), end = text.lastIndexOf("\n");
         if (code !== 0 || text.slice(end + 1) !== "200") throw Error();
         const result = JSON.parse(text.slice(0, end)); done = true; resolve(result);
-      } catch { fail(requiresHumanVerification(output.toString('utf8')) ? 'supplier_human_verification_required' : 'supplier_response_unconfirmed'); }
+      } catch {
+        const body=output.toString('utf8'),status=body.slice(body.lastIndexOf('\n')+1);
+        fail(requiresHumanVerification(body) ? 'supplier_human_verification_required' : 'supplier_response_unconfirmed',
+          {kind:'transport_failure',exitCode:code,httpStatus:/^\d{3}$/.test(status)?Number(status):null});
+      }
     });
     child.stdin.end(body);
   });
@@ -49,7 +60,12 @@ function merchant(credentials, transport = curlJson) {
       if (fields.num !== 1 || !/^gpi-[a-f0-9]{40}$/.test(fields.request_no)) throw Error("supplier_dispatch_invalid");
       const data = { ...fields, app_id: String(credentials.app_id) }; data.sign = sign(data, credentials.app_key);
       const result = await transport("https://aisou.pro/shared/commodity/trade", new URLSearchParams(data).toString(), "application/x-www-form-urlencoded", 45000);
-      if (result?.code !== 200 || !result.data) throw Error(requiresHumanVerification(result?.msg || result?.message) ? 'supplier_human_verification_required' : 'supplier_trade_unconfirmed');
+      if (result?.code !== 200 || !result.data) {
+        const e=Error(purchaseRejection(result?.msg || result?.message));
+        // Retain diagnostics encrypted, never in customer/admin message text.
+        e.supplierDiagnostic={kind:'merchant_rejection',code:result?.code,message:String(result?.msg||result?.message||'').slice(0,2000)};
+        throw e;
+      }
       return result.data;
     },
   };
@@ -176,7 +192,7 @@ async function procureWebsiteKey({ prisma, activationStore, orderId, productKey,
     const cost = finance(order, payment, quote, policy, reserveProof?.priorOpeningRub || 0);
     await onProgress({phase:prior && prior.state!=='wrong_product'?'reconcile':'purchasing',product:expected.product});
     const result = await buyWithOneCorrection({ enabled: true, journal, scope, expected, quote, totalBudgetMinor: cost.totalBudgetMinor, buyer: fields => api.buy(fields), verifyKey: (key, site) => verifyProvider(key, site, transport) });
-    if (result.state !== "verified") throw Error(result.reason==='supplier_human_verification_required'?'supplier_human_verification_required':"supplier_" + result.state);
+    if (result.state !== "verified") throw Error(['supplier_human_verification_required','supplier_api_ip_not_allowed','supplier_api_access_refused'].includes(result.reason)?result.reason:"supplier_" + result.state);
     const asset = await journal.get("SELECT * FROM assets WHERE scope=? AND state='verified'", [scope + (result.requestNo === "gpi-" + require("node:crypto").createHash("sha256").update(scope + ":primary").digest("hex").slice(0,40) ? ":primary" : ":correction-1")]);
     if (!asset) throw Error("supplier_asset_unconfirmed");
     const keyValue = journal.open(asset.encrypted_key).toUpperCase();
@@ -209,7 +225,7 @@ async function procureWebsiteKey({ prisma, activationStore, orderId, productKey,
   } finally { await journal.close(); }
 }
 
-module.exports = { merchant, curlJson, providerEvidence, verifyProvider, finance, assertPaidWebsiteOrder, procureWebsiteKey, loadSettings, requiresHumanVerification };
+module.exports = { merchant, curlJson, providerEvidence, verifyProvider, finance, assertPaidWebsiteOrder, procureWebsiteKey, loadSettings, requiresHumanVerification, purchaseRejection };
 
 async function pendingNativeOrders(activeOrderIds, suppliedSettings) {
   let settings; try { settings = suppliedSettings || loadSettings(); } catch { return []; }
