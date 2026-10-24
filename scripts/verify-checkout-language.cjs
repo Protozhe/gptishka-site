@@ -59,6 +59,9 @@ const proPlanContext = vm.createContext({
   getProductSearchText: item => [item.title, item.slug, ...(item.tags || [])].filter(Boolean).join(' ').toLowerCase(),
 });
 vm.runInContext(functions.get('getNewAccountSurcharge'), proPlanContext);
+for (const slug of ['claude-pro', 'claude-max-5x', 'claude-max-20x']) {
+  assert.equal(proPlanContext.getNewAccountSurcharge('claude', slug), 0);
+}
 const surchargeSource = fs.readFileSync('apps/admin-backend/src/modules/payments/new-account-option.ts', 'utf8').replace(/^import .*;\r?\n/gm, '');
 const surchargeContext = vm.createContext({ exports: {}, AppError: class extends Error {} });
 vm.runInContext(ts.transpileModule(surchargeSource, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText, surchargeContext);
@@ -140,17 +143,25 @@ for (const service of ['chatgpt', 'claude', 'grok', 'perplexity', 'gemini', 'sun
       getServiceDurationLabel: () => '1 месяц', resolveDeliveryType: () => 'link',
       getAiOrderModalSummaryTitle: (name, plan) => name + ' ' + plan,
       escapeHtml: value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;'),
-      readChatGptGoOrderDraft: () => ({ isGift: true, giftSender: 'Иван', giftRecipient: 'Мария', giftMessage: 'Спасибо', orderComment: 'Продление', cameByRecommendation: true }),
-      getNewAccountSurcharge: key => key === 'chatgpt' ? 250 : key === 'claude' ? 3000 : 0,
+      readChatGptGoOrderDraft: () => ({ isGift: true, giftSender: 'Иван', giftRecipient: 'Мария', giftMessage: 'Спасибо', orderComment: 'Продление', cameByRecommendation: true, needsNewAccount: true, newAccountServiceKey: service }),
       servicePageRootEl: null, DEFAULT_PAYMENT_METHOD: 'pally', activePaymentMethod: 'pally', activePromoCode: '',
       normalizeChatGptGoPaymentChoice: value => value, normalizePromoCodeInput: value => value,
       getChatGptGoDiscount: () => 0, formatPriceByCurrency: value => value + ' RUB',
       getChatGptGoPasswordIcon: () => '', renderChatGptPaymentOption: (_, title) => '<button>' + title + '</button>',
       getChatGptGoOrderField: (form, name) => form.elements.namedItem(name),
     });
-    for (const name of ['renderChatGptGoOrderCard', 'applyAiOrderModalServiceCopy', 'setChatGptGoStatus']) vm.runInContext(functions.get(name), context);
+    for (const name of ['getNewAccountSurcharge', 'renderChatGptGoOrderCard', 'applyAiOrderModalServiceCopy', 'setChatGptGoStatus']) vm.runInContext(functions.get(name), context);
     window.document.body.innerHTML = context.renderChatGptGoOrderCard({ product: service + '-plan', id: service + '-plan', serviceKey: service, price: 2000, planKey: 'max-5x', deliveryKey: delivery, durationKey: '1m' }, service);
     const form = window.document.querySelector('form');
+    if (service === 'claude') {
+      assert.equal(form.querySelector('[name="needsNewAccount"]'), null);
+      assert.equal(form.querySelector('.chatgpt-order-new-account'), null);
+      assert.equal(form.querySelector('[data-chatgpt-go-total]').textContent, '2000 RUB');
+    }
+    if (service === 'chatgpt') {
+      assert.equal(form.querySelector('[name="needsNewAccount"]').checked, true);
+      assert.equal(form.querySelector('[data-chatgpt-go-total]').textContent, '2250 RUB');
+    }
     context.applyAiOrderModalServiceCopy(form, service);
     context.setChatGptGoStatus(form, 'Проверьте обязательные поля.', 'error');
     assert.equal(form.querySelector('[data-chatgpt-go-status]').textContent, 'Please check the required fields.');
