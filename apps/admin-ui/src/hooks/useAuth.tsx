@@ -5,6 +5,7 @@ type User = {
   id: string;
   email: string;
   role: "OWNER" | "ADMIN" | "MANAGER" | "SUPPORT";
+  canManageMarketplaceAccounts?: boolean;
   firstName?: string;
   lastName?: string;
 };

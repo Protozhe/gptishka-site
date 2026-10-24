@@ -11,6 +11,7 @@ authRouter.post("/login", authLoginRateLimit, validateBody(loginSchema), login);
 authRouter.post("/verify-telegram", authLoginRateLimit, validateBody(telegramCodeSchema), verifyTelegram);
 authRouter.get("/panel-check", panelCheck);
 authRouter.get("/panel-owner-check", panelCheck);
+authRouter.get("/panel-marketplace-check", panelCheck);
 authRouter.post("/register-admin", authLoginRateLimit, validateBody(registerAdminSchema), registerAdmin);
 authRouter.post("/refresh", authSessionRateLimit, refresh);
 authRouter.post("/logout", authSessionRateLimit, logout);

@@ -12,6 +12,7 @@ const schema = z.object({
   enabled: z.literal(true),
   botToken: z.string().regex(/^\d+:[A-Za-z0-9_-]+$/),
   users: z.record(z.string().regex(/^[1-9][0-9]+$/)),
+  marketplaceMaintainers: z.array(z.string().regex(/^[A-Za-z0-9_-]{1,128}$/)).max(8).default([]),
   proxyUrl: z.literal("http://127.0.0.1:18082"),
   database: z.string().startsWith("/var/lib/gptishka-runtime/website/"),
 });
@@ -32,6 +33,15 @@ function configuration(): Config | null {
 }
 
 export function telegramMfaRequired() { return configuration() !== null; }
+
+export function canMaintainMarketplaceAccounts(userId: string, role: string) {
+  if (role === "OWNER") return true;
+  if (role !== "ADMIN") return false;
+  const config = configuration();
+  // Individual delegation, never a grant to every administrator. A private
+  // Telegram MFA binding is required in addition to the configured user ID.
+  return Boolean(config?.users[userId] && config.marketplaceMaintainers.includes(userId));
+}
 
 function digest(value: string) {
   return createHmac("sha256", env.JWT_REFRESH_SECRET).update(value).digest("hex");
