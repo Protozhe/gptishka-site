@@ -89,7 +89,7 @@ function assertPaidWebsiteOrder(order, activation, productKey, expected, policy,
   const start = Date.parse(policy.enabledAfter), o = order, a = activation;
   if (!Number.isFinite(start) || start > now || !o || o.source !== "site" || o.status !== "PAID" || o.currency !== "RUB" || o.items?.length !== 1 || o.items[0].quantity !== 1 || o.items[0].product?.slug !== productKey || !(+new Date(o.createdAt) >= start)) throw Error("supplier_order_ineligible");
   const paid = (o.payments || []).filter(p => p.status === "SUCCESS");
-  if (paid.length !== 1 || paid[0].currency !== "RUB" || Number(paid[0].amount) !== Number(o.totalAmount) || !(+new Date(paid[0].processedAt || paid[0].createdAt) >= start)) throw Error("supplier_payment_unverified");
+  if (paid.length !== 1 || !["pally","lava","enot","gateway","enot.io"].includes(String(paid[0].provider || "").toLowerCase()) || o.paymentMethod === "stub" || paid[0].currency !== "RUB" || Number(paid[0].amount) !== Number(o.totalAmount) || !(+new Date(paid[0].processedAt || paid[0].createdAt) >= start)) throw Error("supplier_payment_unverified");
   if (!a || a.status === "success" || a.verificationState === "success" || a.cdk || a.taskId || Number(a.attempts || 0) > 0 || (o.licenseKeys || []).length || a.reservedCandidates?.length) throw Error("supplier_prior_fulfillment");
   if (!a.clientTokenCiphertext || !(Date.parse(a.clientTokenExpiresAt) > now)) throw Error("supplier_session_required");
   if (!expected || !policy.products?.includes(productKey)) throw Error("supplier_product_disabled");

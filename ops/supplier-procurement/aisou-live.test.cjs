@@ -5,7 +5,7 @@ const {merchant,providerEvidence,finance,assertPaidWebsiteOrder,procureWebsiteKe
 const {contract,quoteFromValuation}=require('./aisou-core.cjs');
 const now=Date.now(),oid='fixturepaidorder0000000001';
 const policy={enabled:true,enabledAfter:new Date(now-100000).toISOString(),products:['codex-250','chatgpt-plus-1','chatgpt-go-1'],rubPerCny:13.2,costCheckedAt:new Date(now).toISOString(),costMaxAgeMs:86400000,minimumProfitRub:0,costSource:'owner-fixture'};
-const order=()=>({id:oid,source:'site',status:'PAID',currency:'RUB',createdAt:new Date(now-50000),totalAmount:'3000',email:'fixture@example.invalid',items:[{quantity:1,product:{slug:'codex-250'}}],licenseKeys:[],payments:[{status:'SUCCESS',currency:'RUB',amount:'3000',processedAt:new Date(now-10000),payload:{commission:'90'}}]});
+const order=()=>({id:oid,source:'site',status:'PAID',currency:'RUB',createdAt:new Date(now-50000),totalAmount:'3000',email:'fixture@example.invalid',items:[{quantity:1,product:{slug:'codex-250'}}],licenseKeys:[],payments:[{status:'SUCCESS',provider:'pally',currency:'RUB',amount:'3000',processedAt:new Date(now-10000),payload:{commission:'90'}}]});
 const activation=()=>({orderId:oid,status:'issued',attempts:0,clientTokenCiphertext:'fixture-encrypted',clientTokenExpiresAt:new Date(now+3600000).toISOString(),tokenMeta:{fingerprint:'a'.repeat(16)}});
 function fixture(t,{lost=false,wrong=false}={}){
  const stateDir=fs.mkdtempSync(path.join(os.tmpdir(),'aisou-live-'));t.after(()=>fs.rmSync(stateDir,{recursive:true,force:true}));
@@ -33,7 +33,7 @@ function fixture(t,{lost=false,wrong=false}={}){
 }
 test('paid/new/exact product, session and untouched fulfilment are mandatory',()=>{
  const expected=contract('codex-250','plus');
- for(const mutate of [o=>o.status='PENDING',o=>o.items[0].quantity=2,o=>o.items[0].product.slug='codex-500',o=>o.payments[0].amount='1',o=>o.createdAt=new Date(0),o=>o.payments.push(o.payments[0])]){
+ for(const mutate of [o=>o.status='PENDING',o=>o.items[0].quantity=2,o=>o.items[0].product.slug='codex-500',o=>o.payments[0].amount='1',o=>o.createdAt=new Date(0),o=>o.payments.push(o.payments[0]),o=>o.payments[0].provider='stub',o=>o.payments[0].provider='test',o=>o.payments[0].provider='',o=>o.paymentMethod='stub']){
   const o=order();mutate(o);assert.throws(()=>assertPaidWebsiteOrder(o,activation(),'codex-250',expected,policy));
  }
  for(const patch of [{cdk:'fixture'},{attempts:1},{taskId:'fixture'},{status:'success'},{clientTokenCiphertext:''}])assert.throws(()=>assertPaidWebsiteOrder(order(),{...activation(),...patch},'codex-250',expected,policy));
