@@ -91,7 +91,8 @@ export const panelCheck = asyncHandler(async (req: Request, res: Response) => {
     where: { id: payload.sid, userId: payload.sub, revokedAt: null, expiresAt: { gt: new Date() } },
     select: { user: { select: { isActive: true, role: { select: { code: true } } } } },
   });
-  if (!session?.user.isActive || !["OWNER", "ADMIN"].includes(session.user.role.code)) throw new AppError("Unauthorized", 401);
+  const roles = req.path === "/panel-owner-check" ? ["OWNER"] : ["OWNER", "ADMIN"];
+  if (!session?.user.isActive || !roles.includes(session.user.role.code)) throw new AppError("Unauthorized", 401);
   res.status(204).send();
 });
 

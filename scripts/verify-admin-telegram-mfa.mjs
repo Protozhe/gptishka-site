@@ -110,12 +110,12 @@ try {
 let consumed = false, issued = 0, trusted = false, remembered = 0, challenges = 0, credentialChecks = 0, challengeVersion = "version:fixture-hash";
 const fixtureUser = { id: "owner", email: "owner@example.invalid", passwordHash: "fixture-hash", isActive: true, role: { code: "OWNER" } };
 const handlers = load("auth.controller", {
-  "../../config/prisma": { prisma: { user: { findUnique: async () => fixtureUser }, refreshToken: { create: async () => { issued++; return { id: "session", expiresAt: new Date(Date.now() + 60000) }; } } } },
+  "../../config/prisma": { prisma: { user: { findUnique: async () => fixtureUser }, refreshToken: { findFirst: async () => ({ user: fixtureUser }), create: async () => { issued++; return { id: "session", expiresAt: new Date(Date.now() + 60000) }; } } } },
   "../../config/env": { env: { REFRESH_COOKIE_NAME: "refresh", JWT_REFRESH_TTL_DAYS: 30 } },
   "../../common/http/async-handler": { asyncHandler: fn => fn },
   "../../common/errors/app-error": { AppError }, "../../common/utils/hash": { sha256: x => "hash:" + x },
   "./auth.service": { validateUserCredentials: async (_email, password) => { credentialChecks++; if (password !== "fixture-password") throw new AppError("Invalid credentials", 401); return fixtureUser; } },
-  "./token.service": { verifyRefreshToken: () => ({ sub: "owner", mfa: false }), signAccessToken: (_u, _r, _s, mfa) => { assert.equal(mfa, true); return "access"; }, signRefreshToken: (_u, mfa) => { assert.equal(mfa, true); return "refresh"; }, signPanelToken: () => "panel" },
+  "./token.service": { verifyRefreshToken: () => ({ sub: "owner", mfa: false }), signAccessToken: (_u, _r, _s, mfa) => { assert.equal(mfa, true); return "access"; }, signRefreshToken: (_u, mfa) => { assert.equal(mfa, true); return "refresh"; }, signPanelToken: () => "panel", verifyPanelToken: () => ({ sub: "owner", sid: "session" }) },
   "./telegram-mfa.service": { telegramMfaRequired: () => true, requestBinding: () => "binding",
     credentialVersion: (_id, hash) => "version:" + hash,
     hasTrustedIp: async (_id, ip, version) => trusted && ip === "192.0.2.1" && version === "version:fixture-hash",
@@ -159,3 +159,15 @@ challengeVersion = ""; consumed = false;
 await handlers.verifyTelegram({ ...req, body: { challengeId: "legacy-challenge", code: "123456" } }, response());
 assert.equal(issued, 3); assert.equal(remembered, 1, "Legacy pending codes may log in once, but cannot enroll an IP");
 console.log("Telegram MFA: new-IP challenge, persistent per-user IP trust, required password, credential-change reset, copy button, private delivery, expiry and concurrent replay checks passed.");
+
+// The browser credential editor must be owner-only even with a valid admin panel cookie.
+for (const [role, allowed] of [["OWNER", true], ["ADMIN", false], ["SUPPORT", false]]) {
+  fixtureUser.role.code = role;
+  const ownerReq = { path: "/panel-owner-check", cookies: { __Host_gptishka_panel: "fixture" } };
+  const res = { setHeader() {}, status(code) { assert.equal(code, 204); return this; }, send() {} };
+  if (allowed) await handlers.panelCheck(ownerReq, res);
+  else await assert.rejects(handlers.panelCheck(ownerReq, res), e => e.statusCode === 401);
+}
+fixtureUser.role.code = "ADMIN";
+await handlers.panelCheck({ path: "/panel-check", cookies: {} }, { setHeader() {}, status(code) { assert.equal(code, 204); return this; }, send() {} });
+console.log("Owner-only marketplace session editor rejects other panel roles.");

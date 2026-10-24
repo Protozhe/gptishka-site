@@ -1,4 +1,4 @@
-﻿import { FormEvent, useState } from "react";
+﻿import { FormEvent, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { Eye, EyeOff } from "lucide-react";
@@ -11,15 +11,21 @@ export default function LoginPage() {
   const [pending, setPending] = useState(false);
   const [challengeId, setChallengeId] = useState<string | null>(null);
   const [code, setCode] = useState("");
-  const { login, verifyTelegram } = useAuth();
+  const { login, verifyTelegram, user, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   function finishLogin() {
     const next = new URLSearchParams(location.search).get("next") || "";
     if (/^\/(?:ops|chats|profit|capital)(?:\/|$)/.test(next) || next === "/subscription-reminders.html") window.location.assign(next);
-    else navigate("/", { replace: true });
+    else if (/^\/admin(?:\/|$)/.test(next) && !next.startsWith("/admin/login")) window.location.assign(next);
+    else navigate(user?.role === "OWNER" || user?.role === "ADMIN" ? "/workspace/overview" : "/", { replace: true });
   }
+
+  // Restore a valid shared session instead of asking for the password again.
+  useEffect(() => {
+    if (!loading && user && !challengeId && !pending) finishLogin();
+  }, [loading, user, challengeId, pending]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
