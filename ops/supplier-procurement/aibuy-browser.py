@@ -95,7 +95,7 @@ def minor_text(v):
 def _main(data,dispatch):
     from playwright.sync_api import sync_playwright
     n=data['credits']
-    if type(n) is not int or n not in PRICES or data['mode'] not in ('prepare','buy','history','topup'):
+    if type(n) is not int or n not in PRICES or data['mode'] not in ('prepare','buy','history','topup','balance'):
         raise ValueError('supplier_request_invalid')
     with sync_playwright() as p:
         browser=p.chromium.launch(executable_path='/usr/bin/google-chrome',headless=True,
@@ -118,6 +118,11 @@ def _main(data,dispatch):
                     if v.isdigit():ids.append(int(v))
             if ids!=[data['merchantId']]:raise ValueError('supplier_login_required')
             if data['mode']=='topup':return result(topup(page,data))
+            if data['mode']=='balance':
+                dropdown=page.locator('#tokyoUserDropdown');dropdown.wait_for(state='visible',timeout=15000)
+                values=re.findall(r'[¥￥]\s*([\d,]+(?:\.\d{1,2})?)',dropdown.inner_text())
+                if len(values)!=1:raise ValueError('supplier_balance_unconfirmed')
+                return result({'balance_minor':minor_text(values[0].replace(',','')),'owner_verified':True})
             before=history(context)
             if data['mode']=='history':
                 out={'history':before}

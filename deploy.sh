@@ -147,6 +147,7 @@ SWITCHED=0
 PAUSED_FOR_PERMISSIONS=0
 NOTIFIERS_RELOADED=0
 AIBUY_RELOADED=0
+AIBUY_TOPUP_RELOADED=0
 rollback() {
   status=$?
   if [ "$status" -ne 0 ] && { [ "$SWITCHED" -eq 1 ] || [ "$PAUSED_FOR_PERMISSIONS" -eq 1 ]; }; then
@@ -160,6 +161,9 @@ rollback() {
     fi
     if [ "$AIBUY_RELOADED" -eq 1 ]; then
       systemctl restart gptishka-aibuy.service || true
+    fi
+    if [ "$AIBUY_TOPUP_RELOADED" -eq 1 ]; then
+      systemctl restart gptishka-aibuy-topup.service || true
     fi
     echo "Release failed; previous complete directory restored"
   fi
@@ -181,6 +185,10 @@ if systemctl is-enabled --quiet gptishka-aibuy.service; then
   AIBUY_RELOADED=1
   systemctl restart gptishka-aibuy.service
 fi
+if systemctl is-enabled --quiet gptishka-aibuy-topup.service; then
+  AIBUY_TOPUP_RELOADED=1
+  systemctl restart gptishka-aibuy-topup.service
+fi
 HEALTH_OK=0
 for attempt in $(seq 1 20); do
   if curl -fsS --max-time 5 http://127.0.0.1:4100/api/admin/health >/dev/null && curl -fsS --max-time 5 http://127.0.0.1:4000/ >/dev/null && curl -fsS --max-time 5 http://127.0.0.1:4000/api/public/products >/dev/null; then
@@ -193,6 +201,10 @@ if [ "$REUSE_DEPS" -eq 0 ] && [ -f /etc/gptishka-notifiers/ecosystem.json ]; the
   # These consumers share the site's generated client and HTTP dependencies.
   NOTIFIERS_RELOADED=1
   pm2 startOrReload /etc/gptishka-notifiers/ecosystem.json --update-env
+fi
+if [ "$AIBUY_TOPUP_RELOADED" -eq 1 ] && [ "$NOTIFIERS_RELOADED" -eq 0 ]; then
+  NOTIFIERS_RELOADED=1
+  pm2 restart gptishka-monitor-bot
 fi
 systemctl reload nginx
 pm2 save

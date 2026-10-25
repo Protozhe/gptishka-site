@@ -1,0 +1,2 @@
+import {spawnSync} from 'node:child_process';
+for(const [command,args] of [[process.execPath,['--test','ops/supplier-procurement/aibuy-telegram.test.mjs']],[process.platform==='win32'?'python':'python3',['-B','ops/supplier-procurement/test-aibuy-topup.py']]]){const r=spawnSync(command,args,{cwd:process.cwd(),env:process.env,stdio:'inherit'});if(r.error)throw r.error;if(r.status!==0)process.exit(r.status??1)}

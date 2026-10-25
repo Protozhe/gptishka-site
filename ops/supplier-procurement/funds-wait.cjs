@@ -37,7 +37,7 @@ async function deliver(j, row, event, send, supplier = 'AISOU') {
   const claim = await j.run("INSERT OR IGNORE INTO funds_hold_notices VALUES(?,?,'sending')", [row.scope,event]);
   if (!claim.changes) return;
   let state = 'uncertain';
-  try { if (await send(card(row,event,supplier))) state = 'sent'; } catch { /* retain the delivery uncertainty */ }
+  try { if (await send(card(row,event,supplier),supplier==='AI-BUY'&&event!=='resolved'?{inline_keyboard:[[{text:'💰 Пополнить AI-BUY',url:'https://t.me/myadminiibot?start=aibuy'}]]}:undefined)) state = 'sent'; } catch { /* retain the delivery uncertainty */ }
   await j.run('UPDATE funds_hold_notices SET state=? WHERE scope=? AND event=?', [state,row.scope,event]);
 }
 async function notify(j, row, send, now = Date.now(), supplier = 'AISOU') {
