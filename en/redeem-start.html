@@ -1281,6 +1281,7 @@
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/redeem-clean-checkout-v2.css?v=20261007-all-services6">
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
+<link rel="stylesheet" href="/assets/css/instruction-actions.css?v=sha256-ba15eccd755cc1ff">
 </head>
 <body id="storefrontBody" class="redeem-flow home-wide-body">
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
@@ -1361,7 +1362,7 @@
             <summary id="tokenGuideSummary">Instructions!</summary>
             <ol id="tokenGuideList">
               <li>Login through your browser to your ChatGPT account (if you haven’t logged in yet, just log in).</li>
-              <li>Open the link <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>
+              <li>Open the token page in the same browser:<a class="instruction-action" href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">Open token page<span aria-hidden="true">↗</span></a></li>
               <li>Copy all contents and paste it into the Account Token field.</li>
               <li>How it works / video instructions - <a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">watch</a></li>
             </ol>
@@ -1961,7 +1962,7 @@
       if (tokenGuideSummaryEl) tokenGuideSummaryEl.closest('details').open = true;
       if (tokenGuideListEl) tokenGuideListEl.innerHTML = [
         '<li>Sign in to your account on the <a href="https://www.perplexity.ai/" target="_blank" rel="noreferrer noopener">official Perplexity website</a>.</li>',
-        '<li>Open <a href="https://www.perplexity.ai/api/auth/session" target="_blank" rel="noreferrer noopener">perplexity.ai/api/auth/session</a> in the same browser.</li>',
+        '<li>Open the account data page in the same browser:<a class="instruction-action" href="https://www.perplexity.ai/api/auth/session" target="_blank" rel="noreferrer noopener">Open token page<span aria-hidden="true">↗</span></a></li>',
         '<li>Copy the entire page contents (JSON).</li>',
         '<li>Paste the copied text into the field below and select “Send session data”.</li>',
         '<li>After confirmation, send the link to this page only in a private support chat.</li>',
@@ -2087,7 +2088,7 @@
               ].join('')
             : [
                 '<li>Open <a href="https://grok.com" target="_blank" rel="noreferrer noopener">grok.com</a> and sign in to your account.</li>',
-                '<li>Open <a href="https://grok.com/api/auth/session" target="_blank" rel="noreferrer noopener">grok.com/api/auth/session</a> in the same browser.</li>',
+                '<li>Open the account data page in the same browser:<a class="instruction-action" href="https://grok.com/api/auth/session" target="_blank" rel="noreferrer noopener">Open ID page<span aria-hidden="true">↗</span></a></li>',
                 '<li>Find the <strong>id</strong> field. The correct area is highlighted in the screenshots.</li>',
                 '<li class="redeem-guide-shot"><img src="/assets/img/supergrok-activation-1.png" alt="Where to find account ID Grok - example 1" loading="lazy" decoding="async"></li>',
                 '<li class="redeem-guide-shot"><img src="/assets/img/supergrok-activation-2.png" alt="Where to find account ID Grok - example 2" loading="lazy" decoding="async"></li>',
@@ -2096,7 +2097,7 @@
         } else {
           tokenGuideListEl.innerHTML = [
             '<li>Login through your browser to your ChatGPT account (if you haven’t logged in yet, just log in).</li>',
-            '<li>Open the link <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>',
+            '<li>Open the token page in the same browser:<a class="instruction-action" href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">Open token page<span aria-hidden="true">↗</span></a></li>',
             '<li>Copy the entire page contents and paste them into the “ChatGPT account token” field.</li>',
             '<li><a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">Open the video guide</a>.</li>',
           ].join('');
@@ -2149,7 +2150,7 @@
         if (tokenLabelEl) tokenLabelEl.textContent = 'Perplexity session data';
         if (tokenGuideListEl) tokenGuideListEl.innerHTML = [
           '<li>Sign in to your account on the <a href="https://www.perplexity.ai/" target="_blank" rel="noreferrer noopener">official Perplexity website</a>.</li>',
-          '<li>Open <a href="https://www.perplexity.ai/api/auth/session" target="_blank" rel="noreferrer noopener">perplexity.ai/api/auth/session</a> in the same browser.</li>',
+          '<li>Open the account data page in the same browser:<a class="instruction-action" href="https://www.perplexity.ai/api/auth/session" target="_blank" rel="noreferrer noopener">Open token page<span aria-hidden="true">↗</span></a></li>',
           '<li>Copy the entire page contents (JSON).</li>',
           '<li>Paste the copied text into the field below and select “Send session data”.</li>',
           '<li>After confirmation, send the link to this page only in a private support chat.</li>',

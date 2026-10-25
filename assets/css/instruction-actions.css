@@ -1,0 +1,37 @@
+/* Instruction actions only: product, marketplace and review links are unaffected. */
+html body#storefrontBody:is(.redeem-flow, .activation-bundle-flow) a.instruction-action {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 46px;
+  margin: 10px 0 2px;
+  padding: 10px 16px !important;
+  border: 1px solid rgba(114, 229, 188, .28) !important;
+  border-radius: 12px !important;
+  background: rgba(66, 221, 166, .09) !important;
+  color: #9aebcd !important;
+  font: 700 16px/1.45 Manrope, sans-serif !important;
+  text-align: left;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  transition: background 180ms ease, border-color 180ms ease;
+}
+html body#storefrontBody:is(.redeem-flow, .activation-bundle-flow) a.instruction-action:hover {
+  background: rgba(66, 221, 166, .16) !important;
+  border-color: rgba(114, 229, 188, .55) !important;
+}
+html body#storefrontBody:is(.redeem-flow, .activation-bundle-flow) a.instruction-action:focus-visible {
+  outline: 2px solid #9aebcd;
+  outline-offset: 4px;
+}
+html body#storefrontBody a.instruction-action span[aria-hidden] {
+  flex-shrink: 0;
+  font-size: 20px;
+  line-height: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  html body#storefrontBody a.instruction-action { transition: none; }
+}

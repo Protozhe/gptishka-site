@@ -2560,6 +2560,7 @@
   }
 </style>
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
+<link rel="stylesheet" href="/assets/css/instruction-actions.css?v=sha256-ba15eccd755cc1ff">
 </head>
 <body id="storefrontBody" class="redeem-flow home-wide-body">
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
@@ -2640,7 +2641,7 @@
             <summary id="tokenGuideSummary">Инструкция!</summary>
             <ol id="tokenGuideList" class="redeem-guide-linear">
               <li>Войдите через браузер в аккаунт ChatGPT (если ещё не вошли — просто авторизуйтесь).</li>
-              <li>Откройте ссылку <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>
+              <li>В этом же браузере откройте страницу токена:<a class="instruction-action" href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">Открыть страницу токена<span aria-hidden="true">↗</span></a></li>
               <li>Скопируйте все содержимое и вставьте его в поле «Токен аккаунта».</li>
               <li>Как это работает / видео инструкция — <a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">смотреть</a></li>
             </ol>
@@ -3405,7 +3406,7 @@
       if (tokenGuideSummaryEl) tokenGuideSummaryEl.closest('details').open = true;
       if (tokenGuideListEl) tokenGuideListEl.innerHTML = [
         '<li>Войдите через браузер в свой аккаунт на <a href="https://www.perplexity.ai/" target="_blank" rel="noreferrer noopener">официальном сайте Perplexity</a> (если ещё не вошли — авторизуйтесь).</li>',
-        '<li>Откройте <a href="https://www.perplexity.ai/api/auth/session" target="_blank" rel="noreferrer noopener">perplexity.ai/api/auth/session</a> в том же браузере.</li>',
+        '<li>В этом же браузере откройте страницу токена:<a class="instruction-action" href="https://www.perplexity.ai/api/auth/session" target="_blank" rel="noreferrer noopener">Открыть страницу токена<span aria-hidden="true">↗</span></a></li>',
         '<li>Скопируйте всё содержимое страницы (JSON).</li>',
         '<li>Вставьте скопированный текст в поле ниже и нажмите «Отправить данные».</li>',
         '<li>После подтверждения скопируйте ссылку на эту страницу и отправьте её только в личный чат поддержки.</li>',
@@ -3608,7 +3609,7 @@
               ].join('')
             : [
                 '<li>Откройте <a href="https://grok.com" target="_blank" rel="noreferrer noopener">grok.com</a> и войдите в свой аккаунт.</li>',
-                '<li>В этом же браузере откройте <a href="https://grok.com/api/auth/session" target="_blank" rel="noreferrer noopener">grok.com/api/auth/session</a>.</li>',
+                '<li>В этом же браузере откройте страницу с данными аккаунта:<a class="instruction-action" href="https://grok.com/api/auth/session" target="_blank" rel="noreferrer noopener">Открыть страницу ID<span aria-hidden="true">↗</span></a></li>',
                 '<li>Найдите поле <strong>id</strong>. Нужная область отмечена на скриншотах.</li>',
                 '<li class="redeem-guide-shot"><img src="/assets/img/supergrok-activation-1.png" alt="Где найти ID аккаунта Grok — пример 1" loading="lazy" decoding="async"></li>',
                 '<li class="redeem-guide-shot"><img src="/assets/img/supergrok-activation-2.png" alt="Где найти ID аккаунта Grok — пример 2" loading="lazy" decoding="async"></li>',
@@ -3617,7 +3618,7 @@
         } else {
           tokenGuideListEl.innerHTML = [
             '<li>Войдите через браузер в аккаунт ChatGPT (если ещё не вошли — просто авторизуйтесь).</li>',
-            '<li>Откройте ссылку <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">chatgpt.com/api/auth/session</a></li>',
+            '<li>В этом же браузере откройте страницу токена:<a class="instruction-action" href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">Открыть страницу токена<span aria-hidden="true">↗</span></a></li>',
             '<li>Скопируйте всё содержимое страницы и вставьте его в поле «Токен аккаунта ChatGPT».</li>',
             '<li><a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">Открыть видеоинструкцию</a>.</li>',
           ].join('');
