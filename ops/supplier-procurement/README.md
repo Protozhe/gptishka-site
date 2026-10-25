@@ -13,6 +13,9 @@ tariffs remain unsupported. Their existing activation paths are unchanged.
 `install-pulse.py` checks exact anchors before installing the adapter and keeps
 code backups. It does not enable policies, buy keys or activate customer accounts.
 
+The separate `market_aibuy.py` / `aibuy-market.py` integration below adds
+marketplace AI-BUY procurement; this does not broaden the AISOU adapter.
+
 ## Verified merchant facts (2026-10-24)
 
 - AISOU serves the ACG-Faka Shared API. An unauthenticated read-only request to
@@ -220,6 +223,56 @@ Isolated tests include correct item/no variants, canonical workflow, encrypted
 quarantine, old/unpaid/invalid UUID rejection, lost purchase/activation replies,
 restart reuse and late final completion. These do not debit the real wallet;
 first live empty-pool procurement still needs a genuine new paid order.
+
+### FunPay and PlayerOK empty-pool procurement
+
+`install-aibuy-market.py` installs explicit, hash-pinned additive Pulse hooks
+from a clean committed active release. It backs up both original sources,
+installs a separate root broker and starts disabled. Website code and stock
+remain separate. Future website deploys restart an installed marketplace
+broker together with the shared supplier runtime; rollback reloads it too.
+
+Both root and Pulse policies must explicitly admit the marketplace source,
+account, and a fresh `marketplaces.enabledAfter` cutoff. Both the job creation
+and original order/payment time must follow it, with automatic submission
+already allowed. Claude Pro scanning skips older orders entirely. Existing
+manual, paused, submitted, refunded and foreign fulfillments cannot acquire
+another key. Unknown or multiple variants/quantities stop acquisition.
+
+Codex uses existing AIEE stock first. An empty pool can purchase only exact
+AI-BUY item75 variants250/500/1000, with ceilings75/145/276 CNY. Claude Pro uses
+item29/no variant/one unit/up to134 CNY. Authenticated catalog inspection found
+no2500 variant: its existing stock remains usable; an empty2500 pool emits an
+owner notice without buying a different denomination or splitting the order.
+
+The root Unix socket accepts only a positive local job ID from the Pulse UID,
+never a caller-supplied amount, product, account, payment flag or session.
+It independently checks an account-scoped current paid FunPay list or a paid
+outgoing PlayerOK deal, authoritative source records, quantity, order identity,
+prior delivery/refund/dispatch records, encrypted input and current margin.
+Actual commission/payout/listing fees and the fresh owner CNY rate gate every
+purchase. Confirmed acquisition cost is bound once to the marketplace order.
+
+An opaque platform/account/order hash shares the existing root purchase vault
+and account lock with website procurement and funding. Uncertain debits across
+any source block another debit; history recovery never repeats a pay click.
+Only verified unused canonical workflows can be assigned. Keys and customer
+input remain encrypted; no supplier login or password enters Pulse.
+
+Native activation saves `dispatched=1` before one `activate` POST. Restart,
+timeout and manual retry only inspect the original key. Provider final success
+marks the same order/key complete; generic legacy pollers cannot touch it.
+Existing marketplace finalizers and outbound privacy guards remain in charge
+of customer completion. Owner notices use a separate durable delivery journal
+and verify `funpaypulseaibot` before sending; website notices remain in
+`myadminiibot`. Funds shortages preserve a15-minute grace and resume the same
+demand after funding. An uncertain notification send is never blindly repeated.
+
+Tests use synthetic paid orders and mocked provider/platform/bot transports for
+both platforms and all four supported products, plus old-order and refund
+rejection, wrong keys, current payment checks, margin, funding deadlines,
+restart/lost-response recovery and a shared cross-source debit blocker.
+No synthetic live purchase, activation or customer test message is permitted.
 
 ### Owner-prepaid AIEE 1000 reserve
 

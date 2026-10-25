@@ -148,6 +148,7 @@ PAUSED_FOR_PERMISSIONS=0
 NOTIFIERS_RELOADED=0
 AIBUY_RELOADED=0
 AIBUY_TOPUP_RELOADED=0
+AIBUY_MARKET_RELOADED=0
 rollback() {
   status=$?
   if [ "$status" -ne 0 ] && { [ "$SWITCHED" -eq 1 ] || [ "$PAUSED_FOR_PERMISSIONS" -eq 1 ]; }; then
@@ -164,6 +165,9 @@ rollback() {
     fi
     if [ "$AIBUY_TOPUP_RELOADED" -eq 1 ]; then
       systemctl restart gptishka-aibuy-topup.service || true
+    fi
+    if [ "$AIBUY_MARKET_RELOADED" -eq 1 ]; then
+      systemctl restart gptishka-aibuy-market.service || true
     fi
     echo "Release failed; previous complete directory restored"
   fi
@@ -188,6 +192,10 @@ fi
 if systemctl is-enabled --quiet gptishka-aibuy-topup.service; then
   AIBUY_TOPUP_RELOADED=1
   systemctl restart gptishka-aibuy-topup.service
+fi
+if systemctl is-enabled --quiet gptishka-aibuy-market.service; then
+  AIBUY_MARKET_RELOADED=1
+  systemctl restart gptishka-aibuy-market.service
 fi
 HEALTH_OK=0
 for attempt in $(seq 1 20); do
