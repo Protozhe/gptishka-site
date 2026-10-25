@@ -58,7 +58,8 @@ def select_purchase_ui(page,n):
     return race,variant,num,pay
 
 
-def topup(page,data):
+def topup(page,data,dispatch):
+    dispatch['phase']='form'
     amount=data['amount_minor']
     if type(amount) is not int or not 100<=amount<=1000000:raise ValueError('supplier_topup_amount')
     networks={'BEP20':('14','USDT-BEP20'),'POLYGON':('15','USDT-POLYGON'),'TRC20':('17','USDT-TRC20')}
@@ -70,18 +71,41 @@ def topup(page,data):
     method.wait_for(state='visible',timeout=30000)
     if method.inner_text().strip()!=label:raise ValueError('supplier_topup_network')
     method.click()
+    try:page.wait_for_function("id => document.querySelector('.btn-pay.checked')?.dataset.id === id",arg=pay_id,timeout=10000)
+    except Exception:raise ValueError('supplier_topup_network') from None
     button=page.locator('.payButton')
     if not button.is_enabled() or minor_text(field.input_value())!=amount:raise ValueError('supplier_topup_amount')
     # Creates an unpaid invoice only. No wallet, transfer or checkout payment
     # is performed here. Never repeat after a lost invoice-creation response.
-    with page.expect_response(lambda r:r.url==ORIGIN+'/user/api/recharge/trade',timeout=50000) as event:
-        button.click(no_wait_after=True,timeout=10000)
-    response=event.value;receipt=response.json()
-    if response.status!=200 or receipt.get('code')!=200:raise ValueError('supplier_topup_unconfirmed')
-    url=receipt.get('data',{}).get('url','')
     from urllib.parse import urlparse
-    parsed=urlparse(url)
-    if parsed.scheme!='https' or parsed.netloc!='pay.ai-buy.vip' or not re.fullmatch(r'/pay/checkout-counter/[A-Za-z0-9_-]{8,80}',parsed.path):
+    def gateway(url):
+        parsed=urlparse(url)
+        return parsed.scheme=='https' and parsed.netloc=='pay.ai-buy.vip' and not parsed.query and not parsed.fragment and bool(re.fullmatch(r'/pay/checkout-counter/[A-Za-z0-9_-]{8,80}',parsed.path))
+    observed=[]
+    page.on('request',lambda r:observed.append(urlparse(r.url).path) if r.url.startswith(ORIGIN+'/user/api/') else None)
+    try:
+        with page.expect_response(lambda r:r.url.split('?')[0].rstrip('/')==ORIGIN+'/user/api/recharge/trade' and r.request.method=='POST',timeout=50000) as event:
+            dispatch['started']=True
+            dispatch['phase']='submit'
+            button.click(no_wait_after=True,timeout=10000)
+        dispatch['phase']='response'
+        response=event.value;receipt=response.json()
+    except Exception as e:
+        # A successful ordinary form may navigate before its response body is
+        # readable. The new, strict public gateway URL is itself recoverable;
+        # never click again merely because the response observer timed out.
+        if gateway(page.url):
+            return {'invoice_url':page.url,'amount_minor':amount,'network':data['network'],'paid':False}
+        return {'error':'supplier_topup_unconfirmed','dispatch_state':'sent_or_uncertain',
+            'phase':dispatch['phase'],'exception':type(e).__name__,
+            'observed_paths':observed[-10:],'verification_required':page.locator('#fv-mask:visible,input[name=captcha]:visible').count()>0}
+    if response.status!=200 or receipt.get('code')!=200:
+        # Keep the first provider result encrypted in the root journal. A
+        # rejection is different from waiting for a still-running provider.
+        return {'error':'supplier_topup_rejected','dispatch_state':'sent_or_uncertain',
+            'http_status':response.status,'provider_code':receipt.get('code')}
+    url=receipt.get('data',{}).get('url','')
+    if not gateway(url):
         raise ValueError('supplier_topup_gateway_changed')
     return {'invoice_url':url,'amount_minor':amount,'network':data['network'],'trade_no':str(receipt['data'].get('tradeNo','')),'paid':False}
 
@@ -129,7 +153,7 @@ def _main(data,dispatch):
                     v=unescape(re.sub('<[^>]+>','',m[2])).strip()
                     if v.isdigit():ids.append(int(v))
             if ids!=[data['merchantId']]:raise ValueError('supplier_login_required')
-            if data['mode']=='topup':return result(topup(page,data))
+            if data['mode']=='topup':return result(topup(page,data,dispatch))
             if data['mode']=='balance':
                 return result(balance_snapshot(page))
             before=history(context)
@@ -210,10 +234,15 @@ def main(data):
     dispatch={'started':False}
     try:return _main(data,dispatch)
     except Exception as e:
-        if data.get('mode')=='buy' and not dispatch['started']:
+        if data.get('mode') in ('buy','topup') and not dispatch['started']:
             reason=str(e)
             return {'error':reason if re.fullmatch(r'supplier_[a-z_]{1,70}',reason) else 'supplier_checkout_not_ready',
                 'dispatch_state':'not_sent'}
+        if data.get('mode')=='topup':
+            reason=str(e)
+            return {'error':reason if re.fullmatch(r'supplier_[a-z_]{1,70}',reason) else 'supplier_topup_unconfirmed',
+                'dispatch_state':'sent_or_uncertain','phase':dispatch.get('phase','owner'),
+                'exception':type(e).__name__}
         raise
 
 

@@ -191,7 +191,7 @@ def child(data):
             env={'HOME':d,'XDG_CACHE_HOME':d,'XDG_CONFIG_HOME':d,'PATH':'/usr/bin:/bin'})
         if p.returncode or len(p.stdout)>4194304:raise ValueError('supplier_browser_unconfirmed')
         result=json.loads(p.stdout)
-        if result.get('error') and not (data.get('mode')=='buy' and result.get('dispatch_state')=='not_sent'):
+        if result.get('error') and not (data.get('mode')=='buy' and result.get('dispatch_state')=='not_sent' or data.get('mode')=='topup'):
             raise ValueError(result['error'])
         rows=result.pop('_cookies',None)
         if rows is not None:

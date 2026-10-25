@@ -12,11 +12,21 @@ def invoice_request(v,reference,amount,network,send):
     row=v.db.execute('SELECT * FROM topups WHERE id=?',(reference,)).fetchone()
     if row:
         if row['amount_minor']!=amount or row['network']!=network:raise ValueError('supplier_topup_contract_changed')
-        if row['receipt']:return v.open(row['receipt'],reference+'|topup')
-        raise ValueError('supplier_topup_unconfirmed')
-    v.db.execute("INSERT INTO topups VALUES(?,?,?,'creating',NULL)",(reference,amount,network))
+        if row['receipt']:
+            result=v.open(row['receipt'],reference+'|topup')
+            if row['state']!='not_sent':
+                if result.get('error'):raise ValueError(result['error'])
+                return result
+        else:raise ValueError('supplier_topup_unconfirmed')
+        # Only an explicit pre-click failure allows a new attempt. Unknown
+        # dispatches and provider rejections always retain their first result.
+        v.db.execute("UPDATE topups SET state='creating',receipt=NULL WHERE id=?",(reference,))
+    else:v.db.execute("INSERT INTO topups VALUES(?,?,?,'creating',NULL)",(reference,amount,network))
     result=send()
-    v.db.execute("UPDATE topups SET state='created',receipt=? WHERE id=?",(v.seal(result,reference+'|topup'),reference));return result
+    state=('not_sent' if result.get('dispatch_state')=='not_sent' else 'review') if result.get('error') else 'created'
+    v.db.execute("UPDATE topups SET state=?,receipt=? WHERE id=?",(state,v.seal(result,reference+'|topup'),reference))
+    if result.get('error'):raise ValueError(result['error'])
+    return result
 
 
 def create_invoice(reference,amount,network):

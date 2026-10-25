@@ -7,6 +7,51 @@ b=load('broker_topup_test','aibuy-broker.py');t=load('topup_test','aibuy-topup.p
 ui=load('topup_browser_test','aibuy-browser.py')
 
 class Tests(unittest.TestCase):
+ def test_navigation_recovers_invoice_without_a_second_click(self):
+  events=[];self_test=self
+  class Event:
+   def __enter__(self):return self
+   def __exit__(self,*args):raise TimeoutError()
+  class Locator:
+   def __init__(self,page,selector):self.page=page;self.selector=selector
+   def fill(self,value):self_test.assertEqual(value,'200.00')
+   def wait_for(self,**kw):pass
+   def inner_text(self):return 'USDT-BEP20'
+   def click(self,**kw):
+    if self.selector=='.payButton':events.append('create');self.page.url=self.page.destination
+   def is_enabled(self):return True
+   def input_value(self):return '200.00'
+   def count(self):return 0
+  class Page:
+   destination='https://pay.ai-buy.vip/pay/checkout-counter/FIXTURE1234'
+   url=ui.ORIGIN+'/user/recharge/index'
+   def goto(self,*args,**kw):pass
+   def locator(self,selector):return Locator(self,selector)
+   def wait_for_function(self,*args,**kw):pass
+   def on(self,*args):pass
+   def expect_response(self,*args,**kw):return Event()
+  r=ui.topup(Page(),{'amount_minor':20000,'network':'BEP20'},{'started':False})
+  self.assertEqual(r['invoice_url'],Page.destination);self.assertFalse(r['paid']);self.assertEqual(events,['create'])
+  for destination in ('https://evil.test/pay/checkout-counter/FIXTURE1234','https://pay.ai-buy.vip/pay/checkout-counter/FIXTURE1234?x=bad'):
+   page=Page();page.destination=destination;events.clear()
+   r=ui.topup(page,{'amount_minor':20000,'network':'BEP20'},{'started':False})
+   self.assertEqual(r['dispatch_state'],'sent_or_uncertain');self.assertNotIn('invoice_url',r);self.assertEqual(events,['create'])
+ def test_only_proven_preclick_failure_can_retry_and_rejection_keeps_first_result(self):
+  v=b.Vault(':memory:',os.urandom(32));calls=[]
+  def not_sent():calls.append('preclick');return {'error':'supplier_checkout_not_ready','dispatch_state':'not_sent'}
+  with self.assertRaisesRegex(ValueError,'checkout_not_ready'):t.invoice_request(v,'retry-fixture',20000,'BEP20',not_sent)
+  def rejected():calls.append('rejected');return {'error':'supplier_topup_rejected','dispatch_state':'sent_or_uncertain','provider_code':42002}
+  with self.assertRaisesRegex(ValueError,'topup_rejected'):t.invoice_request(v,'retry-fixture',20000,'BEP20',rejected)
+  with self.assertRaisesRegex(ValueError,'topup_rejected'):t.invoice_request(v,'retry-fixture',20000,'BEP20',lambda:self.fail('must not dispatch again'))
+  row=v.db.execute('SELECT * FROM topups').fetchone();self.assertEqual(row['state'],'review')
+  self.assertEqual(v.open(row['receipt'],'retry-fixture|topup')['provider_code'],42002);self.assertEqual(calls,['preclick','rejected']);v.db.close()
+ def test_preclick_and_uncertain_browser_errors_have_distinct_persistent_evidence(self):
+  from unittest.mock import patch
+  with patch.object(ui,'_main',side_effect=TimeoutError()):
+   self.assertEqual(ui.main({'mode':'topup'})['dispatch_state'],'not_sent')
+  def sent(data,dispatch):dispatch.update(started=True,phase='response');raise TimeoutError()
+  with patch.object(ui,'_main',side_effect=sent):
+   r=ui.main({'mode':'topup'});self.assertEqual(r['dispatch_state'],'sent_or_uncertain');self.assertEqual(r['phase'],'response');self.assertEqual(r['exception'],'TimeoutError')
  def test_balance_uses_storefront_layout_without_payment_or_stock_actions(self):
   events=[]
   class Page:
