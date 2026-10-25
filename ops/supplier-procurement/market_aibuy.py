@@ -181,7 +181,11 @@ def poll_result(a,j,r,result):
         update(a,j['id'],state='review',reason='provider_final_failure',next_at=time.time()+86400)
         with a.connect() as c:c.execute("UPDATE codex_jobs SET status='manual_action',error='AI-BUY: поставщик не завершил активацию; повторная отправка заблокирована',updated_at=? WHERE id=? AND status<>'success'",(utc_now(),j['id']))
         notice(a,j,'review','⚠️ <b>AI-BUY · Требуется проверка</b>\n\nПоставщик завершил заявку с ошибкой. Повторная закупка и активация остановлены.')
-    else:update(a,j['id'],state='processing',next_at=time.time()+30)
+    else:
+        update(a,j['id'],state='processing',next_at=time.time()+30)
+        try:overdue=bool(j['aiee_order_id']) and time.time()-stamp(j['updated_at'])>=900
+        except (TypeError,ValueError):overdue=False
+        if overdue:notice(a,j,'pending_15','⚠️ <b>AI-BUY · Активация задерживается</b>\n\nСтатус: <b>проверяем исходную заявку более 15 минут</b>\nПовторная покупка и отправка заблокированы; продолжаем проверять результат.')
 
 def drive(a,jid):
     import fcntl
