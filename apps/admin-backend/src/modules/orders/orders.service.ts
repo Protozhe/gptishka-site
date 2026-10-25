@@ -59,6 +59,7 @@ const CHONGZHI_SUBMIT_API_TIMEOUT_MS = 45_000;
 const IOS_SUBMIT_API_TIMEOUT_MS = 150_000;
 const IOS_SUBMIT_CLIENT_WAIT_MS = 20_000;
 const IOS_SUBMISSION_RECONCILE_MS = 15 * 60_000;
+type IosSubmitObserver = (result: { status: number; json: any } | null) => void;
 const AICHONGZHI_API_TIMEOUT_MS = 30_000;
 const SXZFD_GROK_MAX_START_ATTEMPTS = Math.min(3, ACTIVATION_OUTSTOCK_MAX_RETRIES);
 const MIN_STORED_CLIENT_TOKEN_TTL_HOURS = 24 * 7;
@@ -2511,7 +2512,9 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   if (latestBeforeStart.status === "processing" || latestBeforeStart.verificationState === "pending") {
     return { taskId: String(latestBeforeStart.taskId || `reconcile-${orderId}`), reused: true };
   }
-  if(latestBeforeStart.taskId && Number(latestBeforeStart.attempts||0)>0 && (latestBeforeStart.lastProviderPayload?.submissionDiagnostics as any)?.phase === "submit_recharge") {
+  if(latestBeforeStart.taskId && Number(latestBeforeStart.attempts||0)>0 &&
+      ((latestBeforeStart.lastProviderPayload?.submissionDiagnostics as any)?.phase === "submit_recharge" ||
+       (isIosProviderBase(latestBeforeStart.activationSiteUrl) && /^reconcile-\d{13}-[a-z0-9]+$/.test(latestBeforeStart.taskId)))) {
     return {taskId:latestBeforeStart.taskId,reused:true};
   }
   // A rejected retry must preserve the previous provider task and diagnostics.
@@ -2603,6 +2606,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     productKey: String(stored.productKey || ""),
     activationSiteUrl: String(stored.activationSiteUrl || ""),
     forceOverwrite: chatGptPlusSelection.forceOverwrite,
+    onIosSubmitResult: iosSubmission ? result => recordIosSubmitResult(orderId, stored.cdk, iosReconcileTask, result) : undefined,
     beforeSubmit: durableJsonSubmission ? () => {
       const latest = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
       if (iosDispatchRecorded || latest.cdk !== stored.cdk || latest.status === "success"
@@ -2614,7 +2618,8 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
         taskId: iosReconcileTask, attempts: attempts + 1,
         lastProviderMessage: "Заявка отправляется. Проверяем результат автоматически.",
         lastProviderPayload: { submissionDiagnostics: {
-          phase: "submit_recharge", outcome: "in_flight", checkedAt: new Date().toISOString(),
+          phase: "submit_recharge", outcome: "in_flight", dispatchTask: iosReconcileTask,
+          forceOverwrite: chatGptPlusSelection.forceOverwrite, checkedAt: new Date().toISOString(),
         } },
         updatedAt: new Date().toISOString(),
       });
@@ -2669,7 +2674,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
       ...(iosDispatchRecorded ? { status: "failed" as const, verificationState: "failed" as const } : {}),
       lastProviderMessage: `${providerName} task creation failed (HTTP ${createResult.status || 0}; requests ${createResult.tries || 0}).`,
       lastProviderCheckedAt: failedAt,
-      lastProviderPayload: null,
+      lastProviderPayload: durableJsonSubmission ? latestFailed.lastProviderPayload : null,
       updatedAt: failedAt,
     });
     throw new AppError("Не удалось запустить активацию автоматически. Повторите попытку или обратитесь в поддержку.", 502, {
@@ -2702,7 +2707,16 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     verificationState: nextVerificationState,
     lastProviderMessage: String(createResult.message || "Activation request sent"),
     lastProviderCheckedAt: new Date().toISOString(),
-    lastProviderPayload: createResult.providerPayload || null,
+    lastProviderPayload: durableJsonSubmission ? {
+      ...(createResult.providerPayload || {}),
+      ...((latest.lastProviderPayload?.submissionDiagnostics || createResult.providerPayload?.submissionDiagnostics) ? {
+        submissionDiagnostics: {
+          ...(latest.lastProviderPayload?.submissionDiagnostics as object || {}),
+          ...(createResult.providerPayload?.submissionDiagnostics as object || {}),
+        },
+      } : {}),
+      ...(latest.lastProviderPayload?.iosSubmitResult ? { iosSubmitResult: latest.lastProviderPayload.iosSubmitResult } : {}),
+    } : createResult.providerPayload || null,
     updatedAt: new Date().toISOString(),
   });
 
@@ -2726,6 +2740,7 @@ async function startOutstockTaskWithRetry(input: {
   activationSiteUrl?: string;
   forceOverwrite?: boolean;
   beforeSubmit?: () => void;
+  onIosSubmitResult?: IosSubmitObserver;
 }) {
   const aichongzhiProduct = resolveAichongzhiProduct(input.productKey);
   if (aichongzhiProduct) {
@@ -3717,7 +3732,7 @@ async function recoverCompletedChongzhiJsonTask(
 // Return progress to the browser while the single upstream request continues.
 // A late failure is consumed here; the durable task is reconciled by read-only
 // query_code checks. Never replay the POST or switch keys after this boundary.
-function waitForIosSubmitResponse(request: Promise<{ status: number; raw: string; json: any }>) {
+function waitForIosSubmitResponse(request: Promise<{ status: number; raw: string; json: any }>, observe?: IosSubmitObserver) {
   return new Promise<{ status: number; raw: string; json: any }>((resolve, reject) => {
     let settled = false;
     const timer = setTimeout(() => {
@@ -3727,15 +3742,46 @@ function waitForIosSubmitResponse(request: Promise<{ status: number; raw: string
       } });
     }, IOS_SUBMIT_CLIENT_WAIT_MS);
     request.then(result => {
+      try { observe?.(result); } catch { /* Observation cannot replay or invalidate the original request. */ }
       if (!settled) { settled = true; clearTimeout(timer); resolve(result); }
     }, error => {
+      try { observe?.(null); } catch { /* Keep the durable dispatch even if diagnostics cannot be saved. */ }
       if (!settled) { settled = true; clearTimeout(timer); reject(error); }
     });
   });
 }
 
+// Preserve a late reply after the browser has received its progress response.
+// This observer never submits, changes a key, or treats acceptance as success.
+function recordIosSubmitResult(orderId: string, cdk: string, dispatchTask: string, result: { status: number; json: any } | null) {
+  const current = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
+  if (!current || current.cdk !== cdk || !isIosProviderBase(current.activationSiteUrl) ||
+      current.status === "success" || current.verificationState === "success") return;
+  const diagnostic = current.lastProviderPayload?.submissionDiagnostics as any;
+  if (diagnostic?.dispatchTask !== dispatchTask && current.taskId !== dispatchTask) return;
+  const reply = result?.json;
+  const code = String(reply?.code || "");
+  const state = String(reply?.recharge_status || reply?.status || "").toLowerCase();
+  const outcome = !reply ? "unconfirmed" : reply.success === true || reply.pending === true ? "accepted" : "rejected";
+  activationStore.upsert({
+    ...current,
+    lastProviderPayload: { ...(current.lastProviderPayload || {}),
+      submissionDiagnostics: { ...(diagnostic || {}), phase: "submit_recharge", dispatchTask, outcome, checkedAt: new Date().toISOString() },
+      iosSubmitResult: { httpStatus: result?.status || 0, outcome,
+        code: /^[a-z_]{1,80}$/.test(code) ? code : null,
+        rechargeStatus: /^[a-z_]{1,30}$/.test(state) ? state : null,
+        hasTask: Boolean(reply?.order_id || reply?.task_id || reply?.record_id),
+      },
+    },
+    updatedAt: new Date().toISOString(),
+  });
+  if (reply?.success === true && ["success", "completed"].includes(state)) {
+    updateActivationFromChongzhiCodePayload(orderId, { status: result?.status, json: reply });
+  }
+}
+
 async function startChongzhiJsonTask(
-  input: { cdk: string; userCandidates: any[]; productKey?: string; forceOverwrite?: boolean; beforeSubmit?: () => void },
+  input: { cdk: string; userCandidates: any[]; productKey?: string; forceOverwrite?: boolean; beforeSubmit?: () => void; onIosSubmitResult?: IosSubmitObserver },
   base: string,
   sourceLabel?: string
 ) {
@@ -3935,7 +3981,7 @@ async function startChongzhiJsonTask(
         };
     input.beforeSubmit?.();
     const request = callChongzhiJsonApi(base, "submit_recharge", submitData, session);
-    submit = await (isIosProviderBase(base) ? waitForIosSubmitResponse(request) : request);
+    submit = await (isIosProviderBase(base) ? waitForIosSubmitResponse(request, input.onIosSubmitResult) : request);
   } catch (error) {
     // The provider can complete a recharge but leave the submit request open
     // until our HTTP timeout. Query the CDK before reporting a false failure.
@@ -4009,7 +4055,7 @@ async function startChongzhiJsonTask(
 }
 
 async function startChongzhiTaskWithRetry(
-  input: { cdk: string; deviceId: string; userCandidates: any[]; productKey?: string; forceOverwrite?: boolean; beforeSubmit?: () => void },
+  input: { cdk: string; deviceId: string; userCandidates: any[]; productKey?: string; forceOverwrite?: boolean; beforeSubmit?: () => void; onIosSubmitResult?: IosSubmitObserver },
   options?: { baseUrl?: string; sourceLabel?: string }
 ) {
   const base = String(options?.baseUrl || env.ACTIVATION_CHONGZHI_BASE_URL || "https://vip.sxzfd.com")
@@ -4311,7 +4357,7 @@ function updateActivationFromChongzhiCodePayload(orderId: string, payload: { sta
   if (!stored) return;
   // A concurrent browser/admin poll may finish after the final provider reply.
   // Keep confirmed AI-BUY completion and cleared customer credentials intact.
-  if (stored.activationSiteUrl === "https://aichongzhi.fun" &&
+  if ((stored.activationSiteUrl === "https://aichongzhi.fun" || isIosProviderBase(stored.activationSiteUrl)) &&
       (stored.status === "success" || stored.verificationState === "success")) return;
 
   const nowIso = new Date().toISOString();
@@ -4362,6 +4408,7 @@ function updateActivationFromChongzhiCodePayload(orderId: string, payload: { sta
     lastProviderPayload: {
       ...(stored.lastProviderPayload?.submissionDiagnostics
         ? { submissionDiagnostics: stored.lastProviderPayload.submissionDiagnostics } : {}),
+      ...(stored.lastProviderPayload?.iosSubmitResult ? { iosSubmitResult: stored.lastProviderPayload.iosSubmitResult } : {}),
       source: (stored.activationSiteUrl === "https://aichongzhi.fun") ? (stored.productKey === "claude-pro" ? "aibuy-claude" : "aibuy-codex") : isAiee ? "aiee.fun/api/auth.php" : "chongzhi/status",
       providerStatus: Number(payload?.status || 0),
       code_status: codeStatus || null,

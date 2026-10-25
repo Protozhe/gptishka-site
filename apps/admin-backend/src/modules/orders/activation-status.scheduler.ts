@@ -37,7 +37,16 @@ function processingRecords() {
         (record.lastProviderPayload?.submissionDiagnostics as any)?.phase === "submit_recharge" &&
         ["unused", "pending", "processing"].includes(String(record.lastProviderPayload?.recharge_status || "")) &&
         Date.parse(String(record.issuedAt || "")) >= oldestAllowed;
-      if (status !== "processing" && verification !== "pending" && !unresolvedCodex && !unresolvedAibuy) return false;
+      // IOS progress can precede a late submit reply. After a review alert,
+      // keep querying the same key; never turn this into another submission.
+      const unresolvedIos =
+        record.activationSiteUrl === "https://vip.sxzfd.com" &&
+        status !== "success" && verification !== "success" &&
+        Boolean(record.cdk) && Number(record.attempts || 0) > 0 &&
+        /^reconcile-\d{13}-[a-z0-9]+$/.test(String(record.taskId || "")) &&
+        ["", "active", "available", "unused", "pending", "processing"].includes(String(record.lastProviderPayload?.recharge_status || "")) &&
+        Date.parse(String(record.issuedAt || "")) >= oldestAllowed;
+      if (status !== "processing" && verification !== "pending" && !unresolvedCodex && !unresolvedAibuy && !unresolvedIos) return false;
       const updatedAt = Date.parse(String(record.updatedAt || ""));
       return !Number.isFinite(updatedAt) || updatedAt >= oldestAllowed;
     })

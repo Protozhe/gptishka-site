@@ -105,6 +105,20 @@ for (const lateFailure of [false, true]) {
   assert.equal(calls.filter(c => c.action === "submit_recharge").length, 1);
   resolveLate = undefined; rejectLate = undefined;
 }
+// The client wait may finish before the original request. Observe that same
+// request exactly once, including a late rejection, without starting a new one.
+for (const rejected of [false, true]) {
+  const observed=[];let complete,fail;
+  const response=new Promise((resolve,reject)=>{complete=resolve;fail=reject});
+  timers.length=0;
+  const pending=flow.waitForIosSubmitResponse(response,r=>observed.push(r));
+  timers.find(t=>t.ms===20000&&!t.cleared).fn();
+  assert.equal((await pending).status,202);assert.equal(observed.length,0);
+  if(rejected)fail(Error('isolated late failure'));
+  else complete({status:200,json:{success:false,code:'overwrite_consent_required'},raw:'fixture-sensitive-response'});
+  await Promise.resolve();await Promise.resolve();
+  assert.equal(observed.length,1);assert.equal(observed[0]?.json?.code,rejected?undefined:'overwrite_consent_required');
+}
 
 // Process loss after dispatch: the persisted pending state must stop another
 // request before it reserves a key, resets the task or reaches the supplier.
@@ -127,6 +141,7 @@ const state = load({
     input.beforeSubmit(); posts++;
     assert.equal(stored.status, "processing"); assert.equal(stored.attempts, 1); assert.match(stored.taskId, /^reconcile-/);
     if (outcome === "crash") throw Error("fixture process loss");
+    if (outcome === "pending") return {ok:true,taskId:`reconcile-${Date.now()}-pending`,immediateSuccess:false,providerPayload:{recharge:{pending:true}}};
     stored = { ...stored, status: "success", verificationState: "success", taskId: "provider-1" };
     return { ok: true, taskId: "late-pending", immediateSuccess: false };
   },
@@ -140,6 +155,15 @@ assert.equal(result.reused, true); assert.equal(result.taskId, taskId); assert.e
 reset(); outcome = "late-response";
 await state.startActivationUnsafe("fixture-order", '{"fixture":true}');
 assert.equal(stored.status, "success", "A late submit response must not overwrite scheduler-confirmed success");
+reset();outcome='pending';
+await state.startActivationUnsafe('fixture-order','{"fixture":true}');
+assert.equal(stored.lastProviderPayload.submissionDiagnostics.phase,'submit_recharge');
+assert.equal(stored.lastProviderPayload.submissionDiagnostics.forceOverwrite,true);
+assert.match(stored.lastProviderPayload.submissionDiagnostics.dispatchTask,/^reconcile-/);
+stored={...stored,status:'failed',verificationState:'failed',lastProviderPayload:{recharge_status:'available'}};
+const historicalTask=stored.taskId;
+result=await state.startActivationUnsafe('fixture-order','{"fixture":true}');
+assert.equal(result.reused,true);assert.equal(result.taskId,historicalTask);assert.equal(posts,1,'Legacy lost diagnostics cannot permit a second dispatch after the review deadline');
 
 // Reconciliation grace applies only to IOS; confirmation requires a successful
 // recharge, not merely the supplier marking a key used after a failed attempt.
@@ -151,7 +175,7 @@ const status = load({
   isAieeProviderBase: value => String(value).includes("aiee.fun"), isIosProviderBase: ios,
   activationStore: { findByOrderId: () => stored, upsert: value => { stored = value; } },
   buildStoredClientTokenPatch: () => ({ clientTokenCiphertext: null }),
-}, ["isChongzhiCodeUsed", "updateActivationFromChongzhiCodePayload"]);
+}, ["isChongzhiCodeUsed", "updateActivationFromChongzhiCodePayload", "recordIosSubmitResult"]);
 const available = { status: 200, json: { success: true, status: "available", recharge_status: "available" } };
 function record(site, minutes) { stored = { orderId: "fixture-order", cdk: "fixture", activationSiteUrl: site, taskId: `reconcile-${now - minutes * 60000}-fixture`, status: "processing", verificationState: "pending" }; }
 record("https://vip.sxzfd.com", 6); status.updateActivationFromChongzhiCodePayload("fixture-order", available); assert.equal(stored.status, "processing");
@@ -163,4 +187,29 @@ assert.equal(stored.status, "failed");
 record("https://vip.sxzfd.com", 1);
 status.updateActivationFromChongzhiCodePayload("fixture-order", { status: 200, json: { success: true, status: "used", recharge_status: "success", order_id: "provider-1" } });
 assert.equal(stored.status, "success"); assert.equal(stored.taskId, "provider-1"); assert.equal(stored.clientTokenCiphertext, null);
+const confirmed=JSON.stringify(stored);
+status.updateActivationFromChongzhiCodePayload('fixture-order',available);
+assert.equal(JSON.stringify(stored),confirmed,'A late available response cannot undo confirmed IOS renewal');
+record('https://vip.sxzfd.com',16);stored.attempts=1;stored.lastProviderPayload={submissionDiagnostics:{phase:'submit_recharge',dispatchTask:'original-dispatch'}};
+status.recordIosSubmitResult('fixture-order','fixture','original-dispatch',{status:200,json:{success:false,code:'overwrite_consent_required',message:'fixture-sensitive-email@example.invalid',sid:'fixture-secret'}});
+assert.equal(stored.lastProviderPayload.iosSubmitResult.code,'overwrite_consent_required');
+assert.ok(!JSON.stringify(stored).includes('fixture-sensitive'));assert.ok(!JSON.stringify(stored).includes('fixture-secret'));
+status.updateActivationFromChongzhiCodePayload('fixture-order',available);
+assert.equal(stored.lastProviderPayload.iosSubmitResult.outcome,'rejected');
+const beforeWrong=JSON.stringify(stored);
+status.recordIosSubmitResult('fixture-order','another-key','original-dispatch',{status:200,json:{success:true,recharge_status:'success'}});
+status.recordIosSubmitResult('fixture-order','fixture','another-dispatch',{status:200,json:{success:true,recharge_status:'success'}});
+assert.equal(JSON.stringify(stored),beforeWrong);
+status.recordIosSubmitResult('fixture-order','fixture','original-dispatch',{status:200,json:{success:true,recharge_status:'success',order_id:'provider-late'}});
+assert.equal(stored.status,'success');assert.equal(stored.taskId,'provider-late');
+// A review alert must retain query-only eligibility, including older IOS
+// records whose synthetic task survived but whose diagnostic marker was lost.
+const scheduler=ts.createSourceFile('scheduler.ts',fs.readFileSync('apps/admin-backend/src/modules/orders/activation-status.scheduler.ts','utf8'),ts.ScriptTarget.Latest,true);
+const select=scheduler.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name.text==='processingRecords');
+const watch=vm.createContext({Date,MAX_RECORD_AGE_MS:7*86400000,MAX_RECORDS_PER_CYCLE:24,activationStore:{list:()=>[stored]}});
+vm.runInContext(ts.transpileModule(select.getText(scheduler),{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,watch);
+stored={orderId:'fixture',activationSiteUrl:'https://vip.sxzfd.com',cdk:'fixture',attempts:1,status:'failed',verificationState:'failed',taskId:`reconcile-${Date.now()-16*60000}-fixture`,issuedAt:new Date().toISOString(),updatedAt:new Date().toISOString(),lastProviderPayload:{recharge_status:'available'}};
+assert.equal(watch.processingRecords().length,1);
+const reviewed={...stored};
+for(const change of [{attempts:0},{status:'success',verificationState:'success'},{taskId:'manual-fixture'},{issuedAt:new Date(Date.now()-8*86400000).toISOString()},{lastProviderPayload:{recharge_status:'failed'}}]){stored={...reviewed,...change};assert.equal(watch.processingRecords().length,0)}
 console.log("IOS renewals: consent, route/TLS, in-memory cookies, asynchronous response, one-shot dispatch, restart safety, lost replies and read-only confirmation passed.");
