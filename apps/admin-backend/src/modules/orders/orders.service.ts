@@ -3782,6 +3782,22 @@ function recordIosSubmitResult(orderId: string, cdk: string, dispatchTask: strin
   }
 }
 
+// Session pages can append tens of kilobytes of marketing and experiment data.
+// Keep authentication and account fields intact; omit only unrelated telemetry
+// from the IOS request, without changing the stored session or its binding.
+function compactIosSessionToken(raw: string) {
+  try {
+    const value = JSON.parse(raw);
+    if (!value || typeof value !== "object" || Array.isArray(value)) return raw;
+    delete value.WARNING_BANNER;
+    delete value.statsigContext;
+    delete value.marketingEligibility;
+    return JSON.stringify(value);
+  } catch {
+    return raw;
+  }
+}
+
 async function startChongzhiJsonTask(
   input: { cdk: string; userCandidates: any[]; productKey?: string; forceOverwrite?: boolean; beforeSubmit?: () => void; onIosSubmitResult?: IosSubmitObserver },
   base: string,
@@ -3968,7 +3984,7 @@ async function startChongzhiJsonTask(
     const submitData = isIosProviderBase(base)
       ? {
           cdk: input.cdk,
-          json_token: tokenRaw,
+          json_token: compactIosSessionToken(tokenRaw),
           sid,
           force_overwrite: Boolean(input.forceOverwrite),
           confirm_overwrite: Boolean(input.forceOverwrite),

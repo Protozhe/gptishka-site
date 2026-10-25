@@ -51,6 +51,15 @@ assert.ok(!JSON.stringify(requests[1].options).includes("fixture-sensitive"), "C
 // Run the actual JSON/retry flow. All provider traffic below is a deterministic
 // fixture, including transport failures and late upstream responses.
 let calls, mode, resolveLate, rejectLate, claimed, queryCount;
+const sessionFixture = {
+  accessToken: "fixture-access", sessionToken: "fixture-session",
+  account: { id: "fixture-account", planType: "plus" }, user: { email: "fixture@example.invalid" },
+  expires: "2099-01-01T00:00:00Z", authProvider: "fixture", futureAuthField: { keep: true },
+  WARNING_BANNER: "fixture-warning", statsigContext: { experiment: "fixture" },
+  marketingEligibility: { content: "x".repeat(29000) },
+};
+const originalSession = JSON.stringify(sessionFixture);
+const expectedSession = Object.fromEntries(Object.entries(sessionFixture).filter(([k]) => !["WARNING_BANNER", "statsigContext", "marketingEligibility"].includes(k)));
 const flow = load({
   env: {}, Date, Math, Map, setTimeout: fakeTimer, clearTimeout: clearTimer,
   IOS_SUBMIT_CLIENT_WAIT_MS: 20000, ACTIVATION_OUTSTOCK_MAX_RETRIES: 3,
@@ -69,19 +78,32 @@ const flow = load({
     if (action === "verify_code") return { status: 200, json: { success: true, status: "active", sid: "fixture-sid", can_submit: mode !== "invalid-key" } };
     assert.equal(action, "submit_recharge");
     assert.equal(claimed, 1, "A durable dispatch must be recorded before the POST");
-    assert.equal(payload.force_overwrite, true); assert.equal(payload.confirm_overwrite, true);
+    assert.equal(payload.force_overwrite, true);
+    if (ios(base)) {
+      assert.equal(payload.confirm_overwrite, true);
+      assert.deepEqual(JSON.parse(payload.json_token), expectedSession, "Keep every auth/account field while omitting unrelated telemetry from IOS POST");
+      assert.ok(payload.json_token.length < 1000, "Marketing bloat must not reach the supplier POST");
+    } else {
+      assert.equal(payload.json_token, originalSession, "Other suppliers retain their existing session contract");
+    }
     if (mode === "slow") return new Promise((resolve, reject) => { resolveLate = resolve; rejectLate = reject; });
     if (mode.startsWith("lost-")) throw new Error("fixture transport failure");
     if (mode === "http-500") return { status: 500, json: { success: false } };
     if (mode === "accepted") return { status: 200, json: { success: true, order_id: "provider-1" } };
     return { status: 200, json: { success: true, recharge_status: "success", order_id: "provider-1" } };
   },
-}, ["isChongzhiCodeUsed", "recoverCompletedChongzhiJsonTask", "waitForIosSubmitResponse", "startChongzhiJsonTask", "startChongzhiTaskWithRetry"]);
+}, ["isChongzhiCodeUsed", "recoverCompletedChongzhiJsonTask", "waitForIosSubmitResponse", "compactIosSessionToken", "startChongzhiJsonTask", "startChongzhiTaskWithRetry"]);
 function start(which) {
   mode = which; calls = []; claimed = 0; queryCount = 0; timers.length = 0;
-  return flow.startChongzhiTaskWithRetry({ cdk: "fixture", deviceId: "web", userCandidates: ['{"account":{"planType":"plus"}}'], forceOverwrite: true, beforeSubmit() { claimed++; } }, { baseUrl: "https://vip.sxzfd.com" });
+  return flow.startChongzhiTaskWithRetry({ cdk: "fixture", deviceId: "web", userCandidates: [originalSession], forceOverwrite: true, beforeSubmit() { claimed++; } }, { baseUrl: "https://vip.sxzfd.com" });
 }
 let result = await start("success"); assert.equal(result.immediateSuccess, true);
+assert.equal(calls.filter(c => c.action === "submit_recharge").length, 1);
+assert.equal(JSON.stringify(sessionFixture), originalSession, "Request compaction cannot mutate the original session");
+assert.equal(flow.compactIosSessionToken("not-json"), "not-json");
+assert.equal(flow.compactIosSessionToken("[]"), "[]");
+calls = []; claimed = 0;
+await flow.startChongzhiJsonTask({ cdk: "fixture", userCandidates: [originalSession], forceOverwrite: true, beforeSubmit() { claimed++; } }, "https://compatible.example.invalid");
 assert.equal(calls.filter(c => c.action === "submit_recharge").length, 1);
 result = await start("accepted"); assert.equal(result.immediateSuccess, false, "Acceptance alone must not claim success");
 result = await start("invalid-key"); assert.equal(result.ok, false); assert.equal(claimed, 0);
