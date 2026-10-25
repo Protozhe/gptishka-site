@@ -5,6 +5,7 @@ An independent DB validator determines the paid product, cutoff and margin.
 No public endpoint, password, payment retry or activation lives in this broker.
 """
 import base64,json,os,pathlib,re,socket,sqlite3,stat,struct,subprocess,sys,tempfile,time
+from datetime import datetime,timezone
 from decimal import Decimal
 from hashlib import sha256
 from urllib.request import Request,build_opener,HTTPRedirectHandler
@@ -50,6 +51,10 @@ class Vault:
         self.db.row_factory=sqlite3.Row;self.db.execute('PRAGMA synchronous=FULL')
         self.db.execute('CREATE TABLE IF NOT EXISTS buys(order_id TEXT PRIMARY KEY,credits INTEGER NOT NULL,amount_minor INTEGER NOT NULL,state TEXT NOT NULL,baseline BLOB NOT NULL,receipt BLOB)')
         self.db.execute('CREATE TABLE IF NOT EXISTS assets(fingerprint TEXT PRIMARY KEY,credits INTEGER NOT NULL,cipher BLOB NOT NULL,amount_minor INTEGER NOT NULL,trade_no TEXT UNIQUE NOT NULL,order_id TEXT UNIQUE,state TEXT NOT NULL)')
+        self.db.execute('''CREATE TABLE IF NOT EXISTS prepaid_aiee_reserves(
+            fingerprint TEXT PRIMARY KEY,credits INTEGER NOT NULL,cipher BLOB NOT NULL,
+            amount_minor INTEGER NOT NULL,usdt_minor INTEGER NOT NULL,purchased_on TEXT NOT NULL,
+            order_id TEXT UNIQUE,state TEXT NOT NULL,assigned_at TEXT,reason TEXT)''')
         if str(file)!=':memory:':os.chmod(file,0o600)
 
     def seal(self,value,aad):
@@ -117,6 +122,62 @@ def verify_key(code,credits):
     return True
 
 
+def verify_aiee_key(code,credits):
+    if credits!=1000 or not isinstance(code,str):raise ValueError('supplier_fallback_product_invalid')
+    results={}
+    for action in ('query_code','verify_code'):
+        req=Request('https://aiee.fun/api/auth.php',data=json.dumps({'action':action,'cdk':code}).encode(),
+            headers={'Content-Type':'application/json'},method='POST')
+        with build_opener(NoRedirect).open(req,timeout=25) as response:results[action]=json.loads(response.read(262144))
+    query,verify=results['query_code'],results['verify_code']
+    if (query.get('success') is not True or str(query.get('status','')).lower() not in ('active','available','unused')
+        or query.get('order_id') or query.get('recharge_status') or query.get('previous_failed')
+        or verify.get('success') is not True or verify.get('plan_type')!='codex1000'
+        or int(verify.get('require_cookie') or 0)!=0 or not verify.get('sid') or verify.get('can_submit') is False):
+        raise ValueError('supplier_fallback_key_unverified')
+    return True
+
+
+def fallback_reply(vault,row):
+    return {'state':'prepaid_fallback','source':'owner_prepaid_aiee','credits':row['credits'],
+        'code':vault.open(row['cipher'],row['fingerprint']),'fallback_id':row['fingerprint'],
+        'amount_minor':row['amount_minor'],'usdt_minor':row['usdt_minor'],'purchased_on':row['purchased_on'],
+        'activationSiteUrl':'https://aiee.fun','primary_sealed_no_charge':True}
+
+
+def prepaid_fallback(vault,oid,credits,policy,reason,validator,oracle=verify_aiee_key):
+    cfg=policy.get('prepaidAieeFallback') or {}
+    allowed={'supplier_login_required','supplier_checkout_not_ready','supplier_balance_insufficient'}
+    if cfg.get('enabled') is not True or credits!=1000 or reason not in allowed:return None
+    prior=vault.db.execute('SELECT state FROM buys WHERE order_id=?',(oid,)).fetchone()
+    if prior and prior['state']!='not_sent':return None
+    row=vault.db.execute("SELECT * FROM prepaid_aiee_reserves WHERE credits=? AND state='available' AND order_id IS NULL ORDER BY rowid LIMIT 1",(credits,)).fetchone()
+    if not row:return None
+    intent=validator(oid,row['amount_minor'])
+    try:
+        start=datetime.fromisoformat(str(cfg['enabledAfter']).replace('Z','+00:00'))
+        if start.tzinfo is None or start>datetime.now(timezone.utc):return None
+        for field in ('created_at','payment_at'):
+            date=datetime.fromisoformat(str(intent[field]).replace('Z','+00:00'))
+            if date.tzinfo is None or date<start:return None
+    except (ValueError,TypeError,KeyError):return None
+    if intent.get('stock_available'):return {'state':'stock_available'}
+    oracle(vault.open(row['cipher'],row['fingerprint']),credits)
+    vault.db.execute('BEGIN IMMEDIATE')
+    try:
+        prior=vault.db.execute('SELECT state FROM buys WHERE order_id=?',(oid,)).fetchone()
+        if prior and prior['state']!='not_sent':raise ValueError('supplier_fallback_primary_unconfirmed')
+        changed=vault.db.execute("UPDATE prepaid_aiee_reserves SET state='assigned',order_id=?,assigned_at=?,reason=? WHERE fingerprint=? AND state='available' AND order_id IS NULL",
+            (oid,datetime.now(timezone.utc).isoformat(),reason,row['fingerprint'])).rowcount
+        if changed!=1:raise ValueError('supplier_fallback_stock_changed')
+        if prior:vault.db.execute("UPDATE buys SET state='cancelled_no_charge' WHERE order_id=? AND state='not_sent'",(oid,))
+        else:vault.db.execute("INSERT INTO buys VALUES(?,?,?,'cancelled_no_charge',?,?)",
+            (oid,credits,row['amount_minor'],vault.seal([],oid+'|baseline'),vault.seal({'prepaid_fallback':True,'reason':reason,'dispatch_state':'not_sent'},oid+'|receipt')))
+        vault.db.execute('COMMIT')
+    except BaseException:vault.db.execute('ROLLBACK');raise
+    return fallback_reply(vault,row)
+
+
 def child(data):
     import pwd
     saved,key,current=session()
@@ -177,7 +238,7 @@ def asset_reply(vault,asset):
         'activationSiteUrl':'https://aichongzhi.fun'}
 
 
-def procure(oid,policy,*,browser=child,order_validator=validate,oracle=verify_key):
+def procure(oid,policy,*,browser=child,order_validator=validate,oracle=verify_key,fallback_oracle=verify_aiee_key):
     if not re.fullmatch(r'[a-z0-9]{20,40}',oid or ''):raise ValueError('supplier_request_invalid')
     if policy.get('enabled') is not True:raise ValueError('supplier_disabled')
     if policy.get('paused') is True:raise ValueError('supplier_owner_topup_pause')
@@ -185,6 +246,8 @@ def procure(oid,policy,*,browser=child,order_validator=validate,oracle=verify_ke
     if intent.get('stock_available'):return {'state':'stock_available'}
     saved,key,cookies=session();vault=Vault(STATE/'journal.sqlite',key)
     try:
+        reserve=vault.db.execute("SELECT * FROM prepaid_aiee_reserves WHERE order_id=? AND state='assigned'",(oid,)).fetchone()
+        if reserve:return fallback_reply(vault,reserve)
         asset=vault.assigned(oid)
         if asset:return asset_reply(vault,asset)
         # Stock allocation is atomic and verified again before assignment.
@@ -212,7 +275,10 @@ def procure(oid,policy,*,browser=child,order_validator=validate,oracle=verify_ke
             # The logged-in shop page is the authoritative balance display.
             balance=result.get('balance_minor')
             if not isinstance(balance,int):raise ValueError('supplier_balance_unconfirmed')
-            if balance<amount:return {'state':'funds_wait','required_minor':amount,'balance_minor':balance}
+            if balance<amount:
+                reserve=prepaid_fallback(vault,oid,credits,policy,'supplier_balance_insufficient',order_validator,fallback_oracle)
+                if reserve:return reserve
+                return {'state':'funds_wait','required_minor':amount,'balance_minor':balance}
             baseline=[str(r['trade_no']) for r in result['history']]
             claimed,prior=vault.claim(oid,credits,amount,baseline)
             if claimed:
@@ -251,6 +317,10 @@ def procure(oid,policy,*,browser=child,order_validator=validate,oracle=verify_ke
             vault.db.execute("UPDATE buys SET state='verified' WHERE order_id=?",(oid,));vault.db.execute('COMMIT')
         except BaseException:vault.db.execute('ROLLBACK');raise
         return asset_reply(vault,vault.assigned(oid))
+    except ValueError as error:
+        reserve=prepaid_fallback(vault,oid,credits,policy,str(error),order_validator,fallback_oracle)
+        if reserve:return reserve
+        raise
     finally:vault.db.close()
 
 

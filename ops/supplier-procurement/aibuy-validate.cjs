@@ -38,7 +38,7 @@ async function validate(req) {
  if(!Number.isSafeInteger(amount)||amount<=0||amount>ceilings[credits])throw Error('supplier_price_hold');
  const cost=finance(order,paid,{amountMinor:amount},settings.policy);
  const stock=await prisma.licenseKey.findFirst({where:{productKey:product,status:'available',activationSiteUrl:{in:['https://aiee.fun','https://aichongzhi.fun']}},select:{id:true}});
- return {order_id:order.id,credits,amount_minor:amount,cost_rub:cost.costRub,rate:cost.rateRubPerCny,budget_minor:cost.totalBudgetMinor,stock_available:!!stock};
+ return {order_id:order.id,credits,amount_minor:amount,cost_rub:cost.costRub,rate:cost.rateRubPerCny,budget_minor:cost.totalBudgetMinor,stock_available:!!stock,created_at:order.createdAt,payment_at:paid.processedAt||paid.createdAt};
 }
 if(require.main===module)(async()=>{let raw='';for await(const b of process.stdin){raw+=b;if(raw.length>2048)throw Error('supplier_request_invalid')}console.log(JSON.stringify(await validate(JSON.parse(raw))))})().catch(e=>{console.log(JSON.stringify({error:/^supplier_[a-z_]+$/.test(e.message)?e.message:'supplier_order_unconfirmed'}));process.exitCode=1}).finally(()=>prisma.$disconnect());
 module.exports={validate};

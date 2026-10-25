@@ -180,5 +180,138 @@ class Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'request_invalid'):
             b.procure('old/../order',{'enabled':True},browser=fail,order_validator=fail)
 
+    def reserve_fixture(self):
+        oid,key,intent,receipt=self.fixture()
+        intent.update(credits=1000,created_at='2026-10-25T00:00:00Z',payment_at='2026-10-25T00:01:00Z')
+        receipt.update(race='1000点数额度',amount='276',secret='ISOLATED-AIBUY-FIXTURE-1000')
+        code='ISOLATED-AIEE-RESERVE-1000';fingerprint=b.sha256(code.encode()).hexdigest()
+        v=b.Vault(b.STATE/'journal.sqlite',key)
+        v.db.execute("INSERT INTO prepaid_aiee_reserves VALUES(?,?,?,?,?,?,NULL,'available',NULL,NULL)",
+            (fingerprint,1000,v.seal(code,fingerprint),27600,4140,'2026-10-24'))
+        v.db.close()
+        policy={'enabled':True,'prepaidAieeFallback':{'enabled':True,'enabledAfter':'2026-10-24T23:00:00Z'}}
+        return oid,key,intent,receipt,code,policy
+
+    def test_prepaid_reserve_is_not_primary_and_stays_encrypted(self):
+        oid,key,intent,receipt,code,policy=self.reserve_fixture();calls=[]
+        def browser(data):
+            calls.append(data['mode'])
+            if data['mode']=='prepare':return {'amount_minor':27600,'balance_minor':100000,'history':[]}
+            return {'receipt':{'json':{'data':{'tradeNo':receipt['trade_no']}}},'history':[receipt]}
+        def forbidden(*args):raise AssertionError('reserve must not be checked on a healthy primary')
+        result=b.procure(oid,policy,browser=browser,order_validator=lambda *a:intent,oracle=lambda *a:True,fallback_oracle=forbidden)
+        self.assertEqual(result['code'],receipt['secret']);self.assertEqual(calls,['prepare','buy'])
+        v=b.Vault(b.STATE/'journal.sqlite',key)
+        self.assertEqual(v.db.execute('SELECT state FROM prepaid_aiee_reserves').fetchone()[0],'available');v.db.close()
+        self.assertNotIn(code.encode(),(b.STATE/'journal.sqlite').read_bytes())
+
+    def test_proven_precharge_failures_use_reserve_and_restart_cannot_buy_again(self):
+        for failure in ('supplier_login_required','supplier_checkout_not_ready','supplier_balance_insufficient'):
+            with self.subTest(failure=failure):
+                oid,key,intent,receipt,code,policy=self.reserve_fixture();calls=[];checks=[]
+                def browser(data):
+                    calls.append(data['mode'])
+                    if failure=='supplier_login_required':raise ValueError(failure)
+                    if data['mode']=='prepare':return {'amount_minor':27600,'balance_minor':0 if failure.endswith('insufficient') else 100000,'history':[]}
+                    return {'dispatch_state':'not_sent','error':failure}
+                args=dict(browser=browser,order_validator=lambda *a:intent,fallback_oracle=lambda *a:checks.append(a))
+                result=b.procure(oid,policy,**args);again=b.procure(oid,policy,**args)
+                self.assertEqual(result,again);self.assertEqual(result['code'],code)
+                self.assertEqual(result['amount_minor'],27600);self.assertEqual(result['usdt_minor'],4140)
+                self.assertEqual(result['activationSiteUrl'],'https://aiee.fun');self.assertEqual(len(checks),1)
+                self.assertEqual(calls,['prepare','buy'] if failure.endswith('not_ready') else ['prepare'])
+                v=b.Vault(b.STATE/'journal.sqlite',key)
+                self.assertEqual(v.db.execute('SELECT state FROM buys WHERE order_id=?',(oid,)).fetchone()[0],'cancelled_no_charge')
+                self.assertEqual(v.db.execute('SELECT order_id FROM prepaid_aiee_reserves').fetchone()[0],oid);v.db.close()
+
+    def test_ambiguous_primary_claim_never_consumes_reserve(self):
+        for state in ('sending','received','verified','cancelled_no_charge'):
+            with self.subTest(state=state):
+                oid,key,intent,receipt,code,policy=self.reserve_fixture()
+                v=b.Vault(b.STATE/'journal.sqlite',key);v.claim(oid,1000,27600,[])
+                v.db.execute('UPDATE buys SET state=? WHERE order_id=?',(state,oid))
+                def forbidden(*args):raise AssertionError('reserve oracle must not run')
+                self.assertIsNone(b.prepaid_fallback(v,oid,1000,policy,'supplier_login_required',lambda *a:intent,forbidden))
+                self.assertEqual(v.db.execute('SELECT state FROM prepaid_aiee_reserves').fetchone()[0],'available');v.db.close()
+
+    def test_post_click_timeout_and_captcha_never_use_reserve(self):
+        for failure in ('supplier_human_check','supplier_requires_review','supplier_browser_unconfirmed','timeout_after_click'):
+            with self.subTest(failure=failure):
+                oid,key,intent,receipt,code,policy=self.reserve_fixture()
+                def browser(data):
+                    if failure=='timeout_after_click':
+                        if data['mode']=='prepare':return {'amount_minor':27600,'balance_minor':100000,'history':[]}
+                        raise TimeoutError('ambiguous dispatch')
+                    raise ValueError(failure)
+                def forbidden(*args):raise AssertionError('reserve must stay untouched')
+                with self.assertRaises(ValueError):b.procure(oid,policy,browser=browser,order_validator=lambda *a:intent,fallback_oracle=forbidden)
+                v=b.Vault(b.STATE/'journal.sqlite',key)
+                self.assertEqual(v.db.execute('SELECT state FROM prepaid_aiee_reserves').fetchone()[0],'available');v.db.close()
+
+    def test_old_unpaid_wrong_product_and_disabled_fallback_stay_held(self):
+        for changes in ('old_created','old_paid','missing_paid','wrong_product','disabled','future_cutoff'):
+            with self.subTest(changes=changes):
+                oid,key,intent,receipt,code,policy=self.reserve_fixture()
+                if changes=='old_created':intent['created_at']='2026-10-23T00:00:00Z'
+                if changes=='old_paid':intent['payment_at']='2026-10-23T00:00:00Z'
+                if changes=='missing_paid':intent.pop('payment_at')
+                if changes=='wrong_product':intent['credits']=500
+                if changes=='disabled':policy['prepaidAieeFallback']['enabled']=False
+                if changes=='future_cutoff':policy['prepaidAieeFallback']['enabledAfter']='2099-01-01T00:00:00Z'
+                def browser(data):raise ValueError('supplier_login_required')
+                def forbidden(*args):raise AssertionError('reserve check must not run')
+                with self.assertRaisesRegex(ValueError,'supplier_login_required'):
+                    b.procure(oid,policy,browser=browser,order_validator=lambda *a:intent,fallback_oracle=forbidden)
+
+    def test_bad_reserve_or_unprofitable_order_cannot_claim_key(self):
+        for failure in ('supplier_fallback_key_unverified','supplier_margin_below_minimum'):
+            with self.subTest(failure=failure):
+                oid,key,intent,receipt,code,policy=self.reserve_fixture()
+                def browser(data):raise ValueError('supplier_login_required')
+                def validator(*args):
+                    if len(args)>1 and failure=='supplier_margin_below_minimum':raise ValueError(failure)
+                    return intent
+                def oracle(*args):raise ValueError(failure)
+                with self.assertRaisesRegex(ValueError,failure):
+                    b.procure(oid,policy,browser=browser,order_validator=validator,fallback_oracle=oracle)
+                v=b.Vault(b.STATE/'journal.sqlite',key)
+                self.assertEqual(v.db.execute('SELECT COUNT(*) FROM buys').fetchone()[0],0)
+                self.assertEqual(v.db.execute('SELECT state FROM prepaid_aiee_reserves').fetchone()[0],'available');v.db.close()
+
+    def test_reserve_claim_is_exclusive_and_seals_primary_atomically(self):
+        oid,key,intent,receipt,code,policy=self.reserve_fixture()
+        v=b.Vault(b.STATE/'journal.sqlite',key);other=b.Vault(b.STATE/'journal.sqlite',key)
+        def oracle(*args):
+            self.assertIsNotNone(b.prepaid_fallback(other,'c'+'b'*24,1000,policy,'supplier_login_required',lambda *a:intent,lambda *a:True))
+        with self.assertRaisesRegex(ValueError,'stock_changed'):
+            b.prepaid_fallback(v,oid,1000,policy,'supplier_login_required',lambda *a:intent,oracle)
+        self.assertIsNone(v.db.execute('SELECT * FROM buys WHERE order_id=?',(oid,)).fetchone())
+        self.assertEqual(v.db.execute('SELECT order_id FROM prepaid_aiee_reserves').fetchone()[0],'c'+'b'*24)
+        v.db.close();other.db.close()
+
+    def test_reserve_verification_is_read_only_and_checks_canonical_product_not_prefix(self):
+        from unittest.mock import patch
+        class Response:
+            def __init__(self,payload):self.payload=payload
+            def __enter__(self):return self
+            def __exit__(self,*args):pass
+            def read(self,*args):return json.dumps(self.payload).encode()
+        class Opener:
+            def __init__(self,query,verify):self.query=query;self.verify=verify;self.actions=[]
+            def open(self,request,**kwargs):
+                self.assert_url=request.full_url=='https://aiee.fun/api/auth.php'
+                if not self.assert_url:raise AssertionError('wrong provider')
+                action=json.loads(request.data)['action'];self.actions.append(action)
+                if action not in ('query_code','verify_code'):raise AssertionError('not a read-only key check')
+                return Response(self.query if action=='query_code' else self.verify)
+        q={'success':True,'status':'active'};v={'success':True,'plan_type':'codex1000','sid':'isolated','require_cookie':0}
+        for query,verified,success in ((q,v,True),({**q,'order_id':'existing'},v,False),(q,{**v,'plan_type':'codex500'},False),(q,{**v,'can_submit':False},False)):
+            opener=Opener(query,verified)
+            with patch.object(b,'build_opener',lambda *args:opener):
+                if success:self.assertTrue(b.verify_aiee_key('ISOLATED-TEST-KEY',1000))
+                else:
+                    with self.assertRaisesRegex(ValueError,'fallback_key_unverified'):b.verify_aiee_key('ISOLATED-TEST-KEY',1000)
+            self.assertEqual(opener.actions,['query_code','verify_code'])
+
 
 if __name__=='__main__':unittest.main()

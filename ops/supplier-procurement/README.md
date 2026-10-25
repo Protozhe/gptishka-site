@@ -171,3 +171,23 @@ supplier; the helper never transfers money. Repeating the same reference
 returns the same invoice or holds an uncertain result. The account lock
 serializes invoice creation with purchases. A supplier-requested login/2FA
 renewal requires owner participation and never starts an automatic new login.
+
+### Owner-prepaid AIEE 1000 reserve
+
+The optional `prepaidAieeFallback` policy has its own `enabled` and fresh
+`enabledAfter` cutoff. It accepts only website Codex 1000 orders both created
+and paid after that cutoff, with the existing fresh-session and margin checks.
+Prepaid keys stay AES-GCM encrypted in the root broker's
+`prepaid_aiee_reserves` table, never in the ordinary available AIEE pool. Each
+row records actual acquisition CNY, USDT and purchase date without a purchase
+request. Never put a real key in Git, arguments, logs or reports.
+
+AI-BUY remains primary. Only a login-required error, checkout-not-ready result
+proven before any pay click, or confirmed balance shortage can claim a reserve.
+Its unused status and exact `codex1000` denomination are checked via AIEE's
+read-only `query_code` and `verify_code` actions. A single SQLite transaction
+assigns the key exclusively and seals the original purchase as
+`cancelled_no_charge`. Restart recovery returns the same bound key. A timeout,
+ambiguous debit, prior submitted activation, human verification or owner pause
+cannot consume the reserve. AIEE activation then uses the existing native
+durable submission flow; this feature never activates a key as a test.

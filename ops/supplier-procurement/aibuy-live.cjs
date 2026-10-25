@@ -29,11 +29,11 @@ async function procure({prisma,activationStore,orderId,productKey,accountPlan,no
  const eligible=['plus','pro','prolite','prolight','pro5x','pro20x','pro25x','pro50x'];
  if(!eligible.includes(String(accountPlan).toLowerCase().replace(/[ _-]/g,'')))throw Error('supplier_account_ineligible');
  let a=activationStore.findByOrderId(orderId);
- const bound=(order.licenseKeys||[]).filter(k=>k.productKey===productKey&&k.activationSiteUrl===site&&k.orderId===orderId&&k.status==='used');
+ const bound=(order.licenseKeys||[]).filter(k=>k.productKey===productKey&&[site,'https://aiee.fun'].includes(k.activationSiteUrl)&&k.orderId===orderId&&k.status==='used');
  if(bound.length===1&&!a.cdk&&!a.taskId&&!a.attempts){
   assertPaidWebsiteOrder({...order,licenseKeys:[]},a,productKey,expected,cfg);
-  const audit=await prisma.licenseKeyAuditLog.findFirst({where:{keyId:bound[0].id,action:{in:['aibuy_purchase','aibuy_stock_import']}}});
-  if(audit?.meta?.orderId===orderId||(audit?.action==='aibuy_stock_import'&&audit?.meta?.productKey===productKey))return {keyId:bound[0].id,code:bound[0].keyValue,activationSiteUrl:site};
+  const audit=await prisma.licenseKeyAuditLog.findFirst({where:{keyId:bound[0].id,action:{in:['aibuy_purchase','aibuy_stock_import','aiee_prepaid_fallback']}}});
+  if(audit?.meta?.orderId===orderId||(audit?.action==='aibuy_stock_import'&&audit?.meta?.productKey===productKey))return {keyId:bound[0].id,code:bound[0].keyValue,activationSiteUrl:bound[0].activationSiteUrl};
  }
  assertPaidWebsiteOrder(order,a,productKey,expected,cfg);
  if(a.externalFulfillmentOwner)throw Error('supplier_prior_fulfillment');
@@ -44,6 +44,25 @@ async function procure({prisma,activationStore,orderId,productKey,accountPlan,no
   await j.run('INSERT OR IGNORE INTO demands VALUES(?,?,?)',[scope,productKey,new Date().toISOString()]);
   if(p.paused)throw Error('supplier_owner_topup_pause');
   const result=await transport(orderId);
+  if(result.state==='prepaid_fallback'){
+   if(p.prepaidAieeFallback?.enabled!==true||productKey!=='codex-1000'||result.source!=='owner_prepaid_aiee'||result.credits!==1000||result.activationSiteUrl!=='https://aiee.fun'||result.primary_sealed_no_charge!==true||! /^[a-f0-9]{64}$/.test(result.fallback_id||'')||!Number.isSafeInteger(result.amount_minor)||result.amount_minor<=0||result.amount_minor>27600||!Number.isSafeInteger(result.usdt_minor)||result.usdt_minor<=0||typeof result.code!=='string')throw Error('supplier_fallback_unverified');
+   order=await prisma.order.findUnique({where:{id:orderId},include:{payments:true,items:{include:{product:true}},licenseKeys:true}});a=activationStore.findByOrderId(orderId);
+   const payment=assertPaidWebsiteOrder(order,a,productKey,expected,cfg),cost=finance(order,payment,{amountMinor:result.amount_minor},cfg);
+   const cutoff=Date.parse(p.prepaidAieeFallback.enabledAfter);
+   const created=+new Date(order.createdAt),paid=+new Date(payment.processedAt||payment.createdAt);
+   if(!Number.isFinite(cutoff)||cutoff>Date.now()||!Number.isFinite(created)||!Number.isFinite(paid)||created<cutoff||paid<cutoff)throw Error('supplier_fallback_old_order');
+   const key=await prisma.$transaction(async tx=>{
+    const old=await tx.licenseKey.findUnique({where:{keyValue:result.code}});
+    if(old){if(old.orderId!==orderId||old.productKey!==productKey||old.activationSiteUrl!=='https://aiee.fun'||old.status!=='used')throw Error('supplier_stock_conflict');return old}
+    const fresh=await tx.order.findUnique({where:{id:orderId},include:{payments:true,items:{include:{product:true}},licenseKeys:true}});
+    assertPaidWebsiteOrder(fresh,activationStore.findByOrderId(orderId),productKey,expected,cfg);
+    const k=await tx.licenseKey.create({data:{keyValue:result.code,productKey,activationSiteUrl:'https://aiee.fun',status:'used',orderId,email:fresh.email,usedAt:new Date()}});
+    await tx.licenseKeyAuditLog.create({data:{keyId:k.id,action:'aiee_prepaid_fallback',meta:{orderId,supplier:'owner_prepaid_aiee',fallbackId:result.fallback_id,amountCny:result.amount_minor/100,amountUsdt:result.usdt_minor/100,purchasedOn:result.purchased_on,costRub:cost.costRub,costSource:cfg.costSource,primarySealedNoCharge:true}}});return k;
+   });
+   await funds.resolve(j,scope,notifyFunds,Date.now(),'AI-BUY');
+   await onProgress({phase:'received',product:productKey,provider:'aiee_prepaid_fallback'});
+   return {keyId:key.id,code:result.code,activationSiteUrl:'https://aiee.fun'};
+  }
   if(result.state==='stock_available'){
    for(const activationSiteUrl of ['https://aiee.fun',site]){
     const reserved=await activationStore.reserveCdkRecordForOrder({productKey,activationSiteUrl,orderId,email:order.email});
