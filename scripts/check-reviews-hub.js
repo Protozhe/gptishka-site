@@ -16,7 +16,27 @@ const data = JSON.parse(read(path.join("scripts", "fixtures", "public-reviews.js
 
 assert.match(html, /<body\b[^>]*class="[^"]*\breviews-hub-body\b[^"]*"[^>]*>/);
 assert.match(html, /href="\/app\/" aria-current="page">Отзывы<\/a>/);
-assert.doesNotMatch(html, /reviewsSources|reviewsTrustTitle|Источники отзывов|Хотите проверить или оставить отзыв|funpay/i);
+assert.doesNotMatch(html, /reviewsSources|reviewsTrustTitle|Источники отзывов|Хотите проверить или оставить отзыв/i);
+// Only the two stores explicitly approved for public display appear as links.
+// Review cards and all other imported source metadata remain private below.
+const shopLinks = html.match(/<nav class="reviews-shop-links"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
+assert.ok(shopLinks, "The approved marketplace links are visible above the reviews");
+const approvedShopUrls = [
+  "https://playerok.com/profile/Vivaseller/reviews",
+  "https://funpay.com/users/19372031/#reviews",
+];
+assert.deepStrictEqual(Array.from(shopLinks.matchAll(/href="([^"]+)"/g), match => match[1]), approvedShopUrls);
+assert.deepStrictEqual(Array.from(html.matchAll(/href="(https:\/\/(?:funpay\.com|playerok\.com)\/[^"]+)"/g), match => match[1]), approvedShopUrls);
+assert.strictEqual((shopLinks.match(/target="_blank" rel="noopener noreferrer"/g) || []).length, 2);
+assert.match(shopLinks, />Vivaseller<\/span>/);
+assert.match(shopLinks, />Reznikshop<\/span>/);
+assert.ok(html.indexOf('class="reviews-shop-links"') < html.indexOf('id="reviewsGrid"'));
+assert.doesNotMatch(html, /funpay\.com\/users\/162964/);
+const shopCss = read(path.join("assets", "css", "review-store-links.css"));
+assert.match(shopCss, /@media \(max-width: 760px\)/);
+assert.match(shopCss, /:focus-visible/);
+const shopCssVersion = require("crypto").createHash("sha256").update(shopCss).digest("hex").slice(0, 16);
+assert.ok(html.includes("/assets/css/review-store-links.css?v=sha256-" + shopCssVersion));
 assert.match(html, /отзывов на всех площадках/);
 assert.doesNotMatch(html, /отзывов в источниках/);
 assert.doesNotMatch(html, /последняя проверка/);
