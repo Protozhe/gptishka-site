@@ -4,8 +4,22 @@ HERE=Path(__file__).parent
 def load(name,file):
  s=importlib.util.spec_from_file_location(name,HERE/file);m=importlib.util.module_from_spec(s);s.loader.exec_module(m);return m
 b=load('broker_topup_test','aibuy-broker.py');t=load('topup_test','aibuy-topup.py');server=load('topup_server_test','aibuy-topup-server.py');installer=load('ui_installer_test','install-aibuy-telegram.py')
+ui=load('topup_browser_test','aibuy-browser.py')
 
 class Tests(unittest.TestCase):
+ def test_balance_uses_storefront_layout_without_payment_or_stock_actions(self):
+  events=[]
+  class Page:
+   def goto(self,url,**kw):events.append(url)
+   def locator(self,selector):
+    self_test.assertEqual(events,[ui.ORIGIN+'/item/75']);self_test.assertEqual(selector,'#tokyoUserDropdown');return self
+   def wait_for(self,**kw):self_test.assertEqual(kw['state'],'attached')
+   def inner_text(self):return 'Balance ¥437.00'
+  self_test=self;self.assertEqual(ui.balance_snapshot(Page()),{'balance_minor':43700,'owner_verified':True})
+  class Ambiguous(Page):
+   def inner_text(self):return 'Balance ¥437.00 Other ¥200.00'
+  events.clear()
+  with self.assertRaisesRegex(ValueError,'balance_unconfirmed'):ui.balance_snapshot(Ambiguous())
  def test_once_only_invoice_survives_restart_and_contract_cannot_change(self):
   with tempfile.TemporaryDirectory() as d:
    file=Path(d)/'invoices.sqlite';key=os.urandom(32);calls=[]

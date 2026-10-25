@@ -92,6 +92,18 @@ def minor_text(v):
     return int(n) if n.is_finite() and n==n.to_integral_value() else None
 
 
+def balance_snapshot(page):
+    # The account/profile layout has no storefront dropdown. Read the same
+    # authenticated header already used by procurement, without touching pay.
+    page.goto(ORIGIN+'/item/75',wait_until='domcontentloaded',timeout=45000)
+    dropdown=page.locator('#tokyoUserDropdown')
+    try:dropdown.wait_for(state='attached',timeout=15000)
+    except Exception:raise ValueError('supplier_balance_unconfirmed') from None
+    values=re.findall(r'[¥￥]\s*([\d,]+(?:\.\d{1,2})?)',dropdown.inner_text())
+    if len(values)!=1:raise ValueError('supplier_balance_unconfirmed')
+    return {'balance_minor':minor_text(values[0].replace(',','')),'owner_verified':True}
+
+
 def _main(data,dispatch):
     from playwright.sync_api import sync_playwright
     n=data['credits']
@@ -119,10 +131,7 @@ def _main(data,dispatch):
             if ids!=[data['merchantId']]:raise ValueError('supplier_login_required')
             if data['mode']=='topup':return result(topup(page,data))
             if data['mode']=='balance':
-                dropdown=page.locator('#tokyoUserDropdown');dropdown.wait_for(state='visible',timeout=15000)
-                values=re.findall(r'[¥￥]\s*([\d,]+(?:\.\d{1,2})?)',dropdown.inner_text())
-                if len(values)!=1:raise ValueError('supplier_balance_unconfirmed')
-                return result({'balance_minor':minor_text(values[0].replace(',','')),'owner_verified':True})
+                return result(balance_snapshot(page))
             before=history(context)
             if data['mode']=='history':
                 out={'history':before}
