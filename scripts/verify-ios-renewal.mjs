@@ -164,6 +164,12 @@ stored={...stored,status:'failed',verificationState:'failed',lastProviderPayload
 const historicalTask=stored.taskId;
 result=await state.startActivationUnsafe('fixture-order','{"fixture":true}');
 assert.equal(result.reused,true);assert.equal(result.taskId,historicalTask);assert.equal(posts,1,'Legacy lost diagnostics cannot permit a second dispatch after the review deadline');
+const serviceDeclaration=source.statements.filter(ts.isVariableStatement).flatMap(n=>n.declarationList.declarations).find(n=>n.name.getText(source)==='ordersService');
+const restartMethod=serviceDeclaration.initializer.properties.find(n=>n.name?.getText(source)==='restartActivationWithNewKey');
+state.withActivationOrderLock=async(id,job)=>job();state.assertPaidOrderAccess=async()=>({id:'fixture-order'});
+vm.runInContext(ts.transpileModule('this.keyRetry={getActivation:ordersService.getActivation,'+restartMethod.getText(source)+'}',{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,state);
+await assert.rejects(state.keyRetry.restartActivationWithNewKey('fixture-order','{"fixture":true}'),/повторная отправка и смена ключа заблокированы/);
+assert.equal(posts,1);assert.equal(reserves,0,'The separate change-key endpoint must enforce the same historical dispatch guard');
 
 // Reconciliation grace applies only to IOS; confirmation requires a successful
 // recharge, not merely the supplier marking a key used after a failed attempt.

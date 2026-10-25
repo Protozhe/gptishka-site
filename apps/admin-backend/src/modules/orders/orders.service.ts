@@ -1142,7 +1142,9 @@ export const ordersService = {
       if (current?.status === "success") {
         throw new AppError("Activation is already completed", 409);
       }
-      if((current?.lastProviderPayload?.submissionDiagnostics as any)?.phase === "submit_recharge" && Number(current?.attempts||0)>0){
+      if(Number(current?.attempts||0)>0 &&
+          ((current?.lastProviderPayload?.submissionDiagnostics as any)?.phase === "submit_recharge" ||
+           (isIosProviderBase(current?.activationSiteUrl) && /^reconcile-\d{13}-[a-z0-9]+$/.test(String(current?.taskId || ""))))){
         throw new AppError("Исходная заявка уже отправлена поставщику. Проверяем её результат; повторная отправка и смена ключа заблокированы.",409);
       }
       if (isCodexCreditsProductKey(activationInfo?.productSlug || current?.productKey) || /^(?:chatgpt-plus-1|chatgpt-go-1|chatgpt-pro-(5|20|25)x-1)$/.test(String(activationInfo?.productSlug || current?.productKey || ""))) {
