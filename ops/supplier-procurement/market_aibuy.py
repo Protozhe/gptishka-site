@@ -112,7 +112,9 @@ def handle(a,jid):
             pass
         elif not eligible(j,config()) or j['status'] not in ('waiting_data','failed'):return False
         code=j['package'] if j['product_type']=='codex' else 0
-        if not unavailable and classify(j['title'])!=code:return False
+        if not unavailable and classify(j['title'])!=code:
+            notice(a,j,'product_ambiguous','⚠️ <b>AI-BUY · Не подтверждён товар</b>\n\nСтатус: <b>нужна проверка тарифа</b>\nВ заказе несколько номиналов или другой продукт. Покупка и активация остановлены.')
+            return True
         if j['key_id'] or j['aiee_order_id'] or j['started_at'] or j['last_poll_status']:return False
         if code and c.execute("SELECT 1 FROM codex_keys WHERE pool=? AND status='available'",('codex_'+str(code),)).fetchone():return False
     if unavailable:

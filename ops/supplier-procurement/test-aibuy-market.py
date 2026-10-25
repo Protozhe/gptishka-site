@@ -80,6 +80,16 @@ class Tests(unittest.TestCase):
             self.assertEqual(c.execute('SELECT COUNT(*) FROM market_aibuy_attempts').fetchone()[0],0)
             self.assertEqual(c.execute('SELECT COUNT(*) FROM market_aibuy_notices').fetchone()[0],1)
 
+    def test_ambiguous_variant_never_falls_through_to_a_legacy_smaller_key(self):
+        a,path,p,calls,r=self.fixture(250)
+        with a.connect() as c:
+            c.execute("UPDATE codex_jobs SET title='Codex 250 / 500 / 1000'")
+            c.execute("INSERT INTO codex_keys(pool,status) VALUES('codex_250','available')")
+        with patch.object(adapter,'rpc',side_effect=AssertionError('ambiguous order cannot buy')):self.assertTrue(adapter.handle(a,1))
+        with a.connect() as c:
+            self.assertIsNone(c.execute('SELECT key_id FROM codex_jobs').fetchone()[0])
+            self.assertEqual(c.execute('SELECT COUNT(*) FROM market_aibuy_attempts').fetchone()[0],0)
+
     @unittest.skipUnless(os.name=='posix','Real cross-thread flock exercised by Linux CI')
     def test_concurrent_customer_validation_has_one_purchase_and_one_activation(self):
         import concurrent.futures
