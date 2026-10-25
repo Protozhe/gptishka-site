@@ -155,6 +155,21 @@ wrong/used keys remain encrypted in quarantine. Margin/verification failures
 hold the order for review without another charge. Native website notices use
 the website admin bot, including a 15-minute funds grace and confirmed outcome.
 
+Native Codex status reads carry the selected product into the provider adapter,
+so a different workflow cannot complete the order. Confirmed completion is
+monotonic: a slower concurrent pending/failed reply cannot downgrade success or
+restore erased customer credentials. An uncertain submission that reached the
+review timeout continues read-only reconciliation for up to seven days; a late
+final provider confirmation can complete it without a second activation POST.
+An explicit final provider failure does not enter this uncertain-state polling.
+
+Isolated native integration tests cover all three denominations, one purchased
+key and acquisition cost per order, restart reuse, lost activation responses,
+late success and final notification dispatch. They use synthetic paid orders
+and mocked transports; passing them does not by itself prove a new live
+customer purchase and activation. Read-only supplier preflight verifies the
+current exact variants/quotes and inventory without debiting the wallet.
+
 Install `install-aibuy.py` from the deployed committed release; it starts with
 `enabled:false, paused:true`. Run `preflight-aibuy.py` (read-only) and confirm all
 three variants, balance and owner before enabling. Set a fresh cutoff when

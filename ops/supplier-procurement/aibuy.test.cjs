@@ -74,6 +74,17 @@ test('prepaid AIEE fallback preserves the existing native route, acquisition cos
  assert.equal(f.audits[0].meta.costRub,3643.2);assert.equal(f.audits[0].meta.primarySealedNoCharge,true);
 });
 
+for(const [credits,amount] of [[250,7500],[500,14500],[1000,27600]])test(`AI-BUY ${credits} purchase binds one exact native key and restart reuses its acquisition`,async()=>{
+ const f=prepaidFixture(),productKey=`codex-${credits}`;
+ f.order.items[0].product.slug=productKey;f.settings.policy.products=[productKey];
+ Object.assign(f.result,{state:'assigned',credits,code:`ISOLATED-AIBUY-KEY-${credits}`,amount_minor:amount,trade_no:'20000000000000',activationSiteUrl:'https://aichongzhi.fun'});
+ f.args.productKey=productKey;
+ const first=await f.api.procure(f.args),again=await f.api.procure(f.args);
+ assert.equal(first.code,f.result.code);assert.equal(again.code,first.code);assert.equal(first.activationSiteUrl,'https://aichongzhi.fun');
+ assert.equal(f.dispatches(),1);assert.equal(f.keys.length,1);assert.equal(f.audits.length,1);
+ assert.equal(f.keys[0].productKey,productKey);assert.equal(f.audits[0].action,'aibuy_purchase');assert.equal(f.audits[0].meta.amountCny,amount/100);
+});
+
 test('fallback rejects wrong product, unsealed primary, invalid provenance, old payments and stale margin',async()=>{
  const mutations=[
   [f=>f.result.credits=500,/fallback_unverified/],[f=>f.result.primary_sealed_no_charge=false,/fallback_unverified/],

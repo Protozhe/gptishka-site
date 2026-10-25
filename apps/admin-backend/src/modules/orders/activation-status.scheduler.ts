@@ -26,7 +26,18 @@ function processingRecords() {
         Boolean(record.clientTokenCiphertext) &&
         Number(record.tokenValidationAttempts || 0) > 0 &&
         Date.parse(String(record.issuedAt || "")) >= oldestAllowed;
-      if (status !== "processing" && verification !== "pending" && !unresolvedCodex) return false;
+      // A review alert after an uncertain submission must not end read-only
+      // reconciliation. A later final success can still complete the order;
+      // the durable task/attempt prevents any second activation submission.
+      const unresolvedAibuy =
+        record.activationSiteUrl === "https://aichongzhi.fun" &&
+        /^codex-(250|500|1000)$/.test(String(record.productKey || "")) &&
+        status !== "success" && verification !== "success" &&
+        Boolean(record.cdk && record.taskId) && Number(record.attempts || 0) > 0 &&
+        (record.lastProviderPayload?.submissionDiagnostics as any)?.phase === "submit_recharge" &&
+        ["unused", "pending", "processing"].includes(String(record.lastProviderPayload?.recharge_status || "")) &&
+        Date.parse(String(record.issuedAt || "")) >= oldestAllowed;
+      if (status !== "processing" && verification !== "pending" && !unresolvedCodex && !unresolvedAibuy) return false;
       const updatedAt = Date.parse(String(record.updatedAt || ""));
       return !Number.isFinite(updatedAt) || updatedAt >= oldestAllowed;
     })

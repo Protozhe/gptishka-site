@@ -1251,7 +1251,7 @@ export const ordersService = {
         const statusBaseUrl = isCodexCreditsProductKey(stored?.productKey)
           ? (isAieeProviderBase(stored?.activationSiteUrl) || (stored?.activationSiteUrl === "https://aichongzhi.fun") ? stored?.activationSiteUrl : DEFAULT_AIEE_URL)
           : stored?.activationSiteUrl;
-        const checked = await fetchChongzhiCodeStatus(String(stored?.cdk || ""), statusBaseUrl || "");
+        const checked = await fetchChongzhiCodeStatus(String(stored?.cdk || ""), statusBaseUrl || "", stored?.productKey);
         updateActivationFromChongzhiCodePayload(orderId, checked);
       } catch (error) {
         updateActivationProviderCheckError(orderId, error);
@@ -1345,7 +1345,7 @@ export const ordersService = {
       let current = stored;
       if (String(current?.cdk || "").trim() && current?.status !== "success") {
         try {
-          const checked = await fetchChongzhiCodeStatus(String(current?.cdk || ""), current?.activationSiteUrl || "");
+          const checked = await fetchChongzhiCodeStatus(String(current?.cdk || ""), current?.activationSiteUrl || "", current?.productKey);
           updateActivationFromChongzhiCodePayload(orderId, checked);
           current = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || current;
         } catch (error) {
@@ -1688,7 +1688,7 @@ export const ordersService = {
           const statusBaseUrl = isCodexCreditsProductKey(activation.productKey)
             ? (isAieeProviderBase(activation.activationSiteUrl) || (activation.activationSiteUrl === "https://aichongzhi.fun") ? activation.activationSiteUrl : DEFAULT_AIEE_URL)
             : activation.activationSiteUrl;
-          const checked = await fetchChongzhiCodeStatus(activation.cdk, statusBaseUrl || "");
+          const checked = await fetchChongzhiCodeStatus(activation.cdk, statusBaseUrl || "", activation.productKey);
           updateActivationFromChongzhiCodePayload(id, checked);
         } catch (error) {
           updateActivationProviderCheckError(id, error);
@@ -1733,7 +1733,7 @@ export const ordersService = {
         }
       } else if (String(activation.taskId || "").startsWith("chongzhi-") && activation.cdk) {
         try {
-          const checked = await fetchChongzhiCodeStatus(activation.cdk, activation.activationSiteUrl || "");
+          const checked = await fetchChongzhiCodeStatus(activation.cdk, activation.activationSiteUrl || "", activation.productKey);
           updateActivationFromChongzhiCodePayload(id, checked);
         } catch (error) {
           updateActivationProviderCheckError(id, error);
@@ -4210,9 +4210,9 @@ function tryParseJson(raw: string) {
   }
 }
 
-async function fetchChongzhiCodeStatus(cdk: string, activationSiteUrl?: string | null) {
+async function fetchChongzhiCodeStatus(cdk: string, activationSiteUrl?: string | null, productKey?: string | null) {
   if ((activationSiteUrl === "https://aichongzhi.fun")) {
-    return require(path.resolve(__dirname,"../../../../../ops/supplier-procurement/aibuy-activation.cjs")).status(cdk);
+    return require(path.resolve(__dirname,"../../../../../ops/supplier-procurement/aibuy-activation.cjs")).status(cdk, productKey);
   }
   const base = String(activationSiteUrl || env.ACTIVATION_CHONGZHI_BASE_URL || "https://vip.sxzfd.com")
     .trim()
@@ -4299,6 +4299,10 @@ function isChongzhiCodeUsed(
 function updateActivationFromChongzhiCodePayload(orderId: string, payload: { status?: number; json?: any; raw?: string }) {
   const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
   if (!stored) return;
+  // A concurrent browser/admin poll may finish after the final provider reply.
+  // Keep confirmed AI-BUY completion and cleared customer credentials intact.
+  if (stored.activationSiteUrl === "https://aichongzhi.fun" &&
+      (stored.status === "success" || stored.verificationState === "success")) return;
 
   const nowIso = new Date().toISOString();
   const isAiee = isAieeProviderBase(stored.activationSiteUrl || "");
