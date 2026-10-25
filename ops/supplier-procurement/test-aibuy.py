@@ -7,6 +7,66 @@ spec=importlib.util.spec_from_file_location('browser',HERE/'aibuy-browser.py');u
 
 
 class Tests(unittest.TestCase):
+    def test_claude_purchase_and_lost_response_recovery_never_select_codex_or_repay(self):
+        for lost in (False,True):
+            with self.subTest(lost=lost):
+                oid,key,intent,receipt=self.fixture();intent['credits']=0
+                receipt.update(commodity_id=29,race='',amount='134',secret='ISOLATED-CLAUDE-PRO-KEY')
+                calls=[];verified=[]
+                def browser(data):
+                    self.assertEqual(data['credits'],0);calls.append(data['mode'])
+                    if data['mode']=='prepare':return {'amount_minor':13400,'balance_minor':63700,'history':[]}
+                    if data['mode']=='buy' and lost:raise TimeoutError('isolated lost receipt')
+                    return {'receipt':{'json':{'data':{'tradeNo':receipt['trade_no']}}},'history':[receipt],'reference_history':[receipt]}
+                args=dict(browser=browser,order_validator=lambda *a:intent,oracle=lambda *a:verified.append(a))
+                if lost:
+                    with self.assertRaisesRegex(ValueError,'purchase_unconfirmed'):b.procure(oid,{'enabled':True},**args)
+                first=b.procure(oid,{'enabled':True},**args);again=b.procure(oid,{'enabled':True},**args)
+                self.assertEqual(first,again);self.assertEqual(first['product_key'],'claude-pro');self.assertEqual(first['amount_minor'],13400)
+                self.assertEqual(calls,['prepare','buy','history'] if lost else ['prepare','buy']);self.assertEqual(len(verified),1)
+                self.assertNotIn(receipt['secret'].encode(),(b.STATE/'journal.sqlite').read_bytes())
+
+    def test_claude_receipt_requires_exact_item_no_variant_one_paid_balance_key(self):
+        for changed in ({'commodity_id':75},{'race':'250点数额度'},{'card_num':2},{'pay_id':2},{'status':0},{'amount':'134.01'}):
+            v=b.Vault(':memory:',os.urandom(32));v.claim('fixture',0,13400,[])
+            v.receive('fixture',{'receipt':{'json':{'data':{'tradeNo':'20000000000029'}}}})
+            row=v.db.execute('SELECT * FROM buys').fetchone()
+            receipt={'trade_no':'20000000000029','commodity_id':29,'race':'','card_num':1,'pay_id':1,'status':1,'amount':'134',**changed}
+            with self.assertRaisesRegex(ValueError,'receipt_mismatch'):b.matching_receipt(row,[receipt],v)
+            v.db.close()
+
+    def test_claude_key_oracle_uses_workflow_not_a_key_prefix_and_is_read_only(self):
+        from unittest.mock import patch
+        for data,valid in (({'ok':True,'status':'unused','workflow':'claude_pro'},True),({'ok':True,'status':'unused','workflow':'codex_250'},False),({'ok':True,'status':'done','workflow':'claude_pro'},False)):
+            class Response:
+                def __enter__(self):return self
+                def __exit__(self,*a):pass
+                def read(self,*a):return json.dumps(data).encode()
+            class Opener:
+                def open(self,req,**kw):
+                    if not req.full_url.endswith('a=verifyCdk') or json.loads(req.data)['product']!='claude':raise AssertionError('wrong action/product')
+                    return Response()
+            with patch.object(b,'build_opener',lambda *a:Opener()):
+                if valid:self.assertTrue(b.verify_key('ARBITRARY-ISOLATED-KEY',0))
+                else:
+                    with self.assertRaisesRegex(ValueError,'key_quarantined'):b.verify_key('ARBITRARY-ISOLATED-KEY',0)
+
+    def test_claude_checkout_requires_no_variants_and_quantity_one(self):
+        for count in (0,1):
+            events=[]
+            class Locator:
+                def __init__(self,selector):self.selector=selector
+                def wait_for(self,**kw):events.append('ready')
+                def count(self):return count if self.selector=='.switch-race' else 1
+                def fill(self,value):events.append('qty:'+value)
+                def dispatch_event(self,name):events.append(name)
+            class Page:
+                def locator(self,selector):return Locator(selector)
+            if count:
+                with self.assertRaisesRegex(ValueError,'variant_unconfirmed'):ui.select_purchase_ui(Page(),0)
+            else:
+                result=ui.select_purchase_ui(Page(),0);self.assertEqual(result[:2],('',None));self.assertEqual(events,['ready','qty:1','change'])
+
     @unittest.skipUnless(os.name=='posix','Unix socket directory permissions')
     def test_private_service_umask_preserves_web_group_socket_access(self):
         from unittest.mock import patch

@@ -234,6 +234,14 @@ export async function deliverProduct(order: Order) {
   });
 
   if (!reserved) {
+    if (fullOrder.source === "site" && productKey === "claude-pro" && activationSiteUrl === "https://aichongzhi.fun" && deliveryType !== "code") {
+      const nowIso = new Date().toISOString();
+      activationStore.upsert({orderId:order.id,email:order.email,productKey,cdk:"",activationSiteUrl,
+        status:"issued",verificationState:"unknown",attempts:0,taskId:null,keyAllocationState:"awaiting_session",
+        lastProviderMessage:"Ожидаем ID аккаунта Claude для автоматической активации.",issuedAt:nowIso,updatedAt:nowIso});
+      await ensureBundleVpnAccess();
+      return;
+    }
     console.warn(`[delivery] no CDK available for product=${productKey} site=${activationSiteUrl || "-"} order=${order.id}`);
     return;
   }

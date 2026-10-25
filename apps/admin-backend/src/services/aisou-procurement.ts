@@ -15,9 +15,12 @@ export async function procureSelectedWebsiteKey(input: {
   const modulePath = path.resolve(__dirname, "../../../../ops/supplier-procurement/aisou-live.cjs");
   const { procureWebsiteKey, notifyHoldOnce } = require(modulePath);
   const aibuy = require(path.resolve(__dirname,"../../../../ops/supplier-procurement/aibuy-live.cjs"));
-  const paidOrder = /^codex-(250|500|1000)$/.test(input.productKey)
+  const paidOrder = /^(?:codex-(250|500|1000)|claude-pro)$/.test(input.productKey)
     ? await prisma.order.findUnique({where:{id:input.orderId},include:{items:{include:{product:true}}}}) : null;
   const viaAibuy = aibuy.managed(aibuy.policy(),paidOrder);
+  // Claude Pro has one selected supplier; never fall through to an unrelated
+  // AISOU product when its own policy is disabled or the order predates it.
+  if (input.productKey === "claude-pro" && !viaAibuy) return null;
   const supplier = viaAibuy ? "AI-BUY" : "AISOU";
   const progress = async (event: {phase:string;product?:string;provider?:string}) => {
     const a = activationStore.findByOrderId(input.orderId);
@@ -94,16 +97,17 @@ export async function pendingAisouNativeOrders(): Promise<string[]> {
 }
 
 export async function notifyAibuyActivationResult(orderId:string, productKey:string, completed:boolean) {
-  if(!/^[a-z0-9]{20,40}$/.test(orderId)||!/^codex-(250|500|1000)$/.test(productKey))return;
+  if(!/^[a-z0-9]{20,40}$/.test(orderId)||!/^(?:codex-(250|500|1000)|claude-pro)$/.test(productKey))return;
   const order=await prisma.order.findUnique({where:{id:orderId},select:{source:true,status:true}});
   const a=activationStore.findByOrderId(orderId);
   if(order?.source!=="site"||order.status!=="PAID"||a?.activationSiteUrl!=="https://aichongzhi.fun")return;
   if(completed&&a.status!=="success"&&a.verificationState!=="success")return;
   const {notifyHoldOnce}=require(path.resolve(__dirname,"../../../../ops/supplier-procurement/aisou-live.cjs"));
+  const claude=productKey==="claude-pro";
   await notifyHoldOnce(orderId,completed?"aibuy_activation_completed":"aibuy_activation_review",()=>sendTelegramNotification(
-    `${completed?'✅':'⚠️'} <b>AI-BUY · ${completed?'Кредиты зачислены':'Нужно проверить пополнение'}</b>\n\n`
-    + `🧾 Заказ: <code>${orderId}</code>\n🛍 Товар: <b>Codex ${productKey.slice(6)}</b>\n\n`
+    `${completed?'✅':'⚠️'} <b>AI-BUY · ${completed?(claude?'Подписка активирована':'Кредиты зачислены'):'Нужно проверить активацию'}</b>\n\n`
+    + `🧾 Заказ: <code>${orderId}</code>\n🛍 Товар: <b>${claude?'Claude Pro':'Codex '+productKey.slice(6)}</b>\n\n`
     + `Статус: <b>${completed?'Выполнен':'Требуется проверка'}</b>\n\n`
-    + (completed?'Поставщик подтвердил завершение пополнения.':'Исходная заявка сохранена. Повторная закупка и повторная отправка остановлены до проверки результата.')
+    + (completed?'Поставщик подтвердил завершение активации.':'Исходная заявка сохранена. Повторная закупка и повторная отправка остановлены до проверки результата.')
   ));
 }

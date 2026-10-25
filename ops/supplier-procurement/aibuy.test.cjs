@@ -54,6 +54,7 @@ function prepaidFixture(){
   if(id==='node:net')return {};
   if(id==='./aisou-core.cjs')return {Journal};
   if(id==='./aisou-live.cjs')return real;
+  if(id==='./aibuy-contract.cjs')return require(id);
   if(id==='./funds-wait.cjs')return {resolve:async()=>events.push('resolved')};
   throw Error('unexpected dependency');
  }};
@@ -97,4 +98,78 @@ test('fallback rejects wrong product, unsealed primary, invalid provenance, old 
   [f=>{f.activation.cdk='EXISTING-FIXTURE';f.activation.attempts=1;},/prior_fulfillment/],
  ];
  for(const [change,error] of mutations){const f=prepaidFixture();change(f);await assert.rejects(f.api.procure(f.args),error);assert.equal(f.keys.length,0);assert.equal(f.audits.length,0)}
+});
+
+test('Claude Pro requires its own new-order cutoff and binds one item-29 acquisition across restart',async()=>{
+ const f=prepaidFixture(),product='claude-pro';
+ f.order.items[0].product.slug=product;f.args.productKey=product;f.args.accountPlan='';
+ assert.equal(f.api.managed(f.policy,f.order),false,'Codex cutoff never silently enables Claude');
+ f.policy.productEnabledAfter={[product]:f.policy.enabledAfter};
+ Object.assign(f.result,{state:'assigned',product_key:product,credits:0,code:'ISOLATED-CLAUDE-KEY',amount_minor:13400,trade_no:'20000000000029',activationSiteUrl:'https://aichongzhi.fun'});
+ const first=await f.api.procure(f.args),again=await f.api.procure(f.args);
+ assert.equal(first.code,again.code);assert.equal(f.dispatches(),1);assert.equal(f.keys.length,1);assert.equal(f.keys[0].productKey,product);
+ assert.equal(f.audits[0].action,'aibuy_purchase');assert.equal(f.audits[0].meta.amountCny,134);
+});
+
+test('Claude Pro cannot buy for old, unpaid, wrong-quantity, started, unprofitable or mismatched replies',async()=>{
+ for(const [change,error] of [
+  [f=>f.order.createdAt=new Date(0),null],
+  [f=>f.order.status='PENDING',/order_ineligible/],
+  [f=>f.order.items[0].quantity=2,/order_ineligible/],
+  [f=>f.order.payments[0].status='PROCESSING',/payment_unverified/],
+  [f=>f.activation.attempts=1,/prior_fulfillment/],
+  [f=>f.activation.clientTokenExpiresAt=new Date(0).toISOString(),/session_required/],
+  [f=>{f.order.totalAmount='100';f.order.payments[0].amount='100';f.order.payments[0].payload.commission='3'},/margin_hold/],
+  [f=>f.result.credits=250,/reply_invalid/],
+  [f=>f.result.product_key='codex-250',/reply_invalid/],
+  [f=>f.result.amount_minor=13401,/reply_invalid/],
+ ]){
+  const f=prepaidFixture();f.args.productKey='claude-pro';f.order.items[0].product.slug='claude-pro';f.policy.productEnabledAfter={'claude-pro':f.policy.enabledAfter};
+  Object.assign(f.result,{state:'assigned',product_key:'claude-pro',credits:0,code:'ISOLATED-CLAUDE-KEY',amount_minor:13400,trade_no:'20000000000029',activationSiteUrl:'https://aichongzhi.fun'});
+  change(f);if(error)await assert.rejects(f.api.procure(f.args),error);else assert.equal(await f.api.procure(f.args),null);
+  assert.equal(f.keys.length,0);assert.equal(f.audits.length,0);
+ }
+});
+
+test('Claude uses its UUID, canonical unused workflow and one durable activation POST',async()=>{
+ const input={cdk:'ISOLATED-CLAUDE-KEY',productKey:'claude-pro',userCandidates:['00000000-0000-4000-8000-000000000029']};
+ for(const verified of [{ok:true,status:'unused',workflow:'claude_pro'},{ok:true,status:'unused',workflow:'codex_250'},{ok:true,status:'done',workflow:'claude_pro'}]){
+  const events=[];
+  const run=()=>start({...input,beforeSubmit:()=>events.push('durable')},{fetchImpl:async(url,opts)=>{
+   const body=JSON.parse(opts.body);assert.equal(body.product,'claude');
+   if(url.endsWith('verifyCdk'))return response(verified);
+   events.push('activate');assert.equal(body.token,input.userCandidates[0]);throw Error('isolated timeout');
+  }});
+  if(verified.status==='unused'&&verified.workflow==='claude_pro')assert.equal((await run()).immediateSuccess,false);else await assert.rejects(run());
+  assert.deepEqual(events,verified.status==='unused'&&verified.workflow==='claude_pro'?['durable','activate']:[]);
+ }
+ await assert.rejects(start({...input,userCandidates:['wrong'],beforeSubmit(){}},{fetchImpl:()=>{throw Error('must not access provider')}}),/contract/);
+ for(const workflow of ['codex_250',undefined])await assert.rejects(status(input.cdk,'claude-pro',async()=>response({ok:true,status:'done',final:true,workflow})),/product_mismatch/);
+ const final=await status(input.cdk,'claude-pro',async(url,opts)=>{assert.equal(JSON.parse(opts.body).product,'claude');return response({ok:true,status:'done',final:true,workflow:'claude_pro',job_id:'isolated-job'})});
+ assert.equal(final.json.recharge_status,'success');
+});
+
+test('independent root DB validator derives Claude item contract and rejects missing UUID or non-Claude stock',async()=>{
+ const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path'),crypto=require('node:crypto');
+ const f=prepaidFixture(),product='claude-pro',secret='ISOLATED-TEST-SECRET';
+ f.order.items[0].product.slug=product;f.policy.productEnabledAfter={[product]:f.policy.enabledAfter};
+ const iv=Buffer.alloc(12,1),key=crypto.createHash('sha256').update('gptishka:activation-token:v1:'+secret).digest();
+ function session(token){const cipher=crypto.createCipheriv('aes-256-gcm',key,iv);f.activation.clientTokenCiphertext=Buffer.concat([cipher.update(token),cipher.final()]).toString('base64');f.activation.clientTokenIv=iv.toString('base64');f.activation.clientTokenAuthTag=cipher.getAuthTag().toString('base64')}
+ const db={order:{findUnique:async()=>f.order},licenseKey:{findFirst:async({where})=>{assert.equal(where.productKey,product);assert.deepEqual(Array.from(where.activationSiteUrl.in),['https://aichongzhi.fun']);return null}}};
+ const mod={exports:{}};
+ const real=require('./aisou-live.cjs');
+ vm.runInNewContext(fs.readFileSync(path.join(__dirname,'aibuy-validate.cjs'),'utf8'),{module:mod,Buffer,Date,process,require:id=>{
+  if(id==='node:fs')return {readFileSync:()=>JSON.stringify(f.policy),existsSync:()=>false};
+  if(id==='node:crypto')return crypto;
+  if(id.endsWith('/config/prisma.js'))return {prisma:db};
+  if(id.endsWith('/config/env.js'))return {env:{ACTIVATION_TOKEN_ENCRYPTION_KEY:secret}};
+  if(id.endsWith('/orders/activation.store.js'))return {activationStore:{findByOrderId:()=>f.activation}};
+  if(id==='./aisou-live.cjs')return {...real,loadSettings:()=>f.settings};
+  return require(id);
+ }});
+ session('00000000-0000-4000-8000-000000000029');
+ const result=await mod.exports.validate({order_id:f.order.id});assert.equal(result.credits,0);assert.equal(result.amount_minor,13400);
+ session('{"account":{"planType":"plus"}}');await assert.rejects(mod.exports.validate({order_id:f.order.id}),/account_ineligible/);
+ session('not-an-account-uuid');await assert.rejects(mod.exports.validate({order_id:f.order.id}),/account_ineligible/);
+ session('00000000-0000-4000-8000-000000000029');f.policy.productEnabledAfter={};await assert.rejects(mod.exports.validate({order_id:f.order.id}),/product_disabled/);
 });

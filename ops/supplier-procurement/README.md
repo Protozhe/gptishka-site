@@ -130,8 +130,9 @@ unexpected/reused key deliveries. They make no supplier purchases or activations
 
 `aibuy-live.cjs` selects AI-BUY only for website Codex 250/500/1000 orders
 created AND paid after the separate `aibuy-policy.json` cutoff. Matching local
-AIEE stock is used first. ChatGPT, Claude, Grok and marketplace routes are not
-changed. Any existing AISOU purchase claim blocks a second supplier purchase.
+AIEE stock is used first. ChatGPT, Grok, Claude Max and marketplace routes are
+not changed. Claude Pro has the separate opt-in below. Any existing AISOU
+purchase claim blocks a second supplier purchase.
 
 The ordinary storefront runs in real sandboxed Chrome as `gptishka-buy`, with
 the independently established, encrypted server session. No desktop cookies or
@@ -186,6 +187,39 @@ supplier; the helper never transfers money. Repeating the same reference
 returns the same invoice or holds an uncertain result. The account lock
 serializes invoice creation with purchases. A supplier-requested login/2FA
 renewal requires owner participation and never starts an automatic new login.
+
+### Website Claude Pro
+
+Claude Pro additionally requires a fresh `productEnabledAfter["claude-pro"]`
+in the protected AI-BUY policy. Both order creation and confirmed payment must
+follow it. Enabling Codex alone does not enable Claude or admit old orders.
+Normal available native Claude keys are reserved first. With an empty pool,
+the activation form still accepts a Claude account UUID, stores the encrypted
+input and requests one acquisition for that trusted paid order.
+
+The only subscription contract is item **29**, no variant, quantity **1**,
+balance payment, at most **¥134** with confirmed positive margin. Any newly
+introduced variants stop checkout. The old INTEGER ledger stores this distinct
+subscription contract as `0`; it does not mean zero credits. No schema change
+is needed, the global uncertain-debit guard covers subscriptions and credits,
+and Codex never takes an asset from the Claude bucket. Receipt item, empty
+variant, quantity, payment and amount must all match. The independent key oracle
+must confirm `product=claude`, unused `workflow=claude_pro`, without a prior
+job/account binding. Prefixes and similar titles are never proof.
+
+Claude uses the same durable purchase and native activation boundaries as
+Codex. One `activate` POST follows the saved native submission claim; timeouts
+only poll the original key. Final success cannot be downgraded by a slower
+status reply. Review of an uncertain response keeps read-only polling enabled;
+the native retry/swap actions cannot resubmit it. Funds shortages retain the
+15-minute owner grace and automatic continuation. Website outcome notifications
+use the existing website admin bot and its once-only delivery journal.
+
+Claude Max, support SDK pools, Zovo routes and old/manual orders are excluded.
+Isolated tests include correct item/no variants, canonical workflow, encrypted
+quarantine, old/unpaid/invalid UUID rejection, lost purchase/activation replies,
+restart reuse and late final completion. These do not debit the real wallet;
+first live empty-pool procurement still needs a genuine new paid order.
 
 ### Owner-prepaid AIEE 1000 reserve
 

@@ -3,13 +3,14 @@ const fs=require('node:fs'),net=require('node:net'),path=require('node:path');
 const {Journal}=require('./aisou-core.cjs');
 const {loadSettings,assertPaidWebsiteOrder,finance}=require('./aisou-live.cjs');
 const funds=require('./funds-wait.cjs');
+const {contract,cutoff,settingsForProduct}=require('./aibuy-contract.cjs');
 const STATE='/var/lib/gptishka-runtime/aisou-procurement/aibuy';
 const POLICY='/var/lib/gptishka-runtime/supplier-secrets/aibuy-policy.json';
 function policy(){
  try{const st=fs.lstatSync(POLICY);if(!st.isFile()||st.isSymbolicLink()||(st.mode&0o027))throw Error('supplier_settings_permissions');return JSON.parse(fs.readFileSync(POLICY,'utf8'))}
  catch(e){if(e.code==='ENOENT')return null;throw e}
 }
-function managed(p,o){return p?.enabled===true&&o?.source==='site'&&/^codex-(250|500|1000)$/.test(o?.items?.[0]?.product?.slug||'')&&Number.isFinite(Date.parse(p.enabledAfter))&&+new Date(o.createdAt)>=Date.parse(p.enabledAfter)}
+function managed(p,o){const product=o?.items?.[0]?.product?.slug,start=Date.parse(cutoff(p,product));return p?.enabled===true&&o?.source==='site'&&!!contract(product)&&Number.isFinite(start)&&start<=Date.now()&&+new Date(o.createdAt)>=start}
 function rpc(orderId){return new Promise((resolve,reject)=>{
  const socket=net.createConnection('/run/gptishka-aibuy/rpc.sock');let raw='';
  socket.setTimeout(210000,()=>socket.destroy(Error('supplier_purchase_unconfirmed')));
@@ -20,16 +21,17 @@ function rpc(orderId){return new Promise((resolve,reject)=>{
 })}
 async function journal(settings){fs.mkdirSync(STATE,{recursive:true,mode:0o700});const j=new Journal(path.join(STATE,'journal.sqlite'),settings.encryptionKey);await j.initialize();return j}
 async function procure({prisma,activationStore,orderId,productKey,accountPlan,notifyFunds,onProgress=async()=>{},transport=rpc,suppliedPolicy,suppliedSettings}){
- const p=suppliedPolicy||policy();if(!p?.enabled||!/^codex-(250|500|1000)$/.test(productKey))return null;
+ const p=suppliedPolicy||policy(),c=contract(productKey);if(!p?.enabled||!c)return null;
  let order=await prisma.order.findUnique({where:{id:orderId},include:{payments:true,items:{include:{product:true}},licenseKeys:true}});
  if(!managed(p,order))return null;
  const settings=suppliedSettings||loadSettings();if(!settings)throw Error('supplier_disabled');
- const cfg={...settings.policy,enabledAfter:p.enabledAfter,productEnabledAfter:{}};
- const site='https://aichongzhi.fun',expected={product:productKey,site},credits=Number(productKey.slice(6));
+ const cfg=settingsForProduct(settings,p,productKey);
+ const site='https://aichongzhi.fun',expected={product:productKey,site},credits=c.code;
  const eligible=['plus','pro','prolite','prolight','pro5x','pro20x','pro25x','pro50x'];
- if(!eligible.includes(String(accountPlan).toLowerCase().replace(/[ _-]/g,'')))throw Error('supplier_account_ineligible');
+ if(productKey!=='claude-pro'&&!eligible.includes(String(accountPlan).toLowerCase().replace(/[ _-]/g,'')))throw Error('supplier_account_ineligible');
  let a=activationStore.findByOrderId(orderId);
- const bound=(order.licenseKeys||[]).filter(k=>k.productKey===productKey&&[site,'https://aiee.fun'].includes(k.activationSiteUrl)&&k.orderId===orderId&&k.status==='used');
+ const sites=productKey==='claude-pro'?[site]:[site,'https://aiee.fun'];
+ const bound=(order.licenseKeys||[]).filter(k=>k.productKey===productKey&&sites.includes(k.activationSiteUrl)&&k.orderId===orderId&&k.status==='used');
  if(bound.length===1&&!a.cdk&&!a.taskId&&!a.attempts){
   assertPaidWebsiteOrder({...order,licenseKeys:[]},a,productKey,expected,cfg);
   const audit=await prisma.licenseKeyAuditLog.findFirst({where:{keyId:bound[0].id,action:{in:['aibuy_purchase','aibuy_stock_import','aiee_prepaid_fallback']}}});
@@ -64,7 +66,7 @@ async function procure({prisma,activationStore,orderId,productKey,accountPlan,no
    return {keyId:key.id,code:result.code,activationSiteUrl:'https://aiee.fun'};
   }
   if(result.state==='stock_available'){
-   for(const activationSiteUrl of ['https://aiee.fun',site]){
+   for(const activationSiteUrl of sites){
     const reserved=await activationStore.reserveCdkRecordForOrder({productKey,activationSiteUrl,orderId,email:order.email});
     if(reserved)return reserved;
    }
@@ -75,7 +77,7 @@ async function procure({prisma,activationStore,orderId,productKey,accountPlan,no
    await funds.notify(j,row,notifyFunds,Date.now(),'AI-BUY');
    const error=Error('supplier_balance_insufficient');error.fundsWait={startedAt:row.started_at,deadlineAt:row.deadline_at};throw error;
   }
-  if(result.credits!==credits||result.activationSiteUrl!==site||typeof result.code!=='string'||!/^\d{10,32}$/.test(result.trade_no||'')||!Number.isSafeInteger(result.amount_minor)||result.amount_minor<=0||result.amount_minor>({250:7500,500:14500,1000:27600})[credits])throw Error('supplier_reply_invalid');
+  if(result.credits!==credits||(credits===0&&result.product_key!=='claude-pro')||result.activationSiteUrl!==site||typeof result.code!=='string'||!/^\d{10,32}$/.test(result.trade_no||'')||!Number.isSafeInteger(result.amount_minor)||result.amount_minor<=0||result.amount_minor>c.ceiling)throw Error('supplier_reply_invalid');
   order=await prisma.order.findUnique({where:{id:orderId},include:{payments:true,items:{include:{product:true}},licenseKeys:true}});a=activationStore.findByOrderId(orderId);
   const payment=assertPaidWebsiteOrder(order,a,productKey,expected,cfg),cost=finance(order,payment,{amountMinor:result.amount_minor},cfg);
   const key=await prisma.$transaction(async tx=>{

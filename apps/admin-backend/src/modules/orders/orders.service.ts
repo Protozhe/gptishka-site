@@ -320,6 +320,7 @@ function normalizeActivationRecordForRead(record: ActivationRecord | null | unde
 
 function isChongzhiActivationRecord(record: ActivationRecord | null | undefined) {
   if (!record) return false;
+  if (record.productKey === "claude-pro" && record.activationSiteUrl === "https://aichongzhi.fun") return true;
   if (isCodexCreditsProductKey(record.productKey)) return true;
   if (isAieeProviderBase(record.activationSiteUrl || "")) return true;
   if (String(record.taskId || "").startsWith("chongzhi-")) return true;
@@ -1089,9 +1090,9 @@ export const ordersService = {
       reasons.push(...supportValidation.reasons);
     }
 
-    if (!String(stored.cdk || "").trim()) {
+    if (!String(stored.cdk || "").trim() && stored.productKey !== "claude-pro") {
       reasons.push("Activation key is not issued yet");
-    } else {
+    } else if (String(stored.cdk || "").trim()) {
       // Sanity: ensure we actually have a DB-issued CDK for this order/product.
       const issued = await prisma.licenseKey.findFirst({
         where: {
@@ -2472,6 +2473,9 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   if (isAisouGrokProduct(activationInfo?.productSlug || stored.productKey)) {
     const error=validateGrokSsoSession(tokenInfo);if(error) throw new AppError(error,400);
   }
+  if (stored.productKey === "claude-pro" && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tokenInfo.raw)) {
+    throw new AppError("Вставьте ID аккаунта Claude в формате UUID.", 400);
+  }
   const storagePatch = buildStoredClientTokenPatch(tokenInfo.raw);
   const nowIso = new Date().toISOString();
   const latestBeforeStart = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
@@ -2545,7 +2549,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
       orderId: paidOrder.id,
       email: paidOrder.email,
     });
-    if (!reserved && (/^codex-(250|500|1000)$/.test(String(stored.productKey || "")) || isAisouGrokProduct(stored.productKey)) && stored.activationSiteUrl === "https://aiee.fun") {
+    if (!reserved && (((/^codex-(250|500|1000)$/.test(String(stored.productKey || "")) || isAisouGrokProduct(stored.productKey)) && stored.activationSiteUrl === "https://aiee.fun") || (stored.productKey === "claude-pro" && stored.activationSiteUrl === "https://aichongzhi.fun"))) {
       reserved = await procureSelectedWebsiteKey({
         orderId: stored.orderId, productKey: stored.productKey,
         accountPlan: isAisouGrokProduct(stored.productKey) ? "free" : String((tokenInfo.json?.account as any)?.planType || "").trim().toLowerCase(),
@@ -2725,6 +2729,7 @@ async function startOutstockTaskWithRetry(input: {
 }) {
   const aichongzhiProduct = resolveAichongzhiProduct(input.productKey);
   if (aichongzhiProduct) {
+    if (input.productKey === "claude-pro" && input.activationSiteUrl === "https://aichongzhi.fun") return startAibuySubscription(input);
     return startAichongzhiTaskWithRetry({ ...input, product: aichongzhiProduct });
   }
   if (isCodexCreditsProductKey(input.productKey) && (input.activationSiteUrl === "https://aichongzhi.fun")) {
@@ -2811,6 +2816,11 @@ async function startOutstockTaskWithRetry(input: {
     message: "",
     providerPayload: null,
   };
+}
+
+async function startAibuySubscription(input: Parameters<typeof startOutstockTaskWithRetry>[0]) {
+  try { return await require(path.resolve(__dirname,"../../../../../ops/supplier-procurement/aibuy-activation.cjs")).start(input); }
+  catch { return {ok:false as const,taskId:"",status:409,body:"Provider key requires review",tries:0,immediateSuccess:false,message:"",providerPayload:null}; }
 }
 
 function resolveAichongzhiTarget(product: AichongzhiProduct) {
@@ -4352,7 +4362,7 @@ function updateActivationFromChongzhiCodePayload(orderId: string, payload: { sta
     lastProviderPayload: {
       ...(stored.lastProviderPayload?.submissionDiagnostics
         ? { submissionDiagnostics: stored.lastProviderPayload.submissionDiagnostics } : {}),
-      source: (stored.activationSiteUrl === "https://aichongzhi.fun") ? "aibuy-codex" : isAiee ? "aiee.fun/api/auth.php" : "chongzhi/status",
+      source: (stored.activationSiteUrl === "https://aichongzhi.fun") ? (stored.productKey === "claude-pro" ? "aibuy-claude" : "aibuy-codex") : isAiee ? "aiee.fun/api/auth.php" : "chongzhi/status",
       providerStatus: Number(payload?.status || 0),
       code_status: codeStatus || null,
       recharge_status: String(payload?.json?.recharge_status || "").trim() || null,

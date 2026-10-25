@@ -31,7 +31,7 @@ function processingRecords() {
       // the durable task/attempt prevents any second activation submission.
       const unresolvedAibuy =
         record.activationSiteUrl === "https://aichongzhi.fun" &&
-        /^codex-(250|500|1000)$/.test(String(record.productKey || "")) &&
+        /^(?:codex-(250|500|1000)|claude-pro)$/.test(String(record.productKey || "")) &&
         status !== "success" && verification !== "success" &&
         Boolean(record.cdk && record.taskId) && Number(record.attempts || 0) > 0 &&
         (record.lastProviderPayload?.submissionDiagnostics as any)?.phase === "submit_recharge" &&

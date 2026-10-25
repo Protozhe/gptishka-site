@@ -7,7 +7,7 @@ Private input/output travels over pipes to the owner-only broker.
 import json,re,sys
 
 ORIGIN='https://ai-buy.vip'
-PRICES={250:7500,500:14500,1000:27600}
+PRICES={0:13400,250:7500,500:14500,1000:27600}
 
 
 def cookies(rows):
@@ -47,13 +47,19 @@ def select_purchase_ui(page,n):
     pay=page.locator('.pay-list .pay[data-id="1"]')
     try:pay.wait_for(state='visible',timeout=45000)
     except Exception:raise ValueError('supplier_checkout_not_ready') from None
-    race=str(n)+'点数额度'
-    variant=page.locator('.switch-race').filter(has_text=race)
-    if variant.count()!=1 or variant.get_attribute('data-sku')!=race:
-        raise ValueError('supplier_variant_unconfirmed')
-    variant.click()
-    try:page.wait_for_function("race => document.querySelector('.switch-race.is-primary')?.dataset.sku === race",arg=race,timeout=10000)
-    except Exception:raise ValueError('supplier_variant_unconfirmed') from None
+    race='' if n==0 else str(n)+'点数额度'
+    variant=None
+    if n==0:
+        # Item 29 has no variants. A new variant must be reviewed explicitly,
+        # never implicitly selected by its position or a similar title.
+        if page.locator('.switch-race').count():raise ValueError('supplier_variant_unconfirmed')
+    else:
+        variant=page.locator('.switch-race').filter(has_text=race)
+        if variant.count()!=1 or variant.get_attribute('data-sku')!=race:
+            raise ValueError('supplier_variant_unconfirmed')
+        variant.click()
+        try:page.wait_for_function("race => document.querySelector('.switch-race.is-primary')?.dataset.sku === race",arg=race,timeout=10000)
+        except Exception:raise ValueError('supplier_variant_unconfirmed') from None
     num=page.locator('.vstack input[name=num]');num.fill('1');num.dispatch_event('change')
     return race,variant,num,pay
 
@@ -161,13 +167,14 @@ def _main(data,dispatch):
                 out={'history':before}
                 if data.get('request_no'):out['reference_history']=reference_history(context,data['request_no'])
                 return result(out)
-            page.goto(ORIGIN+'/item/75',wait_until='domcontentloaded',timeout=45000)
+            item=29 if n==0 else 75
+            page.goto(ORIGIN+'/item/'+str(item),wait_until='domcontentloaded',timeout=45000)
             race,variant,num,pay=select_purchase_ui(page,n)
-            fields={'item_id':75,'race':race,'num':1,'card_id':0,'coupon':''}
+            fields={'item_id':item,'race':race,'num':1,'card_id':0,'coupon':''}
             reads={}
             for action in ('valuation','stock'):
                 response=context.request.post(ORIGIN+'/user/api/index/'+action,form=fields,
-                    headers={'Referer':ORIGIN+'/item/75','Origin':ORIGIN,'X-Requested-With':'XMLHttpRequest'},timeout=30000)
+                    headers={'Referer':ORIGIN+'/item/'+str(item),'Origin':ORIGIN,'X-Requested-With':'XMLHttpRequest'},timeout=30000)
                 reads[action]=response.json()
                 if response.status!=200 or reads[action].get('code')!=200:
                     raise ValueError('supplier_quote_unconfirmed')
@@ -202,7 +209,8 @@ def _main(data,dispatch):
             }''',request_no)
             # The broker has already durably claimed this order. Recheck all
             # bindings immediately before the one irreversible UI click.
-            if int(price)!=data['amount_minor'] or num.input_value()!='1' or variant.get_attribute('class').find('is-primary')<0:
+            variant_valid=(page.locator('.switch-race').count()==0 if n==0 else variant.get_attribute('data-sku')==race and 'is-primary' in variant.get_attribute('class'))
+            if int(price)!=data['amount_minor'] or num.input_value()!='1' or not variant_valid:
                 raise ValueError('supplier_quote_changed')
             if sorted(str(x['trade_no']) for x in before)!=sorted(data['baseline']):
                 raise ValueError('supplier_account_history_changed')

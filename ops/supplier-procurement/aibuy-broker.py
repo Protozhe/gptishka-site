@@ -16,7 +16,9 @@ SECRET=pathlib.Path('/var/lib/gptishka-runtime/supplier-secrets')
 STATE=pathlib.Path('/var/lib/gptishka-runtime/aibuy-procurement')
 SOCKET='/run/gptishka-aibuy/rpc.sock'
 ORIGIN='https://ai-buy.vip'
-PRICES={250:7500,500:14500,1000:27600}
+# 0 names the Claude Pro subscription in the existing integer ledger. It is
+# never a caller-provided denomination; the independent paid-order DB decides.
+PRICES={0:13400,250:7500,500:14500,1000:27600}
 
 def request_no(oid):return 'ab-'+sha256(('website:'+oid).encode()).hexdigest()[:40]
 
@@ -100,7 +102,8 @@ def matching_receipt(row,rows,vault,reference_rows=None):
         matches=[r for r in reference_rows if str(r.get('trade_no')) not in baseline]
     if len(matches)!=1:raise ValueError('supplier_purchase_unconfirmed')
     r=matches[0]
-    if (int(r.get('commodity_id',0))!=75 or r.get('race')!=str(row['credits'])+'点数额度'
+    is_claude=row['credits']==0
+    if (int(r.get('commodity_id',0))!=(29 if is_claude else 75) or (r.get('race') or '')!=('' if is_claude else str(row['credits'])+'点数额度')
         or int(r.get('card_num',0))!=1 or int(r.get('pay_id',0))!=1 or int(r.get('status',0))!=1
         or not re.fullmatch(r'\d{10,32}',str(r.get('trade_no','')))
         or not 0<minor(r.get('amount'))<=row['amount_minor']):raise ValueError('supplier_receipt_mismatch')
@@ -112,11 +115,11 @@ class NoRedirect(HTTPRedirectHandler):
 
 
 def verify_key(code,credits):
-    if not isinstance(code,str) or not re.fullmatch(r'[A-Za-z0-9_.-]{12,256}',code):raise ValueError('supplier_key_unconfirmed')
+    if credits not in PRICES or not isinstance(code,str) or not re.fullmatch(r'[A-Za-z0-9_.-]{12,256}',code):raise ValueError('supplier_key_unconfirmed')
     req=Request('https://aichongzhi.fun/api/redeem.php?a=verifyCdk',
-        data=json.dumps({'code':code,'product':'gpt'}).encode(),headers={'Content-Type':'application/json'},method='POST')
+        data=json.dumps({'code':code,'product':'claude' if credits==0 else 'gpt'}).encode(),headers={'Content-Type':'application/json'},method='POST')
     with build_opener(NoRedirect).open(req,timeout=30) as r:d=json.loads(r.read(262144))
-    if (d.get('ok') is not True or d.get('workflow')!='codex_'+str(credits)
+    if (d.get('ok') is not True or d.get('workflow')!=('claude_pro' if credits==0 else 'codex_'+str(credits))
         or str(d.get('status','')).lower() not in ('unused','available','active','ready')
         or d.get('job_id') or d.get('task_id') or d.get('email')):raise ValueError('supplier_key_quarantined')
     return True
@@ -234,6 +237,7 @@ def validate(oid,amount=None):
 
 def asset_reply(vault,asset):
     return {'code':vault.open(asset['cipher'],asset['fingerprint']),
+        'product_key':'claude-pro' if asset['credits']==0 else 'codex-'+str(asset['credits']),
         'credits':asset['credits'],'amount_minor':asset['amount_minor'],'trade_no':asset['trade_no'],
         'activationSiteUrl':'https://aichongzhi.fun'}
 
@@ -243,6 +247,7 @@ def procure(oid,policy,*,browser=child,order_validator=validate,oracle=verify_ke
     if policy.get('enabled') is not True:raise ValueError('supplier_disabled')
     if policy.get('paused') is True:raise ValueError('supplier_owner_topup_pause')
     intent=order_validator(oid);credits=intent['credits']
+    if type(credits) is not int or credits not in PRICES:raise ValueError('supplier_product_disabled')
     if intent.get('stock_available'):return {'state':'stock_available'}
     saved,key,cookies=session();vault=Vault(STATE/'journal.sqlite',key)
     try:
