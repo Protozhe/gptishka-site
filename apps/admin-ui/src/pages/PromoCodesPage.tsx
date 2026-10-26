@@ -21,6 +21,18 @@ export default function PromoCodesPage() {
   const [discount, setDiscount] = useState(10);
   const [usageLimit, setUsageLimit] = useState<number | "">("");
 
+  const generateCode = () => {
+    const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const existingCodes = new Set<string>((data?.items || []).map((item: any) => item.code.toUpperCase()));
+    existingCodes.add(code.toUpperCase());
+    let generatedCode: string;
+    do {
+      const bytes = crypto.getRandomValues(new Uint8Array(10));
+      generatedCode = Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
+    } while (existingCodes.has(generatedCode));
+    setCode(generatedCode);
+  };
+
   const create = useMutation({
     mutationFn: () =>
       api.post("/promocodes", {
@@ -62,8 +74,13 @@ export default function PromoCodesPage() {
         </Link>
       </div>
 
-      <form onSubmit={onSubmit} className="card p-4 grid gap-2 md:grid-cols-6">
-        <input className="input" placeholder="Промокод" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} />
+      <form onSubmit={onSubmit} className="card p-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <input className="input min-w-0 flex-1" aria-label="Промокод" placeholder="Промокод" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} />
+          <button type="button" className="btn-secondary shrink-0" onClick={generateCode} disabled={create.isPending}>
+            Сгенерировать
+          </button>
+        </div>
         <select className="input" value={kind} onChange={(e) => setKind(e.target.value)}>
           <option value="REFERRAL">Реферальный</option>
           <option value="ADS">Реклама</option>
@@ -73,7 +90,7 @@ export default function PromoCodesPage() {
         <input className="input" placeholder="Канал/кампания" value={campaign} onChange={(e) => setCampaign(e.target.value)} />
         <input className="input" type="number" min={0} max={95} placeholder="Скидка %" value={discount} onChange={(e) => setDiscount(Number(e.target.value))} />
         <input className="input" type="number" min={1} placeholder="Лимит использований" value={usageLimit} onChange={(e) => setUsageLimit(e.target.value ? Number(e.target.value) : "")} />
-        <button className="btn-primary md:col-span-6">Добавить промокод</button>
+        <button className="btn-primary md:col-span-2 xl:col-span-3" disabled={create.isPending}>Добавить промокод</button>
       </form>
 
       <section className="card overflow-hidden">
