@@ -172,11 +172,44 @@ class Tests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError,'supplier_(order_ineligible|prior_fulfillment)'):
                     root.validate_job(1,policy=p,payment_reader=lambda *a:(_ for _ in ()).throw(AssertionError('must not query payment')))
 
-    def test_market_and_website_uncertain_debits_share_one_global_guard(self):
+    def test_market_and_website_uncertain_debits_are_isolated_per_order(self):
         vault=root.b.Vault(':memory:',os.urandom(32))
         vault.claim('website-fixture',1000,27600,[])
-        with self.assertRaisesRegex(ValueError,'previous_purchase_unconfirmed'):vault.claim('market-fixture',0,13400,[])
+        self.assertTrue(vault.claim('market-fixture',0,13400,[])[0])
+        self.assertFalse(vault.claim('website-fixture',1000,27600,[])[0])
+        self.assertFalse(vault.claim('market-fixture',0,13400,[])[0])
         vault.db.close()
+
+    def test_waiting_customer_can_return_after_a_month_without_blocking_new_orders(self):
+        for platform in ('funpay','playerok'):
+            with self.subTest(platform=platform):
+                a,path,p,calls,result=self.fixture(250,platform)
+                p['marketplaces']['enabledAfter']=iso(-40*86400)
+                adapter.CONFIG.write_text(json.dumps(p))
+                with a.connect() as c:
+                    c.execute('UPDATE codex_jobs SET created_at=?,source_created_at=?,note_url=NULL,email=NULL',(iso(-31*86400),iso(-31*86400)))
+                    c.execute("INSERT INTO codex_jobs SELECT 2,'SECOND-ORDER',account_id,platform,package,product_type,title,status,key_pool,key_id,aiee_order_id,started_at,last_poll_status,?,?,updated_at,auto_submit_allowed,archived_at,'https://notebrio.com/n/second','fixture@example.invalid',finished_at,error,instruction_sent_at,anchor_message_id,chat_id FROM codex_jobs WHERE id=1",(iso(-30),iso(-30)))
+                requests=[]
+                def rpc(jid,action='procure'):
+                    requests.append((jid,action));return result
+                original=adapter.capture
+                def capture(automation,job):
+                    if job['id']==1 and not job['note_url']:raise ValueError('supplier_session_required')
+                    return original(automation,job)
+                with patch.object(adapter,'capture',capture),patch.object(adapter,'rpc',rpc):
+                    self.assertTrue(adapter.handle(a,1))
+                    self.assertEqual(requests,[])
+                    with a.connect() as c:self.assertEqual(c.execute('SELECT COUNT(*) FROM market_aibuy_attempts').fetchone()[0],0)
+                    self.assertTrue(adapter.handle(a,2))
+                    self.assertEqual(requests,[(2,'procure'),(2,'attest')])
+                    with a.connect() as c:
+                        c.execute("UPDATE codex_jobs SET note_url='https://notebrio.com/n/fresh',email='fixture@example.invalid' WHERE id=1")
+                    first_result={**result,'code':'ISOLATED-RETURNING-KEY','trade_no':'30000000000029'}
+                    def returning_rpc(jid,action='procure'):
+                        requests.append((jid,action));return first_result
+                    with patch.object(adapter,'rpc',returning_rpc):self.assertTrue(adapter.handle(a,1))
+                self.assertEqual(requests,[(2,'procure'),(2,'attest'),(1,'procure'),(1,'attest')])
+                self.assertEqual(calls.count('activate'),2)
 
     def test_root_paid_order_finance_and_fresh_session_checks_before_purchase(self):
         for platform in ('funpay','playerok'):

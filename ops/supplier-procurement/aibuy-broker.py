@@ -67,8 +67,8 @@ class Vault:
     def claim(self,oid,credits,amount,baseline):
         self.db.execute('BEGIN IMMEDIATE')
         try:
-            if self.db.execute("SELECT 1 FROM buys WHERE order_id<>? AND state NOT IN ('verified','not_sent','cancelled_no_charge')",(oid,)).fetchone():
-                raise ValueError('supplier_previous_purchase_unconfirmed')
+            # Uncertain debits hold only their own order. The account lock still
+            # serializes checkout; exact receipt references prevent cross-binding.
             changed=self.db.execute("INSERT OR IGNORE INTO buys VALUES(?,?,?,'sending',?,NULL)",
                 (oid,credits,amount,self.seal(baseline,oid+'|baseline'))).rowcount
             row=self.db.execute('SELECT * FROM buys WHERE order_id=?',(oid,)).fetchone()

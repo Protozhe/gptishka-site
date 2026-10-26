@@ -149,8 +149,10 @@ Only item 75, quantity 1 and balance payment are permitted. Variants are exact
 Before the one pay click, the broker fsyncs a durable claim; the ordinary form
 carries a stable opaque request number and contact correlation. Lost replies
 are recovered by authenticated own-order history, never by paying again. No
-CAPTCHA, TOTP or other verification is bypassed. An uncertain earlier debit
-blocks further debits from that account until resolved.
+CAPTCHA, TOTP or other verification is bypassed. An uncertain debit blocks
+another debit for that order only, not unrelated paid orders. The shared
+account lock still serializes checkout. Recovery requires that order's exact
+receipt or request reference, never an unrelated recent purchase.
 
 The key is independently verified unused and `codex_<denomination>` at
 `aichongzhi.fun`. It never enters an AIEE pool. New activation submissions also
@@ -204,7 +206,7 @@ The only subscription contract is item **29**, no variant, quantity **1**,
 balance payment, at most **¥134** with confirmed positive margin. Any newly
 introduced variants stop checkout. The old INTEGER ledger stores this distinct
 subscription contract as `0`; it does not mean zero credits. No schema change
-is needed, the global uncertain-debit guard covers subscriptions and credits,
+is needed, the per-order uncertain-debit guard covers subscriptions and credits,
 and Codex never takes an asset from the Claude bucket. Receipt item, empty
 variant, quantity, payment and amount must all match. The independent key oracle
 must confirm `product=claude`, unused `workflow=claude_pro`, without a prior
@@ -255,7 +257,7 @@ purchase. Confirmed acquisition cost is bound once to the marketplace order.
 
 An opaque platform/account/order hash shares the existing root purchase vault
 and account lock with website procurement and funding. Uncertain debits across
-any source block another debit; history recovery never repeats a pay click.
+any source block only the same order; history recovery never repeats a pay click.
 Only verified unused canonical workflows can be assigned. Keys and customer
 input remain encrypted; no supplier login or password enters Pulse.
 
@@ -271,7 +273,10 @@ demand after funding. An uncertain notification send is never blindly repeated.
 Tests use synthetic paid orders and mocked provider/platform/bot transports for
 both platforms and all four supported products, plus old-order and refund
 rejection, wrong keys, current payment checks, margin, funding deadlines,
-restart/lost-response recovery and a shared cross-source debit blocker.
+restart/lost-response recovery and cross-source per-order debit isolation.
+Waiting for customer input creates no purchase demand. An admitted paid order
+can resume with fresh input weeks later without holding up unrelated customers;
+refund, prior-fulfillment and current payment/session checks still apply.
 No synthetic live purchase, activation or customer test message is permitted.
 
 ### Owner-prepaid AIEE 1000 reserve

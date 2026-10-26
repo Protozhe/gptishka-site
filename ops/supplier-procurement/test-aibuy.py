@@ -141,12 +141,54 @@ class Tests(unittest.TestCase):
             file=Path(d)/'j.sqlite';key=os.urandom(32);a=b.Vault(file,key);c=b.Vault(file,key)
             yes,row=a.claim('website-fixture',500,14500,['old'])
             self.assertTrue(yes);self.assertFalse(c.claim('website-fixture',500,14500,['old'])[0])
-            with self.assertRaises(ValueError):c.claim('another-fixture',250,7500,['old'])
+            self.assertTrue(c.claim('another-fixture',250,7500,['old'])[0])
+            self.assertFalse(a.claim('another-fixture',250,7500,['old'])[0])
             with self.assertRaises(ValueError):c.claim('website-fixture',1000,27600,['old'])
             a.receive('website-fixture',{'receipt':{'json':{'data':{'tradeNo':'12345678901234'}}}})
             self.assertNotIn(b'tradeNo',Path(file).read_bytes())
             a.db.close();c.db.close();a=b.Vault(file,key)
-            self.assertFalse(a.claim('website-fixture',500,14500,['old'])[0]);a.db.close()
+            self.assertFalse(a.claim('website-fixture',500,14500,['old'])[0])
+            self.assertFalse(a.claim('another-fixture',250,7500,['old'])[0]);a.db.close()
+
+    def test_uncertain_purchase_does_not_block_another_or_adopt_its_receipt(self):
+        for lost in (False,True):
+            with self.subTest(lost=lost):
+                oid,key,intent,receipt=self.fixture()
+                other='c'+'b'*24;later={**receipt,'trade_no':'30000000000000','secret':'ISOLATED-OTHER-ORDER-KEY'}
+                calls=[]
+                def uncertain(data):
+                    calls.append(('first',data['mode']))
+                    if data['mode']=='prepare':return {'amount_minor':7500,'balance_minor':100000,'history':[]}
+                    if lost:raise TimeoutError('isolated ambiguous debit')
+                    return {'dispatch_state':'sent_or_uncertain','receipt':{'http_status':500},'history':[],'reference_history':[]}
+                args=dict(order_validator=lambda *a:intent,oracle=lambda *a:True)
+                with self.assertRaisesRegex(ValueError,'purchase_unconfirmed'):
+                    b.procure(oid,{'enabled':True},browser=uncertain,**args)
+                v=b.Vault(b.STATE/'journal.sqlite',key)
+                before=tuple(v.db.execute('SELECT * FROM buys WHERE order_id=?',(oid,)).fetchone());v.db.close()
+                def buy_other(data):
+                    calls.append(('other',data['mode']))
+                    if data['mode']=='prepare':return {'amount_minor':7500,'balance_minor':92500,'history':[]}
+                    return {'receipt':{'json':{'data':{'tradeNo':later['trade_no']}}},'history':[later]}
+                second=b.procure(other,{'enabled':True},browser=buy_other,**args)
+                self.assertEqual(second['code'],later['secret'])
+                v=b.Vault(b.STATE/'journal.sqlite',key)
+                self.assertEqual(tuple(v.db.execute('SELECT * FROM buys WHERE order_id=?',(oid,)).fetchone()),before);v.db.close()
+                def unrelated_history(data):
+                    calls.append(('first',data['mode']));self.assertEqual(data['mode'],'history')
+                    self.assertEqual(data['request_no'],b.request_no(oid))
+                    return {'history':[later],'reference_history':[]}
+                with self.assertRaisesRegex(ValueError,'purchase_unconfirmed'):
+                    b.procure(oid,{'enabled':True},browser=unrelated_history,**args)
+                def recovered_history(data):
+                    calls.append(('first',data['mode']));self.assertEqual(data['mode'],'history')
+                    return {'history':[later,receipt],'reference_history':[receipt]}
+                first=b.procure(oid,{'enabled':True},browser=recovered_history,**args)
+                self.assertEqual(first['code'],receipt['secret'])
+                def forbidden(*a):raise AssertionError('assigned orders must not repurchase')
+                self.assertEqual(b.procure(other,{'enabled':True},browser=forbidden,**args),second)
+                self.assertEqual(b.procure(oid,{'enabled':True},browser=forbidden,**args),first)
+                self.assertEqual(calls.count(('first','buy')),1);self.assertEqual(calls.count(('other','buy')),1)
 
     def test_history_is_bound_to_owner_baseline_item_quantity_variant_price_and_balance_method(self):
         v=b.Vault(':memory:',os.urandom(32));_,row=v.claim('order-fixture',500,14500,['10000000000000'])
