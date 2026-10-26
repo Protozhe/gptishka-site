@@ -21,6 +21,8 @@ After the protected production release succeeds, run its committed installer:
 ```sh
 python3 /var/www/gptishka-new/ops/zovocard-status/install.py --sha COMMIT
 python3 /var/www/gptishka-new/ops/zovocard-status/install.py --sha COMMIT --apply
+python3 /var/www/gptishka-new/ops/supplier-procurement/install-notifications.py --sha COMMIT
+python3 /var/www/gptishka-new/ops/supplier-procurement/install-notifications.py --sha COMMIT --apply
 ```
 
 The installer checks release identity and known runtime hashes, refuses to reload
@@ -29,3 +31,5 @@ reloads the two existing consumers of cached imports; the website Pro timers
 load the new bridge on their next normal invocation. Configuration, routes,
 limits, customer sessions and the secondary payment worker are untouched. An
 installation failure restores the original modules and services automatically.
+The separate monitor-bot installer updates only the reviewed notification
+predicate and result call, preserving its live authentication, MFA and owner UI.

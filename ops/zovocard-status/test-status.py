@@ -320,5 +320,21 @@ class InstallationTests(unittest.TestCase):
         self.assertFalse((self.target/'new.py').exists())
 
 
+class MonitorInstallerTests(unittest.TestCase):
+    def test_dedup_call_is_installed_without_replacing_live_security_code(self):
+        installer = load('monitor_install_fixture', HERE.parent/'supplier-procurement/install-notifications.py')
+        desired = (HERE.parent/'telegram-monitor-bot/worker.mjs').read_text(encoding='utf-8')
+        helper_start = desired.index('function hasZovocardStatusNotifier(record) {')
+        helper_end = desired.index('async function pollActivationNotifications(state) {', helper_start)
+        old = '      await notifyAdmins(await activationNotification(record, current));'
+        new = '      if (!hasZovocardStatusNotifier(record)) await notifyAdmins(await activationNotification(record, current));'
+        legacy = (desired[:helper_start] + desired[helper_end:]).replace(new, old)
+        security = '// Fixture: owner authentication and MFA must stay untouched.\n'
+        self.assertEqual(installer.transform(security + legacy, desired), security + desired)
+        self.assertEqual(installer.transform(security + desired, desired), security + desired)
+        with self.assertRaisesRegex(ValueError, 'notification_call_anchor'):
+            installer.transform(legacy.replace(old, ''), desired)
+
+
 if __name__ == '__main__':
     unittest.main()
