@@ -197,13 +197,15 @@ assert.equal(posts,1);assert.equal(reserves,0,'The separate change-key endpoint 
 // recharge, not merely the supplier marking a key used after a failed attempt.
 const now = 1792758000000;
 const status = load({
+  AppError,
+  Error,
   normalizeActivationRecordForRead: value => value,
   Date: class extends Date { static now() { return now; } },
   IOS_SUBMISSION_RECONCILE_MS: 900000,
   isAieeProviderBase: value => String(value).includes("aiee.fun"), isIosProviderBase: ios,
   activationStore: { findByOrderId: () => stored, upsert: value => { stored = value; } },
   buildStoredClientTokenPatch: () => ({ clientTokenCiphertext: null }),
-}, ["isChongzhiCodeUsed", "updateActivationFromChongzhiCodePayload", "recordIosSubmitResult"]);
+}, ["isChongzhiCodeUsed", "updateActivationFromChongzhiCodePayload", "recordIosSubmitResult", "updateActivationProviderCheckError", "summarizeProviderCheckError"]);
 const available = { status: 200, json: { success: true, status: "available", recharge_status: "available" } };
 function record(site, minutes) { stored = { orderId: "fixture-order", cdk: "fixture", activationSiteUrl: site, taskId: `reconcile-${now - minutes * 60000}-fixture`, status: "processing", verificationState: "pending" }; }
 record("https://vip.sxzfd.com", 6); status.updateActivationFromChongzhiCodePayload("fixture-order", available); assert.equal(stored.status, "processing");
@@ -222,6 +224,12 @@ record('https://vip.sxzfd.com',16);stored.attempts=1;stored.lastProviderPayload=
 status.recordIosSubmitResult('fixture-order','fixture','original-dispatch',{status:200,json:{success:false,code:'overwrite_consent_required',message:'fixture-sensitive-email@example.invalid',sid:'fixture-secret'}});
 assert.equal(stored.lastProviderPayload.iosSubmitResult.code,'overwrite_consent_required');
 assert.ok(!JSON.stringify(stored).includes('fixture-sensitive'));assert.ok(!JSON.stringify(stored).includes('fixture-secret'));
+const originalDispatch = JSON.stringify(stored.lastProviderPayload.submissionDiagnostics);
+const originalReply = JSON.stringify(stored.lastProviderPayload.iosSubmitResult);
+status.updateActivationProviderCheckError('fixture-order',new Error('isolated temporary status timeout'));
+assert.equal(JSON.stringify(stored.lastProviderPayload.submissionDiagnostics),originalDispatch,'Read-only status failures must preserve the durable dispatch evidence');
+assert.equal(JSON.stringify(stored.lastProviderPayload.iosSubmitResult),originalReply,'Read-only status failures must preserve the supplier submit reply');
+assert.equal(stored.lastProviderPayload.statusCheckError.message,'isolated temporary status timeout');
 status.updateActivationFromChongzhiCodePayload('fixture-order',available);
 assert.equal(stored.lastProviderPayload.iosSubmitResult.outcome,'rejected');
 const beforeWrong=JSON.stringify(stored);

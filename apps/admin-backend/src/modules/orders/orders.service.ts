@@ -4915,12 +4915,18 @@ function updateActivationProviderCheckError(orderId: string, error: unknown) {
   const nowIso = new Date().toISOString();
   const message = summarizeProviderCheckError(error);
   const alreadyConfirmed = stored.status === "success" || stored.verificationState === "success";
+  const durableSubmission = Boolean(stored.lastProviderPayload?.submissionDiagnostics || stored.lastProviderPayload?.iosSubmitResult);
   activationStore.upsert({
     ...stored,
     lastProviderMessage: alreadyConfirmed ? "Активация подтверждена провайдером." : message,
     lastProviderCheckedAt: nowIso,
     lastProviderPayload: alreadyConfirmed
       ? stored.lastProviderPayload
+      : durableSubmission
+      ? {
+          ...stored.lastProviderPayload,
+          statusCheckError: { message, checkedAt: nowIso },
+        }
       : {
           source: "provider-check-error",
           message,
