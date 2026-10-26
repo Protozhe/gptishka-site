@@ -27,9 +27,10 @@ export default function PromoCodesPage() {
     existingCodes.add(code.toUpperCase());
     let generatedCode: string;
     do {
-      const bytes = crypto.getRandomValues(new Uint8Array(10));
-      generatedCode = Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
-    } while (existingCodes.has(generatedCode));
+      const bytes = crypto.getRandomValues(new Uint8Array(8));
+      const randomPart = Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
+      generatedCode = `GPT-${randomPart.slice(0, 4)}-${randomPart.slice(4)}`;
+    } while (!/[2-9]/.test(generatedCode) || existingCodes.has(generatedCode));
     setCode(generatedCode);
   };
 
