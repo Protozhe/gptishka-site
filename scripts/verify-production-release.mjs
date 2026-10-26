@@ -21,6 +21,7 @@ const checks = [
   "scripts/verify-supplier-procurement.mjs",
   "scripts/verify-aibuy-topup.mjs",
   "scripts/verify-subscription-routes.mjs",
+  "scripts/verify-zovocard-status.mjs",
   "scripts/verify-review-product-labels.cjs",
   "scripts/verify-preserved-reviews.cjs",
   "scripts/verify-public-news-sync.cjs",

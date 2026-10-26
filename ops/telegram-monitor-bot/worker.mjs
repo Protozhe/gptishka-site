@@ -474,6 +474,15 @@ function requiresActivationKey(record) {
   return true;
 }
 
+function hasZovocardStatusNotifier(record) {
+  const key = String(record?.productKey || "");
+  const match = /^chatgpt-pro-(5|20)x-1$/.exec(key);
+  if (!match || record.cdk || record.taskId || Number(record.attempts || 0)) return false;
+  const owner = `pulse-sitepro${match[1]}x-v1`;
+  return record.externalFulfillmentOwner === owner || record.lastProviderPayload?.source === owner ||
+    String(record.activationSiteUrl || "").replace(/\/+$/, "") === "https://zovocard.com";
+}
+
 async function pollActivationNotifications(state) {
   const records = readActivationRecords();
   if (!state.activationInitialized) {
@@ -488,7 +497,8 @@ async function pollActivationNotifications(state) {
     const previous = state.activationStatuses[orderId];
     const current = activationState(record);
     if (previous && previous !== current && ["success", "failed"].includes(current)) {
-      await notifyAdmins(await activationNotification(record, current));
+      // The Zovo observer owns the verified result and settled cost in this bot.
+      if (!hasZovocardStatusNotifier(record)) await notifyAdmins(await activationNotification(record, current));
       state.activationStatuses[orderId] = current;
       writeState(state);
     } else if (!previous) {

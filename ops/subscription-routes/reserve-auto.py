@@ -24,6 +24,14 @@ def eligible(j,cfg,now):
         and _time(j['created_at'])>=_time(cfg['enabled_after'])
         and _time(j['source_created_at'] or j['created_at'])>=_time(cfg.get('product_enabled_after',{}).get(j['product_type'],cfg['enabled_after'])) and now-_time(j['created_at'])>=cfg['minimum_wait_seconds'])
 
+def current_candidate(a,job_id,cfg):
+    from zovocard_job_status import recoverable_wait,review_reason,primary_inflight
+    with a.connect() as c:
+        j=c.execute('SELECT * FROM codex_jobs WHERE id=?',(job_id,)).fetchone()
+        if not j or not eligible(j,cfg,time.time()):return None
+        if recoverable_wait(j,review_reason(c,job_id)) or primary_inflight(c,job_id):return None
+        return j
+
 def init(a):
     with a.connect() as c:
         c.execute('''CREATE TABLE IF NOT EXISTS subscription_reserve_attempts(
@@ -327,11 +335,14 @@ def run(dry=False):
     if not cfg.get('enabled'):return {'enabled':False}
     init(a)
     with a.connect() as c:jobs=c.execute("SELECT * FROM codex_jobs WHERE status='manual_action' AND product_type LIKE 'chatgpt_%' ORDER BY id DESC LIMIT 100").fetchall()
-    if dry:return {'eligible':sum(eligible(j,cfg,time.time()) for j in jobs),'dry_run':True}
+    jobs=[current for j in jobs if (current:=current_candidate(a,j['id'],cfg)) is not None]
+    if dry:return {'eligible':len(jobs),'dry_run':True}
     waiting={j['id'] for j in jobs if funds_wait(a,j,cfg,time.time())}
     jobs=[j for j in jobs if eligible(j,cfg,time.time()) and j['id'] not in waiting]
     for j in jobs[:5]:
         try:
+            j=current_candidate(a,j['id'],cfg)
+            if j is None:continue
             with a.connect() as c:
                 if c.execute('SELECT 1 FROM subscription_reserve_attempts WHERE job_id=?',(j['id'],)).fetchone():continue
                 if not c.execute("SELECT 1 FROM codex_logs WHERE job_id=? AND (event LIKE 'zovocard%review' OR event LIKE 'zovocard%failed')",(j['id'],)).fetchone():continue
@@ -339,13 +350,17 @@ def run(dry=False):
             from aisou_stock import enabled as supply_enabled
             if not available(a,j,pool) and not supply_enabled(j):notice(a,j,'empty','⚠️ Нет резервного ключа нужного тарифа и типа аккаунта. Другой ключ не подставляли.');continue
             assess(fresh['financial'],{})
-            with a.connect() as c:c.execute("INSERT OR IGNORE INTO subscription_reserve_attempts(job_id,order_id,platform,pool,provider,state,encrypted_session,created_at,updated_at) VALUES(?,?,?,?,?,'attesting',?,?,?)",(j['id'],j['order_id'],j['platform'],pool,('vip' if pool.endswith('_active') else 'aiee'),encrypted(a,raw),time.time(),time.time()))
+            if current_candidate(a,j['id'],cfg) is None:continue
+            with a.connect() as c:c.execute("INSERT OR IGNORE INTO subscription_reserve_attempts(job_id,order_id,platform,pool,provider,state,encrypted_session,created_at,updated_at) SELECT ?,?,?,?,?,'attesting',?,?,? WHERE EXISTS(SELECT 1 FROM codex_jobs WHERE id=? AND status='manual_action' AND key_pool=? AND key_id IS NULL AND coalesce(aiee_order_id,'')='')",(j['id'],j['order_id'],j['platform'],pool,('vip' if pool.endswith('_active') else 'aiee'),encrypted(a,raw),time.time(),time.time(),j['id'],j['key_pool']))
         except Exception as e:
+            # The primary worker may have advanced while RPC evidence was read.
+            if j is None or current_candidate(a,j['id'],cfg) is None:continue
             reason=str(e) if isinstance(e,ValueError) and str(e).startswith(('reserve_','supplier_')) else 'reserve_evidence_unavailable'
             notice(a,j,'blocked:'+reason,'⚠️ Автоматический резерв ожидает проверки: '+reason+'. Повторную оплату не запускали.')
     with a.connect() as c:rows=c.execute("SELECT * FROM subscription_reserve_attempts WHERE state NOT IN ('completed','review') AND next_at<=? ORDER BY job_id LIMIT 5",(time.time(),)).fetchall()
     for r in rows:
         if r['job_id'] in waiting and not r['proof'] and not r['dispatched']:continue
+        if r['state']=='attesting' and current_candidate(a,r['job_id'],cfg) is None:continue
         with a.connect() as c:j=c.execute('SELECT * FROM codex_jobs WHERE id=?',(r['job_id'],)).fetchone()
         try:process(a,j,r)
         except Exception as e:
