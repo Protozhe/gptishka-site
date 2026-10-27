@@ -100,12 +100,54 @@ const proOptions = geminiFallbackContext.getConstructorFilterOptions('chatgpt', 
 assert.equal(proOptions.find(option => option.key === 'pro-25x').disabled, true, 'Pro 500 cannot be purchased without an active product');
 const geminiDurations = geminiFallbackContext.getConstructorFilterOptions('gemini', 'duration', [{ key: '18m', count: 1 }]);
 assert.equal(JSON.stringify(geminiDurations), JSON.stringify([{ key: '18m', count: 1, disabled: false }]));
+// Reproduce a stale CMS card summary with only the current 18-month product.
+// Both languages must use the actual offered duration and keep its live price.
+for (const english of [false, true]) {
+  const cardContext = vm.createContext({
+    isEnPage: english,
+    normalizeAiServiceKey: value => value,
+    getProductSearchText: item => [item.title, item.slug, ...(item.tags || [])].filter(Boolean).join(' ').toLowerCase(),
+    toAmount: Number,
+    getVisualConfig: () => ({}),
+    getServiceCardBackground: () => '#070b18',
+    getOptimizedServiceImageUrl: value => value,
+    getServicePagePath: key => english ? '/en/' + key + '.html' : '/' + key,
+    formatPriceByCurrency: amount => amount + ' RUB',
+    escapeHtml: value => String(value),
+  });
+  for (const name of ['getServicePlanKey', 'getServicePlanLabel', 'getServiceDurationKey', 'getServiceDurationLabel', 'getServiceDurationSortScore', 'formatServicePlanSummary', 'getShowcaseServiceCardConfig', 'getServiceCardValue', 'renderAiDirectoryCard']) {
+    vm.runInContext(functions.get(name), cardContext);
+  }
+  const geminiGroup = {
+    service: { key: 'gemini', name: 'Gemini', description: '', icon: 'AI', theme: 'gemini' },
+    items: [{ slug: 'gemini-pro-18-link', title: 'Gemini Pro — 18 месяцев', tags: ['gemini', 'pro', 'month:18'], price: 449, currency: 'RUB' }],
+  };
+  const expectedSummary = english ? 'Pro · 18 months' : 'Pro · 18 месяцев';
+  assert.equal(cardContext.formatServicePlanSummary(geminiGroup), expectedSummary);
+  const geminiCard = cardContext.renderAiDirectoryCard(geminiGroup, {
+    serviceCards: [{ serviceKey: 'gemini', planSummary: 'Pro · 12 или 18 месяцев', priceText: 'от 1 500 RUB' }],
+  });
+  assert.ok(geminiCard.includes(expectedSummary), 'Gemini card must ignore outdated CMS duration text');
+  assert.doesNotMatch(geminiCard, /12 или 18|12 or 18|1 500/);
+  assert.match(geminiCard, /449 RUB/);
+  const chatgptCard = cardContext.renderAiDirectoryCard({
+    service: { key: 'chatgpt', name: 'ChatGPT', description: '', icon: 'GPT', theme: 'chatgpt' },
+    items: [{ title: 'ChatGPT Plus — 1 месяц', tags: ['chatgpt', 'plus', 'month:1'], price: 2290 }],
+  }, { serviceCards: [{ serviceKey: 'chatgpt', description: 'GPT-6' }] });
+  assert.match(chatgptCard, /GPT-6\.1 Sol\/Astra/);
+}
 vm.runInContext(functions.get('getEnglishServicePageContent'), geminiFallbackContext);
 const geminiEnglishFallback = geminiFallbackContext.getEnglishServicePageContent('gemini');
 assert.doesNotMatch(JSON.stringify(geminiEnglishFallback), /12.month|1,500|2,100/);
 assert.match(geminiEnglishFallback.metaTitle, /18 months/);
 for (const path of ['catalog/index.html', 'catalog/ai/index.html', 'en/catalog/index.html', 'en/catalog/ai/index.html']) {
   assert.doesNotMatch(fs.readFileSync(path, 'utf8'), /12 или 18|12 or 18/);
+  assert.match(fs.readFileSync(path, 'utf8'), />GPT-6\.1 Sol\/Astra</);
+  const geminiFallbackCard = fs.readFileSync(path, 'utf8').match(/<article\b[^>]*data-showcase-service-key="gemini"[^>]*>[\s\S]*?<\/article>/)?.[0];
+  assert.ok(geminiFallbackCard);
+  assert.match(geminiFallbackCard, /1 тариф|1 plan/);
+  assert.match(geminiFallbackCard, /449/);
+  assert.doesNotMatch(geminiFallbackCard, /2 тарифа|2 tariffs|1 500/);
 }
 const geminiDom = page('<html><body></body></html>');
 for (const value of geminiStrings) {

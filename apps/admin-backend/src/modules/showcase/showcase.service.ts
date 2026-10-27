@@ -39,7 +39,7 @@ const SERVICE_CARD_DEFAULTS: Record<string, Record<string, any>> = {
   chatgpt: {
     serviceKey: "chatgpt",
     title: "ChatGPT",
-    description: "GPT-6",
+    description: "GPT-6.1 Sol/Astra",
     planSummary: "Go / Plus / Pro 5x / Pro 20x",
     buttonText: "К тарифам",
     href: "/chatgpt",

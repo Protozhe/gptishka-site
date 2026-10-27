@@ -3487,6 +3487,14 @@ function initActivationResumeShortcut() {
         const plans = items.filter(item => normalizeAiServiceKey(getAiServiceConfig(item)?.key) === key && toAmount(item?.price) > 0);
         if (!plans.length) return;
         const cheapest = plans.reduce((best, item) => toAmount(item.price) < toAmount(best.price) ? item : best);
+        if (key === "gemini") {
+          const summary = card.querySelector(".ai-directory-card__plans");
+          if (summary) summary.textContent = formatServicePlanSummary({ service: { key }, items: plans });
+          const count = card.querySelector(".ai-directory-card__count");
+          if (count) count.textContent = isEnPage
+            ? `${plans.length} plan${plans.length === 1 ? "" : "s"}`
+            : `${plans.length} тариф${plans.length === 1 ? "" : plans.length < 5 ? "а" : "ов"}`;
+        }
         const price = card.querySelector(".ai-directory-card__price");
         if (price) price.textContent = (isEnPage ? "from " : "от ") + formatPriceByCurrency(cheapest.price, cheapest.currency);
         card.querySelectorAll(".ai-directory-card__media, .ai-directory-card__button").forEach(link => link.setAttribute("href", getServicePagePath(key)));
@@ -3767,7 +3775,14 @@ function initActivationResumeShortcut() {
       seen.add(planKey);
       labels.push(getServicePlanLabel(serviceKey, planKey));
     });
-    return labels.slice(0, 4).join(" / ");
+    const summary = labels.slice(0, 4).join(" / ");
+    if (serviceKey === "gemini") {
+      const durations = [...new Set(group.items.map(item => getServiceDurationKey(item)))];
+      durations.sort((a, b) => getServiceDurationSortScore(a) - getServiceDurationSortScore(b));
+      const durationSummary = durations.map(key => getServiceDurationLabel(key)).join(" / ");
+      return [summary, durationSummary].filter(Boolean).join(" · ");
+    }
+    return summary;
   }
 
   function renderAiDirectoryCard(group, section) {
@@ -3848,7 +3863,7 @@ function initActivationResumeShortcut() {
     const displayTitle = getServiceCardValue(serviceCard, "title", group.service.name);
     const compactDescriptions = isEnPage
       ? {
-          chatgpt: "GPT-6",
+          chatgpt: "GPT-6.1 Sol/Astra",
           claude: "Claude Opus 5.5",
           grok: "Grok 4.7",
           perplexity: "Search with trusted sources.",
@@ -3857,7 +3872,7 @@ function initActivationResumeShortcut() {
           devin: "AI software engineer for development.",
         }
       : {
-          chatgpt: "GPT-6",
+          chatgpt: "GPT-6.1 Sol/Astra",
           claude: "Claude Opus 5.5",
           grok: "Grok 4.7",
           perplexity: "Поиск с надёжными источниками",
@@ -3866,7 +3881,7 @@ function initActivationResumeShortcut() {
           devin: "AI-инженер для задач разработки",
         };
     const displayDescription = compactDescriptions[serviceKey] || getServiceCardValue(serviceCard, "description", group.service.description);
-    const displayPlanSummary = serviceKey === "claude"
+    const displayPlanSummary = ["claude", "gemini"].includes(serviceKey)
       ? planSummary
       : getServiceCardValue(serviceCard, "planSummary", planSummary);
     const displayPriceText = minPrice ? fromLabel + " " + formatPriceByCurrency(minPrice, currency) : getServiceCardValue(serviceCard, "priceText", "");
