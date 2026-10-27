@@ -167,10 +167,11 @@ export const activationStore = {
     return result;
   },
 
-  async reserveCdkRecordForOrder(input: { productKey: string; activationSiteUrl?: string; orderId: string; email: string; excludeCdk?: string }) {
+  async reserveCdkRecordForOrder(input: { productKey: string; activationSiteUrl?: string; activationSiteUrls?: string[]; orderId: string; email: string; excludeCdk?: string }) {
     const reserved = await cdkKeysStore.assignNextUnused({
       productKey: input.productKey,
       activationSiteUrl: input.activationSiteUrl,
+      activationSiteUrls: input.activationSiteUrls,
       orderId: input.orderId,
       email: input.email,
       excludeCode: input.excludeCdk,

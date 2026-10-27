@@ -140,7 +140,7 @@ export const licenseService = {
       select: { id: true },
     });
 
-    // Detect conflicts: the same key already exists under another productKey.
+    // A duplicate must never silently relabel a key's product or activation site.
     const existing = await prisma.licenseKey.findMany({
       where: { keyValue: { in: unique } },
       select: { keyValue: true, productKey: true, activationSiteUrl: true, status: true, orderId: true, email: true },
@@ -156,7 +156,7 @@ export const licenseService = {
     }> = [];
     let conflicts = 0;
     for (const row of existing) {
-      if (row.productKey !== pk) {
+      if (row.productKey !== pk || normalizeActivationSiteUrl(row.activationSiteUrl) !== activationSiteUrl) {
         conflicts++;
         conflictsByProductKey[row.productKey] = (conflictsByProductKey[row.productKey] || 0) + 1;
         conflictDetails.push({
@@ -303,10 +303,18 @@ export const licenseService = {
     productKey: string,
     input: { orderId: string; email?: string },
     actor?: { userId?: string },
-    opts?: { excludeKeyValue?: string; activationSiteUrl?: string }
+    opts?: { excludeKeyValue?: string; activationSiteUrl?: string; activationSiteUrls?: string[] }
   ) {
     const pk = canonicalProductKey(productKey);
     const activationSiteUrl = normalizeActivationSiteUrl(opts?.activationSiteUrl);
+    const sites = opts?.activationSiteUrls?.length
+      ? Array.from(new Set(opts.activationSiteUrls.map(normalizeActivationSiteUrl)))
+      : [activationSiteUrl];
+    if (sites.length > 2 || (opts?.activationSiteUrls?.length && sites.some((site) => !site))) {
+      throw new AppError("Invalid activation stock sites", 400);
+    }
+    const primarySite = sites[0];
+    const secondarySite = sites[1] || primarySite;
     const orderId = String(input.orderId || "").trim();
     if (!pk) throw new Error("productKey is required");
     if (!orderId) throw new Error("orderId is required");
@@ -319,13 +327,30 @@ export const licenseService = {
 
     // Postgres atomic pick: FOR UPDATE SKIP LOCKED.
     const rows = await prisma.$transaction(async (tx) => {
+      if (opts?.activationSiteUrls?.length) {
+        // Recover a key assigned just before an interrupted activation-record write.
+        // Serialize the order across processes before checking or claiming stock.
+        await tx.$queryRaw`SELECT 1 AS locked FROM pg_advisory_xact_lock(hashtext(${`activation-stock:${orderId}`})::bigint)`;
+        const assigned = await tx.licenseKey.findMany({
+          where: { productKey: pk, orderId, status: { in: ["used", "reserved"] } },
+          take: 2,
+        });
+        if (assigned.length) {
+          const row = assigned[0];
+          if (assigned.length !== 1 || row.status !== "used" || !sites.includes(row.activationSiteUrl) || row.keyValue === exclude) {
+            throw new AppError("У заказа уже есть привязанный ключ. Требуется проверка перед выдачей другого", 409);
+          }
+          return [row];
+        }
+      }
       const picked = await tx.$queryRaw<{ id: string }[]>`
         SELECT id
         FROM license_keys
         WHERE product_key = ${pk}
-          AND activation_site_url = ${activationSiteUrl}
+          AND (activation_site_url = ${primarySite} OR activation_site_url = ${secondarySite})
           AND status = 'available'
           AND (${exclude} = '' OR key_value <> ${exclude})
+        ORDER BY CASE WHEN activation_site_url = ${primarySite} THEN 0 ELSE 1 END, created_at ASC, id ASC
         FOR UPDATE SKIP LOCKED
         LIMIT 1
       `;
@@ -351,7 +376,7 @@ export const licenseService = {
           keyId: id,
           action: "assign",
           userId: auditUserId,
-          meta: asJson({ orderId, productKey: pk, activationSiteUrl }),
+          meta: asJson({ orderId, productKey: pk, activationSiteUrl: row.activationSiteUrl || "" }),
         },
       });
 

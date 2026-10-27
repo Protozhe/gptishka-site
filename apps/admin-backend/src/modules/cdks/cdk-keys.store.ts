@@ -2,6 +2,7 @@ import { LicenseKey } from "@prisma/client";
 import { normalizeActivationSiteUrl } from "../../common/utils/activation-site";
 import { canonicalProductKey } from "../../common/utils/product-key";
 import { licenseService } from "../../services/licenseService";
+import { CodexKeySupplier, resolveCodexImportSite } from "./codex-key-suppliers";
 
 export type CdkStatus = "unused" | "used" | "archived";
 
@@ -42,12 +43,12 @@ function mapStatus(status?: CdkStatus) {
 }
 
 export const cdkKeysStore = {
-  async importCodes(input: { productKey?: string; activationSiteUrl?: string; codes: string[] }, actor?: { userId?: string }) {
+  async importCodes(input: { productKey?: string; activationSiteUrl?: string; supplier?: CodexKeySupplier; codes: string[] }, actor?: { userId?: string }) {
     return licenseService.importKeys(
       String(input.productKey || "chatgpt"),
       input.codes || [],
       actor,
-      { activationSiteUrl: normalizeActivationSiteUrl(input.activationSiteUrl) }
+      { activationSiteUrl: resolveCodexImportSite(String(input.productKey || "chatgpt"), input.activationSiteUrl, input.supplier) }
     );
   },
 
@@ -83,13 +84,13 @@ export const cdkKeysStore = {
     };
   },
 
-  async assignNextUnused(input: { productKey?: string; activationSiteUrl?: string; orderId: string; email: string; excludeCode?: string }) {
+  async assignNextUnused(input: { productKey?: string; activationSiteUrl?: string; activationSiteUrls?: string[]; orderId: string; email: string; excludeCode?: string }) {
     const productKey = String(input.productKey || "chatgpt");
     const reserved = await licenseService.reserveKey(
       productKey,
       { orderId: input.orderId, email: input.email },
       undefined,
-      { excludeKeyValue: input.excludeCode, activationSiteUrl: normalizeActivationSiteUrl(input.activationSiteUrl) }
+      { excludeKeyValue: input.excludeCode, activationSiteUrl: normalizeActivationSiteUrl(input.activationSiteUrl), activationSiteUrls: input.activationSiteUrls }
     );
     return reserved ? mapRow(reserved) : null;
   },

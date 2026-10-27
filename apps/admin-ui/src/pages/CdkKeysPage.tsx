@@ -128,6 +128,16 @@ function chatGptPlusPoolLabel(siteUrl: string) {
   return "Другой сайт активации";
 }
 
+const CODEX_KEY_SUPPLIERS = [
+  { id: "aibuy", title: "AI-BUY", url: "https://aichongzhi.fun" },
+  { id: "aisou", title: "AISOU", url: "https://aiee.fun" },
+] as const;
+type CodexKeySupplier = typeof CODEX_KEY_SUPPLIERS[number]["id"];
+
+function isDualSupplierCodexPool(productKey: string) {
+  return /^codex-(250|500|1000)$/.test(productKey);
+}
+
 const TEXT = {
   title: "CDK / SDK ключи по товарам",
   subtitle:
@@ -346,6 +356,11 @@ function ActivationTable({
                       {chatGptPlusPoolLabel(item.activationSiteUrl || "")}
                     </span>
                   ) : null}
+                  {isDualSupplierCodexPool(item.productKey) ? (
+                    <span className="ml-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                      {CODEX_KEY_SUPPLIERS.find((supplier) => supplier.url === String(item.activationSiteUrl || "").replace(/\/+$/, ""))?.title || "Другой поставщик"}
+                    </span>
+                  ) : null}
                 </div>
                 <div>
                   <span className="text-slate-500">{TEXT.assigned}: </span>
@@ -482,6 +497,7 @@ function KeyProductColumn({
   const baseProductKey = resolveProductPoolBaseKey(product);
   const productKey = productKeyOverride || resolveKeyPoolProductKey(baseProductKey, mode);
   const isChatGptPlusDualPool = !isSupportMode && productKey === CHATGPT_PLUS_PRODUCT_KEY;
+  const isCodexSupplierPool = !isSupportMode && isDualSupplierCodexPool(productKey);
   const isGeminiActivationLinkPool = !isSupportMode && productKey === "gemini-pro-18";
   const keyColumnLabel = isGeminiActivationLinkPool ? "Ссылка активации" : isSupportMode ? "SDK" : "CDK";
   const modeLabel = isGeminiActivationLinkPool
@@ -502,7 +518,10 @@ function KeyProductColumn({
   const defaultActivationSiteUrl = String(product.activationVariants?.withoutLogin?.activationSiteUrl || "").trim();
   const [text, setText] = useState("");
   const [activationSiteUrl, setActivationSiteUrl] = useState(defaultActivationSiteUrl);
-  const selectedActivationSiteUrl = isChatGptPlusDualPool
+  const [codexSupplier, setCodexSupplier] = useState<CodexKeySupplier | "">("");
+  const selectedActivationSiteUrl = isCodexSupplierPool
+    ? (CODEX_KEY_SUPPLIERS.find((supplier) => supplier.id === codexSupplier)?.url || "")
+    : isChatGptPlusDualPool
     ? (activationSiteUrl === CHATGPT_PLUS_FREE_SITE_URL ? CHATGPT_PLUS_FREE_SITE_URL : CHATGPT_PLUS_IOS_SITE_URL)
     : activationSiteUrl;
   const [error, setError] = useState("");
@@ -567,6 +586,7 @@ function KeyProductColumn({
       (
         await api.post("/cdks/import", {
           productKey,
+          supplier: isCodexSupplierPool ? codexSupplier : undefined,
           activationSiteUrl: isSupportMode || isGeminiActivationLinkPool ? "" : selectedActivationSiteUrl,
           text,
         })
@@ -640,7 +660,7 @@ function KeyProductColumn({
       return;
     }
     if (!isSupportMode && !isGeminiActivationLinkPool && !selectedActivationSiteUrl.trim()) {
-      setError(TEXT.fillActivationSite);
+      setError(isCodexSupplierPool ? "Выберите поставщика ключей: AI-BUY или AISOU" : TEXT.fillActivationSite);
       return;
     }
     setError("");
@@ -708,6 +728,20 @@ function KeyProductColumn({
               ))}
             </div>
             <p className="text-xs text-slate-500">Выберите пул перед загрузкой. Смешанная партия или неверный префикс отклоняются целиком.</p>
+          </fieldset>
+        ) : isCodexSupplierPool ? (
+          <fieldset className="space-y-2 rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+            <legend className="px-1 text-sm font-semibold">Где куплены ключи Codex</legend>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {CODEX_KEY_SUPPLIERS.map((supplier) => (
+                <label key={supplier.id} className={`flex cursor-pointer gap-2 rounded-lg border p-3 text-sm ${codexSupplier === supplier.id ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30" : "border-slate-200 dark:border-slate-700"}`}>
+                  <input type="radio" name={`supplier-${productKey}`} checked={codexSupplier === supplier.id} onChange={() => setCodexSupplier(supplier.id)} />
+                  <span><span className="block font-semibold">{supplier.title}</span><span className="block text-xs text-slate-500">{supplier.url}</span></span>
+                </label>
+              ))}
+            </div>
+            <p className="text-xs text-slate-500">Добавляйте ключи выбранного поставщика и номинала — по одному в строке. Для другой партии смените поставщика перед загрузкой.</p>
+            <p className="text-xs text-slate-500">Активация возьмёт свободный ключ этого номинала: сначала AI-BUY, затем AISOU. Каждый ключ используется на своём сайте активации.</p>
           </fieldset>
         ) : !isSupportMode && !isGeminiActivationLinkPool ? (
           <label className="grid gap-1">

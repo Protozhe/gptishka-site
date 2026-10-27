@@ -17,6 +17,7 @@ const listSchema = z.object({
 const importSchema = z.object({
   productKey: z.string().default("chatgpt"),
   activationSiteUrl: z.string().max(2048).optional(),
+  supplier: z.enum(["aibuy", "aisou"]).optional(),
   codes: z.array(z.string()).optional(),
   text: z.string().optional(),
 });
@@ -66,6 +67,7 @@ cdkKeysRouter.post(
       {
         productKey: body.productKey,
         activationSiteUrl: body.activationSiteUrl,
+        supplier: body.supplier,
         codes: parseCodes(body),
       },
       { userId: req.auth?.userId }

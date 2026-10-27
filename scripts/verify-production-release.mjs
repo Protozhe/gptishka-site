@@ -10,6 +10,7 @@ const checks = [
   "scripts/verify-codex-attribution.mjs",
   "scripts/verify-chatgpt-ad-price-meta.mjs",
   "scripts/verify-external-codex-routing.mjs",
+  "scripts/verify-codex-manual-suppliers.mjs",
   "scripts/verify-checkout-language.cjs",
   "scripts/verify-claude-plan-links.mjs",
   "scripts/verify-activation-confidentiality.mjs",

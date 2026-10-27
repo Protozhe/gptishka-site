@@ -2548,9 +2548,14 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     const paidOrder = trustedAdmin
       ? await assertPaidOrderForAdmin(orderId)
       : await assertPaidOrderAccess(orderId, orderToken);
+    // Manual Codex stock keeps the activation site of its supplier. Check both
+    // exact-denomination pools before considering any new procurement.
+    const codexStockSites = /^codex-(250|500|1000)$/.test(String(stored.productKey || "")) && !stored.taskId && !stored.attempts
+      ? ["https://aichongzhi.fun", "https://aiee.fun"] : undefined;
     let reserved = await activationStore.reserveCdkRecordForOrder({
       productKey: String(stored.productKey || "chatgpt"),
       activationSiteUrl: stored.activationSiteUrl || "",
+      activationSiteUrls: codexStockSites,
       orderId: paidOrder.id,
       email: paidOrder.email,
     });
