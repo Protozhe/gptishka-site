@@ -1,4 +1,4 @@
-/* Category links are equal two-line buttons; text stays on the page pixel grid. */
+/* Equal two-line buttons on desktop, a compact icon row on phones. */
 .launch-categories--buttons {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
@@ -73,17 +73,50 @@ html body#storefrontBody .launch-categories--buttons .launch-category small {
 @media (max-width: 1100px) {
   .launch-categories--buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-@media (max-width: 600px) {
-  .launch-categories--buttons { grid-template-columns: minmax(0, 1fr); gap: 10px; padding-top: 18px; }
-  html body#storefrontBody .launch-categories--buttons .launch-category {
-    height: 88px;
-    min-height: 88px;
-    padding: 14px 18px;
-    border-radius: 16px;
+@media (max-width: 760px) {
+  .launch-categories--buttons {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 440px;
+    margin-inline: auto;
+    gap: 12px;
+    padding: 12px 4px 0;
+    box-sizing: border-box;
   }
-  html body#storefrontBody .launch-categories--buttons .launch-category strong { font-size: 19px; line-height: 25px; }
-  html body#storefrontBody .launch-categories--buttons .launch-category small { font-size: 15px; line-height: 21px; }
-  .launch-categories--buttons .launch-category-copy { gap: 4px; }
+  html body#storefrontBody .launch-categories--buttons .launch-category {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 56px;
+    width: 56px;
+    height: 56px;
+    min-height: 56px;
+    padding: 0;
+    gap: 0;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    box-shadow: none;
+  }
+  html body#storefrontBody .launch-categories--buttons .launch-category:is(:hover, :focus-visible) {
+    background: #263033;
+    box-shadow: none;
+  }
+  .launch-categories--buttons .launch-category-copy {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   html body#storefrontBody .launch-categories--buttons .launch-category { transition: none; }
