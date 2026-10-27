@@ -6,6 +6,7 @@ from pathlib import Path
 HERE=Path(__file__).resolve().parent
 PULSE=Path('/opt/pulse-web')
 BASE_HASH='e545a38b898c49c7c7f9219dbcd07ef30c322d3f294d1bd60817df3acb096872'
+PRIOR_SHARED_HASH='7be0ab7bbd1dbabcadea6059f39051917745bdb18c4cfa5802c84cef4a1af317'
 SERVICES=['pulse-chat-fallback.service','funpay-telegram-fallback.service','gptishka-aibuy-market.service']
 
 def atomic(path,content,mode=0o644,gid=0):
@@ -24,7 +25,7 @@ def install():
     if subprocess.check_output(['git','-C',str(release),'status','--porcelain'],text=True).strip():raise ValueError('clean_deployed_release_required')
     source={name:(HERE/name).read_bytes() for name in ('market_aibuy.py','market_shared_stock.py')}
     actual=hashlib.sha256((PULSE/'market_aibuy.py').read_bytes()).hexdigest()
-    if actual not in (BASE_HASH,hashlib.sha256(source['market_aibuy.py']).hexdigest()):raise ValueError('market_source_changed')
+    if actual not in (BASE_HASH,PRIOR_SHARED_HASH,hashlib.sha256(source['market_aibuy.py']).hexdigest()):raise ValueError('market_source_changed')
     for name,content in source.items():compile(content,name,'exec')
     with open('/var/lib/gptishka-runtime/aibuy-procurement/account.lock','a') as lock:
         try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
@@ -44,6 +45,8 @@ def install():
                 settings={'enabled':True,'enabledAfter':datetime.now(timezone.utc).isoformat()}
                 atomic(cfg,json.dumps(settings).encode(),0o640,who.pw_gid)
             else:settings=json.loads(cfg.read_text())
+            settings={**settings,'defaultActivationSite':'https://aiee.fun','codexAibuyFallback':False}
+            atomic(cfg,json.dumps(settings).encode(),0o640,who.pw_gid)
             with sqlite3.connect(PULSE/'data/chat-activity.db') as c:
                 c.execute("CREATE TABLE IF NOT EXISTS market_shared_stock(job_id INTEGER PRIMARY KEY,native_key_id TEXT NOT NULL UNIQUE,activation_site TEXT NOT NULL,sid TEXT NOT NULL DEFAULT '')")
         except Exception:

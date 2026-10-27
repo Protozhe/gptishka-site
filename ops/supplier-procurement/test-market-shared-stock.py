@@ -9,6 +9,24 @@ adapter=fixtures.adapter
 
 class Tests(unittest.TestCase):
     fixture=fixtures.Tests.fixture
+    def test_empty_aisou_stock_waits_without_aibuy_purchase(self):
+        a,path,_,calls,_=self.fixture(500)
+        cfg=path/'shared.json';cfg.write_text(json.dumps({'enabled':True,'enabledAfter':fixtures.iso(-60)}))
+        actions=[]
+        def rpc(jid,action='procure'):
+            actions.append(action)
+            if action!='stock':raise AssertionError('must not fall back to AI-BUY')
+            return {'state':'empty'}
+        with patch.object(stock,'CONFIG',cfg),patch.object(adapter,'rpc',side_effect=rpc):
+            adapter.handle(a,1)
+            with a.connect() as c:c.execute('UPDATE market_aibuy_attempts SET next_at=0')
+            adapter.drive(a,1)
+        self.assertEqual(actions,['stock','stock']);self.assertEqual(calls,[])
+        with a.connect() as c:
+            row=c.execute('SELECT state,reason,dispatched FROM market_aibuy_attempts').fetchone()
+            self.assertEqual(tuple(row),('procurement','supplier_aisou_stock_empty',0))
+            self.assertEqual(c.execute("SELECT COUNT(*) FROM market_aibuy_notices WHERE event='1:aisou_stock_empty'").fetchone()[0],1)
+
     def test_lost_stock_reply_holds_then_recovers_without_purchase(self):
         a,path,_,calls,_=self.fixture(250)
         cfg=path/'shared.json';cfg.write_text(json.dumps({'enabled':True,'enabledAfter':fixtures.iso(-60)}))

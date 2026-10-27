@@ -12,7 +12,7 @@ function load(name, mocks = {}, suffix = "") {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
   }).outputText;
   vm.runInNewContext(code, {
-    module, exports: module.exports, URL,
+    module, exports: module.exports, URL, __dirname: "fixture",
     require: name => Object.hasOwn(mocks, name) ? mocks[name] : nativeRequire(name),
   }, { filename: file.pathname });
   return module.exports;
@@ -206,11 +206,17 @@ const context = vm.createContext({
   },
 });
 vm.runInContext(ts.transpileModule(start, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, context);
-for (const [index, supplier] of ["aibuy", "aisou"].entries()) {
-  await cdkKeysStore.importCodes({ productKey: "codex-500", supplier, codes: [`FIXTURE-START-${supplier}`] });
-  stored = { orderId: `fixture-start-${supplier}`, productKey: "codex-500", status: "issued", attempts: 0, activationSiteUrl: origins[1], cdk: "" };
+await cdkKeysStore.importCodes({productKey:'codex-500',supplier:'aibuy',codes:['FIXTURE-START-AIBUY']});
+stored={orderId:'fixture-no-aisou',productKey:'codex-500',status:'issued',attempts:0,activationSiteUrl:origins[1],cdk:''};
+await assert.rejects(()=>context.startActivationUnsafe(stored.orderId,'{"fixture":true}'),e=>e.statusCode===409);
+assert.equal(providerRequest,undefined,'Empty AISOU stock does not use an AI-BUY key');
+assert.equal(procurementCalls,0,'Empty AISOU stock must not start supplier purchases');
+await cdkKeysStore.importCodes({productKey:'codex-500',supplier:'aisou',codes:['FIXTURE-START-AISOU']});
+const legacyKey=await cdkKeysStore.assignNextUnused({productKey:'codex-500',activationSiteUrl:origins[0],orderId:'fixture-existing-aibuy',email:'fixture@example.invalid'});
+for (const [supplier,cdk,site] of [['aisou','',origins[1]],['aibuy',legacyKey.code,origins[0]]]) {
+  stored = { orderId: `fixture-start-${supplier}`, productKey: "codex-500", status: "issued", attempts: 0, activationSiteUrl: site, cdk };
   await assert.rejects(() => context.startActivationUnsafe(stored.orderId, '{"fixture":true}'), /fixture-provider-reached/);
-  assert.equal(providerRequest.activationSiteUrl, origins[index], "The selected key retains its provider route");
+  assert.equal(providerRequest.activationSiteUrl, site, "New starts use AISOU; an already-bound AI-BUY key retains its site");
   assert.equal(providerRequest.cdk, `FIXTURE-START-${supplier.toUpperCase()}`);
   assert.equal(stored.status, "processing"); assert.equal(stored.attempts, 1);
   const before = keys.filter(row => row.status === "used").length;
@@ -221,6 +227,27 @@ for (const [index, supplier] of ["aibuy", "aisou"].entries()) {
   wrongToken = false;
 }
 assert.equal(procurementCalls, 0, "Existing matching stock avoids any new purchase");
+
+let previousSupplier,aisouRecovery=0,aibuyRecovery=0,aibuyEnabled=true;
+const recovery=load(base+'services/aisou-procurement.ts',{
+  path:{default:{resolve:(...parts)=>parts.at(-1).split('/').at(-1)}},
+  '../config/prisma':{prisma:{order:{findUnique:async()=>({id:'fixture-paid'})}}},
+  '../modules/orders/activation.store':{activationStore:{findByOrderId:()=>previousSupplier?{lastProviderPayload:{supplierProcurement:{provider:previousSupplier}}}:null}},
+  '../common/errors/app-error':errors,
+  '../modules/notifications/notifications.service':{sendTelegramNotification:()=>{throw Error('No real notifications')}},
+  'aisou-live.cjs':{procureWebsiteKey:async()=>{aisouRecovery++;return {keyId:'fixture-aisou',code:'FIXTURE',activationSiteUrl:origins[1]}}},
+  'aibuy-live.cjs':{policy:()=>({}),managed:()=>aibuyEnabled,procure:async()=>{aibuyRecovery++;return {keyId:'fixture-aibuy',code:'FIXTURE',activationSiteUrl:origins[0]}}},
+});
+for(const size of [250,500,1000])assert.equal(await recovery.procureSelectedWebsiteKey({orderId:'fixture-paid',productKey:'codex-'+size,accountPlan:'pro',activationSiteUrl:origins[1]}),null);
+assert.equal(aisouRecovery+aibuyRecovery,0,'Fresh Codex requests cannot start a new supplier purchase');
+for(const supplier of ['aisou','aibuy']){
+  previousSupplier=supplier;
+  const result=await recovery.procureSelectedWebsiteKey({orderId:'fixture-paid',productKey:'codex-500',accountPlan:'pro',activationSiteUrl:origins[1]});
+  assert.equal(result.activationSiteUrl,supplier==='aisou'?origins[1]:origins[0],'An existing purchase recovers with the same supplier');
+}
+aibuyEnabled=false;previousSupplier='aibuy';
+assert.equal(await recovery.procureSelectedWebsiteKey({orderId:'fixture-paid',productKey:'codex-500',accountPlan:'pro',activationSiteUrl:origins[1]}),null);
+assert.equal(aisouRecovery,1,'A blocked legacy AI-BUY purchase must not switch suppliers');
 
 // Interact with the actual React import form using fixture keys and a mock API.
 const { JSDOM } = require("jsdom"), React = require("react");
@@ -253,7 +280,7 @@ try {
     assert.equal(posts.length, before, "An explicit supplier choice is required");
     assert.match(container.textContent, /Выберите поставщика ключей/);
     for (const [index, supplier] of ["aibuy", "aisou"].entries()) {
-      await React.act(async () => Simulate.change(container.querySelectorAll('input[type="radio"]')[index]));
+      await React.act(async () => Simulate.change(container.querySelectorAll('input[type="radio"]')[supplier==='aisou'?0:1]));
       await React.act(async () => Simulate.change(textarea, { target: { value: "FIXTURE-UI" } }));
       await React.act(async () => Simulate.submit(form));
       assert.equal(posts.at(-1).path, "/cdks/import");

@@ -12,12 +12,21 @@ export function verifiedAieeGrokProduct(payload:unknown):string|null {
 export async function procureSelectedWebsiteKey(input: {
   orderId: string; productKey: string; accountPlan: string; activationSiteUrl: string;
 }) {
+  const codex = /^codex-(250|500|1000)$/.test(input.productKey);
+  const priorProcurement = activationStore.findByOrderId(input.orderId)?.lastProviderPayload?.supplierProcurement as {provider?:unknown}|undefined;
+  const existingSupplier = String(priorProcurement?.provider || "");
+  if (codex && !["aibuy", "aisou"].includes(String(existingSupplier || ""))) {
+    // Codex is now prepaid AISOU by default. Recover existing purchases with
+    // their original supplier; never open a new purchase for an empty pool.
+    return null;
+  }
   const modulePath = path.resolve(__dirname, "../../../../ops/supplier-procurement/aisou-live.cjs");
   const { procureWebsiteKey, notifyHoldOnce } = require(modulePath);
   const aibuy = require(path.resolve(__dirname,"../../../../ops/supplier-procurement/aibuy-live.cjs"));
   const paidOrder = /^(?:codex-(250|500|1000)|claude-pro)$/.test(input.productKey)
     ? await prisma.order.findUnique({where:{id:input.orderId},include:{items:{include:{product:true}}}}) : null;
-  const viaAibuy = aibuy.managed(aibuy.policy(),paidOrder);
+  const viaAibuy = (!codex || existingSupplier === "aibuy") && aibuy.managed(aibuy.policy(),paidOrder);
+  if (codex && existingSupplier === "aibuy" && !viaAibuy) return null;
   // Claude Pro has one selected supplier; never fall through to an unrelated
   // AISOU product when its own policy is disabled or the order predates it.
   if (input.productKey === "claude-pro" && !viaAibuy) return null;

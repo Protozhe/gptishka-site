@@ -15,11 +15,17 @@ function fixture(){
  return {rows,audits,prisma:{$transaction:async fn=>{const prior=tail;let done;tail=new Promise(r=>done=r);await prior;try{return await fn(tx)}finally{done()}}}};
 }
 const input=(scope,credits=500)=>({scope:'m'+scope.repeat(31),credits,platform:'funpay',action:'claim'});
-test('marketplaces share exact pools, prioritize AI-BUY and keep owner reserves',async()=>{
- const f=fixture();const first=await claim(input('a'),f.prisma);assert.equal(first.activationSiteUrl,'https://aichongzhi.fun');
- const second=await claim({...input('b'),platform:'playerok'},f.prisma);assert.equal(second.activationSiteUrl,'https://aiee.fun');
- assert.deepEqual(await claim(input('c'),f.prisma),{state:'empty'});assert.equal(f.rows.find(r=>r.id==='held500').status,'reserved');
+test('new marketplace starts use AISOU only, exact pools and preserve owner reserves',async()=>{
+ const f=fixture();const first=await claim(input('a'),f.prisma);assert.equal(first.activationSiteUrl,'https://aiee.fun');
+ const second=await claim({...input('b'),platform:'playerok'},f.prisma);assert.deepEqual(second,{state:'empty'});
+ assert.equal(f.rows.find(r=>r.id==='500-1').status,'available','AI-BUY is not an automatic fallback');
+ assert.equal(f.rows.find(r=>r.id==='held500').status,'reserved');
  assert.equal((await claim(input('d',250),f.prisma)).product_key,'codex-250');
+});
+test('an existing AI-BUY assignment retains its provider during recovery',async()=>{
+ const f=fixture(),request=input('9'),row=f.rows.find(r=>r.id==='500-1');row.status='used';
+ f.audits.push({keyId:row.id,meta:{scope:request.scope,platform:'funpay',activationSiteUrl:row.activationSiteUrl}});
+ const recovered=await claim(request,f.prisma);assert.equal(recovered.native_key_id,row.id);assert.equal(recovered.activationSiteUrl,'https://aichongzhi.fun');
 });
 test('parallel/restarted requests reuse one key and attest binds scope, provider and nominal',async()=>{
  const f=fixture(),request=input('e');const [a,b]=await Promise.all([claim(request,f.prisma),claim(request,f.prisma)]);

@@ -129,8 +129,8 @@ function chatGptPlusPoolLabel(siteUrl: string) {
 }
 
 const CODEX_KEY_SUPPLIERS = [
-  { id: "aibuy", title: "AI-BUY", url: "https://aichongzhi.fun" },
   { id: "aisou", title: "AISOU", url: "https://aiee.fun" },
+  { id: "aibuy", title: "AI-BUY", url: "https://aichongzhi.fun" },
 ] as const;
 type CodexKeySupplier = typeof CODEX_KEY_SUPPLIERS[number]["id"];
 
@@ -770,7 +770,7 @@ function KeyProductColumn({
               ))}
             </div>
             <p className="text-xs text-slate-500">Добавляйте ключи выбранного поставщика и номинала — по одному в строке. Для другой партии смените поставщика перед загрузкой.</p>
-            <p className="text-xs text-slate-500">Активация возьмёт свободный ключ этого номинала: сначала AI-BUY, затем AISOU. Каждый ключ используется на своём сайте активации.</p>
+            <p className="text-xs text-slate-500">Автоматическая активация Codex использует AISOU / aiee.fun и ключ строго нужного номинала. Если ключей нет, заказ ждёт пополнения. Пул AI-BUY сохраняется отдельно.</p>
           </fieldset>
         ) : !isSupportMode && !isGeminiActivationLinkPool ? (
           <label className="grid gap-1">

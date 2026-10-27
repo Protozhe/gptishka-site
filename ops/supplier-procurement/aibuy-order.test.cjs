@@ -8,9 +8,10 @@ function load(names,context){
  const js=ts.transpileModule(statements+'\nthis.api={'+names.join(',')+'};',{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;
  vm.runInNewContext(js,context);return context.api;
 }
-for(const credits of [250,500,1000,0])test(`native ${credits||'Claude Pro'} selects AI-BUY and a lost reply cannot repeat procurement or activate`,async()=>{
+for(const credits of [250,500,1000,0])test(`native ${credits?'legacy Codex '+credits:'Claude Pro'} retains AI-BUY and a lost reply cannot repeat procurement or activate`,async()=>{
  const productKey=credits?`codex-${credits}`:'claude-pro';
  let stored={orderId:'cfixturewebsitepaidorder0001',email:'fixture@example.invalid',productKey,status:'issued',verificationState:'unknown',attempts:0,cdk:'',activationSiteUrl:credits?'https://aiee.fun':'https://aichongzhi.fun'};
+ if(credits)stored.lastProviderPayload={supplierProcurement:{managed:true,provider:'aibuy',phase:'purchasing'}};
  let buys=0,activates=0,reserves=0;
  const token=credits?JSON.stringify({account:{planType:'plus'},accessToken:'isolated-fixture'}):'00000000-0000-4000-8000-000000000029';
  const context={Date,Math,path,__dirname:'/isolated/apps/admin-backend/dist/modules/orders',env:{},
@@ -34,7 +35,7 @@ for(const credits of [250,500,1000,0])test(`native ${credits||'Claude Pro'} sele
  const first=await api.startActivationUnsafe(stored.orderId,token,undefined,true);
  assert.equal(stored.activationSiteUrl,'https://aichongzhi.fun');assert.equal(stored.status,'processing');assert.equal(stored.attempts,1);
  const second=await api.startActivationUnsafe(stored.orderId,token,undefined,true);
- assert.equal(second.reused,true);assert.equal(second.taskId,first.taskId);assert.equal(buys,1);assert.equal(activates,1);assert.equal(reserves,1);
+ assert.equal(second.reused,true);assert.equal(second.taskId,first.taskId);assert.equal(buys,1);assert.equal(activates,1);assert.equal(reserves,credits?0:1);
 });
 for(const productKey of ['codex-500','claude-pro'])test(`website ${productKey} polling uses the selected provider and confirms only its final success`,async()=>{
  let stored={orderId:'cfixturewebsitepaidorder0001',productKey,cdk:'ISOLATED-KEY-500',activationSiteUrl:'https://aichongzhi.fun',taskId:'reconcile-1700000000000-aibuy',status:'processing',verificationState:'pending'};

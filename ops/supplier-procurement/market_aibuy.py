@@ -210,7 +210,13 @@ def drive(a,jid):
                 if result.get('state')=='shared_stock':
                     stock.bind(a,j,r,result)
                     with a.connect() as c:r=c.execute('SELECT * FROM market_aibuy_attempts WHERE job_id=?',(jid,)).fetchone()
-                elif result.get('state')=='empty':result=rpc(jid)
+                elif result.get('state')=='empty':
+                    if r['contract_code'] in (250,500,1000) and stock.enabled(j,r):
+                        update(a,jid,next_at=time.time()+60,reason='supplier_aisou_stock_empty')
+                        with a.connect() as c:c.execute("UPDATE codex_jobs SET error=?,updated_at=datetime('now') WHERE id=? AND status='waiting_data'",('Ожидаем ключ AISOU Codex '+str(r['contract_code'])+' из общего резерва',jid))
+                        notice(a,j,'aisou_stock_empty','⏳ <b>AISOU · Нужен ключ Codex</b>\n\nПополните общий резерв ключей нужного номинала для aiee.fun. Заказ сохранён и продолжится после пополнения.')
+                        return
+                    result=rpc(jid)
                 else:raise ValueError('supplier_stock_unconfirmed')
                 if result.get('state')=='shared_stock':pass
                 elif result.get('state')=='funds_wait':

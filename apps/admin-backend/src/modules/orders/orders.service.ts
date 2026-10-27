@@ -2548,22 +2548,24 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     const paidOrder = trustedAdmin
       ? await assertPaidOrderForAdmin(orderId)
       : await assertPaidOrderAccess(orderId, orderToken);
-    // Manual Codex stock keeps the activation site of its supplier. Check both
-    // exact-denomination pools before considering any new procurement.
+    // New Codex starts use prepaid AISOU stock. A prior supplier purchase must
+    // be reconciled with its original provider before another key is allocated.
+    const existingCodexProcurement = /^codex-(250|500|1000)$/.test(String(stored.productKey || ""))
+      && ["aibuy", "aisou"].includes(String((stored.lastProviderPayload?.supplierProcurement as {provider?:unknown}|undefined)?.provider || ""));
     const codexStockSites = /^codex-(250|500|1000)$/.test(String(stored.productKey || "")) && !stored.taskId && !stored.attempts
-      ? ["https://aichongzhi.fun", "https://aiee.fun"] : undefined;
-    let reserved = await activationStore.reserveCdkRecordForOrder({
+      ? ["https://aiee.fun"] : undefined;
+    let reserved = existingCodexProcurement ? null : await activationStore.reserveCdkRecordForOrder({
       productKey: String(stored.productKey || "chatgpt"),
       activationSiteUrl: stored.activationSiteUrl || "",
       activationSiteUrls: codexStockSites,
       orderId: paidOrder.id,
       email: paidOrder.email,
     });
-    if (!reserved && (((/^codex-(250|500|1000)$/.test(String(stored.productKey || "")) || isAisouGrokProduct(stored.productKey)) && stored.activationSiteUrl === "https://aiee.fun") || (stored.productKey === "claude-pro" && stored.activationSiteUrl === "https://aichongzhi.fun"))) {
+    if (!reserved && (existingCodexProcurement || (isAisouGrokProduct(stored.productKey) && stored.activationSiteUrl === "https://aiee.fun") || (stored.productKey === "claude-pro" && stored.activationSiteUrl === "https://aichongzhi.fun"))) {
       reserved = await procureSelectedWebsiteKey({
         orderId: stored.orderId, productKey: stored.productKey,
         accountPlan: isAisouGrokProduct(stored.productKey) ? "free" : String((tokenInfo.json?.account as any)?.planType || "").trim().toLowerCase(),
-        activationSiteUrl: stored.activationSiteUrl,
+        activationSiteUrl: String(stored.activationSiteUrl || ""),
       });
     }
     if (reserved) {
@@ -2583,7 +2585,9 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     }
   }
   if (!String(stored.cdk || "").trim()) {
-    activationStore.upsert({...stored,keyAllocationState:"exhausted",updatedAt:new Date().toISOString()});
+    activationStore.upsert({...stored,keyAllocationState:"exhausted",
+      ...(isCodexCreditsProductKey(stored.productKey) ? {keyAllocationSite:"https://aiee.fun",lastProviderMessage:"Ожидаем пополнения ключей активации нужного номинала. Заказ сохранён."} : {}),
+      updatedAt:new Date().toISOString()});
     throw new AppError("Activation key is not issued yet", 409);
   }
 
