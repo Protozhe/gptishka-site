@@ -34,8 +34,65 @@ expect(app.includes('const title = isEnPage ? "Steam Top Up" : "Пополнен
 expect(app.includes("const displayTitle = title;"), "stored showcase data can overwrite the final Steam title");
 expect(onboarding.includes('document.body.classList.add("chatgpt-onboarding-ready")'), "compact ChatGPT flow is not activated");
 expect(onboarding.includes('briefTitle: "Автоматическое подключение"'), "ChatGPT product page does not identify automatic activation");
-expect(onboarding.includes('new Set(["go", "plus"])'), "ChatGPT automatic activation note must apply only to Go and Plus");
-expect(onboarding.includes('if (!automaticPlanKeys.has(card.dataset.planKey || "")) return;'), "ChatGPT automatic activation note is not restricted to eligible plans");
+// Every current existing-account plan activates automatically. Account creation
+// still needs the manager instructions, including after a plan rerender.
+const briefSource = onboarding.slice(onboarding.indexOf("  const isEnglish ="), onboarding.indexOf("  new MutationObserver(mountBrief)"));
+assert.ok(briefSource.includes("function mountBrief()"), "activation note renderer is missing");
+for (const language of ["ru", "en"]) {
+  let note = null;
+  let checked = false;
+  let selectedCard = null;
+  let insertions = 0;
+  const anchor = {
+    insertAdjacentHTML(position, html) {
+      assert.equal(position, "afterend");
+      const mode = /data-fulfillment-mode="([^"]+)"/.exec(html)?.[1];
+      assert.ok(mode, "activation instructions must identify their fulfillment mode");
+      insertions += 1;
+      note = { dataset: { fulfillmentMode: mode }, html, remove() { note = null; } };
+    },
+  };
+  const host = {
+    querySelector(selector) {
+      return selector === ".chatgpt-onboarding-brief" ? note : anchor;
+    },
+  };
+  const context = vm.createContext({
+    document: {
+      documentElement: { lang: language },
+      querySelector: () => ({ checked }),
+    },
+    location: { pathname: language === "en" ? "/en/chatgpt.html" : "/chatgpt" },
+    grid: {
+      querySelector: () => selectedCard,
+      closest: selector => selector === "[data-chatgpt-workspace]" ? {} : host,
+    },
+    mountCodexEntry() {},
+  });
+  vm.runInContext(briefSource, context);
+  for (const planKey of ["go", "plus", "pro-5x", "pro-20x", "pro-25x"]) {
+    selectedCard = { dataset: { planKey }, querySelector: () => ({}) };
+    for (const newAccount of [false, true, false]) {
+      checked = newAccount;
+      context.mountBrief();
+      const expectedMode = newAccount ? "manager" : "automatic";
+      assert.equal(note?.dataset.fulfillmentMode, expectedMode, `${language}: ${planKey}, new account=${newAccount}`);
+      const title = newAccount
+        ? (language === "en" ? "Activation by a manager" : "Подключение через менеджера")
+        : (language === "en" ? "Automatic activation" : "Автоматическое подключение");
+      assert.ok(note.html.includes(`<strong>${title}</strong>`), `${language}: ${planKey} instructions mismatch`);
+      const count = insertions;
+      context.mountBrief();
+      assert.equal(insertions, count, "activation instructions must not duplicate on rerender");
+    }
+  }
+  selectedCard = { querySelector: () => null };
+  context.mountBrief();
+  assert.equal(note, null, "instructions must disappear when the purchase action is unavailable");
+  selectedCard = null;
+  context.mountBrief();
+  assert.equal(note, null, "instructions must stay absent without a selected product");
+}
 for (const file of ["chatgpt.html", "en/chatgpt.html"]) {
   const html = read(file);
   assertAssetReference(html, "assets/css/chatgpt-onboarding-v1.css", file);
