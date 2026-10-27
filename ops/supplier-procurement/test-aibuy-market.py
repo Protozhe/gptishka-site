@@ -7,6 +7,7 @@ from cryptography.fernet import Fernet
 sys.path.insert(0,str(Path(__file__).parent))
 import market_aibuy as adapter
 import market_aibuy_common as common
+import market_shared_stock as shared_stock
 spec=importlib.util.spec_from_file_location('market_root',Path(__file__).with_name('aibuy-market.py'));root=importlib.util.module_from_spec(spec);spec.loader.exec_module(root)
 if os.name!='posix':sys.modules['fcntl']=types.SimpleNamespace(LOCK_EX=1,LOCK_NB=2,flock=lambda *a:None)
 
@@ -16,6 +17,10 @@ sys.modules['codex_automation']=types.SimpleNamespace(utc_now=iso)
 class Tests(unittest.TestCase):
     def fixture(self,code=250,platform='funpay'):
         temp=tempfile.TemporaryDirectory();self.addCleanup(temp.cleanup);path=Path(temp.name)
+        # Legacy procurement fixtures choose their route explicitly; never read
+        # the server's live shared-stock switch. Shared-stock cases override this.
+        stock_cfg=path/'shared-stock.json';stock_cfg.write_text(json.dumps({'enabled':False}))
+        stock_patch=patch.object(shared_stock,'CONFIG',stock_cfg);stock_patch.start();self.addCleanup(stock_patch.stop)
         db=sqlite3.connect(path/'activity.db');db.row_factory=sqlite3.Row
         db.executescript('''CREATE TABLE codex_jobs(id INTEGER PRIMARY KEY,order_id TEXT,account_id TEXT,platform TEXT,
           package INTEGER,product_type TEXT,title TEXT,status TEXT,key_pool TEXT,key_id INTEGER,aiee_order_id TEXT DEFAULT '',
@@ -54,6 +59,16 @@ class Tests(unittest.TestCase):
         a=types.SimpleNamespace(db_path=str(path/'activity.db'),profit_db_path=str(path/'profit.db'),connect=connect,_fernet=lambda:fernet,_fetch_note=lambda _:note,_post_json=post)
         reply={'product_key':common.product(code),'credits':code,'activationSiteUrl':'https://aichongzhi.fun','code':'ISOLATED-MARKET-KEY','trade_no':'20000000000029','amount_minor':common.PRICES[code],'cost_rub':str(common.PRICES[code]*13.2/100)}
         return a,path,policy,calls,reply
+
+    def test_fixture_does_not_inherit_enabled_live_shared_stock(self):
+        with tempfile.TemporaryDirectory() as td:
+            live=Path(td)/'live-policy.json'
+            live.write_text(json.dumps({'enabled':True,'enabledAfter':iso(-3600)}))
+            with patch.object(shared_stock,'CONFIG',live):
+                a,path,_,_,_=self.fixture(250)
+                with a.connect() as c:job=dict(c.execute('SELECT * FROM codex_jobs').fetchone())
+                self.assertEqual(shared_stock.CONFIG,path/'shared-stock.json')
+                self.assertFalse(shared_stock.enabled(job,{'created_at':time.time()}))
 
     def test_contracts_and_new_paid_source_boundaries(self):
         for code in (0,250,500,1000):
