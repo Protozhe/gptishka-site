@@ -185,17 +185,11 @@ html body#storefrontBody #chatgptWorkspace #subscriptions .pay-now-btn {
     margin: -1px;
   }
   html body#storefrontBody #chatgptWorkspace .chatgpt-workspace-breadcrumbs {
-    margin-bottom: 8px;
-  }
-  html body#storefrontBody #chatgptWorkspace .chatgpt-workspace-breadcrumbs a {
-    min-height: 36px;
+    display: none;
   }
   html body#storefrontBody #chatgptWorkspace #subscriptions .service-constructor-card {
     padding: 12px !important;
     gap: 10px !important;
-  }
-  html body#storefrontBody #chatgptWorkspace #subscriptions #servicePlanFilters .service-filter-group__chips {
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   }
   html body#storefrontBody #chatgptWorkspace #subscriptions #servicePlanFilters .service-filter-chip {
     padding-inline: 6px !important;
