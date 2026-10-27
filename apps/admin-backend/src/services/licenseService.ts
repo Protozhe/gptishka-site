@@ -3,6 +3,7 @@ import { normalizeActivationSiteUrl } from "../common/utils/activation-site";
 import { canonicalProductKey } from "../common/utils/product-key";
 import { AppError } from "../common/errors/app-error";
 import { validateChatGptPlusKeyImport } from "../modules/cdks/chatgpt-plus-pool-validation";
+import { CodexKeySupplier, resolveCodexImportSite } from "../modules/cdks/codex-key-suppliers";
 
 export type LicenseKeyStatus = "available" | "reserved" | "used" | "revoked";
 
@@ -62,6 +63,29 @@ async function resolveAuditUserId(userId?: string | null) {
 }
 
 export const licenseService = {
+  async changeUnusedCodexSupplier(id: string, supplier: CodexKeySupplier, expectedSite: string, actor?: { userId?: string }) {
+    const auditUserId = await resolveAuditUserId(actor?.userId);
+    return prisma.$transaction(async (tx) => {
+      const row = await tx.licenseKey.findUnique({ where: { id } });
+      if (!row) throw new AppError("Ключ не найден", 404);
+      if (row.status !== "available" || row.orderId || row.usedAt || row.reservedAt) {
+        throw new AppError("Поставщика можно менять только у свободного ключа без привязки к заказу", 409);
+      }
+      if (row.activationSiteUrl !== expectedSite) throw new AppError("Данные ключа изменились. Обновите страницу", 409);
+      const activationSiteUrl = resolveCodexImportSite(row.productKey, undefined, supplier);
+      const result = await tx.licenseKey.updateMany({
+        where: { id, status: "available", orderId: null, usedAt: null, reservedAt: null, activationSiteUrl: expectedSite },
+        data: { activationSiteUrl },
+      });
+      if (result.count !== 1) throw new AppError("Ключ уже выдан или изменён. Обновите страницу", 409);
+      await tx.licenseKeyAuditLog.create({ data: {
+        keyId: id, action: "change_supplier", userId: auditUserId,
+        meta: asJson({ productKey: row.productKey, supplier, activationSiteUrl, previousActivationSiteUrl: expectedSite }),
+      } });
+      return { id, supplier, activationSiteUrl };
+    });
+  },
+
   async createKey(
     productKey: string,
     keyValue: string,
@@ -438,29 +462,34 @@ export const licenseService = {
     const id = String(keyId || "").trim();
     if (!id) throw new Error("keyId is required");
 
-    const row = await prisma.licenseKey.update({
-      where: { id },
-      data: {
-        status: "available",
-        orderId: null,
-        email: null,
-        reservedAt: null,
-        usedAt: null,
-        revokedAt: null,
-      },
-    });
-
     const auditUserId = await resolveAuditUserId(actor?.userId);
+    return prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM license_keys WHERE id = ${id} FOR UPDATE`;
+      if (await tx.licenseKeyAuditLog.findFirst({ where: { keyId: id, action: "assign_marketplace_stock" } })) {
+        throw new AppError("Ключ закреплён за заказом FunPay или PlayerOK. Повторная выдача заблокирована", 409);
+      }
+      const row = await tx.licenseKey.update({
+        where: { id },
+        data: {
+          status: "available",
+          orderId: null,
+          email: null,
+          reservedAt: null,
+          usedAt: null,
+          revokedAt: null,
+        },
+      });
 
-    await prisma.licenseKeyAuditLog.create({
-      data: {
-        keyId: row.id,
-        action: "return_available",
-        userId: auditUserId,
-      },
+      await tx.licenseKeyAuditLog.create({
+        data: {
+          keyId: row.id,
+          action: "return_available",
+          userId: auditUserId,
+        },
+      });
+
+      return row;
     });
-
-    return row;
   },
 
   async returnAssignedToAvailable(

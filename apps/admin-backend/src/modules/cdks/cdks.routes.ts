@@ -26,6 +26,10 @@ const movePoolSchema = z.object({
   fromProductKey: z.string().min(1),
   toProductKey: z.string().min(1),
 });
+const changeSupplierSchema = z.object({
+  supplier: z.enum(["aibuy", "aisou"]),
+  expectedActivationSiteUrl: z.string().max(2048),
+});
 
 function parseCodes(input: z.infer<typeof importSchema>) {
   const fromArray = Array.isArray(input.codes) ? input.codes : [];
@@ -82,6 +86,15 @@ cdkKeysRouter.post(
   asyncHandler(async (req, res) => {
     const body = req.body as z.infer<typeof movePoolSchema>;
     res.json(await cdkKeysStore.movePool(body, { userId: req.auth?.userId }));
+  })
+);
+
+cdkKeysRouter.patch(
+  "/:id/supplier",
+  validateBody(changeSupplierSchema),
+  asyncHandler(async (req, res) => {
+    const body = req.body as z.infer<typeof changeSupplierSchema>;
+    res.json(await licenseService.changeUnusedCodexSupplier(String(req.params.id), body.supplier, body.expectedActivationSiteUrl, { userId: req.auth?.userId }));
   })
 );
 

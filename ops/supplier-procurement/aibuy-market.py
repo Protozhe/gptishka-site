@@ -67,9 +67,9 @@ def paid(job,policy,*,worker_read=None,player_read=None):
     if payload.get('quantity',1)!=1:raise ValueError('supplier_product_mismatch')
     return {'platform':'playerok','order_id':job['order_id'],'gross_rub':row['gross_revenue_rub'],'marketplace_commission_rub':row['commission_rub'],'quantity':1,'title':row['title'],'payment_verified':True}
 
-def validate_job(jid,amount=None,*,bound=False,policy=None,payment_reader=paid):
+def validate_job(jid,amount=None,*,bound=False,shared=False,policy=None,payment_reader=paid):
     policy=policy or b.protected(b.SECRET/'aibuy-policy.json')
-    if policy.get('paused') is True and not bound:raise ValueError('supplier_owner_topup_pause')
+    if policy.get('paused') is True and not bound and not shared:raise ValueError('supplier_owner_topup_pause')
     with db(ACTIVITY) as c:
         settings=c.execute('SELECT enabled,auto_submit FROM codex_settings WHERE id=1').fetchone()
         if not settings or not settings['enabled'] or not settings['auto_submit']:raise ValueError('supplier_automation_paused')
@@ -77,6 +77,9 @@ def validate_job(jid,amount=None,*,bound=False,policy=None,payment_reader=paid):
         attempt=c.execute('SELECT * FROM market_aibuy_attempts WHERE job_id=?',(jid,)).fetchone()
         if not raw or not attempt:raise ValueError('supplier_order_ineligible')
         job=dict(raw);code=job['package'] if job['product_type']=='codex' else 0;job['contract_code']=code
+        if shared:
+            from market_shared_stock import enabled
+            if not enabled(job,attempt):raise ValueError('supplier_stock_order_ineligible')
         if not eligible(job,policy) or code not in PRICES or classify(job['title'])!=code or attempt['contract_code']!=code:raise ValueError('supplier_order_ineligible')
         if job['status'] not in ('waiting_data','ready','validating') or attempt['dispatched'] or job['aiee_order_id']:raise ValueError('supplier_prior_fulfillment')
         if (bool(job['key_id'])!=bound) or (bound and (attempt['key_id']!=job['key_id'] or attempt['state']!='key_ready')):raise ValueError('supplier_prior_fulfillment')
@@ -97,17 +100,51 @@ def validate_job(jid,amount=None,*,bound=False,policy=None,payment_reader=paid):
     fee_policy=json.loads(FEE_POLICY.read_text())
     s=importlib.util.spec_from_file_location('margin_read',GUARD);guard=importlib.util.module_from_spec(s);s.loader.exec_module(guard)
     cost=quote(amount,code,rate_policy,financial,fee_policy,guard.assess)
-    if bound:
+    if bound and not shared:
         if amount!=attempt['amount_minor'] or str(cost)!=attempt['cost_rub']:raise ValueError('supplier_cost_binding_invalid')
         with db(b.STATE/'journal.sqlite') as c:
             asset=c.execute("SELECT * FROM assets WHERE order_id=? AND state='assigned'",(identity(job),)).fetchone()
         if not asset or asset['fingerprint']!=native_key['fingerprint'] or asset['credits']!=code or asset['amount_minor']!=amount or asset['trade_no']!=attempt['trade_no']:raise ValueError('supplier_cost_binding_invalid')
-    return {'order_id':identity(job),'credits':code,'amount_minor':amount,'cost_rub':cost,'stock_available':False}
+    result={'order_id':identity(job),'credits':code,'amount_minor':amount,'cost_rub':cost,'stock_available':False,'platform':job['platform']}
+    if shared and bound:
+        with db(ACTIVITY) as c:binding=c.execute('SELECT * FROM market_shared_stock WHERE job_id=?',(jid,)).fetchone()
+        if not binding:raise ValueError('supplier_stock_binding_invalid')
+        result.update(native_key_id=binding['native_key_id'],activationSiteUrl=binding['activation_site'],fingerprint=native_key['fingerprint'])
+    return result
+
+def web_stock(payload):
+    import pwd
+    apps=json.loads(subprocess.check_output(['pm2','jlist']))
+    app=next(x for x in apps if x['name']=='gptishka-admin-api')
+    env={}
+    for entry in pathlib.Path('/proc/'+str(app['pid'])+'/environ').read_bytes().split(b'\0'):
+        if b'=' in entry:
+            key,value=entry.split(b'=',1);env[key.decode()]=value.decode()
+    for key in ('NODE_CHANNEL_FD','NODE_CHANNEL_SERIALIZATION_MODE','NODE_UNIQUE_ID'):env.pop(key,None)
+    who=pwd.getpwnam('gptishka-web')
+    def demote():os.setgroups([]);os.setgid(who.pw_gid);os.setuid(who.pw_uid)
+    result=subprocess.run(['/usr/bin/node',str(HERE/'market-shared-stock.cjs')],input=json.dumps(payload),text=True,
+        capture_output=True,env=env,preexec_fn=demote,cwd=HERE.parent.parent,timeout=35)
+    try:out=json.loads(result.stdout)
+    except Exception:raise ValueError('supplier_stock_unconfirmed') from None
+    if result.returncode or out.get('error'):raise ValueError('supplier_stock_unconfirmed')
+    return out
 
 def handle(req,policy):
     if req=={'action':'health'}:return {'state':'alive','enabled':policy.get('enabled') is True and policy.get('marketplaces',{}).get('enabled') is True,'paused':policy.get('paused') is True}
-    if set(req)!={'action','job_id'} or req['action'] not in ('procure','attest') or type(req['job_id']) is not int or req['job_id']<=0:raise ValueError('supplier_request_invalid')
+    if set(req)!={'action','job_id'} or req['action'] not in ('procure','attest','stock','stock_attest') or type(req['job_id']) is not int or req['job_id']<=0:raise ValueError('supplier_request_invalid')
     jid=req['job_id']
+    if req['action'] in ('stock','stock_attest'):
+        attest=req['action']=='stock_attest'
+        intent=validate_job(jid,bound=attest,shared=True,policy=policy)
+        if not attest:
+            with db(b.STATE/'journal.sqlite') as c:prior=c.execute('SELECT state FROM buys WHERE order_id=?',(intent['order_id'],)).fetchone()
+            if prior and prior['state']!='not_sent':raise ValueError('supplier_prior_purchase_requires_review')
+        out=web_stock({'action':'attest' if attest else 'claim','scope':intent['order_id'],'credits':intent['credits'],
+            'platform':intent['platform'],**({'key_id':intent['native_key_id']} if attest else {})})
+        if attest and (out.get('state')!='shared_stock' or out.get('native_key_id')!=intent['native_key_id']
+            or out.get('activationSiteUrl')!=intent['activationSiteUrl'] or out.get('fingerprint')!=intent['fingerprint']):raise ValueError('supplier_stock_binding_invalid')
+        return out
     if req['action']=='attest':
         with db(ACTIVITY) as c:r=c.execute('SELECT amount_minor FROM market_aibuy_attempts WHERE job_id=?',(jid,)).fetchone()
         return validate_job(jid,r['amount_minor'] if r else None,bound=True,policy=policy)

@@ -23,6 +23,8 @@ def source_allowed(platform,created,account=None):
 def claude_title(title):return ('claude_pro',0,'claude_pro') if classify(title)==0 else None
 
 def init(a):
+    from market_shared_stock import init as shared_init
+    shared_init(a)
     with a.connect() as c:
         c.execute('''CREATE TABLE IF NOT EXISTS market_aibuy_attempts(
           job_id INTEGER PRIMARY KEY,contract_code INTEGER NOT NULL,state TEXT NOT NULL,
@@ -176,7 +178,10 @@ def poll_result(a,j,r,result):
             c.execute("UPDATE market_aibuy_attempts SET state='completed',encrypted_session=NULL,reason='',updated_at=? WHERE job_id=?",(time.time(),j['id']))
             c.execute("UPDATE codex_jobs SET status='success',error='',finished_at=COALESCE(finished_at,?),last_poll_status='success',updated_at=? WHERE id=? AND key_id=?",(utc_now(),utc_now(),j['id'],r['key_id']))
             c.execute("UPDATE codex_keys SET status='used',used_at=COALESCE(used_at,?) WHERE id=? AND reserved_job_id=?",(utc_now(),r['key_id'],j['id']))
-        notice(a,j,'completed','✅ <b>AI-BUY · Активация выполнена</b>\n\nСтатус: <b>подтверждено поставщиком</b>\nОдна закупка и одна отправка. Повторный запуск заблокирован.')
+        from market_shared_stock import binding
+        if binding(a,j['id']):
+            notice(a,j,'completed','✅ <b>Codex · Активация выполнена</b>\n\nКлюч из общего резерва. Зачисление подтверждено поставщиком; повторная отправка заблокирована.')
+        else:notice(a,j,'completed','✅ <b>AI-BUY · Активация выполнена</b>\n\nСтатус: <b>подтверждено поставщиком</b>\nОдна закупка и одна отправка. Повторный запуск заблокирован.')
     elif failed:
         update(a,j['id'],state='review',reason='provider_final_failure',next_at=time.time()+86400)
         with a.connect() as c:c.execute("UPDATE codex_jobs SET status='manual_action',error='AI-BUY: поставщик не завершил активацию; повторная отправка заблокирована',updated_at=? WHERE id=? AND status<>'success'",(utc_now(),j['id']))
@@ -199,24 +204,34 @@ def drive(a,jid):
         if j['status'] in ('paused','manual_completed','cancelled','success') or j['archived_at']:
             update(a,jid,state='owner_stopped');return
         try:
+            import market_shared_stock as stock
             if r['state']=='procurement':
-                result=rpc(jid)
-                if result.get('state')=='funds_wait':
+                result=rpc(jid,'stock') if stock.enabled(j,r) else {'state':'empty'}
+                if result.get('state')=='shared_stock':
+                    stock.bind(a,j,r,result)
+                    with a.connect() as c:r=c.execute('SELECT * FROM market_aibuy_attempts WHERE job_id=?',(jid,)).fetchone()
+                elif result.get('state')=='empty':result=rpc(jid)
+                else:raise ValueError('supplier_stock_unconfirmed')
+                if result.get('state')=='shared_stock':pass
+                elif result.get('state')=='funds_wait':
                     start=r['funds_at'] or time.time();update(a,jid,funds_at=start,next_at=time.time()+30,reason='supplier_balance_insufficient')
                     notice(a,j,'funds_wait','⏳ <b>AI-BUY · Ожидаем пополнение</b>\n\nСтатус: <b>заказ сохранён на 15 минут</b>\nПополните общий баланс AI-BUY. После пополнения продолжим автоматически.')
                     if time.time()-start>=900:notice(a,j,'funds_deadline','🚨 <b>AI-BUY · Баланс не пополнен</b>\n\nПрошло 15 минут. Заказ остаётся в ожидании; списания и повторной оплаты нет.')
                     return
-                bind(a,j,r,result)
+                else:bind(a,j,r,result)
                 with a.connect() as c:r=c.execute('SELECT * FROM market_aibuy_attempts WHERE job_id=?',(jid,)).fetchone()
-            if not r['dispatched']:frozen_cost(a,j,r)
+            shared=stock.binding(a,jid)
+            if not r['dispatched'] and not shared:frozen_cost(a,j,r)
             with a.connect() as c:key=c.execute('SELECT * FROM codex_keys WHERE id=?',(r['key_id'],)).fetchone()
             if not key or key['reserved_job_id']!=jid or key['pool']!=pool(r['contract_code']):raise ValueError('supplier_stock_conflict')
             value=a._fernet().decrypt(key['encrypted_key'].encode()).decode();provider='claude' if r['contract_code']==0 else 'gpt'
             if not r['dispatched']:
-                rpc(jid,'attest')
-                checked=a._post_json(URL+'verifyCdk',{'code':value,'product':provider},timeout=45)
-                if checked.get('ok') is not True or checked.get('workflow')!=workflow(r['contract_code']) or checked.get('status')!='unused' or checked.get('job_id') or checked.get('task_id') or checked.get('email'):raise ValueError('supplier_key_quarantined')
                 raw=session(a._fernet().decrypt(r['encrypted_session'].encode()).decode(),r['contract_code'])
+                rpc(jid,'stock_attest' if shared else 'attest')
+                sid=stock.verify(a,value,r['contract_code'],shared['activation_site'],raw) if shared else ''
+                if not shared:
+                    checked=a._post_json(URL+'verifyCdk',{'code':value,'product':provider},timeout=45)
+                    if checked.get('ok') is not True or checked.get('workflow')!=workflow(r['contract_code']) or checked.get('status')!='unused' or checked.get('job_id') or checked.get('task_id') or checked.get('email'):raise ValueError('supplier_key_quarantined')
                 from codex_automation import utc_now
                 with a.connect() as c:
                     c.execute('BEGIN IMMEDIATE');fresh=c.execute('SELECT * FROM codex_jobs WHERE id=?',(jid,)).fetchone()
@@ -224,9 +239,9 @@ def drive(a,jid):
                     if c.execute('SELECT 1 FROM marketplace_refund_holds WHERE platform=? AND account_id=? AND order_id=?',(j['platform'],j['account_id'],j['order_id'])).fetchone():raise ValueError('supplier_refund_hold')
                     if c.execute("UPDATE market_aibuy_attempts SET dispatched=1,state='processing',next_at=?,updated_at=? WHERE job_id=? AND dispatched=0",(time.time()+30,time.time(),jid)).rowcount!=1:return
                     c.execute("UPDATE codex_jobs SET status='submitting',aiee_order_id=?,last_poll_status='aibuy_submit_once',updated_at=? WHERE id=?",('aibuy-'+str(jid),utc_now(),jid))
-                try:result=a._post_json(URL+'activate',{'code':value,'token':raw,'cookie':'','product':provider},timeout=90)
+                try:result=stock.submit(a,value,r['contract_code'],shared['activation_site'],raw,sid) if shared else a._post_json(URL+'activate',{'code':value,'token':raw,'cookie':'','product':provider},timeout=90)
                 except Exception:return  # Durable dispatch remains; the next cycle reads status only.
-            else:result=a._post_json(URL+'status',{'code':value,'product':provider},timeout=45)
+            else:result=stock.poll(a,value,r['contract_code'],shared['activation_site']) if shared else a._post_json(URL+'status',{'code':value,'product':provider},timeout=45)
             poll_result(a,j,r,result)
         except Exception as e:
             reason=str(e);reason=reason if __import__('re').fullmatch(r'supplier_[a-z_]{1,70}',reason) else 'supplier_result_unconfirmed'

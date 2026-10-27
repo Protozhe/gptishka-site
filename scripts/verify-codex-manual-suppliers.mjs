@@ -35,13 +35,15 @@ const keyModel = {
   async createMany({ data }) {
     let count = 0;
     for (const row of data) if (!keys.some(key => key.keyValue === row.keyValue)) {
-      keys.push({ ...row, id: `fixture-${++nextId}`, createdAt: new Date(nextId), updatedAt: new Date(nextId), usedAt: null, orderId: null, email: null });
+      keys.push({ ...row, id: `fixture-${++nextId}`, createdAt: new Date(nextId), updatedAt: new Date(nextId), usedAt: null, reservedAt: null, orderId: null, email: null });
       count++;
     }
     return { count };
   },
   async updateMany({ where, data }) {
-    const row = keys.find(key => key.id === where.id && key.status === where.status);
+    const row = keys.find(key => key.id === where.id && key.status === where.status
+      && (!Object.hasOwn(where,'activationSiteUrl') || key.activationSiteUrl === where.activationSiteUrl)
+      && (!Object.hasOwn(where,'orderId') || key.orderId === where.orderId));
     if (!row) return { count: 0 };
     Object.assign(row, data); return { count: 1 };
   },
@@ -49,10 +51,11 @@ const keyModel = {
 };
 const tx = {
   licenseKey: keyModel,
-  licenseKeyAuditLog: { async create({ data }) { audits.push(data); } },
+  licenseKeyAuditLog: { async create({ data }) { audits.push(data); }, async findFirst({where}) { return audits.find(row=>row.keyId===where.keyId&&row.action===where.action)||null; } },
   async $queryRaw(strings, ...values) {
     const sql = strings.join("?");
     if (sql.includes("pg_advisory_xact_lock")) { assert.match(sql, /hashtext/); return []; }
+    if (sql.includes('WHERE id =')) return [];
     assert.match(sql, /FOR UPDATE SKIP LOCKED/);
     assert.match(sql, /status = 'available'/);
     assert.match(sql, /ORDER BY CASE/);
@@ -77,6 +80,7 @@ const { licenseService } = load(base + "services/licenseService.ts", {
   "../config/prisma": { prisma }, "../common/errors/app-error": errors,
   "../common/utils/activation-site": sites, "../common/utils/product-key": products,
   "../modules/cdks/chatgpt-plus-pool-validation": { validateChatGptPlusKeyImport: () => null },
+  "../modules/cdks/codex-key-suppliers": supplierHelpers,
 });
 const { cdkKeysStore } = load(base + "modules/cdks/cdk-keys.store.ts", {
   "../../services/licenseService": { licenseService }, "./codex-key-suppliers": supplierHelpers,
@@ -144,8 +148,27 @@ try {
     });
     assert.equal(response.status, expected, JSON.stringify(body));
   }
+  const legacyKey=keys.find(row=>row.keyValue==='FIXTURE-LEGACY-250');
+  for(const [id,body,status] of [
+    [legacyKey.id,{supplier:'aibuy',expectedActivationSiteUrl:origins[1]},200],
+    [legacyKey.id,{supplier:'aisou',expectedActivationSiteUrl:origins[1]},409],
+    [held500.id,{supplier:'aibuy',expectedActivationSiteUrl:origins[1]},409],
+  ]) {
+    const response=await fetch(`http://127.0.0.1:${server.address().port}/cdks/${id}/supplier`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    assert.equal(response.status,status);
+  }
 } finally { await new Promise(resolve => server.close(resolve)); }
 assert.ok(!keys.some(row => row.keyValue === "FIXTURE-REJECTED"));
+const editable = keys.find(row => row.keyValue === 'FIXTURE-HTTP-1000');
+assert.equal((await licenseService.changeUnusedCodexSupplier(editable.id,'aisou',origins[0])).activationSiteUrl,origins[1]);
+await assert.rejects(()=>licenseService.changeUnusedCodexSupplier(editable.id,'aibuy',origins[0]),e=>e.statusCode===409);
+for(const protectedKey of [held500,keys.find(row=>row.status==='used')]) {
+  await assert.rejects(()=>licenseService.changeUnusedCodexSupplier(protectedKey.id,'aibuy',protectedKey.activationSiteUrl),e=>e.statusCode===409);
+}
+const marketKey=keys.find(row=>row.status==='used');
+audits.push({keyId:marketKey.id,action:'assign_marketplace_stock'});
+await assert.rejects(()=>licenseService.returnToAvailable(marketKey.id),e=>e.statusCode===409);
+assert.equal(marketKey.status,'used');
 
 // Exercise the real native activation start, stopping at the mocked provider.
 const orderSource = fs.readFileSync(new URL(base + "modules/orders/orders.service.ts", root), "utf8");
@@ -207,7 +230,7 @@ const previousGlobals = new Map(Object.keys(globals).map(key => [key, Object.get
 for (const [key, value] of Object.entries(globals)) Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
 const { createRoot } = require("react-dom/client"), { Simulate } = require("react-dom/test-utils");
 const posts = [];
-const { KeyProductColumn } = load("apps/admin-ui/src/pages/CdkKeysPage.tsx", {
+const { KeyProductColumn, ActivationTable } = load("apps/admin-ui/src/pages/CdkKeysPage.tsx", {
   "../lib/api": { api: { async post(path, body) { posts.push({ path, body }); return { data: { inserted: 1, skipped: 0 } }; } } },
   "@tanstack/react-query": {
     useQueryClient: () => ({ invalidateQueries() {} }),
@@ -215,7 +238,7 @@ const { KeyProductColumn } = load("apps/admin-ui/src/pages/CdkKeysPage.tsx", {
     useMutation: options => ({ mutate: async () => { const data = await options.mutationFn(); options.onSuccess?.(data); }, isPending: false }),
   },
   "../components/ProductDurationEditor": { getProductDurationLabel: () => "", compareProductsByFamilyAndDuration: () => 0, ProductDurationEditor: () => null },
-}, "\nexport { KeyProductColumn };\n");
+}, "\nexport { KeyProductColumn, ActivationTable };\n");
 const container = dom.window.document.getElementById("root"), reactRoot = createRoot(container);
 try {
   for (const size of [250, 500, 1000]) {
@@ -239,6 +262,13 @@ try {
       assert.equal(posts.at(-1).body.productKey, `codex-${size}`);
     }
   }
+  let changedSupplier;
+  const item={id:'fixture-edit',code:'FIXTURE-UI',productKey:'codex-500',status:'unused',activationSiteUrl:origins[1],createdAt:new Date().toISOString()};
+  await React.act(async()=>reactRoot.render(React.createElement(ActivationTable,{items:[item],loading:false,onChangeSupplier:(row,supplier)=>{changedSupplier={row,supplier};}})));
+  await React.act(async()=>Simulate.change(container.querySelector('select[aria-label="Поставщик ключа"]'),{target:{value:'aibuy'}}));
+  assert.equal(changedSupplier.supplier,'aibuy');assert.equal(changedSupplier.row.id,item.id);
+  await React.act(async()=>reactRoot.render(React.createElement(ActivationTable,{items:[{...item,status:'used'}],loading:false,onChangeSupplier(){throw Error('Used key must not be editable')}})));
+  assert.equal(container.querySelector('select[aria-label="Поставщик ключа"]'),null);
 } finally {
   await React.act(async () => reactRoot.unmount()); dom.window.close();
   for (const [key, descriptor] of previousGlobals) {

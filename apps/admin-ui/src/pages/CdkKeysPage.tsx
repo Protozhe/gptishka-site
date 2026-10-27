@@ -299,6 +299,8 @@ function ActivationTable({
   returningId,
   onDelete,
   deletingId,
+  onChangeSupplier,
+  changingSupplierId,
   onRestore,
   restoringId,
   onPermanentDelete,
@@ -311,6 +313,8 @@ function ActivationTable({
   returningId?: string;
   onDelete?: (id: string) => void;
   deletingId?: string;
+  onChangeSupplier?: (item: CdkRow, supplier: CodexKeySupplier) => void;
+  changingSupplierId?: string;
   onRestore?: (id: string) => void;
   restoringId?: string;
   onPermanentDelete?: (id: string) => void;
@@ -373,6 +377,19 @@ function ActivationTable({
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2">
+                {item.status === "unused" && isDualSupplierCodexPool(item.productKey) && onChangeSupplier ? (
+                  <label className="flex items-center gap-2 text-xs">
+                    Поставщик
+                    <select className="input py-1" aria-label="Поставщик ключа"
+                      value={CODEX_KEY_SUPPLIERS.find((supplier) => supplier.url === item.activationSiteUrl)?.id || ""}
+                      disabled={changingSupplierId === item.id}
+                      onChange={(event) => onChangeSupplier(item, event.target.value as CodexKeySupplier)}>
+                      <option value="" disabled>Выберите поставщика</option>
+                      {CODEX_KEY_SUPPLIERS.map((supplier) => <option key={supplier.id} value={supplier.id}>{supplier.title}</option>)}
+                    </select>
+                    {changingSupplierId === item.id ? "Сохраняем…" : null}
+                  </label>
+                ) : null}
                 {item.status === "used" && onReturn ? (
                   <button className="btn-secondary" type="button" onClick={() => onReturn(item.id)} disabled={returningId === item.id}>
                     {returningId === item.id ? `${TEXT.returnToUnused}...` : TEXT.returnToUnused}
@@ -527,6 +544,7 @@ function KeyProductColumn({
   const [error, setError] = useState("");
   const [returningId, setReturningId] = useState("");
   const [deletingId, setDeletingId] = useState("");
+  const [changingSupplierId, setChangingSupplierId] = useState("");
   const [restoringId, setRestoringId] = useState("");
   const [permanentDeletingId, setPermanentDeletingId] = useState("");
   const [showUnused, setShowUnused] = useState(true);
@@ -598,6 +616,17 @@ function KeyProductColumn({
     },
     onError: (err: any) => {
       setError(err?.response?.data?.message || TEXT.importFailed);
+    },
+  });
+
+  const supplierMutation = useMutation({
+    mutationFn: async ({ item, supplier }: { item: CdkRow; supplier: CodexKeySupplier }) =>
+      (await api.patch(`/cdks/${encodeURIComponent(item.id)}/supplier`, { supplier, expectedActivationSiteUrl: item.activationSiteUrl || "" })).data,
+    onSuccess: () => {
+      setChangingSupplierId(""); setError(""); qc.invalidateQueries({ queryKey: ["cdks"] });
+    },
+    onError: (err: any) => {
+      setChangingSupplierId(""); setError(err?.response?.data?.message || "Не удалось сменить поставщика ключа");
     },
   });
 
@@ -795,6 +824,8 @@ function KeyProductColumn({
             loading={loading}
             onDelete={onDeleteUnused}
             deletingId={deletingId}
+            onChangeSupplier={(item, supplier) => { setChangingSupplierId(item.id); supplierMutation.mutate({ item, supplier }); }}
+            changingSupplierId={changingSupplierId}
             keyColumnLabel={keyColumnLabel}
           />
         </CurtainBlock>
