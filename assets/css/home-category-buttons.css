@@ -1,0 +1,89 @@
+/* Category links are equal two-line buttons; text stays on the page pixel grid. */
+.launch-categories--buttons {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding-top: 20px;
+}
+html body#storefrontBody .launch-categories--buttons .launch-category {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  height: 104px;
+  min-height: 104px;
+  padding: 18px;
+  border: 1px solid #394246;
+  border-radius: 18px;
+  background: #20272a;
+  box-shadow: 0 3px 8px #0000001a;
+  transform: none;
+  text-shadow: none;
+  transition: background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+.launch-categories--buttons .launch-category--ai { --category-hover: #24332f; --category-edge: #52776e; }
+.launch-categories--buttons .launch-category--steam { --category-hover: #263140; --category-edge: #526b8a; }
+.launch-categories--buttons .launch-category--apple { --category-hover: #2a3038; --category-edge: #687581; }
+.launch-categories--buttons .launch-category--codex { --category-hover: #2c322f; --category-edge: #6d7769; }
+html body#storefrontBody .launch-categories--buttons .launch-category:is(:hover, :focus-visible) {
+  background: var(--category-hover);
+  border-color: var(--category-edge);
+  box-shadow: 0 5px 14px #00000030;
+  transform: none;
+}
+html body#storefrontBody .launch-categories--buttons .launch-category:focus-visible {
+  outline: 2px solid var(--store-focus);
+  outline-offset: 4px;
+}
+.launch-categories--buttons .launch-category-icon {
+  width: 34px;
+  height: 34px;
+  margin: 0;
+}
+.launch-categories--buttons .launch-category-terminal { font-size: 30px; line-height: 34px; }
+.launch-categories--buttons .launch-category-copy {
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  min-width: 0;
+}
+html body#storefrontBody .launch-categories--buttons .launch-category strong {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 26px;
+  letter-spacing: -.015em;
+  white-space: nowrap;
+}
+html body#storefrontBody .launch-categories--buttons .launch-category small {
+  max-width: none;
+  margin: 0;
+  color: #b5bec1;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+@media (min-width: 1101px) and (max-width: 1279px) {
+  html body#storefrontBody .launch-categories--buttons .launch-category { padding-inline: 14px; gap: 12px; }
+  html body#storefrontBody .launch-categories--buttons .launch-category strong { font-size: 18px; }
+  html body#storefrontBody .launch-categories--buttons .launch-category small { font-size: 14.5px; }
+}
+@media (max-width: 1100px) {
+  .launch-categories--buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .launch-categories--buttons { grid-template-columns: minmax(0, 1fr); gap: 10px; padding-top: 18px; }
+  html body#storefrontBody .launch-categories--buttons .launch-category {
+    height: 88px;
+    min-height: 88px;
+    padding: 14px 18px;
+    border-radius: 16px;
+  }
+  html body#storefrontBody .launch-categories--buttons .launch-category strong { font-size: 19px; line-height: 25px; }
+  html body#storefrontBody .launch-categories--buttons .launch-category small { font-size: 15px; line-height: 21px; }
+  .launch-categories--buttons .launch-category-copy { gap: 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html body#storefrontBody .launch-categories--buttons .launch-category { transition: none; }
+}
