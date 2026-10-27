@@ -59,7 +59,6 @@
     understood: "Всё понятно"
   };
 
-  const automaticPlanKeys = new Set(["go", "plus"]);
   const managerCopy = isEnglish ? {
     briefTitle: "Activation by a manager",
     briefText: "After payment, contact a manager. We will create your account and send you the login details — no token needed.",
@@ -99,16 +98,14 @@
     }
     const needsNewAccount = Boolean(document.querySelector('[data-service-new-account]')?.checked);
     const mode = needsNewAccount ? "manager" : "automatic";
-    if (current?.dataset.fulfillmentMode === mode
-      && (needsNewAccount || automaticPlanKeys.has(card.dataset.planKey || ""))) return;
+    if (current?.dataset.fulfillmentMode === mode) return;
     current?.remove();
-    if (!needsNewAccount) {
-      if (!automaticPlanKeys.has(card.dataset.planKey || "")) return;
-    }
     const briefMarkup = needsNewAccount
       ? markup.replace(copy.briefTitle, managerCopy.briefTitle).replace(copy.briefText, managerCopy.briefText)
       : markup;
-    const briefAnchor = workspace ? briefHost.querySelector('.service-account-choice') : buyButton;
+    const briefAnchor = workspace
+      ? briefHost.querySelector('.chatgpt-purchase-controls, .service-account-choice')
+      : buyButton;
     const briefPosition = workspace ? "afterend" : "beforebegin";
     briefAnchor?.insertAdjacentHTML(briefPosition, briefMarkup.replace('class="chatgpt-onboarding-brief"', 'class="chatgpt-onboarding-brief" data-fulfillment-mode="' + mode + '"'));
   }
