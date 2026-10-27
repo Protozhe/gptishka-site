@@ -1,0 +1,250 @@
+/* Sequential subscription checkout; credit checkout keeps its own layout. */
+html body#storefrontBody #chatgptWorkspace {
+  width: min(900px, calc(100% - 48px)) !important;
+  max-width: 900px !important;
+  padding-top: 8px !important;
+}
+html body#storefrontBody #chatgptWorkspace .chatgpt-workspace-breadcrumbs {
+  margin-bottom: 8px;
+}
+html body#storefrontBody #chatgptWorkspace .chatgpt-workspace-intro {
+  margin-bottom: 8px;
+}
+html body#storefrontBody #chatgptWorkspace .chatgpt-workspace-tabs {
+  margin-bottom: 12px;
+}
+html body#storefrontBody #chatgptWorkspace .chatgpt-workspace-tabs a {
+  min-height: 56px !important;
+  padding: 6px 12px !important;
+  gap: 2px !important;
+  font-size: 18px !important;
+  line-height: 1.25 !important;
+}
+html body#storefrontBody #chatgptWorkspace .chatgpt-workspace-tabs a span {
+  font-size: 14px !important;
+  line-height: 1.3 !important;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .service-constructor-card {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 12px !important;
+  padding: 14px !important;
+  background: #1a2025 !important;
+  border-radius: 18px !important;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions :is(.service-constructor-head, #servicePlanFilters, .chatgpt-purchase-controls, .chatgpt-onboarding-brief, .service-selected-plan) {
+  grid-column: 1 !important;
+  grid-row: auto !important;
+  min-width: 0;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .service-constructor-head {
+  align-items: start !important;
+  gap: 16px !important;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--workspace-line);
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .service-constructor-brand > span {
+  display: block !important;
+  margin: 0 0 4px;
+  color: var(--workspace-muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions #serviceConstructorTitle {
+  font-size: 24px !important;
+  line-height: 1.3 !important;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .service-constructor-price {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  text-align: right;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions #serviceConstructorPrice {
+  font-size: 24px !important;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .service-constructor-period {
+  color: var(--workspace-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions #servicePlanFilters .service-filter-group__chips {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .service-filter-group__label {
+  font-size: 15px !important;
+  line-height: 1.4 !important;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions #servicePlanFilters .service-filter-chip {
+  grid-column: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 42px !important;
+  padding: 8px 10px !important;
+  font-size: 15px !important;
+  line-height: 1.4 !important;
+  white-space: normal !important;
+  text-align: center;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .chatgpt-purchase-controls {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 12px !important;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions #serviceDurationFilters .service-filter-chip {
+  min-height: 38px !important;
+  padding: 8px 14px !important;
+  font-size: 15px !important;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .service-account-choice {
+  padding: 12px !important;
+  border: 1px solid transparent !important;
+  border-radius: 12px;
+  background: #252d33;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .service-account-choice:has(input:checked) {
+  border-color: var(--workspace-accent) !important;
+  background: rgba(109, 218, 206, .06);
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .service-account-choice .service-new-account {
+  min-height: 0;
+  row-gap: 2px !important;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .service-new-account__text strong {
+  font-size: 16px !important;
+  line-height: 1.4 !important;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .service-account-choice .service-new-account__price {
+  font-size: 14px !important;
+  line-height: 1.4;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .chatgpt-onboarding-brief {
+  gap: 4px !important;
+  padding: 12px !important;
+  border-color: #385554 !important;
+  background: #202e31 !important;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .chatgpt-onboarding-brief__copy {
+  display: grid !important;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .chatgpt-onboarding-brief__mark {
+  display: block !important;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: var(--workspace-accent);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 18'%3E%3Cpath fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M8 1.5l5.5 2v4c0 3-2.5 5-5.5 7-3-2-5.5-4-5.5-7v-4L8 1.5zm-2.5 6L7.2 9.2l3.3-3.5'/%3E%3C/svg%3E") center / contain no-repeat;
+  box-shadow: none;
+  color: var(--workspace-accent);
+  font-size: 0;
+  line-height: 1.4;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .chatgpt-onboarding-brief__text {
+  display: contents !important;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .chatgpt-onboarding-brief__text strong {
+  grid-column: 2;
+  font-size: 16px !important;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .chatgpt-onboarding-brief__text small {
+  grid-column: 1 / -1;
+  font-size: 15px !important;
+  line-height: 1.5 !important;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .chatgpt-onboarding-brief__details {
+  min-height: 32px !important;
+  padding: 4px 0 !important;
+  font-size: 15px !important;
+}
+html body#storefrontBody #chatgptWorkspace #subscriptions .pay-now-btn {
+  width: 100% !important;
+  min-height: 50px !important;
+  padding: 12px 18px !important;
+  font-size: 16px !important;
+}
+/* Short desktop windows keep the full purchase action in view. */
+@media (min-width: 981px) and (max-height: 800px) {
+  html body#storefrontBody #chatgptWorkspace {
+    padding-top: 8px !important;
+  }
+  html body#storefrontBody #chatgptWorkspace .chatgpt-workspace-intro {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    margin: -1px;
+  }
+  html body#storefrontBody #chatgptWorkspace .chatgpt-workspace-breadcrumbs {
+    margin-bottom: 8px;
+  }
+  html body#storefrontBody #chatgptWorkspace .chatgpt-workspace-breadcrumbs a {
+    min-height: 36px;
+  }
+  html body#storefrontBody #chatgptWorkspace #subscriptions .service-constructor-card {
+    padding: 12px !important;
+    gap: 10px !important;
+  }
+  html body#storefrontBody #chatgptWorkspace #subscriptions #servicePlanFilters .service-filter-group__chips {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  }
+  html body#storefrontBody #chatgptWorkspace #subscriptions #servicePlanFilters .service-filter-chip {
+    padding-inline: 6px !important;
+  }
+  html body#storefrontBody #chatgptWorkspace #subscriptions .chatgpt-onboarding-brief {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    padding: 10px !important;
+    gap: 6px 12px !important;
+  }
+  html body#storefrontBody #chatgptWorkspace #subscriptions .chatgpt-onboarding-brief__copy {
+    display: contents !important;
+  }
+  html body#storefrontBody #chatgptWorkspace #subscriptions .chatgpt-onboarding-brief__mark {
+    position: absolute;
+    top: 17px;
+    left: 10px;
+  }
+  html body#storefrontBody #chatgptWorkspace #subscriptions .chatgpt-onboarding-brief__text strong {
+    grid-column: 1;
+    grid-row: 1;
+    padding-left: 26px;
+  }
+  html body#storefrontBody #chatgptWorkspace #subscriptions .chatgpt-onboarding-brief__text small {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  html body#storefrontBody #chatgptWorkspace #subscriptions .chatgpt-onboarding-brief__details {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+@media (max-width: 600px) {
+  html body#storefrontBody #chatgptWorkspace {
+    width: calc(100% - 28px) !important;
+  }
+  html body#storefrontBody #chatgptWorkspace #subscriptions .service-constructor-card {
+    padding: 14px !important;
+    gap: 14px !important;
+  }
+  html body#storefrontBody #chatgptWorkspace #subscriptions #serviceConstructorTitle,
+  html body#storefrontBody #chatgptWorkspace #subscriptions #serviceConstructorPrice {
+    font-size: 19px !important;
+  }
+  html body#storefrontBody #chatgptWorkspace #subscriptions #servicePlanFilters .service-filter-chip {
+    padding: 8px 4px !important;
+    font-size: 13px !important;
+  }
+  html body#storefrontBody #chatgptWorkspace #subscriptions .chatgpt-onboarding-brief__details {
+    min-height: 40px !important;
+  }
+}

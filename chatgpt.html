@@ -44,6 +44,7 @@
 <link rel="stylesheet" href="/assets/css/chatgpt-workspace.css?v=sha256-b729875dbe63e091">
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
 <link rel="stylesheet" href="/assets/css/chatgpt-purchase-layout.css?v=sha256-569758aef1a76692">
+<link rel="stylesheet" href="/assets/css/chatgpt-subscription-stack.css?v=sha256-14189a540efa4f9d">
 </head>
 <body id="storefrontBody" class="chatgpt-workspace-body">
 <div class="page-overlay"></div>
@@ -114,14 +115,15 @@
   <div id="subscriptions" class="chatgpt-workspace-panel" role="tabpanel" aria-labelledby="subscriptions-tab" tabindex="0">
   <section class="service-plans-section" id="plans">
     <div class="service-constructor-shell">
-      <div class="service-constructor-card">
+      <div class="service-constructor-card" data-stacked-purchase>
         <div class="service-constructor-head">
           <div class="service-constructor-brand">
-            <span>Тарифные планы</span>
+            <span>Подписка ChatGPT</span>
             <h2 id="serviceConstructorTitle">ChatGPT</h2>
           </div>
           <div class="service-constructor-price">
             <strong id="serviceConstructorPrice">—</strong>
+            <small class="service-constructor-period" data-service-price-period></small>
           </div>
         </div>
         <div id="servicePlanFilters"></div>
@@ -134,13 +136,13 @@
             <label class="service-new-account"><input type="checkbox" data-service-new-account aria-describedby="serviceAccountNote"><span class="service-new-account__check" aria-hidden="true"></span><span class="service-new-account__text"><strong>Нужен новый аккаунт</strong></span><span class="service-new-account__price">+250 ₽</span></label>
             <p class="service-account-choice__note" id="serviceAccountNote" data-service-account-note aria-live="polite">По умолчанию подключаем подписку на ваш аккаунт.</p>
           </div>
-          <div class="service-selected-plan" id="servicePlansGrid" aria-live="polite">
-            <div class="price-card price-card-skeleton" aria-hidden="true">
-              <div class="price-card-skeleton__title"></div>
-              <div class="price-card-skeleton__price"></div>
-              <div class="price-card-skeleton__line"></div>
-              <div class="price-card-skeleton__button"></div>
-            </div>
+        </div>
+        <div class="service-selected-plan" id="servicePlansGrid" aria-live="polite">
+          <div class="price-card price-card-skeleton" aria-hidden="true">
+            <div class="price-card-skeleton__title"></div>
+            <div class="price-card-skeleton__price"></div>
+            <div class="price-card-skeleton__line"></div>
+            <div class="price-card-skeleton__button"></div>
           </div>
         </div>
         <div class="service-constructor-description">
@@ -306,7 +308,7 @@
 <script src="/assets/js/support-widget.js?v=20260924-support-account1&build=sha256-9da6a0dc556ea999" defer></script>
   <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
   <script src="/assets/js/chatgpt-onboarding-v1.js?v=sha256-9b17a803e84c47f5" defer></script>
-<script src="/assets/js/chatgpt-workspace.js?v=sha256-244058e6dcea997d" defer></script>
+<script src="/assets/js/chatgpt-workspace.js?v=sha256-f5db31eb7420f6fb" defer></script>
 <script src="/assets/js/codex-credits.js?v=sha256-813abe19104b3899" defer></script>
 <script src="/assets/js/storefront-ui.js?v=sha256-bcae5e9700f06872" defer></script>
 <script src="/assets/js/client-i18n.js?v=sha256-7839447261a20824" defer></script>

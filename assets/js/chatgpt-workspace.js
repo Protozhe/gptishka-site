@@ -88,6 +88,34 @@
   window.addEventListener('popstate', restoreSection);
   restoreSection();
 
+  // Present the selected plan and displayed total without changing checkout data.
+  const purchaseCard = workspace.querySelector('.service-constructor-card');
+  if (purchaseCard?.hasAttribute('data-stacked-purchase')) {
+    const english = document.documentElement.lang.startsWith('en') || location.pathname.startsWith('/en/') || new URLSearchParams(location.search).get('lang') === 'en';
+    function syncPurchaseSummary() {
+      const plan = purchaseCard.querySelector('#servicePlanFilters .is-active span')?.textContent.trim();
+      const duration = purchaseCard.querySelector('#serviceDurationFilters .is-active span')?.textContent.trim();
+      const price = purchaseCard.querySelector('#serviceConstructorPrice')?.textContent.trim();
+      const title = purchaseCard.querySelector('#serviceConstructorTitle');
+      const period = purchaseCard.querySelector('[data-service-price-period]');
+      const buy = purchaseCard.querySelector('.pay-now-btn');
+      const labels = [
+        [purchaseCard.querySelector('.service-constructor-brand > span'), english ? 'ChatGPT subscription' : 'Подписка ChatGPT'],
+        [purchaseCard.querySelector('#servicePlanFilters .service-filter-group__label'), english ? 'Choose a plan' : 'Выберите тариф'],
+        [purchaseCard.querySelector('#serviceDurationFilters .service-filter-group__label'), english ? 'Subscription period' : 'Период подписки']
+      ];
+      labels.forEach(([node, value]) => { if (node && node.textContent !== value) node.textContent = value; });
+      const nextTitle = plan ? 'ChatGPT ' + plan : '';
+      const nextPeriod = duration ? (english ? 'for ' : 'за ') + duration : '';
+      const nextBuy = price && price !== '—' ? (english ? 'Buy for ' : 'Купить за ') + price : '';
+      if (title && nextTitle && title.textContent !== nextTitle) title.textContent = nextTitle;
+      if (period && period.textContent !== nextPeriod) period.textContent = nextPeriod;
+      if (buy && nextBuy && buy.textContent !== nextBuy) buy.textContent = nextBuy;
+    }
+    new MutationObserver(syncPurchaseSummary).observe(purchaseCard, { childList: true, characterData: true, subtree: true });
+    syncPurchaseSummary();
+  }
+
   // On a direct section link, keep the product title and tabs in view. Native
   // scrolling to a tab panel otherwise leaves its heading behind the header.
   if (incomingSection) {
