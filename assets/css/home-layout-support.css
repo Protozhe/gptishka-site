@@ -1,0 +1,56 @@
+/* Lift the opening without scaling its text or service cards. */
+@media (min-width: 1101px) {
+  html body#storefrontBody .home-wide-page .home-opening-frame.home-launch {
+    width: min(1400px, calc(100% - 48px));
+    padding: 8px 0 44px !important;
+  }
+  .home-launch .launch-hero { width: 100%; max-width: 1320px; margin-inline: auto; }
+  .home-launch .launch-categories--buttons { gap: 16px; }
+}
+@media (max-width: 1100px) {
+  html body#storefrontBody .home-wide-page .home-opening-frame.home-launch {
+    padding-top: 12px !important;
+    padding-bottom: 24px !important;
+    gap: 24px;
+  }
+  .home-launch .launch-hero { gap: 24px; }
+}
+@media (max-width: 760px) {
+  html body#storefrontBody .home-wide-page .home-opening-frame.home-launch { padding-top: 10px !important; }
+  html body#storefrontBody .home-launch .launch-description { margin-top: 18px; }
+  .home-launch .launch-actions { margin-top: 22px; }
+  .home-launch .launch-categories--buttons { padding-top: 12px; }
+}
+
+/* Use the existing contact link in the header; activation reminders stay available. */
+html body#storefrontBody #storefrontHeader .header-quick-link.header-support-link {
+  width: auto !important;
+  min-width: max-content !important;
+  flex: 0 0 auto !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  overflow: visible !important;
+  padding: 7px 12px !important;
+  border: 1px solid #47635d !important;
+  border-radius: 999px !important;
+  background: #24332f !important;
+  color: #deeee7 !important;
+  text-decoration: none;
+}
+html body#storefrontBody #storefrontHeader .header-quick-link.header-support-link:is(:hover, :focus-visible) {
+  background: #30433d !important;
+  border-color: #729c8f !important;
+}
+html body#storefrontBody:is(.home-wide-body, .contact-flat-body) #gptishka-support-widget.support-widget { pointer-events: none !important; }
+html body#storefrontBody:is(.home-wide-body, .contact-flat-body) #gptishka-support-widget :is(.support-widget__mascot, .support-widget__panel) { display: none !important; }
+@media (max-width: 760px) {
+  html body#storefrontBody #storefrontHeader .header-quick-link.header-support-link {
+    min-height: 34px !important;
+    height: 34px !important;
+    padding: 5px 8px !important;
+    font-size: 13px !important;
+  }
+}
+@media (max-width: 360px) {
+  html body#storefrontBody #storefrontHeader .header-quick-link.header-support-link { padding-inline: 6px !important; font-size: 12px !important; }
+}

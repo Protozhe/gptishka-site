@@ -219,6 +219,14 @@ html body.contact-flat-body main.contact-page {
   line-height: 1.7;
 }
 
+.contact-channel__response {
+  display: block;
+  color: var(--contact-text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
 .contact-response {
   padding: 22px 0 4px clamp(20px, 3vw, 38px);
   border-left: 1px solid var(--contact-border-strong);
