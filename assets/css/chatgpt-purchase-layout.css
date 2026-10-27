@@ -14,7 +14,7 @@ html body#storefrontBody #chatgptWorkspace .chatgpt-workspace-tabs {
 html body#storefrontBody #chatgptWorkspace .service-constructor-card {
   display: grid !important;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  gap: 24px 32px;
+  gap: 20px 32px;
   align-items: start;
 }
 html body#storefrontBody #chatgptWorkspace .service-constructor-head {
@@ -27,7 +27,7 @@ html body#storefrontBody #chatgptWorkspace .chatgpt-purchase-controls {
   min-width: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: 12px 16px;
 }
 html body#storefrontBody #chatgptWorkspace .service-filter-stack {
   display: contents !important;
@@ -38,15 +38,16 @@ html body#storefrontBody #chatgptWorkspace .service-selected-plan {
   grid-column: 1 / -1;
 }
 html body#storefrontBody #chatgptWorkspace #serviceDurationFilters .service-filter-group {
-  display: flex !important;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
+  display: grid !important;
+  justify-content: start !important;
+  justify-items: start;
+  gap: 8px;
 }
 html body#storefrontBody #chatgptWorkspace #serviceDurationFilters .service-filter-group__label {
   margin: 0 !important;
 }
 html body#storefrontBody #chatgptWorkspace .service-account-choice {
+  align-self: center;
   margin: 0 !important;
   padding: 0 !important;
 }
@@ -54,8 +55,18 @@ html body#storefrontBody #chatgptWorkspace .service-account-choice .service-new-
   grid-template-columns: 22px minmax(0, 1fr) !important;
   row-gap: 0 !important;
 }
+html body#storefrontBody #chatgptWorkspace .service-account-choice .service-new-account__check {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  align-self: center;
+}
+html body#storefrontBody #chatgptWorkspace .service-account-choice .service-new-account__text {
+  grid-column: 2;
+  grid-row: 1;
+}
 html body#storefrontBody #chatgptWorkspace .service-account-choice .service-new-account__price {
   grid-column: 2 !important;
+  grid-row: 2;
   font-size: 15px !important;
   color: var(--workspace-muted);
 }
@@ -163,12 +174,6 @@ html body#storefrontBody #chatgptWorkspace .codex-order__status:empty {
   }
   html body#storefrontBody #chatgptWorkspace .chatgpt-purchase-controls {
     grid-template-columns: minmax(0, 1fr);
-  }
-  html body#storefrontBody #chatgptWorkspace .service-account-choice .service-new-account {
-    grid-template-columns: 22px minmax(0, 1fr) auto !important;
-  }
-  html body#storefrontBody #chatgptWorkspace .service-account-choice .service-new-account__price {
-    grid-column: auto !important;
   }
   html body#storefrontBody #chatgptWorkspace #serviceConstructorTitle {
     max-width: none;
