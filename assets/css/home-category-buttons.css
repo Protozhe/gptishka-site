@@ -3,6 +3,7 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   padding-top: 20px;
+  border-top: 0;
 }
 html body#storefrontBody .launch-categories--buttons .launch-category {
   display: grid;
