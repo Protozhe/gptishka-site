@@ -2,6 +2,13 @@
   'use strict';
   const workspace = document.querySelector('[data-claude-workspace]');
   if (!workspace) return;
+  // Keep the legacy ?lang=en route in sync with the dedicated English page.
+  const english = /^\/en(?:\/|$)/.test(location.pathname) || new URLSearchParams(location.search).get('lang') === 'en';
+  if (english) {
+    document.querySelectorAll('[data-verification-en]').forEach(node => {
+      node.textContent = node.dataset.verificationEn;
+    });
+  }
   const tabs = Array.from(workspace.querySelectorAll('[role="tab"]'));
   const panels = tabs.map(tab => document.getElementById(tab.getAttribute('aria-controls')));
   const defaultSection = workspace.dataset.defaultSection === 'verification' ? 'verification' : 'subscriptions';

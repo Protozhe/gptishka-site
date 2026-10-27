@@ -168,8 +168,8 @@
         <label class="claude-verification-option"><input type="radio" name="claude-verification" value="cvp"><span><b>CVP</b></span></label>
       </fieldset>
       <div id="claudeVerificationDetails" aria-live="polite">
-        <p class="claude-verification-description">Верификация KYC: объясним порядок проверки и поможем разобраться.</p>
-        <p class="claude-verification-description"><strong>Пройдите KYC до подключения Claude Max 5× или Max 20×.</strong></p>
+        <p class="claude-verification-description" data-verification-en="We do not sign in to your Claude account. For KYC guidance, we need the verification link shown after you click Verify&nbsp;now.">Мы не заходим в ваш аккаунт Claude. Для сопровождения KYC нужна ссылка на проверку, которая появляется после нажатия Verify&nbsp;now.</p>
+        <p class="claude-verification-description" data-verification-en="After payment, send the link to your manager. You complete verification yourself; the manager helps with instructions and any questions.">После оплаты передайте ссылку менеджеру. Вы проходите проверку самостоятельно, а менеджер помогает с инструкциями и возникающими вопросами.</p>
       </div>
       <button id="claudeVerificationSubmit" class="claude-verification-submit" type="button" disabled>Оформить KYC</button>
     </section>
@@ -267,7 +267,7 @@
       <label><input type="radio" name="payment" value="enot">Карта / СБП — ENOT</label>
       <label><input type="radio" name="payment" value="lava">Зарубежная карта</label>
     </fieldset>
-    <p class="verification-support-checkout__hint">Завершите KYC до подключения Claude Max 5× или Max 20×. После подтверждения оплаты появится кнопка связи с менеджером.</p>
+    <p class="verification-support-checkout__hint" data-verification-en="A contact button will appear after payment is confirmed.">После подтверждения оплаты появится кнопка связи с менеджером.</p>
     <p class="verification-support-checkout__terms">Нажимая «Оплатить», вы принимаете <a href="/oferta.html" target="_blank" rel="noopener">оферту</a> и <a href="/politika.html" target="_blank" rel="noopener">политику конфиденциальности</a>.</p>
     <p data-support-payment-status role="status" aria-live="polite"></p>
     <button class="claude-verification-submit" type="submit" data-support-pay>Оплатить</button>
@@ -288,7 +288,7 @@
   <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
   <script src="/assets/js/claude-onboarding-v1.js?v=20261002-new-account1" defer></script>
 <script src="/assets/js/verification-support-checkout.js?v=sha256-d1a10bf09dbacda7" defer></script>
-<script src="/assets/js/claude-workspace.js?v=sha256-3ebe0891afd6897d" defer></script>
+<script src="/assets/js/claude-workspace.js?v=sha256-07eab16b7e7f98d7" defer></script>
 <script src="/assets/js/storefront-ui.js?v=sha256-bcae5e9700f06872" defer></script>
 <script src="/assets/js/client-i18n.js?v=sha256-a03ba37031dbc980" defer></script>
 <script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer></script>
