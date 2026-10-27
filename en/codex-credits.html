@@ -44,7 +44,7 @@
 <link rel="stylesheet" href="/assets/css/codex-credits.css?v=20260916-wide-readable3">
 <link rel="stylesheet" href="/assets/css/chatgpt-workspace.css?v=sha256-b729875dbe63e091">
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
-<link rel="stylesheet" href="/assets/css/chatgpt-purchase-layout.css?v=sha256-b657af0a4cd9ec5d">
+<link rel="stylesheet" href="/assets/css/chatgpt-purchase-layout.css?v=sha256-569758aef1a76692">
 </head>
 <body id="storefrontBody" class="chatgpt-workspace-body">
 <div class="page-overlay"></div>
@@ -125,9 +125,9 @@
             <strong id="serviceConstructorPrice">—</strong>
           </div>
         </div>
+        <div id="servicePlanFilters"></div>
         <div class="chatgpt-purchase-controls">
           <div class="service-filter-stack service-filter-stack--constructor" aria-label="Tariff filters">
-            <div id="servicePlanFilters"></div>
             <div id="serviceDurationFilters"></div>
           </div>
           <div class="service-account-choice">
@@ -200,11 +200,7 @@
     </div>
   </section>
 
-  <section class="service-faq-section" id="faq">
-    <div class="service-section-title">
-      <h2>Frequently Asked Questions</h2>
-      <p>Short answers to the most frequently asked questions</p>
-    </div>
+  <section class="service-faq-section" id="faq" aria-label="Subscription questions">
     <div class="service-faq-list">
       <article class="service-faq-item">
         <button class="service-faq-question" type="button"><span class="service-faq-question__topic">Security</span><span class="service-faq-question__text">Do I need to share my ChatGPT login and password?</span><span class="service-faq-question__toggle"></span></button>
