@@ -490,6 +490,7 @@
     "Верификация KYC: объясним порядок проверки и поможем разобраться.": "KYC verification: we explain the verification steps and help you understand the process.",
     "Пройдите KYC до подключения Claude Max 5× или Max 20×.": "Complete KYC before activating Claude Max 5× or Max 20×.",
     "Завершите KYC до подключения Claude Max 5× или Max 20×. После подтверждения оплаты появится кнопка связи с менеджером.": "Complete KYC before activating Claude Max 5× or Max 20×. A contact button will appear after payment is confirmed.",
+    "После подтверждения оплаты появится кнопка связи с менеджером.": "A contact button will appear after payment is confirmed.",
     "Email для заказа": "Order email",
     "Telegram для связи": "Telegram contact",
     "Карта РФ / СБП": "Russian card / SBP",
