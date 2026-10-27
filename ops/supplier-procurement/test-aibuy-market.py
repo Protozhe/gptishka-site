@@ -69,6 +69,7 @@ class Tests(unittest.TestCase):
                 with a.connect() as c:job=dict(c.execute('SELECT * FROM codex_jobs').fetchone())
                 self.assertEqual(shared_stock.CONFIG,path/'shared-stock.json')
                 self.assertFalse(shared_stock.enabled(job,{'created_at':time.time()}))
+                self.doCleanups()  # Stop the fixture patch before the outer policy patch.
 
     def test_contracts_and_new_paid_source_boundaries(self):
         for code in (0,250,500,1000):
