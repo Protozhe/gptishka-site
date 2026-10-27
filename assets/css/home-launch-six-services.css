@@ -1,0 +1,59 @@
+/* Six service links in the existing hero; the first-screen height is preserved. */
+.launch-art--six-services .launch-tile {
+  inset: auto;
+  width: 28%;
+  height: 27%;
+}
+html body#storefrontBody .launch-art--six-services a.launch-tile {
+  padding: 12px;
+  border-radius: 18px;
+}
+.launch-art--six-services .launch-tile--chatgpt { left: 0; top: 0; }
+.launch-art--six-services .launch-tile--claude { right: 0; top: 7%; }
+.launch-art--six-services .launch-tile--grok {
+  left: 1%;
+  top: 34%;
+  background-color: #272e32;
+  color: #f5f4ed;
+  --launch-tile-ink: #f5f4ed;
+  --tile-accent: #a8b5ba;
+}
+.launch-art--six-services .launch-tile--appstore {
+  right: 1%;
+  top: 40%;
+  background-color: #bed0e9;
+  color: #223e62;
+  --launch-tile-ink: #223e62;
+  --tile-accent: #d8e6f9;
+}
+.launch-art--six-services .launch-tile--codex { left: 4%; top: 68%; gap: 4px; }
+.launch-art--six-services .launch-tile--steam { right: 3%; top: 73%; }
+.launch-art--six-services .launch-symbol {
+  width: 39%;
+  height: auto;
+  aspect-ratio: 1;
+  margin-bottom: 9px;
+  flex-shrink: 0;
+}
+.launch-symbol--grok { --symbol: url('/assets/img/services/grok-symbol-mask-v1.webp'); }
+.launch-art--six-services .launch-tile strong {
+  font-size: clamp(15px, 1.45vw, 19px);
+  line-height: 1.3;
+}
+.launch-art--six-services .launch-terminal { font-size: clamp(24px, 2.5vw, 32px); }
+.launch-art--six-services .launch-tile--codex small {
+  font-size: 12px;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+@media (max-width: 760px) {
+  html body#storefrontBody .launch-art--six-services a.launch-tile {
+    padding: 8px;
+    border-radius: 14px;
+  }
+  .launch-art--six-services .launch-symbol { width: 35%; margin-bottom: 5px; }
+  .launch-art--six-services .launch-tile strong { font-size: clamp(12.2px, 3.4vw, 16px); }
+  .launch-art--six-services .launch-terminal { font-size: clamp(18px, 5.6vw, 24px); }
+  .launch-art--six-services .launch-tile--codex { gap: 2px; }
+  .launch-art--six-services .launch-tile--codex small { font-size: clamp(9px, 2.7vw, 11px); line-height: 1.15; }
+}
