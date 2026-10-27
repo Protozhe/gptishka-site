@@ -193,6 +193,26 @@ html body #claudeWorkspace .service-product-gallery { display:none !important; }
 .claude-verification-description { margin:0 0 18px; font-size:18px; line-height:1.65; color:var(--workspace-muted); }
 #claudeVerificationDetails[hidden] { display:none !important; }
 
+/* Give KYC guidance the same warm note treatment as the Max requirements. */
+#claudeVerificationDetails.claude-verification-note { margin:0; font-size:16px; line-height:1.55; }
+#claudeVerificationDetails .claude-verification-description { margin:8px 0 0; font-size:inherit; line-height:inherit; color:var(--workspace-muted); }
+@media (min-width:1101px) {
+  .claude-verification-card:has(#claudeVerificationDetails:not([hidden])) {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    column-gap:32px;
+    align-items:start;
+    padding:24px;
+  }
+  .claude-verification-card .claude-verification-head { grid-column:1 / -1; }
+  .claude-verification-card .claude-verification-options { grid-column:1; grid-row:2; margin-bottom:0; }
+  .claude-verification-card #claudeVerificationDetails { grid-column:2; grid-row:2 / 4; }
+  .claude-verification-card #claudeVerificationSubmit { grid-column:1; grid-row:3; align-self:end; }
+}
+@media (max-width:600px) {
+  #claudeVerificationDetails.claude-verification-note { font-size:15px; }
+}
+
 
 .verification-support-checkout { width:min(520px,calc(100% - 32px)); max-height:calc(100dvh - 32px); box-sizing:border-box; border:1px solid #414750; border-radius:20px; padding:28px; background:#242930; color:#edf1f5; font-family:Manrope,sans-serif; }
 .verification-support-checkout::backdrop { background:rgba(0,0,0,.7); }

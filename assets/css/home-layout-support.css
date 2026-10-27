@@ -22,35 +22,24 @@
   .home-launch .launch-categories--buttons { padding-top: 12px; }
 }
 
-/* Use the existing contact link in the header; activation reminders stay available. */
-html body#storefrontBody #storefrontHeader .header-quick-link.header-support-link {
-  width: auto !important;
-  min-width: max-content !important;
-  flex: 0 0 auto !important;
-  height: 38px !important;
-  min-height: 38px !important;
-  overflow: visible !important;
-  padding: 7px 12px !important;
-  border: 1px solid #47635d !important;
-  border-radius: 999px !important;
-  background: #24332f !important;
-  color: #deeee7 !important;
-  text-decoration: none;
-}
-html body#storefrontBody #storefrontHeader .header-quick-link.header-support-link:is(:hover, :focus-visible) {
-  background: #30433d !important;
-  border-color: #729c8f !important;
+/* Keep support in the common header navigation; activation reminders stay available. */
+@media (max-width:760px) {
+  html body#storefrontBody #storefrontHeader .header-quick-links {
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    margin-inline:0 !important;
+    justify-content:space-between !important;
+    gap:4px !important;
+  }
+  html body#storefrontBody #storefrontHeader .header-quick-link:not(.header-social-link) {
+    width:auto !important;
+    min-width:max-content !important;
+    max-width:none !important;
+    flex:0 0 auto !important;
+    padding-inline:3px !important;
+    font-size:13px !important;
+  }
 }
 html body#storefrontBody:is(.home-wide-body, .contact-flat-body) #gptishka-support-widget.support-widget { pointer-events: none !important; }
 html body#storefrontBody:is(.home-wide-body, .contact-flat-body) #gptishka-support-widget :is(.support-widget__mascot, .support-widget__panel) { display: none !important; }
-@media (max-width: 760px) {
-  html body#storefrontBody #storefrontHeader .header-quick-link.header-support-link {
-    min-height: 34px !important;
-    height: 34px !important;
-    padding: 5px 8px !important;
-    font-size: 13px !important;
-  }
-}
-@media (max-width: 360px) {
-  html body#storefrontBody #storefrontHeader .header-quick-link.header-support-link { padding-inline: 6px !important; font-size: 12px !important; }
-}

@@ -40,7 +40,7 @@
 <link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
-<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-da51805d1d069613">
+<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-cac38b3e1e58e662">
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
 </head>
 <body id="storefrontBody" class="claude-workspace-body">
@@ -166,10 +166,11 @@
         <label class="claude-verification-option"><input type="radio" name="claude-verification" value="kyc" checked><span><b>KYC</b></span></label>
         <label class="claude-verification-option"><input type="radio" name="claude-verification" value="cvp"><span><b>CVP</b></span></label>
       </fieldset>
-      <div id="claudeVerificationDetails" aria-live="polite">
+      <aside id="claudeVerificationDetails" class="claude-account-age claude-verification-note" aria-live="polite" aria-labelledby="claudeVerificationNoteTitle">
+        <strong id="claudeVerificationNoteTitle">How KYC works</strong>
         <p class="claude-verification-description">We do not sign in to your account. For KYC guidance, we need the link shown after you click Verify&nbsp;now.</p>
         <p class="claude-verification-description">After payment, send the link to your manager. You complete verification yourself; the manager guides you through the steps.</p>
-      </div>
+      </aside>
       <button id="claudeVerificationSubmit" class="claude-verification-submit" type="button" disabled>Order KYC</button>
     </section>
   </div>
