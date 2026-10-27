@@ -8,10 +8,23 @@ html body#storefrontBody .launch-art--six-services a.launch-tile {
   rotate: var(--tile-angle, 0deg);
 }
 .launch-art--six-services .launch-pass {
-  left: 30%;
-  top: 11%;
-  width: 40%;
-  height: 70%;
+  left: var(--pass-pixel-left, 30%);
+  top: var(--pass-pixel-top, 11%);
+  width: var(--pass-pixel-width, 40%);
+  height: var(--pass-pixel-height, 70%);
+  border-color: #d9eade66;
+  background-clip: padding-box;
+  box-shadow: 0 16px 32px -6px #00000066;
+}
+/* A single contour and soft cast shadow avoid stacked, stepped rims. */
+html body#storefrontBody .launch-art--six-services a.launch-tile {
+  border-color: #ffffff1a;
+  background-clip: padding-box;
+  box-shadow: 0 14px 26px -5px #00000073;
+}
+html body#storefrontBody .launch-art--six-services a.launch-tile:is(:hover, :focus-visible) {
+  border-color: #ffffff2b;
+  box-shadow: 6px 26px 34px -6px #00000085;
 }
 .launch-art--six-services .launch-cat { width: 64%; margin-top: 14px; }
 .launch-art--six-services .launch-pass-brand { font-size: clamp(21px, 2.2vw, 30px); }
