@@ -1,18 +1,32 @@
-/* Six service links in the existing hero; the first-screen height is preserved. */
+/* A loose ring of service cards keeps the centre open and the hero height intact. */
 .launch-art--six-services .launch-tile {
   inset: auto;
-  width: 28%;
-  height: 27%;
 }
 html body#storefrontBody .launch-art--six-services a.launch-tile {
   padding: 12px;
   border-radius: 18px;
+  rotate: var(--tile-angle, 0deg);
 }
-.launch-art--six-services .launch-tile--chatgpt { left: 0; top: 0; }
-.launch-art--six-services .launch-tile--claude { right: 0; top: 7%; }
+.launch-art--six-services .launch-pass {
+  left: 30%;
+  top: 11%;
+  width: 40%;
+  height: 70%;
+}
+.launch-art--six-services .launch-cat { width: 64%; margin-top: 14px; }
+.launch-art--six-services .launch-pass-brand { font-size: clamp(21px, 2.2vw, 30px); }
+.launch-art--six-services .launch-tile--chatgpt {
+  left: 1%; top: 2%; width: 28%; height: 29%; --tile-angle: -7deg;
+}
+.launch-art--six-services .launch-tile--claude {
+  right: 3%; top: 11%; width: 27%; height: 27%; --tile-angle: 8deg;
+}
 .launch-art--six-services .launch-tile--grok {
   left: 1%;
-  top: 34%;
+  top: 39%;
+  width: 24%;
+  height: 24%;
+  --tile-angle: -5deg;
   background-color: #272e32;
   color: #f5f4ed;
   --launch-tile-ink: #f5f4ed;
@@ -20,14 +34,21 @@ html body#storefrontBody .launch-art--six-services a.launch-tile {
 }
 .launch-art--six-services .launch-tile--appstore {
   right: 1%;
-  top: 40%;
+  top: 45%;
+  width: 25%;
+  height: 25%;
+  --tile-angle: 6deg;
   background-color: #bed0e9;
   color: #223e62;
   --launch-tile-ink: #223e62;
   --tile-accent: #d8e6f9;
 }
-.launch-art--six-services .launch-tile--codex { left: 4%; top: 68%; gap: 4px; }
-.launch-art--six-services .launch-tile--steam { right: 3%; top: 73%; }
+.launch-art--six-services .launch-tile--codex {
+  left: 14%; top: 78%; width: 27%; height: 23%; gap: 4px; --tile-angle: 5deg;
+}
+.launch-art--six-services .launch-tile--steam {
+  right: 16%; top: 77%; width: 28%; height: 23%; --tile-angle: -6deg;
+}
 .launch-art--six-services .launch-symbol {
   width: 39%;
   height: auto;
@@ -51,6 +72,9 @@ html body#storefrontBody .launch-art--six-services a.launch-tile {
     padding: 8px;
     border-radius: 14px;
   }
+  .launch-art--six-services .launch-pass { padding-inline: 6px; }
+  .launch-art--six-services .launch-pass-brand { font-size: clamp(17px, 4.7vw, 23px); }
+  .launch-art--six-services .launch-cat { margin-top: 10px; }
   .launch-art--six-services .launch-symbol { width: 35%; margin-bottom: 5px; }
   .launch-art--six-services .launch-tile strong { font-size: clamp(12.2px, 3.4vw, 16px); }
   .launch-art--six-services .launch-terminal { font-size: clamp(18px, 5.6vw, 24px); }
