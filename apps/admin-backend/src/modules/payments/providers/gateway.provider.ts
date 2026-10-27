@@ -1,3 +1,4 @@
+import { GATEWAY_INVOICE_TIMEOUT_MS } from "../invoice-timeouts";
 import { env } from "../../../config/env";
 import { AppError } from "../../../common/errors/app-error";
 import { PaymentProvider, PaymentCreateInput } from "../payment-provider";
@@ -66,7 +67,7 @@ export class GatewayProvider implements PaymentProvider {
         "x-api-key": apiKey,
       },
       body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(GATEWAY_INVOICE_TIMEOUT_MS),
     });
 
     if (!response.ok) {

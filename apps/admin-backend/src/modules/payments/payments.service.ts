@@ -402,6 +402,8 @@ export const paymentsService = {
 
     let provider = input.paymentMethod ? getProviderByCode(selectedProviderCode) : getPaymentProvider();
     let paymentResponse;
+    const invoiceStartedAt = Date.now();
+    let invoiceFallback = false;
     try {
       paymentResponse = await provider.createPayment(paymentInput);
     } catch (error) {
@@ -411,6 +413,7 @@ export const paymentsService = {
       const canFallbackToEnot = selectedProviderCode === "lava" || selectedProviderCode === "pally";
       if (!canFallbackToEnot) throw error;
 
+      invoiceFallback = true;
       const fallbackProvider = getProviderByCode("gateway");
       paymentResponse = await fallbackProvider.createPayment(paymentInput);
       provider = fallbackProvider;
@@ -422,6 +425,8 @@ export const paymentsService = {
         `[payments] provider fallback applied order=${order.id} from=${selectedProviderCode} to=enot reason=${error instanceof Error ? error.message : "unknown"}`
       );
     }
+
+    console.info(`[payments] invoice_create provider=${paymentResponse.provider} duration_ms=${Date.now() - invoiceStartedAt} fallback=${invoiceFallback}`);
 
     const payment = await prisma.payment.create({
       data: {

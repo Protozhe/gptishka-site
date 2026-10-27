@@ -4653,6 +4653,8 @@ function initActivationResumeShortcut() {
     if (!button.dataset.originalText) button.dataset.originalText = button.textContent || "Оплатить";
     button.disabled = Boolean(busy);
     button.textContent = busy ? "Переходим к оплате..." : button.dataset.originalText;
+    if (busy) button.setAttribute("aria-busy", "true");
+    else button.removeAttribute("aria-busy");
   }
 
   function updateChatGptGoOrderTotals(form, item) {
@@ -5059,56 +5061,60 @@ function initActivationResumeShortcut() {
       return;
     }
 
-    const promoInput = getChatGptGoOrderField(form, "promoCode");
-    const promoCode = normalizePromoCodeInput(promoInput ? promoInput.value : "");
-    if (promoCode) {
-      const promoOk = await applyChatGptGoPromoCode(form, item, { silent: true });
-      if (!promoOk) {
-        setChatGptGoStatus(form, "Промокод не применён. Исправьте его или очистите поле.", "error");
-        if (promoInput && typeof promoInput.focus === "function") promoInput.focus();
-        return;
-      }
-    }
-
-    const order = collectChatGptGoOrder(form, item);
-    saveChatGptGoOrderDraft(order);
-    window.gptishkaLastChatGptGoOrder = {
-      ...order,
-      serviceLogin: "",
-      servicePassword: "",
-    };
-    const orderServiceKey = normalizeAiServiceKey(order.serviceKey || item.serviceKey || form.getAttribute("data-service-key") || getServicePageKey() || "chatgpt");
-
-    try {
-      localStorage.setItem("checkout_email", order.contactEmail);
-      localStorage.setItem("gptishka_site_checkout_context", JSON.stringify({
-        source: `${orderServiceKey}_order`,
-        serviceKey: orderServiceKey,
-        productId: String(item.productId || item.id || ""),
-        planKey: String(order.planKey || item.planKey || "go"),
-        deliveryKey: String(item.deliveryKey || "link"),
-        needsNewAccount: order.needsNewAccount,
-        createdAt: Date.now(),
-      }));
-      if (headerCartEmailInputEl) headerCartEmailInputEl.value = order.contactEmail;
-      if (cartEmailInputEl) cartEmailInputEl.value = order.contactEmail;
-    } catch (_) {
-      // Ignore storage write errors.
-    }
-
-    const provider = getChatGptGoPaymentProvider(order.paymentMethod);
-    savePaymentMethod(provider);
-    syncPaymentMethodUi();
     chatGptGoOrderCheckoutInProgress = true;
     setChatGptGoSubmitBusy(form, true);
     setChatGptGoStatus(form, "Создаём безопасную оплату...", "loading");
-
+    let redirecting = false;
     try {
+      const promoInput = getChatGptGoOrderField(form, "promoCode");
+      const promoCode = normalizePromoCodeInput(promoInput ? promoInput.value : "");
+      if (promoCode) {
+        const promoOk = await applyChatGptGoPromoCode(form, item, { silent: true });
+        if (!promoOk) {
+          setChatGptGoStatus(form, "Промокод не применён. Исправьте его или очистите поле.", "error");
+          if (promoInput && typeof promoInput.focus === "function") promoInput.focus();
+          return;
+        }
+      }
+
+      const order = collectChatGptGoOrder(form, item);
+      saveChatGptGoOrderDraft(order);
+      window.gptishkaLastChatGptGoOrder = {
+        ...order,
+        serviceLogin: "",
+        servicePassword: "",
+      };
+      const orderServiceKey = normalizeAiServiceKey(order.serviceKey || item.serviceKey || form.getAttribute("data-service-key") || getServicePageKey() || "chatgpt");
+
+      try {
+        localStorage.setItem("checkout_email", order.contactEmail);
+        localStorage.setItem("gptishka_site_checkout_context", JSON.stringify({
+          source: `${orderServiceKey}_order`,
+          serviceKey: orderServiceKey,
+          productId: String(item.productId || item.id || ""),
+          planKey: String(order.planKey || item.planKey || "go"),
+          deliveryKey: String(item.deliveryKey || "link"),
+          needsNewAccount: order.needsNewAccount,
+          createdAt: Date.now(),
+        }));
+        if (headerCartEmailInputEl) headerCartEmailInputEl.value = order.contactEmail;
+        if (cartEmailInputEl) cartEmailInputEl.value = order.contactEmail;
+      } catch (_) {
+        // Ignore storage write errors.
+      }
+
+      const provider = getChatGptGoPaymentProvider(order.paymentMethod);
+      savePaymentMethod(provider);
+      syncPaymentMethodUi();
       await startBackendCheckout(item, 1, order.promoCode, provider, buildChatGptGoCheckoutDetails(order, item));
+      redirecting = true;
     } catch (error) {
       setChatGptGoStatus(form, resolveCheckoutErrorMessage(error), "error");
-      setChatGptGoSubmitBusy(form, false);
-      chatGptGoOrderCheckoutInProgress = false;
+    } finally {
+      if (!redirecting) {
+        setChatGptGoSubmitBusy(form, false);
+        chatGptGoOrderCheckoutInProgress = false;
+      }
     }
   }
 

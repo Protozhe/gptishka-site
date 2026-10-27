@@ -1,3 +1,4 @@
+import { PRIMARY_INVOICE_TIMEOUT_MS } from "../invoice-timeouts";
 import crypto from "crypto";
 import { env } from "../../../config/env";
 import { AppError } from "../../../common/errors/app-error";
@@ -67,6 +68,7 @@ export class LavaProvider implements PaymentProvider {
         Signature: signature,
       },
       body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(PRIMARY_INVOICE_TIMEOUT_MS),
     });
 
     if (!response.ok) {

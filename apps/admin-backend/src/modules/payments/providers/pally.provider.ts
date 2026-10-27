@@ -1,3 +1,4 @@
+import { PRIMARY_INVOICE_TIMEOUT_MS } from "../invoice-timeouts";
 import { env } from "../../../config/env";
 import { AppError } from "../../../common/errors/app-error";
 import { PaymentCreateInput, PaymentProvider } from "../payment-provider";
@@ -50,7 +51,7 @@ export class PallyProvider implements PaymentProvider {
           Authorization: `Bearer ${token}`,
         },
         body: buildPallyCreateBody(input, shopId),
-        signal: AbortSignal.timeout(10000),
+        signal: AbortSignal.timeout(PRIMARY_INVOICE_TIMEOUT_MS),
       });
     } catch (error) {
       console.warn(
