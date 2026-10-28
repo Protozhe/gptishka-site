@@ -1199,7 +1199,10 @@ function createApp() {
 
   // Payment providers can return the shopper with POST. Convert it to GET so
   // the static result pages are served instead of falling through to 404.
-  app.post(["/payment/success", "/payment/fail", "/success.html", "/fail.html"], (req, res) => {
+  app.post([
+    "/payment/success", "/payment/fail", "/success.html", "/fail.html",
+    "/verification-support.html", "/en/verification-support.html",
+  ], (req, res) => {
     res.redirect(303, req.originalUrl);
   });
 

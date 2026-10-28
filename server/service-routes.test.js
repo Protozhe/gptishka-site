@@ -42,3 +42,39 @@ test("retired public VPN routes cannot accept new purchases", async () => {
     }
   });
 });
+
+test("KYC and CVP payment POST returns open the protected RU/EN manager page", async () => {
+  await withServer(async (baseUrl) => {
+    for (const prefix of ["", "/en"]) {
+      for (const product of ["kyc", "cvp"]) {
+        const query = new URLSearchParams({
+          order_id: `fixture-${product}-order`,
+          t: "fixture+protected/link=token",
+        });
+        const route = `${prefix}/verification-support.html?${query}`;
+        const response = await fetch(`${baseUrl}${route}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: "status=success",
+          redirect: "manual",
+        });
+
+        assert.equal(response.status, 303, route);
+        assert.equal(response.headers.get("location"), route, "preserve the full protected order query");
+
+        const page = await fetch(new URL(response.headers.get("location"), baseUrl));
+        const html = await page.text();
+        assert.equal(page.status, 200, route);
+        assert.match(html, new RegExp(`<html lang="${prefix ? "en" : "ru"}">`));
+        assert.match(html, /id="supportPaidDetails" hidden/, "a return alone cannot confirm payment");
+        assert.match(html, /id="supportContact"/);
+        assert.match(html, /\/assets\/js\/verification-support-receipt\.js/);
+        assert.ok(page.headers.get("cache-control").includes("no-store"));
+      }
+    }
+
+    // Browser return handling must not turn arbitrary POSTs into page loads.
+    const unrelated = await fetch(`${baseUrl}/claude`, { method: "POST", redirect: "manual" });
+    assert.equal(unrelated.status, 404);
+  });
+});
