@@ -3,9 +3,11 @@ const crypto = require('node:crypto');
 const SITES = ['https://aichongzhi.fun', 'https://aiee.fun'];
 async function claim(input, prisma) {
   const {scope, credits, platform, action} = input || {};
-  if (!/^m[a-f0-9]{31}$/.test(scope || '') || ![250,500,1000].includes(credits)
+  if (!/^m[a-f0-9]{31}$/.test(scope || '') || ![0,250,500,1000].includes(credits)
       || !['funpay','playerok'].includes(platform) || !['claim','attest'].includes(action)) throw Error('supplier_stock_contract_invalid');
-  const productKey = 'codex-' + credits;
+  const productKey = credits === 0 ? 'claude-pro' : 'codex-' + credits;
+  const allowedSites = credits === 0 ? [SITES[0]] : SITES;
+  const preferredSite = credits === 0 ? SITES[0] : SITES[1];
   return prisma.$transaction(async tx => {
     await tx.$queryRaw`SELECT 1 AS locked FROM pg_advisory_xact_lock(hashtext(${'market-stock:'+scope})::bigint)`;
     const prior = await tx.licenseKeyAuditLog.findMany({where:{action:'assign_marketplace_stock',meta:{path:['scope'],equals:scope}},take:2});
@@ -13,12 +15,12 @@ async function claim(input, prisma) {
     if (prior.length) {
       if (prior.length !== 1) throw Error('supplier_stock_binding_invalid');
       row = await tx.licenseKey.findUnique({where:{id:prior[0].keyId}});
-      if (!row || row.status !== 'used' || row.orderId || row.productKey !== productKey || !SITES.includes(row.activationSiteUrl)
+      if (!row || row.status !== 'used' || row.orderId || row.productKey !== productKey || !allowedSites.includes(row.activationSiteUrl)
           || prior[0].meta.platform !== platform || prior[0].meta.activationSiteUrl !== row.activationSiteUrl) throw Error('supplier_stock_binding_invalid');
     } else {
       if (action === 'attest') throw Error('supplier_stock_binding_invalid');
       const picked = await tx.$queryRaw`SELECT id FROM license_keys WHERE product_key=${productKey}
-        AND activation_site_url=${SITES[1]} AND status='available'
+        AND activation_site_url=${preferredSite} AND status='available'
         AND order_id IS NULL AND used_at IS NULL AND reserved_at IS NULL
         ORDER BY created_at ASC, id ASC
         FOR UPDATE SKIP LOCKED LIMIT 1`;

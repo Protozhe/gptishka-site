@@ -4,6 +4,7 @@ const {claim}=require('./market-shared-stock.cjs');
 function fixture(){
  const rows=[250,500,1000].flatMap(n=>['https://aiee.fun','https://aichongzhi.fun'].map((site,i)=>({id:n+'-'+i,productKey:'codex-'+n,activationSiteUrl:site,status:'available',orderId:null,keyValue:'FIXTURE-'+n+'-'+i})));
  rows.push({id:'held500',productKey:'codex-500',activationSiteUrl:'https://aiee.fun',status:'reserved',orderId:null,keyValue:'FIXTURE-HELD'});
+ rows.push(...['https://aiee.fun','https://aichongzhi.fun'].map((site,i)=>({id:'claude-'+i,productKey:'claude-pro',activationSiteUrl:site,status:'available',orderId:null,keyValue:'FIXTURE-CLAUDE-'+i})));
  const audits=[];let tail=Promise.resolve();
  const tx={
   async $queryRaw(strings,...values){const sql=strings.join('?');if(sql.includes('pg_advisory'))return [];
@@ -36,4 +37,17 @@ test('parallel/restarted requests reuse one key and attest binds scope, provider
 test('unsupported denominations and foreign sources cannot claim stock',async()=>{
  const f=fixture();for(const change of [{credits:2500},{platform:'site'},{scope:'other'},{action:'purchase'}])await assert.rejects(()=>claim({...input('f'),...change},f.prisma));
  assert.equal(f.audits.length,0);
+});
+
+test('Claude Pro uses its own prepaid AI-BUY key once, never a Codex or AISOU key',async()=>{
+ const f=fixture(),request=input('c',0);
+ const [a,b]=await Promise.all([claim(request,f.prisma),claim(request,f.prisma)]);
+ assert.equal(a.native_key_id,'claude-1');assert.equal(b.native_key_id,a.native_key_id);
+ assert.equal(a.product_key,'claude-pro');assert.equal(a.activationSiteUrl,'https://aichongzhi.fun');
+ assert.equal(f.audits.length,1);assert.equal(f.rows.find(r=>r.id==='claude-0').status,'available');
+ assert.deepEqual(await claim({...input('b',0),platform:'playerok'},f.prisma),{state:'empty'});
+ const proof=await claim({...request,action:'attest',key_id:a.native_key_id},f.prisma);
+ assert.equal(proof.code,undefined);assert.equal(proof.fingerprint,a.fingerprint);
+ await assert.rejects(()=>claim({...request,credits:250,action:'attest'},f.prisma));
+ assert.equal(f.rows.find(r=>r.id==='250-0').status,'available');
 });

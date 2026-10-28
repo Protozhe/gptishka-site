@@ -139,7 +139,11 @@ def handle(req,policy):
         intent=validate_job(jid,bound=attest,shared=True,policy=policy)
         if not attest:
             with db(b.STATE/'journal.sqlite') as c:prior=c.execute('SELECT state FROM buys WHERE order_id=?',(intent['order_id'],)).fetchone()
-            if prior and prior['state']!='not_sent':raise ValueError('supplier_prior_purchase_requires_review')
+            # An owner may explicitly move an unactivated Claude order to
+            # prepaid stock. Its unresolved purchase receipt stays in the
+            # ledger, terminal for procurement; no claim resets it to not_sent.
+            owner_switch=intent['credits']==0 and prior and prior['state']=='owner_stock_switch'
+            if prior and prior['state']!='not_sent' and not owner_switch:raise ValueError('supplier_prior_purchase_requires_review')
         out=web_stock({'action':'attest' if attest else 'claim','scope':intent['order_id'],'credits':intent['credits'],
             'platform':intent['platform'],**({'key_id':intent['native_key_id']} if attest else {})})
         if attest and (out.get('state')!='shared_stock' or out.get('native_key_id')!=intent['native_key_id']

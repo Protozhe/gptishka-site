@@ -180,7 +180,8 @@ def poll_result(a,j,r,result):
             c.execute("UPDATE codex_keys SET status='used',used_at=COALESCE(used_at,?) WHERE id=? AND reserved_job_id=?",(utc_now(),r['key_id'],j['id']))
         from market_shared_stock import binding
         if binding(a,j['id']):
-            notice(a,j,'completed','✅ <b>Codex · Активация выполнена</b>\n\nКлюч из общего резерва. Зачисление подтверждено поставщиком; повторная отправка заблокирована.')
+            label='Claude Pro' if code==0 else 'Codex'
+            notice(a,j,'completed','✅ <b>'+label+' · Активация выполнена</b>\n\nКлюч из общего резерва. Активация подтверждена поставщиком; повторная отправка заблокирована.')
         else:notice(a,j,'completed','✅ <b>AI-BUY · Активация выполнена</b>\n\nСтатус: <b>подтверждено поставщиком</b>\nОдна закупка и одна отправка. Повторный запуск заблокирован.')
     elif failed:
         update(a,j['id'],state='review',reason='provider_final_failure',next_at=time.time()+86400)
@@ -211,6 +212,11 @@ def drive(a,jid):
                     stock.bind(a,j,r,result)
                     with a.connect() as c:r=c.execute('SELECT * FROM market_aibuy_attempts WHERE job_id=?',(jid,)).fetchone()
                 elif result.get('state')=='empty':
+                    if r['contract_code']==0 and stock.enabled(j,r):
+                        update(a,jid,next_at=time.time()+60,reason='supplier_claude_stock_empty')
+                        with a.connect() as c:c.execute("UPDATE codex_jobs SET error=?,updated_at=datetime('now') WHERE id=? AND status='waiting_data'",('Ожидаем ключ Claude Pro для aichongzhi.fun из общего резерва',jid))
+                        notice(a,j,'claude_stock_empty','⏳ <b>Claude Pro · Нужен ключ</b>\n\nДобавьте ключ Claude Pro для aichongzhi.fun в общий резерв SDK/CDK. Заказ сохранён и продолжится после пополнения.')
+                        return
                     if r['contract_code'] in (250,500,1000) and stock.enabled(j,r):
                         update(a,jid,next_at=time.time()+60,reason='supplier_aisou_stock_empty')
                         with a.connect() as c:c.execute("UPDATE codex_jobs SET error=?,updated_at=datetime('now') WHERE id=? AND status='waiting_data'",('Ожидаем ключ AISOU Codex '+str(r['contract_code'])+' из общего резерва',jid))

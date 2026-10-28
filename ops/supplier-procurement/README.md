@@ -228,6 +228,21 @@ first live empty-pool procurement still needs a genuine new paid order.
 
 ### FunPay and PlayerOK empty-pool procurement
 
+Current prepaid-stock default (2026-10-28): new admitted Claude Pro orders use
+the website SDK/CDK pool `claude-pro`, exactly `https://aichongzhi.fun`, and the
+customer's order-scoped Claude account UUID. Codex 250/500/1000 uses its exact
+AISOU pool at `https://aiee.fun`. Empty shared stock waits for restocking and
+does not buy a replacement. Existing dispatched purchases/activations retain
+their original provider and once-only reconciliation.
+
+An owner-reviewed, still-unactivated Claude order can have its original purchase
+sealed as `owner_stock_switch`. This is not a no-charge claim: the original
+encrypted receipt remains, procurement becomes terminal, and only a prepaid
+stock claim is admitted. Other uncertain purchases still require review.
+The normal paid-source, quantity, margin, refund, prior-activation and exact
+provider checks apply before claiming and again before dispatch. A crash or
+lost response reuses one key and polls it without another activation.
+
 `install-aibuy-market.py` installs explicit, hash-pinned additive Pulse hooks
 from a clean committed active release. It backs up both original sources,
 installs a separate root broker and starts disabled. Website code and stock

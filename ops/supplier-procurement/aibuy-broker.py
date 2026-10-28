@@ -251,6 +251,8 @@ def procure(oid,policy,*,browser=child,order_validator=validate,oracle=verify_ke
     if intent.get('stock_available'):return {'state':'stock_available'}
     saved,key,cookies=session();vault=Vault(STATE/'journal.sqlite',key)
     try:
+        held=vault.db.execute('SELECT state FROM buys WHERE order_id=?',(oid,)).fetchone()
+        if held and held['state']=='owner_stock_switch':raise ValueError('supplier_owner_completed')
         reserve=vault.db.execute("SELECT * FROM prepaid_aiee_reserves WHERE order_id=? AND state='assigned'",(oid,)).fetchone()
         if reserve:return fallback_reply(vault,reserve)
         asset=vault.assigned(oid)
