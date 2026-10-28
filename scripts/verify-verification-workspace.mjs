@@ -69,6 +69,7 @@ const script = fs.readFileSync('assets/js/verification-support-receipt.js', 'utf
 const flush = async () => { for (let i=0;i<4;i++) await new Promise(resolve => setImmediate(resolve)); };
 async function page(lang, slug, initial = 'awaiting_link', responseStatus = 200) {
   const html = fs.readFileSync((lang === 'en' ? 'en/' : '') + 'verification-support.html', 'utf8');
+  assert.match(html, /<form id="supportLinkForm" method="post"/, 'verification links must never enter a native GET query');
   const dom = new JSDOM(html, { url: `https://fixture.invalid/${lang === 'en' ? 'en/' : ''}verification-support.html?order_id=fixture-order&t=fixture-access`, runScripts: 'outside-only' });
   const w=dom.window, requests=[], timers=[];
   let state=initial, failure=false;
