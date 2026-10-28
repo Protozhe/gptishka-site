@@ -29,14 +29,15 @@ export default function UsersPage() {
   return (
     <div className="space-y-4">
       <form onSubmit={onSubmit} className="card p-4 grid gap-2 md:grid-cols-4">
-        <input className="input" placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input className="input" placeholder="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <select className="input" value={role} onChange={(e) => setRole(e.target.value)}>
+        <div className="admin-form-heading"><h3>Новый пользователь</h3><p>Укажите данные сотрудника и нужную роль доступа.</p></div>
+        <label className="admin-field"><span className="admin-field-label">Email</span><input className="input" placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
+        <label className="admin-field"><span className="admin-field-label">Пароль</span><input className="input" placeholder="password" value={password} onChange={(e) => setPassword(e.target.value)} /></label>
+        <label className="admin-field"><span className="admin-field-label">Роль доступа</span><select className="input" value={role} onChange={(e) => setRole(e.target.value)}>
           <option>OWNER</option>
           <option>ADMIN</option>
           <option>MANAGER</option>
           <option>SUPPORT</option>
-        </select>
+        </select></label>
         <button className="btn-primary">Добавить пользователя</button>
       </form>
 

@@ -611,13 +611,13 @@ export default function ShowcasePage() {
         </div>
 
         <form className="grid gap-2 md:grid-cols-6" onSubmit={onSubmitSection}>
-          <input className="input md:col-span-2" placeholder="Название раздела" value={sectionForm.title} onChange={(e) => setSectionForm((prev) => ({ ...prev, title: e.target.value }))} />
-          <input className="input" placeholder="slug, можно пустым" value={sectionForm.slug} onChange={(e) => setSectionForm((prev) => ({ ...prev, slug: e.target.value }))} />
-          <input className="input" type="number" placeholder="Порядок" value={sectionForm.sortOrder} onChange={(e) => setSectionForm((prev) => ({ ...prev, sortOrder: Number(e.target.value) }))} />
-          <select className="input" value={sectionForm.renderMode} onChange={(e) => setSectionForm((prev) => ({ ...prev, renderMode: e.target.value as ShowcaseRenderMode }))}>
+          <label className="admin-field md:col-span-2"><span className="admin-field-label">Название раздела</span><input className="input md:col-span-2" placeholder="Название раздела" value={sectionForm.title} onChange={(e) => setSectionForm((prev) => ({ ...prev, title: e.target.value }))} /></label>
+          <label className="admin-field"><span className="admin-field-label">slug, можно пустым</span><input className="input" placeholder="slug, можно пустым" value={sectionForm.slug} onChange={(e) => setSectionForm((prev) => ({ ...prev, slug: e.target.value }))} /></label>
+          <label className="admin-field"><span className="admin-field-label">Порядок</span><input className="input" type="number" placeholder="Порядок" value={sectionForm.sortOrder} onChange={(e) => setSectionForm((prev) => ({ ...prev, sortOrder: Number(e.target.value) }))} /></label>
+          <label className="admin-field"><span className="admin-field-label">Способ показа</span><select className="input" value={sectionForm.renderMode} onChange={(e) => setSectionForm((prev) => ({ ...prev, renderMode: e.target.value as ShowcaseRenderMode }))}>
             <option value="cards">Карточки товаров</option>
             <option value="auto">Авто AI/VPN</option>
-          </select>
+          </select></label>
           <label className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-800">
             <input type="checkbox" checked={sectionForm.isActive} onChange={(e) => setSectionForm((prev) => ({ ...prev, isActive: e.target.checked }))} />
             Активен
@@ -625,7 +625,7 @@ export default function ShowcasePage() {
           <button className="btn-primary" type="submit" disabled={saveSection.isPending}>
             {saveSection.isPending ? "Сохраняем..." : editingSectionId ? "Сохранить раздел" : "Создать раздел"}
           </button>
-          <textarea className="input md:col-span-3 min-h-20" placeholder="Описание раздела" value={sectionForm.description} onChange={(e) => setSectionForm((prev) => ({ ...prev, description: e.target.value }))} />
+          <label className="admin-field md:col-span-3"><span className="admin-field-label">Описание раздела</span><textarea className="input md:col-span-3 min-h-20" placeholder="Описание раздела" value={sectionForm.description} onChange={(e) => setSectionForm((prev) => ({ ...prev, description: e.target.value }))} /></label>
           <label className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-800">
             <input type="checkbox" checked={sectionForm.showOnHomepage} onChange={(e) => setSectionForm((prev) => ({ ...prev, showOnHomepage: e.target.checked }))} />
             На главной
@@ -649,7 +649,7 @@ export default function ShowcasePage() {
             <h3 className="text-base font-bold">Визуал карточки на витрине</h3>
             <p className="text-sm text-slate-500">Редактирует внешний вид товара на главной и в витрине. Product.id, цена, tags и выдача не меняются.</p>
           </div>
-          <select
+          <label className="admin-field"><span className="admin-field-label">Товар для оформления</span><select
             className="input min-w-[280px]"
             value={selectedVisualProduct?.id || ""}
             onChange={(e) => selectVisualProduct(e.target.value)}
@@ -659,7 +659,7 @@ export default function ShowcasePage() {
                 {product.title} · {product.category}
               </option>
             ))}
-          </select>
+          </select></label>
         </div>
 
         {!selectedVisualProduct ? (
@@ -680,49 +680,49 @@ export default function ShowcasePage() {
               <div className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-500 dark:border-slate-800">
                 {selectedVisualProduct.slug}
               </div>
-              <input
+              <label className="admin-field"><span className="admin-field-label">Заголовок карточки</span><input
                 className="input"
                 placeholder="Заголовок карточки"
                 value={visualConfig.cardTitle || ""}
                 onChange={(e) => updateVisualConfig({ cardTitle: e.target.value })}
-              />
-              <input
+              /></label>
+              <label className="admin-field"><span className="admin-field-label">Текст кнопки</span><input
                 className="input"
                 placeholder="Текст кнопки"
                 value={visualConfig.buttonText || ""}
                 onChange={(e) => updateVisualConfig({ buttonText: e.target.value })}
-              />
-              <textarea
+              /></label>
+              <label className="admin-field md:col-span-2"><span className="admin-field-label">Короткое описание карточки</span><textarea
                 className="input min-h-20 md:col-span-2"
                 placeholder="Короткое описание карточки"
                 value={visualConfig.cardDescription || ""}
                 onChange={(e) => updateVisualConfig({ cardDescription: e.target.value })}
-              />
-              <input
+              /></label>
+              <label className="admin-field"><span className="admin-field-label">Alt обычного изображения</span><input
                 className="input"
                 placeholder="Alt обычного изображения"
                 value={visualConfig.imageAlt || ""}
                 onChange={(e) => updateVisualConfig({ imageAlt: e.target.value })}
-              />
-              <input
+              /></label>
+              <label className="admin-field"><span className="admin-field-label">URL обычного изображения</span><input
                 className="input"
                 placeholder="URL обычного изображения"
                 value={visualConfig.imageUrl || ""}
                 onChange={(e) => updateVisualConfig({ imageUrl: e.target.value })}
-              />
-              <input
+              /></label>
+              <label className="admin-field"><span className="admin-field-label">Alt hover-изображения</span><input
                 className="input"
                 placeholder="Alt hover-изображения"
                 value={visualConfig.hoverImageAlt || ""}
                 onChange={(e) => updateVisualConfig({ hoverImageAlt: e.target.value })}
-              />
-              <input
+              /></label>
+              <label className="admin-field"><span className="admin-field-label">URL hover-изображения</span><input
                 className="input"
                 placeholder="URL hover-изображения"
                 value={visualConfig.hoverImageUrl || ""}
                 onChange={(e) => updateVisualConfig({ hoverImageUrl: e.target.value })}
-              />
-              <select
+              /></label>
+              <label className="admin-field"><span className="admin-field-label">Тип фона</span><select
                 className="input"
                 value={visualConfig.backgroundType || "solid"}
                 onChange={(e) => updateVisualConfig({ backgroundType: e.target.value as ProductVisualBackgroundType })}
@@ -730,43 +730,43 @@ export default function ShowcasePage() {
                 <option value="solid">Фон: цвет</option>
                 <option value="gradient">Фон: градиент</option>
                 <option value="image">Фон: изображение</option>
-              </select>
-              <input
+              </select></label>
+              <label className="admin-field"><span className="admin-field-label">Цвет фона, например #111111</span><input
                 className="input"
                 placeholder="Цвет фона, например #111111"
                 value={visualConfig.backgroundColor || ""}
                 onChange={(e) => updateVisualConfig({ backgroundColor: e.target.value })}
-              />
-              <input
+              /></label>
+              <label className="admin-field md:col-span-2"><span className="admin-field-label">CSS градиент, например linear-gradient(135deg,#111,#243)</span><input
                 className="input md:col-span-2"
                 placeholder="CSS градиент, например linear-gradient(135deg,#111,#243)"
                 value={visualConfig.backgroundGradient || ""}
                 onChange={(e) => updateVisualConfig({ backgroundGradient: e.target.value })}
-              />
-              <input
+              /></label>
+              <label className="admin-field"><span className="admin-field-label">Цвет текста карточки, например #ffffff</span><input
                 className="input"
                 placeholder="Цвет текста карточки, например #ffffff"
                 value={visualConfig.textColor || ""}
                 onChange={(e) => updateVisualConfig({ textColor: e.target.value })}
-              />
-              <input
+              /></label>
+              <label className="admin-field"><span className="admin-field-label">Стиль кнопки: primary / secondary / glass</span><input
                 className="input"
                 placeholder="Стиль кнопки: primary / secondary / glass"
                 value={visualConfig.buttonStyle || ""}
                 onChange={(e) => updateVisualConfig({ buttonStyle: e.target.value })}
-              />
-              <input
+              /></label>
+              <label className="admin-field"><span className="admin-field-label">Фон кнопки CSS</span><input
                 className="input"
                 placeholder="Фон кнопки CSS"
                 value={visualConfig.buttonBackground || ""}
                 onChange={(e) => updateVisualConfig({ buttonBackground: e.target.value })}
-              />
-              <input
+              /></label>
+              <label className="admin-field"><span className="admin-field-label">Цвет текста кнопки, например #06110b</span><input
                 className="input"
                 placeholder="Цвет текста кнопки, например #06110b"
                 value={visualConfig.buttonTextColor || ""}
                 onChange={(e) => updateVisualConfig({ buttonTextColor: e.target.value })}
-              />
+              /></label>
               <div className="flex flex-wrap items-center gap-2">
                 <label className="btn-secondary cursor-pointer">
                   Загрузить 1 картинку
@@ -919,37 +919,37 @@ export default function ShowcasePage() {
 
                 {editing && (
                   <div className="mt-3 grid gap-2 md:grid-cols-2">
-                    <input className="input" placeholder="Название" value={draftCard.title || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { title: e.target.value })} />
-                    <input className="input" placeholder="Ссылка" value={draftCard.href || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { href: e.target.value })} />
-                    <textarea className="input min-h-20 md:col-span-2" placeholder="Описание" value={draftCard.description || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { description: e.target.value })} />
-                    <input className="input" placeholder="Строка тарифов" value={draftCard.planSummary || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { planSummary: e.target.value })} />
-                    <input className="input" placeholder="Цена на карточке" value={draftCard.priceText || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { priceText: e.target.value })} />
-                    <input className="input" placeholder="Текст кнопки" value={draftCard.buttonText || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { buttonText: e.target.value })} />
-                    <input className="input" placeholder="Иконка" value={draftCard.iconText || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { iconText: e.target.value })} />
-                    <input className="input" placeholder="Theme class" value={draftCard.theme || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { theme: e.target.value })} />
-                    <input className="input" type="number" placeholder="Порядок" value={draftCard.sortOrder || 100} onChange={(e) => updateServiceCardDraft(card.serviceKey, { sortOrder: Number(e.target.value) || 100 })} />
-                    <input className="input" placeholder="Картинка" value={draftCard.imageUrl || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { imageUrl: e.target.value })} />
+                    <label className="admin-field"><span className="admin-field-label">Название</span><input className="input" placeholder="Название" value={draftCard.title || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { title: e.target.value })} /></label>
+                    <label className="admin-field"><span className="admin-field-label">Ссылка</span><input className="input" placeholder="Ссылка" value={draftCard.href || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { href: e.target.value })} /></label>
+                    <label className="admin-field md:col-span-2"><span className="admin-field-label">Описание</span><textarea className="input min-h-20 md:col-span-2" placeholder="Описание" value={draftCard.description || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { description: e.target.value })} /></label>
+                    <label className="admin-field"><span className="admin-field-label">Строка тарифов</span><input className="input" placeholder="Строка тарифов" value={draftCard.planSummary || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { planSummary: e.target.value })} /></label>
+                    <label className="admin-field"><span className="admin-field-label">Цена на карточке</span><input className="input" placeholder="Цена на карточке" value={draftCard.priceText || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { priceText: e.target.value })} /></label>
+                    <label className="admin-field"><span className="admin-field-label">Текст кнопки</span><input className="input" placeholder="Текст кнопки" value={draftCard.buttonText || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { buttonText: e.target.value })} /></label>
+                    <label className="admin-field"><span className="admin-field-label">Иконка</span><input className="input" placeholder="Иконка" value={draftCard.iconText || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { iconText: e.target.value })} /></label>
+                    <label className="admin-field"><span className="admin-field-label">Theme class</span><input className="input" placeholder="Theme class" value={draftCard.theme || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { theme: e.target.value })} /></label>
+                    <label className="admin-field"><span className="admin-field-label">Порядок</span><input className="input" type="number" placeholder="Порядок" value={draftCard.sortOrder || 100} onChange={(e) => updateServiceCardDraft(card.serviceKey, { sortOrder: Number(e.target.value) || 100 })} /></label>
+                    <label className="admin-field"><span className="admin-field-label">Картинка</span><input className="input" placeholder="Картинка" value={draftCard.imageUrl || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { imageUrl: e.target.value })} /></label>
                     <label className="btn-secondary inline-flex cursor-pointer items-center justify-center gap-2">
                       <Upload size={16} />
                       Загрузить
                       <input className="hidden" type="file" accept="image/*" onChange={(e) => { void uploadServiceCardFile(card, "image", e.target.files?.[0] || null); e.currentTarget.value = ""; }} />
                     </label>
-                    <input className="input" placeholder="Hover-картинка" value={draftCard.hoverImageUrl || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { hoverImageUrl: e.target.value })} />
+                    <label className="admin-field"><span className="admin-field-label">Hover-картинка</span><input className="input" placeholder="Hover-картинка" value={draftCard.hoverImageUrl || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { hoverImageUrl: e.target.value })} /></label>
                     <label className="btn-secondary inline-flex cursor-pointer items-center justify-center gap-2">
                       <Upload size={16} />
                       Hover
                       <input className="hidden" type="file" accept="image/*" onChange={(e) => { void uploadServiceCardFile(card, "hover", e.target.files?.[0] || null); e.currentTarget.value = ""; }} />
                     </label>
-                    <select className="input" value={draftCard.backgroundType || "solid"} onChange={(e) => updateServiceCardDraft(card.serviceKey, { backgroundType: e.target.value as ShowcaseServiceCard["backgroundType"] })}>
+                    <label className="admin-field"><span className="admin-field-label">Тип фона</span><select className="input" value={draftCard.backgroundType || "solid"} onChange={(e) => updateServiceCardDraft(card.serviceKey, { backgroundType: e.target.value as ShowcaseServiceCard["backgroundType"] })}>
                       <option value="solid">Solid</option>
                       <option value="gradient">Gradient</option>
                       <option value="image">Image</option>
-                    </select>
-                    <input className="input" placeholder="Фон" value={draftCard.backgroundColor || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { backgroundColor: e.target.value })} />
-                    <input className="input md:col-span-2" placeholder="Градиент" value={draftCard.backgroundGradient || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { backgroundGradient: e.target.value })} />
-                    <input className="input" placeholder="Цвет текста" value={draftCard.textColor || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { textColor: e.target.value })} />
-                    <input className="input" placeholder="Фон кнопки" value={draftCard.buttonBackground || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { buttonBackground: e.target.value })} />
-                    <input className="input" placeholder="Цвет кнопки" value={draftCard.buttonTextColor || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { buttonTextColor: e.target.value })} />
+                    </select></label>
+                    <label className="admin-field"><span className="admin-field-label">Фон</span><input className="input" placeholder="Фон" value={draftCard.backgroundColor || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { backgroundColor: e.target.value })} /></label>
+                    <label className="admin-field md:col-span-2"><span className="admin-field-label">Градиент</span><input className="input md:col-span-2" placeholder="Градиент" value={draftCard.backgroundGradient || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { backgroundGradient: e.target.value })} /></label>
+                    <label className="admin-field"><span className="admin-field-label">Цвет текста</span><input className="input" placeholder="Цвет текста" value={draftCard.textColor || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { textColor: e.target.value })} /></label>
+                    <label className="admin-field"><span className="admin-field-label">Фон кнопки</span><input className="input" placeholder="Фон кнопки" value={draftCard.buttonBackground || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { buttonBackground: e.target.value })} /></label>
+                    <label className="admin-field"><span className="admin-field-label">Цвет кнопки</span><input className="input" placeholder="Цвет кнопки" value={draftCard.buttonTextColor || ""} onChange={(e) => updateServiceCardDraft(card.serviceKey, { buttonTextColor: e.target.value })} /></label>
                     <label className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-800">
                       <input type="checkbox" checked={draftCard.isActive !== false} onChange={(e) => updateServiceCardDraft(card.serviceKey, { isActive: e.target.checked })} />
                       Показывать на витрине
@@ -983,12 +983,12 @@ export default function ShowcasePage() {
             </div>
 
             <div className="grid gap-2 border-b border-slate-200 p-4 md:grid-cols-[minmax(0,1fr)_120px_120px_auto] dark:border-slate-800">
-              <select className="input" value={draft.productId} onChange={(e) => updatePlacementDraft(section.id, { productId: e.target.value })}>
+              <label className="admin-field"><span className="admin-field-label">Добавить товар</span><select className="input" value={draft.productId} onChange={(e) => updatePlacementDraft(section.id, { productId: e.target.value })}>
                 {productOptions.map((product) => (
                   <option key={product.id} value={product.id}>{product.title} · {product.category}</option>
                 ))}
-              </select>
-              <input className="input" type="number" value={draft.sortOrder} onChange={(e) => updatePlacementDraft(section.id, { sortOrder: Number(e.target.value) || 100 })} />
+              </select></label>
+              <label className="admin-field"><span className="admin-field-label">Порядок</span><input className="input" type="number" value={draft.sortOrder} onChange={(e) => updatePlacementDraft(section.id, { sortOrder: Number(e.target.value) || 100 })} /></label>
               <label className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-800">
                 <input type="checkbox" checked={draft.isPinned} onChange={(e) => updatePlacementDraft(section.id, { isPinned: e.target.checked })} />
                 Закрепить
@@ -997,7 +997,7 @@ export default function ShowcasePage() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
+              <table className="min-w-full text-sm admin-data-table">
                 <thead className="bg-slate-100 text-left dark:bg-slate-800">
                   <tr>
                     <th className="px-4 py-3">Товар</th>
@@ -1005,34 +1005,34 @@ export default function ShowcasePage() {
                     <th className="px-4 py-3">Порядок</th>
                     <th className="px-4 py-3">Закреплен</th>
                     <th className="px-4 py-3">Статус</th>
-                    <th className="px-4 py-3">Действия</th>
+                    <th className="px-4 py-3" data-column-kind="actions">Действия</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(section.placements || []).map((placement) => (
                     <tr key={placement.id} className="border-t border-slate-200 dark:border-slate-800">
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3" data-label="Товар">
                         <div className="font-semibold">{productCardTitle(placement.product)}</div>
                         <div className="text-xs text-slate-500">{placement.product.slug}</div>
                       </td>
-                      <td className="px-4 py-3">{money(Number(placement.product.price), placement.product.currency)}</td>
-                      <td className="px-4 py-3">
-                        <input
+                      <td className="px-4 py-3" data-label="Цена">{money(Number(placement.product.price), placement.product.currency)}</td>
+                      <td className="px-4 py-3" data-label="Порядок">
+                        <label className="admin-field w-24"><span className="admin-field-label">Порядок</span><input
                           className="input w-24"
                           type="number"
                           value={placement.sortOrder}
                           onChange={(e) => updatePlacement.mutate({ id: placement.id, payload: { sortOrder: Number(e.target.value) || 100 } })}
-                        />
+                        /></label>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3" data-label="Закреплен">
                         <input type="checkbox" checked={placement.isPinned} onChange={(e) => updatePlacement.mutate({ id: placement.id, payload: { isPinned: e.target.checked } })} />
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3" data-label="Статус">
                         <button className="btn-secondary" type="button" onClick={() => updatePlacement.mutate({ id: placement.id, payload: { isActive: !placement.isActive } })}>
                           {placement.isActive ? "Активен" : "Отключен"}
                         </button>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3" data-label="Действия" data-column-kind="actions">
                         <button className="btn-secondary" type="button" onClick={() => removePlacement.mutate(placement.id)} disabled={removePlacement.isPending}>Убрать из раздела</button>
                       </td>
                     </tr>

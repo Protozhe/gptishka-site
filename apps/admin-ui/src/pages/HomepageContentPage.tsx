@@ -146,7 +146,7 @@ export default function HomepageContentPage() {
       <section className="card p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold">Главная страница</h2>
+            <h2 className="text-lg font-bold">Публикация изменений</h2>
             <p className="text-sm text-slate-500">
               Редактирование слайдера и трёх плиток под ним: Пополнения, Нейросети, V*N.
             </p>
@@ -187,20 +187,20 @@ export default function HomepageContentPage() {
                 </label>
               </div>
               <div className="grid gap-2 md:grid-cols-4">
-                <input className="input" placeholder="ID" value={slide.id} onChange={(e) => updateSlide(index, { id: e.target.value })} />
-                <input className="input" placeholder="Бейдж" value={slide.badge} onChange={(e) => updateSlide(index, { badge: e.target.value })} />
-                <input className="input" type="number" placeholder="Порядок" value={slide.sortOrder} onChange={(e) => updateSlide(index, { sortOrder: Number(e.target.value) || 0 })} />
-                <input className="input" placeholder="CSS-класс темы" value={slide.themeClass} onChange={(e) => updateSlide(index, { themeClass: e.target.value })} />
-                <textarea
+                <label className="admin-field"><span className="admin-field-label">ID</span><input className="input" placeholder="ID" value={slide.id} onChange={(e) => updateSlide(index, { id: e.target.value })} /></label>
+                <label className="admin-field"><span className="admin-field-label">Бейдж</span><input className="input" placeholder="Бейдж" value={slide.badge} onChange={(e) => updateSlide(index, { badge: e.target.value })} /></label>
+                <label className="admin-field"><span className="admin-field-label">Порядок</span><input className="input" type="number" placeholder="Порядок" value={slide.sortOrder} onChange={(e) => updateSlide(index, { sortOrder: Number(e.target.value) || 0 })} /></label>
+                <label className="admin-field"><span className="admin-field-label">CSS-класс темы</span><input className="input" placeholder="CSS-класс темы" value={slide.themeClass} onChange={(e) => updateSlide(index, { themeClass: e.target.value })} /></label>
+                <label className="admin-field md:col-span-2"><span className="admin-field-label">Заголовок. Каждая строка = отдельная строка на баннере</span><textarea
                   className="input min-h-20 md:col-span-2"
                   placeholder="Заголовок. Каждая строка = отдельная строка на баннере"
                   value={(slide.titleLines || []).join("\n")}
                   onChange={(e) => updateSlide(index, { titleLines: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })}
-                />
-                <textarea className="input min-h-20 md:col-span-2" placeholder="Описание" value={slide.description} onChange={(e) => updateSlide(index, { description: e.target.value })} />
-                <input className="input" placeholder="Текст кнопки" value={slide.buttonText} onChange={(e) => updateSlide(index, { buttonText: e.target.value })} />
-                <input className="input" placeholder="Ссылка кнопки" value={slide.buttonHref} onChange={(e) => updateSlide(index, { buttonHref: e.target.value })} />
-                <input className="input" placeholder="URL фоновой картинки" value={slide.imageUrl} onChange={(e) => updateSlide(index, { imageUrl: e.target.value })} />
+                /></label>
+                <label className="admin-field md:col-span-2"><span className="admin-field-label">Описание</span><textarea className="input min-h-20 md:col-span-2" placeholder="Описание" value={slide.description} onChange={(e) => updateSlide(index, { description: e.target.value })} /></label>
+                <label className="admin-field"><span className="admin-field-label">Текст кнопки</span><input className="input" placeholder="Текст кнопки" value={slide.buttonText} onChange={(e) => updateSlide(index, { buttonText: e.target.value })} /></label>
+                <label className="admin-field"><span className="admin-field-label">Ссылка кнопки</span><input className="input" placeholder="Ссылка кнопки" value={slide.buttonHref} onChange={(e) => updateSlide(index, { buttonHref: e.target.value })} /></label>
+                <label className="admin-field"><span className="admin-field-label">URL фоновой картинки</span><input className="input" placeholder="URL фоновой картинки" value={slide.imageUrl} onChange={(e) => updateSlide(index, { imageUrl: e.target.value })} /></label>
                 <label className="btn-secondary cursor-pointer text-center">
                   Загрузить фото
                   <input className="hidden" type="file" accept="image/*" onChange={(e) => { void uploadTo("slide", index, e.target.files?.[0] || null); e.currentTarget.value = ""; }} />
@@ -231,23 +231,23 @@ export default function HomepageContentPage() {
                 </label>
               </div>
               <div className="grid gap-2 md:grid-cols-4">
-                <input className="input" placeholder="ID" value={shortcut.id} onChange={(e) => updateShortcut(index, { id: e.target.value })} />
-                <input className="input" placeholder="Название" value={shortcut.title} onChange={(e) => updateShortcut(index, { title: e.target.value })} />
-                <input className="input" type="number" placeholder="Порядок" value={shortcut.sortOrder} onChange={(e) => updateShortcut(index, { sortOrder: Number(e.target.value) || 0 })} />
-                <input className="input" placeholder="CSS-класс темы" value={shortcut.themeClass} onChange={(e) => updateShortcut(index, { themeClass: e.target.value })} />
-                <input className="input md:col-span-2" placeholder="Ссылка" value={shortcut.href} onChange={(e) => updateShortcut(index, { href: e.target.value })} />
-                <input className="input md:col-span-2" placeholder="Aria label" value={shortcut.ariaLabel} onChange={(e) => updateShortcut(index, { ariaLabel: e.target.value })} />
-                <input className="input" placeholder="Основная картинка" value={shortcut.imageUrl} onChange={(e) => updateShortcut(index, { imageUrl: e.target.value })} />
+                <label className="admin-field"><span className="admin-field-label">ID</span><input className="input" placeholder="ID" value={shortcut.id} onChange={(e) => updateShortcut(index, { id: e.target.value })} /></label>
+                <label className="admin-field"><span className="admin-field-label">Название</span><input className="input" placeholder="Название" value={shortcut.title} onChange={(e) => updateShortcut(index, { title: e.target.value })} /></label>
+                <label className="admin-field"><span className="admin-field-label">Порядок</span><input className="input" type="number" placeholder="Порядок" value={shortcut.sortOrder} onChange={(e) => updateShortcut(index, { sortOrder: Number(e.target.value) || 0 })} /></label>
+                <label className="admin-field"><span className="admin-field-label">CSS-класс темы</span><input className="input" placeholder="CSS-класс темы" value={shortcut.themeClass} onChange={(e) => updateShortcut(index, { themeClass: e.target.value })} /></label>
+                <label className="admin-field md:col-span-2"><span className="admin-field-label">Ссылка</span><input className="input md:col-span-2" placeholder="Ссылка" value={shortcut.href} onChange={(e) => updateShortcut(index, { href: e.target.value })} /></label>
+                <label className="admin-field md:col-span-2"><span className="admin-field-label">Aria label</span><input className="input md:col-span-2" placeholder="Aria label" value={shortcut.ariaLabel} onChange={(e) => updateShortcut(index, { ariaLabel: e.target.value })} /></label>
+                <label className="admin-field"><span className="admin-field-label">Основная картинка</span><input className="input" placeholder="Основная картинка" value={shortcut.imageUrl} onChange={(e) => updateShortcut(index, { imageUrl: e.target.value })} /></label>
                 <label className="btn-secondary cursor-pointer text-center">
                   Загрузить 1 картинку
                   <input className="hidden" type="file" accept="image/*" onChange={(e) => { void uploadTo("shortcutImage", index, e.target.files?.[0] || null); e.currentTarget.value = ""; }} />
                 </label>
-                <input className="input" placeholder="Hover-картинка" value={shortcut.hoverImageUrl} onChange={(e) => updateShortcut(index, { hoverImageUrl: e.target.value })} />
+                <label className="admin-field"><span className="admin-field-label">Hover-картинка</span><input className="input" placeholder="Hover-картинка" value={shortcut.hoverImageUrl} onChange={(e) => updateShortcut(index, { hoverImageUrl: e.target.value })} /></label>
                 <label className="btn-secondary cursor-pointer text-center">
                   Загрузить hover
                   <input className="hidden" type="file" accept="image/*" onChange={(e) => { void uploadTo("shortcutHover", index, e.target.files?.[0] || null); e.currentTarget.value = ""; }} />
                 </label>
-                <input className="input" placeholder="Лого вместо картинки" value={shortcut.logoUrl} onChange={(e) => updateShortcut(index, { logoUrl: e.target.value })} />
+                <label className="admin-field"><span className="admin-field-label">Лого вместо картинки</span><input className="input" placeholder="Лого вместо картинки" value={shortcut.logoUrl} onChange={(e) => updateShortcut(index, { logoUrl: e.target.value })} /></label>
                 <label className="btn-secondary cursor-pointer text-center">
                   Загрузить лого
                   <input className="hidden" type="file" accept="image/*" onChange={(e) => { void uploadTo("shortcutLogo", index, e.target.files?.[0] || null); e.currentTarget.value = ""; }} />

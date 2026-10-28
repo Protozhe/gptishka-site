@@ -23,6 +23,7 @@ import { useState } from "react";
 import { Activity, MessageSquare, Clock3, Landmark, ChevronRight, LogOut } from "lucide-react";
 import { WorkspacePanels } from "../components/WorkspacePanels";
 import { workspacePanels, workspaceSection } from "../lib/workspace";
+import { AdminSectionFrame } from "../components/AdminSectionFrame";
 
 const TEXT = {
   dashboard: "\u0414\u0430\u0448\u0431\u043e\u0440\u0434",
@@ -100,7 +101,7 @@ export function AdminLayout() {
     </aside>
     <main className="workspace-main">
       <header className="workspace-header"><div className="workspace-breadcrumb"><span>Управление</span><ChevronRight size={14} /><h1>{title}</h1></div><div className="flex items-center gap-2"><span className="workspace-session"><ShieldCheck size={14} /> Единый вход</span><ThemeToggle /><button className="workspace-logout" aria-label="Выйти" onClick={() => void logout()}><LogOut size={17} /></button></div></header>
-      <div className={embedded ? "workspace-content embedded" : "workspace-content"}><Outlet />{allowedOps && <WorkspacePanels section={section} />}</div>
+      <div className={embedded ? "workspace-content embedded" : "workspace-content"}><AdminSectionFrame pathname={location.pathname}><Outlet /></AdminSectionFrame>{allowedOps && <WorkspacePanels section={section} />}</div>
     </main>
   </div>;
 }

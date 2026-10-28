@@ -1,0 +1,103 @@
+.admin-section {
+  --admin-ink:#203247;--admin-muted:#6b7b8e;--admin-line:#e2e8ef;--admin-surface:#fff;--admin-subtle:#f7f9fb;--admin-accent:#087e70;
+  max-width:1500px;margin:0 auto;color:var(--admin-ink);font-size:14px;line-height:1.65;
+}
+.admin-page-heading {margin-bottom:24px}
+.admin-page-heading h2 {font-size:28px;line-height:1.25;letter-spacing:-.7px;font-weight:750}
+.admin-page-heading p {margin-top:7px;font-size:14px;color:var(--admin-muted);max-width:800px}
+.admin-section .card {border:1px solid var(--admin-line);border-radius:12px;background:var(--admin-surface);box-shadow:none;--tw-ring-shadow:0 0 #0000;min-width:0}
+.admin-section .card.p-4 {padding:20px}
+.admin-section :where(.grid)>* {min-width:0}
+.admin-section :where(.card>h2,.card>h3,.card>div>h2,.card>div>h3) {font-size:17px;line-height:1.5;font-weight:700;letter-spacing:-.2px}
+.admin-section :where(.text-slate-500,.text-slate-400) {color:var(--admin-muted)}
+.admin-section .input {min-width:0;min-height:42px;border-radius:9px;font-size:13px;font-weight:400;line-height:1.65;border-color:#ced8e2;background:var(--admin-surface);color:var(--admin-ink)}
+.admin-section textarea.input {min-height:100px;resize:vertical}
+.admin-section .input:focus {border-color:var(--admin-accent);outline:2px solid #087e7020;outline-offset:1px;--tw-ring-shadow:0 0 #0000}
+.admin-section :where(.btn-primary,.btn-secondary) {min-height:36px;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:650;line-height:1.6;gap:7px;white-space:normal;text-align:center}
+.admin-section .btn-primary {background:#087e70;border:1px solid #087e70;color:#fff}
+.admin-section .btn-primary:hover {background:#066a5e}
+.admin-section .btn[aria-pressed=true] {background:#087e70;border-color:#087e70;color:#fff}
+.admin-section .btn-secondary {background:var(--admin-surface);border:1px solid var(--admin-line);color:#52677b}
+.admin-section .btn-secondary:hover {border-color:#b2c5ce;background:var(--admin-subtle)}
+.admin-section .btn-secondary.text-rose-600 {color:#ad3645;border-color:#e9c9cf}
+.admin-section button:disabled {opacity:.45;cursor:not-allowed}
+.admin-section :where(button,a,summary):focus-visible {outline:2px solid var(--admin-accent);outline-offset:3px}
+.admin-section input:is([type=checkbox],[type=radio]) {accent-color:var(--admin-accent);width:16px;height:16px;flex-shrink:0;cursor:pointer}
+.admin-field {display:flex;flex-direction:column;gap:7px;min-width:0;justify-content:flex-end}
+.admin-field-label {display:block;font-size:11px;font-weight:650;color:var(--admin-muted);line-height:1.6}
+.admin-field>.input {width:100%}
+.admin-section .flex:has(>.admin-field) {align-items:flex-end}
+.admin-section[data-admin-section="/promocodes"] {position:relative}
+.admin-section[data-admin-section="/promocodes"]>.space-y-4>.flex:first-child {position:absolute;top:0;right:0}
+.admin-section[data-admin-section="/promocodes"]>.admin-page-heading {padding-right:175px}
+.admin-section .admin-form-heading {grid-column:1/-1;padding-bottom:12px;margin-bottom:3px;border-bottom:1px solid var(--admin-line)}
+.admin-form-heading h3 {font-size:17px;font-weight:700}
+.admin-form-heading p {font-size:12px;color:var(--admin-muted);margin-top:4px}
+.admin-section .admin-data-table {width:100%;border-collapse:separate;border-spacing:0;line-height:1.65;font-size:13px}
+.admin-section .admin-data-table th {background:var(--admin-subtle);color:var(--admin-muted);font-size:11px;font-weight:700;text-transform:none;letter-spacing:0;text-align:left;padding:12px 16px;border-bottom:1px solid var(--admin-line);white-space:normal;vertical-align:middle}
+.admin-section .admin-data-table td {padding:14px 16px;vertical-align:top;border-top:0;border-bottom:1px solid var(--admin-line);overflow-wrap:break-word}
+.admin-section .admin-data-table td:is([data-label="Данные"],[data-label="Сущность"]) {overflow-wrap:anywhere}
+.admin-section .admin-data-table tr:last-child>td {border-bottom:0}
+.admin-section .admin-data-table tbody>tr:hover {background:#f7faf9}
+.admin-section .admin-data-table td:first-child>.font-semibold {font-size:14px}
+.admin-section .admin-data-table td:is([data-label="Код"],[data-label="Тип"],[data-label="Цена"],[data-label="Сумма"],[data-label="Скидка"],[data-label="Ставка"],[data-label="Начисление"],[data-label="Выручка (RUB)"],[data-label="Скидки (RUB)"],[data-label="Оплачено сумма"]) {white-space:nowrap;font-variant-numeric:tabular-nums}
+.admin-section .admin-data-table :where(th,td)[data-column-kind=actions] {position:sticky;right:0;z-index:1;min-width:140px;background:var(--admin-surface);box-shadow:-7px 0 12px -12px #456077}
+.admin-section .admin-data-table th[data-column-kind=actions] {background:var(--admin-subtle);z-index:2}
+.admin-section .admin-data-table td[data-column-kind=actions]>div {flex-wrap:wrap;gap:7px}
+.admin-section .admin-table-caption {caption-side:top;text-align:left;padding:17px 20px;font-size:15px;font-weight:700;background:var(--admin-surface);border-bottom:1px solid var(--admin-line)}
+.admin-section .admin-data-table td[data-expanded-cell] {background:var(--admin-subtle);padding:20px}
+.admin-section .admin-data-table .admin-field-label {font-size:10px}
+.admin-section :where(.text-2xl,.text-xl).font-bold {font-variant-numeric:tabular-nums}
+.admin-section[data-admin-section="/sessions"] article {background:var(--admin-surface);border-color:var(--admin-line);border-radius:12px}
+.admin-section[data-admin-section="/sessions"] article>div:first-child {font-size:15px}
+.admin-section[data-admin-section="/users"] .space-y-2>div {background:var(--admin-subtle);border:1px solid var(--admin-line);border-radius:9px;padding:14px 16px;overflow-wrap:anywhere}
+.admin-section [role=alert] {overflow-wrap:anywhere}
+.dark .admin-section {--admin-ink:#e1eaf4;--admin-muted:#9aabbe;--admin-line:#2a3a4d;--admin-surface:#162133;--admin-subtle:#142032;--admin-accent:#7ed6ba}
+.dark .admin-section .input {border-color:#35475d}
+.dark .admin-section .btn-secondary {color:#c0cede}
+.dark .admin-section .btn-secondary.text-rose-600 {color:#ffabb6;border-color:#69434b}
+.dark .admin-section .admin-data-table tbody>tr:hover {background:#19312f}
+/* Match the operational overview to the inventory and orders typography. */
+.workspace-overview .workspace-hero h2 {font-size:28px;letter-spacing:-.7px}
+.workspace-overview .workspace-hero p {font-size:14px}
+.workspace-overview .workspace-card {border-radius:12px;box-shadow:none}
+.workspace-overview .workspace-card h3 {font-size:16px}
+.workspace-overview .workspace-account-row strong {font-size:13px}
+.workspace-overview .workspace-account-row small,.workspace-overview .workspace-card-heading p {font-size:12px;line-height:1.7}
+.workspace-overview .workspace-shortcuts h3 {font-size:14px}
+.workspace-overview .workspace-shortcuts p {font-size:12px;line-height:1.7}
+.workspace-overview .workspace-account-row button,.workspace-overview .workspace-card-heading button {font-size:12px;min-height:36px}
+@media(max-width:800px) {
+ .admin-section .admin-data-table {display:block;min-width:0!important;width:100%;max-width:100%}
+ .admin-section .admin-data-table thead {position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ .admin-section .admin-data-table tbody {display:block}
+ .admin-section .admin-data-table tbody>tr {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:16px;border:0;border-bottom:1px solid var(--admin-line)}
+ .admin-section .admin-data-table td {display:block;min-width:0;width:auto;padding:0;border:0;white-space:normal;text-align:left;font-size:13px;position:static;box-shadow:none;background:transparent}
+ .admin-section .admin-data-table td[data-label] {white-space:normal}
+ .admin-section .admin-data-table td::before {content:attr(data-label);display:block;margin-bottom:5px;font-size:10px;font-weight:650;color:var(--admin-muted)}
+ .admin-section .admin-data-table td:first-child,.admin-section .admin-data-table td[data-column-kind=actions],.admin-section .admin-data-table td[data-expanded-cell] {grid-column:1/-1}
+ .admin-section .admin-data-table td:first-child {font-weight:650}
+ .admin-section .admin-data-table td[data-expanded-cell] {padding:0;min-width:0;font-weight:400}
+ .admin-section .admin-data-table td[data-expanded-cell]::before {display:none}
+ .admin-section .admin-data-table td[data-column-kind=actions] {position:static;min-width:0;border-top:1px solid var(--admin-line);padding-top:12px;background:transparent}
+ .admin-section .admin-data-table td[data-column-kind=actions] .btn-secondary {min-height:40px}
+ .admin-section .admin-table-caption {display:block;padding:16px}
+ .admin-section .admin-data-table td .card {max-width:100%}
+}
+@media(max-width:600px) {
+ .admin-page-heading {margin-bottom:20px}
+ .admin-page-heading h2 {font-size:25px}
+ .admin-page-heading p {font-size:12px;line-height:1.7}
+ .admin-section[data-admin-section="/promocodes"]>.space-y-4>.flex:first-child {position:static}
+ .admin-section[data-admin-section="/promocodes"]>.admin-page-heading {padding-right:0}
+ .admin-section .card.p-4 {padding:16px}
+ .admin-section :where(.btn-primary,.btn-secondary) {min-height:40px}
+ .admin-field-label {font-size:11px}
+ .admin-section .input {font-size:14px}
+ .admin-section .admin-data-table td[data-expanded-cell] .card {padding:12px}
+ .workspace-overview .workspace-hero h2 {font-size:25px}
+ .workspace-overview .workspace-hero p {font-size:12px}
+ .workspace-overview .workspace-shortcuts p {font-size:11px}
+ .workspace-overview .workspace-card-heading button {font-size:11px}
+}
+@media(prefers-reduced-motion:reduce) {.admin-section * {transition:none!important;animation:none!important}}

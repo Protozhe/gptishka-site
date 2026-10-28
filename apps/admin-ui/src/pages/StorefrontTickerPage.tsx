@@ -142,7 +142,7 @@ export default function StorefrontTickerPage() {
     <div className="space-y-4">
       <section className="card overflow-hidden">
         <div className="bg-linear-to-r from-cyan-600 via-cyan-500 to-blue-600 px-5 py-4 text-white">
-          <h2 className="text-lg font-bold">Плашка клиентов на главной</h2>
+          <h2 className="text-lg font-bold">Настройки плашки</h2>
           <p className="mt-1 text-sm text-cyan-50">
             Управляйте email, которые попадают в публичную ленту. Тестовые адреса можно скрыть без удаления заказа.
           </p>
@@ -169,12 +169,12 @@ export default function StorefrontTickerPage() {
         <div className="flex flex-wrap items-end gap-2">
           <div className="min-w-[260px] flex-1">
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Скрыть email</label>
-            <input
+            <label className="admin-field"><span className="admin-field-label">Email для предпросмотра</span><input
               className="input"
               value={emailInput}
               onChange={(event) => setEmailInput(event.target.value)}
               placeholder="test@example.com"
-            />
+            /></label>
           </div>
           <button className="btn-primary" type="button" onClick={addHiddenEmail} disabled={saveSettings.isPending}>
             Добавить в скрытые
@@ -227,17 +227,17 @@ export default function StorefrontTickerPage() {
       <section className="card overflow-hidden">
         <div className="border-b border-slate-200 p-4 dark:border-slate-800">
           <div className="flex flex-wrap items-center gap-2">
-            <input
+            <label className="admin-field max-w-sm"><span className="admin-field-label">Поиск по email или заказу</span><input
               className="input max-w-sm"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Поиск по email или order id"
-            />
+            /></label>
             <div className="text-sm text-slate-500">Оплаченные заказы: {rows.length}</div>
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
+          <table className="min-w-full text-sm admin-data-table">
             <thead className="bg-slate-100 text-left dark:bg-slate-800">
               <tr>
                 <th className="px-4 py-3">Заказ</th>
@@ -245,24 +245,24 @@ export default function StorefrontTickerPage() {
                 <th className="px-4 py-3">Маска</th>
                 <th className="px-4 py-3">Дата</th>
                 <th className="px-4 py-3">Статус</th>
-                <th className="px-4 py-3 text-right">Действия</th>
+                <th className="px-4 py-3 text-right" data-column-kind="actions">Действия</th>
               </tr>
             </thead>
             <tbody>
               {filteredRows.map((row) => (
                 <tr className="border-t border-slate-200 dark:border-slate-800" key={row.orderId}>
-                  <td className="px-4 py-3 font-mono text-xs">{row.orderId.slice(0, 14)}...</td>
-                  <td className="px-4 py-3">{row.email}</td>
-                  <td className="px-4 py-3">{row.emailMasked}</td>
-                  <td className="px-4 py-3">{fmtDate(row.createdAt)}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 font-mono text-xs" data-label="Заказ">{row.orderId.slice(0, 14)}...</td>
+                  <td className="px-4 py-3" data-label="Email">{row.email}</td>
+                  <td className="px-4 py-3" data-label="Маска">{row.emailMasked}</td>
+                  <td className="px-4 py-3" data-label="Дата">{fmtDate(row.createdAt)}</td>
+                  <td className="px-4 py-3" data-label="Статус">
                     {row.hidden ? (
                       <span className="badge bg-rose-100 text-rose-700">Скрыт</span>
                     ) : (
                       <span className="badge bg-emerald-100 text-emerald-700">Показывается</span>
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" data-label="Действия" data-column-kind="actions">
                     <div className="flex justify-end gap-2">
                       <button
                         type="button"
@@ -286,7 +286,7 @@ export default function StorefrontTickerPage() {
               ))}
               {!tickerQuery.isLoading && !filteredRows.length ? (
                 <tr>
-                  <td className="px-4 py-5 text-slate-500" colSpan={6}>
+                  <td className="px-4 py-5 text-slate-500" colSpan={6} data-expanded-cell="true">
                     Нет заказов для отображения.
                   </td>
                 </tr>

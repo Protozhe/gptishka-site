@@ -1890,18 +1890,18 @@ export default function ProductsPage() {
         </div>
         {formError && <div className="mb-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700" role="alert">{formError}</div>}
         <form id="productEditorForm" className="grid gap-2 md:grid-cols-4" onSubmit={onSubmitProductForm}>
-          <textarea
+          <label className="admin-field md:col-span-2"><span className="admin-field-label">Название товара · RU</span><textarea
             className="input min-h-12 resize-y md:col-span-2"
             placeholder="Название товара (RU). Shift+Enter — перенос строки."
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-          />
-          <textarea
+          /></label>
+          <label className="admin-field md:col-span-2"><span className="admin-field-label">Название товара · EN</span><textarea
             className="input min-h-12 resize-y md:col-span-2"
             placeholder="Product title (EN). Shift+Enter for line break."
             value={titleEn}
             onChange={(e) => setTitleEn(e.target.value)}
-          />
+          /></label>
 
           <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
@@ -1914,13 +1914,13 @@ export default function ProductsPage() {
             </div>
 
             <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_auto]">
-              <input
+              <label className="admin-field"><span className="admin-field-label">Категория товара</span><input
                 className="input"
                 placeholder="Категория товара (например: Подписки ChatGPT)"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 list="product-categories"
-              />
+              /></label>
               <button
                 type="button"
                 className="btn-secondary"
@@ -1932,7 +1932,7 @@ export default function ProductsPage() {
             </div>
 
             <div className="mt-2 grid gap-2 md:grid-cols-[minmax(0,1fr)_auto]">
-              <input
+              <label className="admin-field"><span className="admin-field-label">Новая категория</span><input
                 className="input"
                 placeholder="Новая категория"
                 value={newCategoryDraft}
@@ -1943,7 +1943,7 @@ export default function ProductsPage() {
                     onAddCategory();
                   }
                 }}
-              />
+              /></label>
               <button type="button" className="btn-secondary" onClick={onAddCategory}>
                 Добавить категорию
               </button>
@@ -2040,79 +2040,79 @@ export default function ProductsPage() {
                   </label>
                 )}
 
-                <input
+                <label className="admin-field"><span className="admin-field-label">Название страницы, например Midjourney</span><input
                   className="input"
                   placeholder="Название страницы, например Midjourney"
                   value={servicePageDraft.title || ""}
                   onChange={(e) => updateServicePageDraft({ title: e.target.value })}
-                />
-                <input
+                /></label>
+                <label className="admin-field"><span className="admin-field-label">URL страницы, например /midjourney</span><input
                   className="input"
                   placeholder="URL страницы, например /midjourney"
                   value={servicePageDraft.path || ""}
                   onChange={(e) => updateServicePageDraft({ path: e.target.value })}
-                />
-                <input
+                /></label>
+                <label className="admin-field"><span className="admin-field-label">serviceKey, например midjourney</span><input
                   className="input"
                   placeholder="serviceKey, например midjourney"
                   value={servicePageDraft.serviceKey || ""}
                   onChange={(e) => updateServicePageDraft({ serviceKey: e.target.value })}
-                />
-                <select className="input" value={servicePageDraft.theme || "custom"} onChange={(e) => onServicePageThemeChange(e.target.value)}>
+                /></label>
+                <label className="admin-field"><span className="admin-field-label">Тема страницы</span><select className="input" value={servicePageDraft.theme || "custom"} onChange={(e) => onServicePageThemeChange(e.target.value)}>
                   <option value="emerald">ChatGPT / зелёный</option>
                   <option value="orange">Claude / оранжевый</option>
                   <option value="black">Grok / чёрный</option>
                   <option value="dark-blue">VPN / тёмно-синий</option>
                   <option value="custom">Свой цвет</option>
-                </select>
-                <input
+                </select></label>
+                <label className="admin-field"><span className="admin-field-label">#35f28f</span><input
                   className="input"
                   placeholder="#35f28f"
                   value={servicePageDraft.accentColor || ""}
                   onChange={(e) => updateServicePageDraft({ accentColor: e.target.value, theme: "custom" })}
-                />
-                <input
+                /></label>
+                <label className="admin-field"><span className="admin-field-label">linear-gradient(135deg,#35f28f,#18c878,#0f8f5c)</span><input
                   className="input"
                   placeholder="linear-gradient(135deg,#35f28f,#18c878,#0f8f5c)"
                   value={servicePageDraft.accentGradient || ""}
                   onChange={(e) => updateServicePageDraft({ accentGradient: e.target.value, theme: "custom" })}
-                />
-                <input
+                /></label>
+                <label className="admin-field"><span className="admin-field-label">Hero label, например Тарифные планы</span><input
                   className="input"
                   placeholder="Hero label, например Тарифные планы"
                   value={servicePageDraft.heroEyebrow || ""}
                   onChange={(e) => updateServicePageDraft({ heroEyebrow: e.target.value })}
-                />
-                <input
+                /></label>
+                <label className="admin-field"><span className="admin-field-label">Hero title, например ChatGPT</span><input
                   className="input"
                   placeholder="Hero title, например ChatGPT"
                   value={servicePageDraft.heroTitle || ""}
                   onChange={(e) => updateServicePageDraft({ heroTitle: e.target.value })}
-                />
-                <textarea
+                /></label>
+                <label className="admin-field md:col-span-2"><span className="admin-field-label">Описание hero-блока</span><textarea
                   className="input min-h-20 md:col-span-2"
                   placeholder="Описание hero-блока"
                   value={servicePageDraft.heroDescription || ""}
                   onChange={(e) => updateServicePageDraft({ heroDescription: e.target.value })}
-                />
-                <input
+                /></label>
+                <label className="admin-field md:col-span-2"><span className="admin-field-label">URL видео hero, например /assets/video/chatgpt-plans-bg.mp4</span><input
                   className="input md:col-span-2"
                   placeholder="URL видео hero, например /assets/video/chatgpt-plans-bg.mp4"
                   value={servicePageDraft.heroVideoUrl || ""}
                   onChange={(e) => updateServicePageDraft({ heroVideoUrl: e.target.value })}
-                />
-                <input
+                /></label>
+                <label className="admin-field md:col-span-2"><span className="admin-field-label">URL логотипа/картинки hero</span><input
                   className="input md:col-span-2"
                   placeholder="URL логотипа/картинки hero"
                   value={servicePageDraft.heroImageUrl || ""}
                   onChange={(e) => updateServicePageDraft({ heroImageUrl: e.target.value, heroLogoUrl: e.target.value })}
-                />
-                <textarea
+                /></label>
+                <label className="admin-field md:col-span-2"><span className="admin-field-label">Описание конструктора тарифов под карточкой</span><textarea
                   className="input min-h-20 md:col-span-2"
                   placeholder="Описание конструктора тарифов под карточкой"
                   value={servicePageDraft.constructorDescription || ""}
                   onChange={(e) => updateServicePageDraft({ constructorDescription: e.target.value })}
-                />
+                /></label>
 
                 <div className="grid gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 md:col-span-2 dark:border-slate-800 dark:bg-slate-900">
                   <label className="flex items-center gap-2 text-sm">
@@ -2276,18 +2276,18 @@ export default function ProductsPage() {
             )}
           </div>
 
-          <textarea
+          <label className="admin-field md:col-span-2"><span className="admin-field-label">Описание · RU</span><textarea
             className="input md:col-span-2 min-h-24"
             placeholder="Описание товара (RU)"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-          />
-          <textarea
+          /></label>
+          <label className="admin-field md:col-span-2"><span className="admin-field-label">Описание · EN</span><textarea
             className="input md:col-span-2 min-h-24"
             placeholder="Product description (EN)"
             value={descriptionEn}
             onChange={(e) => setDescriptionEn(e.target.value)}
-          />
+          /></label>
           <div className="md:col-span-4 rounded-xl border border-cyan-200 bg-cyan-50/70 p-3 dark:border-cyan-900 dark:bg-cyan-950/30">
             <div className="text-sm font-semibold text-slate-900 dark:text-white">Срок товара</div>
             <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">
@@ -2319,18 +2319,18 @@ export default function ProductsPage() {
           <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
             <div className="mb-2 text-sm font-semibold">Описание для модального окна оплаты</div>
             <div className="grid gap-2 md:grid-cols-2">
-              <textarea
+              <label className="admin-field"><span className="admin-field-label">Текст оформления · RU</span><textarea
                 className="input min-h-24"
                 placeholder="Текст в модальном окне (RU)"
                 value={modalDescription}
                 onChange={(e) => setModalDescription(e.target.value)}
-              />
-              <textarea
+              /></label>
+              <label className="admin-field"><span className="admin-field-label">Текст оформления · EN</span><textarea
                 className="input min-h-24"
                 placeholder="Text for checkout modal (EN)"
                 value={modalDescriptionEn}
                 onChange={(e) => setModalDescriptionEn(e.target.value)}
-              />
+              /></label>
             </div>
             <div className="mt-2 text-xs text-slate-600 dark:text-slate-300">
               Этот текст показывается между блоком названия/цены и полями Email/Промокод в модальном окне оплаты.
@@ -2343,12 +2343,12 @@ export default function ProductsPage() {
           {editingId && withLoginEnabled && withLoginDeliveryType === "credentials" && (
             <div className="md:col-span-4 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
               <div className="mb-2 text-sm font-semibold">Готовые цифровые доступы для выдачи</div>
-              <textarea
+              <label className="admin-field w-full"><span className="admin-field-label">Загрузка подготовленных доступов</span><textarea
                 className="input min-h-24 w-full font-mono text-xs"
                 placeholder={"Формат: login:password\\nПо одной паре в строке\\nТолько заранее подготовленные доступы, не данные клиента."}
                 value={credentialsImportText}
                 onChange={(e) => setCredentialsImportText(e.target.value)}
-              />
+              /></label>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <button
                   type="button"
@@ -2366,24 +2366,24 @@ export default function ProductsPage() {
               </div>
               {credentialsMessage && <div className="mt-2 text-xs text-slate-600 dark:text-slate-300">{credentialsMessage}</div>}
               <div className="mt-3 overflow-x-auto">
-                <table className="min-w-full text-xs">
+                <table className="min-w-full text-xs admin-data-table">
                   <thead className="bg-slate-100 text-left dark:bg-slate-800">
                     <tr>
                       <th className="px-2 py-2">Логин</th>
                       <th className="px-2 py-2">Пароль</th>
                       <th className="px-2 py-2">Статус</th>
                       <th className="px-2 py-2">Заказ</th>
-                      <th className="px-2 py-2">Действие</th>
+                      <th className="px-2 py-2" data-column-kind="actions">Действие</th>
                     </tr>
                   </thead>
                   <tbody>
                     {(credentials.data?.items || []).map((cred) => (
                       <tr key={cred.id} className="border-t border-slate-200 dark:border-slate-800">
-                        <td className="px-2 py-2 font-mono">{cred.login}</td>
-                        <td className="px-2 py-2 font-mono">{cred.password}</td>
-                        <td className="px-2 py-2">{cred.status === "available" ? "Свободен" : "Выдан"}</td>
-                        <td className="px-2 py-2">{cred.orderId || "-"}</td>
-                        <td className="px-2 py-2">
+                        <td className="px-2 py-2 font-mono" data-label="Логин">{cred.login}</td>
+                        <td className="px-2 py-2 font-mono" data-label="Пароль">{cred.password}</td>
+                        <td className="px-2 py-2" data-label="Статус">{cred.status === "available" ? "Свободен" : "Выдан"}</td>
+                        <td className="px-2 py-2" data-label="Заказ">{cred.orderId || "-"}</td>
+                        <td className="px-2 py-2" data-label="Действие" data-column-kind="actions">
                           {cred.status === "available" ? (
                             <button
                               type="button"
@@ -2430,7 +2430,7 @@ export default function ProductsPage() {
     <div className="space-y-4">
       <section className="card flex flex-wrap items-center justify-between gap-3 p-4">
         <div>
-          <h1 className="text-xl font-bold">Товары и цены</h1>
+          <h3 className="text-xl font-bold">Каталог товаров</h3>
           <p className="text-sm text-slate-500">Найдите товар и нажмите «Редактировать» — настройки откроются сразу под ним.</p>
         </div>
         <button className="btn-primary" type="button" onClick={() => { resetForm(); setIsCreateOpen(true); }}>
@@ -2481,7 +2481,7 @@ export default function ProductsPage() {
             ))}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <input className="input max-w-sm" placeholder="Поиск товаров" value={q} onChange={(e) => setQ(e.target.value)} />
+            <label className="admin-field max-w-sm"><span className="admin-field-label">Поиск товаров</span><input className="input max-w-sm" placeholder="Поиск товаров" value={q} onChange={(e) => setQ(e.target.value)} /></label>
             <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
               <span className="whitespace-nowrap font-semibold">Сортировка</span>
               <select
@@ -2521,7 +2521,7 @@ export default function ProductsPage() {
 
       <section className="card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
+          <table className="min-w-full text-sm admin-data-table">
             <thead className="bg-slate-100 text-left dark:bg-slate-800">
               <tr>
                 <th className="px-4 py-3">Название</th>
@@ -2530,7 +2530,7 @@ export default function ProductsPage() {
                 <th className="px-4 py-3">Цена</th>
                 <th className="px-4 py-3">Выдача</th>
                 <th className="px-4 py-3">Статус</th>
-                <th className="px-4 py-3">Действия</th>
+                <th className="px-4 py-3" data-column-kind="actions">Действия</th>
               </tr>
             </thead>
             <tbody>
@@ -2546,21 +2546,21 @@ export default function ProductsPage() {
                       editingId === item.id ? "bg-cyan-50 dark:bg-cyan-950/30" : item.isActive ? "" : "bg-slate-50/80 dark:bg-slate-950/40"
                     }`}
                   >
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" data-label="Название">
                       <div className="font-semibold">{item.title}</div>
                       <div className="text-xs text-slate-500">{item.slug}</div>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap" data-label="Срок">
                       {itemDuration || <span className="text-slate-400">Не указан</span>}
                     </td>
-                    <td className="px-4 py-3">{item.category}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">
+                    <td className="px-4 py-3" data-label="Категория">{item.category}</td>
+                    <td className="px-4 py-3 whitespace-nowrap" data-label="Цена">
                       <div className="font-semibold">{money(Number(item.price), item.currency)}</div>
                       {item.activationVariants?.withLogin?.enabled === false && item.activationVariants?.withoutLogin?.enabled !== false ? (
                         <div className="text-xs text-slate-500">Без входа</div>
                       ) : null}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" data-label="Выдача">
                       <div>{deliveryMethodLabel(itemDeliveryType)}</div>
                       {itemDeliveryType === "vpn" && (
                         <div className="text-xs text-indigo-700 dark:text-indigo-300">
@@ -2573,7 +2573,7 @@ export default function ProductsPage() {
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" data-label="Статус">
                       <div className="flex min-w-44 items-center gap-3">
                         <button
                           className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 ${
@@ -2603,7 +2603,7 @@ export default function ProductsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" data-label="Действия" data-column-kind="actions">
                       <div className="flex gap-2">
                         <button className="btn-secondary" type="button" aria-expanded={editingId === item.id} onClick={() => onEdit(item)} disabled={isSaving || toggle.isPending || archive.isPending}>
                           {editingId === item.id ? "Свернуть" : "Редактировать"}
@@ -2626,7 +2626,7 @@ export default function ProductsPage() {
                   </tr>
                   {editingId === item.id ? (
                     <tr className="bg-slate-50 dark:bg-slate-950/50">
-                      <td colSpan={7} className="p-3 md:p-5">{productEditor}</td>
+                      <td colSpan={7} className="p-3 md:p-5" data-expanded-cell="true">{productEditor}</td>
                     </tr>
                   ) : null}
                   </Fragment>

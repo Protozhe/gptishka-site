@@ -284,16 +284,16 @@ export default function AccountToolsPage() {
   return (
     <div className="space-y-4">
       <section className="card p-4">
-        <h2 className="text-lg font-bold">Клиентский кабинет: support tools</h2>
+        <h2 className="text-lg font-bold">Действия поддержки</h2>
         <p className="mt-1 text-sm text-slate-500">Поиск клиента, ручная привязка подписки, повторная отправка входа и ручное управление VPN.</p>
       </section>
 
       <section className="card p-4">
         <h3 className="text-base font-bold">Поиск клиента</h3>
         <form onSubmit={onLookup} className="mt-3 grid gap-3 md:grid-cols-3">
-          <input className="input" placeholder="Email" value={lookupEmail} onChange={(event) => setLookupEmail(event.target.value)} />
-          <input className="input" placeholder="Order ID" value={lookupOrderId} onChange={(event) => setLookupOrderId(event.target.value)} />
-          <input className="input" placeholder="VPN Access ID" value={lookupVpnAccessId} onChange={(event) => setLookupVpnAccessId(event.target.value)} />
+          <label className="admin-field"><span className="admin-field-label">Email</span><input className="input" placeholder="Email" value={lookupEmail} onChange={(event) => setLookupEmail(event.target.value)} /></label>
+          <label className="admin-field"><span className="admin-field-label">Номер заказа</span><input className="input" placeholder="Order ID" value={lookupOrderId} onChange={(event) => setLookupOrderId(event.target.value)} /></label>
+          <label className="admin-field"><span className="admin-field-label">ID доступа VPN</span><input className="input" placeholder="VPN Access ID" value={lookupVpnAccessId} onChange={(event) => setLookupVpnAccessId(event.target.value)} /></label>
           <button className="btn-primary md:col-span-3" disabled={lookupMutation.isPending}>
             {lookupMutation.isPending ? "Поиск..." : "Найти"}
           </button>
@@ -344,7 +344,7 @@ export default function AccountToolsPage() {
           <div>
             <div className="text-sm font-semibold">VPN доступы</div>
             <div className="mt-2 grid gap-3 md:grid-cols-[180px_minmax(0,1fr)]">
-              <input
+              <label className="admin-field"><span className="admin-field-label">Дней продления</span><input
                 className="input"
                 type="number"
                 min={1}
@@ -352,13 +352,13 @@ export default function AccountToolsPage() {
                 value={vpnActionDays}
                 onChange={(event) => setVpnActionDays(event.target.value)}
                 placeholder="Дней продления"
-              />
-              <input
+              /></label>
+              <label className="admin-field"><span className="admin-field-label">Причина отключения</span><input
                 className="input"
                 value={vpnDisableReason}
                 onChange={(event) => setVpnDisableReason(event.target.value)}
                 placeholder="Причина отключения"
-              />
+              /></label>
             </div>
             <div className="mt-2 space-y-2 text-sm">
               {lookupResult.vpnAccesses.length === 0 ? (
@@ -419,8 +419,8 @@ export default function AccountToolsPage() {
       <section className="card p-4">
         <h3 className="text-base font-bold">Повторная отправка magic-link</h3>
         <form onSubmit={onResendMagic} className="mt-3 grid gap-3 md:grid-cols-2">
-          <input className="input" type="email" placeholder="Email" value={magicEmail} onChange={(event) => setMagicEmail(event.target.value)} required />
-          <input className="input" placeholder="Next path" value={magicNext} onChange={(event) => setMagicNext(event.target.value)} />
+          <label className="admin-field"><span className="admin-field-label">Email</span><input className="input" type="email" placeholder="Email" value={magicEmail} onChange={(event) => setMagicEmail(event.target.value)} required /></label>
+          <label className="admin-field"><span className="admin-field-label">Страница после входа</span><input className="input" placeholder="Next path" value={magicNext} onChange={(event) => setMagicNext(event.target.value)} /></label>
           <button className="btn-primary md:col-span-2" disabled={resendMagicMutation.isPending}>
             {resendMagicMutation.isPending ? "Отправка..." : "Отправить ссылку входа"}
           </button>
@@ -437,15 +437,15 @@ export default function AccountToolsPage() {
           }}
           className="mt-3 grid gap-3 md:grid-cols-2"
         >
-          <input
+          <label className="admin-field"><span className="admin-field-label">Email клиента</span><input
             className="input"
             type="email"
             placeholder="Email клиента"
             value={telegramTestEmail}
             onChange={(event) => setTelegramTestEmail(event.target.value)}
             required
-          />
-          <input className="input" placeholder="Текст теста" value={telegramTestMessage} onChange={(event) => setTelegramTestMessage(event.target.value)} />
+          /></label>
+          <label className="admin-field"><span className="admin-field-label">Текст тестового сообщения</span><input className="input" placeholder="Текст теста" value={telegramTestMessage} onChange={(event) => setTelegramTestMessage(event.target.value)} /></label>
           <button className="btn-primary md:col-span-2" disabled={telegramTestMutation.isPending}>
             {telegramTestMutation.isPending ? "Отправка..." : "Отправить тест Telegram"}
           </button>
@@ -455,8 +455,8 @@ export default function AccountToolsPage() {
       <section className="card p-4">
         <h3 className="text-base font-bold">Привязка заказа к email</h3>
         <form onSubmit={onLinkOrder} className="mt-3 grid gap-3 md:grid-cols-2">
-          <input className="input" placeholder="Order ID" value={linkOrderId} onChange={(event) => setLinkOrderId(event.target.value)} required />
-          <input className="input" type="email" placeholder="Email" value={linkOrderEmail} onChange={(event) => setLinkOrderEmail(event.target.value)} required />
+          <label className="admin-field"><span className="admin-field-label">Номер заказа</span><input className="input" placeholder="Order ID" value={linkOrderId} onChange={(event) => setLinkOrderId(event.target.value)} required /></label>
+          <label className="admin-field"><span className="admin-field-label">Email</span><input className="input" type="email" placeholder="Email" value={linkOrderEmail} onChange={(event) => setLinkOrderEmail(event.target.value)} required /></label>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={linkOrderSyncOrder} onChange={(e) => setLinkOrderSyncOrder(e.target.checked)} />
             Обновить email в самом заказе
@@ -474,8 +474,8 @@ export default function AccountToolsPage() {
       <section className="card p-4">
         <h3 className="text-base font-bold">Привязка VPN доступа к email</h3>
         <form onSubmit={onLinkVpn} className="mt-3 grid gap-3 md:grid-cols-2">
-          <input className="input" placeholder="VPN Access ID" value={linkVpnId} onChange={(event) => setLinkVpnId(event.target.value)} required />
-          <input className="input" type="email" placeholder="Email" value={linkVpnEmail} onChange={(event) => setLinkVpnEmail(event.target.value)} required />
+          <label className="admin-field"><span className="admin-field-label">ID доступа VPN</span><input className="input" placeholder="VPN Access ID" value={linkVpnId} onChange={(event) => setLinkVpnId(event.target.value)} required /></label>
+          <label className="admin-field"><span className="admin-field-label">Email</span><input className="input" type="email" placeholder="Email" value={linkVpnEmail} onChange={(event) => setLinkVpnEmail(event.target.value)} required /></label>
           <label className="flex items-center gap-2 text-sm md:col-span-2">
             <input type="checkbox" checked={linkVpnSyncOrder} onChange={(e) => setLinkVpnSyncOrder(e.target.checked)} />
             Если есть paid order, синхронизировать email в заказе

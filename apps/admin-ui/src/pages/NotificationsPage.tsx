@@ -90,14 +90,14 @@ export default function NotificationsPage() {
       <section className="card p-4">
         <h3 className="text-base font-bold">Тестовое письмо</h3>
         <form onSubmit={onSendTest} className="mt-3 grid gap-3 md:grid-cols-[1fr_auto]">
-          <input
+          <label className="admin-field"><span className="admin-field-label">Email</span><input
             className="input"
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             placeholder="email@example.com"
             required
-          />
+          /></label>
           <button className="btn-primary" disabled={sendTestMutation.isPending}>
             {sendTestMutation.isPending ? "Отправка..." : "Отправить тест"}
           </button>

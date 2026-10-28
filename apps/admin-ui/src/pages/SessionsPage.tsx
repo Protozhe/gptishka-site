@@ -21,7 +21,7 @@ export default function SessionsPage() {
     finally { setBusy(false); }
   }
   return <section className="space-y-4">
-    <h2 className="text-xl font-bold">Устройства и входы</h2>
+    <h2 className="text-xl font-bold">Активные сеансы</h2>
     <p className="text-sm text-slate-500">Здесь можно завершить вход с другого компьютера или телефона. Доступ прекращается сразу.</p>
     {error && <p role="alert" className="text-red-600">{error}</p>}
     <button className="btn-secondary" disabled={busy || !sessions.some(s => !s.current)} onClick={() => void revoke()}>Выйти на остальных устройствах</button>

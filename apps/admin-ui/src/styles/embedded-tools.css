@@ -1,0 +1,67 @@
+/* Scoped to existing same-origin tools; no visibility or workflow changes. */
+body.gptishka-tool-theme {
+ color-scheme:light;--bg:#f4f6fa;--sidebar:#fff;--panel:#fff;--panel2:#f7f9fb;--panel-2:#f7f9fb;--panel-3:#f4f6fa;--line:#e2e8ef;--line-soft:#e2e8ef;--text:#203247;--muted:#6b7b8e;--green:#087e70;--green-2:#e6f4ee;--red:#b63649;
+ --workspace-bg:#f4f6fa;--surface:#fff;--surface-soft:#f7f9fb;--surface-blue:#edf8f3;--ink:#203247;--ink-soft:#6b7b8e;--stroke:#e2e8ef;--stroke-strong:#c8d5df;--accent:#087e70;--accent-strong:#066a5e;--accent-soft:#e6f4ee;--danger:#b63649;--success:#08755f;--shadow:none;--panel-shadow:none;
+ background:var(--bg);color:var(--text);font-family:Manrope,ui-sans-serif,system-ui,sans-serif;font-size:14px;line-height:1.6;
+ --surface2:var(--panel-2);--blue:var(--green);--blue2:var(--green-2);--green2:var(--green-2);
+}
+body.gptishka-tool-theme.gptishka-tool-dark {
+ color-scheme:dark;--bg:#101927;--sidebar:#162133;--panel:#162133;--panel2:#142032;--panel-2:#142032;--panel-3:#142032;--line:#2a3a4d;--line-soft:#2a3a4d;--text:#e1eaf4;--muted:#9aabbe;--green:#7ed6ba;--green-2:#1b3e34;--red:#ffabb6;
+ --workspace-bg:#101927;--surface:#162133;--surface-soft:#142032;--surface-blue:#1b3e34;--ink:#e1eaf4;--ink-soft:#9aabbe;--stroke:#2a3a4d;--stroke-strong:#35475d;--accent:#7ed6ba;--accent-strong:#8adbbd;--accent-soft:#1b3e34;--danger:#ffabb6;--success:#8ce0c0;
+}
+.gptishka-tool-theme :where(button,input,select,textarea) {font-family:inherit;font-size:13px;border-radius:8px}
+.gptishka-tool-theme :where(button:not(.primary):not(.danger):not(.stat-link)) {background:var(--panel);color:var(--text);border-color:var(--line)}
+.gptishka-tool-theme :where(button,input:not([type=checkbox]):not([type=radio]),select) {min-height:36px}
+.gptishka-tool-theme :where(input:not([type=checkbox]):not([type=radio]),select,textarea) {background:var(--panel);color:var(--text);border-color:var(--line);min-width:0}
+.gptishka-tool-theme :where(button,input,select,textarea,a):focus-visible {outline:2px solid var(--green);outline-offset:2px}
+.gptishka-tool-theme :where(input[type=checkbox],input[type=radio]) {accent-color:var(--green)}
+.gptishka-tool-theme :where(.panel,.band,.stat,.metric) {background:var(--panel);border-color:var(--line);border-radius:12px;box-shadow:none}
+.gptishka-tool-theme :where(.panel,.band) {overflow-wrap:anywhere}
+.gptishka-tool-theme :where(.savebar,.toast) {background:var(--panel);color:var(--text);border-color:var(--line)}
+.gptishka-tool-theme .stat.attention {background:#fff3dc;border-color:#efddb8;color:#925d0e}
+.gptishka-tool-theme :where(.awaiting_confirmation,.scheduled,.retry,.manual_due) {color:#925d0e}
+.gptishka-tool-theme.gptishka-tool-dark .stat.attention {background:#44351f;border-color:#675130;color:#efc56f}
+.gptishka-tool-theme.gptishka-tool-dark :where(.awaiting_confirmation,.scheduled,.retry,.manual_due) {color:#efc56f}
+.gptishka-tool-theme[data-workspace-tool=reminders] main,.gptishka-tool-theme[data-workspace-tool=profit] main {margin:0 auto;align-self:start;padding:24px}
+.gptishka-tool-theme :where(.shell>aside,.app>.side) {background:var(--panel);color:var(--text);border-color:var(--line)}
+.gptishka-tool-theme :where(.shell>aside,.app>.side) nav a {color:var(--muted)}
+.gptishka-tool-theme :where(.shell>aside,.app>.side) nav a.active {background:var(--green-2);color:var(--green)!important}
+.gptishka-tool-theme :where(h1,.title h1) {font-size:28px;line-height:1.3;letter-spacing:-.7px;color:var(--text)}
+.gptishka-tool-theme :where(h2,h3) {color:var(--text)}
+.gptishka-tool-theme :where(.muted,.small-label,.account-meta) {color:var(--muted)}
+.gptishka-tool-theme button.primary,.gptishka-tool-theme .btn.primary {background:#087e70;color:#fff;border:1px solid #087e70}
+.gptishka-tool-theme .btn.danger {background:var(--panel);color:var(--red);border-color:var(--red)}
+.gptishka-tool-theme dialog {background:var(--panel);color:var(--text)}
+.gptishka-tool-theme :where(.tabs button.active,.rail-tab.active) {color:var(--green);border-color:var(--green)}
+.gptishka-tool-theme table {font-size:13px;line-height:1.6}
+.gptishka-tool-theme :where(th,td) {border-color:var(--line)}
+.gptishka-tool-theme th {color:var(--muted);background:var(--panel-2);font-size:11px;letter-spacing:0;text-transform:none;white-space:normal}
+.gptishka-tool-theme :where(td,.account-name,.chat-name) {overflow-wrap:anywhere}
+.gptishka-tool-theme :where(.stats .stat,.summary .metric) strong {font-variant-numeric:tabular-nums}
+.gptishka-tool-theme[data-workspace-tool=chats] :where(.app,.side,.chats,.main,.toolbar,.main-header,.composer,.reply-rail,.reply-rail-header,.codex-rail) {background:var(--panel)!important;border-color:var(--line)!important;color:var(--text)!important}
+.gptishka-tool-theme[data-workspace-tool=chats] .messages {background:var(--bg)!important;color:var(--text)!important}
+.gptishka-tool-theme[data-workspace-tool=chats] .message {background:var(--panel)!important;color:var(--text)!important;border-color:var(--line)!important;box-shadow:none!important}
+.gptishka-tool-theme[data-workspace-tool=chats] .message.own {background:var(--green-2)!important;border-color:var(--stroke-strong)!important;color:var(--text)!important}
+.gptishka-tool-theme[data-workspace-tool=chats] .message.system {background:var(--panel-2)!important;border-color:var(--stroke-strong)!important;color:var(--text)!important}
+.gptishka-tool-theme[data-workspace-tool=chats] :where(.account-btn.active,.chat-item.active) {background:var(--green-2)!important;border-color:var(--green)!important;color:var(--text)!important}
+.gptishka-tool-theme[data-workspace-tool=chats] #sendBtn,.gptishka-tool-theme[data-workspace-tool=chats] #manageInstructionsBtn {background:#087e70!important;border-color:#087e70!important;color:#fff!important}
+.gptishka-tool-theme[data-workspace-tool=chats] :is(#messageInput,#searchInput,#apiInput,#tokenInput,#scriptInput,#instructionTitleInput,#instructionTextInput,#codexPackage,#codexKeysInput) {background:var(--panel)!important;color:var(--text)!important;border-color:var(--line)!important}
+.gptishka-tool-theme[data-workspace-tool=chats] :is(#autoBtn,#settingsBtn,#refreshBtn,#soundBtn,#openFunpayBtn,#reloadMessagesBtn,#attachBtn,#allFilter,#unreadFilter,#codexSideBtn) {background:var(--panel)!important;color:var(--text)!important;border-color:var(--line)!important}
+.gptishka-tool-theme[data-workspace-tool=chats] :is(#allFilter,#unreadFilter).active {background:var(--green-2)!important;color:var(--green)!important}
+.gptishka-tool-theme[data-workspace-tool=chats] :where(.side-footer,.brand,.filter-row) {background:var(--panel)!important;border-color:var(--line)!important}
+.gptishka-tool-theme[data-workspace-tool=chats] :where(.chat-sub,.msg-meta) {color:var(--muted)!important}
+.gptishka-tool-theme[data-workspace-tool=chats] :where(.settings-pop,.scripts-dialog) {background:var(--panel);color:var(--text);border-color:var(--line)}
+.gptishka-tool-theme[data-workspace-tool=capital] :where(.content,.app) {background:var(--bg);color:var(--text)}
+.gptishka-tool-theme[data-workspace-tool=capital] :where(.control,.btn) {border-color:var(--line)}
+.gptishka-tool-theme[data-workspace-tool=capital] .account {background:var(--panel)}
+@media(max-width:1250px) {
+ .gptishka-tool-theme[data-workspace-tool=profit] .stats {grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:700px) {
+ .gptishka-tool-theme :where(button,input:not([type=checkbox]):not([type=radio]),select) {min-height:40px}
+ .gptishka-tool-theme :where(h1,.title h1) {font-size:25px}
+ .gptishka-tool-theme[data-workspace-tool=reminders] main,.gptishka-tool-theme[data-workspace-tool=profit] main {padding:16px}
+ .gptishka-tool-theme :where(.stats,.summary) {gap:10px}
+ .gptishka-tool-theme[data-workspace-tool=profit] .stats {grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce) {.gptishka-tool-theme * {transition:none!important;animation:none!important}}

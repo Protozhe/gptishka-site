@@ -231,14 +231,14 @@ function TelegramProductsTable({
         <p className="mt-1 text-xs text-slate-500">{hint} Порядок: товар → срок.</p>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[760px] text-left text-sm">
+        <table className="w-full min-w-[760px] text-left text-sm admin-data-table">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-900/60">
             <tr>
               <th className="px-4 py-3">Название</th>
               <th className="px-4 py-3">Срок</th>
               <th className="px-4 py-3">Метод</th>
-              <th className="px-4 py-3">Telegram pool</th>
-              <th className="px-4 py-3 text-right">Действие</th>
+              <th className="px-4 py-3">Пул Telegram</th>
+              <th className="px-4 py-3 text-right" data-column-kind="actions">Действие</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -258,16 +258,16 @@ function TelegramProductsTable({
                     }
                     onClick={() => onSelect(product.id)}
                   >
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" data-label="Название">
                       <div className="font-semibold">{title}</div>
                       <div className="text-xs text-slate-500">{product.slug}</div>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap" data-label="Срок">
                       {getProductDurationLabel(product) || <span className="text-slate-400">Не указан</span>}
                     </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{methodLabelForTelegramProduct(product)}</td>
-                    <td className="px-4 py-3 font-mono text-xs text-slate-500">{key}</td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300" data-label="Метод">{methodLabelForTelegramProduct(product)}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-slate-500" data-label="Пул Telegram">{key}</td>
+                    <td className="px-4 py-3 text-right" data-label="Действие" data-column-kind="actions">
                       <button
                         className={isActive ? "btn-primary" : "btn-secondary"}
                         type="button"
@@ -282,7 +282,7 @@ function TelegramProductsTable({
                   </tr>
                   {isActive ? (
                     <tr className="bg-slate-50/80 dark:bg-slate-950/40">
-                      <td className="px-4 py-4" colSpan={5}>
+                      <td className="px-4 py-4" colSpan={5} data-expanded-cell="true">
                         {showDurationEditor ? <ProductDurationEditor product={product} /> : null}
                         {renderDetails(product)}
                       </td>
@@ -453,12 +453,12 @@ function ProductKeysCard({ product, poolKeyOverride }: { product: ProductItem; p
       </div>
 
       <form className="space-y-2" onSubmit={onSubmit}>
-        <textarea
+        <label className="admin-field w-full"><span className="admin-field-label">Ключи для загрузки</span><textarea
           className="input min-h-[120px] w-full"
           placeholder="SDK ключи по одному в строке"
           value={text}
           onChange={(e) => setText(e.target.value)}
-        />
+        /></label>
         {error ? <div className="text-sm text-rose-500">{error}</div> : null}
         <button className="btn-primary" type="submit" disabled={importer.isPending}>
           {importer.isPending ? "Загрузка..." : "Загрузить ключи"}
@@ -540,14 +540,14 @@ function LegacyPoolMovePanel({
         Переносит все ключи этого пула в выбранный товар. Статусы сохраняются: свободные, выданные и архивные не смешиваются.
       </p>
       <div className="mt-3 grid gap-2 md:grid-cols-[1fr_auto]">
-        <select className="input" value={targetKey} onChange={(event) => setTargetKey(event.target.value)}>
+        <label className="admin-field"><span className="admin-field-label">Пул назначения</span><select className="input" value={targetKey} onChange={(event) => setTargetKey(event.target.value)}>
           <option value="">Выберите товар / Telegram pool</option>
           {filteredTargets.map((target) => (
             <option value={target.productKey} key={target.productKey}>
               {target.label} → {target.productKey}
             </option>
           ))}
-        </select>
+        </select></label>
         <button
           className="btn-primary"
           type="button"
@@ -687,7 +687,7 @@ export default function TelegramCdkPage() {
   return (
     <div className="space-y-4" data-telegram-cdk-ui-version={TELEGRAM_CDK_UI_VERSION}>
       <section className="card p-4">
-        <h2 className="text-xl font-semibold">Telegram CDK</h2>
+        <h2 className="text-xl font-semibold">Пулы ключей для ботов</h2>
         <p className="mt-1 text-sm text-slate-500">
           Это отдельные ключи для Telegram-ботов. Ключи сайта сюда не подтягиваются.
         </p>

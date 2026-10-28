@@ -76,27 +76,29 @@ export default function PromoCodesPage() {
       </div>
 
       <form onSubmit={onSubmit} className="card p-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="admin-form-heading"><h3>Новый промокод</h3><p>Задайте скидку и ограничения, затем сохраните код.</p></div>
         <div className="flex min-w-0 items-center gap-2">
-          <input className="input min-w-0 flex-1" aria-label="Промокод" placeholder="Промокод" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} />
+          <label className="admin-field flex-1"><span className="admin-field-label">Промокод</span><input className="input min-w-0 flex-1" aria-label="Промокод" placeholder="Промокод" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} /></label>
           <button type="button" className="btn-secondary shrink-0" onClick={generateCode} disabled={create.isPending}>
             Сгенерировать
           </button>
         </div>
-        <select className="input" value={kind} onChange={(e) => setKind(e.target.value)}>
+        <label className="admin-field"><span className="admin-field-label">Тип промокода</span><select className="input" value={kind} onChange={(e) => setKind(e.target.value)}>
           <option value="REFERRAL">Реферальный</option>
           <option value="ADS">Реклама</option>
           <option value="GENERAL">Общий</option>
-        </select>
-        <input className="input" placeholder="Кому принадлежит" value={ownerLabel} onChange={(e) => setOwnerLabel(e.target.value)} />
-        <input className="input" placeholder="Канал/кампания" value={campaign} onChange={(e) => setCampaign(e.target.value)} />
-        <input className="input" type="number" min={0} max={95} placeholder="Скидка %" value={discount} onChange={(e) => setDiscount(Number(e.target.value))} />
-        <input className="input" type="number" min={1} placeholder="Лимит использований" value={usageLimit} onChange={(e) => setUsageLimit(e.target.value ? Number(e.target.value) : "")} />
+        </select></label>
+        <label className="admin-field"><span className="admin-field-label">Кому принадлежит</span><input className="input" placeholder="Кому принадлежит" value={ownerLabel} onChange={(e) => setOwnerLabel(e.target.value)} /></label>
+        <label className="admin-field"><span className="admin-field-label">Канал/кампания</span><input className="input" placeholder="Канал/кампания" value={campaign} onChange={(e) => setCampaign(e.target.value)} /></label>
+        <label className="admin-field"><span className="admin-field-label">Скидка, %</span><input className="input" type="number" min={0} max={95} placeholder="Скидка %" value={discount} onChange={(e) => setDiscount(Number(e.target.value))} /></label>
+        <label className="admin-field"><span className="admin-field-label">Лимит использований</span><input className="input" type="number" min={1} placeholder="Лимит использований" value={usageLimit} onChange={(e) => setUsageLimit(e.target.value ? Number(e.target.value) : "")} /></label>
         <button className="btn-primary md:col-span-2 xl:col-span-3" disabled={create.isPending}>Добавить промокод</button>
       </form>
 
       <section className="card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
+          <table className="min-w-full text-sm admin-data-table">
+            <caption className="admin-table-caption">Промокоды и результаты</caption>
             <thead className="bg-slate-100 text-left dark:bg-slate-800">
               <tr>
                 <th className="px-4 py-3">Код</th>
@@ -108,22 +110,22 @@ export default function PromoCodesPage() {
                 <th className="px-4 py-3">Выручка (RUB)</th>
                 <th className="px-4 py-3">Скидки (RUB)</th>
                 <th className="px-4 py-3">Использовано</th>
-                <th className="px-4 py-3 text-right">Действия</th>
+                <th className="px-4 py-3 text-right" data-column-kind="actions">Действия</th>
               </tr>
             </thead>
             <tbody>
               {(data?.items || []).map((item: any) => (
                 <tr className="border-t border-slate-200 dark:border-slate-800" key={item.id}>
-                  <td className="px-4 py-3 font-semibold">{item.code}</td>
-                  <td className="px-4 py-3">{item.kind}</td>
-                  <td className="px-4 py-3">{item.ownerLabel || "-"}</td>
-                  <td className="px-4 py-3">{item.campaign || "-"}</td>
-                  <td className="px-4 py-3">{item.discountPercent}%</td>
-                  <td className="px-4 py-3">{item.ordersPaid}</td>
-                  <td className="px-4 py-3">{formatRub(item.revenueRub)}</td>
-                  <td className="px-4 py-3">{formatRub(item.discountRub)}</td>
-                  <td className="px-4 py-3">{item.usedCount}{item.usageLimit ? ` / ${item.usageLimit}` : ""}</td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 font-semibold" data-label="Код">{item.code}</td>
+                  <td className="px-4 py-3" data-label="Тип">{item.kind}</td>
+                  <td className="px-4 py-3" data-label="Владелец">{item.ownerLabel || "-"}</td>
+                  <td className="px-4 py-3" data-label="Кампания">{item.campaign || "-"}</td>
+                  <td className="px-4 py-3" data-label="Скидка">{item.discountPercent}%</td>
+                  <td className="px-4 py-3" data-label="Оплаченных заказов">{item.ordersPaid}</td>
+                  <td className="px-4 py-3" data-label="Выручка (RUB)">{formatRub(item.revenueRub)}</td>
+                  <td className="px-4 py-3" data-label="Скидки (RUB)">{formatRub(item.discountRub)}</td>
+                  <td className="px-4 py-3" data-label="Использовано">{item.usedCount}{item.usageLimit ? ` / ${item.usageLimit}` : ""}</td>
+                  <td className="px-4 py-3 text-right" data-label="Действия" data-column-kind="actions">
                     <button
                       type="button"
                       className="btn-secondary text-rose-600"

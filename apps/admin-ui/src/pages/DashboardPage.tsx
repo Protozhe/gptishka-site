@@ -119,7 +119,7 @@ export default function DashboardPage() {
               За выбранный период оплаченных транзакций не было.
             </div>
           ) : (
-            <table className="min-w-full text-sm">
+            <table className="min-w-full text-sm admin-data-table">
               <thead>
                 <tr className="text-left text-slate-500">
                   <th className="py-2 pr-4 font-semibold">Дата</th>
@@ -130,9 +130,9 @@ export default function DashboardPage() {
               <tbody>
                 {dailyTransactions.map((item) => (
                   <tr className="border-t border-slate-200/70 dark:border-slate-700/70" key={item.date}>
-                    <td className="py-2 pr-4">{formatFullDay(item.date)}</td>
-                    <td className="py-2 pr-4">{item.orders}</td>
-                    <td className="py-2 pr-0 font-semibold">{money(Number(item.revenue || 0))}</td>
+                    <td className="py-2 pr-4" data-label="Дата">{formatFullDay(item.date)}</td>
+                    <td className="py-2 pr-4" data-label="Транзакций">{item.orders}</td>
+                    <td className="py-2 pr-0 font-semibold" data-label="Выручка">{money(Number(item.revenue || 0))}</td>
                   </tr>
                 ))}
               </tbody>

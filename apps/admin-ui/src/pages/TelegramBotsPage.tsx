@@ -83,46 +83,46 @@ export default function TelegramBotsPage() {
     <section className="space-y-4">
       <div className="card p-4">
         <div className="flex flex-wrap items-center gap-3">
-          <h2 className="text-lg font-semibold">Telegram Bots Monitor</h2>
-          <select className="input max-w-[180px]" value={botType} onChange={(e) => setBotType(e.target.value as BotOption)}>
+          <h2 className="text-lg font-semibold">Обзор ботов</h2>
+          <label className="admin-field max-w-[180px]"><span className="admin-field-label">Бот</span><select className="input max-w-[180px]" value={botType} onChange={(e) => setBotType(e.target.value as BotOption)}>
             {BOT_OPTIONS.map((b) => (
               <option key={b} value={b}>{b}</option>
             ))}
-          </select>
-          <select className="input max-w-[140px]" value={days} onChange={(e) => setDays(Number(e.target.value || 7))}>
-            <option value={1}>1 day</option>
-            <option value={3}>3 days</option>
-            <option value={7}>7 days</option>
-            <option value={14}>14 days</option>
-            <option value={30}>30 days</option>
-          </select>
+          </select></label>
+          <label className="admin-field max-w-[140px]"><span className="admin-field-label">Период</span><select className="input max-w-[140px]" value={days} onChange={(e) => setDays(Number(e.target.value || 7))}>
+            <option value={1}>1 день</option>
+            <option value={3}>3 дня</option>
+            <option value={7}>7 дней</option>
+            <option value={14}>14 дней</option>
+            <option value={30}>30 дней</option>
+          </select></label>
         </div>
       </div>
 
       <div className="grid gap-3 md:grid-cols-3">
-        <div className="card p-4"><div className="text-xs text-slate-500">Events</div><div className="text-2xl font-bold">{overview.data?.totalEvents ?? 0}</div></div>
-        <div className="card p-4"><div className="text-xs text-slate-500">Unique users</div><div className="text-2xl font-bold">{overview.data?.uniqueUsers ?? 0}</div></div>
-        <div className="card p-4"><div className="text-xs text-slate-500">Range</div><div className="text-2xl font-bold">{overview.data?.rangeDays ?? days}d</div></div>
+        <div className="card p-4"><div className="text-xs text-slate-500">События</div><div className="text-2xl font-bold">{overview.data?.totalEvents ?? 0}</div></div>
+        <div className="card p-4"><div className="text-xs text-slate-500">Клиентов</div><div className="text-2xl font-bold">{overview.data?.uniqueUsers ?? 0}</div></div>
+        <div className="card p-4"><div className="text-xs text-slate-500">Период</div><div className="text-2xl font-bold">{overview.data?.rangeDays ?? days}d</div></div>
       </div>
 
       <div className="card p-4">
-        <h3 className="mb-3 font-semibold">Client Funnel</h3>
+        <h3 className="mb-3 font-semibold">Путь клиента</h3>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
-          <div><div className="text-xs text-slate-500">Start</div><div className="text-xl font-bold">{overview.data?.funnel?.start ?? 0}</div></div>
-          <div><div className="text-xs text-slate-500">Buy intent</div><div className="text-xl font-bold">{overview.data?.funnel?.buyIntent ?? 0}</div></div>
-          <div><div className="text-xs text-slate-500">Order created</div><div className="text-xl font-bold">{overview.data?.funnel?.orderCreated ?? 0}</div></div>
-          <div><div className="text-xs text-slate-500">Payment confirmed</div><div className="text-xl font-bold">{overview.data?.funnel?.paymentConfirmed ?? 0}</div></div>
-          <div><div className="text-xs text-slate-500">Activation success</div><div className="text-xl font-bold text-emerald-700">{overview.data?.funnel?.activationSuccess ?? 0}</div></div>
-          <div><div className="text-xs text-slate-500">Activation failed</div><div className="text-xl font-bold text-rose-700">{overview.data?.funnel?.activationFailed ?? 0}</div></div>
+          <div><div className="text-xs text-slate-500">Запустили бота</div><div className="text-xl font-bold">{overview.data?.funnel?.start ?? 0}</div></div>
+          <div><div className="text-xs text-slate-500">Начали покупку</div><div className="text-xl font-bold">{overview.data?.funnel?.buyIntent ?? 0}</div></div>
+          <div><div className="text-xs text-slate-500">Создали заказ</div><div className="text-xl font-bold">{overview.data?.funnel?.orderCreated ?? 0}</div></div>
+          <div><div className="text-xs text-slate-500">Оплатили</div><div className="text-xl font-bold">{overview.data?.funnel?.paymentConfirmed ?? 0}</div></div>
+          <div><div className="text-xs text-slate-500">Активировано</div><div className="text-xl font-bold text-emerald-700">{overview.data?.funnel?.activationSuccess ?? 0}</div></div>
+          <div><div className="text-xs text-slate-500">Ошибка активации</div><div className="text-xl font-bold text-rose-700">{overview.data?.funnel?.activationFailed ?? 0}</div></div>
         </div>
       </div>
 
       <div className="card p-4 overflow-x-auto">
-        <h3 className="mb-2 font-semibold">Users Activity</h3>
-        <table className="w-full text-sm">
+        <h3 className="mb-2 font-semibold">Активность клиентов</h3>
+        <table className="w-full text-sm admin-data-table">
           <thead>
             <tr className="text-left border-b">
-              <th className="py-2 pr-3">User</th><th className="py-2 pr-3">Events</th><th className="py-2 pr-3">Orders</th><th className="py-2 pr-3">Paid</th><th className="py-2 pr-3">Success</th><th className="py-2 pr-3">Failed</th><th className="py-2 pr-3">Last seen</th>
+              <th className="py-2 pr-3">Клиент</th><th className="py-2 pr-3">События</th><th className="py-2 pr-3">Заказы</th><th className="py-2 pr-3">Оплаты</th><th className="py-2 pr-3">Успешно</th><th className="py-2 pr-3">Ошибки</th><th className="py-2 pr-3">Последняя активность</th>
             </tr>
           </thead>
           <tbody>
@@ -132,13 +132,13 @@ export default function TelegramBotsPage() {
                 className={`border-b align-top cursor-pointer ${selectedUserId === u.telegramUserId ? "bg-slate-50" : ""}`}
                 onClick={() => setSelectedUserId(String(u.telegramUserId))}
               >
-                <td className="py-2 pr-3">{u.telegramUsername ? `@${u.telegramUsername}` : u.telegramUserId}</td>
-                <td className="py-2 pr-3">{u.events}</td>
-                <td className="py-2 pr-3">{u.orderCreated}</td>
-                <td className="py-2 pr-3">{u.paymentConfirmed}</td>
-                <td className="py-2 pr-3 text-emerald-700">{u.activationSuccess}</td>
-                <td className="py-2 pr-3 text-rose-700">{u.activationFailed}</td>
-                <td className="py-2 pr-3">{fmtDate(u.lastSeenAt)}</td>
+                <td className="py-2 pr-3" data-label="Клиент">{u.telegramUsername ? `@${u.telegramUsername}` : u.telegramUserId}</td>
+                <td className="py-2 pr-3" data-label="События">{u.events}</td>
+                <td className="py-2 pr-3" data-label="Заказы">{u.orderCreated}</td>
+                <td className="py-2 pr-3" data-label="Оплаты">{u.paymentConfirmed}</td>
+                <td className="py-2 pr-3 text-emerald-700" data-label="Успешно">{u.activationSuccess}</td>
+                <td className="py-2 pr-3 text-rose-700" data-label="Ошибки">{u.activationFailed}</td>
+                <td className="py-2 pr-3" data-label="Последняя активность">{fmtDate(u.lastSeenAt)}</td>
               </tr>
             ))}
           </tbody>
@@ -146,22 +146,22 @@ export default function TelegramBotsPage() {
       </div>
 
       <div className="card p-4 overflow-x-auto">
-        <h3 className="mb-2 font-semibold">User Timeline {selectedUserId ? `(${selectedUserId})` : ""}</h3>
-        {!selectedUserId ? <div className="text-sm text-slate-500">Select a user in Users Activity table.</div> : null}
+        <h3 className="mb-2 font-semibold">История клиента {selectedUserId ? `(${selectedUserId})` : ""}</h3>
+        {!selectedUserId ? <div className="text-sm text-slate-500">Выберите клиента в таблице «Активность клиентов».</div> : null}
         {selectedUserId ? (
-          <table className="w-full text-sm">
+          <table className="w-full text-sm admin-data-table">
             <thead>
               <tr className="text-left border-b">
-                <th className="py-2 pr-3">Time</th><th className="py-2 pr-3">Event</th><th className="py-2 pr-3">Order</th><th className="py-2 pr-3">Data</th>
+                <th className="py-2 pr-3">Время</th><th className="py-2 pr-3">Событие</th><th className="py-2 pr-3">Заказ</th><th className="py-2 pr-3">Данные</th>
               </tr>
             </thead>
             <tbody>
               {(timeline.data?.items || []).map((e: any) => (
                 <tr key={e.id} className="border-b align-top">
-                  <td className="py-2 pr-3">{fmtDate(e.createdAt)}</td>
-                  <td className="py-2 pr-3">{e.eventType}</td>
-                  <td className="py-2 pr-3">{e.orderId || "-"}</td>
-                  <td className="py-2 pr-3 text-xs">{eventData(e)}</td>
+                  <td className="py-2 pr-3" data-label="Время">{fmtDate(e.createdAt)}</td>
+                  <td className="py-2 pr-3" data-label="Событие">{e.eventType}</td>
+                  <td className="py-2 pr-3" data-label="Заказ">{e.orderId || "-"}</td>
+                  <td className="py-2 pr-3 text-xs" data-label="Данные">{eventData(e)}</td>
                 </tr>
               ))}
             </tbody>
@@ -170,29 +170,29 @@ export default function TelegramBotsPage() {
       </div>
 
       <div className="card p-4 overflow-x-auto">
-        <h3 className="mb-2 font-semibold">Recent Telegram Orders</h3>
-        <table className="w-full text-sm">
+        <h3 className="mb-2 font-semibold">Последние заказы ботов</h3>
+        <table className="w-full text-sm admin-data-table">
           <thead>
             <tr className="text-left border-b">
-              <th className="py-2 pr-3">Order</th><th className="py-2 pr-3">Bot</th><th className="py-2 pr-3">User</th><th className="py-2 pr-3">Product</th><th className="py-2 pr-3">Amount</th><th className="py-2 pr-3">Promo</th><th className="py-2 pr-3">Payment</th><th className="py-2 pr-3">Activation</th><th className="py-2 pr-3">CDK</th><th className="py-2 pr-3">Created</th>
+              <th className="py-2 pr-3">Заказ</th><th className="py-2 pr-3">Бот</th><th className="py-2 pr-3">Клиент</th><th className="py-2 pr-3">Товар</th><th className="py-2 pr-3">Сумма</th><th className="py-2 pr-3">Промокод</th><th className="py-2 pr-3">Оплата</th><th className="py-2 pr-3">Активация</th><th className="py-2 pr-3">CDK</th><th className="py-2 pr-3">Создан</th>
             </tr>
           </thead>
           <tbody>
             {(overview.data?.recentOrders || []).map((row: any) => (
               <tr key={row.id} className="border-b align-top">
-                <td className="py-2 pr-3">{row.id}<div className="text-xs text-slate-500">{row.status}</div></td>
-                <td className="py-2 pr-3">{row.botType || "-"}</td>
-                <td className="py-2 pr-3">{row.telegramUsername ? `@${row.telegramUsername}` : row.telegramUserId || "-"}</td>
-                <td className="py-2 pr-3">{row.productTitle || "-"}</td>
-                <td className="py-2 pr-3">{fmtMoney(row.totalAmount, row.currency || "RUB")}</td>
-                <td className="py-2 pr-3">
+                <td className="py-2 pr-3" data-label="Заказ">{row.id}<div className="text-xs text-slate-500">{row.status}</div></td>
+                <td className="py-2 pr-3" data-label="Бот">{row.botType || "-"}</td>
+                <td className="py-2 pr-3" data-label="Клиент">{row.telegramUsername ? `@${row.telegramUsername}` : row.telegramUserId || "-"}</td>
+                <td className="py-2 pr-3" data-label="Товар">{row.productTitle || "-"}</td>
+                <td className="py-2 pr-3" data-label="Сумма">{fmtMoney(row.totalAmount, row.currency || "RUB")}</td>
+                <td className="py-2 pr-3" data-label="Промокод">
                   {row.promoCode || "-"}
                   {Number(row.discountAmount || 0) > 0 ? <div className="text-xs text-emerald-700">-{fmtMoney(row.discountAmount, row.currency || "RUB")}</div> : null}
                 </td>
-                <td className="py-2 pr-3">{row.paymentStatus || "-"}<div className="text-xs text-slate-500">{row.paymentProvider || ""}</div></td>
-                <td className="py-2 pr-3">{row.activationStatus || "-"}<div className="text-xs text-rose-600">{row.telegramLastError || row.activationMessage || ""}</div></td>
-                <td className="py-2 pr-3 font-mono text-xs">{row.activationCdk || "-"}</td>
-                <td className="py-2 pr-3">{fmtDate(row.createdAt)}</td>
+                <td className="py-2 pr-3" data-label="Оплата">{row.paymentStatus || "-"}<div className="text-xs text-slate-500">{row.paymentProvider || ""}</div></td>
+                <td className="py-2 pr-3" data-label="Активация">{row.activationStatus || "-"}<div className="text-xs text-rose-600">{row.telegramLastError || row.activationMessage || ""}</div></td>
+                <td className="py-2 pr-3 font-mono text-xs" data-label="CDK">{row.activationCdk || "-"}</td>
+                <td className="py-2 pr-3" data-label="Создан">{fmtDate(row.createdAt)}</td>
               </tr>
             ))}
           </tbody>
@@ -200,22 +200,22 @@ export default function TelegramBotsPage() {
       </div>
 
       <div className="card p-4 overflow-x-auto">
-        <h3 className="mb-2 font-semibold">Recent Bot Events</h3>
-        <table className="w-full text-sm">
+        <h3 className="mb-2 font-semibold">Последние события</h3>
+        <table className="w-full text-sm admin-data-table">
           <thead>
             <tr className="text-left border-b">
-              <th className="py-2 pr-3">Time</th><th className="py-2 pr-3">Bot</th><th className="py-2 pr-3">Event</th><th className="py-2 pr-3">User</th><th className="py-2 pr-3">Order</th><th className="py-2 pr-3">Data</th>
+              <th className="py-2 pr-3">Время</th><th className="py-2 pr-3">Бот</th><th className="py-2 pr-3">Событие</th><th className="py-2 pr-3">Клиент</th><th className="py-2 pr-3">Заказ</th><th className="py-2 pr-3">Данные</th>
             </tr>
           </thead>
           <tbody>
             {(events.data?.items || []).map((e: any) => (
               <tr key={e.id} className="border-b align-top">
-                <td className="py-2 pr-3">{fmtDate(e.createdAt)}</td>
-                <td className="py-2 pr-3">{e.botType}</td>
-                <td className="py-2 pr-3">{e.eventType}</td>
-                <td className="py-2 pr-3">{e.telegramUsername ? `@${e.telegramUsername}` : e.telegramUserId || "-"}</td>
-                <td className="py-2 pr-3">{e.orderId || "-"}</td>
-                <td className="py-2 pr-3 text-xs">{eventData(e)}</td>
+                <td className="py-2 pr-3" data-label="Время">{fmtDate(e.createdAt)}</td>
+                <td className="py-2 pr-3" data-label="Бот">{e.botType}</td>
+                <td className="py-2 pr-3" data-label="Событие">{e.eventType}</td>
+                <td className="py-2 pr-3" data-label="Клиент">{e.telegramUsername ? `@${e.telegramUsername}` : e.telegramUserId || "-"}</td>
+                <td className="py-2 pr-3" data-label="Заказ">{e.orderId || "-"}</td>
+                <td className="py-2 pr-3 text-xs" data-label="Данные">{eventData(e)}</td>
               </tr>
             ))}
           </tbody>
