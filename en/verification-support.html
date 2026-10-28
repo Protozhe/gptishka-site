@@ -12,14 +12,14 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
-<meta name="robots" content="index, follow">
 
 
 
 
 
 
-<title>Contact your manager — GPTishka</title>
+
+<title>Verification support — GPTishka</title>
 <link rel="stylesheet" href="/assets/css/logo.min.css">
 <link rel="stylesheet" href="/assets/css/gptishka-header-refresh.css?v=20260912-header-codex1">
 <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260516fix4">
@@ -38,9 +38,11 @@
 <link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
-<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-da51805d1d069613">
+<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-cac38b3e1e58e662">
+<link rel="stylesheet" href="/assets/css/verification-support-receipt.css?v=sha256-4f6ed077ed9916c3">
+<link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
 </head>
-<body class="claude-workspace-body">
+<body id="storefrontBody" class="claude-workspace-body">
 <div class="page-overlay"></div>
 <header class="gptishka-canonical-header">
 <div class="nav nav-shell">
@@ -90,19 +92,57 @@
         </div>
 </header>
 
-<main id="claudeWorkspace" class="page">
-  <section class="claude-verification-card verification-support-receipt" aria-labelledby="supportTitle">
-    <h1 id="supportTitle">Contact your manager</h1>
-    <p id="supportOrder">Order: —</p>
-    <p id="supportReceiptStatus" role="status" aria-live="polite">Checking payment…</p>
-    <button id="supportRetry" type="button" hidden>Check payment again</button>
-    <div id="supportPaidDetails" hidden>
-      <p>Your verification payment is confirmed. Contact the manager with your order number for guidance on the verification steps and your questions.</p>
-      <p>For KYC, we complete the verification without logging into your account.</p>
-      <a id="supportContact" class="claude-verification-submit verification-support-contact" target="_blank" rel="noopener noreferrer">Contact the manager</a>
+<main id="claudeWorkspace" class="page verification-order-workspace">
+  <a class="verification-back" href="/en/claude.html#verification"><span aria-hidden="true">‹</span> Back to Claude</a>
+  <div class="verification-heading">
+    <div>
+      <p class="verification-eyebrow">Claude · KYC / CVP</p>
+      <h1 id="supportTitle">Verification support</h1>
+      <p class="verification-lead">Add your verification link to save it with your order. No login or password is needed.</p>
+      <p id="supportOrder">Order: —</p>
     </div>
-    <p><a href="/en/claude.html#verification">Back to Claude</a></p>
-  </section>
+    <span id="supportPaymentBadge" class="verification-payment-badge">Checking payment</span>
+  </div>
+  <div class="verification-order-grid">
+    <section class="verification-guide" aria-labelledby="supportGuideTitle">
+      <h2 id="supportGuideTitle">How to prepare your link</h2>
+      <ol class="verification-steps">
+        <li><div><h3 id="supportStepOneTitle">Open verification in Claude</h3><p id="supportStepOneText">Your account should show an identity verification request. Click <b>Verify now</b>.</p></div></li>
+        <li><div><h3 id="supportStepTwoTitle">Copy the full link</h3><p id="supportStepTwoText">Click <b>Start</b> and copy the full address of the page that opens. Include every character in the link.</p></div></li>
+        <li><div><h3>Add the link to your order</h3><p>Paste the copied link into the field and click “Send link”. Then share this order page with the manager.</p></div></li>
+      </ol>
+      <p class="verification-guide-note">You complete your own identity verification. The manager helps with instructions and questions about the process.</p>
+    </section>
+    <section class="verification-entry" aria-label="Verification support">
+      <p id="supportReceiptStatus" class="verification-message" role="status" aria-live="polite">Checking payment…</p>
+      <button id="supportRetry" class="verification-text-button" type="button" hidden>Check payment again</button>
+      <div id="supportPaidDetails" hidden>
+        <form id="supportLinkForm" autocomplete="off">
+          <h2>Add your verification link</h2>
+          <p id="supportEntryIntro" class="verification-entry-intro">Use the personal link that opened after Start.</p>
+          <label for="supportLink">Verification link</label>
+          <textarea id="supportLink" name="verificationLink" rows="4" maxlength="8192" placeholder="https://…" required spellcheck="false" autocapitalize="off" aria-describedby="supportLinkHelp"></textarea>
+          <p id="supportLinkHelp" class="verification-field-note">Your link will be saved with the order. Do not post it publicly or share it in a group chat.</p>
+          <button id="supportLinkSubmit" class="verification-primary" type="submit">Send link</button>
+        </form>
+        <div id="supportProgress" class="verification-progress" role="status" aria-live="polite" hidden>
+          <div class="verification-progress-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg></div>
+          <h2 id="supportProgressTitle">Your order is in progress</h2>
+          <p id="supportProgressText">Your link has been received. Processing takes up to 24 hours.</p>
+          <div id="supportProgressTime" class="verification-time"><span>up to</span><strong>24</strong><span>hours</span></div>
+          <div class="verification-activity" aria-hidden="true"></div>
+          <ol id="supportTimeline" class="verification-timeline"><li>Paid</li><li>Link received</li><li>Complete</li></ol>
+          <p class="verification-progress-note">Your status is saved even if you close this page. You can return to your order here.</p>
+          <div class="verification-progress-actions"><button id="supportRefresh" class="verification-text-button" type="button">Refresh status</button><button id="supportReplaceLink" class="verification-text-button" type="button">Replace link</button></div>
+        </div>
+        <div class="verification-help">
+          <a id="supportContact" class="verification-text-button" target="_blank" rel="noopener noreferrer">Contact the manager</a>
+          <button id="supportCopyOrder" class="verification-text-button" type="button">Copy order page</button>
+          <small>Share this protected page only with the manager or the order owner.</small>
+        </div>
+      </div>
+    </section>
+  </div>
 </main>
 
 <footer>
@@ -114,7 +154,8 @@
   </div>
   <span class="footer-copy">&copy; 2026 GPTishka. All rights reserved, copying prohibited.</span>
 </footer>
+<script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer></script>
 <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
-  <script src="/assets/js/verification-support-receipt.js?v=sha256-fbd7b48e782efdf0" defer></script>
+  <script src="/assets/js/verification-support-receipt.js?v=sha256-bd62afe26d803eb4" defer></script>
 </body>
 </html>

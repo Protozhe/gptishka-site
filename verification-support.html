@@ -13,14 +13,14 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
-<meta name="robots" content="index, follow">
 
 
 
 
 
 
-<title>Связь с менеджером — GPTishka</title>
+
+<title>Сопровождение верификации — GPTishka</title>
 <link rel="stylesheet" href="/assets/css/logo.min.css">
 <link rel="stylesheet" href="/assets/css/gptishka-header-refresh.css?v=20260912-header-codex1">
 <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260516fix4">
@@ -39,9 +39,11 @@
 <link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
-<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-da51805d1d069613">
+<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-cac38b3e1e58e662">
+<link rel="stylesheet" href="/assets/css/verification-support-receipt.css?v=sha256-4f6ed077ed9916c3">
+<link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
 </head>
-<body class="claude-workspace-body">
+<body id="storefrontBody" class="claude-workspace-body">
 <div class="page-overlay"></div>
 <header class="gptishka-canonical-header">
 <div class="nav nav-shell">
@@ -91,19 +93,57 @@
         </div>
 </header>
 
-<main id="claudeWorkspace" class="page">
-  <section class="claude-verification-card verification-support-receipt" aria-labelledby="supportTitle">
-    <h1 id="supportTitle">Связь с менеджером</h1>
-    <p id="supportOrder">Заказ: —</p>
-    <p id="supportReceiptStatus" role="status" aria-live="polite">Проверяем оплату…</p>
-    <button id="supportRetry" type="button" hidden>Проверить оплату ещё раз</button>
-    <div id="supportPaidDetails" hidden>
-      <p>Оплата верификации подтверждена. Напишите менеджеру и сообщите номер заказа — он поможет разобраться с порядком проверки и вашими вопросами.</p>
-      <p>Для KYC верификацию проходим мы и проводим без входа в аккаунт.</p>
-      <a id="supportContact" class="claude-verification-submit verification-support-contact" target="_blank" rel="noopener noreferrer">Связаться с менеджером</a>
+<main id="claudeWorkspace" class="page verification-order-workspace">
+  <a class="verification-back" href="/claude#verification"><span aria-hidden="true">‹</span> К странице Claude</a>
+  <div class="verification-heading">
+    <div>
+      <p class="verification-eyebrow">Claude · KYC / CVP</p>
+      <h1 id="supportTitle">Сопровождение верификации</h1>
+      <p class="verification-lead">Добавьте ссылку на проверку — она сохранится в вашем заказе. Логин и пароль не нужны.</p>
+      <p id="supportOrder">Заказ: —</p>
     </div>
-    <p><a href="/claude#verification">Вернуться к странице Claude</a></p>
-  </section>
+    <span id="supportPaymentBadge" class="verification-payment-badge">Проверяем оплату</span>
+  </div>
+  <div class="verification-order-grid">
+    <section class="verification-guide" aria-labelledby="supportGuideTitle">
+      <h2 id="supportGuideTitle">Как подготовить ссылку</h2>
+      <ol class="verification-steps">
+        <li><div><h3 id="supportStepOneTitle">Откройте проверку в Claude</h3><p id="supportStepOneText">На вашем аккаунте должен появиться запрос на проверку личности. Нажмите <b>Verify now</b>.</p></div></li>
+        <li><div><h3 id="supportStepTwoTitle">Скопируйте длинную ссылку</h3><p id="supportStepTwoText">Нажмите <b>Start</b> и скопируйте полный адрес открывшейся страницы. Ссылка нужна целиком, со всеми символами.</p></div></li>
+        <li><div><h3>Добавьте ссылку в заказ</h3><p>Вставьте скопированную ссылку в поле и нажмите «Отправить ссылку». Затем передайте менеджеру страницу этого заказа.</p></div></li>
+      </ol>
+      <p class="verification-guide-note">Проверку личности вы проходите сами. Менеджер помогает с инструкциями и вопросами по проверке.</p>
+    </section>
+    <section class="verification-entry" aria-label="Сопровождение верификации">
+      <p id="supportReceiptStatus" class="verification-message" role="status" aria-live="polite">Проверяем оплату…</p>
+      <button id="supportRetry" class="verification-text-button" type="button" hidden>Проверить оплату ещё раз</button>
+      <div id="supportPaidDetails" hidden>
+        <form id="supportLinkForm" autocomplete="off">
+          <h2>Добавьте ссылку на проверку</h2>
+          <p id="supportEntryIntro" class="verification-entry-intro">Используйте персональную ссылку, которая открылась после Start.</p>
+          <label for="supportLink">Ссылка для верификации</label>
+          <textarea id="supportLink" name="verificationLink" rows="4" maxlength="8192" placeholder="https://…" required spellcheck="false" autocapitalize="off" aria-describedby="supportLinkHelp"></textarea>
+          <p id="supportLinkHelp" class="verification-field-note">Ссылка будет сохранена в заказе. Её не нужно публиковать или отправлять в общий чат.</p>
+          <button id="supportLinkSubmit" class="verification-primary" type="submit">Отправить ссылку</button>
+        </form>
+        <div id="supportProgress" class="verification-progress" role="status" aria-live="polite" hidden>
+          <div class="verification-progress-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg></div>
+          <h2 id="supportProgressTitle">Заказ выполняется</h2>
+          <p id="supportProgressText">Ссылка получена. Обработка заказа — до 24 часов.</p>
+          <div id="supportProgressTime" class="verification-time"><span>до</span><strong>24</strong><span>часов</span></div>
+          <div class="verification-activity" aria-hidden="true"></div>
+          <ol id="supportTimeline" class="verification-timeline"><li>Оплачено</li><li>Ссылка получена</li><li>Завершено</li></ol>
+          <p class="verification-progress-note">Статус сохранится, даже если закрыть страницу. Здесь можно вернуться к своему заказу.</p>
+          <div class="verification-progress-actions"><button id="supportRefresh" class="verification-text-button" type="button">Обновить статус</button><button id="supportReplaceLink" class="verification-text-button" type="button">Заменить ссылку</button></div>
+        </div>
+        <div class="verification-help">
+          <a id="supportContact" class="verification-text-button" target="_blank" rel="noopener noreferrer">Связаться с менеджером</a>
+          <button id="supportCopyOrder" class="verification-text-button" type="button">Скопировать страницу заказа</button>
+          <small>Передавайте защищённую страницу только менеджеру или владельцу заказа.</small>
+        </div>
+      </div>
+    </section>
+  </div>
 </main>
 
 <footer>
@@ -115,8 +155,9 @@
   </div>
   <span class="footer-copy">&copy; 2026 GPTishka. Все права защищены, копирование запрещено.</span>
 </footer>
+<script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer></script>
 <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
-  <script src="/assets/js/verification-support-receipt.js?v=sha256-fbd7b48e782efdf0" defer></script>
+  <script src="/assets/js/verification-support-receipt.js?v=sha256-bd62afe26d803eb4" defer></script>
 </body>
 </html>
 

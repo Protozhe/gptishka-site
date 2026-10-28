@@ -48,12 +48,26 @@ const { buildOrderActivationRecoveryLink } = load("modules/orders/activation-rec
   "../../common/utils/product-delivery": { resolveOrderDeliveryType: () => "activation" },
   "../../config/env": { env: { APP_BASE_URL: "https://fixture.invalid" } }, "../../config/prisma": { prisma },
   "../audit/audit.service": { writeAuditLog: async value => { audit = value; } },
+  "./verification-support": load("modules/orders/verification-support.ts", {}, { URL }),
 }, { URL });
 const first = await buildOrderActivationRecoveryLink(row.id); const previous = new URL(first.activationUrl).searchParams.get("t");
 assertOrderLinkAccess(row, previous);
 const revoked = await buildOrderActivationRecoveryLink(row.id, { rotate: true, audit: true });
 assert.equal(audit.action, "activation_links_revoked"); assert.throws(() => assertOrderLinkAccess(row, previous));
 assertOrderLinkAccess(row, new URL(revoked.activationUrl).searchParams.get("t"));
+
+// Verification support recovery must never open the ChatGPT token guide.
+for (const slug of ['claude-kyc', 'claude-cvp', 'claude-kyc-support', 'claude-cvp-support']) {
+  for (const language of ['ru', 'en']) {
+    row = { ...row, orderDetails: { language }, items: [{ product: { slug } }] };
+    const link = await buildOrderActivationRecoveryLink(row.id);
+    const url = new URL(link.activationUrl);
+    assert.equal(url.pathname, `${language === 'en' ? '/en' : ''}/verification-support.html`);
+    assert.equal(url.searchParams.get('order_id'), row.id);
+    assertOrderLinkAccess(row, url.searchParams.get('t'));
+  }
+}
+row = { ...row, orderDetails: {}, items: [] };
 
 // Execute status/reconcile methods to prove authorization precedes payment
 // probes and that a token is preserved on internal calls.

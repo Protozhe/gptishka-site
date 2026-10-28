@@ -6,6 +6,7 @@ import { resolveOrderDeliveryType } from "../../common/utils/product-delivery";
 import { env } from "../../config/env";
 import { prisma } from "../../config/prisma";
 import { writeAuditLog } from "../audit/audit.service";
+import { isVerificationSupportProduct } from "./verification-support";
 
 type RecoveryLinkActor = {
   userId?: string;
@@ -58,7 +59,11 @@ export async function buildOrderActivationRecoveryLink(
   const recoveryToken = createActivationRecoveryToken(order.id, redeemTokenHash);
   const firstItem = order.items[0];
   const deliveryType = resolveOrderDeliveryType(order.orderDetails, firstItem?.product?.tags || []);
-  const path = deliveryType === "vpn" ? "/store/vpn/activate" : "/redeem-start.html";
+  const verificationSupport = isVerificationSupportProduct(firstItem?.product?.slug);
+  const language = (order.orderDetails as any)?.language === "en" ? "en" : "ru";
+  const path = verificationSupport
+    ? `${language === "en" ? "/en" : ""}/verification-support.html`
+    : deliveryType === "vpn" ? "/store/vpn/activate" : "/redeem-start.html";
   const url = new URL(path, resolveSiteOrigin());
   url.searchParams.set("order_id", order.id);
   if (recoveryToken) url.searchParams.set("t", recoveryToken);

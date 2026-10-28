@@ -37,7 +37,7 @@ import { buildActivationReviewModerationCallback } from "./activation-review-mod
 import { isMidjourneyProductSlug, validateMidjourneyPaymentLink } from "./midjourney-payment-link";
 import { isSunoPaymentLinkOrder, validateSunoPaymentLink } from "./suno-payment-link";
 import { isDevinProductSlug, validateDevinPaymentLink } from "./devin-payment-link";
-import { isVerificationSupportProduct, VERIFICATION_MANAGER_URL } from "./verification-support";
+import { isVerificationSupportProduct, validateVerificationSupportLink, VERIFICATION_MANAGER_URL } from "./verification-support";
 import { assertOrderLinkAccess } from "../../common/security/order-link-access";
 import { resolveExternalCodexOwner } from "./external-codex";
 
@@ -639,9 +639,14 @@ export const ordersService = {
     const isSupportTokenFlow = isSupportLikeDeliveryType(deliveryType) || isSupportActivationFlow(tokenActivationFlow);
 
     if (isVerificationSupportProduct(productSlug)) {
+      const record = normalizeActivationRecordForRead(activationStore.findByOrderId(order.id));
+      const completed = record?.status === "success" || record?.verificationState === "success";
       return {
         orderId: order.id, deliveryMode: "verification_support", productSlug, productTitle,
         status: "paid", supportUrl: VERIFICATION_MANAGER_URL,
+        supportState: completed ? "completed" : record?.verificationLinkSubmittedAt ? "processing" : "awaiting_link",
+        submittedAt: record?.verificationLinkSubmittedAt || null,
+        completedAt: completed ? record?.updatedAt || null : null,
         message: "Оплата верификации подтверждена. Свяжитесь с менеджером и сообщите номер заказа. Клиент проходит проверку своей личности самостоятельно.",
       };
     }
@@ -925,7 +930,34 @@ export const ordersService = {
     const deliveryType = resolveOrderDeliveryType(orderWithItem?.orderDetails, firstItem?.product?.tags || []);
     const activationSiteUrl = readActivationSiteUrlFromOrderDetails(orderWithItem?.orderDetails);
     const productSlug = String(firstItem?.product?.slug || "").trim().toLowerCase();
-    if (isVerificationSupportProduct(productSlug)) throw new AppError("Для верификации свяжитесь с менеджером. Данные проверки здесь не принимаются.", 409);
+    if (isVerificationSupportProduct(productSlug)) {
+      return withActivationOrderLock(order.id, async () => {
+        await assertPaidOrderAccess(orderId, orderToken);
+        const error = validateVerificationSupportLink(token);
+        if (error) throw new AppError(error, 400);
+        const existing = normalizeActivationRecordForRead(activationStore.findByOrderId(order.id));
+        if (existing?.status === "success" || existing?.verificationState === "success") {
+          throw new AppError("Заказ уже завершён. Для нового обращения свяжитесь с менеджером.", 409);
+        }
+        const raw = String(token).trim();
+        const tokenMeta = buildTokenMeta(parseClientTokenInput(raw));
+        const now = new Date().toISOString();
+        const submittedAt = existing?.verificationLinkSubmittedAt || now;
+        if (existing?.tokenMeta?.fingerprint !== tokenMeta.fingerprint || !hasStoredClientToken(existing)) {
+          activationStore.upsert({
+            ...existing,
+            orderId: order.id, email: order.email, productKey: productSlug,
+            cdk: "", activationSiteUrl: "", externalFulfillmentOwner: "verification_support",
+            status: "issued", taskId: null, attempts: 0,
+            tokenMeta, verificationState: "pending", verificationLinkSubmittedAt: submittedAt,
+            lastProviderMessage: "Ссылка получена. Заказ сопровождения в работе, срок — до 24 часов.",
+            issuedAt: existing?.issuedAt || now, updatedAt: now,
+            ...buildStoredClientTokenPatch(raw),
+          });
+        }
+        return { ok: true, orderId: order.id, paid: true, supportState: "processing", submittedAt };
+      });
+    }
     if (isClaudeZovoProduct(productSlug) && await isClaudeZovoOrder(order.id)) {
       await assertPaidOrderAccess(orderId,orderToken);
       const error=validateClaudeZovoSession(token);if(error)throw new AppError(error,400);

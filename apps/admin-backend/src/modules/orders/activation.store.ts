@@ -34,6 +34,7 @@ export type ActivationRecord = {
   clientTokenAuthTag?: string | null;
   clientTokenStoredAt?: string | null;
   clientTokenExpiresAt?: string | null;
+  verificationLinkSubmittedAt?: string | null;
   verificationState?: "unknown" | "pending" | "success" | "failed";
   lastProviderMessage?: string | null;
   lastProviderCheckedAt?: string | null;

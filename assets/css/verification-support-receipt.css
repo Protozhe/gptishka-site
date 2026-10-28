@@ -1,0 +1,69 @@
+html body #claudeWorkspace.verification-order-workspace { width:min(1080px,calc(100% - 40px)) !important; max-width:1080px !important; padding:28px 0 56px !important; }
+.verification-order-workspace [hidden] { display:none !important; }
+.verification-order-workspace .verification-back { display:inline-flex; align-items:center; gap:8px; margin-bottom:22px; color:#acb5bf; font-size:14px; text-decoration:none; }
+.verification-order-workspace .verification-heading { display:flex; justify-content:space-between; align-items:start; gap:24px; margin-bottom:28px; }
+.verification-order-workspace .verification-eyebrow { margin:0 0 10px; color:#e8ae91; font-size:12px; font-weight:750; letter-spacing:.1em; text-transform:uppercase; }
+.verification-order-workspace h1 { margin:0; font-size:clamp(26px,3vw,34px); line-height:1.24; font-weight:750; letter-spacing:-.035em; }
+.verification-order-workspace .verification-lead { max-width:660px; margin:12px 0 0; color:#acb5bf; font-size:15px; line-height:1.65; }
+.verification-order-workspace #supportOrder { margin:10px 0 0; color:#acb5bf; font-size:12px; overflow-wrap:anywhere; }
+.verification-order-workspace .verification-payment-badge { flex:none; display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid #39434a; border-radius:30px; color:#b5bec8; font-size:12px; font-weight:700; white-space:nowrap; }
+.verification-order-workspace .verification-payment-badge::before { content:''; width:6px; height:6px; background:currentColor; border-radius:50%; }
+.verification-order-workspace .verification-payment-badge.is-paid { color:#71dfb5; background:#1c302a; border-color:#31554a; }
+.verification-order-workspace .verification-order-grid { display:grid; grid-template-columns:1.05fr 1fr; gap:28px; align-items:start; }
+.verification-order-workspace .verification-guide,.verification-order-workspace .verification-entry { padding:27px 28px; border:1px solid #394047; border-radius:20px; background:#22272d; }
+.verification-order-workspace h2 { margin:0; font-size:20px; line-height:1.4; letter-spacing:-.02em; font-weight:750; }
+.verification-order-workspace .verification-steps { display:grid; gap:23px; margin:25px 0 0; padding:0; list-style:none; counter-reset:verification-step; }
+.verification-order-workspace .verification-steps li { display:grid; grid-template-columns:30px minmax(0,1fr); gap:12px; counter-increment:verification-step; }
+.verification-order-workspace .verification-steps li::before { content:counter(verification-step,decimal-leading-zero); display:grid; place-items:center; width:30px; height:30px; border:1px solid #55605e; border-radius:50%; color:#88deca; font-size:11px; font-weight:750; }
+.verification-order-workspace .verification-steps h3 { margin:2px 0 7px; font-size:15px; line-height:1.5; font-weight:750; }
+.verification-order-workspace .verification-steps p { margin:0; color:#acb5bf; font-size:14px; line-height:1.75; }
+.verification-order-workspace .verification-steps b { color:#dbe5e4; font-weight:650; }
+.verification-order-workspace .verification-guide-note { margin:25px 0 0; padding-top:18px; border-top:1px solid #394047; color:#acb5bf; font-size:12px; line-height:1.7; }
+.verification-order-workspace .verification-entry-intro { margin:10px 0 20px; color:#acb5bf; font-size:14px; line-height:1.7; }
+.verification-order-workspace label { display:block; margin-bottom:10px; font-size:13px; font-weight:750; }
+.verification-order-workspace textarea { display:block; box-sizing:border-box; width:100%; min-height:132px; padding:15px; resize:vertical; border:1px solid #49545c; border-radius:12px; background:#191d22; color:#f4f6f8; font:400 14px/1.7 'Manrope',sans-serif; overflow-wrap:anywhere; }
+.verification-order-workspace textarea::placeholder { color:#7e8a94; }
+.verification-order-workspace .verification-field-note { margin:10px 0 20px; color:#9ba7b0; font-size:12px; line-height:1.7; }
+.verification-order-workspace :is(button,a,textarea):focus-visible { outline:2px solid #70d9cb; outline-offset:4px; }
+.verification-order-workspace .verification-primary { display:inline-flex; align-items:center; justify-content:center; min-height:48px; width:100%; padding:12px 18px; border:0; border-radius:12px; background:#70d9cb; color:#0f2926; font-size:15px; font-weight:750; text-decoration:none; cursor:pointer; transition:background-color .2s ease; }
+.verification-order-workspace .verification-primary:hover { background:#91e6db; }
+.verification-order-workspace .verification-primary:disabled { opacity:.55; cursor:wait; }
+.verification-order-workspace .verification-text-button { padding:0; border:0; background:none; color:#8fddcf; font:650 13px/1.7 'Manrope',sans-serif; text-decoration:none; cursor:pointer; }
+.verification-order-workspace .verification-text-button:hover { color:#c6f2e9; text-decoration:underline; text-underline-offset:4px; }
+.verification-order-workspace .verification-help { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-top:20px; padding-top:19px; border-top:1px solid #394047; }
+.verification-order-workspace .verification-help small { flex-basis:100%; color:#929ea9; font-size:11px; line-height:1.6; }
+.verification-order-workspace .verification-message { margin:0 0 18px; padding:12px 15px; border:1px solid #3e5650; border-radius:12px; background:#21312e; color:#c5e3dc; font-size:13px; line-height:1.7; }
+.verification-order-workspace .verification-message.is-error { border-color:#6b5149; background:#352c2a; color:#e9bca9; }
+.verification-order-workspace #supportRetry { margin:0 0 18px; }
+.verification-order-workspace .verification-progress { margin-bottom:22px; }
+.verification-order-workspace .verification-progress-icon { position:relative; display:grid; place-items:center; width:58px; height:58px; margin-bottom:20px; border:1px solid #34574f; border-radius:50%; background:#213832; color:#8fe3ca; }
+.verification-order-workspace .verification-progress-icon::before { content:''; position:absolute; inset:-1px; border:2px solid transparent; border-top-color:#8fe3ca; border-radius:50%; animation:verification-orbit 2.8s linear infinite; }
+.verification-order-workspace .verification-progress-icon svg { width:23px; height:23px; }
+.verification-order-workspace .verification-progress.is-complete .verification-progress-icon::before { animation:none; border-color:#457f6e; }
+.verification-order-workspace #supportProgressText { margin:10px 0 0; color:#b7c4c8; font-size:14px; line-height:1.75; }
+.verification-order-workspace .verification-time { display:flex; align-items:baseline; gap:7px; margin:21px 0 18px; color:#a5b5ba; font-size:13px; }
+.verification-order-workspace .verification-time strong { color:#ecf7f3; font-size:27px; font-weight:750; letter-spacing:-.03em; }
+.verification-order-workspace .verification-activity { height:4px; margin:20px 0; overflow:hidden; border-radius:5px; background:#34443f; }
+.verification-order-workspace .verification-activity::before { content:''; display:block; width:35%; height:100%; border-radius:inherit; background:#78d8bf; animation:verification-flow 3s ease-in-out infinite alternate; }
+.verification-order-workspace .verification-progress.is-complete .verification-activity::before { width:100%; animation:none; }
+.verification-order-workspace .verification-timeline { display:flex; justify-content:space-between; gap:12px; margin:0 0 20px; padding:0; list-style:none; color:#99aaa9; font-size:11px; }
+.verification-order-workspace .verification-timeline li { position:relative; padding-top:15px; }
+.verification-order-workspace .verification-timeline li::before { content:''; position:absolute; top:0; left:0; width:6px; height:6px; border-radius:50%; background:#6bba9f; }
+.verification-order-workspace .verification-timeline li:last-child { color:#7d8b91; }
+.verification-order-workspace .verification-timeline li:last-child::before { background:#566168; }
+.verification-order-workspace .verification-timeline[data-state=completed] li:last-child { color:#b3e2d0; }
+.verification-order-workspace .verification-timeline[data-state=completed] li:last-child::before { background:#6bba9f; }
+.verification-order-workspace .verification-progress-note { margin:0 0 18px; color:#99a8ae; font-size:12px; line-height:1.7; }
+.verification-order-workspace .verification-progress-actions { display:flex; flex-wrap:wrap; gap:10px 22px; }
+@keyframes verification-orbit { to { transform:rotate(360deg); } }
+@keyframes verification-flow { from { transform:translateX(-30%); } to { transform:translateX(220%); } }
+@media(max-width:760px) {
+  html body #claudeWorkspace.verification-order-workspace { width:calc(100% - 32px) !important; padding-top:20px !important; }
+  .verification-order-workspace .verification-heading { flex-direction:column; gap:16px; margin-bottom:22px; }
+  .verification-order-workspace .verification-order-grid { grid-template-columns:1fr; gap:18px; }
+  .verification-order-workspace .verification-guide,.verification-order-workspace .verification-entry { padding:23px 20px; border-radius:17px; }
+  .verification-order-workspace .verification-steps { gap:21px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .verification-order-workspace .verification-progress-icon::before,.verification-order-workspace .verification-activity::before { animation:none; }
+}
