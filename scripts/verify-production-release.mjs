@@ -33,6 +33,7 @@ const checks = [
   "scripts/verify-metrika-sync-packaging.mjs",
   "scripts/verify-admin-cdk-duration-sort.mjs",
   "scripts/verify-cdk-activation-stock.mjs",
+  "scripts/verify-admin-orders-workspace.mjs",
   "scripts/verify-admin-product-duration-sort.mjs",
   "scripts/check-activation-pages-refresh.mjs",
   "scripts/verify-activation-success-message.mjs",

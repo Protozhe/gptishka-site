@@ -176,6 +176,21 @@ const ACCOUNT_OPTIONS = [
   },
 ] as const;
 
+function orderStatusTitle(value: unknown) {
+  const status = String(value || "").toUpperCase();
+  return ({ PAID: "Оплачен", PENDING: "Ожидает оплаты", FAILED: "Ошибка", REFUNDED: "Возвращён" } as Record<string, string>)[status] || status || "—";
+}
+
+function paymentStatusTitle(value: unknown) {
+  const status = String(value || "").toUpperCase();
+  return ({ SUCCESS: "Оплата подтверждена", PROCESSING: "Платёж обрабатывается", FAILED: "Платёж не прошёл", REFUNDED: "Возврат выполнен" } as Record<string, string>)[status] || status || "Нет данных об оплате";
+}
+
+function activationStatusTitle(value: unknown) {
+  const status = String(value || "").toLowerCase();
+  return ({ success: "Активировано", processing: "В обработке", pending: "В ожидании", issued: "Ожидает активации", failed: "Ошибка активации" } as Record<string, string>)[status] || status || "Нет данных";
+}
+
 export default function OrdersPage() {
   const qc = useQueryClient();
   const [qInput, setQInput] = useState("");
@@ -357,68 +372,54 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <section className="card p-4 flex flex-wrap items-center gap-2">
+    <div className="orders-page">
+      <header className="orders-page-heading"><div><h2>Заказы</h2><p>Оплата, активация и данные клиентов</p></div><button className="orders-refresh-button" type="button" onClick={() => orders.refetch()} disabled={orders.isFetching}>{orders.isFetching ? "Обновляем…" : "Обновить заказы"}</button></header>
+      <section className="orders-toolbar" aria-label="Фильтры заказов">
+        <div className="orders-search-field"><label htmlFor="orders-search">Найти заказ</label>
         <input
-          className="input max-w-sm"
+          id="orders-search" className="input"
           value={qInput}
           placeholder="Поиск: order id / email / payment id / telegram"
           onChange={(e) => setQInput(e.target.value)}
         />
-        <select className="input max-w-40" value={status} onChange={(e) => setStatus(e.target.value)}>
+        </div><label className="orders-filter-field">Статус заказа<select className="input" value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">Все статусы</option>
           <option value="PENDING">PENDING</option>
           <option value="PAID">PAID</option>
           <option value="FAILED">FAILED</option>
           <option value="REFUNDED">REFUNDED</option>
         </select>
-        <select className="input max-w-40" value={source} onChange={(e) => setSource(e.target.value)}>
+        </label><label className="orders-filter-field">Источник<select className="input" value={source} onChange={(e) => setSource(e.target.value)}>
           <option value="">Источник: все</option>
           <option value="site">site</option>
           <option value="telegram">telegram</option>
         </select>
-        <select className="input max-w-40" value={botType} onChange={(e) => setBotType(e.target.value)}>
+        </label><label className="orders-filter-field">Бот<select className="input" value={botType} onChange={(e) => setBotType(e.target.value)}>
           <option value="">Бот: все</option>
           <option value="claude">claude</option>
           <option value="chatgpt">chatgpt</option>
           <option value="grok">grok</option>
         </select>
-        <select className="input max-w-40" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
+        </label><label className="orders-filter-field">Способ оплаты<select className="input" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
           <option value="">Оплата: все</option>
           <option value="enot">enot</option>
           <option value="lava">lava</option>
           <option value="gateway">gateway (legacy)</option>
         </select>
-        <a className="btn-secondary" href={`${(import.meta.env.VITE_ADMIN_API_URL || "/api/admin")}/orders/export/csv`}>
+        </label><a className="orders-export-button" href={`${(import.meta.env.VITE_ADMIN_API_URL || "/api/admin")}/orders/export/csv`}>
           Экспорт CSV
         </a>
         {checkMessage ? (
-          <div className={`basis-full text-sm ${checkActivation.isError ? "text-rose-600" : "text-slate-600 dark:text-slate-300"}`}>
+          <div role="status" aria-live="polite" className={`orders-check-message text-sm ${checkActivation.isError ? "text-rose-600" : "text-slate-600 dark:text-slate-300"}`}>
             {checkMessage}
           </div>
         ) : null}
       </section>
 
-      <section className="card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead className="bg-slate-100 text-left dark:bg-slate-800">
-              <tr>
-                <th className="px-4 py-3">Заказ</th>
-                <th className="px-4 py-3">Источник / ресурс</th>
-                <th className="px-4 py-3">Покупатель</th>
-                <th className="px-4 py-3">Что купили</th>
-                <th className="px-4 py-3">Данные клиента</th>
-                <th className="px-4 py-3">Сумма</th>
-                <th className="px-4 py-3">Оплата</th>
-                <th className="px-4 py-3">Промокод</th>
-                <th className="px-4 py-3">Статус</th>
-                <th className="px-4 py-3">Активация</th>
-                <th className="px-4 py-3">Действия</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(orders.data?.items || []).map((o: any) => {
+      {orders.isError ? <div className="orders-load-error" role="alert">Не удалось обновить список заказов. {orders.data ? "Показаны последние полученные данные." : "Попробуйте обновить страницу."}</div> : null}
+      <section className="orders-list" aria-label="Список заказов">
+        <div className="orders-list-heading"><span>{orders.isLoading ? "Загружаем заказы…" : `Показано заказов: ${(orders.data?.items || []).length}`}</span><span>Действия доступны под каждым заказом</span></div>
+        {(orders.data?.items || []).map((o: any) => {
                 const tokenValidationAttempts = Number(o.activation?.tokenValidationAttempts || 0);
                 const hasRepeatedTokenInput = tokenValidationAttempts > 1;
                 const sourceResource = resolveSourceResource(o);
@@ -444,36 +445,33 @@ export default function OrdersPage() {
                   String(o.status || "").toUpperCase() === "FAILED" &&
                   String(o.paymentStatus || "").toUpperCase() === "PROCESSING";
 
-                return (
-                <tr className="border-t border-slate-200 dark:border-slate-800" key={o.id}>
-                  <td className="px-4 py-3">
+
+          return (
+            <article className="orders-order-card" key={o.id} aria-label={`Заказ ${o.id}`}>
+              <header className="orders-order-heading">
+                <div className="orders-id-block">
                     <div className="font-semibold">{o.id}</div>
                     <div className="text-xs text-slate-500">{fmtDate(o.createdAt)}</div>
-                  </td>
-                  <td className="px-4 py-3">
+                  </div>
+                <div className="orders-order-heading-meta">
+                  <a className="orders-source-label" href={sourceResource.url} target="_blank" rel="noreferrer">{sourceCode === "telegram" ? sourceResource.handle : "Сайт"}</a>
+                  <span className="orders-state-badge" data-state={String(o.status || "").toLowerCase()} title={String(o.status || "")}>{orderStatusTitle(o.status)}</span>
+                </div>
+              </header>
+              <div className="orders-order-main">
+                <section className="orders-product"><div className="orders-field-label">Что купили</div>
                     <div className="text-xs leading-5">
-                      <div className="font-semibold">{sourceResource.title}</div>
-                      <a className="text-cyan-700 underline" href={sourceResource.url} target="_blank" rel="noreferrer">
-                        {sourceResource.handle}
-                      </a>
+                      <div className="font-semibold">{o.product?.title || "-"}</div>
+                      <div className="text-slate-500">{o.product?.slug || o.product?.id || "-"}</div>
                       <div className="text-slate-500">
-                        {sourceCode}
-                        {o.botType ? ` / ${o.botType}` : ""}
+                        qty: {Number(o.product?.quantity || 1)}
+                        {o.product?.unitPrice !== null && o.product?.unitPrice !== undefined
+                          ? ` x ${money(Number(o.product.unitPrice), o.currency)}`
+                          : ""}
                       </div>
-                      {marketingTouch ? (
-                        <div className="mt-1 border-t border-slate-200 pt-1 dark:border-slate-700">
-                          <div className="font-semibold text-cyan-700 dark:text-cyan-300">
-                            {[marketingTouch.source, marketingTouch.medium].filter(Boolean).join(" / ") || "Источник не определён"}
-                          </div>
-                          {marketingTouch.utm_campaign ? <div>campaign: {String(marketingTouch.utm_campaign)}</div> : null}
-                          {marketingTouch.utm_content ? <div>content: {String(marketingTouch.utm_content)}</div> : null}
-                          {marketingTouch.utm_term ? <div>term: {String(marketingTouch.utm_term)}</div> : null}
-                          {marketingTouch.yclid ? <div className="break-all">yclid: {String(marketingTouch.yclid)}</div> : null}
-                        </div>
-                      ) : null}
                     </div>
-                  </td>
-                  <td className="px-4 py-3">
+                  </section>
+                <section className="orders-customer"><div className="orders-field-label">Покупатель</div>
                     <div className="text-xs leading-5">
                       <div className="font-semibold">
                         {telegramClient.id ? "Telegram-клиент" : o.email}
@@ -486,117 +484,31 @@ export default function OrdersPage() {
                         </a>
                       ) : null}
                     </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="text-xs leading-5">
-                      <div className="font-semibold">{o.product?.title || "-"}</div>
-                      <div className="text-slate-500">{o.product?.slug || o.product?.id || "-"}</div>
-                      <div className="text-slate-500">
-                        qty: {Number(o.product?.quantity || 1)}
-                        {o.product?.unitPrice !== null && o.product?.unitPrice !== undefined
-                          ? ` x ${money(Number(o.product.unitPrice), o.currency)}`
-                          : ""}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    {checkoutDetailRows.length ? (
-                      <div className="min-w-56 text-xs leading-5">
-                        <div
-                          className={`mb-2 rounded border p-2 ${
-                            isSuccessfullyPaid
-                              ? "border-cyan-200 bg-cyan-50 dark:border-cyan-900/60 dark:bg-cyan-950/30"
-                              : "border-amber-200 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/30"
-                          }`}
-                        >
-                          <div
-                            className={`font-semibold ${
-                              isSuccessfullyPaid ? "text-cyan-800 dark:text-cyan-200" : "text-amber-800 dark:text-amber-200"
-                            }`}
-                          >
-                            {isSuccessfullyPaid ? "Оплачено · форма сохранена" : "Ожидает оплаты · контакты доступны"}
-                          </div>
-                          <dl className="mt-1 space-y-1">
-                            {clientPreviewRows.map(([label, value]) => (
-                              <div className="grid grid-cols-[80px_minmax(0,1fr)] gap-2" key={`${label}:${value}`}>
-                                <dt className="text-slate-500">{label}</dt>
-                                <dd className="wrap-break-word font-medium">
-                                  {label === "Telegram" && resolveTelegramContactUrl(value) ? (
-                                    <a className="text-cyan-700 underline" href={resolveTelegramContactUrl(value)} target="_blank" rel="noreferrer">
-                                      {value}
-                                    </a>
-                                  ) : label === "Email" ? (
-                                    <a className="text-cyan-700 underline" href={`mailto:${value}`}>{value}</a>
-                                  ) : label === "Пароль" ? "••••••••" : value}
-                                </dd>
-                              </div>
-                            ))}
-                          </dl>
-                        </div>
-                        <button
+
+                  {!telegramClient.id && !telegramClient.username ? clientPreviewRows.filter(([label]) => label === "Telegram").map(([label, value]) => <div className="orders-muted" key={label}>{resolveTelegramContactUrl(value) ? <a href={resolveTelegramContactUrl(value)} target="_blank" rel="noreferrer">{value}</a> : value}</div>) : null}
+                  {checkoutDetailRows.length ? (<button
                           className="btn-secondary"
                           onClick={() => {
                             setClientInfoDialog({ orderId: o.id, details: checkoutDetails });
                           }}
                         >
                           Все данные клиента
-                        </button>
-                      </div>
-                    ) : isSuccessfullyPaid ? (
-                      <div className="text-xs font-medium text-amber-700 dark:text-amber-300">Оплачено, но данные формы не сохранены</div>
-                    ) : (
-                      <div className="text-xs text-slate-500">Контакты в форме не указаны</div>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">{money(Number(o.totalAmount), o.currency)}</td>
-                  <td className="px-4 py-3">
-                    <div className="text-xs leading-5">
-                      <div className="font-semibold">{o.paymentStatus || "-"}</div>
-                      <div className="text-slate-500">method: {paymentMethodSelected || "-"}</div>
-                      <div className="text-slate-500">provider: {paymentProviderUsed || "-"}</div>
-                      {o.paymentRef ? <div className="text-slate-400">ref: {String(o.paymentRef)}</div> : null}
-                      {o.paidAt ? <div className="text-slate-400">paid: {fmtDate(o.paidAt)}</div> : null}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">{o.promoCodeSnapshot || "-"}</td>
-                  <td className="px-4 py-3">{o.status}</td>
-                  <td className="px-4 py-3">
-                    {o.activation ? (
-                      <div className="text-xs leading-5">
-                        <div className="font-semibold">{o.activation.status}</div>
-                        <div className="text-slate-500">{o.activation.verificationState || "unknown"}</div>
-                        <div className="text-slate-500">
-                          token: {o.activation.tokenBound ? "bound" : o.activation.tokenSeen ? "entered" : "missing"}
-                        </div>
-                        <div className="text-slate-500">stored token: {o.activation.tokenStored ? "yes" : "no"}</div>
-                        <div className={`text-slate-500 ${hasRepeatedTokenInput ? "font-semibold text-amber-700" : ""}`}>
-                          token input:{" "}
-                          {hasRepeatedTokenInput ? `repeated (${tokenValidationAttempts}x)` : tokenValidationAttempts === 1 ? "single" : "none"}
-                        </div>
-                        <div className="text-slate-500">validations: {tokenValidationAttempts}</div>
-                        <div className="text-slate-500">attempts: {Number(o.activation.attempts || 0)} / 3</div>
-                        {o.activation.lastTokenValidatedAt ? (
-                          <div className="text-slate-400">token seen: {fmtDate(o.activation.lastTokenValidatedAt)}</div>
-                        ) : null}
-                        {o.activation.tokenExpiresAt ? (
-                          <div className="text-slate-400">token expires: {fmtDate(o.activation.tokenExpiresAt)}</div>
-                        ) : null}
-                        {o.activation.taskId ? <div className="text-slate-400">task: {String(o.activation.taskId)}</div> : null}
-                        {o.activation.lastProviderCheckedAt ? (
-                          <div className="text-slate-400">{fmtDate(o.activation.lastProviderCheckedAt)}</div>
-                        ) : null}
-                        {o.activation.completedAt ? <div className="text-slate-400">done: {fmtDate(o.activation.completedAt)}</div> : null}
-                        {o.telegramLastError ? <div className="text-rose-600">error: {o.telegramLastError}</div> : null}
-                      </div>
-                    ) : (
-                      <div className="text-xs leading-5">
-                        <div>-</div>
-                        {o.telegramLastError ? <div className="text-rose-600">error: {o.telegramLastError}</div> : null}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-2">
+                        </button>) : isSuccessfullyPaid ? <p className="orders-warning">Оплачено, но данные формы не сохранены</p> : null}
+                </section>
+                <section className="orders-payment"><div className="orders-field-label">Оплата</div>
+                  <div className="orders-amount">{money(Number(o.totalAmount), o.currency)}</div>
+                  <div className="orders-payment-state" data-state={String(o.paymentStatus || "").toLowerCase()}>{paymentStatusTitle(o.paymentStatus)}</div>
+                  <div className="orders-muted">{paymentMethodSelected || "—"}{paymentProviderUsed && paymentProviderUsed !== paymentMethodSelected ? ` · ${paymentProviderUsed}` : ""}</div>
+                  {o.promoCodeSnapshot ? <div className="orders-muted">Промокод: {o.promoCodeSnapshot}</div> : null}
+                </section>
+                <section className="orders-activation"><div className="orders-field-label">Активация</div>
+                  <div className="orders-activation-state" data-state={String(o.activation?.status || "").toLowerCase()}>{activationStatusTitle(o.activation?.status)}</div>
+                  {o.activation ? <><div className="orders-muted">{o.activation.tokenStored ? "Токен сохранён" : "Токен не сохранён"}</div><div className="orders-muted">Попытки: {Number(o.activation.attempts || 0)} / 3</div></> : null}
+                  {o.telegramLastError ? <p className="orders-warning">{o.telegramLastError}</p> : null}
+                </section>
+              </div>
+              <div className="orders-actions">
+                    <div className="orders-action-buttons">
                       <button className="btn-secondary" onClick={() => checkActivation.mutate(o.id)} disabled={checkActivation.isPending}>
                         {checkActivation.isPending && checkActivation.variables === o.id ? "Проверяем..." : "Проверить активацию"}
                       </button>
@@ -651,13 +563,125 @@ export default function OrdersPage() {
                         Возврат
                       </button>
                     </div>
-                  </td>
-                </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+              <details className="orders-order-details">
+                <summary>Подробности заказа<span>Источник, платёж, данные формы и диагностика</span></summary>
+                <div className="orders-detail-grid">
+                  <section><h3>Источник и реклама</h3>
+                    <div className="text-xs leading-5">
+                      <div className="font-semibold">{sourceResource.title}</div>
+                      <a className="text-cyan-700 underline" href={sourceResource.url} target="_blank" rel="noreferrer">
+                        {sourceResource.handle}
+                      </a>
+                      <div className="text-slate-500">
+                        {sourceCode}
+                        {o.botType ? ` / ${o.botType}` : ""}
+                      </div>
+                      {marketingTouch ? (
+                        <div className="mt-1 border-t border-slate-200 pt-1 dark:border-slate-700">
+                          <div className="font-semibold text-cyan-700 dark:text-cyan-300">
+                            {[marketingTouch.source, marketingTouch.medium].filter(Boolean).join(" / ") || "Источник не определён"}
+                          </div>
+                          {marketingTouch.utm_campaign ? <div>campaign: {String(marketingTouch.utm_campaign)}</div> : null}
+                          {marketingTouch.utm_content ? <div>content: {String(marketingTouch.utm_content)}</div> : null}
+                          {marketingTouch.utm_term ? <div>term: {String(marketingTouch.utm_term)}</div> : null}
+                          {marketingTouch.yclid ? <div className="break-all">yclid: {String(marketingTouch.yclid)}</div> : null}
+                        </div>
+                      ) : null}
+                    </div>
+                  </section>
+                  <section><h3>Данные из формы</h3>
+                    {checkoutDetailRows.length ? (
+                      <div className="min-w-56 text-xs leading-5">
+                        <div
+                          className={`mb-2 rounded border p-2 ${
+                            isSuccessfullyPaid
+                              ? "border-cyan-200 bg-cyan-50 dark:border-cyan-900/60 dark:bg-cyan-950/30"
+                              : "border-amber-200 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/30"
+                          }`}
+                        >
+                          <div
+                            className={`font-semibold ${
+                              isSuccessfullyPaid ? "text-cyan-800 dark:text-cyan-200" : "text-amber-800 dark:text-amber-200"
+                            }`}
+                          >
+                            {isSuccessfullyPaid ? "Оплачено · форма сохранена" : "Ожидает оплаты · контакты доступны"}
+                          </div>
+                          <dl className="mt-1 space-y-1">
+                            {clientPreviewRows.map(([label, value]) => (
+                              <div className="grid grid-cols-[80px_minmax(0,1fr)] gap-2" key={`${label}:${value}`}>
+                                <dt className="text-slate-500">{label}</dt>
+                                <dd className="wrap-break-word font-medium">
+                                  {label === "Telegram" && resolveTelegramContactUrl(value) ? (
+                                    <a className="text-cyan-700 underline" href={resolveTelegramContactUrl(value)} target="_blank" rel="noreferrer">
+                                      {value}
+                                    </a>
+                                  ) : label === "Email" ? (
+                                    <a className="text-cyan-700 underline" href={`mailto:${value}`}>{value}</a>
+                                  ) : label === "Пароль" ? "••••••••" : value}
+                                </dd>
+                              </div>
+                            ))}
+                          </dl>
+                        </div>
+
+                      </div>
+                    ) : isSuccessfullyPaid ? (
+                      <div className="text-xs font-medium text-amber-700 dark:text-amber-300">Оплачено, но данные формы не сохранены</div>
+                    ) : (
+                      <div className="text-xs text-slate-500">Контакты в форме не указаны</div>
+                    )}
+                  </section>
+                  <section><h3>Платёжные реквизиты</h3>
+                    <div className="text-xs leading-5">
+                      <div className="font-semibold">{o.paymentStatus || "-"}</div>
+                      <div className="text-slate-500">method: {paymentMethodSelected || "-"}</div>
+                      <div className="text-slate-500">provider: {paymentProviderUsed || "-"}</div>
+                      {o.paymentRef ? <div className="text-slate-400">ref: {String(o.paymentRef)}</div> : null}
+                      {o.paidAt ? <div className="text-slate-400">paid: {fmtDate(o.paidAt)}</div> : null}
+                    </div>
+                  <div className="orders-muted">Промокод: {o.promoCodeSnapshot || "-"}</div><div className="orders-muted">Статус заказа: {o.status}</div></section>
+                  <section><h3>Диагностика активации</h3>
+                    {o.activation ? (
+                      <div className="text-xs leading-5">
+                        <div className="font-semibold">{o.activation.status}</div>
+                        <div className="text-slate-500">{o.activation.verificationState || "unknown"}</div>
+                        <div className="text-slate-500">
+                          token: {o.activation.tokenBound ? "bound" : o.activation.tokenSeen ? "entered" : "missing"}
+                        </div>
+                        <div className="text-slate-500">stored token: {o.activation.tokenStored ? "yes" : "no"}</div>
+                        <div className={`text-slate-500 ${hasRepeatedTokenInput ? "font-semibold text-amber-700" : ""}`}>
+                          token input:{" "}
+                          {hasRepeatedTokenInput ? `repeated (${tokenValidationAttempts}x)` : tokenValidationAttempts === 1 ? "single" : "none"}
+                        </div>
+                        <div className="text-slate-500">validations: {tokenValidationAttempts}</div>
+                        <div className="text-slate-500">attempts: {Number(o.activation.attempts || 0)} / 3</div>
+                        {o.activation.lastTokenValidatedAt ? (
+                          <div className="text-slate-400">token seen: {fmtDate(o.activation.lastTokenValidatedAt)}</div>
+                        ) : null}
+                        {o.activation.tokenExpiresAt ? (
+                          <div className="text-slate-400">token expires: {fmtDate(o.activation.tokenExpiresAt)}</div>
+                        ) : null}
+                        {o.activation.taskId ? <div className="text-slate-400">task: {String(o.activation.taskId)}</div> : null}
+                        {o.activation.lastProviderCheckedAt ? (
+                          <div className="text-slate-400">{fmtDate(o.activation.lastProviderCheckedAt)}</div>
+                        ) : null}
+                        {o.activation.completedAt ? <div className="text-slate-400">done: {fmtDate(o.activation.completedAt)}</div> : null}
+                        {o.telegramLastError ? <div className="text-rose-600">error: {o.telegramLastError}</div> : null}
+                      </div>
+                    ) : (
+                      <div className="text-xs leading-5">
+                        <div>-</div>
+                        {o.telegramLastError ? <div className="text-rose-600">error: {o.telegramLastError}</div> : null}
+                      </div>
+                    )}
+                  </section>
+                </div>
+              </details>
+            </article>
+          );
+        })}
+        {!orders.isLoading && !(orders.data?.items || []).length ? <div className="orders-empty"><strong>Заказы не найдены</strong><p>Проверьте поиск и выбранные фильтры.</p></div> : null}
       </section>
       {clientInfoDialog ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
