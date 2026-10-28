@@ -7,6 +7,10 @@
   document.documentElement.dataset.clientLanguage = "en";
 
   const translations = new Map([
+    ["Добавьте ссылку на проверку", "Add your verification link"],
+    ["Используйте персональную ссылку, которая открылась после Start.", "Use the personal link that opened after Start."],
+    ["Ссылка для верификации", "Verification link"],
+    ["Ссылка будет сохранена в заказе. Её не нужно публиковать или отправлять в общий чат.", "Your link will be saved with the order. Do not post it publicly or share it in a group chat."],
     ["Gemini Pro для работы с текстом, файлами, идеями и сложными задачами. Доступна подписка на 18 месяцев.", "Gemini Pro for text, files, ideas and complex tasks. An 18-month subscription is available."],
     ["Доступен Gemini Pro на 18 месяцев. Актуальная стоимость указана в тарифе перед оформлением.", "Gemini Pro is available for 18 months. The current price is shown in the plan before checkout."],
     ["Что входит в Gemini Pro", "What Gemini Pro includes"],
