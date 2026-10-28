@@ -75,6 +75,18 @@ assert.equal(ui.activationPoolLabel("claude-pro-sdk5", "").title, "SDK · Claude
 assert.equal(ui.activationPoolLabel("gemini-pro-18", "").title, "Ссылки Gemini");
 assert.equal(ui.activationPools("other-product", {}, "https://example.invalid/activate/")[0].unused, 0);
 assert.equal(ui.CdkStockBreakdown({ productKey: "codex-250", inventory: undefined }), null, "Missing statistics must not be rendered as empty stock");
+assert.equal(ui.matchesActivationStockFilter("codex-250", result.stats.byActivationSite, "empty"), false);
+assert.equal(ui.matchesActivationStockFilter("codex-500", result.stats.byActivationSite, "low"), true);
+assert.equal(ui.matchesActivationStockFilter("chatgpt-plus-1", result.stats.byActivationSite, "empty"), true);
+assert.equal(ui.matchesActivationStockFilter(null, result.stats.byActivationSite, "empty"), false);
+assert.equal(ui.matchesActivationStockFilter("codex-250", undefined, "empty"), false);
+const historicalFixture = plain(result.stats.byActivationSite);
+historicalFixture["chatgpt-plus-1"][""] = {unused:0,used:8,reserved:0,archived:1,total:9};
+const beforePresentation=JSON.stringify(historicalFixture);
+const presentation=ui.visibleActivationPools("chatgpt-plus-1",historicalFixture);
+assert.equal(presentation.current.length,2,"Both configured channels remain visible even with zero stock");
+assert.equal(presentation.historical.length,1,"Used-only unbound keys must not create a false empty-channel warning");
+assert.equal(JSON.stringify(historicalFixture),beforePresentation,"Presentation never mutates stock");
 
 // The new count-only endpoint shares the existing CDK authentication and roles.
 const guards = [(_req, _res, next) => next(), (_req, _res, next) => next()];
@@ -95,4 +107,50 @@ let body;
 await inventoryRoute.stack[0].handle({}, { json(value) { body = value; } });
 assert.deepEqual(plain(body), plain(result));
 assert.ok(queries === 2);
+
+// Exercise filtering on the real page while an import draft is open.
+const require=createRequire(import.meta.url), React=require("react"), {JSDOM}=require("jsdom");
+const dom=new JSDOM('<!doctype html><div id="root"></div>',{url:"http://localhost/"});
+const globals={window:dom.window,document:dom.window.document,navigator:dom.window.navigator,IS_REACT_ACT_ENVIRONMENT:true};
+const previous=new Map(Object.keys(globals).map(key=>[key,Object.getOwnPropertyDescriptor(globalThis,key)]));
+for(const [key,value] of Object.entries(globals))Object.defineProperty(globalThis,key,{configurable:true,writable:true,value});
+const {createRoot}=require("react-dom/client"),{Simulate}=require("react-dom/test-utils");
+const fixtures=[250,500,1000].map(size=>({id:`fixture-${size}`,slug:`codex-${size}`,title:`Codex ${size}`,deliveryType:"activation"}));
+let writes=0;
+const Page=load("apps/admin-ui/src/pages/CdkKeysPage.tsx",{
+  "../components/CdkStockBreakdown":ui,
+  "../components/ProductDurationEditor":{compareProductsByFamilyAndDuration:()=>0,getProductDurationLabel:()=>"",ProductDurationEditor:()=>React.createElement("span",null,"fixture-duration-editor")},
+  "../lib/api":{api:{post(){writes++;throw Error("Unexpected write during filtering");}}},
+  "@tanstack/react-query":{
+    useQueryClient:()=>({invalidateQueries(){}}),
+    useQuery:({queryKey})=>({isLoading:false,isFetching:false,isError:false,data:queryKey[0]==="products"?{items:fixtures}:queryKey[1]==="all-pool-stats"?result:{items:[],total:0},refetch(){}}),
+    useMutation:()=>({isPending:false,mutate(){writes++;throw Error("Unexpected mutation during filtering");}}),
+  },
+}).default;
+const container=dom.window.document.getElementById("root"),reactRoot=createRoot(container);
+const mainRows=()=>[...container.querySelectorAll(".cdk-page > .cdk-inventory-section .cdk-product-row")];
+const rowFor=name=>mainRows().find(row=>row.textContent.includes(name));
+try{
+  await React.act(async()=>reactRoot.render(React.createElement(Page)));
+  assert.equal(mainRows().length,3);
+  await React.act(async()=>rowFor("Codex 250").querySelector("button").click());
+  const textarea=container.querySelector("textarea");
+  await React.act(async()=>Simulate.change(textarea,{target:{value:"FIXTURE-UNSAVED-DRAFT"}}));
+  const emptyButton=[...container.querySelectorAll(".cdk-stock-filters button")].find(button=>button.textContent.includes("Пустые каналы"));
+  await React.act(async()=>emptyButton.click());
+  assert(rowFor("Codex 250"),"Open product stays mounted outside its stock filter");
+  assert.equal(container.querySelector("textarea").value,"FIXTURE-UNSAVED-DRAFT");
+  assert(container.querySelector(".cdk-pinned-notice"));
+  const search=container.querySelector('input[placeholder="Название товара или номинал"]');
+  await React.act(async()=>Simulate.change(search,{target:{value:"500"}}));
+  assert.equal(mainRows().length,2,"Search keeps only its match and the open form");
+  assert.equal(container.querySelector("textarea").value,"FIXTURE-UNSAVED-DRAFT");
+  await React.act(async()=>rowFor("Codex 250").querySelector("button").click());
+  assert.equal(mainRows().length,1);
+  assert(rowFor("Codex 500"));
+  assert.equal(writes,0,"Search, filters and disclosure must not write or activate anything");
+}finally{
+  await React.act(async()=>reactRoot.unmount());dom.window.close();
+  for(const [key,descriptor] of previous){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else delete globalThis[key];}
+}
 console.log("CDK activation stock: complete supplier counts, zero pools, unknown bindings, reservation/archive separation and guarded count-only HTTP contract passed.");

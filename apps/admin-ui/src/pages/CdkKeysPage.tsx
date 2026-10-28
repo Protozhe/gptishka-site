@@ -1,7 +1,7 @@
 ﻿import { Fragment, FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
-import { ActivationInventory, activationPoolLabel, CdkStockBreakdown } from "../components/CdkStockBreakdown";
+import { ActivationInventory, activationPoolLabel, CdkStockBreakdown, matchesActivationStockFilter } from "../components/CdkStockBreakdown";
 import {
   compareProductsByFamilyAndDuration,
   getProductDurationLabel,
@@ -12,6 +12,7 @@ type ProductDeliveryType = "activation" | "code" | "credentials" | "vpn" | "supp
 type CdkStatus = "unused" | "used" | "archived";
 type CredentialStatus = "available" | "assigned";
 type CdkSortMode = "product-duration" | "unused-desc" | "unused-asc";
+type StockFilter = "all" | "low" | "empty";
 type PoolStats = Record<string, { unused: number; used: number; total: number }>;
 
 type ProductItem = {
@@ -1123,7 +1124,7 @@ function ProductsTable({
   resolvePoolKey = inventoryPoolKey,
   showDurationEditor = true,
   title = TEXT.products,
-  hint = "Нажмите на товар, чтобы открыть коробку с ключами.",
+  hint = "Остатки по каждому каналу активации. Нажмите на товар, чтобы добавить или посмотреть ключи.",
 }: {
   products: ProductItem[];
   activeProductId?: string;
@@ -1137,20 +1138,19 @@ function ProductsTable({
   hint?: string;
 }) {
   return (
-    <section className="card overflow-hidden">
-      <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+    <section className="cdk-inventory-section">
+      <div className="cdk-section-heading">
         <h3 className="text-base font-semibold">{title}</h3>
         <p className="mt-1 text-xs text-slate-500">{hint}</p>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[860px] text-left text-sm">
-          <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-900/60">
+      <div className="cdk-table-scroll">
+        <table className="cdk-inventory-table">
+          <thead>
             <tr>
-              <th className="px-4 py-3">Название</th>
+              <th className="px-4 py-3">Товар</th>
               <th className="px-4 py-3">Срок</th>
-              <th className="px-4 py-3">{TEXT.method}</th>
-              <th className="px-4 py-3 text-right">Свободные ключи</th>
-              <th className="px-4 py-3">Пул</th>
+              <th className="px-4 py-3">Способ активации / остаток</th>
+              <th className="px-4 py-3 cdk-total-heading">Свободные ключи</th>
               <th className="px-4 py-3 text-right">Действие</th>
             </tr>
           </thead>
@@ -1164,44 +1164,46 @@ function ProductsTable({
               return (
                 <Fragment key={product.id}>
                   <tr
-                    className={
-                      isActive
-                        ? "bg-cyan-50/80 dark:bg-cyan-950/30"
-                        : "cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-900/60"
-                    }
+                    className={`cdk-product-row ${isActive ? "is-active" : ""}`}
                     onClick={() => onSelect(product.id)}
                   >
-                    <td className="px-4 py-3">
-                      <div className="font-semibold">{title}</div>
-                      <div className="text-xs text-slate-500">{product.slug}</div>
+                    <td className="cdk-product-cell">
+                      <div className="cdk-product-title">{title}</div>
+                      <div className="cdk-product-mobile-duration">{getProductDurationLabel(product)}</div>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      {getProductDurationLabel(product) || <span className="text-slate-400">Не указан</span>}
+                    <td className="cdk-duration-cell">
+                      {getProductDurationLabel(product) || <span className="text-slate-400">—</span>}
                     </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{productModeLabel(product)}</td>
-                    <td className="px-4 py-3 text-right tabular-nums font-semibold" title={poolKey ? `Свободные ключи: ${poolKey}` : "Ключи не используются"}>
-                      {unusedCount === null ? "—" : unusedCount}
-                      {poolKey ? <CdkStockBreakdown compact productKey={poolKey} inventory={activationInventory} expectedSite={resolveDeliveryType(product) === "activation" || resolveDeliveryType(product) === "code" ? product.activationVariants?.withoutLogin?.activationSiteUrl : ""} /> : null}
+                    <td className="cdk-channel-cell">
+                      {poolKey ? <CdkStockBreakdown compact productKey={poolKey} inventory={activationInventory} expectedSite={resolveDeliveryType(product) === "activation" || resolveDeliveryType(product) === "code" ? product.activationVariants?.withoutLogin?.activationSiteUrl : ""} /> : <span className="cdk-stock-muted">{resolveDeliveryType(product) === "vpn" ? "Автоматическая выдача VPN" : "Готовые цифровые доступы"}</span>}
+                      {poolKey && !activationInventory ? <span className="cdk-stock-muted">Остатки загружаются…</span> : null}
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs text-slate-500">{productPoolHint(product)}</td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="cdk-total-cell" title="Общий свободный запас по всем каналам">
+                      <strong>{unusedCount === null ? "—" : unusedCount}</strong><span>всего</span>
+                    </td>
+                    <td className="cdk-action-cell">
                       <button
-                        className={isActive ? "btn-primary" : "btn-secondary"}
+                        className={`cdk-manage-button ${isActive ? "is-open" : ""}`}
                         type="button"
                         onClick={(event) => {
                           event.stopPropagation();
                           onSelect(product.id);
                         }}
                       >
-                        {isActive ? TEXT.selected : TEXT.openKeys}
+                        {isActive ? "Свернуть" : poolKey ? "Добавить ключи" : "Открыть"}
                       </button>
                     </td>
                   </tr>
                   {isActive ? (
-                    <tr className="bg-slate-50/80 dark:bg-slate-950/40">
-                      <td className="px-4 py-4" colSpan={6}>
-                        {showDurationEditor ? <ProductDurationEditor product={product} /> : null}
+                    <tr className="cdk-product-details-row">
+                      <td colSpan={5}>
                         {renderDetails(product)}
+                        <details className="cdk-technical-details">
+                          <summary>Служебные настройки товара</summary>
+                          <p>{productModeLabel(product)} · {productPoolHint(product)}</p>
+                          <p>{product.slug}</p>
+                          {showDurationEditor ? <ProductDurationEditor product={product} /> : null}
+                        </details>
                       </td>
                     </tr>
                   ) : null}
@@ -1286,7 +1288,10 @@ function LegacyPoolMovePanel({
 }
 
 export default function CdkKeysPage() {
+  const qc = useQueryClient();
   const [q, setQ] = useState("");
+  const [productSearch, setProductSearch] = useState("");
+  const [stockFilter, setStockFilter] = useState<StockFilter>("all");
   const [sortMode, setSortMode] = useState<CdkSortMode>(readCdkSortMode);
   const [selectedProductId, setSelectedProductId] = useState("");
   const [selectedLegacyPoolId, setSelectedLegacyPoolId] = useState("");
@@ -1418,15 +1423,29 @@ export default function CdkKeysPage() {
     setSelectedLegacyPoolId((current) => (current === id ? "" : id));
   };
 
+  const matchesSearch = (product: ProductItem) => `${product.title} ${product.slug}`.toLocaleLowerCase("ru").includes(productSearch.trim().toLocaleLowerCase("ru"));
+  const matchesStock = (product: ProductItem, filter: StockFilter) => matchesActivationStockFilter(
+    inventoryPoolKey(product), activationInventory, filter,
+    resolveDeliveryType(product) === "activation" || resolveDeliveryType(product) === "code" ? product.activationVariants?.withoutLogin?.activationSiteUrl : ""
+  );
+  const searchedProducts = sortedProducts.filter(matchesSearch);
+  // Keep the open form mounted when a filter or refreshed stock would hide its row.
+  const filteredProducts = sortedProducts.filter(product => (matchesSearch(product) && matchesStock(product, stockFilter)) || product.id === selectedProductId);
+  const openOutsideFilter = activeProduct && (!matchesSearch(activeProduct) || !matchesStock(activeProduct, stockFilter));
+  const filterOptions: Array<{ id: StockFilter; label: string }> = [
+    { id: "all", label: "Все товары" }, { id: "low", label: "Мало ключей" }, { id: "empty", label: "Пустые каналы" },
+  ];
+
   return (
-    <div className="space-y-4">
-      <section className="card p-4 space-y-2">
-        <h2 className="text-lg font-semibold">{TEXT.title}</h2>
-        <p className="text-sm text-slate-500">{TEXT.subtitle}</p>
-        <p className="text-xs text-slate-500">Остатки разделены по способам активации и обновляются каждые 30 секунд. Красный — свободных ключей нет, жёлтый — осталось не больше трёх.</p>
-        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_260px]">
-          <input className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder={TEXT.searchPlaceholder} />
-          <label className="grid gap-1 text-xs font-semibold text-slate-600 dark:text-slate-300">
+    <div className="cdk-page">
+      <section className="cdk-page-toolbar">
+        <div className="cdk-page-heading">
+          <div><h2>Запас ключей</h2><p>Товары, каналы активации и свободный остаток</p></div>
+          <button className="cdk-refresh-button" type="button" disabled={poolStatsQuery.isFetching} onClick={() => qc.invalidateQueries({ queryKey: ["cdks"] })}>{poolStatsQuery.isFetching ? "Обновляем…" : "Обновить остатки"}</button>
+        </div>
+        <div className="cdk-toolbar-inputs">
+          <label>Найти товар<input className="input" value={productSearch} onChange={event => setProductSearch(event.target.value)} placeholder="Название товара или номинал" /></label>
+          <label>
             Сортировка товаров
             <select
               className="input"
@@ -1447,6 +1466,16 @@ export default function CdkKeysPage() {
             </select>
           </label>
         </div>
+        <div className="cdk-filter-bar">
+          <div className="cdk-stock-filters" aria-label="Фильтр по запасу">
+            {filterOptions.map(filter => <button type="button" key={filter.id} aria-pressed={stockFilter === filter.id} disabled={filter.id !== "all" && !activationInventory} onClick={() => setStockFilter(filter.id)}>
+              {filter.label}<span>{filter.id !== "all" && !activationInventory ? "—" : searchedProducts.filter(product => matchesStock(product, filter.id)).length}</span>
+            </button>)}
+          </div>
+          <span className="cdk-auto-refresh">Обновление каждые 30 сек.</span>
+        </div>
+        <p className="cdk-filter-caption">{stockFilter === "low" ? "Товары, у которых хотя бы в одном канале осталось 1–3 ключа." : stockFilter === "empty" ? "Товары, у которых есть канал без свободных ключей." : "Красный — нет ключей. Жёлтый — осталось 1–3. Резерв не входит в свободный запас."}</p>
+        {openOutsideFilter ? <p className="cdk-pinned-notice">Открытый товар оставлен в списке, чтобы вы могли закончить работу с ним.</p> : null}
       </section>
 
       {productsQuery.isLoading ? <div className="card p-4 text-sm text-slate-500">{TEXT.loading}</div> : null}
@@ -1454,20 +1483,25 @@ export default function CdkKeysPage() {
 
       {!productsQuery.isLoading && !products.length ? <div className="card p-4 text-sm text-rose-600">{TEXT.noProducts}</div> : null}
 
-      {products.length ? (
+      {filteredProducts.length ? (
         <ProductsTable
-          products={sortedProducts}
+          products={filteredProducts}
           activeProductId={activeProduct?.id}
           onSelect={toggleSelectedProduct}
           unusedByPool={unusedByPool}
           activationInventory={activationInventory}
-          renderDetails={(product) => <ProductColumn key={product.id} product={product} search={q} activationInventory={activationInventory} />}
+          renderDetails={(product) => <div className="cdk-product-workspace">
+            <label className="cdk-key-search">Найти ключ в открытом товаре<input className="input" value={q} onChange={e => setQ(e.target.value)} placeholder={TEXT.searchPlaceholder} /></label>
+            <ProductColumn key={product.id} product={product} search={q} activationInventory={activationInventory} />
+          </div>}
         />
       ) : null}
+      {!productsQuery.isLoading && products.length > 0 && !filteredProducts.length ? <div className="cdk-empty-filter"><strong>По этому фильтру товаров нет</strong><p>Измените поиск или покажите весь список.</p><button type="button" onClick={() => { setProductSearch(""); setStockFilter("all"); }}>Показать все товары</button></div> : null}
 
       {poolStatsQuery.isLoading ? <div className="card p-4 text-sm text-slate-500">{TEXT.loading}</div> : null}
 
       {!poolStatsQuery.isLoading && legacyPools.length ? (
+        <details className="cdk-legacy-pools"><summary>{TEXT.legacyPools} · {legacyPools.length}</summary>
         <ProductsTable
           title={TEXT.legacyPools}
           hint={TEXT.legacyPoolsHint}
@@ -1480,6 +1514,7 @@ export default function CdkKeysPage() {
           resolvePoolKey={(pool) => pool.slug}
           renderDetails={(pool) => (
             <>
+              <label className="cdk-key-search">Найти ключ в старом пуле<input className="input" value={q} onChange={e => setQ(e.target.value)} placeholder={TEXT.searchPlaceholder} /></label>
               <LegacyPoolMovePanel
                 fromProductKey={pool.slug}
                 targets={cdkMoveTargets}
@@ -1496,7 +1531,9 @@ export default function CdkKeysPage() {
             </>
           )}
         />
+        </details>
       ) : null}
+      <details className="cdk-method-help"><summary>Как устроены способы выдачи</summary><p>{TEXT.subtitle}</p></details>
     </div>
   );
 }

@@ -44,6 +44,37 @@ export function activationPools(productKey: string, inventory: ActivationInvento
   }));
 }
 
+export function visibleActivationPools(productKey: string, inventory: ActivationInventory, expectedSite = "") {
+  const pools = activationPools(productKey, inventory, expectedSite);
+  const required = new Set(productKey === "chatgpt-plus-1" ? [IOS_SITE, AISOU_SITE]
+    : /^codex-(250|500|1000)$/.test(productKey) ? [AISOU_SITE, AIBUY_SITE]
+    : normalizeInventorySite(expectedSite) ? [normalizeInventorySite(expectedSite)] : []);
+  if (/-sdk[45]$/.test(productKey) || productKey === "gemini-pro-18") required.add("");
+  const current = pools.filter(pool => required.has(pool.siteUrl) || pool.unused > 0 || pool.reserved > 0);
+  const historical = pools.filter(pool => !current.includes(pool));
+  return { current, historical };
+}
+
+export function matchesActivationStockFilter(productKey: string | null, inventory: ActivationInventory | undefined, filter: "all" | "low" | "empty", expectedSite = "") {
+  if (filter === "all") return true;
+  if (!productKey || !inventory) return false;
+  const { current } = visibleActivationPools(productKey, inventory, expectedSite);
+  return filter === "low" ? current.some(pool => pool.unused > 0 && pool.unused <= 3)
+    : current.length === 0 || current.some(pool => pool.unused === 0);
+}
+
+function stockTone(unused: number) {
+  return unused === 0 ? "empty" : unused <= 3 ? "low" : "ready";
+}
+
+function poolDetails(pool: ReturnType<typeof activationPools>[number], historical = false) {
+  return <div key={pool.siteUrl} className={`cdk-pool-detail ${historical ? "cdk-pool-historical" : `cdk-tone-${stockTone(pool.unused)}`}`}>
+    <div className="cdk-pool-detail-heading"><strong>{pool.title}</strong><span><b>{pool.unused}</b> свободно</span></div>
+    <div className="cdk-pool-detail-meta">В резерве: {pool.reserved} · Использовано: {pool.used} · Архив: {pool.archived}</div>
+    <div className="cdk-pool-detail-hint">{pool.hint}</div>
+  </div>;
+}
+
 export function CdkStockBreakdown({ productKey, inventory, expectedSite, compact = false }: {
   productKey: string;
   inventory?: ActivationInventory;
@@ -51,31 +82,25 @@ export function CdkStockBreakdown({ productKey, inventory, expectedSite, compact
   compact?: boolean;
 }) {
   if (!inventory) return null;
-  const pools = activationPools(productKey, inventory, expectedSite);
-  if (!pools.length) return null;
+  const { current, historical } = visibleActivationPools(productKey, inventory, expectedSite);
   if (compact) return (
-    <div className="mt-2 flex min-w-[220px] flex-col items-start gap-1 text-left text-xs font-medium">
-      {pools.map((pool) => (
-        <span key={pool.siteUrl} title={pool.hint} className={`rounded-lg px-2 py-1 ${pool.unused === 0 ? "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300" : pool.unused <= 3 ? "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300" : "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"}`}>
-          {pool.title}: <b>{pool.unused}</b>{pool.unused === 0 ? " · нет ключей" : ""}
-        </span>
+    <div className="cdk-channel-list">
+      {current.map((pool) => (
+        <div key={pool.siteUrl} title={pool.hint} className={`cdk-channel cdk-tone-${stockTone(pool.unused)}`}>
+          <span className="cdk-channel-name">{pool.title}</span>
+          <span className="cdk-channel-stock"><b>{pool.unused}</b><small>{pool.unused === 0 ? "нет ключей" : pool.unused <= 3 ? "мало" : "в наличии"}</small></span>
+        </div>
       ))}
+      {!current.length ? <span className="cdk-stock-muted">Свободных ключей нет</span> : null}
+      {historical.length ? <span className="cdk-stock-history-note">История каналов — в карточке товара</span> : null}
     </div>
   );
   return (
-    <section className="space-y-2" aria-label="Запас по способам активации">
-      <div className="text-sm font-semibold">Запас по способам активации</div>
-      <p className="text-xs text-slate-500">Полный остаток, без учёта поиска. Резерв, использованные и архив не входят в свободный запас.</p>
-      <div className="grid gap-2 sm:grid-cols-2">
-        {pools.map((pool) => (
-          <div key={pool.siteUrl} className={`rounded-xl border p-3 ${pool.unused === 0 ? "border-rose-200 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/30" : pool.unused <= 3 ? "border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30" : "border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30"}`}>
-            <div className="font-semibold">{pool.title}</div>
-            <div className="mt-1 text-lg font-bold">Свободно: {pool.unused}{pool.unused === 0 ? " · нет ключей" : pool.unused <= 3 ? " · мало" : ""}</div>
-            <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">В резерве: {pool.reserved} · Использовано: {pool.used} · Архив: {pool.archived}</div>
-            <div className="mt-1 break-all text-xs text-slate-500">{pool.hint}</div>
-          </div>
-        ))}
-      </div>
+    <section className="cdk-stock-details" aria-label="Запас по способам активации">
+      <div className="cdk-stock-details-title">Запас по способам активации</div>
+      <p className="cdk-stock-details-caption">Только свободные ключи входят в запас. Резерв, использованные и архив показаны отдельно.</p>
+      <div className="cdk-pool-details-grid">{current.map(pool => poolDetails(pool))}</div>
+      {historical.length ? <details className="cdk-stock-history"><summary>Ранее использованные каналы · {historical.length}</summary>{historical.map(pool => poolDetails(pool, true))}</details> : null}
     </section>
   );
 }

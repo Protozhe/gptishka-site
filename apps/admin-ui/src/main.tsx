@@ -7,6 +7,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminLayout } from "./layout/AdminLayout";
 import "./styles/index.css";
 import "./styles/workspace.css";
+import "./styles/cdk-inventory.css";
 
 const LoginPage = React.lazy(() => import("./pages/LoginPage"));
 const DashboardPage = React.lazy(() => import("./pages/DashboardPage"));
