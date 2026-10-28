@@ -127,6 +127,7 @@ await assert.rejects(() => reserve(250, "fixture-order-250"), e => e.statusCode 
 const validation = load(base + "common/middleware/validation.ts", { "../errors/app-error": errors });
 const asyncHandlers = load(base + "common/http/async-handler.ts");
 const { cdkKeysRouter } = load(base + "modules/cdks/cdks.routes.ts", {
+  "./cdk-inventory": { readCdkInventory: async () => { throw new Error("Inventory is covered by its isolated regression check"); } },
   "./cdk-keys.store": { cdkKeysStore }, "../../services/licenseService": { licenseService },
   "../auth/auth.middleware": { requireAuth: (_req, _res, next) => next(), allowRoles: () => (_req, _res, next) => next() },
   "../../common/middleware/validation": validation, "../../common/http/async-handler": asyncHandlers,
@@ -258,6 +259,7 @@ for (const [key, value] of Object.entries(globals)) Object.defineProperty(global
 const { createRoot } = require("react-dom/client"), { Simulate } = require("react-dom/test-utils");
 const posts = [];
 const { KeyProductColumn, ActivationTable } = load("apps/admin-ui/src/pages/CdkKeysPage.tsx", {
+  "../components/CdkStockBreakdown": load("apps/admin-ui/src/components/CdkStockBreakdown.tsx"),
   "../lib/api": { api: { async post(path, body) { posts.push({ path, body }); return { data: { inserted: 1, skipped: 0 } }; } } },
   "@tanstack/react-query": {
     useQueryClient: () => ({ invalidateQueries() {} }),

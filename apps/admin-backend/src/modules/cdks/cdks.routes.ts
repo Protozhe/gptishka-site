@@ -5,6 +5,7 @@ import { validateBody, validateQuery } from "../../common/middleware/validation"
 import { asyncHandler } from "../../common/http/async-handler";
 import { cdkKeysStore } from "./cdk-keys.store";
 import { licenseService } from "../../services/licenseService";
+import { readCdkInventory } from "./cdk-inventory";
 
 const listSchema = z.object({
   status: z.enum(["unused", "used", "archived"]).optional(),
@@ -43,6 +44,13 @@ function parseCodes(input: z.infer<typeof importSchema>) {
 export const cdkKeysRouter = Router();
 
 cdkKeysRouter.use(requireAuth, allowRoles(["OWNER", "ADMIN", "MANAGER"]));
+
+cdkKeysRouter.get(
+  "/inventory",
+  asyncHandler(async (_req, res) => {
+    res.json(await readCdkInventory());
+  })
+);
 
 cdkKeysRouter.get(
   "/stats",

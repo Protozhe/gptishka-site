@@ -1,6 +1,7 @@
 ﻿import { Fragment, FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
+import { ActivationInventory, activationPoolLabel, CdkStockBreakdown } from "../components/CdkStockBreakdown";
 import {
   compareProductsByFamilyAndDuration,
   getProductDurationLabel,
@@ -47,6 +48,7 @@ type CdkRow = {
 
 type CdkListResponse = {
   items: CdkRow[];
+  total?: number;
   stats?: {
     byProduct?: Record<
       string,
@@ -58,6 +60,8 @@ type CdkListResponse = {
     >;
   };
 };
+
+type CdkInventoryResponse = { stats: { byProduct: PoolStats; byActivationSite: ActivationInventory } };
 
 type CdkImportResult = {
   inserted: number;
@@ -343,6 +347,10 @@ function ActivationTable({
                 </span>
               </div>
 
+              <div className="mb-2 text-xs font-semibold text-cyan-700 dark:text-cyan-300">
+                {activationPoolLabel(item.productKey, item.activationSiteUrl || "").title}
+              </div>
+
               <div className="grid grid-cols-1 gap-x-3 gap-y-1 text-sm sm:grid-cols-2">
                 <div>
                   <span className="text-slate-500">{TEXT.user}: </span>
@@ -502,11 +510,13 @@ function KeyProductColumn({
   search,
   mode = "activation",
   productKeyOverride,
+  activationInventory,
 }: {
   product: ProductItem;
   search: string;
   mode?: "activation" | "support" | "support_claude";
   productKeyOverride?: string;
+  activationInventory?: ActivationInventory;
 }) {
   const qc = useQueryClient();
   const isSupportMode = mode === "support" || mode === "support_claude";
@@ -722,6 +732,9 @@ function KeyProductColumn({
   const usedItems = usedQuery.data?.items || [];
   const archivedItems = archivedQuery.data?.items || [];
   const loading = unusedQuery.isLoading || usedQuery.isLoading || archivedQuery.isLoading;
+  const unusedCount = unusedQuery.data?.total ?? unusedItems.length;
+  const usedCount = usedQuery.data?.total ?? usedItems.length;
+  const archivedCount = archivedQuery.data?.total ?? archivedItems.length;
 
   return (
     <section className="card p-4 space-y-3">
@@ -737,9 +750,11 @@ function KeyProductColumn({
           </p>
         </div>
         <div className="text-xs text-slate-600">
-          {TEXT.unused}: <b>{unusedItems.length}</b> | {TEXT.used}: <b>{usedItems.length}</b> | {TEXT.archived}: <b>{archivedItems.length}</b>
+          {TEXT.unused}: <b>{unusedCount}</b> | {TEXT.used}: <b>{usedCount}</b> | {TEXT.archived}: <b>{archivedCount}</b>
         </div>
       </div>
+
+      <CdkStockBreakdown productKey={productKey} inventory={activationInventory} expectedSite={isSupportMode || isGeminiActivationLinkPool ? "" : defaultActivationSiteUrl} />
 
       <form onSubmit={onImport} className="space-y-2">
         {isChatGptPlusDualPool ? (
@@ -815,7 +830,7 @@ function KeyProductColumn({
       <div className="grid gap-3">
         <CurtainBlock
           title={TEXT.unused}
-          count={unusedItems.length}
+          count={unusedCount}
           open={showUnused}
           onToggle={() => setShowUnused((value) => !value)}
         >
@@ -832,7 +847,7 @@ function KeyProductColumn({
 
         <CurtainBlock
           title={TEXT.used}
-          count={usedItems.length}
+          count={usedCount}
           open={showUsed}
           onToggle={() => setShowUsed((value) => !value)}
         >
@@ -847,7 +862,7 @@ function KeyProductColumn({
 
         <CurtainBlock
           title={TEXT.archived}
-          count={archivedItems.length}
+          count={archivedCount}
           open={showArchived}
           onToggle={() => setShowArchived((value) => !value)}
         >
@@ -1029,7 +1044,7 @@ function VpnProductColumn({ product }: { product: ProductItem }) {
   );
 }
 
-function ProductColumn({ product, search }: { product: ProductItem; search: string }) {
+function ProductColumn({ product, search, activationInventory }: { product: ProductItem; search: string; activationInventory?: ActivationInventory }) {
   const deliveryType = resolveDeliveryType(product);
   if (deliveryType === "credentials") {
     return <CredentialsProductColumn product={product} search={search} />;
@@ -1038,13 +1053,13 @@ function ProductColumn({ product, search }: { product: ProductItem; search: stri
     return <VpnProductColumn product={product} />;
   }
   if (deliveryType === "support") {
-    return <KeyProductColumn product={product} search={search} mode="support" />;
+    return <KeyProductColumn product={product} search={search} mode="support" activationInventory={activationInventory} />;
   }
   if (deliveryType === "support_claude") {
-    return <KeyProductColumn product={product} search={search} mode="support_claude" />;
+    return <KeyProductColumn product={product} search={search} mode="support_claude" activationInventory={activationInventory} />;
   }
 
-  return <KeyProductColumn product={product} search={search} mode="activation" />;
+  return <KeyProductColumn product={product} search={search} mode="activation" activationInventory={activationInventory} />;
 }
 
 function productModeLabel(product: ProductItem) {
@@ -1104,6 +1119,7 @@ function ProductsTable({
   onSelect,
   renderDetails,
   unusedByPool,
+  activationInventory,
   resolvePoolKey = inventoryPoolKey,
   showDurationEditor = true,
   title = TEXT.products,
@@ -1114,6 +1130,7 @@ function ProductsTable({
   onSelect: (id: string) => void;
   renderDetails: (product: ProductItem) => React.ReactNode;
   unusedByPool?: PoolStats;
+  activationInventory?: ActivationInventory;
   resolvePoolKey?: (product: ProductItem) => string | null;
   showDurationEditor?: boolean;
   title?: string;
@@ -1164,6 +1181,7 @@ function ProductsTable({
                     <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{productModeLabel(product)}</td>
                     <td className="px-4 py-3 text-right tabular-nums font-semibold" title={poolKey ? `Свободные ключи: ${poolKey}` : "Ключи не используются"}>
                       {unusedCount === null ? "—" : unusedCount}
+                      {poolKey ? <CdkStockBreakdown compact productKey={poolKey} inventory={activationInventory} expectedSite={resolveDeliveryType(product) === "activation" || resolveDeliveryType(product) === "code" ? product.activationVariants?.withoutLogin?.activationSiteUrl : ""} /> : null}
                     </td>
                     <td className="px-4 py-3 font-mono text-xs text-slate-500">{productPoolHint(product)}</td>
                     <td className="px-4 py-3 text-right">
@@ -1289,18 +1307,10 @@ export default function CdkKeysPage() {
       ).data,
   });
 
-  const poolStatsQuery = useQuery<CdkListResponse>({
+  const poolStatsQuery = useQuery<CdkInventoryResponse>({
     queryKey: ["cdks", "all-pool-stats"],
     refetchInterval: 30_000,
-    queryFn: async () =>
-      (
-        await api.get("/cdks", {
-          params: {
-            page: 1,
-            limit: 1,
-          },
-        })
-      ).data,
+    queryFn: async () => (await api.get("/cdks/inventory")).data,
   });
 
   const products = useMemo(() => {
@@ -1322,6 +1332,7 @@ export default function CdkKeysPage() {
   }, [productsQuery.data]);
 
   const unusedByPool = poolStatsQuery.data?.stats?.byProduct;
+  const activationInventory = poolStatsQuery.data?.stats?.byActivationSite;
   const sortedProducts = useMemo(
     () => sortProductsByStock(products, sortMode, unusedByPool),
     [products, sortMode, unusedByPool]
@@ -1412,6 +1423,7 @@ export default function CdkKeysPage() {
       <section className="card p-4 space-y-2">
         <h2 className="text-lg font-semibold">{TEXT.title}</h2>
         <p className="text-sm text-slate-500">{TEXT.subtitle}</p>
+        <p className="text-xs text-slate-500">Остатки разделены по способам активации и обновляются каждые 30 секунд. Красный — свободных ключей нет, жёлтый — осталось не больше трёх.</p>
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_260px]">
           <input className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder={TEXT.searchPlaceholder} />
           <label className="grid gap-1 text-xs font-semibold text-slate-600 dark:text-slate-300">
@@ -1438,6 +1450,7 @@ export default function CdkKeysPage() {
       </section>
 
       {productsQuery.isLoading ? <div className="card p-4 text-sm text-slate-500">{TEXT.loading}</div> : null}
+      {poolStatsQuery.isError ? <div className="card p-4 text-sm text-rose-600" role="alert">Не удалось обновить остатки. {poolStatsQuery.data ? "Показаны последние полученные данные." : "Количество ключей пока неизвестно."} <button type="button" className="underline" onClick={() => poolStatsQuery.refetch()}>Повторить</button></div> : null}
 
       {!productsQuery.isLoading && !products.length ? <div className="card p-4 text-sm text-rose-600">{TEXT.noProducts}</div> : null}
 
@@ -1447,7 +1460,8 @@ export default function CdkKeysPage() {
           activeProductId={activeProduct?.id}
           onSelect={toggleSelectedProduct}
           unusedByPool={unusedByPool}
-          renderDetails={(product) => <ProductColumn key={product.id} product={product} search={q} />}
+          activationInventory={activationInventory}
+          renderDetails={(product) => <ProductColumn key={product.id} product={product} search={q} activationInventory={activationInventory} />}
         />
       ) : null}
 
@@ -1462,6 +1476,7 @@ export default function CdkKeysPage() {
           activeProductId={activeLegacyPool?.id}
           onSelect={toggleSelectedLegacyPool}
           unusedByPool={unusedByPool}
+          activationInventory={activationInventory}
           resolvePoolKey={(pool) => pool.slug}
           renderDetails={(pool) => (
             <>
@@ -1476,6 +1491,7 @@ export default function CdkKeysPage() {
                 search={q}
                 mode="support"
                 productKeyOverride={pool.slug}
+                activationInventory={activationInventory}
               />
             </>
           )}
