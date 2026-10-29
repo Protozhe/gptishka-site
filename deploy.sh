@@ -99,6 +99,16 @@ fi
 TEST_DIR="$(mktemp -d /tmp/gptishka-tests.XXXXXX)"
 git -C "$RELEASE" archive "$COMMIT" | tar -x -C "$TEST_DIR"
 ln -s "$(readlink -f "$RELEASE/node_modules")" "$TEST_DIR/node_modules"
+# npm may keep backend-only packages inside their workspace. Share dependency
+# directories with isolated tests, while keeping production .env and data out.
+for dependency_workspace in "$RELEASE"/apps/*; do
+  [[ -f "$dependency_workspace/package.json" ]] || continue
+  test_workspace_rel="${dependency_workspace#"$RELEASE"/}"
+  [[ -f "$TEST_DIR/$test_workspace_rel/package.json" ]] || exit 1
+  if [ -d "$dependency_workspace/node_modules" ]; then
+    ln -s "$(readlink -f "$dependency_workspace/node_modules")" "$TEST_DIR/$test_workspace_rel/node_modules"
+  fi
+done
 (
   cd "$TEST_DIR"
   export NODE_ENV=test ADMIN_BACKEND_URL=http://127.0.0.1:9 ADMIN_BACKEND_FALLBACK_URLS=http://127.0.0.1:9

@@ -40,6 +40,8 @@ assert.match(deploy, /git -C "\$RELEASE" archive "\$COMMIT" \| tar -x -C "\$TEST
 assert.match(deploy, /export NODE_ENV=test ADMIN_BACKEND_URL=http:\/\/127.0.0.1:9/);
 assert.match(deploy, /DATABASE_URL=postgresql:\/\/fixture:fixture@127.0.0.1:9\/fixture/);
 assert.match(deploy, /export GPTISHKA_RUNTIME_DIR="\$TEST_DIR\/data"/);
+assert.match(deploy, /for dependency_workspace in "\$RELEASE"\/apps\/\*/);
+assert.match(deploy, /ln -s "\$\(readlink -f "\$dependency_workspace\/node_modules"\)" "\$TEST_DIR\/\$test_workspace_rel\/node_modules"/);
 assert.match(deploy, /python3 -B "\$RELEASE\/scripts\/test-site-permissions.py"/);
 assert.match(deploy, /cmp -s "\$PRIOR_RELEASE\/package-lock.json" "\$RELEASE\/package-lock.json"/);
 assert.match(deploy, /diff -qr "\$PRIOR_RELEASE\/apps\/admin-backend\/prisma" "\$RELEASE\/apps\/admin-backend\/prisma"/);
