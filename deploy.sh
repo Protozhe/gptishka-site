@@ -81,9 +81,25 @@ PRIOR_RELEASE="$RELEASES_DIR/release-$(git -C "$REPO_DIR" rev-parse "$COMMIT^")"
 if [ "$SCHEMA_CHANGED" -eq 0 ] && ! cmp -s "$ACTIVE_REAL/package-lock.json" "$RELEASE/package-lock.json" && [ -d "$PRIOR_RELEASE" ] && [ "$(stat -c %u "$PRIOR_RELEASE")" = 0 ] && cmp -s "$PRIOR_RELEASE/package-lock.json" "$RELEASE/package-lock.json" && diff -qr "$PRIOR_RELEASE/apps/admin-backend/prisma" "$RELEASE/apps/admin-backend/prisma" >/dev/null; then
   DEPENDENCY_SOURCE="$PRIOR_RELEASE"
 fi
+# Follow an earlier candidate's dependency link to the complete installation.
+# Root and workspace packages must come from the same matching lockfile.
+if [ -d "$DEPENDENCY_SOURCE/node_modules" ]; then
+  COMPLETE_DEPENDENCY_SOURCE="$(dirname "$(readlink -f "$DEPENDENCY_SOURCE/node_modules")")"
+  if [[ "$COMPLETE_DEPENDENCY_SOURCE" == "$RELEASES_DIR"/release-* ]] && [ "$(stat -c %u "$COMPLETE_DEPENDENCY_SOURCE")" = 0 ] && cmp -s "$COMPLETE_DEPENDENCY_SOURCE/package-lock.json" "$RELEASE/package-lock.json" && diff -qr "$COMPLETE_DEPENDENCY_SOURCE/apps/admin-backend/prisma" "$RELEASE/apps/admin-backend/prisma" >/dev/null; then
+    DEPENDENCY_SOURCE="$COMPLETE_DEPENDENCY_SOURCE"
+  fi
+fi
 if [ "$SCHEMA_CHANGED" -eq 0 ] && cmp -s "$DEPENDENCY_SOURCE/package-lock.json" "$RELEASE/package-lock.json" && [ -x "$DEPENDENCY_SOURCE/node_modules/.bin/tsc" ] && [ -x "$DEPENDENCY_SOURCE/node_modules/.bin/vite" ]; then
   REUSE_DEPS=1
   ln -s "$DEPENDENCY_SOURCE/node_modules" "$RELEASE/node_modules"
+  for source_workspace in "$DEPENDENCY_SOURCE"/apps/*; do
+    [[ -f "$source_workspace/package.json" ]] || continue
+    workspace_rel="${source_workspace#"$DEPENDENCY_SOURCE"/}"
+    [[ -f "$RELEASE/$workspace_rel/package.json" ]] || exit 1
+    if [ -d "$source_workspace/node_modules" ]; then
+      ln -s "$(readlink -f "$source_workspace/node_modules")" "$RELEASE/$workspace_rel/node_modules"
+    fi
+  done
 else
   (cd "$RELEASE" && npm ci --include=dev --prefer-offline && npm run prisma:generate --workspace @gptishka/admin-backend)
 fi
