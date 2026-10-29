@@ -1,5 +1,6 @@
 import { ProductVisualBackgroundType } from "@prisma/client";
 import { z } from "zod";
+import { partialUpdateSchema } from "../../common/validation/partial-update-schema";
 
 const nullableText = (max = 2048) =>
   z
@@ -36,7 +37,7 @@ export const showcaseSectionSchema = z.object({
   renderMode: z.enum(["auto", "cards"]).default("auto"),
 });
 
-export const showcaseSectionUpdateSchema = showcaseSectionSchema.partial();
+export const showcaseSectionUpdateSchema = partialUpdateSchema(showcaseSectionSchema);
 
 export const showcaseServiceCardSchema = z.object({
   title: nullableText(150),
@@ -61,7 +62,7 @@ export const showcaseServiceCardSchema = z.object({
   sortOrder: z.coerce.number().int().min(0).max(100000).default(100),
 });
 
-export const showcaseServiceCardUpdateSchema = showcaseServiceCardSchema.partial();
+export const showcaseServiceCardUpdateSchema = partialUpdateSchema(showcaseServiceCardSchema);
 
 export const showcasePlacementSchema = z.object({
   productId: z.string().min(10),

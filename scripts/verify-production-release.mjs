@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 
 const checks = [
   "scripts/verify-dependency-compatibility.mjs",
+  "scripts/verify-payment-storage-privacy.mjs",
   "scripts/verify-admin-access.mjs",
   "scripts/verify-admin-sessions-uploads.mjs",
   "scripts/verify-admin-telegram-mfa.mjs",

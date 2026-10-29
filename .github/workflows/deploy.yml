@@ -40,6 +40,9 @@ jobs:
       - name: Build native modules used by compatibility checks
         run: npm rebuild bcrypt sqlite3
 
+      - name: Block known high and critical production dependency vulnerabilities
+        run: npm audit --omit=dev --audit-level=high --ignore-scripts
+
       - name: Run production regression checks
         run: npm run verify:production
 

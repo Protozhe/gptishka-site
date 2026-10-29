@@ -1,5 +1,6 @@
 import { Currency } from "@prisma/client";
 import { z } from "zod";
+import { partialUpdateSchema } from "../../common/validation/partial-update-schema";
 
 const PNG_URL_RE = /\.png(?:\?.*)?(?:#.*)?$/i;
 
@@ -76,7 +77,7 @@ const productBody = z.object({
 });
 
 export const createProductSchema = productBody;
-export const updateProductSchema = productBody.partial();
+export const updateProductSchema = partialUpdateSchema(productBody);
 
 export const translateRuToEnSchema = z.object({
   title: z.string().min(1).max(150),

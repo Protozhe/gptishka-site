@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { partialUpdateSchema } from "../../common/validation/partial-update-schema";
 
 const nullableText = (max = 2048) =>
   z
@@ -39,7 +40,7 @@ export const servicePageSchema = z.object({
   sortOrder: z.coerce.number().int().min(0).max(100000).default(100),
 });
 
-export const servicePageUpdateSchema = servicePageSchema.partial();
+export const servicePageUpdateSchema = partialUpdateSchema(servicePageSchema);
 
 export const servicePagePlacementSchema = z.object({
   productId: z.string().min(10),

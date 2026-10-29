@@ -11,7 +11,7 @@ import { AppError } from "../../common/errors/app-error";
 const schema = z.object({
   enabled: z.literal(true),
   botToken: z.string().regex(/^\d+:[A-Za-z0-9_-]+$/),
-  users: z.record(z.string().regex(/^[1-9][0-9]+$/)),
+  users: z.record(z.string(), z.string().regex(/^[1-9][0-9]+$/)),
   marketplaceMaintainers: z.array(z.string().regex(/^[A-Za-z0-9_-]{1,128}$/)).max(8).default([]),
   proxyUrl: z.literal("http://127.0.0.1:18082"),
   database: z.string().startsWith("/var/lib/gptishka-runtime/website/"),

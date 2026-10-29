@@ -5,6 +5,7 @@ const { execFile } = require("child_process");
 const sqlite3 = require("sqlite3").verbose();
 const helmet = require("helmet");
 const { applyContentSecurityPolicy } = require("./server/security-headers");
+const { blockPrivatePaymentStorage } = require("./server/private-payment-storage");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
 const {
@@ -1121,6 +1122,7 @@ function createApp() {
   );
   app.use(compression());
   app.use(applyContentSecurityPolicy);
+  app.use(blockPrivatePaymentStorage);
   app.use(
     "/api",
     rateLimit({
