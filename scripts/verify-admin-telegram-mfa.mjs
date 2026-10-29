@@ -6,8 +6,11 @@ import vm from "node:vm";
 import crypto from "node:crypto";
 import net from "node:net";
 import sqlite3 from "sqlite3";
-import { z } from "zod";
+import { createRequire } from "node:module";
 import ts from "typescript";
+
+const backend = createRequire(new URL("../apps/admin-backend/package.json", import.meta.url));
+const { z } = backend("zod");
 
 class AppError extends Error { constructor(message, statusCode) { super(message); this.statusCode = statusCode; } }
 const source = name => fs.readFileSync(`apps/admin-backend/src/modules/auth/${name}.ts`, "utf8");
