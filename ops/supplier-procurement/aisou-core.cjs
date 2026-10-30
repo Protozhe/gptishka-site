@@ -88,7 +88,11 @@ function quoteFromReads(expected, item, inventory) {
   return { amountMinor, itemId: expected.itemId, code: expected.code, race: expected.race, quantity: 1, currency: "CNY", available: Number(inventory.count) > 0 };
 }
 
-function quoteFromValuation(expected, catalog, inventory, valuation) {
+function quoteFromValuation(expected, catalog, inventory, valuation, source = "catalog") {
+  // The authenticated item endpoint omits api_status. Its successful response
+  // can identify the fixed Plus-Free item without downloading the full catalog.
+  const targeted = source === "authenticated_plus_item";
+  if (source !== "catalog" && (!targeted || expected.product !== "plus_free" || expected.itemId !== 49 || expected.race !== "")) throw Error("merchant_quote_contract_mismatch");
   const matches=[];
   function walk(rows) {
     if (!Array.isArray(rows)) return;
@@ -99,7 +103,8 @@ function quoteFromValuation(expected, catalog, inventory, valuation) {
   }
   walk(catalog);
   const item=matches[0];
-  if (matches.length!==1 || Number(item.api_status)!==1 || Number(item.status)!==1 || Number(inventory?.delivery_way)!==0) throw Error("merchant_quote_contract_mismatch");
+  const apiConfirmed = item && (targeted && item.api_status == null || Number(item.api_status) === 1);
+  if (matches.length!==1 || !apiConfirmed || Number(item.status)!==1 || Number(inventory?.delivery_way)!==0) throw Error("merchant_quote_contract_mismatch");
   if (expected.race) {
     let names=Object.keys(typeof item.config?.category==='object'?item.config.category:{});
     if(typeof item.config==='string') {

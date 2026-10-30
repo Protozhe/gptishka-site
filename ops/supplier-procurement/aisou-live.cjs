@@ -166,13 +166,14 @@ async function procureWebsiteKey({ prisma, activationStore, orderId, productKey,
       // stock or balance. A purchase was already claimed and cannot be replayed.
       quote={amountMinor:prior.quoted_minor,itemId:expected.itemId,code:expected.code,race:expected.race,quantity:1,currency:"CNY",available:true};
     } else {
+      const targetedPlus = expected.product === "plus_free";
       const [catalog, stock, valuation, balance] = await Promise.all([
-        api.read("items"),
+        targetedPlus ? api.read("item", { code: expected.code }).then(item => [item]) : api.read("items"),
         api.read("inventory", { sharedCode: expected.code, race: expected.race }),
         api.read("valuation", { code: expected.code, num: 1, card_id: 0, race: expected.race }),
         api.read("connect"),
       ]);
-      quote = quoteFromValuation(expected, catalog, stock, valuation);
+      quote = quoteFromValuation(expected, catalog, stock, valuation, targetedPlus ? "authenticated_plus_item" : "catalog");
       if (!/^\d+(?:\.\d{1,2})?$/.test(String(balance?.balance))) throw Error("supplier_balance_unconfirmed");
       const balanceMinor = Math.round(Number(balance.balance) * 100);
       if (!Number.isSafeInteger(balanceMinor)) throw Error("supplier_balance_unconfirmed");

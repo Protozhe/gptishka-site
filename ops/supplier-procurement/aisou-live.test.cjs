@@ -59,6 +59,40 @@ test('exact one-unit valuation avoids heavy item synchronization and the base-va
  assert.throws(()=>quoteFromValuation(c,[{...cat[0],config:'[category]\n250点数额度=75'}],{delivery_way:0,count:2},{price:'145'}),/variant/);
  const ios=contract('chatgpt-plus-1','plus');assert.equal(quoteFromValuation(ios,[{id:30,code:ios.code,status:1,api_status:1}],{delivery_way:0,count:1,factory_price:'124'},{price:'122'}).amountMinor,12400);
 });
+
+test('authenticated Plus item quote keeps identity, API refusal, currency and price guards',()=>{
+ const c=contract('chatgpt-plus-1','free'),item={id:49,code:c.code,status:1},inventory={delivery_way:0,count:2,factory_price:'113'},valuation={price:'111'};
+ const source='authenticated_plus_item';
+ assert.equal(quoteFromValuation(c,[item],inventory,valuation,source).amountMinor,11300);
+ assert.throws(()=>quoteFromValuation(c,[item],inventory,valuation),/contract/,'ordinary catalog still requires api_status');
+ for(const changed of [{...item,id:30},{...item,code:'foreign'},{...item,status:0},{...item,api_status:0}])assert.throws(()=>quoteFromValuation(c,[changed],inventory,valuation,source),/contract/);
+ assert.throws(()=>quoteFromValuation(c,[item,item],inventory,valuation,source),/contract/);
+ assert.throws(()=>quoteFromValuation(c,[item],inventory,{price:'113.01'},source),/ceiling/);
+ assert.throws(()=>quoteFromValuation(c,[item],inventory,{price:'113',currency_code:'USD'},source),/currency/);
+ assert.throws(()=>quoteFromValuation(contract('codex-250','plus'),[item],inventory,valuation,source),/contract/);
+});
+
+test('paid Plus reserve can buy once while the complete merchant catalog is unavailable',async t=>{
+ const f=fixture(t),c=contract('chatgpt-plus-1','free'),requests=[];let trades=0;
+ f.o.items[0].product.slug='chatgpt-plus-1';f.a.externalFulfillmentOwner='pulse-siteplus-v1';
+ const args={...f.args,productKey:'chatgpt-plus-1',accountPlan:'free',stockOnly:true,reserveProof:{state:'fallback_sealed',orderId:oid,site:c.site,product:c.product,sessionFingerprint:'a'.repeat(16)}};
+ args.prisma.order.findUnique=async()=>({...f.o,licenseKeys:f.o.licenseKeys.filter(k=>k.orderId===oid)});
+ args.transport=async(url,body)=>{
+  requests.push(url);
+  if(url.endsWith('/items'))assert.fail('Plus must not wait for the full catalog');
+  if(url.endsWith('/item')){assert.equal(new URLSearchParams(body).get('code'),c.code);return {code:200,data:{id:49,code:c.code,status:1}};}
+  if(url.endsWith('/inventory'))return {code:200,data:{count:2,delivery_way:0,factory_price:'113'}};
+  if(url.endsWith('/valuation'))return {code:200,data:{price:'113'}};
+  if(url.endsWith('/connect'))return {code:200,data:{balance:'811'}};
+  if(url.endsWith('/trade')){trades++;return {code:200,data:{tradeNo:'fixture-plus-trade',amount:'113',secret:'GPLUS-TEST-TEST-TEST'}};}
+  const p=JSON.parse(body);assert.ok(['query_code','verify_code'].includes(p.action));
+  return p.action==='query_code'?{success:true,status:'active'}:{success:true,sid:'fixture-sid',plan_type:'plus',require_cookie:0};
+ };
+ const r=await procureWebsiteKey(args);assert.equal(r.stockAvailable,true);assert.equal(trades,1);
+ assert.equal(f.o.licenseKeys[0].productKey,'chatgpt-plus-1');assert.equal(f.o.licenseKeys[0].status,'available');
+ assert.equal(f.audits[0].meta.expectedProduct,'plus_free');assert.equal(f.audits[0].meta.amountCny,113);
+ await procureWebsiteKey(args);assert.equal(trades,1,'restart sees the same available stock');
+});
 test('canonical IOS type and AIEE denomination are required; prefix alone is insufficient',()=>{
  const q={success:true,status:'active'},v={success:true,sid:'private',type:'plus_month'};
  assert.equal(providerEvidence('https://vip.sxzfd.com',q,v).product,'plus_ios');
