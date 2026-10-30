@@ -15,6 +15,7 @@ import { resolveActivationVariant } from "../../common/utils/product-activation-
 import { canonicalProductKey } from "../../common/utils/product-key";
 import { encryptManualLoginCredentials, ManualLoginCredentials } from "../../common/security/manual-login-credentials";
 import { isDevinProductSlug } from "../orders/devin-payment-link";
+import { isVerificationSupportProduct } from "../orders/verification-support";
 import { buildPallyOrderData } from "./pally-order-data";
 import { resolveNewAccountSurcharge } from "./new-account-option";
 import { syncWebsiteCustomerToSheet } from "../customers/customer-sheet.service";
@@ -203,6 +204,10 @@ export const paymentsService = {
     );
     if (!selectedVariant.enabled) {
       throw new AppError("Selected activation option is not available", 400);
+    }
+    // Verification support exposes one catalog price, not subscription variant prices.
+    if (isVerificationSupportProduct(product.slug)) {
+      selectedVariant.price = Number(product.price);
     }
     const newAccountSurcharge = resolveNewAccountSurcharge(
       product.slug,
