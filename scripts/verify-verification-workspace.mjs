@@ -91,6 +91,14 @@ for (const lang of ['ru','en']) for (const slug of ['claude-kyc','claude-cvp','c
   const p=await page(lang,slug);
   try {
     assert.equal(p.get('supportPaidDetails').hidden,false);assert.equal(p.get('supportProgress').hidden,true);
+    assert.equal(p.get('supportKycLinkExample').hidden, !slug.includes('kyc'));
+    const example=p.get('supportKycLinkExample').querySelector('code');
+    const exampleUrl=new URL(example.textContent);
+    assert.equal(exampleUrl.hostname,'inquiry.withpersona.com');
+    assert.equal(exampleUrl.searchParams.get('inquiry-id'),'inq_EXAMPLE_NOT_A_REAL_ID');
+    assert.equal(exampleUrl.searchParams.get('session-token'),'EXAMPLE_HEADER.EXAMPLE_PAYLOAD.EXAMPLE_SIGNATURE');
+    assert.equal(example.querySelector('a'),null,'the fictional example must not be an active verification link');
+    assert.equal(/[А-Яа-я]/.test(p.get('supportKycLinkExampleTitle').textContent),lang==='ru');
     p.get('supportLink').value='http://invalid.fixture';p.get('supportLinkForm').dispatchEvent(new p.w.Event('submit',{cancelable:true}));await flush();
     assert.equal(p.requests.filter(x=>x.options.method==='POST').length,0);
     p.get('supportLink').value=link;p.get('supportLinkForm').dispatchEvent(new p.w.Event('submit',{cancelable:true}));await flush();

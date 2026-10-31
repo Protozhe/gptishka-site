@@ -19,6 +19,12 @@ html body #claudeWorkspace.verification-order-workspace { width:min(1080px,calc(
 .verification-order-workspace .verification-steps p { margin:0; color:#acb5bf; font-size:14px; line-height:1.75; }
 .verification-order-workspace .verification-steps b { color:#dbe5e4; font-weight:650; }
 .verification-order-workspace .verification-guide-note { margin:25px 0 0; padding-top:18px; border-top:1px solid #394047; color:#acb5bf; font-size:12px; line-height:1.7; }
+.verification-order-workspace .verification-link-example { min-width:0; margin-top:24px; padding:16px; border:1px solid #625249; border-radius:12px; background:#2c2a29; }
+.verification-order-workspace .verification-link-example h3 { margin:0 0 9px; color:#f1c5ad; font-size:14px; line-height:1.5; }
+.verification-order-workspace .verification-link-example p { margin:0; color:#c2c7cb; font-size:13px; line-height:1.65; }
+.verification-order-workspace .verification-link-example code { display:block; margin:12px 0; padding:12px; border-radius:8px; background:#191d22; color:#acb5bf; font:12px/1.75 ui-monospace,SFMono-Regular,Consolas,monospace; white-space:normal; overflow-wrap:anywhere; word-break:break-word; }
+.verification-order-workspace .verification-link-example code b { color:#8fddcf; font:inherit; font-weight:700; }
+.verification-order-workspace .verification-link-example .verification-link-example__note { color:#aeb5ba; font-size:12px; }
 .verification-order-workspace .verification-entry-intro { margin:10px 0 20px; color:#acb5bf; font-size:14px; line-height:1.7; }
 .verification-order-workspace label { display:block; margin-bottom:10px; font-size:13px; font-weight:750; }
 .verification-order-workspace textarea { display:block; box-sizing:border-box; width:100%; min-height:132px; padding:15px; resize:vertical; border:1px solid #49545c; border-radius:12px; background:#191d22; color:#f4f6f8; font:400 14px/1.7 'Manrope',sans-serif; overflow-wrap:anywhere; }

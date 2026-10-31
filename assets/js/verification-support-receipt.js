@@ -23,6 +23,9 @@
     draft: name => `Hello! I have a ${name} verification support order: ${orderId}. Please help me with the next steps.`,
     cvpTitle: 'Prepare your CVP link', cvpText: 'Copy the personal link from your verification request. If you are unsure which link to use, ask the manager.',
     cvpSecond: 'Copy the full address', cvpSecondText: 'Copy the entire link, including all characters after the question mark.',
+    exampleTitle: 'Example of a complete KYC link',
+    exampleText: 'Copy the entire address: inquiry-id and session-token must both follow the ?. A short link without these parameters is incomplete.',
+    exampleNote: 'This is a fictional example. Paste your own complete link — the actual session-token is usually much longer.',
   } : {
     missing: 'Откройте защищённую ссылку на заказ после оплаты или обратитесь в поддержку.',
     loading: 'Проверяем оплату…', pending: 'Оплата ещё подтверждается. Проверим её повторно через несколько секунд.',
@@ -40,7 +43,13 @@
     draft: name => `Здравствуйте! Мой заказ сопровождения ${name}: ${orderId}. Подскажите дальнейшие шаги.`,
     cvpTitle: 'Подготовьте ссылку для CVP', cvpText: 'Скопируйте персональную ссылку из запроса на проверку. Если не знаете, какую ссылку использовать, уточните у менеджера.',
     cvpSecond: 'Скопируйте полный адрес', cvpSecondText: 'Копируйте ссылку целиком, включая все символы после вопросительного знака.',
+    exampleTitle: 'Пример полной ссылки KYC',
+    exampleText: 'Нужен весь адрес: после ? должны быть inquiry-id и session-token. Короткая ссылка без этих параметров не подойдёт.',
+    exampleNote: 'Это вымышленный образец. Вставьте свою ссылку целиком — реальный session-token обычно значительно длиннее.',
   };
+  get('supportKycLinkExampleTitle').textContent = copy.exampleTitle;
+  get('supportKycLinkExampleText').textContent = copy.exampleText;
+  get('supportKycLinkExampleNote').textContent = copy.exampleNote;
   let attempts = 0, loading = false, saving = false, timer, currentState = '', editing = false;
   function message(text, error = false) {
     status.textContent = text; status.hidden = !text;
@@ -57,6 +66,7 @@
   }
   function render(data) {
     const name = ['claude-kyc-support', 'claude-kyc'].includes(data.productSlug) ? 'KYC' : 'CVP';
+    get('supportKycLinkExample').hidden = name !== 'KYC';
     get('supportTitle').textContent = copy.title(name);
     get('supportOrder').textContent = (en ? 'Order: ' : 'Заказ: ') + orderId;
     get('supportPaymentBadge').textContent = copy.ready;
