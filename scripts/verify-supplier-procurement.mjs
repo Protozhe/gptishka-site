@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-const result = spawnSync(process.execPath, ["--test", "ops/supplier-procurement/market-shared-stock.test.cjs", "ops/supplier-procurement/aisou-core.test.cjs", "ops/supplier-procurement/aisou-live.test.cjs", "ops/supplier-procurement/aibuy.test.cjs", "ops/supplier-procurement/aibuy-order.test.cjs"], {
+const result = spawnSync(process.execPath, ["--test", "ops/supplier-procurement/market-shared-stock.test.cjs", "ops/supplier-procurement/aisou-core.test.cjs", "ops/supplier-procurement/aisou-live.test.cjs", "ops/supplier-procurement/aibuy.test.cjs", "ops/supplier-procurement/aibuy-order.test.cjs", "ops/subscription-routes/native-grok.test.cjs"], {
   cwd: process.cwd(), env: process.env, stdio: "inherit",
 });
 if (result.error) throw result.error;
@@ -21,7 +21,7 @@ if(shared.status!==0)process.exit(shared.status??1);
 const reserve = spawnSync(process.platform === "win32" ? "python" : "python3", ["-B", "ops/subscription-routes/test-reserve.py"], {cwd:process.cwd(),env:process.env,stdio:"inherit"});
 if(reserve.error) throw reserve.error;
 if(reserve.status!==0) process.exit(reserve.status??1);
-for(const [runtime,args] of [[process.execPath,['--test','ops/subscription-routes/native.test.cjs']], [process.platform==='win32'?'python':'python3',['-B','ops/subscription-routes/test-claude.py']]]) {
+for(const [runtime,args] of [[process.execPath,['--test','ops/subscription-routes/native.test.cjs']], [process.platform==='win32'?'python':'python3',['-B','ops/subscription-routes/test-claude.py']], [process.platform==='win32'?'python':'python3',['-B','ops/subscription-routes/test-grok.py']]]) {
   const checked=spawnSync(runtime,args,{cwd:process.cwd(),env:process.env,stdio:'inherit'});
   if(checked.error)throw checked.error;
   if(checked.status!==0)process.exit(checked.status??1);

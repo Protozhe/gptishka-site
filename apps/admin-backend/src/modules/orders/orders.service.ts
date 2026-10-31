@@ -26,6 +26,7 @@ import { toVpnMePayload, vpnService } from "../../services/vpn.service";
 import { licenseService } from "../../services/licenseService";
 import { procureSelectedWebsiteKey, pendingAisouNativeOrders, verifiedAieeGrokProduct, notifyAibuyActivationResult } from "../../services/aisou-procurement";
 import { CLAUDE_ZOVO_OWNER, isClaudeZovoProduct, isClaudeZovoOrder, validateClaudeZovoSession, tickClaudeZovo } from "../../services/claude-zovo";
+import { GROK_ZOVO_OWNER, isGrokZovoProduct, isGrokZovoOrder, validateGrokZovoSession, normalizeGrokZovoSession, tickGrokZovo } from "../../services/grok-zovo";
 import { syncWebsiteCustomerToSheet } from "../customers/customer-sheet.service";
 import crypto from "crypto";
 import fs from "fs";
@@ -699,6 +700,12 @@ export const ordersService = {
       };
     }
 
+    if (isGrokZovoProduct(productSlug) && !needsNewAccount && await isGrokZovoOrder(order.id)) {
+      const current=activationStore.findByOrderId(order.id);
+      return {orderId:order.id,deliveryMode:"activation",activationFlow:"grok_sso",product:productSlug,productSlug,productTitle,
+        status:current?.status||"issued",taskId:current?.taskId||null,verificationState:current?.verificationState||"unknown",
+        tokenStored:hasStoredClientToken(current),lastProviderMessage:publicActivationMessage(current?.status,current?.verificationState)};
+    }
     if (isClaudeZovoProduct(productSlug) && !needsNewAccount && await isClaudeZovoOrder(order.id)) {
       const current=activationStore.findByOrderId(order.id);
       return {orderId:order.id,deliveryMode:"activation",activationFlow:"claude_zovo",product:productSlug,productSlug,productTitle,
@@ -815,6 +822,21 @@ export const ordersService = {
   async resumeClaudeZovoJobs() {
     return tickClaudeZovo({prisma,activationStore,decrypt:decryptStoredClientToken,lock:withActivationOrderLock,
       notify:sendTelegramNotification,complete:async(id:string)=>ordersService.manuallyCompleteActivation(id,{note:"Claude: выбранный тариф подтверждён поставщиком. Автоматическая заявка Zovo, повторное списание заблокировано."},{userAgent:CLAUDE_ZOVO_OWNER})});
+  },
+
+  async resumeGrokZovoJobs() {
+    return tickGrokZovo({prisma,activationStore,decrypt:decryptStoredClientToken,lock:withActivationOrderLock,
+      notify:sendTelegramNotification,complete:async(id:string)=>{
+        const a=activationStore.findByOrderId(id);
+        if(!a||a.externalFulfillmentOwner!==GROK_ZOVO_OWNER)throw new AppError("Маршрут заказа изменился.",409);
+        if(a.status==='success'&&a.verificationState==='success')return;
+        const now=new Date().toISOString();
+        activationStore.upsert({...a,...buildStoredClientTokenPatch(''),status:'success',verificationState:'success',
+          lastProviderMessage:'Grok: выбранный месячный тариф подтверждён провайдером.',lastProviderCheckedAt:now,
+          lastProviderPayload:{...(a.lastProviderPayload||{}),source:'zovocard-grok',completedAt:now},updatedAt:now});
+        await writeAuditLog({entityType:'order',entityId:id,action:'activation_grok_zovo_complete',
+          after:{status:'success',productKey:a.productKey,taskId:a.taskId},userAgent:GROK_ZOVO_OWNER});
+      }});
   },
 
   async resumePendingAisouPurchases() {
@@ -957,6 +979,17 @@ export const ordersService = {
         }
         return { ok: true, orderId: order.id, paid: true, supportState: "processing", submittedAt };
       });
+    }
+    if (isGrokZovoProduct(productSlug) && await isGrokZovoOrder(order.id)) {
+      await assertPaidOrderAccess(orderId,orderToken);
+      const error=validateGrokZovoSession(token);if(error)throw new AppError(error,400);
+      const normalized=normalizeGrokZovoSession(token),meta=buildTokenMeta(parseClientTokenInput(normalized)),prior=activationStore.findByOrderId(order.id),now=new Date().toISOString();
+      if(prior && (prior.cdk||prior.taskId||prior.attempts||prior.status==='success') && prior.externalFulfillmentOwner!==GROK_ZOVO_OWNER)throw new AppError("Заказ уже обрабатывается другим каналом. Повторная оплата остановлена.",409);
+      if(prior && ['processing','success'].includes(prior.status) && isTokenBoundToAnotherFingerprint(prior.tokenMeta,meta))throw new AppError("Order is already bound to another token",409);
+      activationStore.upsert({...prior,orderId:order.id,email:order.email,productKey:productSlug,cdk:'',activationSiteUrl:'https://zovocard.com',externalFulfillmentOwner:GROK_ZOVO_OWNER,
+        status:prior?.status||'issued',attempts:prior?.attempts||0,taskId:prior?.taskId||null,verificationState:prior?.verificationState||'unknown',
+        tokenMeta:meta,tokenValidationAttempts:(prior?.tokenValidationAttempts||0)+1,lastTokenValidatedAt:now,issuedAt:prior?.issuedAt||now,updatedAt:now,...buildStoredClientTokenPatch(normalized)});
+      return {ok:true,orderId:order.id,paid:true,status:prior?.status||'issued'};
     }
     if (isClaudeZovoProduct(productSlug) && await isClaudeZovoOrder(order.id)) {
       await assertPaidOrderAccess(orderId,orderToken);
@@ -1277,6 +1310,11 @@ export const ordersService = {
       };
     }
 
+    if(stored?.externalFulfillmentOwner===GROK_ZOVO_OWNER){
+      const success=stored.status==='success'||stored.verificationState==='success';
+      return {pending:!success&&(stored.status==='processing'||stored.verificationState==='pending'),success,
+        message:publicActivationMessage(stored.status,stored.verificationState),task_id:String(stored.taskId||taskId)};
+    }
     if(stored?.externalFulfillmentOwner===CLAUDE_ZOVO_OWNER){
       return {pending:stored.status==='processing'||stored.verificationState==='pending',success:false,
         message:publicActivationMessage(stored.status,stored.verificationState),task_id:String(stored.taskId||taskId)};
@@ -1710,7 +1748,7 @@ export const ordersService = {
     // Card-worker jobs are reconciled by their persistent owner. An admin or
     // browser status refresh must never query a legacy CDK provider or replace
     // its authoritative progress with "Activation key is missing".
-    const externalFulfillmentOwner = activation?.externalFulfillmentOwner===CLAUDE_ZOVO_OWNER ? CLAUDE_ZOVO_OWNER : order.status === OrderStatus.PAID
+    const externalFulfillmentOwner = [CLAUDE_ZOVO_OWNER,GROK_ZOVO_OWNER].includes(String(activation?.externalFulfillmentOwner||'')) ? activation?.externalFulfillmentOwner : order.status === OrderStatus.PAID
       ? resolveExternalCodexOwner({
           source: order.source,
           productKey: product?.slug || activation?.productKey,
@@ -2469,6 +2507,18 @@ async function selectChatGptPlusCandidate(
 async function startActivationUnsafe(orderId: string, token: string, orderToken?: string, trustedAdmin = false) {
   const activationInfo = await ordersService.getActivation(orderId, orderToken, trustedAdmin);
   assertTokenActivationDeliveryMode(activationInfo);
+  if ((activationInfo as any).activationFlow==='grok_sso' && await isGrokZovoOrder(orderId)) {
+    const error=validateGrokZovoSession(token);if(error)throw new AppError(error,400);
+    const normalized=normalizeGrokZovoSession(token),a=activationStore.findByOrderId(orderId),now=new Date().toISOString(),meta=buildTokenMeta(parseClientTokenInput(normalized));
+    if(!a || a.externalFulfillmentOwner!==GROK_ZOVO_OWNER || a.cdk)throw new AppError("Сначала сохраните sso аккаунта Grok на странице активации.",409);
+    if(isTokenBoundToAnotherFingerprint(a.tokenMeta,meta))throw new AppError("Order is already bound to another token",409);
+    if(a.status==='success'||a.verificationState==='success')return {taskId:String(a.taskId||'grok-zovo-'+orderId),reused:true};
+    if(a.status==='processing')return {taskId:String(a.taskId||'grok-zovo-'+orderId),reused:true};
+    if(a.attempts||a.taskId)throw new AppError("Проверяем исходную заявку Grok. Повторная оплата остановлена.",409);
+    activationStore.upsert({...a,...buildStoredClientTokenPatch(normalized),tokenMeta:meta,status:'processing',verificationState:'pending',taskId:'grok-zovo-'+orderId,updatedAt:now});
+    void ordersService.resumeGrokZovoJobs().catch(()=>{});
+    return {taskId:'grok-zovo-'+orderId,reused:false};
+  }
   if ((activationInfo as any).activationFlow==='claude_zovo') {
     if(!await isClaudeZovoOrder(orderId))throw new AppError("Автоматический маршрут этого заказа недоступен.",409);
     const error=validateClaudeZovoSession(token);if(error)throw new AppError(error,400);

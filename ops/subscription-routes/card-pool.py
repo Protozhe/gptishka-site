@@ -130,7 +130,7 @@ class CardPool(Lifecycle):
             if card in getattr(self,'_retired_card_ids',set()):continue
             # A Claude card with unconfirmed renewal cancellation must never be
             # funded for a different customer, even after its payment settled.
-            if con.execute("SELECT 1 FROM zovo_direct_jobs WHERE card_id=? AND plan IN ('max_5x','max_20x') AND dispatched=1 AND state NOT IN ('terminal_failure','failed_before_dispatch') AND coalesce(renewal_status,'')<>'success' LIMIT 1",(card,)).fetchone():continue
+            if con.execute("SELECT 1 FROM zovo_direct_jobs WHERE card_id=? AND plan IN ('max_5x','max_20x','plus_monthly','premium_monthly','super_monthly','ultra_monthly') AND dispatched=1 AND state NOT IN ('terminal_failure','failed_before_dispatch') AND coalesce(renewal_status,'')<>'success' LIMIT 1",(card,)).fetchone():continue
             if con.execute("SELECT 1 FROM zovo_card_returns WHERE card_id=? AND state IN ('sending','pending','uncertain')",(card,)).fetchone():continue
             jobs=con.execute("""SELECT * FROM zovo_direct_jobs WHERE card_id=? AND source_id<>?
                 AND (dispatched=1 OR state NOT IN ('failed_before_dispatch','terminal_failure'))""",(card,source)).fetchall()

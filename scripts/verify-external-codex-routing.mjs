@@ -24,6 +24,7 @@ class AppError extends Error { constructor(message, status) { super(message); th
 const context = vm.createContext({
   assertOrderTokenAccess: async () => order,
   CLAUDE_ZOVO_OWNER:"website-claude-zovo-v1",isClaudeZovoProduct:()=>false,
+  GROK_ZOVO_OWNER:"website-grok-zovo-v1",isGrokZovoProduct:()=>false,
   isAisouGrokProduct:()=>false,
   isVerificationSupportProduct: () => false, isDevinProductSlug: () => false,
   resolveTokenActivationFlowForProduct: () => "chatgpt_token", isSupportActivationFlow: () => false, isSupportLikeDeliveryType: () => false,

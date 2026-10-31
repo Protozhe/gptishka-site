@@ -48,6 +48,7 @@ class ClaudeHTTPS(DirectHTTPS):
 
 class ClaudeWorker(Worker):
     FLOW='direct'
+    PRODUCT='claude'
     def __init__(self,db,cipher,api,policy,slug,budget):
         plan,limit,fee,cap=TIERS[slug];self.PLAN=plan;self.slug=slug
         p={**policy,'max_clients_per_card':5,'max_quote_php_minor':limit,'max_fee_usd_minor':fee,'min_card_balance_usd_minor':limit,'max_card_balance_usd_minor':25500,'max_funding_usd_minor':25500,'max_wallet_debit_usd_minor':min(cap,budget)}
@@ -63,6 +64,10 @@ class ClaudeWorker(Worker):
         session(raw);return hashlib.sha256(raw.encode()).hexdigest()
     def _account_allowed(self,d):
         return bool(d) and not d.get('blocking_reason') and d.get('can_purchase') is not False and d.get('eligible') is not False and d.get('kyc_required') is not True
+    def _preparation_proof(self,data,digest):
+        return 'claude-local-'+digest,self.clock()+180
+    def _wallet_overhead(self):
+        return 150
     def _quote(self,d,e,p):
         if e.get('checkout_currency')!='USD' or type(e.get('checkout_amount_minor')) is not int:raise Refused('quote_missing_or_over_limit')
         q=(d.get('quotes') or {}).get(self.PLAN)
@@ -130,7 +135,7 @@ class ClaudeWorker(Worker):
             previous=con.execute('SELECT * FROM zovo_direct_jobs WHERE source_id=? OR job_id=?',(source,order['job_id'])).fetchone()
         if previous and (previous['source_id']!=source or previous['job_id']!=order['job_id'] or previous['dispatched'] or previous['state']!='failed_before_dispatch' or previous['funding_state'] is not None):
             raise Refused('existing_attempt_inspect_only')
-        entries=[x for x in plans.get('registry',[]) if x.get('product')=='claude' and x.get('key')==self.PLAN]
+        entries=[x for x in plans.get('registry',[]) if x.get('product')==self.PRODUCT and x.get('key')==self.PLAN]
         if len(entries)!=1 or entries[0].get('purchasable') is not True:raise Refused('plus_unavailable')
         plan=plans.get('plans',{}).get(entries[0].get('acc_plan_key'))
         if not isinstance(plan,dict) or plan.get('enabled') is not True or plan.get('flow')!=self.FLOW:raise Refused('plus_unavailable')
@@ -141,10 +146,10 @@ class ClaudeWorker(Worker):
         quote=self._quote(data,entries[0],plan);amount=quote.get('amountMinor')
         if quote.get('currency')!='USD' or quote.get('minorUnitExponent')!=2 or type(amount) is not int or not 0<amount<=self.policy['max_quote_php_minor']:raise Refused('quote_missing_or_over_limit')
         # Claude has no provider ticket. This encrypted local preparation binds the verified session.
-        proof='claude-local-'+digest;expiry=self.clock()+180
+        proof,expiry=self._preparation_proof(data,digest)
         if not isinstance(proof,str) or not proof or expiry<=self.clock()+30:raise Refused('preflight_expired')
         estimate,target=self.funding_quote(quote,plan)
-        if target+fee+150>self.policy['max_wallet_debit_usd_minor']:raise Refused('funding_over_limit')
+        if target+fee+self._wallet_overhead()>self.policy['max_wallet_debit_usd_minor']:raise Refused('funding_over_limit')
         with self.connect() as con:
             opening=con.execute('SELECT state FROM zovo_card_open_intents WHERE source_id=?',(source,)).fetchone()
         if opening and opening['state']!='confirmed':

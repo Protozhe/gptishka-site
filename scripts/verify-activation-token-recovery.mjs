@@ -93,7 +93,7 @@ const backend = vm.createContext({
   resolveOrderDeliveryType: () => 'activation', readActivationSiteUrlFromOrderDetails: () => '',
   isMidjourneyProductSlug: no, isSunoPaymentLinkOrder: no, isDevinProductSlug: no,
   isVerificationSupportProduct: no,
-  isClaudeZovoProduct:no,isAisouGrokProduct:no,
+  isClaudeZovoProduct:no,isAisouGrokProduct:no,isGrokZovoProduct:no,
   canonicalProductKey: x => x, resolveTokenActivationFlowForProduct: () => 'activation',
   isSupportLikeDeliveryType: no, isSupportActivationFlow: no,
   parseClientTokenInput: raw => ({raw, extracted: raw, json: null}), buildTokenMeta: () => ({}),

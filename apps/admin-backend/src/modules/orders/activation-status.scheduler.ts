@@ -62,6 +62,7 @@ async function runCycle() {
   try {
     void ordersService.resumePendingAisouPurchases().catch(() => {});
     void ordersService.resumeClaudeZovoJobs().catch(() => {});
+    void ordersService.resumeGrokZovoJobs().catch(() => {});
     for (const record of processingRecords()) {
       try {
         await ordersService.getActivationProof(record.orderId, { forceCheck: true });

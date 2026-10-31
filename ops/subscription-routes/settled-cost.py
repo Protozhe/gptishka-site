@@ -23,7 +23,9 @@ def match_charge(rows, job, timezone):
             continue
         merchant=str(item.get('merchant_name','')).upper()
         claude='plan' in job.keys() and job['plan'] in ('max_5x','max_20x')
-        if (not any(x in merchant for x in ('ANTHROPIC','CLAUDE'))) if claude else ('OPENAI' not in merchant):
+        grok='plan' in job.keys() and job['plan'] in ('plus_monthly','premium_monthly','super_monthly','ultra_monthly')
+        allowed=('ANTHROPIC','CLAUDE') if claude else ('XAI','X.AI','GROK') if grok else ('OPENAI',)
+        if not any(x in merchant for x in allowed):
             continue
         if item.get('auth_currency') != job['currency'] or item.get('settle_currency') != 'USD':
             continue
