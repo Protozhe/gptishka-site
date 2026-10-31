@@ -8,6 +8,7 @@ PULSE=Path('/opt/pulse-web')
 BASE_HASH='e545a38b898c49c7c7f9219dbcd07ef30c322d3f294d1bd60817df3acb096872'
 PRIOR_SHARED_HASH='7be0ab7bbd1dbabcadea6059f39051917745bdb18c4cfa5802c84cef4a1af317'
 PRIOR_AISOU_HASH='3f3cc5934f3bee8edbc30c3e5f695592392eeb4dea73779b57ed8f7e264afacf'
+PRIOR_INPUT_REASON_HASH='86c36cbda3ace6dd037adbc84a78b24fe2671af572b672c21d9f2f003e8ea537'
 SERVICES=['pulse-chat-fallback.service','funpay-telegram-fallback.service','gptishka-aibuy-market.service']
 
 def atomic(path,content,mode=0o644,gid=0):
@@ -26,7 +27,7 @@ def install():
     if subprocess.check_output(['git','-C',str(release),'status','--porcelain'],text=True).strip():raise ValueError('clean_deployed_release_required')
     source={name:(HERE/name).read_bytes() for name in ('market_aibuy.py','market_shared_stock.py')}
     actual=hashlib.sha256((PULSE/'market_aibuy.py').read_bytes()).hexdigest()
-    if actual not in (BASE_HASH,PRIOR_SHARED_HASH,PRIOR_AISOU_HASH,hashlib.sha256(source['market_aibuy.py']).hexdigest()):raise ValueError('market_source_changed')
+    if actual not in (BASE_HASH,PRIOR_SHARED_HASH,PRIOR_AISOU_HASH,PRIOR_INPUT_REASON_HASH,hashlib.sha256(source['market_aibuy.py']).hexdigest()):raise ValueError('market_source_changed')
     for name,content in source.items():compile(content,name,'exec')
     with open('/var/lib/gptishka-runtime/aibuy-procurement/account.lock','a') as lock:
         try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)

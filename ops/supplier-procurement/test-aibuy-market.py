@@ -88,6 +88,56 @@ class Tests(unittest.TestCase):
         with patch.object(adapter,'rpc',side_effect=AssertionError('must not buy')):self.assertFalse(adapter.handle(a,1))
         with a.connect() as c:self.assertEqual(c.execute('SELECT COUNT(*) FROM market_aibuy_attempts').fetchone()[0],0)
 
+    def test_expired_customer_session_has_visible_reason_and_fresh_data_resumes_once(self):
+        a,path,p,calls,result=self.fixture(500)
+        expired='fixture.'+base64.urlsafe_b64encode(json.dumps({'exp':time.time()-86400}).encode()).decode().rstrip('=')+'.signature'
+        bad={'account':{'planType':'plus'},'accessToken':expired,'user':{'email':'fixture@example.invalid'}}
+        good_fetch=a._fetch_note
+        with patch.object(a,'_fetch_note',lambda _:bad),patch.object(adapter,'rpc',side_effect=AssertionError('invalid input cannot claim stock or purchase')):
+            self.assertTrue(adapter.handle(a,1));self.assertTrue(adapter.handle(a,1))
+        with a.connect() as c:
+            job=c.execute('SELECT * FROM codex_jobs').fetchone()
+            self.assertEqual(job['status'],'waiting_data');self.assertIn('свежие данные',job['error'])
+            self.assertIsNone(job['key_id']);self.assertIsNone(job['started_at'])
+            self.assertEqual(c.execute('SELECT COUNT(*) FROM market_aibuy_attempts').fetchone()[0],0)
+            self.assertEqual(c.execute('SELECT COUNT(*) FROM market_aibuy_notices').fetchone()[0],1)
+        self.assertEqual(calls,[])
+        with patch.object(a,'_fetch_note',good_fetch),patch.object(adapter,'rpc',lambda *args:result):
+            self.assertTrue(adapter.handle(a,1));self.assertTrue(adapter.handle(a,1))
+        with a.connect() as c:
+            job=c.execute('SELECT * FROM codex_jobs').fetchone()
+            self.assertEqual(job['error'],'');self.assertEqual(job['status'],'submitting')
+            self.assertEqual(c.execute('SELECT COUNT(*) FROM market_aibuy_attempts').fetchone()[0],1)
+        self.assertEqual(calls.count('activate'),1)
+
+    def test_temporary_note_failure_is_visible_without_requesting_new_customer_data(self):
+        a,path,p,calls,result=self.fixture(500)
+        with patch.object(a,'_fetch_note',side_effect=ValueError('note_http_unavailable')),patch.object(adapter,'rpc',side_effect=AssertionError('unread input cannot buy')):
+            self.assertTrue(adapter.handle(a,1));self.assertTrue(adapter.handle(a,1))
+        with a.connect() as c:
+            job=c.execute('SELECT * FROM codex_jobs').fetchone()
+            self.assertIn('Повторим проверку автоматически',job['error'])
+            self.assertNotIn('новую ссылку',job['error'])
+            self.assertEqual(c.execute('SELECT COUNT(*) FROM market_aibuy_attempts').fetchone()[0],0)
+            self.assertEqual(c.execute('SELECT COUNT(*) FROM market_aibuy_notices').fetchone()[0],1)
+        self.assertEqual(calls,[])
+
+    def test_failed_validation_of_old_note_cannot_overwrite_new_data_or_claim(self):
+        for changed in ('note','claim'):
+            with self.subTest(changed=changed):
+                a,path,p,calls,result=self.fixture(500)
+                def failed_capture(automation,job):
+                    with a.connect() as c:
+                        if changed=='note':c.execute("UPDATE codex_jobs SET note_url='https://notebrio.com/n/new-data',error='newer-state'")
+                        else:c.execute("INSERT INTO market_aibuy_attempts(job_id,contract_code,state,session_hash,created_at,updated_at) VALUES(1,500,'procurement','fixture',?,?)",(time.time(),time.time()))
+                    raise ValueError('supplier_session_required')
+                with patch.object(adapter,'capture',failed_capture):self.assertTrue(adapter.handle(a,1))
+                with a.connect() as c:
+                    job=c.execute('SELECT * FROM codex_jobs').fetchone()
+                    self.assertEqual(job['error'],'newer-state' if changed=='note' else None)
+                    self.assertEqual(c.execute('SELECT COUNT(*) FROM market_aibuy_notices').fetchone()[0],0)
+                self.assertEqual(calls,[])
+
     def test_2500_unavailable_variant_never_substitutes_or_buys(self):
         a,path,p,calls,r=self.fixture(1000)
         with a.connect() as c:c.execute("UPDATE codex_jobs SET package=2500,title='Codex 2500',key_pool='codex_2500'")

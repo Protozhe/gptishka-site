@@ -123,9 +123,25 @@ def handle(a,jid):
         notice(a,j,'sku_unavailable','⚠️ <b>AI-BUY · Номинал недоступен</b>\n\nСтатус: <b>ожидаем ключ Codex 2500</b>\nУ поставщика нет этого номинала. Другой ключ не куплен; списаний нет.')
         return True
     try:code,raw=capture(a,j)
-    except Exception:
+    except Exception as error:
         # No purchase demand exists until customer input is complete and fresh.
-        notice(a,j,'session_required','⚠️ <b>AI-BUY · Нужны данные аккаунта</b>\n\nСтатус: <b>ожидаем корректные данные клиента</b>\nПокупка и списание не выполнялись.')
+        reason=str(error)
+        if reason in ('note_transport_unavailable','note_http_unavailable','note_response_unavailable'):
+            detail='Не удалось прочитать заметку с данными. Повторим проверку автоматически; активация не отправлялась.'
+        else:
+            detail='Нужны свежие данные аккаунта: сессия ChatGPT устарела или не прошла проверку. Пришлите новую ссылку Notebrio с полной сессией аккаунта Plus/Pro.' if j['product_type']=='codex' else 'Не удалось проверить ID аккаунта Claude. Нужен полный UUID аккаунта.'
+        from codex_automation import utc_now
+        with a.connect() as c:
+            c.execute('BEGIN IMMEDIATE')
+            fresh=c.execute('SELECT * FROM codex_jobs WHERE id=?',(jid,)).fetchone()
+            # A failed read of an older note cannot overwrite newer data or an
+            # activation another validation thread has already claimed.
+            if (not fresh or fresh['status'] not in ('waiting_data','failed') or fresh['key_id'] or fresh['aiee_order_id']
+                or fresh['note_url']!=j['note_url'] or fresh['email']!=j['email']
+                or c.execute('SELECT 1 FROM market_aibuy_attempts WHERE job_id=?',(jid,)).fetchone()):return True
+            if fresh['status']!='waiting_data' or fresh['error']!=detail:
+                c.execute("UPDATE codex_jobs SET status='waiting_data',error=?,updated_at=? WHERE id=?",(detail,utc_now(),jid))
+        notice(a,j,'session_required','⚠️ <b>Активация · Нужна проверка данных</b>\n\n'+detail+'\nПокупка и списание не выполнялись.')
         return True
     from codex_automation import utc_now
     with a.connect() as c:
