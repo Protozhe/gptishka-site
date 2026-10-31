@@ -32,6 +32,16 @@ function rpc(payload){
 }
 function state(a){return a?.lastProviderPayload?.grokZovo||{}}
 function patch(store,id,values,record={}){const a=store.findByOrderId(id);if(!a)return;store.upsert({...a,...record,lastProviderPayload:{...(a.lastProviderPayload||{}),grokZovo:{...state(a),...values}},updatedAt:new Date().toISOString()})}
+async function review(ctx,id,result){
+  const declined=result.state==='terminal_failure'&&result.provider_status==='declined';
+  const message=declined?'Банк отклонил карту при оплате Grok. Подписка не активирована; повторная оплата заблокирована.':'Поставщик не подтвердил активацию Grok. Исходная заявка сохранена; повторная оплата заблокирована.';
+  const terminal=result.state==='terminal_failure';
+  const notices=state(ctx.activationStore.findByOrderId(id)).notices||{};
+  if(Object.entries(notices).some(([event,value])=>event.startsWith('review:')&&value==='sent'))patch(ctx.activationStore,id,{notices:{...notices,review:'sent'}});
+  patch(ctx.activationStore,id,{phase:result.state,reason:declined?'card_declined':/^[a-z_]{1,80}$/.test(result.reason||'')?result.reason:'provider_review',providerOrderId:result.provider_order_id||state(ctx.activationStore.findByOrderId(id)).providerOrderId||null,transientFailure:null},
+    {lastProviderMessage:message,lastProviderCheckedAt:new Date().toISOString(),...(terminal?{status:'failed',verificationState:'failed'}:{})});
+  await notice(ctx,id,'review',{title:declined?'Карта отклонена':'Требуется проверка',status:terminal?'активация остановлена':'ожидает проверки',body:message});
+}
 async function notice(ctx,id,event,message){
   const a=ctx.activationStore.findByOrderId(id);if(!a||state(a).notices?.[event])return;
   patch(ctx.activationStore,id,{notices:{...(state(a).notices||{}),[event]:'sending'}});
@@ -80,12 +90,12 @@ async function processOrder(ctx,id){
   }
   if(!result)throw Error('grok_reply_unconfirmed');
   if(['failed_before_dispatch','terminal_failure','manual_review','funding_uncertain'].includes(result.state)){
-    patch(store,id,{phase:result.state,reason:/^[a-z_]{1,80}$/.test(result.reason||'')?result.reason:'provider_review'});
     if(result.state==='failed_before_dispatch'&&['wallet_insufficient','wallet_balance_insufficient','insufficient_wallet_balance'].includes(result.reason))await fundsWait(ctx,id);
-    else await notice(ctx,id,'review:'+result.state,{title:'Требуется проверка',status:'оплата остановлена',body:'Поставщик не подтвердил активацию. Исходная заявка сохранена; повторное списание заблокировано. Подробности доступны в админке.'});return;
+    else await review(ctx,id,result);return;
   }
   result=await call('poll');if(!result)throw Error('grok_reply_unconfirmed');
-  patch(store,id,{phase:result.state,providerOrderId:result.provider_order_id||state(store.findByOrderId(id)).providerOrderId||null});
+  patch(store,id,{phase:result.state,reason:null,transientFailure:null,providerOrderId:result.provider_order_id||state(store.findByOrderId(id)).providerOrderId||null});
+  if(['terminal_failure','manual_review','funding_uncertain'].includes(result.state)){await review(ctx,id,result);return;}
   if(result.state!=='completed')return;
   if(!result.provider_order_id||result.provider_status!=='completed'||!(result.final_amount_minor>0)||result.currency!=='USD')throw Error('grok_completion_unverified');
   patch(store,id,{phase:'completed',costPending:true,providerOrderId:result.provider_order_id});
@@ -109,7 +119,9 @@ async function tick(ctx){
       const code=/^grok_[a-z_]{1,100}$/.test(e?.message||'')?e.message:'grok_worker_unavailable';
       patch(ctx.activationStore,r.orderId,{reason:code});
       if(['grok_wallet_insufficient','grok_wallet_balance_insufficient','grok_insufficient_wallet_balance'].includes(code)) {await fundsWait(ctx,r.orderId);continue;}
-      await notice(ctx,r.orderId,code,{title:'Ожидает проверки',status:'заявка сохранена',body:'Автоматическая обработка приостановлена: '+code+'. После восстановления доступности повторно проверим исходную заявку без повторной оплаты.'});
+      const transient=['grok_worker_unavailable','grok_pool_waiting_for_card','grok_history_unverified','grok_card_activity_unverified'].includes(code);
+      if(transient){const now=(ctx.now||Date.now)(),old=state(ctx.activationStore.findByOrderId(r.orderId)).transientFailure,firstSeen=old?.firstSeen??now,count=Number(old?.count||0)+1;patch(ctx.activationStore,r.orderId,{transientFailure:{firstSeen,count,code}});if(now-firstSeen<120000||count<3)continue;}
+      await notice(ctx,r.orderId,'worker_review',{title:'Ожидает проверки',status:'заявка сохранена',body:transient?'Обработчик оплаты Grok недоступен больше двух минут. Проверяем исходную заявку; повторная оплата не запускается.':'Автоматическая обработка приостановлена. Исходная заявка сохранена; повторная оплата заблокирована. Код для проверки: '+code});
     }
   }finally{running=false}
 }

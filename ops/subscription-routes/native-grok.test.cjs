@@ -36,6 +36,21 @@ test('each exact monthly product is prepared, dispatched and receipted once',asy
 test('lost submit response reads the existing remote attempt without another submit',async()=>{
  const f=fixture();f.lost=true;await m.tick(f.ctx);assert.equal(f.submits,1);await m.tick(f.ctx);assert.equal(f.submits,1);assert.equal(f.complete,1);assert.equal(f.calls.filter(r=>r.action==='grok_prepare').length,1);
 });
+test('a provider card decline stops the native order and never dispatches again',async()=>{
+ const f=fixture();f.ctx.rpc=async r=>{f.calls.push(r);return {ok:true,result:{state:'terminal_failure',provider_status:'declined',provider_order_id:'77'}}};
+ await m.tick(f.ctx);await m.tick(f.ctx);
+ const a=f.store.get(id);assert.equal(a.status,'failed');assert.equal(a.verificationState,'failed');assert.equal(m.state(a).reason,'card_declined');assert.equal(m.state(a).providerOrderId,'77');assert.match(a.lastProviderMessage,/Банк отклонил/);assert.equal(f.submits,0);assert.equal(f.complete,0);assert.equal(f.notices.length,1);assert.equal(f.calls.length,1);
+});
+test('a decline discovered during polling is immediately visible as a failed activation',async()=>{
+ const f=fixture(),base=f.ctx.rpc;f.ctx.rpc=async r=>r.action==='grok_poll'?{ok:true,result:{state:'terminal_failure',provider_status:'declined',provider_order_id:'77'}}:base(r);
+ await m.tick(f.ctx);await m.tick(f.ctx);assert.equal(f.submits,1);assert.equal(f.store.get(id).status,'failed');assert.equal(f.notices.length,1);
+});
+test('temporary gateway contention stays quiet, warns once after two minutes and clears on recovery',async()=>{
+ const f=fixture(),base=f.ctx.rpc;let now=Date.now(),unavailable=true;f.ctx.now=()=>now;
+ f.ctx.rpc=async r=>{if(unavailable)throw Error('busy gateway');return base(r)};
+ await m.tick(f.ctx);assert.equal(f.notices.length,0);now+=60000;await m.tick(f.ctx);assert.equal(f.notices.length,0);now+=60000;await m.tick(f.ctx);assert.equal(f.notices.length,1);now+=60000;await m.tick(f.ctx);assert.equal(f.notices.length,1);
+ unavailable=false;await m.tick(f.ctx);assert.equal(m.state(f.store.get(id)).reason,null);assert.equal(m.state(f.store.get(id)).transientFailure,null);assert.equal(f.complete,1);assert.equal(f.submits,1);
+});
 test('wrong currency and missing receipt never confirm successful fulfillment',async()=>{
  for(const patch of [{currency:'PHP'},{provider_status:'running'},{provider_order_id:null}]){const f=fixture();const base=f.ctx.rpc;f.ctx.rpc=async r=>r.action==='grok_poll'?{ok:true,result:{state:'completed',provider_order_id:'77',provider_status:'completed',final_amount_minor:800,currency:'USD',...patch}}:base(r);await m.tick(f.ctx);assert.equal(f.complete,0)}
 });
