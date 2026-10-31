@@ -9,19 +9,47 @@ function fixture(){
  const tx={
   async $queryRaw(strings,...values){const sql=strings.join('?');if(sql.includes('pg_advisory'))return [];
    assert.match(sql,/FOR UPDATE SKIP LOCKED/);assert.match(sql,/reserved_at IS NULL/);
-   const [pk,siteA,siteB]=values;const row=rows.filter(r=>r.productKey===pk&&r.status==='available'&&!r.orderId&&[siteA,siteB].includes(r.activationSiteUrl)).sort((a,b)=>Number(b.activationSiteUrl===siteA)-Number(a.activationSiteUrl===siteA))[0];return row?[{id:row.id}]:[];},
-  licenseKey:{async findUnique({where}){return rows.find(r=>r.id===where.id)},async updateMany({where,data}){const row=rows.find(r=>r.id===where.id&&r.status===where.status);if(!row)return {count:0};Object.assign(row,data);return {count:1}}},
+   assert.match(sql,/\(activation_site_url=\? OR activation_site_url=\?\)/);
+   assert.match(sql,/ORDER BY CASE WHEN activation_site_url=\? THEN 0 ELSE 1 END, created_at ASC, id ASC/);
+   const [pk,siteA,siteB,preferredSite]=values;assert.equal(preferredSite,siteA);
+   const row=rows.filter(r=>r.productKey===pk&&r.status==='available'&&!r.orderId&&!r.usedAt&&!r.reservedAt&&[siteA,siteB].includes(r.activationSiteUrl)).sort((a,b)=>Number(b.activationSiteUrl===preferredSite)-Number(a.activationSiteUrl===preferredSite)||(a.createdAt||0)-(b.createdAt||0)||a.id.localeCompare(b.id))[0];return row?[{id:row.id}]:[];},
+  licenseKey:{async findUnique({where}){return rows.find(r=>r.id===where.id)},async updateMany({where,data}){const row=rows.find(r=>r.id===where.id&&r.status===where.status&&!r.orderId&&!r.usedAt&&!r.reservedAt);if(!row)return {count:0};Object.assign(row,data);return {count:1}}},
   licenseKeyAuditLog:{async findMany({where}){return audits.filter(r=>r.meta.scope===where.meta.equals)},async create({data}){audits.push(data)}}
  };
  return {rows,audits,prisma:{$transaction:async fn=>{const prior=tail;let done;tail=new Promise(r=>done=r);await prior;try{return await fn(tx)}finally{done()}}}};
 }
 const input=(scope,credits=500)=>({scope:'m'+scope.repeat(31),credits,platform:'funpay',action:'claim'});
-test('new marketplace starts use AISOU only, exact pools and preserve owner reserves',async()=>{
- const f=fixture();const first=await claim(input('a'),f.prisma);assert.equal(first.activationSiteUrl,'https://aiee.fun');
- const second=await claim({...input('b'),platform:'playerok'},f.prisma);assert.deepEqual(second,{state:'empty'});
- assert.equal(f.rows.find(r=>r.id==='500-1').status,'available','AI-BUY is not an automatic fallback');
- assert.equal(f.rows.find(r=>r.id==='held500').status,'reserved');
- assert.equal((await claim(input('d',250),f.prisma)).product_key,'codex-250');
+test('both marketplaces prefer AISOU then use exact AI-BUY reserve for every supported Codex nominal',async()=>{
+ for(const platform of ['funpay','playerok'])for(const credits of [250,500,1000]){
+  const f=fixture();
+  const first=await claim({...input('a',credits),platform},f.prisma);
+  assert.equal(first.activationSiteUrl,'https://aiee.fun');assert.equal(first.product_key,'codex-'+credits);
+  const request={...input('b',credits),platform};
+  const second=await claim(request,f.prisma);
+  assert.equal(second.activationSiteUrl,'https://aichongzhi.fun');assert.equal(second.product_key,'codex-'+credits);
+  assert.notEqual(first.native_key_id,second.native_key_id);
+  assert.equal((await claim(request,f.prisma)).native_key_id,second.native_key_id);
+  const proof=await claim({...request,action:'attest',key_id:second.native_key_id},f.prisma);
+  assert.equal(proof.code,undefined);assert.equal(proof.fingerprint,second.fingerprint);
+  assert.equal(f.audits.length,2);assert.equal(f.audits[1].meta.activationSiteUrl,'https://aichongzhi.fun');
+  assert.deepEqual(await claim({...input('c',credits),platform},f.prisma),{state:'empty'});
+  assert.equal(f.rows.find(r=>r.id==='held500').status,'reserved');
+  assert.ok(f.rows.filter(r=>r.productKey!=='codex-'+credits&&r.id!=='held500').every(r=>r.status==='available'));
+ }
+});
+test('reserve selection excludes held, spent, archived, bound and foreign-provider keys',async()=>{
+ const f=fixture();
+ for(const row of f.rows.filter(r=>r.productKey==='codex-500'&&r.status==='available'))row.status='used';
+ const template=f.rows.find(r=>r.id==='500-1');
+ for(const [index,change] of [{status:'reserved'},{status:'revoked'},{orderId:'fixture-other-order'},{usedAt:new Date()},{reservedAt:new Date()},{activationSiteUrl:'https://foreign.example.invalid'}].entries())f.rows.push({...template,status:'available',id:'blocked-'+index,...change});
+ assert.deepEqual(await claim(input('d'),f.prisma),{state:'empty'});assert.equal(f.audits.length,0);
+});
+test('concurrent marketplace orders cannot take the same last AI-BUY reserve',async()=>{
+ const f=fixture();f.rows.find(r=>r.id==='500-0').status='used';
+ const results=await Promise.all([claim(input('a'),f.prisma),claim({...input('b'),platform:'playerok'},f.prisma)]);
+ assert.equal(results.filter(r=>r.state==='shared_stock').length,1);
+ assert.equal(results.filter(r=>r.state==='empty').length,1);
+ assert.equal(f.audits.length,1);assert.equal(f.audits[0].keyId,'500-1');
 });
 test('an existing AI-BUY assignment retains its provider during recovery',async()=>{
  const f=fixture(),request=input('9'),row=f.rows.find(r=>r.id==='500-1');row.status='used';

@@ -20,9 +20,9 @@ async function claim(input, prisma) {
     } else {
       if (action === 'attest') throw Error('supplier_stock_binding_invalid');
       const picked = await tx.$queryRaw`SELECT id FROM license_keys WHERE product_key=${productKey}
-        AND activation_site_url=${preferredSite} AND status='available'
+        AND (activation_site_url=${preferredSite} OR activation_site_url=${SITES[0]}) AND status='available'
         AND order_id IS NULL AND used_at IS NULL AND reserved_at IS NULL
-        ORDER BY created_at ASC, id ASC
+        ORDER BY CASE WHEN activation_site_url=${preferredSite} THEN 0 ELSE 1 END, created_at ASC, id ASC
         FOR UPDATE SKIP LOCKED LIMIT 1`;
       if (!picked.length) return {state:'empty'};
       const id = picked[0].id;
