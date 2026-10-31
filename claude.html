@@ -41,7 +41,7 @@
 <link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
-<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-cac38b3e1e58e662">
+<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-f88bbb690fd45355">
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
 </head>
 <body id="storefrontBody" class="claude-workspace-body">
@@ -172,6 +172,12 @@
         <p class="claude-verification-description" data-verification-en="We do not sign in to your account. For KYC guidance, we need the link shown after you click Verify&nbsp;now.">Мы не заходим в ваш аккаунт. Для сопровождения KYC нужна ссылка, которая появляется после нажатия Verify&nbsp;now.</p>
         <p class="claude-verification-description" data-verification-en="After payment, send the link to your manager. You complete verification yourself; the manager guides you through the steps.">После оплаты отправьте ссылку менеджеру. Проверку вы проходите сами, а менеджер подскажет шаги.</p>
       </aside>
+      <aside id="claudeKycWarning" class="claude-kyc-warning" aria-labelledby="claudeKycWarningTitle">
+        <h3 id="claudeKycWarningTitle"><span aria-hidden="true">⚠</span> <span data-verification-en="Important warning">Важное предупреждение</span></h3>
+        <p data-verification-en="If your account has a low trust rating, it may be suspended or repeatedly asked to complete verification, even after verification has been completed successfully.">Обратите внимание: если ваш аккаунт имеет низкий рейтинг доверия, существует риск его блокировки или возникновения бесконечного запроса на прохождение верификации, даже после её успешного завершения.</p>
+        <p class="claude-kyc-warning__limits" data-verification-en="These situations are not covered by the service guarantee. We are not responsible for suspensions or verification issues related to the state of your account.">Подобные ситуации не являются гарантийным случаем! Мы не несём ответственности за блокировки и проблемы с верификацией, связанные с состоянием вашего аккаунта.</p>
+        <p data-verification-en="Please consider these risks before paying.">Предупреждаем заранее, чтобы избежать недоразумений!</p>
+      </aside>
       <button id="claudeVerificationSubmit" class="claude-verification-submit" type="button" disabled>Оформить KYC</button>
     </section>
   </div>
@@ -268,6 +274,10 @@
       <label><input type="radio" name="payment" value="enot">Карта / СБП — ENOT</label>
       <label><input type="radio" name="payment" value="lava">Зарубежная карта</label>
     </fieldset>
+    <label class="verification-support-checkout__acknowledgement" data-support-kyc-acknowledgement>
+      <input name="kycWarningAcknowledged" type="checkbox" required>
+      <span data-verification-en="I have read the KYC risk warning and guarantee conditions.">Я прочитал предупреждение о рисках KYC и условиях гарантии.</span>
+    </label>
     <p class="verification-support-checkout__hint" data-verification-en="A contact button will appear after payment is confirmed.">После подтверждения оплаты появится кнопка связи с менеджером.</p>
     <p class="verification-support-checkout__terms">Нажимая «Оплатить», вы принимаете <a href="/oferta.html" target="_blank" rel="noopener">оферту</a> и <a href="/politika.html" target="_blank" rel="noopener">политику конфиденциальности</a>.</p>
     <p data-support-payment-status role="status" aria-live="polite"></p>
@@ -288,10 +298,10 @@
 <script src="/assets/js/support-widget.js?v=20260924-support-account1&build=sha256-9da6a0dc556ea999" defer></script>
   <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
   <script src="/assets/js/claude-onboarding-v1.js?v=20261002-new-account1" defer></script>
-<script src="/assets/js/verification-support-checkout.js?v=sha256-d1a10bf09dbacda7" defer></script>
-<script src="/assets/js/claude-workspace.js?v=sha256-07eab16b7e7f98d7" defer></script>
+<script src="/assets/js/verification-support-checkout.js?v=sha256-3dcd8e089f812a3e" defer></script>
+<script src="/assets/js/claude-workspace.js?v=sha256-41bdee682a0ef6ba" defer></script>
 <script src="/assets/js/storefront-ui.js?v=sha256-bcae5e9700f06872" defer></script>
-<script src="/assets/js/client-i18n.js?v=sha256-c3c9e4168b6b2891" defer></script>
+<script src="/assets/js/client-i18n.js?v=sha256-d6f152c390656f25" defer></script>
 <script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer></script>
 </body>
 </html>

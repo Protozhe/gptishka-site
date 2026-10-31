@@ -96,6 +96,7 @@
     input.addEventListener('change', () => {
       const amount = Number(workspace.dataset[input.value + 'Price'] || prices[input.value]);
       document.getElementById('claudeVerificationDetails').hidden = input.value !== 'kyc';
+      document.getElementById('claudeKycWarning').hidden = input.value !== 'kyc';
       document.getElementById('claudeVerificationPrice').textContent = amount.toLocaleString('ru-RU') + ' ₽';
 
       document.getElementById('claudeVerificationSubmit').disabled = !workspace.dataset[input.value + 'Available'];

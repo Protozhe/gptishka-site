@@ -40,7 +40,7 @@
 <link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
-<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-cac38b3e1e58e662">
+<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-f88bbb690fd45355">
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
 </head>
 <body id="storefrontBody" class="claude-workspace-body">
@@ -171,6 +171,12 @@
         <p class="claude-verification-description">We do not sign in to your account. For KYC guidance, we need the link shown after you click Verify&nbsp;now.</p>
         <p class="claude-verification-description">After payment, send the link to your manager. You complete verification yourself; the manager guides you through the steps.</p>
       </aside>
+      <aside id="claudeKycWarning" class="claude-kyc-warning" aria-labelledby="claudeKycWarningTitle">
+        <h3 id="claudeKycWarningTitle"><span aria-hidden="true">⚠</span> Important warning</h3>
+        <p>If your account has a low trust rating, it may be suspended or repeatedly asked to complete verification, even after verification has been completed successfully.</p>
+        <p class="claude-kyc-warning__limits">These situations are not covered by the service guarantee. We are not responsible for suspensions or verification issues related to the state of your account.</p>
+        <p>Please consider these risks before paying.</p>
+      </aside>
       <button id="claudeVerificationSubmit" class="claude-verification-submit" type="button" disabled>Order KYC</button>
     </section>
   </div>
@@ -267,6 +273,10 @@
       <label><input type="radio" name="payment" value="enot">Card / SBP — ENOT</label>
       <label><input type="radio" name="payment" value="lava">International card</label>
     </fieldset>
+    <label class="verification-support-checkout__acknowledgement" data-support-kyc-acknowledgement>
+      <input name="kycWarningAcknowledged" type="checkbox" required>
+      <span>I have read the KYC risk warning and guarantee conditions.</span>
+    </label>
     <p class="verification-support-checkout__hint">A contact button will appear after payment is confirmed.</p>
     <p class="verification-support-checkout__terms">By clicking Pay, you accept our <a href="/oferta.html" target="_blank" rel="noopener">terms</a> and <a href="/politika.html" target="_blank" rel="noopener">privacy policy</a>.</p>
     <p data-support-payment-status role="status" aria-live="polite"></p>
@@ -287,10 +297,10 @@
 <script src="/assets/js/support-widget.js?v=20260924-support-account1&build=sha256-9da6a0dc556ea999" defer></script>
   <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
   <script src="/assets/js/claude-onboarding-v1.js?v=20261002-new-account1" defer></script>
-<script src="/assets/js/verification-support-checkout.js?v=sha256-d1a10bf09dbacda7" defer></script>
-<script src="/assets/js/claude-workspace.js?v=sha256-07eab16b7e7f98d7" defer></script>
+<script src="/assets/js/verification-support-checkout.js?v=sha256-3dcd8e089f812a3e" defer></script>
+<script src="/assets/js/claude-workspace.js?v=sha256-41bdee682a0ef6ba" defer></script>
 <script src="/assets/js/storefront-ui.js?v=sha256-bcae5e9700f06872" defer></script>
-<script src="/assets/js/client-i18n.js?v=sha256-c3c9e4168b6b2891" defer></script>
+<script src="/assets/js/client-i18n.js?v=sha256-d6f152c390656f25" defer></script>
 <script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer></script>
 </body>
 </html>

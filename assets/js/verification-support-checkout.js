@@ -8,6 +8,8 @@
   const en = document.documentElement.lang === 'en';
   const status = form.querySelector('[data-support-payment-status]');
   const pay = form.querySelector('[data-support-pay]');
+  const kycAcknowledgement = form.querySelector('[data-support-kyc-acknowledgement]');
+  const kycAcknowledgementInput = form.elements.kycWarningAcknowledged;
   const products = new Map();
   let current = null;
   const rub = value => Number(value).toLocaleString('ru-RU') + ' ₽';
@@ -31,6 +33,11 @@
   open.addEventListener('click', () => {
     current = products.get(selected());
     if (!current) return;
+    const isKyc = selected() === 'kyc';
+    kycAcknowledgement.hidden = !isKyc;
+    kycAcknowledgementInput.required = isKyc;
+    kycAcknowledgementInput.disabled = !isKyc;
+    kycAcknowledgementInput.checked = false;
     status.textContent = '';
     dialog.querySelector('[data-support-name]').textContent = selected().toUpperCase();
     dialog.querySelector('[data-support-price]').textContent = rub(current.price);

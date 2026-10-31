@@ -196,6 +196,11 @@ html body #claudeWorkspace .service-product-gallery { display:none !important; }
 /* Give KYC guidance the same warm note treatment as the Max requirements. */
 #claudeVerificationDetails.claude-verification-note { margin:0; font-size:16px; line-height:1.55; }
 #claudeVerificationDetails .claude-verification-description { margin:8px 0 0; font-size:inherit; line-height:inherit; color:var(--workspace-muted); }
+.claude-kyc-warning { margin:24px 0 0; padding:18px; border:1px solid rgba(232,174,145,.4); border-radius:12px; background:rgba(232,174,145,.07); color:#dce0e4; font-size:15px; line-height:1.6; }
+.claude-kyc-warning[hidden] { display:none !important; }
+.claude-kyc-warning h3 { display:flex; align-items:center; gap:9px; margin:0 0 10px; color:#f1c5ad; font-size:16px; line-height:1.4; }
+.claude-kyc-warning p { margin:10px 0 0; }
+.claude-kyc-warning__limits { font-weight:650; }
 @media (min-width:1101px) {
   .claude-verification-card:has(#claudeVerificationDetails:not([hidden])) {
     display:grid;
@@ -206,8 +211,9 @@ html body #claudeWorkspace .service-product-gallery { display:none !important; }
   }
   .claude-verification-card .claude-verification-head { grid-column:1 / -1; }
   .claude-verification-card .claude-verification-options { grid-column:1; grid-row:2; margin-bottom:0; }
-  .claude-verification-card #claudeVerificationDetails { grid-column:2; grid-row:2 / 4; }
-  .claude-verification-card #claudeVerificationSubmit { grid-column:1; grid-row:3; align-self:end; }
+  .claude-verification-card #claudeVerificationDetails { grid-column:1; grid-row:3; margin-top:24px; }
+  .claude-verification-card #claudeKycWarning { grid-column:2; grid-row:2 / 5; margin-top:0; }
+  .claude-verification-card #claudeVerificationSubmit { grid-column:1; grid-row:4; align-self:end; }
 }
 @media (max-width:600px) {
   #claudeVerificationDetails.claude-verification-note { font-size:15px; }
@@ -227,6 +233,10 @@ html body #claudeWorkspace .service-product-gallery { display:none !important; }
 #verificationSupportCheckoutForm fieldset label { display:flex; align-items:center; gap:10px; border:1px solid #414750; border-radius:10px; padding:12px; font-size:14px; cursor:pointer; }
 #verificationSupportCheckoutForm fieldset label:has(input:checked) { border-color:#42d99c; background:rgba(66,217,156,.06); }
 #verificationSupportCheckoutForm input[type=radio] { accent-color:#42d99c; }
+#verificationSupportCheckoutForm .verification-support-checkout__acknowledgement { display:flex; align-items:flex-start; gap:12px; margin:22px 0 16px; padding:14px; border:1px solid rgba(232,174,145,.4); border-radius:12px; background:rgba(232,174,145,.07); color:#e0e4e8; font-size:14px; line-height:1.55; cursor:pointer; }
+#verificationSupportCheckoutForm .verification-support-checkout__acknowledgement[hidden] { display:none !important; }
+#verificationSupportCheckoutForm .verification-support-checkout__acknowledgement input { flex:0 0 20px; width:20px; height:20px; margin:2px 0 0; accent-color:#42d99c; }
+#verificationSupportCheckoutForm .verification-support-checkout__acknowledgement:has(input:focus-visible) { outline:2px solid #42d99c; outline-offset:3px; }
 .verification-support-checkout__hint,.verification-support-checkout__terms { color:#b6bec9; font-size:13px; line-height:1.6; }
 .verification-support-checkout a { color:#42d99c; }
 [data-support-payment-status] { font-size:14px; line-height:1.5; }
