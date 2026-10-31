@@ -92,11 +92,22 @@ for (const lang of ['ru','en']) for (const slug of ['claude-kyc','claude-cvp','c
   try {
     assert.equal(p.get('supportPaidDetails').hidden,false);assert.equal(p.get('supportProgress').hidden,true);
     assert.equal(p.get('supportKycLinkExample').hidden, !slug.includes('kyc'));
-    const example=p.get('supportKycLinkExample').querySelector('code');
+    const disclosure=p.get('supportKycLinkExample');
+    assert.equal(disclosure.tagName,'DETAILS');
+    assert.equal(disclosure.open,false,'the complete example starts collapsed');
+    assert.ok(disclosure.querySelector('summary'));
+    const example=disclosure.querySelector('code');
     const exampleUrl=new URL(example.textContent);
     assert.equal(exampleUrl.hostname,'inquiry.withpersona.com');
-    assert.equal(exampleUrl.searchParams.get('inquiry-id'),'inq_EXAMPLE_NOT_A_REAL_ID');
-    assert.equal(exampleUrl.searchParams.get('session-token'),'EXAMPLE_HEADER.EXAMPLE_PAYLOAD.EXAMPLE_SIGNATURE');
+    assert.ok(example.textContent.length>=1000,'show a realistic full-length example without truncation');
+    assert.match(exampleUrl.searchParams.get('inquiry-id'),/^inq_EXAMPLE_/);
+    const token=exampleUrl.searchParams.get('session-token').split('.');
+    assert.equal(token.length,3);
+    const payload=JSON.parse(Buffer.from(token[1],'base64url').toString());
+    assert.equal(payload.iss,'example.invalid');
+    assert.ok(payload.exp<946684810,'the example token must have expired long ago');
+    assert.equal(payload.inquiry_id,exampleUrl.searchParams.get('inquiry-id'));
+    assert.equal(Buffer.from(token[2],'base64url').length,256);
     assert.equal(example.querySelector('a'),null,'the fictional example must not be an active verification link');
     assert.equal(/[А-Яа-я]/.test(p.get('supportKycLinkExampleTitle').textContent),lang==='ru');
     p.get('supportLink').value='http://invalid.fixture';p.get('supportLinkForm').dispatchEvent(new p.w.Event('submit',{cancelable:true}));await flush();

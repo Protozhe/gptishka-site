@@ -39,7 +39,7 @@
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-f88bbb690fd45355">
-<link rel="stylesheet" href="/assets/css/verification-support-receipt.css?v=sha256-612f04f15598479b">
+<link rel="stylesheet" href="/assets/css/verification-support-receipt.css?v=sha256-917b6730ae7f02c2">
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
 </head>
 <body id="storefrontBody" class="claude-workspace-body">
@@ -111,12 +111,14 @@
         <li><div><h3 id="supportStepTwoTitle">Copy the full link</h3><p id="supportStepTwoText">Click <b>Start</b> and copy the full address of the page that opens. Include every character in the link.</p></div></li>
         <li><div><h3>Add the link to your order</h3><p>Paste the copied link into the field and click “Send link”. Then share this order page with the manager.</p></div></li>
       </ol>
-      <aside id="supportKycLinkExample" class="verification-link-example" aria-labelledby="supportKycLinkExampleTitle">
-        <h3 id="supportKycLinkExampleTitle">Example of a complete KYC link</h3>
-        <p id="supportKycLinkExampleText">Copy the entire address: inquiry-id and session-token must both follow the ?. A short link without these parameters is incomplete.</p>
-        <code translate="no">https://inquiry.withpersona.com/verify?<b>inquiry-id</b>=inq_EXAMPLE_NOT_A_REAL_ID&amp;<b>session-token</b>=EXAMPLE_HEADER.EXAMPLE_PAYLOAD.EXAMPLE_SIGNATURE</code>
-        <p id="supportKycLinkExampleNote" class="verification-link-example__note">This is a fictional example. Paste your own complete link — the actual session-token is usually much longer.</p>
-      </aside>
+      <details id="supportKycLinkExample" class="verification-link-example" aria-labelledby="supportKycLinkExampleTitle">
+        <summary><span id="supportKycLinkExampleTitle">Example KYC link</span></summary>
+        <div class="verification-link-example__body">
+          <p id="supportKycLinkExampleText">Copy the entire address: inquiry-id and session-token must both follow the ?. A short link without these parameters is incomplete.</p>
+          <p id="supportKycLinkExampleNote" class="verification-link-example__note">This example is invalid and uses fictional IDs and a fictional token. Paste your own link after Start in full, without shortening it.</p>
+          <code translate="no">https://inquiry.withpersona.com/verify?<b>inquiry-id</b>=inq_EXAMPLE_7xQ2wN6vR9mL5pT3yK8c&amp;<b>session-token</b>=eyJraWQiOiJmM2IyNGFjZjFjYjIzY2E3YjY4ZDA1ZDcyZmNlOWM0YTRmZjZiMWVmYmNmMGFlYWM4NWE2NWM4YjM1YTg2NTNlIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJpcXNlX0VYQU1QTEVfNGhOOHBRMnZSNm1MOXdLM2NUN3kiLCJhdWQiOiJleGFtcGxlLW9ubHktcGVyc29uYS12ZXJpZnkiLCJpc3MiOiJleGFtcGxlLmludmFsaWQiLCJpYXQiOjk0NjY4NDgwMCwibmJmIjo5NDY2ODQ4MDAsImV4cCI6OTQ2Njg0ODAxLCJqdGkiOiIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDAiLCJpbnF1aXJ5X2lkIjoiaW5xX0VYQU1QTEVfN3hRMndONnZSOW1MNXBUM3lLOGMiLCJlbnZpcm9ubWVudF9pZCI6ImVudl9FWEFNUExFXzZyTjJ2UTltTDR3SzhjVDN5UDdoIiwiZXhhbXBsZV9ub3RpY2UiOiJGaWN0aW9uYWwgZXhwaXJlZCBkZW1vbnN0cmF0aW9uLiBUaGlzIHRva2VuIGhhcyBubyB2YWxpZCBwcm92aWRlciBzaWduYXR1cmUgYW5kIG11c3QgbmV2ZXIgYmUgdXNlZCBmb3IgdmVyaWZpY2F0aW9uLiJ9.TCeAbmEwm0EdyWHN-htdBtCk4MqtbqUnuHWeXL84XVcB9SzoZ8JHi3k1SQfJluMN-KWXtpHGISejyKdy5yPwkdd53wpreC_aQae3w86EroNZl1XZfGahKIdvjWVyo4PwrYsqAci1dUzeFAd0hWp9uf4z6gfhglwAxoMwTMDTx4jAm_qKTfNYqwNjPBGRiCQ-4rFO7IrNbnymc9OosEokCdz7Bnv0RN7_Wf8XeZwjECYqj0xHfMa55f7zymPjtxq3_NvTs6wIrYet1VLoe_aPbQ3Xxfr_eJCGp4sUVbcH20r_0jnT3s-j00pQWZCIvjYzQT4GGlS5DEHll01DHR_Pig</code>
+        </div>
+      </details>
       <p class="verification-guide-note">You complete your own identity verification. The manager helps with instructions and questions about the process.</p>
     </section>
     <section class="verification-entry" aria-label="Verification support">
@@ -163,6 +165,6 @@
 <script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer></script>
 <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
 <script src="/assets/js/client-i18n.js?v=sha256-d6f152c390656f25" defer></script>
-  <script src="/assets/js/verification-support-receipt.js?v=sha256-25428a979d924bc1" defer></script>
+  <script src="/assets/js/verification-support-receipt.js?v=sha256-85da5faf50e00e58" defer></script>
 </body>
 </html>

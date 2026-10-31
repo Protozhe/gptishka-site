@@ -19,11 +19,18 @@ html body #claudeWorkspace.verification-order-workspace { width:min(1080px,calc(
 .verification-order-workspace .verification-steps p { margin:0; color:#acb5bf; font-size:14px; line-height:1.75; }
 .verification-order-workspace .verification-steps b { color:#dbe5e4; font-weight:650; }
 .verification-order-workspace .verification-guide-note { margin:25px 0 0; padding-top:18px; border-top:1px solid #394047; color:#acb5bf; font-size:12px; line-height:1.7; }
-.verification-order-workspace .verification-link-example { min-width:0; margin-top:24px; padding:16px; border:1px solid #625249; border-radius:12px; background:#2c2a29; }
-.verification-order-workspace .verification-link-example h3 { margin:0 0 9px; color:#f1c5ad; font-size:14px; line-height:1.5; }
+.verification-order-workspace .verification-link-example { min-width:0; margin-top:24px; padding:0; border:1px solid #625249; border-radius:12px; background:#2c2a29; }
+.verification-order-workspace .verification-link-example summary { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:48px; padding:12px 16px; list-style:none; color:#f1c5ad; font-size:14px; font-weight:750; line-height:1.5; cursor:pointer; }
+.verification-order-workspace .verification-link-example summary::-webkit-details-marker { display:none; }
+.verification-order-workspace .verification-link-example summary::after { content:''; flex:none; width:7px; height:7px; margin-right:3px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:rotate(45deg); }
+.verification-order-workspace .verification-link-example[open] summary { border-bottom:1px solid #625249; }
+.verification-order-workspace .verification-link-example[open] summary::after { transform:rotate(225deg); }
+.verification-order-workspace .verification-link-example__body { display:grid; gap:12px; min-width:0; padding:16px; }
 .verification-order-workspace .verification-link-example p { margin:0; color:#c2c7cb; font-size:13px; line-height:1.65; }
-.verification-order-workspace .verification-link-example code { display:block; margin:12px 0; padding:12px; border-radius:8px; background:#191d22; color:#acb5bf; font:12px/1.75 ui-monospace,SFMono-Regular,Consolas,monospace; white-space:normal; overflow-wrap:anywhere; word-break:break-word; }
-.verification-order-workspace .verification-link-example code b { color:#8fddcf; font:inherit; font-weight:700; }
+.verification-order-workspace .verification-link-example code { display:block; margin:0; padding:12px; border-radius:8px; background:#191d22; color:#acb5bf; font:12px/1.75 ui-monospace,SFMono-Regular,Consolas,monospace; white-space:normal; overflow-wrap:anywhere; word-break:break-word; }
+html body #claudeWorkspace .verification-link-example code,html body #claudeWorkspace .verification-link-example code b { font-family:ui-monospace,SFMono-Regular,Consolas,monospace !important; }
+.verification-order-workspace .verification-link-example code b { color:#8fddcf; font:inherit; font-weight:700; white-space:nowrap; }
+.verification-order-workspace .verification-link-example summary:focus-visible { outline:2px solid #70d9cb; outline-offset:4px; border-radius:11px; }
 .verification-order-workspace .verification-link-example .verification-link-example__note { color:#aeb5ba; font-size:12px; }
 .verification-order-workspace .verification-entry-intro { margin:10px 0 20px; color:#acb5bf; font-size:14px; line-height:1.7; }
 .verification-order-workspace label { display:block; margin-bottom:10px; font-size:13px; font-weight:750; }
