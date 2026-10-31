@@ -1557,6 +1557,29 @@
     let isGrokSsoFlow = false;
     let grokSessionMoved = [];
     let grokSessionForm = null;
+    let isCodexCreditsFlow = false;
+    const codexCreditsEnglish = /^\/en(?:\/|$)/.test(location.pathname) || params.get('lang') === 'en';
+    const codexCreditsText = {
+      button: codexCreditsEnglish ? 'Top up credits' : 'Пополнить кредиты',
+      start: codexCreditsEnglish ? 'Starting your credit top-up…' : 'Запускаем пополнение кредитов…',
+      pending: codexCreditsEnglish ? 'Adding credits. This usually takes a few minutes…' : 'Пополняем кредиты. Обычно это занимает несколько минут…',
+      pendingKeepOpen: codexCreditsEnglish ? 'Adding credits. Please keep this page open…' : 'Пополняем кредиты. Пожалуйста, не закрывайте страницу…',
+      success: codexCreditsEnglish ? 'Credits have been added to your account.' : 'Кредиты успешно зачислены.',
+      paused: codexCreditsEnglish ? 'Your credit top-up is still in progress. Click “Check status” to resume checking.' : 'Пополнение ещё выполняется. Нажмите «Проверить статус», чтобы продолжить проверку.',
+      saved: codexCreditsEnglish ? 'Your details are saved. Click “Top up credits” to start the top-up.' : 'Данные сохранены. Нажмите «Пополнить кредиты», чтобы запустить пополнение.',
+      progress: codexCreditsEnglish ? 'Adding credits' : 'Пополнение',
+      progressLabel: codexCreditsEnglish ? 'Credit top-up progress' : 'Ход пополнения кредитов',
+      reviewBadge: codexCreditsEnglish ? 'Top-up completed' : 'Пополнение завершено',
+      reviewTitle: codexCreditsEnglish ? 'Credits have been added to your account' : 'Кредиты успешно зачислены',
+      reviewLead: codexCreditsEnglish ? 'Your credits are available. Rate your top-up — your review will appear on the Reviews page after moderation.' : 'Кредиты уже на вашем аккаунте. Оцените пополнение — после проверки отзыв появится на странице «Отзывы».',
+      reviewPlaceholder: codexCreditsEnglish ? 'For example: credits arrived quickly, everything works' : 'Например: кредиты зачислились быстро, всё работает',
+      leaveTitle: codexCreditsEnglish ? 'Leave before your credits have been added?' : 'Покинуть страницу до зачисления кредитов?',
+      leaveSubtitle: codexCreditsEnglish ? 'We recommend keeping this page open until your top-up is complete.' : 'Рекомендуем оставаться на странице до завершения пополнения.',
+      timeout: minutes => codexCreditsEnglish
+        ? `Your credit top-up has been in progress for more than ${minutes} minutes. Your details are saved and processing continues automatically. Contact support with your order number if needed; do not pay again or restart the top-up.`
+        : `Пополнение выполняется более ${minutes} минут. Данные сохранены, обработка продолжается автоматически. Можно обратиться в поддержку с номером заказа; повторно оплачивать или запускать пополнение не нужно.`,
+    };
+
     let isPerplexityManualFlow = false;
     let perplexitySessionSubmitted = false;
     let supportActivationFlow = SUPPORT_ACTIVATION_FLOW_GROK;
@@ -1594,6 +1617,11 @@
     };
 
     function getLeaveConfirmText() {
+      if (isCodexCreditsFlow) return {
+        title: codexCreditsText.leaveTitle, subtitle: codexCreditsText.leaveSubtitle,
+        proceed: codexCreditsEnglish ? 'Leave page' : 'Покинуть страницу',
+        stay: codexCreditsEnglish ? 'Stay' : 'Остаться',
+      };
       return isSteamKeyDeliveryFlow ? STEAM_LEAVE_CONFIRM_TEXT : LEAVE_CONFIRM_TEXT;
     }
 
@@ -2062,6 +2090,7 @@
       const codexCreditsMatch = productKey.includes('codex')
         ? productKey.match(/\b(250|500|1000)\b/)
         : null;
+      isCodexCreditsFlow = Boolean(codexCreditsMatch);
       let chatGptPlanName = '';
       if (productKey.includes('chatgpt') && /pro[- ]?25x|pro[- ]?500/.test(productKey)) {
         chatGptPlanName = 'ChatGPT Pro 25x / Pro 500';
@@ -2125,6 +2154,7 @@
         : SUPPORT_ACTIVATION_FLOW_GROK;
       isCredentialsDelivery = false;
       const claudeSupportFlow = isClaudeSupportFlow();
+      if (startBtn) startBtn.textContent = isCodexCreditsFlow ? codexCreditsText.button : 'Activate';
 
       if (tokenBlock) tokenBlock.style.display = 'block';
       if (actionsRow) actionsRow.style.display = '';
@@ -2181,6 +2211,18 @@
       isMasked = !isSupportTokenDelivery;
       if (tokenInput) tokenInput.classList.toggle('masked', isMasked);
       if (toggleMaskBtn) toggleMaskBtn.textContent = isMasked ? 'Show' : 'Hide';
+      if (isCodexCreditsFlow) {
+        const title = document.getElementById('reviewRewardTitle');
+        if (title) title.textContent = codexCreditsText.reviewTitle;
+        const reviewInput = document.getElementById('activationReviewText');
+        if (reviewInput) {
+          reviewInput.placeholder = codexCreditsText.reviewPlaceholder;
+          const badge = document.querySelector('.redeem-review-badge');
+          const lead = document.querySelector('.redeem-review-lead');
+          if (badge) badge.textContent = codexCreditsText.reviewBadge;
+          if (lead) lead.textContent = codexCreditsText.reviewLead;
+        }
+      }
     }
 
     function renderActivationPreview(serviceKey) {
@@ -2200,6 +2242,7 @@
         perplexity: { name: 'Perplexity Pro', perplexity: true },
       };
       const config = configs[normalizedKey] || configs.perplexity;
+      isCodexCreditsFlow = Boolean(config.credits);
 
       document.body.classList.add('redeem-preview-mode');
       if (orderIdEl) orderIdEl.textContent = 'PREVIEW';
@@ -2479,7 +2522,7 @@
       restartAttempts = 0;
       setButtonLoading(startBtn, true);
       try {
-        setStatus('pending', 'Request sent...', true);
+        setStatus('pending', isCodexCreditsFlow ? codexCreditsText.start : 'Request sent...', true);
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/start`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2504,7 +2547,7 @@
         }
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
-        setStatus('pending', `In processing. Task: ${currentTaskId}`, true);
+        setStatus('pending', isCodexCreditsFlow ? codexCreditsText.pending : `In processing. Task: ${currentTaskId}`, true);
         startPolling();
       } catch {
         setStatus('error', 'Network error when starting activation', false);
@@ -2563,7 +2606,7 @@
         }
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
-        setStatus('pending', `In processing. Task: ${currentTaskId}`, true);
+        setStatus('pending', isCodexCreditsFlow ? codexCreditsText.pending : `In processing. Task: ${currentTaskId}`, true);
         startPolling();
       } catch {
         setStatus('error', 'Network error on restart', false);
@@ -2636,7 +2679,7 @@
           currentTaskId = String(payload.taskId || '');
           renderTask(currentTaskId);
           markActivationCompleted();
-          setStatus('success', currentTaskId ? `Successfully. Task: ${currentTaskId}` : 'Connection completed successfully.', false);
+          setStatus('success', isCodexCreditsFlow ? codexCreditsText.success : (currentTaskId ? `Successfully. Task: ${currentTaskId}` : 'Connection completed successfully.'), false);
           clearActivationResumeStorage();
           hideActionButtons();
           showReviewReward();
@@ -2646,9 +2689,9 @@
         renderTask(currentTaskId);
         if (currentTaskId) {
           if (isPollPaused()) {
-            setStatus('pending', `There is an active check. Task: ${currentTaskId}. Autocheck has stopped.`, false);
+            setStatus('pending', isCodexCreditsFlow ? codexCreditsText.paused : `There is an active check. Task: ${currentTaskId}. Autocheck has stopped.`, false);
           } else {
-            setStatus('pending', `In processing. Task: ${currentTaskId}`, true);
+            setStatus('pending', isCodexCreditsFlow ? codexCreditsText.pending : `In processing. Task: ${currentTaskId}`, true);
             startPolling();
           }
           return;
@@ -2730,7 +2773,7 @@
         markActivationCompleted();
         setStatus(
           'success',
-          currentTaskId ? `Successfully. Task: ${currentTaskId}` : 'The subscription has been successfully activated.',
+          isCodexCreditsFlow ? codexCreditsText.success : (currentTaskId ? `Successfully. Task: ${currentTaskId}` : 'The subscription has been successfully activated.'),
           false
         );
         clearActivationResumeStorage();
@@ -2755,7 +2798,7 @@
           if (!done && timeout) {
             const resolved = await resolveActivationSuccessFallback();
             if (resolved) return;
-            setStatus('pending', `Still in processing. Task: ${currentTaskId}. Click ”Check Status” later or ”Change Key and Repeat.”`, false);
+            setStatus('pending', isCodexCreditsFlow ? codexCreditsText.timeout(POLL_MAX_MS / 60000) : `Still in processing. Task: ${currentTaskId}. Click ”Check Status” later or ”Change Key and Repeat.”`, false);
             retryNewKeyBtn.disabled = false;
           }
         }
@@ -2788,13 +2831,13 @@
             if (resolved) return true;
           }
           const msg = String(payload?.message || '').trim();
-          setStatus('pending', `In processing. Task: ${currentTaskId}${msg ? `. ${msg}` : ''}`, true);
+          setStatus('pending', isCodexCreditsFlow ? codexCreditsText.pendingKeepOpen : `In processing. Task: ${currentTaskId}${msg ? `. ${msg}` : ''}`, true);
           retryNewKeyBtn.disabled = true;
           return false;
         }
 
         if (payload.success) {
-          setStatus('success', `Successfully. Task: ${currentTaskId}`, false);
+          setStatus('success', isCodexCreditsFlow ? codexCreditsText.success : `Successfully. Task: ${currentTaskId}`, false);
           markActivationCompleted();
           clearActivationResumeStorage();
           hideActionButtons();

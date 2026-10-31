@@ -2898,6 +2898,28 @@
     let isGeminiActivationLinkFlow = false;
     let currentGeminiActivationUrl = '';
     let isCodexCreditsFlow = false;
+    const codexCreditsEnglish = /^\/en(?:\/|$)/.test(location.pathname) || params.get('lang') === 'en';
+    const codexCreditsText = {
+      button: codexCreditsEnglish ? 'Top up credits' : 'Пополнить кредиты',
+      start: codexCreditsEnglish ? 'Starting your credit top-up…' : 'Запускаем пополнение кредитов…',
+      pending: codexCreditsEnglish ? 'Adding credits. This usually takes a few minutes…' : 'Пополняем кредиты. Обычно это занимает несколько минут…',
+      pendingKeepOpen: codexCreditsEnglish ? 'Adding credits. Please keep this page open…' : 'Пополняем кредиты. Пожалуйста, не закрывайте страницу…',
+      success: codexCreditsEnglish ? 'Credits have been added to your account.' : 'Кредиты успешно зачислены.',
+      paused: codexCreditsEnglish ? 'Your credit top-up is still in progress. Click “Check status” to resume checking.' : 'Пополнение ещё выполняется. Нажмите «Проверить статус», чтобы продолжить проверку.',
+      saved: codexCreditsEnglish ? 'Your details are saved. Click “Top up credits” to start the top-up.' : 'Данные сохранены. Нажмите «Пополнить кредиты», чтобы запустить пополнение.',
+      progress: codexCreditsEnglish ? 'Adding credits' : 'Пополнение',
+      progressLabel: codexCreditsEnglish ? 'Credit top-up progress' : 'Ход пополнения кредитов',
+      reviewBadge: codexCreditsEnglish ? 'Top-up completed' : 'Пополнение завершено',
+      reviewTitle: codexCreditsEnglish ? 'Credits have been added to your account' : 'Кредиты успешно зачислены',
+      reviewLead: codexCreditsEnglish ? 'Your credits are available. Rate your top-up — your review will appear on the Reviews page after moderation.' : 'Кредиты уже на вашем аккаунте. Оцените пополнение — после проверки отзыв появится на странице «Отзывы».',
+      reviewPlaceholder: codexCreditsEnglish ? 'For example: credits arrived quickly, everything works' : 'Например: кредиты зачислились быстро, всё работает',
+      leaveTitle: codexCreditsEnglish ? 'Leave before your credits have been added?' : 'Покинуть страницу до зачисления кредитов?',
+      leaveSubtitle: codexCreditsEnglish ? 'We recommend keeping this page open until your top-up is complete.' : 'Рекомендуем оставаться на странице до завершения пополнения.',
+      timeout: minutes => codexCreditsEnglish
+        ? `Your credit top-up has been in progress for more than ${minutes} minutes. Your details are saved and processing continues automatically. Contact support with your order number if needed; do not pay again or restart the top-up.`
+        : `Пополнение выполняется более ${minutes} минут. Данные сохранены, обработка продолжается автоматически. Можно обратиться в поддержку с номером заказа; повторно оплачивать или запускать пополнение не нужно.`,
+    };
+
     let perplexitySessionSubmitted = false;
     let isSteamKeyDeliveryFlow = false;
     let isSupportTokenDelivery = false;
@@ -2941,6 +2963,11 @@
     };
 
     function getLeaveConfirmText() {
+      if (isCodexCreditsFlow) return {
+        title: codexCreditsText.leaveTitle, subtitle: codexCreditsText.leaveSubtitle,
+        proceed: codexCreditsEnglish ? 'Leave page' : 'Покинуть страницу',
+        stay: codexCreditsEnglish ? 'Stay' : 'Остаться',
+      };
       return isSteamKeyDeliveryFlow ? STEAM_LEAVE_CONFIRM_TEXT : LEAVE_CONFIRM_TEXT;
     }
 
@@ -3634,7 +3661,7 @@
       if (tokenBlock) tokenBlock.style.display = 'block';
       if (geminiActivationBlock) geminiActivationBlock.hidden = true;
       if (perplexityNextStep) perplexityNextStep.hidden = true;
-      if (startBtn) startBtn.textContent = 'Активировать';
+      if (startBtn) startBtn.textContent = isCodexCreditsFlow ? codexCreditsText.button : 'Активировать';
       if (checkBtn) checkBtn.style.display = '';
       if (retryNewKeyBtn) retryNewKeyBtn.style.display = '';
       if (actionsRow) actionsRow.style.display = '';
@@ -3691,6 +3718,18 @@
       isMasked = !isSupportTokenDelivery;
       if (tokenInput) tokenInput.classList.toggle('masked', isMasked);
       if (toggleMaskBtn) toggleMaskBtn.textContent = isMasked ? 'Показать' : 'Скрыть';
+      if (isCodexCreditsFlow) {
+        const title = document.getElementById('reviewRewardTitle');
+        if (title) title.textContent = codexCreditsText.reviewTitle;
+        const reviewInput = document.getElementById('activationReviewText');
+        if (reviewInput) {
+          reviewInput.placeholder = codexCreditsText.reviewPlaceholder;
+          const badge = document.querySelector('.redeem-review-badge');
+          const lead = document.querySelector('.redeem-review-lead');
+          if (badge) badge.textContent = codexCreditsText.reviewBadge;
+          if (lead) lead.textContent = codexCreditsText.reviewLead;
+        }
+      }
     }
 
     function renderActivationPreview(serviceKey) {
@@ -4060,7 +4099,7 @@
       restartAttempts = 0;
       setButtonLoading(startBtn, true);
       try {
-        setStatus('pending', 'Запускаем активацию…', true, 'start');
+        setStatus('pending', isCodexCreditsFlow ? codexCreditsText.start : 'Запускаем активацию…', true, 'start');
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/start`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -4087,7 +4126,7 @@
         renderTask(currentTaskId);
         activationInFlight = true;
         updateStartButtonState();
-        setStatus('pending', 'Подключаем подписку. Обычно это занимает несколько минут…', true, 'process');
+        setStatus('pending', isCodexCreditsFlow ? codexCreditsText.pending : 'Подключаем подписку. Обычно это занимает несколько минут…', true, 'process');
         startPolling();
       } catch {
         setStatus('error', 'Не удалось связаться с сервисом активации. Проверьте интернет и повторите попытку.', false);
@@ -4146,7 +4185,7 @@
         }
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
-        setStatus('pending', 'Подключаем подписку. Обычно это занимает несколько минут…', true, 'process');
+        setStatus('pending', isCodexCreditsFlow ? codexCreditsText.pending : 'Подключаем подписку. Обычно это занимает несколько минут…', true, 'process');
         startPolling();
       } catch {
         setStatus('error', 'Ошибка сети при перезапуске', false);
@@ -4250,7 +4289,7 @@
           currentTaskId = String(payload.taskId || '');
           renderTask(currentTaskId);
           markActivationCompleted();
-          setStatus('success', 'Подписка успешно активирована.', false, 'done');
+          setStatus('success', isCodexCreditsFlow ? codexCreditsText.success : 'Подписка успешно активирована.', false, 'done');
           clearActivationResumeStorage();
           hideActionButtons();
           showReviewReward();
@@ -4262,9 +4301,9 @@
           activationInFlight = activationStatus !== 'failed';
           updateStartButtonState();
           if (isPollPaused()) {
-            setStatus('pending', 'Активация ещё выполняется. Нажмите «Проверить статус», чтобы продолжить проверку.', false, 'process');
+            setStatus('pending', isCodexCreditsFlow ? codexCreditsText.paused : 'Активация ещё выполняется. Нажмите «Проверить статус», чтобы продолжить проверку.', false, 'process');
           } else {
-            setStatus('pending', 'Подключаем подписку. Обычно это занимает несколько минут…', true, 'process');
+            setStatus('pending', isCodexCreditsFlow ? codexCreditsText.pending : 'Подключаем подписку. Обычно это занимает несколько минут…', true, 'process');
             startPolling();
           }
           return;
@@ -4346,7 +4385,7 @@
         markActivationCompleted();
         setStatus(
           'success',
-          'Подписка успешно активирована.',
+          isCodexCreditsFlow ? codexCreditsText.success : 'Подписка успешно активирована.',
           false
         );
         clearActivationResumeStorage();
@@ -4373,7 +4412,7 @@
           if (!done && timeout) {
             const resolved = await resolveActivationSuccessFallback();
             if (resolved) return;
-            setStatus('pending', `Активация выполняется более ${activationPollMaxMs / 60000} минут. Данные сохранены, обработка продолжается автоматически. Можно обратиться в поддержку с номером заказа; повторно оплачивать или запускать активацию не нужно.`, false, 'process');
+            setStatus('pending', isCodexCreditsFlow ? codexCreditsText.timeout(activationPollMaxMs / 60000) : `Активация выполняется более ${activationPollMaxMs / 60000} минут. Данные сохранены, обработка продолжается автоматически. Можно обратиться в поддержку с номером заказа; повторно оплачивать или запускать активацию не нужно.`, false, 'process');
             retryNewKeyBtn.disabled = true;
           }
         }
@@ -4414,13 +4453,13 @@
             const resolved = await resolveActivationSuccessFallback();
             if (resolved) return true;
           }
-          setStatus('pending', 'Подключаем подписку. Пожалуйста, не закрывайте страницу…', true, 'process');
+          setStatus('pending', isCodexCreditsFlow ? codexCreditsText.pendingKeepOpen : 'Подключаем подписку. Пожалуйста, не закрывайте страницу…', true, 'process');
           retryNewKeyBtn.disabled = true;
           return false;
         }
 
         if (payload.success) {
-          setStatus('success', 'Подписка успешно активирована.', false, 'done');
+          setStatus('success', isCodexCreditsFlow ? codexCreditsText.success : 'Подписка успешно активирована.', false, 'done');
           markActivationCompleted();
           clearActivationResumeStorage();
           hideActionButtons();
@@ -4654,7 +4693,7 @@
 
         if (ok) {
           tokenWarn.textContent = isCodexCreditsFlow
-            ? 'Данные сохранены. Нажмите «Активировать», чтобы запустить пополнение.'
+            ? codexCreditsText.saved
             : isSupportTokenDelivery
               ? 'ID аккаунта проверен и сохранён для выполнения заказа.'
               : 'Токен сохранён для выполнения заказа. Нажмите «Активировать».';
@@ -4737,6 +4776,9 @@
 
     function setActivationProgress(stage) {
       if (!activationProgress) return;
+      const process = activationProgress.querySelector('[data-activation-step="process"]');
+      if (process) process.textContent = isCodexCreditsFlow ? codexCreditsText.progress : 'Подключение';
+      activationProgress.setAttribute('aria-label', isCodexCreditsFlow ? codexCreditsText.progressLabel : 'Ход активации');
       const order = ['start', 'process', 'done'];
       const activeIndex = order.indexOf(String(stage || ''));
       activationProgress.hidden = activeIndex < 0;

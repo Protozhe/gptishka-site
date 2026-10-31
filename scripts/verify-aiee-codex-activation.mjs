@@ -17,6 +17,6 @@ assert.match(service, /isCodexCreditsProductKey\(input\.productKey\)\s*\|\|\s*is
 assert.match(service, /validateAieeSessionJson\(tokenInfo\)/, "Codex must reject a bare token before contacting AIEE");
 assert.match(service, /lastProviderMessage:\s*`\$\{providerName\} task creation failed/, "Failed task creation must leave a safe diagnostic on the order");
 assert.match(storefront, /credits:\(250\|500\|1000\)/, "All three Codex denominations must remain available in the storefront");
-assert.match(redeemPage, /Данные сохранены\. Нажмите «Активировать»/, "The page must not claim a token was verified before activation starts");
+assert.match(redeemPage, /Данные сохранены\. Нажмите «Пополнить кредиты»/, "The page must not claim a token was verified before the top-up starts");
 
 console.log("AIEE Codex 250/500/1000 activation and status guard verified.");
