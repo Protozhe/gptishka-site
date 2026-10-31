@@ -184,7 +184,7 @@ const context = vm.createContext({
   parseClientTokenInput: raw => ({ raw, extracted: "fixture-session", json: { account: { planType: "pro" } } }),
   isCodexCreditsProductKey: value => /^codex-(250|500|1000|2500)$/.test(value), validateAieeSessionJson: () => null,
   isSupportTokenActivationMode: () => false, isAisouGrokProduct: () => false,
-  buildStoredClientTokenPatch: () => ({ clientTokenCiphertext: "fixture-encrypted" }),
+  buildStoredClientTokenPatch: token => ({ clientTokenCiphertext: token ? "fixture-encrypted" : null }),
   normalizeActivationRecordForRead: value => value, buildTokenMeta: () => ({}),
   isTokenBoundToAnotherFingerprint: () => wrongToken,
   getOrderWithFirstItem: async () => ({ source: "site" }), resolveExternalCodexOwner: () => null,
@@ -202,23 +202,40 @@ const context = vm.createContext({
   procureSelectedWebsiteKey: async () => { procurementCalls++; return null; },
   buildUpstreamUserCandidates: () => ["fixture-session"], isIosProviderBase: () => false,
   isAieeProviderBase: site => site === origins[1],
+  notifyAibuyActivationResult: async () => {},
   startOutstockTaskWithRetry: async input => {
+    if(input.activationSiteUrl===origins[0]) {
+      const before=JSON.stringify(stored);
+      context.updateActivationFromChongzhiCodePayload(stored.orderId,{status:200,json:{success:true,status:'processing',recharge_status:'pending',order_id:null}});
+      assert.equal(JSON.stringify(stored),before,'An unused-key status poll cannot race the first AI-BUY submission');
+    }
     providerRequest = input; input.beforeSubmit(); throw new Error("fixture-provider-reached");
   },
 });
 vm.runInContext(ts.transpileModule(start, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, context);
+for(const name of ['isChongzhiCodeUsed','updateActivationFromChongzhiCodePayload']) {
+  const node=ast.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text===name);
+  vm.runInContext(ts.transpileModule(node.getText(ast),{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,context);
+}
 await cdkKeysStore.importCodes({productKey:'codex-500',supplier:'aibuy',codes:['FIXTURE-START-AIBUY']});
 stored={orderId:'fixture-no-aisou',productKey:'codex-500',status:'issued',attempts:0,activationSiteUrl:origins[1],cdk:''};
-await assert.rejects(()=>context.startActivationUnsafe(stored.orderId,'{"fixture":true}'),e=>e.statusCode===409);
-assert.equal(providerRequest,undefined,'Empty AISOU stock does not use an AI-BUY key');
-assert.equal(procurementCalls,0,'Empty AISOU stock must not start supplier purchases');
+await assert.rejects(()=>context.startActivationUnsafe(stored.orderId,'{"fixture":true}'),/fixture-provider-reached/);
+assert.equal(providerRequest.activationSiteUrl,origins[0],'Empty AISOU stock uses an exact matching prepaid AI-BUY key');
+assert.equal(providerRequest.cdk,'FIXTURE-START-AIBUY');
+assert.equal(stored.attempts,1,'The real first AI-BUY dispatch is claimed once after the concurrent poll');
+assert.equal(procurementCalls,0,'Prepaid fallback must not start supplier purchases');
+assert.equal((await context.startActivationUnsafe(stored.orderId,'{"fixture":true}')).reused,true);
+context.updateActivationFromChongzhiCodePayload(stored.orderId,{status:200,json:{success:true,status:'used',recharge_status:'success',order_id:'fixture-provider-confirmed'}});
+assert.equal(stored.status,'success','Actual dispatched AI-BUY completion remains reconcilable');
+assert.equal(stored.clientTokenCiphertext,null,'Confirmed success still clears customer credentials');
 await cdkKeysStore.importCodes({productKey:'codex-500',supplier:'aisou',codes:['FIXTURE-START-AISOU']});
+await cdkKeysStore.importCodes({productKey:'codex-500',supplier:'aibuy',codes:['FIXTURE-BOUND-AIBUY']});
 const legacyKey=await cdkKeysStore.assignNextUnused({productKey:'codex-500',activationSiteUrl:origins[0],orderId:'fixture-existing-aibuy',email:'fixture@example.invalid'});
 for (const [supplier,cdk,site] of [['aisou','',origins[1]],['aibuy',legacyKey.code,origins[0]]]) {
   stored = { orderId: `fixture-start-${supplier}`, productKey: "codex-500", status: "issued", attempts: 0, activationSiteUrl: site, cdk };
   await assert.rejects(() => context.startActivationUnsafe(stored.orderId, '{"fixture":true}'), /fixture-provider-reached/);
-  assert.equal(providerRequest.activationSiteUrl, site, "New starts use AISOU; an already-bound AI-BUY key retains its site");
-  assert.equal(providerRequest.cdk, `FIXTURE-START-${supplier.toUpperCase()}`);
+  assert.equal(providerRequest.activationSiteUrl, site, "AISOU is used after AI-BUY stock is exhausted; bound keys retain their supplier");
+  assert.equal(providerRequest.cdk, supplier==='aibuy'?'FIXTURE-BOUND-AIBUY':'FIXTURE-START-AISOU');
   assert.equal(stored.status, "processing"); assert.equal(stored.attempts, 1);
   const before = keys.filter(row => row.status === "used").length;
   assert.equal((await context.startActivationUnsafe(stored.orderId, '{"fixture":true}')).reused, true);
@@ -227,6 +244,10 @@ for (const [supplier,cdk,site] of [['aisou','',origins[1]],['aibuy',legacyKey.co
   await assert.rejects(() => context.startActivationUnsafe(stored.orderId, '{"fixture":true}'), e => e.statusCode === 409);
   wrongToken = false;
 }
+stored={orderId:'fixture-no-stock',productKey:'codex-500',status:'issued',attempts:0,activationSiteUrl:origins[1],cdk:''};
+providerRequest=undefined;
+await assert.rejects(()=>context.startActivationUnsafe(stored.orderId,'{"fixture":true}'),e=>e.statusCode===409);
+assert.equal(providerRequest,undefined,'An empty matching stock cannot use another denomination or a reserved key');
 assert.equal(procurementCalls, 0, "Existing matching stock avoids any new purchase");
 
 let previousSupplier,aisouRecovery=0,aibuyRecovery=0,aibuyEnabled=true;

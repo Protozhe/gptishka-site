@@ -2580,12 +2580,13 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     const paidOrder = trustedAdmin
       ? await assertPaidOrderForAdmin(orderId)
       : await assertPaidOrderAccess(orderId, orderToken);
-    // New Codex starts use prepaid AISOU stock. A prior supplier purchase must
+    // Use the remaining matching AI-BUY stock before prepaid AISOU stock.
+    // A prior supplier purchase must
     // be reconciled with its original provider before another key is allocated.
     const existingCodexProcurement = /^codex-(250|500|1000)$/.test(String(stored.productKey || ""))
       && ["aibuy", "aisou"].includes(String((stored.lastProviderPayload?.supplierProcurement as {provider?:unknown}|undefined)?.provider || ""));
     const codexStockSites = /^codex-(250|500|1000)$/.test(String(stored.productKey || "")) && !stored.taskId && !stored.attempts
-      ? ["https://aiee.fun"] : undefined;
+      ? ["https://aichongzhi.fun", "https://aiee.fun"] : undefined;
     let reserved = existingCodexProcurement ? null : await activationStore.reserveCdkRecordForOrder({
       productKey: String(stored.productKey || "chatgpt"),
       activationSiteUrl: stored.activationSiteUrl || "",
@@ -4414,6 +4415,13 @@ function isChongzhiCodeUsed(
 function updateActivationFromChongzhiCodePayload(orderId: string, payload: { status?: number; json?: any; raw?: string }) {
   const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
   if (!stored) return;
+  // AI-BUY's status endpoint also reports "creating" for an unused key with no
+  // provider job. A poll before our durable dispatch must not invent a pending
+  // activation and make beforeSubmit reject the real first submission.
+  if (/^codex-(250|500|1000)$/.test(String(stored.productKey || "")) &&
+      stored.activationSiteUrl === "https://aichongzhi.fun" &&
+      !stored.externalFulfillmentOwner && !stored.taskId && !Number(stored.attempts || 0) &&
+      !stored.lastProviderPayload?.submissionDiagnostics) return;
   // A concurrent browser/admin poll may finish after the final provider reply.
   // Keep confirmed AI-BUY completion and cleared customer credentials intact.
   if ((stored.activationSiteUrl === "https://aichongzhi.fun" || isIosProviderBase(stored.activationSiteUrl)) &&
