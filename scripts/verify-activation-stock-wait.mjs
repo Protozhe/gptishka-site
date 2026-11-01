@@ -13,12 +13,15 @@ const {ManagerNotificationsOutbox}=module.exports;
 const text=fs.readFileSync('apps/admin-backend/src/modules/notifications/notifications.service.ts','utf8');
 const ast=ts.createSourceFile('notifications.ts',text,ts.ScriptTarget.Latest,true);
 const functions=new Map(ast.statements.filter(ts.isFunctionDeclaration).map(n=>[n.name.text,n.getText(ast)]));
+const presentation={exports:{}};
+vm.runInNewContext(compile(fs.readFileSync('apps/admin-backend/src/modules/notifications/telegram-presentation.ts','utf8')),presentation);
 const folder=fs.mkdtempSync(path.join(os.tmpdir(),'activation-stock-fixture-')),file=path.join(folder,'outbox.json');
 const id='cmvfixture0000000000000001';
 let now=Date.now(), sends=0, order, activation, message, reply, fail=false;
 const flush=async()=>{for(let i=0;i<30;i++)await new Promise(r=>setTimeout(r,5));};
 const context=vm.createContext({
   exports:{},
+  activationStockCard:presentation.exports.activationStockCard,
   managerOutbox:new ManagerNotificationsOutbox(file,()=>now),managerRetryRunning:false,
   activationStore:{findByOrderId:()=>activation},prisma:{order:{findUnique:async()=>order}},
   async sendTelegramNotification(text,buttons){if(fail)throw Error('fixture-delivery-failed');sends++;message=text;reply=buttons;return 77;},
@@ -32,7 +35,8 @@ try{
  assert.equal(sends,1,'Repeated clicks and concurrent pollers send one confirmed stock alert');
  assert.match(message,/Grok Premium/);assert.match(message,/grok-premium-1/);assert.match(message,/AISOU/);assert.match(message,/автоматически/);
  assert.doesNotMatch(message,/fixture-private-session|@|customerToken|sessionKey/);
- assert.equal(reply.inline_keyboard[0][0].url,'https://fixture.invalid/admin/cdks');
+ assert.equal(reply.inline_keyboard[0][0].callback_data,'cdk:o:grok-premium-1:aisou');
+ assert.equal(reply.inline_keyboard[1][0].url,'https://fixture.invalid/admin/cdks');
  assert.equal(context.managerOutbox.snapshot()[0].status,'sent');
  context.managerOutbox=new ManagerNotificationsOutbox(file,()=>now);
  await context.enqueueActivationStockNotification(id);await flush();await context.retryPendingManagerNotifications();assert.equal(sends,1,'A restart preserves the already-sent notification');

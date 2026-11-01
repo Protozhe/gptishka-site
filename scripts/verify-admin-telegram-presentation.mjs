@@ -37,6 +37,9 @@ assert.equal(eventBody.querySelector("code").textContent, "order-123");
 assert.ok(eventBody.querySelector("blockquote"));
 assert.ok(event.includes("\n\n🧾 Заказ"));
 inspect(cards.botAdminEventCard(injected, Array(12).fill(`Текст: ${injected.repeat(100)}`)));
+const stock=inspect(cards.activationStockCard({orderId:'order-123',product:injected,source:'FunPay',pool:'grok-premium-1',site:'https://aiee.fun'}));
+for(const label of ['Ожидает ключа','Что сделать','Для проверки','cdk_stock_wait','dispatch=not_sent'])assert.ok(stock.textContent.includes(label));
+assert.ok(stock.textContent.includes(injected));
 
 // Exercise the actual send/edit functions: formatting must reach Telegram,
 // while moderation callbacks and the durable delivery acknowledgement survive.

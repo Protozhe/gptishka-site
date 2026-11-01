@@ -1,6 +1,7 @@
 """Owner-only unpaid top-up invoices. Separate notifier-only peer socket.
 
-No customer session, product key, activation, card or funds-transfer endpoint.
+Explicit owner CDK imports share the authenticated notifier socket. No customer
+session, activation, card or funds-transfer endpoint is exposed.
 """
 import importlib.util,json,os,pathlib,re,socket,struct,subprocess
 HERE=pathlib.Path(__file__).resolve().parent
@@ -31,6 +32,9 @@ def dispatch(req,uid,notifier_uid,*,authorize=authorized,create=topup.create_inv
  if req=={'action':'health'}:return {'state':'alive','purpose':'unpaid_topup_invoices'}
  if not isinstance(req,dict) or not re.fullmatch(r'[1-9][0-9]{0,19}',str(req.get('telegram_id',''))):raise ValueError('supplier_owner_required')
  if not authorize(req['telegram_id']):raise ValueError('supplier_owner_required')
+ if req.get('action')=='cdk_import':
+  cdk=module('owner_cdk_bridge','../owner-cdk/bridge.py')
+  return cdk.dispatch(req)
  if req.get('action')=='balance' and set(req)=={'action','telegram_id'}:
   import fcntl
   with open(b.STATE/'account.lock','a') as lock:

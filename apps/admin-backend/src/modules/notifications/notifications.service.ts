@@ -5,7 +5,7 @@ import { env } from "../../config/env";
 import { prisma } from "../../config/prisma";
 import { buildOrderActivationRecoveryLink } from "../orders/activation-recovery.service";
 import { ManagerNotificationsOutbox } from "./manager-notifications.outbox";
-import { paidManagerCard } from "./telegram-presentation";
+import { paidManagerCard, activationStockCard } from "./telegram-presentation";
 import { activationStore } from "../orders/activation.store";
 
 const telegramDispatcher = env.TELEGRAM_PROXY_URL ? new ProxyAgent(env.TELEGRAM_PROXY_URL) : undefined;
@@ -388,15 +388,15 @@ async function deliverActivationStockNotification(orderId: string) {
   if (!order || order.status !== "PAID" || order.paymentMethod === "stub" ||
       !order.payments.some(payment => payment.status === "SUCCESS" && payment.provider !== "stub")) return null;
   const site = String(activation.keyAllocationSite || activation.activationSiteUrl || "");
-  const supplier = site === "https://aiee.fun" ? "AISOU / aiee.fun" : site === "https://aichongzhi.fun" ? "AI-BUY / aichongzhi.fun" : site || "Смотрите настройки товара";
+  const supplier = site === "https://aiee.fun" ? "aisou" : site === "https://aichongzhi.fun" ? "aibuy" : "";
+  const importable = /^(grok-(plus|premium|super|ultra)-1|codex-(250|500|1000)|claude-pro)$/.test(activation.productKey) && supplier;
+  const buttons = [{text: "Открыть SDK/CDK", url: `${resolveSiteOrigin()}/admin/cdks`}];
+  const keyboard: Array<Array<{text: string; url?: string; callback_data?: string}>> = [buttons];
+  if (importable) keyboard.unshift([{text: "➕ Добавить CDK в Telegram", callback_data: `cdk:o:${activation.productKey}:${supplier}`}]);
   const messageId = await sendTelegramNotification(
-    `🔑 <b>Нужно добавить ключ активации</b>\n\n` +
-    `🛍 <b>${escapeHtml(order.items[0]?.product?.title || activation.productKey)}</b>\n🧾 Заказ: <code>${escapeHtml(orderId)}</code>\n` +
-    `📍 ${order.source === "telegram" ? "Telegram-бот" : "Сайт"}\nПул: <code>${escapeHtml(activation.productKey)}</code>\nПоставщик: ${escapeHtml(supplier)}\n\n` +
-    `Добавьте ключ этого тарифа в SDK/CDK. Данные клиента сохранены — активация продолжится автоматически.\n` +
-    `Клиент видит: «Заявка принята, подготавливаем активацию».\n\n` +
-    `<code>Диагностика: cdk_stock_wait · отправка провайдеру ещё не выполнялась</code>`,
-    {inline_keyboard: [[{text: "Добавить ключ в SDK/CDK", url: `${resolveSiteOrigin()}/admin/cdks`}]]}
+    activationStockCard({orderId, product: order.items[0]?.product?.title || activation.productKey,
+      source: order.source === "telegram" ? "Telegram-бот" : "Сайт", pool: activation.productKey, site}),
+    {inline_keyboard: keyboard}
   );
   if (!messageId) throw new Error("Stock notification delivery not confirmed");
   return messageId;

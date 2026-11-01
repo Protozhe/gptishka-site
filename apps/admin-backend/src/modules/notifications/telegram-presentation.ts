@@ -20,6 +20,16 @@ export function paidManagerCard(order: { id: string; email: string; totalAmount:
   ]);
 }
 
+export function activationStockCard(input: {orderId: string; product: string; source: string; pool: string; site: string}) {
+  const supplier = input.site === "https://aiee.fun" ? "AISOU / aiee.fun" : input.site === "https://aichongzhi.fun" ? "AI-BUY / aichongzhi.fun" : input.site;
+  return telegramCard("🔑 Нужен ключ активации", [
+    `🛍 <b>${telegramText(input.product, 180)}</b>\n🧾 Заказ: <code>${telegramText(input.orderId, 100)}</code>\n📍 Источник: ${telegramText(input.source, 60)}`,
+    `⏳ <b>Ожидает ключа</b>\nДанные клиента сохранены.\nПоставщик: ${telegramText(supplier, 120)}`,
+    `👉 <b>Что сделать</b>\nДобавьте CDK нужного тарифа через Telegram или SDK/CDK. После добавления активация продолжится автоматически.`,
+    `🔧 <b>Для проверки</b>\n<code>cdk_stock_wait | pool=${telegramText(input.pool, 80)} | dispatch=not_sent</code>`,
+  ]);
+}
+
 export function activationReviewCard(review: { rating: number; productTitle: string; orderId: string; text: string }, status: "pending" | "approved" | "rejected" = "pending") {
   const title = { pending: "⭐ Новый отзыв", approved: "✅ Отзыв опубликован", rejected: "❌ Отзыв отклонён" }[status];
   const label = { pending: "Ожидает модерации", approved: "Одобрен", rejected: "Отклонён" }[status];

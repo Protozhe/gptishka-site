@@ -24,6 +24,11 @@ if(stockWait.status!==0)process.exit(stockWait.status??1);
 const grokWait=spawnSync(process.platform==='win32'?'python':'python3',['-B','ops/supplier-procurement/test-market-grok.py'],{cwd:process.cwd(),env:process.env,stdio:'inherit'});
 if(grokWait.error)throw grokWait.error;
 if(grokWait.status!==0)process.exit(grokWait.status??1);
+for(const [command,args] of [[process.execPath,['--test','ops/owner-cdk/telegram.test.mjs']], [process.platform==='win32'?'python':'python3',['-B','ops/owner-cdk/test-bridge.py']]]) {
+  const checked=spawnSync(command,args,{cwd:process.cwd(),env:process.env,stdio:'inherit'});
+  if(checked.error)throw checked.error;
+  if(checked.status!==0)process.exit(checked.status??1);
+}
 const reserve = spawnSync(process.platform === "win32" ? "python" : "python3", ["-B", "ops/subscription-routes/test-reserve.py"], {cwd:process.cwd(),env:process.env,stdio:"inherit"});
 if(reserve.error) throw reserve.error;
 if(reserve.status!==0) process.exit(reserve.status??1);

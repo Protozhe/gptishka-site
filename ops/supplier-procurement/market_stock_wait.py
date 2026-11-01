@@ -63,11 +63,13 @@ def notice(a,job,pool=None,shared=False,site=None):
     where='SDK/CDK' if shared else 'Ключи в чатах'
     url='https://gptishka.shop/admin/cdks' if shared else 'https://gptishka.shop/admin/workspace/chats'
     e=lambda value:html.escape(str(value))
-    message=(f"🔑 <b>Нужно добавить ключ активации</b>\n\n🛍 <b>{e(label)}</b>\n"
-        f"🧾 <b>{'FunPay' if job['platform']=='funpay' else 'PlayerOK'}</b> · <code>{e(job['order_id'])}</code>\n"
-        f"Пул: <code>{e(selected)}</code>\nСпособ: {e(site)}\n\n"
-        f"Добавьте ключ нужного тарифа в <a href=\"{url}\">{where}</a>. Данные клиента сохранены, обработка продолжится автоматически.\n"
-        "Клиенту сообщение о нехватке ключей не отправляется.\n\n<code>Диагностика: marketplace_stock_wait</code>")
+    supplier='aisou' if grok or str(site).startswith('AISOU') else 'aibuy' if kind=='claude_pro' else ''
+    telegram=f' или <a href="https://t.me/myadminiibot?start=cdk_{e(selected)}_{supplier}">через Telegram</a>' if shared and supplier else ''
+    message=(f"<b>🔑 Нужен ключ активации</b>\n\n🛍 <b>{e(label)}</b>\n"
+        f"🧾 Заказ: <code>{e(job['order_id'])}</code>\n📍 Источник: {'FunPay' if job['platform']=='funpay' else 'PlayerOK'}\n\n"
+        f"⏳ <b>Ожидает ключа</b>\nДанные клиента сохранены.\nПоставщик: {e(site)}\n\n"
+        f"👉 <b>Что сделать</b>\nДобавьте CDK нужного тарифа в <a href=\"{url}\">{where}</a>{telegram}. После добавления активация продолжится автоматически.\n\n"
+        f"🔧 <b>Для проверки</b>\n<code>marketplace_stock_wait | pool={e(selected)} | dispatch=not_sent</code>")
     with a.connect() as c:
         c.execute("INSERT OR IGNORE INTO market_aibuy_notices VALUES(?,'pending',?,NULL,?)",(str(job['id'])+':stock_wait',message,time.time()))
 
