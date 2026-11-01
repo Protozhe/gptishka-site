@@ -526,6 +526,7 @@ function KeyProductColumn({
   const productKey = productKeyOverride || resolveKeyPoolProductKey(baseProductKey, mode);
   const isChatGptPlusDualPool = !isSupportMode && productKey === CHATGPT_PLUS_PRODUCT_KEY;
   const isCodexSupplierPool = !isSupportMode && isDualSupplierCodexPool(productKey);
+  const isGrokAisouPool = !isSupportMode && /^grok-(plus|premium|super|ultra)-1$/.test(productKey);
   const isGeminiActivationLinkPool = !isSupportMode && productKey === "gemini-pro-18";
   const keyColumnLabel = isGeminiActivationLinkPool ? "Ссылка активации" : isSupportMode ? "SDK" : "CDK";
   const modeLabel = isGeminiActivationLinkPool
@@ -543,11 +544,11 @@ function KeyProductColumn({
     : isSupportMode
       ? TEXT.fillSdkKeys
       : TEXT.fillKeys;
-  const defaultActivationSiteUrl = String(product.activationVariants?.withoutLogin?.activationSiteUrl || "").trim();
+  const defaultActivationSiteUrl = isGrokAisouPool ? "https://aiee.fun" : String(product.activationVariants?.withoutLogin?.activationSiteUrl || "").trim();
   const [text, setText] = useState("");
   const [activationSiteUrl, setActivationSiteUrl] = useState(defaultActivationSiteUrl);
   const [codexSupplier, setCodexSupplier] = useState<CodexKeySupplier | "">("");
-  const selectedActivationSiteUrl = isCodexSupplierPool
+  const selectedActivationSiteUrl = isGrokAisouPool ? "https://aiee.fun" : isCodexSupplierPool
     ? (CODEX_KEY_SUPPLIERS.find((supplier) => supplier.id === codexSupplier)?.url || "")
     : isChatGptPlusDualPool
     ? (activationSiteUrl === CHATGPT_PLUS_FREE_SITE_URL ? CHATGPT_PLUS_FREE_SITE_URL : CHATGPT_PLUS_IOS_SITE_URL)
@@ -788,6 +789,12 @@ function KeyProductColumn({
             <p className="text-xs text-slate-500">Добавляйте ключи выбранного поставщика и номинала — по одному в строке. Для другой партии смените поставщика перед загрузкой.</p>
             <p className="text-xs text-slate-500">Автоматическая активация Codex использует AISOU / aiee.fun и ключ строго нужного номинала. Если ключей нет, заказ ждёт пополнения. Пул AI-BUY сохраняется отдельно.</p>
           </fieldset>
+        ) : isGrokAisouPool ? (
+          <div className="rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-sky-900 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-100">
+            <div className="font-semibold">AISOU · aiee.fun · {product.title}</div>
+            <p className="mt-1 text-xs">Добавляйте CDK только этого тарифа на 1 месяц — по одному в строке. Сайт активации закреплён автоматически. Перед отправкой система проверит тариф ключа у поставщика.</p>
+            <p className="mt-1 text-xs">Клиент передаёт sso на странице активации. Если CDK закончились, данные сохраняются; после пополнения обработка продолжится автоматически.</p>
+          </div>
         ) : !isSupportMode && !isGeminiActivationLinkPool ? (
           <label className="grid gap-1">
             <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">

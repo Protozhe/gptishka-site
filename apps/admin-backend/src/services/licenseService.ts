@@ -15,6 +15,15 @@ function normalizeKeyValue(value: string) {
   return String(value || "").trim().toUpperCase();
 }
 
+function resolveCdkImportSite(productKey: string, value: unknown) {
+  const site = normalizeActivationSiteUrl(value);
+  if (!/^grok-(plus|premium|super|ultra)-1$/.test(productKey)) return site;
+  if (String(value || "").trim() && site !== "https://aiee.fun") {
+    throw new AppError("Для месячных тарифов Grok загружайте CDK AISOU с сайтом https://aiee.fun в пул выбранного тарифа", 400);
+  }
+  return "https://aiee.fun";
+}
+
 const GEMINI_ACTIVATION_LINK_PRODUCT_KEY = "gemini-pro-18";
 
 function isGeminiActivationLinkPool(productKey: string) {
@@ -94,7 +103,7 @@ export const licenseService = {
   ) {
     const pk = canonicalProductKey(productKey);
     const kv = normalizeKeyValueForProduct(pk, keyValue);
-    const activationSiteUrl = normalizeActivationSiteUrl(meta?.activationSiteUrl);
+    const activationSiteUrl = resolveCdkImportSite(pk, meta?.activationSiteUrl);
     if (!pk) throw new Error("productKey is required");
     if (!kv) throw new Error("keyValue is required");
     validateGeminiActivationLinks(pk, [kv]);
@@ -132,7 +141,7 @@ export const licenseService = {
     options?: { activationSiteUrl?: string }
   ) {
     const pk = canonicalProductKey(productKey);
-    const activationSiteUrl = normalizeActivationSiteUrl(options?.activationSiteUrl);
+    const activationSiteUrl = resolveCdkImportSite(pk, options?.activationSiteUrl);
     const normalized = (codes || []).map((code) => normalizeKeyValueForProduct(pk, code)).filter(Boolean);
     const unique = Array.from(new Set(normalized));
 

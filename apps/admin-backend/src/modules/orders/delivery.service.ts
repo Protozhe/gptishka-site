@@ -192,10 +192,11 @@ export async function deliverProduct(order: Order) {
     return;
   }
 
-  const isWebsiteChatGptPlusDualPool =
+  const isGrokAisou = /^grok-(plus|premium|super|ultra)-1$/.test(productKey);
+  const isWebsiteChatGptPlusDualPool = isGrokAisou || (
     /^(?:chatgpt-plus-1|chatgpt-go-1|chatgpt-pro-(5|20|25)x-1|grok-(plus|premium|super|ultra)-1|codex-(250|500|1000))$/.test(productKey) &&
     deliveryType === "activation" &&
-    !isTelegramOrderEmail(order.email);
+    !isTelegramOrderEmail(order.email));
 
   if (isWebsiteChatGptPlusDualPool) {
     // The account plan is only trustworthy after the customer submits a
@@ -215,7 +216,7 @@ export async function deliverProduct(order: Order) {
       taskId: null,
       attempts: 0,
       verificationState: "unknown",
-      lastProviderMessage: "Waiting for session JSON to select one ChatGPT Plus key",
+      lastProviderMessage: isGrokAisou ? "Ожидаем sso нужного аккаунта Grok для активации через CDK AISOU." : "Waiting for session JSON to select one ChatGPT Plus key",
       lastProviderCheckedAt: nowIso,
       lastProviderPayload: null,
       issuedAt: nowIso,

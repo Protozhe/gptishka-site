@@ -71,6 +71,7 @@ const STORED_CLIENT_TOKEN_TTL_HOURS = Math.max(
 const STORED_CLIENT_TOKEN_TTL_MS = STORED_CLIENT_TOKEN_TTL_HOURS * 60 * 60 * 1000;
 const activationOrderLocks = new Map<string, Promise<void>>();
 let aisouResumeRunning = false;
+let grokCdkResumeRunning = false;
 const ORDER_FILE_LOCK_TIMEOUT_MS = 45_000;
 const ORDER_FILE_LOCK_STALE_MS = 5 * 60 * 1000;
 const ORDER_FILE_LOCK_POLL_MS = 120;
@@ -106,10 +107,31 @@ function isIosProviderBase(value: unknown) {
 function isAisouGrokProduct(value: unknown) {
   return /^grok-(plus|premium|super|ultra)-1$/.test(String(value || ""));
 }
-function validateGrokSsoSession(tokenInfo: { json: Record<string, unknown> | null }) {
-  const s=tokenInfo.json;
-  return s && Object.keys(s).length===1 && typeof s.sso==='string' && s.sso.length<=40000 && /^eyJ0eXAi[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(s.sso)
-    ? '' : 'Вставьте только значение cookie sso с grok.com. Данные ChatGPT для этого тарифа не подходят.';
+function normalizeAisouGrokSession(raw: string) {
+ try {
+  let sso: unknown = String(raw || "").trim();
+  if (String(sso).startsWith("{")) {
+    const json = JSON.parse(String(sso));
+    if (!json || Array.isArray(json) || Object.keys(json).length !== 1) throw Error("grok_sso_required");
+    sso = json.sso;
+  }
+  if (typeof sso !== "string" || sso.length > 4096 || !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(sso)) throw Error("grok_sso_required");
+  const [header, payload] = sso.split(".").slice(0, 2).map(part => JSON.parse(Buffer.from(part, "base64url").toString()));
+  if (header.alg !== "HS256" || !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(payload.session_id || "") ||
+      (payload.exp !== undefined && (typeof payload.exp !== "number" || payload.exp * 1000 <= Date.now() + 30_000))) throw Error("grok_sso_required");
+  return JSON.stringify({ sso });
+ } catch { throw new AppError("Вставьте действующее значение cookie sso с grok.com целиком. Данные ChatGPT для этого тарифа не подходят.", 400); }
+}
+function validateGrokSsoSession(tokenInfo: { raw: string; json: Record<string, unknown> | null }) {
+  try { normalizeAisouGrokSession(tokenInfo.raw); return ""; }
+  catch { return "Вставьте действующее значение cookie sso с grok.com целиком. Данные ChatGPT для этого тарифа не подходят."; }
+}
+function isResumableGrokCdkRecord(record: ActivationRecord | null | undefined) {
+  return Boolean(record && isAisouGrokProduct(record.productKey) && record.activationSiteUrl === DEFAULT_AIEE_URL &&
+    !record.externalFulfillmentOwner && !record.taskId && !record.attempts && record.status === "issued" &&
+    record.verificationState !== "success" && record.verificationState !== "pending" &&
+    record.lastProviderPayload?.grokCdkRequestedAt && !record.lastProviderPayload?.grokCdkHold &&
+    record.clientTokenCiphertext && Date.parse(record.clientTokenExpiresAt || "") > Date.now());
 }
 function isCodexCreditsProductKey(value: unknown) {
   return /^codex-(250|500|1000)$/.test(String(value || "").trim().toLowerCase());
@@ -856,6 +878,38 @@ export const ordersService = {
     } } finally { aisouResumeRunning = false; }
   },
 
+  async resumePendingGrokCdkJobs() {
+    if (grokCdkResumeRunning) return;
+    grokCdkResumeRunning = true;
+    try {
+      const candidates = activationStore.list().filter(isResumableGrokCdkRecord)
+        .sort((a, b) => Date.parse(a.updatedAt) - Date.parse(b.updatedAt));
+      const available = new Map<string, number>();
+      let started = 0;
+      for (const candidate of candidates) {
+        if (started >= 8) break;
+        try {
+          await withActivationOrderLock(candidate.orderId, async () => {
+            const record = activationStore.findByOrderId(candidate.orderId);
+            if (!isResumableGrokCdkRecord(record)) return;
+            const token = decryptStoredClientToken(record!);
+            if (!token || validateGrokSsoSession(parseClientTokenInput(token))) return;
+            if (!record!.cdk) {
+              if (!available.has(record!.productKey)) available.set(record!.productKey, await prisma.licenseKey.count({ where: {
+                productKey: record!.productKey, activationSiteUrl: DEFAULT_AIEE_URL,
+                status: "available", orderId: null, usedAt: null, reservedAt: null,
+              } }));
+              if (!available.get(record!.productKey)) return;
+              available.set(record!.productKey, available.get(record!.productKey)! - 1);
+            }
+            started++;
+            await startActivationUnsafe(candidate.orderId, token, undefined, true);
+          });
+        } catch { /* Keep the same key and durable submission claim for reconciliation. */ }
+      }
+    } finally { grokCdkResumeRunning = false; }
+  },
+
   async startActivationFromAdmin(
     orderId: string,
     token: string,
@@ -1017,7 +1071,7 @@ export const ordersService = {
       activationSiteUrl,
     });
     const isSupportFlow = isSupportLikeDeliveryType(deliveryType) || isSupportActivationFlow(tokenActivationFlow);
-    const tokenInfo = parseClientTokenInput(token);
+    const tokenInfo = parseClientTokenInput(isAisouGrokProduct(productSlug) ? normalizeAisouGrokSession(token) : token);
     const tokenMeta = buildTokenMeta(tokenInfo);
     const reasons: string[] = [];
 
@@ -1053,6 +1107,9 @@ export const ordersService = {
     }
 
     const existing = normalizeActivationRecordForRead(activationStore.findByOrderId(order.id));
+    if (isAisouGrokProduct(productSlug) && existing && (existing.externalFulfillmentOwner || existing.status === "success" || existing.verificationState === "success")) {
+      throw new AppError("Заказ уже завершён или закреплён за исходным каналом. Данные сохранены без изменений.", 409);
+    }
     if (
       existing &&
       (existing.status === "processing" || existing.status === "success") &&
@@ -1118,7 +1175,7 @@ export const ordersService = {
 
     const stored = await ensureActivationRecordForTokenFlow(orderId, orderToken, activationInfo);
 
-    const tokenInfo = parseClientTokenInput(token);
+    const tokenInfo = parseClientTokenInput(isAisouGrokProduct(stored.productKey) ? normalizeAisouGrokSession(token) : token);
     const tokenMeta = buildTokenMeta(tokenInfo);
     const reasons: string[] = [];
     const nowIso = new Date().toISOString();
@@ -1156,7 +1213,7 @@ export const ordersService = {
       reasons.push(...supportValidation.reasons);
     }
 
-    if (!String(stored.cdk || "").trim() && stored.productKey !== "claude-pro") {
+    if (!String(stored.cdk || "").trim() && stored.productKey !== "claude-pro" && !isAisouGrokProduct(stored.productKey)) {
       reasons.push("Activation key is not issued yet");
     } else if (String(stored.cdk || "").trim()) {
       // Sanity: ensure we actually have a DB-issued CDK for this order/product.
@@ -2343,7 +2400,7 @@ async function ensureActivationRecordForTokenFlow(
     : await assertPaidOrderAccess(orderId, orderToken);
   const orderWithItem = await getOrderWithFirstItem(order.id);
   const productKey = resolveActivationPoolProductKeyForOrder(orderWithItem);
-  const activationSiteUrl = readActivationSiteUrlFromOrderDetails(orderWithItem?.orderDetails);
+  const activationSiteUrl = isAisouGrokProduct(productKey) ? DEFAULT_AIEE_URL : readActivationSiteUrlFromOrderDetails(orderWithItem?.orderDetails);
   if (existing) {
     const needsTelegramPoolRemap =
       !String(existing.cdk || "").trim() &&
@@ -2354,6 +2411,7 @@ async function ensureActivationRecordForTokenFlow(
       !String(existing.productKey || "").startsWith("tgbot-");
     const needsActivationSitePatch =
       existing.externalFulfillmentOwner !== "pulse-siteplus-v1" &&
+      !(isAisouGrokProduct(productKey) && (existing.externalFulfillmentOwner || existing.taskId || existing.attempts || existing.status === "success" || existing.verificationState === "success")) &&
       !String(existing.cdk || "").trim() &&
       String(existing.activationSiteUrl || "") !== String(activationSiteUrl || "");
     if (
@@ -2533,7 +2591,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     return {taskId:'claude-zovo-'+orderId,reused:false};
   }
   let stored = await ensureActivationRecordForTokenFlow(orderId, orderToken, activationInfo, trustedAdmin);
-  const tokenInfo = parseClientTokenInput(token);
+  const tokenInfo = parseClientTokenInput(isAisouGrokProduct(stored.productKey) ? normalizeAisouGrokSession(token) : token);
   if (!tokenInfo.raw) throw new AppError("Token is required", 400);
   if (tokenInfo.extracted === orderId) throw new AppError("Вставлен номер заказа. Скопируйте полный JSON со страницы ChatGPT /api/auth/session.", 400);
   if (tokenInfo.raw.length > MAX_CLIENT_TOKEN_LENGTH) throw new AppError("Token is too long", 400);
@@ -2569,6 +2627,9 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   if (latestBeforeStart.status === "success" || latestBeforeStart.verificationState === "success") {
     throw new AppError("Activation is already completed", 409);
   }
+  if (isAisouGrokProduct(stored.productKey) && latestBeforeStart.externalFulfillmentOwner) {
+    throw new AppError("Заказ закреплён за исходным каналом активации. Переключение и повторная оплата требуют проверки.", 409);
+  }
   if (isTokenBoundToAnotherFingerprint(latestBeforeStart.tokenMeta, buildTokenMeta(tokenInfo))) {
     throw new AppError("Order is already bound to another token", 409);
   }
@@ -2596,6 +2657,9 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   if (latestBeforeStart.status === "processing" || latestBeforeStart.verificationState === "pending") {
     return { taskId: String(latestBeforeStart.taskId || `reconcile-${orderId}`), reused: true };
   }
+  if (isAisouGrokProduct(stored.productKey) && (latestBeforeStart.taskId || latestBeforeStart.attempts)) {
+    throw new AppError("Заявка Grok уже отправлена. Проверяем исходный результат; повторная активация остановлена.", 409);
+  }
   if(latestBeforeStart.taskId && Number(latestBeforeStart.attempts||0)>0 &&
       ((latestBeforeStart.lastProviderPayload?.submissionDiagnostics as any)?.phase === "submit_recharge" ||
        (isIosProviderBase(latestBeforeStart.activationSiteUrl) && /^reconcile-\d{13}-[a-z0-9]+$/.test(latestBeforeStart.taskId)))) {
@@ -2614,6 +2678,13 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
     updatedAt: nowIso,
   });
   stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || latestBeforeStart;
+
+  if (isAisouGrokProduct(stored.productKey)) {
+    if (stored.cdk && stored.activationSiteUrl !== DEFAULT_AIEE_URL) throw new AppError("Для этого заказа нужен CDK AISOU / aiee.fun. Текущая привязка требует проверки.", 409);
+    stored = { ...stored, activationSiteUrl: DEFAULT_AIEE_URL,
+      lastProviderPayload: { ...(stored.lastProviderPayload || {}), grokCdkRequestedAt: stored.lastProviderPayload?.grokCdkRequestedAt || nowIso, grokCdkHold: false } };
+    activationStore.upsert(stored);
+  }
 
   if (stored.status === "success") {
     throw new AppError("Activation is already completed", 409);
@@ -2644,7 +2715,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
       orderId: paidOrder.id,
       email: paidOrder.email,
     });
-    if (!reserved && (existingCodexProcurement || (isAisouGrokProduct(stored.productKey) && stored.activationSiteUrl === "https://aiee.fun") || (stored.productKey === "claude-pro" && stored.activationSiteUrl === "https://aichongzhi.fun"))) {
+    if (!reserved && (existingCodexProcurement || (stored.productKey === "claude-pro" && stored.activationSiteUrl === "https://aichongzhi.fun"))) {
       reserved = await procureSelectedWebsiteKey({
         orderId: stored.orderId, productKey: stored.productKey,
         accountPlan: isAisouGrokProduct(stored.productKey) ? "free" : String((tokenInfo.json?.account as any)?.planType || "").trim().toLowerCase(),
@@ -2656,6 +2727,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
       activationStore.upsert({
         ...latest,
         cdk: reserved.code,
+        ...(isAisouGrokProduct(stored.productKey) ? { keyAllocationState: "selected" as const, keyAllocationSite: DEFAULT_AIEE_URL } : {}),
         activationSiteUrl: reserved.activationSiteUrl || stored.activationSiteUrl || "",
         status: "issued",
         taskId: null,
@@ -2669,6 +2741,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   }
   if (!String(stored.cdk || "").trim()) {
     activationStore.upsert({...stored,keyAllocationState:"exhausted",
+      ...(isAisouGrokProduct(stored.productKey) ? {keyAllocationSite:DEFAULT_AIEE_URL,lastProviderMessage:"Ожидаем CDK AISOU для выбранного месячного тарифа Grok. Данные сохранены; после пополнения продолжим автоматически."} : {}),
       ...(isCodexCreditsProductKey(stored.productKey) ? {keyAllocationSite:"https://aiee.fun",lastProviderMessage:"Ожидаем пополнения ключей активации нужного номинала. Заказ сохранён."} : {}),
       updatedAt:new Date().toISOString()});
     throw new AppError("Activation key is not issued yet", 409);
@@ -2767,8 +2840,11 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
       ...latestFailed,
       ...(iosDispatchRecorded ? { status: "failed" as const, verificationState: "failed" as const } : {}),
       lastProviderMessage: `${providerName} task creation failed (HTTP ${createResult.status || 0}; requests ${createResult.tries || 0}).`,
+      ...(isAisouGrokProduct(stored.productKey) ? { lastProviderMessage: createResult.body === "Provider key denomination mismatch"
+        ? "CDK не соответствует оплаченному месячному тарифу Grok. Отправка остановлена; проверьте пул ключей."
+        : "Не удалось подтвердить запуск Grok через AISOU. Исходный ключ сохранён для проверки; другой ключ автоматически не расходуется." } : {}),
       lastProviderCheckedAt: failedAt,
-      lastProviderPayload: durableJsonSubmission ? latestFailed.lastProviderPayload : null,
+      lastProviderPayload: isAisouGrokProduct(stored.productKey) ? { ...(latestFailed.lastProviderPayload || {}), grokCdkHold: true } : durableJsonSubmission ? latestFailed.lastProviderPayload : null,
       updatedAt: failedAt,
     });
     throw new AppError("Не удалось запустить активацию автоматически. Повторите попытку или обратитесь в поддержку.", 502, {
@@ -2793,6 +2869,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
   activationStore.upsert({
     ...latest,
     ...storagePatch,
+    ...(nextStatus === "success" && isAisouGrokProduct(stored.productKey) ? buildStoredClientTokenPatch("") : {}),
     deviceId,
     tokenMeta,
     status: nextStatus,
@@ -3961,6 +4038,10 @@ async function startChongzhiJsonTask(
       ? ["success", "completed"].includes(rechargeStatus)
       : verifyStatus === "used" || ["success", "completed"].includes(rechargeStatus));
   if (alreadyCompleted) {
+    if (isAisouGrokProduct(input.productKey)) return {
+      ok: false as const, taskId: "", status: 409, body: "Grok key changed during preflight", tries: 1,
+      immediateSuccess: false, message: "Статус CDK изменился до отправки. Требуется проверка исходной активации.", providerPayload: null,
+    };
     const taskId =
       String(verify.json?.order_id || verify.json?.task_id || "").trim() ||
       `chongzhi-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -4013,7 +4094,7 @@ async function startChongzhiJsonTask(
   }
 
   if (isAieeProviderBase(base)) {
-    if (Number(verify.json?.require_cookie || 0) === 1) {
+    if (Number(verify.json?.require_cookie || 0) === 1 && !isAisouGrokProduct(input.productKey)) {
       return {
         ok: false as const,
         taskId: "",
@@ -4205,6 +4286,10 @@ async function startChongzhiTaskWithRetry(
     }
   }
   if (jsonApiResult) return { ...jsonApiResult, tries: jsonApiAttempts };
+  if (isAisouGrokProduct(input.productKey)) return {
+    ok: false as const, taskId: "", status: 502, body: "Grok AISOU API unavailable", tries: jsonApiAttempts,
+    immediateSuccess: false, message: "API активации Grok временно недоступен. CDK сохранён для проверки.", providerPayload: null,
+  };
 
   let lastStatus = 0;
   let lastBody = "";
@@ -4465,6 +4550,16 @@ function isChongzhiCodeUsed(
 function updateActivationFromChongzhiCodePayload(orderId: string, payload: { status?: number; json?: any; raw?: string }) {
   const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
   if (!stored) return;
+  const grok = /^grok-(plus|premium|super|ultra)-1$/.test(stored.productKey) && stored.activationSiteUrl === "https://aiee.fun";
+  // A used key or another order's result cannot prove this order was activated.
+  if (grok && (!stored.taskId || !stored.attempts || stored.status === "success" || stored.verificationState === "success")) return;
+  const grokProviderTask = String(payload.json?.order_id || payload.json?.task_id || "");
+  if (grok && grokProviderTask && !/^reconcile-\d{13}-[a-z0-9]+$/.test(String(stored.taskId)) &&
+      grokProviderTask !== String(stored.taskId)) {
+    activationStore.upsert({ ...stored, lastProviderMessage: "AISOU вернул другой номер заявки. Исходная активация сохранена для проверки; повторной отправки нет.",
+      lastProviderCheckedAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    return;
+  }
   // AI-BUY's status endpoint also reports "creating" for an unused key with no
   // provider job. A poll before our durable dispatch must not invent a pending
   // activation and make beforeSubmit reject the real first submission.
@@ -4479,12 +4574,13 @@ function updateActivationFromChongzhiCodePayload(orderId: string, payload: { sta
 
   const nowIso = new Date().toISOString();
   const isAiee = isAieeProviderBase(stored.activationSiteUrl || "");
-  const used = isChongzhiCodeUsed(payload, { requireRechargeSuccess: isAiee || isIosProviderBase(stored.activationSiteUrl) });
+  const used = (!grok || (payload.json?.success === true && Boolean(payload.json.order_id || payload.json.task_id))) && isChongzhiCodeUsed(payload, { requireRechargeSuccess: isAiee || isIosProviderBase(stored.activationSiteUrl) });
   const codeStatus = String(
     payload?.json?.data?.code_status || payload?.json?.code_status || payload?.json?.status || ""
   ).trim();
   const rechargeStatus = String(payload?.json?.recharge_status || "").trim().toLowerCase();
-  const failed = ["failed", "fail", "error", "rejected", "expired", "canceled", "cancelled"].includes(rechargeStatus);
+  const failed = ["failed", "fail", "error", "rejected", "expired", "canceled", "cancelled"].includes(rechargeStatus) ||
+    Boolean(grok && payload.json?.previous_failed && String(payload.json.previous_order) === String(stored.taskId));
   const pending = ["pending", "processing", "queued", "waiting"].includes(rechargeStatus);
   const hasTask = Boolean(String(stored.taskId || "").trim());
   const reconcileStartedAt = /^reconcile-(\d{13})-[a-z0-9]+$/.exec(String(stored.taskId || ""));

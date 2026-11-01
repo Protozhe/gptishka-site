@@ -12,6 +12,9 @@ export function verifiedAieeGrokProduct(payload:unknown):string|null {
 export async function procureSelectedWebsiteKey(input: {
   orderId: string; productKey: string; accountPlan: string; activationSiteUrl: string;
 }) {
+  // Monthly Grok is fulfilled exclusively from owner-imported AISOU CDKs.
+  // Empty stock must never initiate a merchant purchase.
+  if (/^grok-(plus|premium|super|ultra)-1$/.test(input.productKey)) return null;
   const codex = /^codex-(250|500|1000)$/.test(input.productKey);
   const priorProcurement = activationStore.findByOrderId(input.orderId)?.lastProviderPayload?.supplierProcurement as {provider?:unknown}|undefined;
   const existingSupplier = String(priorProcurement?.provider || "");

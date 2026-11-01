@@ -46,7 +46,13 @@ function processingRecords() {
         /^reconcile-\d{13}-[a-z0-9]+$/.test(String(record.taskId || "")) &&
         ["", "active", "available", "unused", "pending", "processing"].includes(String(record.lastProviderPayload?.recharge_status || "")) &&
         Date.parse(String(record.issuedAt || "")) >= oldestAllowed;
-      if (status !== "processing" && verification !== "pending" && !unresolvedCodex && !unresolvedAibuy && !unresolvedIos) return false;
+      const unresolvedGrok =
+        /^grok-(plus|premium|super|ultra)-1$/.test(record.productKey) && record.activationSiteUrl === "https://aiee.fun" &&
+        status !== "success" && verification !== "success" && Boolean(record.cdk && record.taskId) && Number(record.attempts || 0) > 0 &&
+        (record.lastProviderPayload?.submissionDiagnostics as any)?.phase === "submit_recharge" &&
+        ["", "active", "available", "unused", "pending", "processing", "queued", "waiting"].includes(String(record.lastProviderPayload?.recharge_status || "")) &&
+        Date.parse(String(record.issuedAt || "")) >= oldestAllowed;
+      if (status !== "processing" && verification !== "pending" && !unresolvedCodex && !unresolvedAibuy && !unresolvedIos && !unresolvedGrok) return false;
       const updatedAt = Date.parse(String(record.updatedAt || ""));
       return !Number.isFinite(updatedAt) || updatedAt >= oldestAllowed;
     })
@@ -61,6 +67,7 @@ async function runCycle() {
   running = true;
   try {
     void ordersService.resumePendingAisouPurchases().catch(() => {});
+    void ordersService.resumePendingGrokCdkJobs().catch(() => {});
     void ordersService.resumeClaudeZovoJobs().catch(() => {});
     void ordersService.resumeGrokZovoJobs().catch(() => {});
     for (const record of processingRecords()) {
