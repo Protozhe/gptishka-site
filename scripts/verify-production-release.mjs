@@ -52,6 +52,7 @@ const checks = [
   "scripts/verify-chatgpt-plus-dual-pool.mjs",
   "scripts/verify-aichongzhi-grok-activation.mjs",
   "scripts/verify-supergrok-activation-page.mjs",
+  "scripts/verify-grok-session-page.mjs",
   "scripts/verify-service-modal-harmony.mjs",
   "scripts/verify-order-hours.mjs",
   "scripts/verify-deferred-analytics.mjs",

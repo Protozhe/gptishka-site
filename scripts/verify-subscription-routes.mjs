@@ -55,7 +55,7 @@ for(const tier of ['plus','premium','super','ultra']){
   const d=p.w.document;
   assert.equal(p.errors.length,0,p.errors.join('\n'));
   assert.match(d.getElementById('tokenGuideList').textContent,/cookie sso/);
-  assert.match(d.getElementById('tokenLabel').textContent,/Grok/);
+  assert.equal(d.getElementById('tokenLabel').textContent,'Подключение тарифа');
   assert.match(d.getElementById('orderId').textContent,/ПРЕДПРОСМОТР/);
   const input=d.getElementById('tokenInput');input.value='preview-session-not-real';input.dispatchEvent(new p.w.Event('input',{bubbles:true}));await sleep(50);
   assert.equal(d.getElementById('startBtn').disabled,true);
@@ -68,8 +68,8 @@ for(const tier of ['plus','premium','super','ultra']){
 for(const tier of ['plus','premium','super','ultra']){
  const p=await page({deliveryMode:'activation',activationFlow:'grok_sso',product:'grok-'+tier+'-1',productSlug:'grok-'+tier+'-1',productTitle:'Grok '+tier,status:'issued'});
  try{
-  assert.equal(p.errors.length,0,p.errors.join('\n'));assert.match(p.w.document.getElementById('tokenLabel').textContent,/Grok/);
-  const guide=p.w.document.getElementById('tokenGuideList').innerHTML;assert.match(guide,/cookie sso/);assert.doesNotMatch(guide,/chatgpt.com/);assert.equal(p.w.document.getElementById('claudeZovoConsentBox').hidden,true);
+  assert.equal(p.errors.length,0,p.errors.join('\n'));assert.equal(p.w.document.getElementById('tokenLabel').textContent,'Подключение тарифа');
+  const guideNode=p.w.document.getElementById('tokenGuideList'),guide=guideNode.innerHTML;assert.match(guideNode.textContent,/cookie sso/);assert.match(guide,/grok-session-guide-v1\.png/);assert.doesNotMatch(guide,/chatgpt.com/);assert.equal(p.w.document.getElementById('claudeZovoConsentBox').hidden,true);
   if(tier==='plus'){
    const input=p.w.document.getElementById('tokenInput');input.value='eyJ0eXAiABC.fixture.signature';input.dispatchEvent(new p.w.Event('input',{bubbles:true}));await sleep(700);
    assert.ok(p.calls.length);assert.deepEqual(JSON.parse(p.calls.at(-1)),{sso:input.value});

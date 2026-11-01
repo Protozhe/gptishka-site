@@ -1,0 +1,148 @@
+/* This layout applies only to the Grok session-cookie activation flow. */
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .redeem-page {
+  width: min(1240px, calc(100% - 40px)) !important;
+  max-width: 1240px !important;
+  padding: 16px 0 24px !important;
+  zoom: 1 !important;
+}
+
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenBlock {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr) !important;
+  grid-template-rows: auto !important;
+  gap: 28px !important;
+  padding: 24px !important;
+  align-items: start;
+}
+
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenBlock > .redeem-guide {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+}
+
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenGuideSummary {
+  margin: 0 0 12px !important;
+  padding: 0 28px 0 0 !important;
+  color: #f0f2f3 !important;
+  font-size: 24px !important;
+  font-weight: 750;
+  line-height: 1.4 !important;
+}
+
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenGuideList {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 0 0 26px !important;
+  list-style: decimal !important;
+  color: #b9c3ca !important;
+  font-size: 18px !important;
+  font-weight: 400;
+  line-height: 1.6 !important;
+}
+
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenGuideList > li {
+  display: list-item !important;
+  margin: 0 0 12px !important;
+  padding: 0 0 0 5px !important;
+  border: 0 !important;
+  background: none !important;
+  counter-increment: none;
+}
+
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenGuideList > li::before { content: none !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenGuideList > li:last-child { margin-bottom: 0 !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenGuideList > li::marker { color: #7fd3c8; font-weight: 750; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenGuideList strong { color: #edf0f2 !important; }
+
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenGuideList code,
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenGuideList kbd {
+  display: inline-block;
+  padding: 2px 7px;
+  border: 1px solid #465158;
+  border-radius: 6px;
+  background: #2b3339;
+  color: #e5efed !important;
+  font: 600 0.94em/1.5 ui-monospace, monospace;
+  white-space: nowrap;
+}
+
+.grok-session-path { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.grok-session-screenshot { margin-top: 12px; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .grok-session-screenshot > summary { width: fit-content; max-width: 100%; padding: 8px 12px !important; gap: 12px !important; border: 1px solid #465158 !important; border-radius: 8px; color: #8ee0d4 !important; background: #293237; font-size: 16px !important; font-weight: 650 !important; line-height: 1.5 !important; cursor: pointer; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .grok-session-screenshot > summary::after { transform: rotate(45deg) !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .grok-session-screenshot[open] > summary::after { transform: rotate(225deg) !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenGuideList .grok-session-screenshot > summary::after { position: static !important; }
+.grok-session-screenshot > summary:focus-visible { outline: 2px solid #7fd3c8; outline-offset: 4px; }
+.grok-session-screenshot__opened { display: none; }
+.grok-session-screenshot[open] .grok-session-screenshot__closed { display: none; }
+.grok-session-screenshot[open] .grok-session-screenshot__opened { display: inline; }
+.grok-session-figure { margin: 14px 0 0; }
+.grok-session-figure__zoom { display: block; width: fit-content; max-width: 100%; border-radius: 12px; cursor: zoom-in; }
+.grok-session-figure__zoom:focus-visible { outline: 2px solid #7fd3c8; outline-offset: 5px; }
+.grok-session-figure img { display: block; width: auto; max-width: 100%; height: auto; max-height: 360px; border: 1px solid #465158; border-radius: 12px; }
+.grok-session-figure figcaption { max-width: 48ch; margin-top: 12px; color: #acb9c2; font-size: 15px; line-height: 1.6; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenGuideList .instruction-action { min-height: 36px !important; padding: 5px 12px !important; margin: 8px 0 0 !important; }
+
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .grok-session-form {
+  grid-column: 2;
+  grid-row: 1;
+  position: sticky;
+  top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  align-self: start !important;
+  height: auto !important;
+  padding: 20px;
+  border: 1px solid #3b464d;
+  border-radius: 16px;
+  background: #1c2328;
+}
+
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenLabel { margin: 0 !important; font-size: 20px !important; font-weight: 700 !important; line-height: 1.4 !important; letter-spacing: normal !important; text-transform: none !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .redeem-token-toolbar { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 !important; gap: 8px !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .redeem-token-toolbar .redeem-btn { min-height: 44px; padding: 9px 12px !important; font-size: 16px !important; line-height: 1.4 !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenInput { width: 100% !important; min-height: 112px !important; height: 112px !important; margin: 0 !important; padding: 14px !important; font-size: 18px !important; line-height: 1.6 !important; resize: vertical; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .redeem-meta { display: flex !important; flex-direction: column; align-items: start; gap: 8px !important; margin: 0 !important; font-size: 16px !important; line-height: 1.6 !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenWarn,
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenInfo { flex: 0 1 auto !important; width: auto !important; font-size: 16px !important; line-height: 1.6 !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #actionsRow { display: grid !important; grid-template-columns: 1.1fr 1fr !important; width: 100%; margin: 4px 0 0 !important; gap: 10px !important; padding: 0 !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #actionsRow .redeem-btn { min-height: 48px; padding: 10px 8px !important; font-size: 18px !important; line-height: 1.4 !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #startBtn { grid-column: 1 !important; grid-row: 1; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #checkBtn { grid-column: 2 !important; grid-row: 1; font-size: 16px !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #retryNewKeyBtn { display: none !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso [hidden] { display: none !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .support-widget__resume-bubble,
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .support-widget__resume-restore { display: none !important; }
+
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .redeem-subtitle { font-size: 18px !important; line-height: 1.65 !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .redeem-stage { margin-bottom: 12px !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .redeem-grid { margin-top: 20px !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #orderId { font-size: 14px !important; line-height: 1.5 !important; overflow-wrap: anywhere; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #copyOrderIdBtn { min-height: 44px; font-size: 16px !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #statusBox { margin-top: 20px !important; padding: 16px 18px !important; font-size: 16px !important; line-height: 1.6 !important; }
+body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #statusText { font-size: 16px !important; line-height: 1.6 !important; }
+
+@media (max-height: 800px) {
+  body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .redeem-page { padding-top: 8px !important; }
+  body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .redeem-stage { margin-bottom: 8px !important; }
+  body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .redeem-grid { margin-top: 12px !important; }
+  body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenBlock { padding: 16px !important; }
+  body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .grok-session-form { padding: 16px; gap: 10px; }
+  body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenInput { min-height: 96px !important; height: 96px !important; }
+}
+
+@media (max-width: 800px) {
+  body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .redeem-page { width: calc(100% - 24px) !important; }
+  body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenBlock { grid-template-columns: minmax(0, 1fr) !important; gap: 18px !important; padding: 16px !important; }
+  body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .grok-session-form { grid-column: 1 !important; grid-row: 2 !important; position: static; padding: 16px; gap: 10px; }
+  body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenInput { min-height: 96px !important; height: 96px !important; }
+  body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso #tokenGuideSummary { font-size: 22px !important; }
+  body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .redeem-guide:not([open]) #tokenGuideSummary { margin-bottom: 0 !important; }
+  body#storefrontBody.redeem-flow.home-wide-body.redeem-grok-sso .redeem-token-toolbar .redeem-btn { padding: 8px 5px !important; min-width: 0 !important; }
+}

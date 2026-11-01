@@ -1276,6 +1276,7 @@
 <link rel="stylesheet" href="/assets/css/home-stability-hotfix.css?v=sha256-4b642dad31012b96" />
 <link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260923-scroll-render1" />
 <link rel="stylesheet" href="/assets/css/redeem-start-refresh.css?v=20260724-redeem-refresh3" />
+<link rel="stylesheet" href="/assets/css/grok-session-activation.css?v=sha256-a5e5eb8c2f914c65" />
 <link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
@@ -1553,6 +1554,9 @@
     let isCredentialsDelivery = false;
     let isSteamKeyDeliveryFlow = false;
     let isSupportTokenDelivery = false;
+    let isGrokSsoFlow = false;
+    let grokSessionMoved = [];
+    let grokSessionForm = null;
     let isPerplexityManualFlow = false;
     let perplexitySessionSubmitted = false;
     let supportActivationFlow = SUPPORT_ACTIVATION_FLOW_GROK;
@@ -1906,6 +1910,7 @@
     }
 
     function resolveSupportActivationFlow(payload) {
+      if (isGrokSessionPayload(payload)) return '';
       const directFlow = String(payload?.activationFlow || '').trim().toLowerCase();
       if (directFlow === SUPPORT_ACTIVATION_FLOW_CLAUDE || directFlow === SUPPORT_ACTIVATION_FLOW_GROK) {
         return directFlow;
@@ -1936,6 +1941,7 @@
     }
 
     function resolveForcedSupportActivationFlow(payload) {
+      if (isGrokSessionPayload(payload)) return '';
       const productKey = getActivationProductFingerprint(payload);
       if (productKey.includes('claude') || productKey.endsWith('-sdk5') || productKey.includes('sdk5')) {
         return SUPPORT_ACTIVATION_FLOW_CLAUDE;
@@ -1986,10 +1992,69 @@
       updateStartButtonState();
     }
 
+    function isGrokSessionPayload(payload) {
+      return payload?.activationFlow === 'grok_sso' || /(?:^|\s)grok-(plus|premium|super|ultra)-1(?:\s|$)/.test(getActivationProductFingerprint(payload));
+    }
+
+    function restoreGrokSessionLayout() {
+      document.body.classList.remove('redeem-grok-sso');
+      grokSessionMoved.forEach(({node, anchor}) => { if (anchor.parentNode) anchor.replaceWith(node); });
+      grokSessionMoved = [];
+      if (grokSessionForm) grokSessionForm.remove();
+      grokSessionForm = null;
+    }
+
+    function applyGrokSessionPage() {
+      const english = /^\/en(?:\/|$)/.test(window.location.pathname) || params.get('lang') === 'en';
+      const text = (ru, en) => english ? en : ru;
+      document.body.classList.add('redeem-grok-sso');
+      if (redeemTitleEl) redeemTitleEl.textContent = text('Активация Grok', 'Activate Grok');
+      if (redeemSubtitleEl) redeemSubtitleEl.textContent = text('Подключим тариф на аккаунт Grok без действующей подписки.', 'Activate your plan on a Grok account without an active subscription.');
+      document.title = text('Активация Grok — GPTишка', 'Grok activation — GPTishka');
+      if (tokenLabelEl) tokenLabelEl.textContent = text('Подключение тарифа', 'Plan activation');
+      if (tokenGuideSummaryEl) {
+        tokenGuideSummaryEl.textContent = text('Как получить сессию Grok', 'How to get your Grok session');
+        if (!grokSessionForm) tokenGuideSummaryEl.closest('details').open = !window.matchMedia?.('(max-width: 800px), (max-height: 760px)').matches;
+      }
+      if (tokenGuideListEl) {
+        tokenGuideListEl.classList.remove('redeem-guide-linear');
+        const screenshotOpen = tokenGuideListEl.querySelector('.grok-session-screenshot')?.open === true;
+        tokenGuideListEl.innerHTML = [
+          '<li>' + text('<strong>Войдите в нужный аккаунт Grok</strong> в браузере на компьютере.', '<strong>Sign in to the Grok account you want to activate</strong> in a desktop browser.') + '<a class="instruction-action" href="https://grok.com" target="_blank" rel="noopener noreferrer">' + text('Открыть Grok', 'Open Grok') + '<span aria-hidden="true">↗</span></a></li>',
+          '<li>' + text('<strong>Нажмите <kbd>F12</kbd></strong> и откройте путь:', '<strong>Press <kbd>F12</kbd></strong> to open developer tools, then follow this path:') + '<span class="grok-session-path"><kbd>Application</kbd><span aria-hidden="true">→</span><kbd>Cookies</kbd><span aria-hidden="true">→</span><kbd>https://grok.com</kbd></span></li>',
+          '<li>' + text('<strong>Найдите cookie <code>sso</code></strong> и её значение в столбце Value.', '<strong>Find the <code>sso</code> cookie</strong> and its value in the Value column.') + '<details class="grok-session-screenshot"' + (screenshotOpen ? ' open' : '') + '><summary><span class="grok-session-screenshot__closed">' + text('Показать, где найти sso', 'Show where to find sso') + '</span><span class="grok-session-screenshot__opened">' + text('Свернуть скриншот', 'Hide screenshot') + '</span></summary><figure class="grok-session-figure"><a class="grok-session-figure__zoom" href="/assets/img/grok-session-guide-v1.png" target="_blank" rel="noopener noreferrer" aria-label="' + text('Увеличить скриншот', 'Enlarge screenshot') + '"><img src="/assets/img/grok-session-guide-v1.png" width="1006" height="1564" alt="' + text('Скриншот DevTools: Application → Cookies → grok.com → sso → Value. Значения cookies скрыты.', 'DevTools screenshot: Application → Cookies → grok.com → sso → Value. Cookie values are hidden.') + '" loading="lazy" decoding="async"></a><figcaption>' + text('Нажмите на скриншот, чтобы увеличить. Значения cookies скрыты.', 'Select the screenshot to enlarge. Cookie values are hidden.') + '</figcaption></figure></details></li>',
+          '<li>' + text('<strong>Скопируйте значение полностью</strong> в поле для активации и нажмите «Активировать».', '<strong>Copy the complete value.</strong> Paste it into the activation field and select Activate.') + '</li>',
+        ].join('');
+      }
+      if (tokenInput) {
+        tokenInput.placeholder = text('Вставьте значение cookie sso', 'Paste the sso cookie value');
+        tokenInput.setAttribute('aria-labelledby', 'tokenLabel');
+        tokenInput.setAttribute('autocomplete', 'off');
+      }
+      if (tokenWarn) tokenWarn.textContent = text('Используем сессию только для подключения тарифа.', 'Your session is used only to activate your plan.');
+      if (startBtn) startBtn.textContent = text('Активировать', 'Activate');
+      if (checkBtn) checkBtn.textContent = text('Проверить статус', 'Check status');
+      if (retryNewKeyBtn) retryNewKeyBtn.style.display = 'none';
+      if (!grokSessionForm && tokenBlock) {
+        grokSessionForm = document.createElement('div');
+        grokSessionForm.className = 'grok-session-form';
+        const nodes = [tokenLabelEl, tokenBlock.querySelector('.redeem-token-toolbar'), document.getElementById('proActivationNote'), tokenInput, document.getElementById('claudeZovoConsentBox'), tokenBlock.querySelector('.redeem-meta'), perplexityNextStep, actionsRow];
+        grokSessionMoved = nodes.filter(Boolean).map(node => {
+          const anchor = document.createComment('grok-session-original-position');
+          node.before(anchor);
+          grokSessionForm.append(node);
+          return {node, anchor};
+        });
+        tokenBlock.append(grokSessionForm);
+      }
+    }
+
     function applyActivationPayloadMode(payload, deliveryMode) {
+      if (!isGrokSessionPayload(payload)) restoreGrokSessionLayout();
       const activationFlow = resolveSupportActivationFlow(payload);
       const forcedSupportFlow = resolveForcedSupportActivationFlow(payload);
       const productKey = getActivationProductFingerprint(payload);
+      isGrokSsoFlow = isGrokSessionPayload(payload);
       if ((productKey.includes('perplexity') || productKey.includes('pplx')) && deliveryMode === 'manual_login') {
         applyPerplexityManualFlow(payload);
         return;
@@ -2031,6 +2096,7 @@
         deliveryMode === 'support' || Boolean(forcedSupportFlow),
         forcedSupportFlow || activationFlow
       );
+      if (isGrokSsoFlow) applyGrokSessionPage();
       applyProActivationMode(chatGptPlanName);
     }
 
@@ -2804,6 +2870,13 @@
 
     function updateTokenMeta() {
       const raw = String(tokenInput.value || '').trim();
+      if (isGrokSsoFlow) {
+        const english = /^\/en(?:\/|$)/.test(window.location.pathname) || params.get('lang') === 'en';
+        tokenInfo.textContent = (english ? 'Characters: ' : 'Символов: ') + raw.length;
+        tokenWarn.textContent = english ? 'Your session is used only to activate your plan.' : 'Используем сессию только для подключения тарифа.';
+        tokenWarn.className = '';
+        return;
+      }
       if (isPerplexityManualFlow) {
         tokenInfo.textContent = `Characters: ${raw.length}`;
         tokenWarn.textContent = 'Protected and used only for activation.';
@@ -2826,7 +2899,7 @@
     }
 
     function updateStartButtonState() {
-      if (isCredentialsDelivery) {
+      if (isCredentialsDelivery || (isGrokSsoFlow && currentTaskId)) {
         startBtn.disabled = true;
         return;
       }
@@ -2905,9 +2978,9 @@
       const token = getTokenForSubmit();
       if (!orderId || !token) {
         tokenValidatedOk = false;
-        lastValidateReason = isSupportTokenDelivery ? 'Enter your account ID' : 'Enter token';
+        lastValidateReason = isGrokSsoFlow ? 'Paste the sso cookie value' : isSupportTokenDelivery ? 'Enter your account ID' : 'Enter token';
         tokenWarn.textContent = lastValidateReason;
-        tokenWarn.className = 'warn';
+        tokenWarn.className = isGrokSsoFlow && !String(tokenInput.value || '').trim() ? '' : 'warn';
         updateStartButtonState();
         return false;
       }
@@ -2956,8 +3029,9 @@
     }
 
     function getTokenForSubmit() {
-      // Send raw input to backend; backend handles JSON vs token formats and retries safely.
-      return String(tokenInput.value || '').trim();
+      const raw = String(tokenInput.value || '').trim();
+      if (isGrokSsoFlow && !raw) return '';
+      return isGrokSsoFlow ? JSON.stringify({sso: raw}) : raw;
     }
 
     function extractTokenFromInput(raw) {
