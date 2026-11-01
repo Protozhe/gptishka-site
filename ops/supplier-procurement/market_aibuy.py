@@ -54,6 +54,9 @@ def update(a,jid,**values):
     with a.connect() as c:c.execute('UPDATE market_aibuy_attempts SET '+','.join(k+'=?' for k in values)+' WHERE job_id=?',(*values.values(),jid))
 
 def notice(a,job,event,text):
+    if event in ('claude_stock_empty','aisou_stock_empty'):
+        from market_stock_wait import notice as stock_notice
+        return stock_notice(a,job,shared=True)
     label='Claude Pro' if job['product_type']=='claude_pro' else 'Codex '+str(job['package'])
     message=f"{text}\n\n🧾 <b>{'FunPay' if job['platform']=='funpay' else 'PlayerOK'}</b> · <code>{html.escape(job['order_id'])}</code>\n🛍 <b>{label}</b>"
     with a.connect() as c:c.execute("INSERT OR IGNORE INTO market_aibuy_notices VALUES(?,'pending',?,NULL,?)",(str(job['id'])+':'+event,message,time.time()))
@@ -120,6 +123,8 @@ def handle(a,jid):
         if j['key_id'] or j['aiee_order_id'] or j['started_at'] or j['last_poll_status']:return False
         if code and c.execute("SELECT 1 FROM codex_keys WHERE pool=? AND status='available'",('codex_'+str(code),)).fetchone():return False
     if unavailable:
+        from market_stock_wait import defer,StockUnavailable
+        if defer(a,jid,StockUnavailable('codex_2500')):return True
         notice(a,j,'sku_unavailable','⚠️ <b>AI-BUY · Номинал недоступен</b>\n\nСтатус: <b>ожидаем ключ Codex 2500</b>\nУ поставщика нет этого номинала. Другой ключ не куплен; списаний нет.')
         return True
     try:code,raw=capture(a,j)
@@ -230,12 +235,12 @@ def drive(a,jid):
                 elif result.get('state')=='empty':
                     if r['contract_code']==0 and stock.enabled(j,r):
                         update(a,jid,next_at=time.time()+60,reason='supplier_claude_stock_empty')
-                        with a.connect() as c:c.execute("UPDATE codex_jobs SET error=?,updated_at=datetime('now') WHERE id=? AND status='waiting_data'",('Ожидаем ключ Claude Pro для aichongzhi.fun из общего резерва',jid))
+                        with a.connect() as c:c.execute("UPDATE codex_jobs SET error=?,updated_at=datetime('now') WHERE id=? AND status='waiting_data'",('Данные получены. Подготавливаем активацию.',jid))
                         notice(a,j,'claude_stock_empty','⏳ <b>Claude Pro · Нужен ключ</b>\n\nДобавьте ключ Claude Pro для aichongzhi.fun в общий резерв SDK/CDK. Заказ сохранён и продолжится после пополнения.')
                         return
                     if r['contract_code'] in (250,500,1000) and stock.enabled(j,r):
                         update(a,jid,next_at=time.time()+60,reason='supplier_aisou_stock_empty')
-                        with a.connect() as c:c.execute("UPDATE codex_jobs SET error=?,updated_at=datetime('now') WHERE id=? AND status='waiting_data'",('Ожидаем ключ AISOU Codex '+str(r['contract_code'])+' из общего резерва',jid))
+                        with a.connect() as c:c.execute("UPDATE codex_jobs SET error=?,updated_at=datetime('now') WHERE id=? AND status='waiting_data'",('Данные получены. Подготавливаем активацию.',jid))
                         notice(a,j,'aisou_stock_empty','⏳ <b>AISOU · Нужен ключ Codex</b>\n\nПополните общий резерв ключей нужного номинала для aiee.fun. Заказ сохранён и продолжится после пополнения.')
                         return
                     result=rpc(jid)

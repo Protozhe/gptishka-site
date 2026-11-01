@@ -9,6 +9,36 @@ adapter=fixtures.adapter
 
 class Tests(unittest.TestCase):
     fixture=fixtures.Tests.fixture
+    def test_both_platforms_resume_original_shared_wait_after_refill_once(self):
+        for platform in ('funpay','playerok'):
+            for code in (0,250,500,1000):
+                with self.subTest(platform=platform,code=code):
+                    a,path,_,calls,_=self.fixture(code,platform)
+                    cfg=path/'refill.json';cfg.write_text(json.dumps({'enabled':True,'enabledAfter':fixtures.iso(-60)}))
+                    value='ISOLATED-REFILL-'+str(code);ready=False
+                    reply={'state':'shared_stock','credits':code,'product_key':fixtures.common.product(code),'activationSiteUrl':stock.AIBUY,
+                        'native_key_id':'fixture-refill-'+str(code),'code':value,'fingerprint':hashlib.sha256(value.encode()).hexdigest()}
+                    def rpc(jid,action='procure'):
+                        if action=='stock':return reply if ready else {'state':'empty'}
+                        if action=='stock_attest':return {'state':'attested'}
+                        raise AssertionError('No supplier purchase during manual-key refill')
+                    with patch.object(stock,'CONFIG',cfg),patch.object(adapter,'rpc',side_effect=rpc):
+                        adapter.handle(a,1)
+                        self.assertEqual(calls,[])
+                        with a.connect() as c:
+                            self.assertEqual(c.execute('SELECT error FROM codex_jobs').fetchone()[0],'Данные получены. Подготавливаем активацию.')
+                            c.execute('UPDATE market_aibuy_attempts SET next_at=0')
+                        adapter.drive(a,1)
+                        ready=True
+                        with a.connect() as c:c.execute('UPDATE market_aibuy_attempts SET next_at=0')
+                        adapter.drive(a,1)
+                        with a.connect() as c:c.execute('UPDATE market_aibuy_attempts SET next_at=0')
+                        adapter.drive(a,1);adapter.drive(a,1)
+                    self.assertEqual(calls.count('activate'),1)
+                    with a.connect() as c:
+                        self.assertEqual(c.execute('SELECT status FROM codex_jobs').fetchone()[0],'success')
+                        self.assertEqual(c.execute("SELECT COUNT(*) FROM market_aibuy_notices WHERE event='1:stock_wait'").fetchone()[0],1)
+
     def test_empty_claude_stock_waits_and_deduplicates_without_purchase(self):
         a,path,_,calls,_=self.fixture(0)
         cfg=path/'shared.json';cfg.write_text(json.dumps({'enabled':True,'enabledAfter':fixtures.iso(-60)}))
@@ -24,7 +54,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(actions,['stock','stock']);self.assertEqual(calls,[])
         with a.connect() as c:
             self.assertEqual(tuple(c.execute('SELECT state,reason,dispatched FROM market_aibuy_attempts').fetchone()),('procurement','supplier_claude_stock_empty',0))
-            self.assertEqual(c.execute("SELECT COUNT(*) FROM market_aibuy_notices WHERE event='1:claude_stock_empty'").fetchone()[0],1)
+            self.assertEqual(c.execute("SELECT COUNT(*) FROM market_aibuy_notices WHERE event='1:stock_wait'").fetchone()[0],1)
 
     def test_reviewed_claude_purchase_can_only_switch_to_stock_not_rebuy(self):
         a,path,policy,_,_=self.fixture(0)
@@ -63,7 +93,7 @@ class Tests(unittest.TestCase):
         with a.connect() as c:
             row=c.execute('SELECT state,reason,dispatched FROM market_aibuy_attempts').fetchone()
             self.assertEqual(tuple(row),('procurement','supplier_aisou_stock_empty',0))
-            self.assertEqual(c.execute("SELECT COUNT(*) FROM market_aibuy_notices WHERE event='1:aisou_stock_empty'").fetchone()[0],1)
+            self.assertEqual(c.execute("SELECT COUNT(*) FROM market_aibuy_notices WHERE event='1:stock_wait'").fetchone()[0],1)
 
     def test_lost_stock_reply_holds_then_recovers_without_purchase(self):
         a,path,_,calls,_=self.fixture(250)
