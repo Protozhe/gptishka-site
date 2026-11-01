@@ -63,3 +63,36 @@ test('actual import boundary rechecks OWNER, uses license service safeguards and
  const a=await importer.importOwnerKeys(input,{prisma,licenseService});const b=await importer.importOwnerKeys(input,{prisma,licenseService});assert.equal(a.inserted,1);assert.equal(b.reused,true);assert.equal(calls,1);
  assert.doesNotMatch(JSON.stringify(audits),/TEST-AAAA/);await assert.rejects(()=>importer.importOwnerKeys({...input,codes:['TEST-DDDD-EEEE-FFFF']},{prisma,licenseService}));
 });
+
+const creditPools=[
+ ['c250s','codex-250','https://aiee.fun'],['c250b','codex-250','https://aichongzhi.fun'],
+ ['c500s','codex-500','https://aiee.fun'],['c500b','codex-500','https://aichongzhi.fun'],
+ ['c1000s','codex-1000','https://aiee.fun'],['c1000b','codex-1000','https://aichongzhi.fun'],
+ ['claude','claude-pro','https://aichongzhi.fun'],
+];
+test('Codex and Claude menu confirmations reach the exact shared inventory import boundary once',async t=>{
+ for(const [pool,product,site] of creditPools)await t.test(pool,async t=>{
+  const imported=[],audits=[];
+  const prisma={user:{findUnique:async()=>({isActive:true,role:{code:'OWNER'}})},licenseKeyAuditLog:{findFirst:async({where})=>audits.find(a=>a.meta.reference===where.meta.equals),create:async({data})=>audits.push(data)}};
+  const licenseService={importKeys:async(pk,codes,actor,options)=>{imported.push({pk,codes,actor,options});return {inserted:codes.length,skipped:0,conflicts:0};}};
+  const requests=[],f=await fixture(t,async q=>{requests.push(q);return importer.importOwnerKeys({...q,userId:'fixture-owner'},{prisma,licenseService});});
+  await f.ui.handleCallback(cb('cdk:p:'+pool));await f.ui.handleMessage(msg(keys,2));
+  assert.equal(imported.length,0,'No key insertion before owner confirms exact supplier');
+  assert.match(f.cards.at(-1)[1],site.includes('aichongzhi')?/AI-BUY/:/AISOU/);
+  const confirm=buttons(f)[0].callback_data;await f.ui.handleCallback(cb(confirm));await f.ui.drain();
+  assert.equal(imported.length,1);assert.equal(requests[0].pool,pool);assert.equal(imported[0].pk,product);assert.equal(imported[0].options.activationSiteUrl,site);
+  assert.equal(imported[0].codes.length,2);assert.equal(imported[0].actor.userId,'fixture-owner');
+  await f.ui.handleCallback(cb(confirm,'again'));await f.ui.drain();assert.equal(imported.length,1);
+  await assert.rejects(()=>importer.importOwnerKeys({...requests[0],pool:pool==='claude'?'c500s':'claude',userId:'fixture-owner'},{prisma,licenseService}),/reference_conflict/);
+  assert.doesNotMatch(JSON.stringify(audits),/TEST-AAAA/);
+ });
+});
+
+test('replying to Codex or Claude stock notices preserves denomination and activation site',async t=>{
+ for(const [pool,product,site] of creditPools)await t.test(pool,async t=>{
+  const requests=[],f=await fixture(t,async q=>{requests.push(q);return success(q);});
+  const notice={from:{id:900},text:`Пул: ${product}\nПоставщик: ${site}\nДиагностика: cdk_stock_wait`};
+  await f.ui.handleMessage({...msg(keys,2),reply_to_message:notice});const confirm=buttons(f)[0].callback_data;
+  await f.ui.handleCallback(cb(confirm));await f.ui.drain();assert.equal(requests.length,1);assert.equal(requests[0].pool,pool);
+ });
+});
