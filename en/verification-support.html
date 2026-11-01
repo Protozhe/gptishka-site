@@ -106,7 +106,14 @@
   <div class="verification-order-grid">
     <section class="verification-guide" aria-labelledby="supportGuideTitle">
       <h2 id="supportGuideTitle">How to prepare your link</h2>
-      <ol class="verification-steps">
+      <ol id="supportKycSteps" class="verification-steps">
+        <li><div><h3>Open identity verification</h3><p>Your Claude account should show an identity verification request. Click <b>Verify now</b>.</p></div></li>
+        <li><div><h3>Click Start in the Verification Portal</h3><p>Click <b>Start</b> and wait for the page to load. <b>Do not continue with any other verification steps in the portal.</b></p></div></li>
+        <li><div><h3>Open Persona</h3><p>Find <b>Having trouble?</b> at the bottom of the page and click the button beside it to open <b>Persona</b>.</p></div></li>
+        <li><div><h3>Paste the complete link into the field</h3><p>Copy the full Persona page address from the address bar. Paste it into the field on this page and click <b>Send link</b>. Do not shorten the link.</p></div></li>
+        <li><div><h3>Contact the manager</h3><p>After sending the link, click <b>Copy order page</b>. Send the manager your order page link and your Claude account email.</p></div></li>
+      </ol>
+      <ol id="supportCvpSteps" class="verification-steps" hidden>
         <li><div><h3 id="supportStepOneTitle">Open verification in Claude</h3><p id="supportStepOneText">Your account should show an identity verification request. Click <b>Verify now</b>.</p></div></li>
         <li><div><h3 id="supportStepTwoTitle">Copy the full link</h3><p id="supportStepTwoText">Click <b>Start</b> and copy the full address of the page that opens. Include every character in the link.</p></div></li>
         <li><div><h3>Add the link to your order</h3><p>Paste the copied link into the field and click “Send link”. Then share this order page with the manager.</p></div></li>
@@ -126,9 +133,9 @@
       <button id="supportRetry" class="verification-text-button" type="button" hidden>Check payment again</button>
       <div id="supportPaidDetails" hidden>
         <form id="supportLinkForm" method="post" autocomplete="off">
-          <h2>Add your verification link</h2>
+          <h2 id="supportEntryTitle">Add your verification link</h2>
           <p id="supportEntryIntro" class="verification-entry-intro">Use the personal link that opened after Start.</p>
-          <label for="supportLink">Verification link</label>
+          <label id="supportLinkLabel" for="supportLink">Verification link</label>
           <textarea id="supportLink" name="verificationLink" rows="4" maxlength="8192" placeholder="https://…" required spellcheck="false" autocapitalize="off" aria-describedby="supportLinkHelp"></textarea>
           <p id="supportLinkHelp" class="verification-field-note">Your link will be saved with the order. Do not post it publicly or share it in a group chat.</p>
           <button id="supportLinkSubmit" class="verification-primary" type="submit">Send link</button>
@@ -165,6 +172,6 @@
 <script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer></script>
 <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
 <script src="/assets/js/client-i18n.js?v=sha256-d6f152c390656f25" defer></script>
-  <script src="/assets/js/verification-support-receipt.js?v=sha256-85da5faf50e00e58" defer></script>
+  <script src="/assets/js/verification-support-receipt.js?v=sha256-85398623b4a2f1ff" defer></script>
 </body>
 </html>

@@ -23,9 +23,10 @@
     draft: name => `Hello! I have a ${name} verification support order: ${orderId}. Please help me with the next steps.`,
     cvpTitle: 'Prepare your CVP link', cvpText: 'Copy the personal link from your verification request. If you are unsure which link to use, ask the manager.',
     cvpSecond: 'Copy the full address', cvpSecondText: 'Copy the entire link, including all characters after the question mark.',
+    kycInvalid: 'Paste the complete HTTPS link to your Persona verification page.',
     exampleTitle: 'Example KYC link',
-    exampleText: 'Copy the entire address: inquiry-id and session-token must both follow the ?. A short link without these parameters is incomplete.',
-    exampleNote: 'This example is invalid and uses fictional IDs and a fictional token. Paste your own link after Start in full, without shortening it.',
+    exampleText: 'Paste the entire Persona address into the field on this page: inquiry-id and session-token must both follow the ?. A short link without these parameters is incomplete.',
+    exampleNote: 'This example is invalid and uses fictional IDs and a fictional token. Paste your own complete Persona link into the field without shortening it.',
   } : {
     missing: 'Откройте защищённую ссылку на заказ после оплаты или обратитесь в поддержку.',
     loading: 'Проверяем оплату…', pending: 'Оплата ещё подтверждается. Проверим её повторно через несколько секунд.',
@@ -43,9 +44,10 @@
     draft: name => `Здравствуйте! Мой заказ сопровождения ${name}: ${orderId}. Подскажите дальнейшие шаги.`,
     cvpTitle: 'Подготовьте ссылку для CVP', cvpText: 'Скопируйте персональную ссылку из запроса на проверку. Если не знаете, какую ссылку использовать, уточните у менеджера.',
     cvpSecond: 'Скопируйте полный адрес', cvpSecondText: 'Копируйте ссылку целиком, включая все символы после вопросительного знака.',
+    kycInvalid: 'Вставьте полную HTTPS-ссылку на проверку Persona.',
     exampleTitle: 'Пример ссылки KYC',
-    exampleText: 'Нужен весь адрес: после ? должны быть inquiry-id и session-token. Короткая ссылка без этих параметров не подойдёт.',
-    exampleNote: 'Это недействительный образец с вымышленными ID и токеном. Вставьте свою ссылку после Start целиком, ничего не обрезая.',
+    exampleText: 'В поле на этой странице нужно вставить весь адрес Persona: после ? должны быть inquiry-id и session-token. Короткая ссылка без этих параметров не подойдёт.',
+    exampleNote: 'Это недействительный образец с вымышленными ID и токеном. Вставьте свою полную ссылку Persona в поле на этой странице, ничего не обрезая.',
   };
   get('supportKycLinkExampleTitle').textContent = copy.exampleTitle;
   get('supportKycLinkExampleText').textContent = copy.exampleText;
@@ -66,7 +68,14 @@
   }
   function render(data) {
     const name = ['claude-kyc-support', 'claude-kyc'].includes(data.productSlug) ? 'KYC' : 'CVP';
-    get('supportKycLinkExample').hidden = name !== 'KYC';
+    const kyc = name === 'KYC';
+    get('supportKycSteps').hidden = !kyc;
+    get('supportCvpSteps').hidden = kyc;
+    get('supportKycLinkExample').hidden = !kyc;
+    get('supportEntryTitle').textContent = kyc ? (en ? 'Add your Persona verification link' : 'Добавьте ссылку на проверку Persona') : (en ? 'Add your verification link' : 'Добавьте ссылку на проверку');
+    get('supportLinkLabel').textContent = kyc ? (en ? 'Persona link' : 'Ссылка Persona') : (en ? 'Verification link' : 'Ссылка для верификации');
+    input.placeholder = kyc ? 'https://inquiry.withpersona.com/verify?…' : 'https://…';
+    if (kyc) get('supportEntryIntro').textContent = en ? 'Paste the complete link from the Persona page. After sending it, share your order page and Claude account email with the manager.' : 'Вставьте полную ссылку со страницы Persona. После отправки передайте менеджеру страницу заказа и почту аккаунта Claude.';
     get('supportTitle').textContent = copy.title(name);
     get('supportOrder').textContent = (en ? 'Order: ' : 'Заказ: ') + orderId;
     get('supportPaymentBadge').textContent = copy.ready;
@@ -117,7 +126,7 @@
     event.preventDefault();
     if (saving || !orderId || !orderToken || details.hidden || currentState === 'completed') return;
     const link = input.value.trim();
-    if (!validLink(link)) { message(copy.invalid, true); input.focus(); return; }
+    if (!validLink(link)) { message(get('supportKycSteps').hidden ? copy.invalid : copy.kycInvalid, true); input.focus(); return; }
     saving = true; clearTimeout(timer); submit.disabled = true; submit.setAttribute('aria-busy', 'true'); submit.textContent = copy.sending; message('');
     let accepted = false;
     try {

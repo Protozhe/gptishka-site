@@ -107,7 +107,14 @@
   <div class="verification-order-grid">
     <section class="verification-guide" aria-labelledby="supportGuideTitle">
       <h2 id="supportGuideTitle">Как подготовить ссылку</h2>
-      <ol class="verification-steps">
+      <ol id="supportKycSteps" class="verification-steps">
+        <li><div><h3>Откройте проверку личности</h3><p>На вашем аккаунте Claude должен появиться запрос на проверку личности. Нажмите <b>Verify now</b>.</p></div></li>
+        <li><div><h3>Нажмите Start в Verification Portal</h3><p>Нажмите <b>Start</b> и дождитесь загрузки страницы. <b>Не переходите к другим шагам проверки в портале.</b></p></div></li>
+        <li><div><h3>Перейдите в Persona</h3><p>Внизу страницы найдите <b>Having trouble?</b> и нажмите кнопку рядом, чтобы открыть <b>Persona</b>.</p></div></li>
+        <li><div><h3>Вставьте полную ссылку в поле</h3><p>Скопируйте полный адрес страницы Persona из адресной строки. Вставьте его в поле на этой странице и нажмите <b>«Отправить ссылку»</b>. Ничего не обрезайте.</p></div></li>
+        <li><div><h3>Свяжитесь с менеджером</h3><p>После отправки нажмите <b>«Скопировать страницу заказа»</b>. Передайте менеджеру ссылку на заказ и почту аккаунта Claude.</p></div></li>
+      </ol>
+      <ol id="supportCvpSteps" class="verification-steps" hidden>
         <li><div><h3 id="supportStepOneTitle">Откройте проверку в Claude</h3><p id="supportStepOneText">На вашем аккаунте должен появиться запрос на проверку личности. Нажмите <b>Verify now</b>.</p></div></li>
         <li><div><h3 id="supportStepTwoTitle">Скопируйте длинную ссылку</h3><p id="supportStepTwoText">Нажмите <b>Start</b> и скопируйте полный адрес открывшейся страницы. Ссылка нужна целиком, со всеми символами.</p></div></li>
         <li><div><h3>Добавьте ссылку в заказ</h3><p>Вставьте скопированную ссылку в поле и нажмите «Отправить ссылку». Затем передайте менеджеру страницу этого заказа.</p></div></li>
@@ -127,9 +134,9 @@
       <button id="supportRetry" class="verification-text-button" type="button" hidden>Проверить оплату ещё раз</button>
       <div id="supportPaidDetails" hidden>
         <form id="supportLinkForm" method="post" autocomplete="off">
-          <h2>Добавьте ссылку на проверку</h2>
+          <h2 id="supportEntryTitle">Добавьте ссылку на проверку</h2>
           <p id="supportEntryIntro" class="verification-entry-intro">Используйте персональную ссылку, которая открылась после Start.</p>
-          <label for="supportLink">Ссылка для верификации</label>
+          <label id="supportLinkLabel" for="supportLink">Ссылка для верификации</label>
           <textarea id="supportLink" name="verificationLink" rows="4" maxlength="8192" placeholder="https://…" required spellcheck="false" autocapitalize="off" aria-describedby="supportLinkHelp"></textarea>
           <p id="supportLinkHelp" class="verification-field-note">Ссылка будет сохранена в заказе. Её не нужно публиковать или отправлять в общий чат.</p>
           <button id="supportLinkSubmit" class="verification-primary" type="submit">Отправить ссылку</button>
@@ -166,7 +173,7 @@
 <script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer></script>
 <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
 <script src="/assets/js/client-i18n.js?v=sha256-d6f152c390656f25" defer></script>
-  <script src="/assets/js/verification-support-receipt.js?v=sha256-85da5faf50e00e58" defer></script>
+  <script src="/assets/js/verification-support-receipt.js?v=sha256-85398623b4a2f1ff" defer></script>
 </body>
 </html>
 

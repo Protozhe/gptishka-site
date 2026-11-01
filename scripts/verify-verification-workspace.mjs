@@ -4,12 +4,15 @@ import vm from 'node:vm';
 import crypto from 'node:crypto';
 import ts from 'typescript';
 import { JSDOM } from 'jsdom';
+import { assertAssetReference } from './release-assets.mjs';
 
 const helper = { exports: {} };
 vm.runInNewContext(ts.transpileModule(fs.readFileSync('apps/admin-backend/src/modules/orders/verification-support.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, { exports: helper.exports, URL });
 const { isVerificationSupportProduct, validateVerificationSupportLink } = helper.exports;
 const link = 'https://verify.fixture.invalid/session/fixture?token=fixture%2Bverification';
 assert.equal(validateVerificationSupportLink(link), null);
+const personaLink = 'https://inquiry.withpersona.com/verify?inquiry-id=inq_FIXTURE&session-token=fixture-not-real&language=en';
+assert.equal(validateVerificationSupportLink(personaLink), null);
 for (const value of ['', 'http://verify.fixture.invalid', 'javascript:alert(1)', 'https://user:pass@verify.fixture.invalid', 'https://gptishka.shop/verification-support.html?t=order', 'https://127.0.0.1/test', 'https://verify.fixture.invalid/has space', 'https://verify.fixture.invalid/'+'x'.repeat(8192)]) assert.ok(validateVerificationSupportLink(value), value);
 
 const source = fs.readFileSync('apps/admin-backend/src/modules/orders/orders.service.ts', 'utf8');
@@ -67,8 +70,10 @@ for (const slug of ['claude-kyc', 'claude-cvp', 'claude-kyc-support', 'claude-cv
 
 const script = fs.readFileSync('assets/js/verification-support-receipt.js', 'utf8');
 const flush = async () => { for (let i=0;i<4;i++) await new Promise(resolve => setImmediate(resolve)); };
-async function page(lang, slug, initial = 'awaiting_link', responseStatus = 200) {
+async function page(lang, slug, initial = 'awaiting_link', responseStatus = 200, submittedLink = link) {
   const html = fs.readFileSync((lang === 'en' ? 'en/' : '') + 'verification-support.html', 'utf8');
+  assertAssetReference(html, 'assets/js/verification-support-receipt.js', lang + '/verification-support.html');
+  assert.doesNotMatch(html + script, /notebrio|онлайн-блокнот|online notepad/i);
   assert.match(html, /<form id="supportLinkForm" method="post"/, 'verification links must never enter a native GET query');
   const dom = new JSDOM(html, { url: `https://fixture.invalid/${lang === 'en' ? 'en/' : ''}verification-support.html?order_id=fixture-order&t=fixture-access`, runScripts: 'outside-only' });
   const w=dom.window, requests=[], timers=[];
@@ -78,7 +83,7 @@ async function page(lang, slug, initial = 'awaiting_link', responseStatus = 200)
     requests.push({url,options});
     if(options.method==='POST') {
       if(failure) throw new Error('fixture-network');
-      const body=JSON.parse(options.body);assert.equal(body.token,link);assert.equal(body.orderToken,'fixture-access');state='processing';
+      const body=JSON.parse(options.body);assert.equal(body.token,submittedLink);assert.equal(body.orderToken,'fixture-access');state='processing';
       return {ok:true,json:async()=>({ok:true})};
     }
     return {ok:responseStatus===200,status:responseStatus,json:async()=>({deliveryMode:'verification_support',productSlug:slug,status:'paid',supportState:state,submittedAt:new Date(Date.now()-(initial==='overdue'?25:2)*3600000).toISOString()})};
@@ -92,6 +97,20 @@ for (const lang of ['ru','en']) for (const slug of ['claude-kyc','claude-cvp','c
   try {
     assert.equal(p.get('supportPaidDetails').hidden,false);assert.equal(p.get('supportProgress').hidden,true);
     assert.equal(p.get('supportKycLinkExample').hidden, !slug.includes('kyc'));
+    const kyc = slug.includes('kyc');
+    assert.equal(p.get('supportKycSteps').hidden, !kyc);
+    assert.equal(p.get('supportCvpSteps').hidden, kyc);
+    const visibleSteps = p.get(kyc ? 'supportKycSteps' : 'supportCvpSteps');
+    assert.equal(visibleSteps.children.length, kyc ? 5 : 3);
+    if (kyc) {
+      assert.match(visibleSteps.textContent, /Verification Portal/);
+      assert.match(visibleSteps.textContent, /Having trouble\?/);
+      assert.match(visibleSteps.textContent, /Persona/);
+      assert.match(visibleSteps.textContent, lang === 'ru' ? /почту аккаунта Claude/ : /Claude account email/);
+      assert.equal(visibleSteps.querySelector('a'), null, 'KYC link submission stays on the order page');
+      assert.match(p.get('supportEntryTitle').textContent, /Persona/);
+      assert.match(visibleSteps.textContent, lang === 'ru' ? /Скопировать страницу заказа/ : /Copy order page/);
+    } else assert.doesNotMatch(visibleSteps.textContent, /Persona|Having trouble/);
     const disclosure=p.get('supportKycLinkExample');
     assert.equal(disclosure.tagName,'DETAILS');
     assert.equal(disclosure.open,false,'the complete example starts collapsed');
@@ -121,6 +140,17 @@ for (const lang of ['ru','en']) for (const slug of ['claude-kyc','claude-cvp','c
     for(let i=0;i<p.w.localStorage.length;i++) assert.ok(!String(p.w.localStorage.getItem(p.w.localStorage.key(i))).includes(link));
     assert.ok(!p.get('supportContact').href.includes('fixture-access'),'Telegram draft must never include the protected order token');
   }finally{p.dom.window.close();}
+}
+for (const lang of ['ru','en']) {
+  const p=await page(lang,'claude-kyc','awaiting_link',200,personaLink);
+  try {
+    p.get('supportLink').value=personaLink;
+    p.get('supportLinkForm').dispatchEvent(new p.w.Event('submit',{cancelable:true}));await flush();
+    assert.equal(p.requests.filter(x=>x.options.method==='POST').length,1);
+    assert.equal(p.get('supportProgress').hidden,false);
+    assert.equal(p.get('supportLink').value,'');
+    assert.ok(!p.get('supportContact').href.includes(personaLink));
+  } finally { p.dom.window.close(); }
 }
 for(const code of [403,409]) {
   const p=await page('ru','claude-kyc','awaiting_link',code);assert.equal(p.get('supportPaidDetails').hidden,true);assert.equal(p.get('supportRetry').hidden,false);p.dom.window.close();
