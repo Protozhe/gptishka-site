@@ -199,6 +199,10 @@ class Tests(unittest.TestCase):
    self.assertIsNone(grok.classify(title))
   self.assertEqual(grok.provider_product({'plan_type':'grok_plus','plan_name':'Grok Super 1 month'}),'grok-super-1')
   self.assertIsNone(grok.provider_product({'plan_type':'grok_plus'}))
+  self.assertEqual(grok.provider_product({'plan_type':'grok_premium_halfprice','plan_name':'Grok Premium 半价优惠'}),'grok-premium-1')
+  for tier in grok.KINDS:
+   self.assertEqual(grok.provider_product({'plan_type':'grok_'+tier+'_halfprice','plan_name':'Grok '+tier+' 1 month'}),'grok-'+tier+'-1')
+  self.assertIsNone(grok.provider_product({'plan_type':'grok_premium_halfprice','plan_name':'Grok Premium annual'}))
   for raw in (sso(1),{'accessToken':sso()},{'sso':sso(),'other':'cookie'},'not a session'):
    with self.assertRaisesRegex(ValueError,'supplier_grok_session_required'):grok.normalize(raw)
 

@@ -12,7 +12,8 @@ const CODEX = Object.freeze({ 250: 7500, 500: 14500, 1000: 27600, 2500: 68000 })
 // means different tiers in them. Bind the provider's human plan name as well.
 function grokProductFromProvider(verified) {
   const types={grok_lite:['plus'],grok_plus:['plus','super'],grok_premium:['premium'],grok_super:['super'],grok_ultra:['ultra'],grok_heavy:['ultra']};
-  const allowed=types[verified?.plan_type];if(!allowed)return null;
+  const planType=String(verified?.plan_type||'').replace(/_halfprice$/,'');
+  const allowed=types[planType];if(!allowed)return null;
   const name=String(verified.plan_name||'').toLowerCase();
   const names=[...new Set([...name.matchAll(/\b(plus|lite|premium|super|ultra|heavy)\b/g)].map(x=>({lite:'plus',heavy:'ultra'}[x[1]]||x[1])))];
   if(names.length>1||names.length===1&&!allowed.includes(names[0]))return null;

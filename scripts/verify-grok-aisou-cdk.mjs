@@ -73,6 +73,10 @@ for(const tier of ['plus','premium','super','ultra']){
   assert.equal((await context.startActivationUnsafe('fixture-order',sso,undefined,true)).reused,true);
   assert.equal(claims,1);assert.equal(reservations,1,'Repeated click must keep its original key');
 }
+for(const tier of ['plus','premium','super','ultra']){
+ assert.equal(grokProductFromProvider({plan_type:`grok_${tier}_halfprice`,plan_name:`Grok ${tier} 半价优惠`}),`grok_${tier}_monthly`);
+ assert.equal(grokProductFromProvider({plan_type:`grok_${tier}_halfprice`,plan_name:`Grok ${tier} annual`}),null);
+}
 for(const failure of ['wrong','annual','used','bad-account']){
   reset();mode=failure;await assert.rejects(context.startActivationUnsafe('fixture-order',sso,undefined,true));
   assert.equal(claims,0);assert.equal(record.attempts,0);assert.equal(record.cdk,'fixture-cdk');assert.equal(record.lastProviderPayload.grokCdkHold,true);

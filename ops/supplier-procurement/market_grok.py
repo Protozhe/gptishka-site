@@ -43,7 +43,7 @@ def normalize(raw):
 
 def provider_product(result):
     types={'grok_lite':('plus',),'grok_plus':('plus','super'),'grok_premium':('premium',),'grok_super':('super',),'grok_ultra':('ultra',),'grok_heavy':('ultra',)}
-    allowed=types.get(result.get('plan_type'),())
+    allowed=types.get(re.sub(r'_halfprice$','',str(result.get('plan_type') or '')),())
     names={{'lite':'plus','heavy':'ultra'}.get(v,v) for v in re.findall(r'\b(plus|lite|premium|super|ultra|heavy)\b',str(result.get('plan_name','')).lower())}
     if len(names)>1 or names and next(iter(names)) not in allowed:return None
     tier=next(iter(names)) if names else allowed[0] if len(allowed)==1 else None

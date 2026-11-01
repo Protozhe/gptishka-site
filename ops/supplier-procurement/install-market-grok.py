@@ -76,6 +76,8 @@ def install(expected,apply=False):
  for name,content in before.items():
   allowed=(BASE[name],AFTER[name]) if name in AFTER else (BASE[name],hashlib.sha256(files[name]).hexdigest())
   if hashlib.sha256(content).hexdigest() not in allowed:raise ValueError('grok_source_drift')
+ existing_module=root/'market_grok.py'
+ if existing_module.exists() and hashlib.sha256(existing_module.read_bytes()).hexdigest() not in ('ef67aca0d2055d52f26fb5d0b33749e316312b3d71053827c55c88859234acd9',hashlib.sha256(files['market_grok.py']).hexdigest()):raise ValueError('grok_source_drift')
  if not apply:return {'dryRun':True,'release':sha,'sourceVerified':True,'files':sorted(files)}
  with (root/'data/market-stock-wait-install.lock').open('a') as lock,open('/var/lib/gptishka-runtime/aibuy-procurement/account.lock','a') as broker:
   fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB);fcntl.flock(broker,fcntl.LOCK_EX|fcntl.LOCK_NB)
