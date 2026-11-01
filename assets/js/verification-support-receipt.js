@@ -20,7 +20,7 @@
     finished: 'The manager has marked your order complete. Contact us if you have any questions.',
     late: 'Your order is still in progress. Contact the manager to check the completion time.',
     copied: 'Order page copied', copyFailed: 'Could not copy. Copy this page’s address from the address bar.',
-    draft: name => `Hello! I have a ${name} verification support order: ${orderId}. Please help me with the next steps.`,
+    draft: name => name === 'KYC' ? `Hello! My KYC verification support order is ${orderId}. Please keep me updated on its progress.` : `Hello! I have a ${name} verification support order: ${orderId}. Please help me with the next steps.`,
     cvpTitle: 'Prepare your CVP link', cvpText: 'Copy the personal link from your verification request. If you are unsure which link to use, ask the manager.',
     cvpSecond: 'Copy the full address', cvpSecondText: 'Copy the entire link, including all characters after the question mark.',
     kycInvalid: 'Paste the complete HTTPS link to your Persona verification page.',
@@ -41,7 +41,7 @@
     finished: 'Менеджер отметил заказ как завершённый. Если остались вопросы, напишите нам.',
     late: 'Заказ ещё в работе. Свяжитесь с менеджером, чтобы уточнить срок выполнения.',
     copied: 'Страница заказа скопирована', copyFailed: 'Не удалось скопировать. Скопируйте адрес страницы из адресной строки.',
-    draft: name => `Здравствуйте! Мой заказ сопровождения ${name}: ${orderId}. Подскажите дальнейшие шаги.`,
+    draft: name => name === 'KYC' ? `Здравствуйте! Мой заказ сопровождения KYC: ${orderId}. Пожалуйста, держите меня в курсе выполнения заказа.` : `Здравствуйте! Мой заказ сопровождения ${name}: ${orderId}. Подскажите дальнейшие шаги.`,
     cvpTitle: 'Подготовьте ссылку для CVP', cvpText: 'Скопируйте персональную ссылку из запроса на проверку. Если не знаете, какую ссылку использовать, уточните у менеджера.',
     cvpSecond: 'Скопируйте полный адрес', cvpSecondText: 'Копируйте ссылку целиком, включая все символы после вопросительного знака.',
     kycInvalid: 'Вставьте полную HTTPS-ссылку на проверку Persona.',
@@ -75,7 +75,7 @@
     get('supportEntryTitle').textContent = kyc ? (en ? 'Add your Persona verification link' : 'Добавьте ссылку на проверку Persona') : (en ? 'Add your verification link' : 'Добавьте ссылку на проверку');
     get('supportLinkLabel').textContent = kyc ? (en ? 'Persona link' : 'Ссылка Persona') : (en ? 'Verification link' : 'Ссылка для верификации');
     input.placeholder = kyc ? 'https://inquiry.withpersona.com/verify?…' : 'https://…';
-    if (kyc) get('supportEntryIntro').textContent = en ? 'Paste the complete link from the Persona page. After sending it, share your order page and Claude account email with the manager.' : 'Вставьте полную ссылку со страницы Persona. После отправки передайте менеджеру страницу заказа и почту аккаунта Claude.';
+    if (kyc) get('supportEntryIntro').textContent = en ? 'Paste the complete link from the Persona page and send it. Then contact the manager to stay updated on your order’s progress.' : 'Вставьте полную ссылку со страницы Persona и отправьте её. Затем свяжитесь с менеджером, чтобы быть в курсе выполнения заказа.';
     get('supportTitle').textContent = copy.title(name);
     get('supportOrder').textContent = (en ? 'Order: ' : 'Заказ: ') + orderId;
     get('supportPaymentBadge').textContent = copy.ready;

@@ -106,10 +106,13 @@ for (const lang of ['ru','en']) for (const slug of ['claude-kyc','claude-cvp','c
       assert.match(visibleSteps.textContent, /Verification Portal/);
       assert.match(visibleSteps.textContent, /Having trouble\?/);
       assert.match(visibleSteps.textContent, /Persona/);
-      assert.match(visibleSteps.textContent, lang === 'ru' ? /почту аккаунта Claude/ : /Claude account email/);
+      assert.match(visibleSteps.textContent, lang === 'ru' ? /держать вас в курсе выполнения заказа/ : /stay updated on your order/);
       assert.equal(visibleSteps.querySelector('a'), null, 'KYC link submission stays on the order page');
       assert.match(p.get('supportEntryTitle').textContent, /Persona/);
-      assert.match(visibleSteps.textContent, lang === 'ru' ? /Скопировать страницу заказа/ : /Copy order page/);
+      assert.doesNotMatch(visibleSteps.textContent + p.get('supportEntryIntro').textContent, /почт|email|Copy order page|Скопировать страницу заказа/i);
+      const managerDraft = new URL(p.get('supportContact').href).searchParams.get('text');
+      assert.match(managerDraft, lang === 'ru' ? /держите меня в курсе/ : /keep me updated/);
+      assert.doesNotMatch(managerDraft, /fixture-access|email|@/i);
     } else assert.doesNotMatch(visibleSteps.textContent, /Persona|Having trouble/);
     const disclosure=p.get('supportKycLinkExample');
     assert.equal(disclosure.tagName,'DETAILS');
