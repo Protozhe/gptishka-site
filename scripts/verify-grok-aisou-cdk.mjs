@@ -78,11 +78,13 @@ for(const failure of ['wrong','annual','used','bad-account']){
   assert.equal(claims,0);assert.equal(record.attempts,0);assert.equal(record.cdk,'fixture-cdk');assert.equal(record.lastProviderPayload.grokCdkHold,true);
   await context.resume.resumePendingCdkJobs();assert.equal(claims,0);assert.equal(reservations,1,'Preflight failure holds this key for review');
 }
-reset('premium',0);assert.equal((await context.startActivationUnsafe('fixture-order',sso,undefined,true)).queued,true);
+for(const tier of ['plus','premium','super','ultra']){
+reset(tier,0);assert.equal((await context.startActivationUnsafe('fixture-order',sso,undefined,true)).queued,true);
 assert.equal(record.keyAllocationState,'exhausted');assert.equal(record.attempts,0);assert.equal(calls.length,0);
 await context.resume.resumePendingCdkJobs();assert.equal(calls.length,0);
 stock=1;await context.resume.resumePendingCdkJobs();assert.equal(claims,1);assert.equal(record.status,'processing');
 await context.resume.resumePendingCdkJobs();assert.equal(claims,1,'Restocked queue submits once');
+}
 // Native credit orders use the same durable stock wait, but keep their own
 // ChatGPT session validation and exact-denomination supplier selection.
 reset('plus',0);record.productKey='codex-500';

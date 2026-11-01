@@ -3,11 +3,13 @@ const crypto = require('node:crypto');
 const SITES = ['https://aichongzhi.fun', 'https://aiee.fun'];
 async function claim(input, prisma) {
   const {scope, credits, platform, action} = input || {};
-  if (!/^m[a-f0-9]{31}$/.test(scope || '') || ![0,250,500,1000].includes(credits)
+  const grok = /^grok-(plus|premium|super|ultra)-1$/.test(input?.product_key || '') && credits === undefined;
+  if (!/^m[a-f0-9]{31}$/.test(scope || '') || (!grok && (![0,250,500,1000].includes(credits) || input?.product_key !== undefined))
       || !['funpay','playerok'].includes(platform) || !['claim','attest'].includes(action)) throw Error('supplier_stock_contract_invalid');
-  const productKey = credits === 0 ? 'claude-pro' : 'codex-' + credits;
-  const allowedSites = credits === 0 ? [SITES[0]] : SITES;
+  const productKey = grok ? input.product_key : credits === 0 ? 'claude-pro' : 'codex-' + credits;
+  const allowedSites = grok ? [SITES[1]] : credits === 0 ? [SITES[0]] : SITES;
   const preferredSite = credits === 0 ? SITES[0] : SITES[1];
+  const fallbackSite = grok ? SITES[1] : SITES[0];
   return prisma.$transaction(async tx => {
     await tx.$queryRaw`SELECT 1 AS locked FROM pg_advisory_xact_lock(hashtext(${'market-stock:'+scope})::bigint)`;
     const prior = await tx.licenseKeyAuditLog.findMany({where:{action:'assign_marketplace_stock',meta:{path:['scope'],equals:scope}},take:2});
@@ -20,7 +22,7 @@ async function claim(input, prisma) {
     } else {
       if (action === 'attest') throw Error('supplier_stock_binding_invalid');
       const picked = await tx.$queryRaw`SELECT id FROM license_keys WHERE product_key=${productKey}
-        AND (activation_site_url=${preferredSite} OR activation_site_url=${SITES[0]}) AND status='available'
+        AND (activation_site_url=${preferredSite} OR activation_site_url=${fallbackSite}) AND status='available'
         AND order_id IS NULL AND used_at IS NULL AND reserved_at IS NULL
         ORDER BY CASE WHEN activation_site_url=${preferredSite} THEN 0 ELSE 1 END, created_at ASC, id ASC
         FOR UPDATE SKIP LOCKED LIMIT 1`;

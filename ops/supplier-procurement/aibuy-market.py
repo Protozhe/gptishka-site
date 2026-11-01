@@ -26,7 +26,7 @@ def db(path):
     try:yield c
     finally:c.close()
 
-def paid(job,policy,*,worker_read=None,player_read=None):
+def paid(job,policy,*,worker_read=None,player_read=None,classifier=classify):
     start=stamp(policy['marketplaces']['enabledAfter'])
     if job['platform']=='funpay':
         with db(WORKER) as c:
@@ -54,10 +54,10 @@ def paid(job,policy,*,worker_read=None,player_read=None):
             if not m:raise ValueError('supplier_order_time_unverified')
             today=datetime.now(ZoneInfo('Europe/Moscow'));date=today.replace(hour=int(m[1]),minute=int(m[2]),second=0,microsecond=0)
             if date.timestamp()<start:raise ValueError('supplier_order_time_unverified')
-        if classify(row.get('title'))!=job['contract_code'] or float(row.get('quantity',1))!=1:raise ValueError('supplier_product_mismatch')
+        if classifier(row.get('title'))!=job['contract_code'] or float(row.get('quantity',1))!=1:raise ValueError('supplier_product_mismatch')
         return {'platform':'funpay','order_id':job['order_id'],'gross_rub':row['price'],'quantity':1,'title':row['title'],'payment_verified':True}
     with db(PROFIT) as c:row=c.execute("SELECT * FROM external_orders WHERE platform='playerok' AND order_id=?",(job['order_id'],)).fetchone()
-    if not row or row['status']!='paid' or stamp(row['occurred_at'])<start or classify(row['title'])!=job['contract_code']:raise ValueError('supplier_payment_unverified')
+    if not row or row['status']!='paid' or stamp(row['occurred_at'])<start or classifier(row['title'])!=job['contract_code']:raise ValueError('supplier_payment_unverified')
     if player_read is None:
         sys.path.insert(0,'/opt/pulse-web');from playerok_chat import PlayerokHTTP
         live=PlayerokHTTP().load_deal(job['order_id'])
@@ -132,8 +132,11 @@ def web_stock(payload):
 
 def handle(req,policy):
     if req=={'action':'health'}:return {'state':'alive','enabled':policy.get('enabled') is True and policy.get('marketplaces',{}).get('enabled') is True,'paused':policy.get('paused') is True}
-    if set(req)!={'action','job_id'} or req['action'] not in ('procure','attest','stock','stock_attest') or type(req['job_id']) is not int or req['job_id']<=0:raise ValueError('supplier_request_invalid')
+    if set(req)!={'action','job_id'} or req['action'] not in ('procure','attest','stock','stock_attest','grok_stock','grok_stock_attest') or type(req['job_id']) is not int or req['job_id']<=0:raise ValueError('supplier_request_invalid')
     jid=req['job_id']
+    if req['action'] in ('grok_stock','grok_stock_attest'):
+        from market_grok import root_stock
+        return root_stock(req,policy,db,paid,web_stock)
     if req['action'] in ('stock','stock_attest'):
         attest=req['action']=='stock_attest'
         intent=validate_job(jid,bound=attest,shared=True,policy=policy)

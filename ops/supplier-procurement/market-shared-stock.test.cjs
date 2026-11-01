@@ -79,3 +79,25 @@ test('Claude Pro uses its own prepaid AI-BUY key once, never a Codex or AISOU ke
  await assert.rejects(()=>claim({...request,credits:250,action:'attest'},f.prisma));
  assert.equal(f.rows.find(r=>r.id==='250-0').status,'available');
 });
+
+test('both marketplaces wait for the exact monthly AISOU Grok pool and attest one shared CDK',async()=>{
+ for(const platform of ['funpay','playerok'])for(const tier of ['plus','premium','super','ultra']){
+  const f=fixture(),productKey=`grok-${tier}-1`;
+  const request={scope:'m'+'a'.repeat(31),product_key:productKey,platform,action:'claim'};
+  assert.deepEqual(await claim(request,f.prisma),{state:'empty'});
+  const base={productKey,status:'available',orderId:null,usedAt:null,reservedAt:null};
+  f.rows.push({...base,id:'foreign-provider',activationSiteUrl:'https://aichongzhi.fun',keyValue:'fixture-foreign'},
+   {...base,id:'other-tier',productKey:`grok-${tier==='plus'?'super':'plus'}-1`,activationSiteUrl:'https://aiee.fun',keyValue:'fixture-other'},
+   {...base,id:'held',activationSiteUrl:'https://aiee.fun',reservedAt:new Date(),keyValue:'fixture-held'});
+  assert.deepEqual(await claim(request,f.prisma),{state:'empty'});
+  f.rows.push({...base,id:'right-grok',activationSiteUrl:'https://aiee.fun',keyValue:'fixture-right'});
+  const [a,b]=await Promise.all([claim(request,f.prisma),claim(request,f.prisma)]);
+  assert.equal(a.native_key_id,'right-grok');assert.equal(b.native_key_id,a.native_key_id);
+  assert.equal(a.product_key,productKey);assert.equal(a.activationSiteUrl,'https://aiee.fun');
+  assert.equal(f.audits.length,1);
+  assert.equal((await claim({...request,action:'attest',key_id:a.native_key_id},f.prisma)).code,undefined);
+  await assert.rejects(()=>claim({...request,product_key:`grok-${tier==='plus'?'super':'plus'}-1`,action:'attest'},f.prisma));
+  await assert.rejects(()=>claim({...request,credits:500},f.prisma));
+  assert.equal(f.rows.find(r=>r.id==='foreign-provider').status,'available');
+ }
+});

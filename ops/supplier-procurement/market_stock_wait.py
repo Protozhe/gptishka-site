@@ -50,13 +50,15 @@ def notice(a,job,pool=None,shared=False,site=None):
                 r=c.execute('SELECT pool,provider FROM subscription_reserve_attempts WHERE job_id=?',(job['id'],)).fetchone()
                 if r:selected=str(r['pool']);site={'ios':'https://vip.sxzfd.com','aiee':'https://aiee.fun'}.get(r['provider'],site)
     kind=job.get('product_type','')
+    grok=kind=='grok_aisou'
     label='Claude Pro' if kind=='claude_pro' else 'Codex '+str(job.get('package')) if kind=='codex' else {
         'chatgpt_plus':'ChatGPT Plus','chatgpt_go':'ChatGPT Go','chatgpt_pro_5x':'ChatGPT Pro 5×',
         'chatgpt_pro_20x':'ChatGPT Pro 20×','chatgpt_pro_25x':'ChatGPT Pro 25×','supergrok_1m':'SuperGrok · 1 месяц','supergrok_3m':'SuperGrok · 3 месяца',
     }.get(kind,selected)
+    if grok:label='Grok '+str(selected).removeprefix('aisou_grok_').title()+' · 1 месяц'
     if shared:
-        selected='claude-pro' if kind=='claude_pro' else 'codex-'+str(job['package'])
-        site='AI-BUY / aichongzhi.fun' if kind=='claude_pro' else 'AISOU / aiee.fun; резерв AI-BUY / aichongzhi.fun'
+        selected='grok-'+str(job['key_pool']).removeprefix('aisou_grok_')+'-1' if grok else 'claude-pro' if kind=='claude_pro' else 'codex-'+str(job['package'])
+        site='AISOU / aiee.fun' if grok else 'AI-BUY / aichongzhi.fun' if kind=='claude_pro' else 'AISOU / aiee.fun; резерв AI-BUY / aichongzhi.fun'
     if not site:site='https://vip.sxzfd.com' if selected.endswith('_active') else 'https://aichongzhi.fun' if selected.startswith('grok_') else 'https://aiee.fun'
     where='SDK/CDK' if shared else 'Ключи в чатах'
     url='https://gptishka.shop/admin/cdks' if shared else 'https://gptishka.shop/admin/workspace/chats'
