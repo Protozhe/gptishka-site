@@ -15,6 +15,7 @@ function processingRecords() {
   return activationStore
     .list()
     .filter((record) => {
+      if (record.lastProviderPayload?.cdkWaitRequestedAt && !record.taskId && !record.attempts) return false;
       const status = String(record.status || "").toLowerCase();
       const verification = String(record.verificationState || "").toLowerCase();
       // A lost start response can leave a paid Codex order issued without a
@@ -67,7 +68,7 @@ async function runCycle() {
   running = true;
   try {
     void ordersService.resumePendingAisouPurchases().catch(() => {});
-    void ordersService.resumePendingGrokCdkJobs().catch(() => {});
+    void ordersService.resumePendingCdkJobs().catch(() => {});
     void ordersService.resumeClaudeZovoJobs().catch(() => {});
     void ordersService.resumeGrokZovoJobs().catch(() => {});
     for (const record of processingRecords()) {

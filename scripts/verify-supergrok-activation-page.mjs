@@ -55,7 +55,7 @@ assert(
   "a valid client account ID must be stored even when no SDK key is available"
 );
 assert(
-  redeem.includes("Сейчас возникла техническая задержка. ID аккаунта сохранён") &&
+  redeem.includes("Заявка принята. Подготавливаем активацию.") &&
     redeem.includes("isMissingActivationKeyMessage"),
   "missing SDK inventory must be presented as a recoverable technical delay"
 );

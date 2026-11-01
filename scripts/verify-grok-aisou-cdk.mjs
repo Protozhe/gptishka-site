@@ -29,7 +29,7 @@ const context=vm.createContext({
   buildActivationSiteEndpointUrl:(base,endpoint)=>new URL(endpoint,base+'/').href,
   tryParseUrl:value=>{try{return new URL(value);}catch{return null;}},
   env:{ACTIVATION_PROVIDER:'chongzhi',ACTIVATION_DEVICE_ID:'web'},
-  grokCdkResumeRunning:false,
+  cdkResumeRunning:false, enqueueActivationStockNotification:async()=>{},
   activationStore:{findByOrderId:()=>record,upsert:r=>{record=saved(r);},list:()=>[record],
     async reserveCdkRecordForOrder(input){reservations++;assert.equal(input.productKey,record.productKey);assert.equal(input.activationSiteUrl,'https://aiee.fun');if(!stock)return null;stock--;return {code:'fixture-cdk',activationSiteUrl:'https://aiee.fun'};}},
   prisma:{licenseKey:{async count(){return stock;}}},
@@ -58,9 +58,9 @@ const context=vm.createContext({
     throw Error('Unexpected provider action');
   },
 });
-for(const name of ['isAisouGrokProduct','normalizeAisouGrokSession','validateGrokSsoSession','isResumableGrokCdkRecord','parseClientTokenInput','buildUpstreamUserCandidates','safeStableJsonKey','startChongzhiJsonTask','startChongzhiTaskWithRetry','startActivationUnsafe','isChongzhiCodeUsed','updateActivationFromChongzhiCodePayload'])vm.runInContext(compile(functions.get(name)),context);
+for(const name of ['isAisouGrokProduct','normalizeAisouGrokSession','validateGrokSsoSession','isResumableCdkRecord','isQueuedCdkActivation','queueActivationForCdk','parseClientTokenInput','buildUpstreamUserCandidates','safeStableJsonKey','startChongzhiJsonTask','startChongzhiTaskWithRetry','startActivationUnsafe','isChongzhiCodeUsed','updateActivationFromChongzhiCodePayload'])vm.runInContext(compile(functions.get(name)),context);
 context.startOutstockTaskWithRetry=input=>context.startChongzhiJsonTask(input,'https://aiee.fun');
-vm.runInContext(compile('this.resume={'+method('resumePendingGrokCdkJobs')+'}'),context);
+vm.runInContext(compile('this.resume={'+method('resumePendingCdkJobs')+'}'),context);
 function reset(tier='plus',available=1){plan=tier;stock=available;calls=[];claims=reservations=0;mode='pending';record={orderId:'fixture-order',email:'fixture@example.invalid',productKey:`grok-${tier}-1`,cdk:'',activationSiteUrl:'https://aiee.fun',status:'issued',verificationState:'unknown',attempts:0,taskId:null,issuedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};}
 
 assert.equal(context.normalizeAisouGrokSession(sso),JSON.stringify({sso}));
@@ -76,13 +76,30 @@ for(const tier of ['plus','premium','super','ultra']){
 for(const failure of ['wrong','annual','used','bad-account']){
   reset();mode=failure;await assert.rejects(context.startActivationUnsafe('fixture-order',sso,undefined,true));
   assert.equal(claims,0);assert.equal(record.attempts,0);assert.equal(record.cdk,'fixture-cdk');assert.equal(record.lastProviderPayload.grokCdkHold,true);
-  await context.resume.resumePendingGrokCdkJobs();assert.equal(claims,0);assert.equal(reservations,1,'Preflight failure holds this key for review');
+  await context.resume.resumePendingCdkJobs();assert.equal(claims,0);assert.equal(reservations,1,'Preflight failure holds this key for review');
 }
-reset('premium',0);await assert.rejects(context.startActivationUnsafe('fixture-order',sso,undefined,true),/not issued yet/);
+reset('premium',0);assert.equal((await context.startActivationUnsafe('fixture-order',sso,undefined,true)).queued,true);
 assert.equal(record.keyAllocationState,'exhausted');assert.equal(record.attempts,0);assert.equal(calls.length,0);
-await context.resume.resumePendingGrokCdkJobs();assert.equal(calls.length,0);
-stock=1;await context.resume.resumePendingGrokCdkJobs();assert.equal(claims,1);assert.equal(record.status,'processing');
-await context.resume.resumePendingGrokCdkJobs();assert.equal(claims,1,'Restocked queue submits once');
+await context.resume.resumePendingCdkJobs();assert.equal(calls.length,0);
+stock=1;await context.resume.resumePendingCdkJobs();assert.equal(claims,1);assert.equal(record.status,'processing');
+await context.resume.resumePendingCdkJobs();assert.equal(claims,1,'Restocked queue submits once');
+// Native credit orders use the same durable stock wait, but keep their own
+// ChatGPT session validation and exact-denomination supplier selection.
+reset('plus',0);record.productKey='codex-500';
+const grokTransport=context.startOutstockTaskWithRetry;
+context.isCodexCreditsProductKey=key=>/^codex-(250|500|1000)$/.test(key);
+context.validateAieeSessionJson=()=>'';
+context.getOrderWithFirstItem=async()=>({source:'site',orderDetails:{}});
+context.resolveExternalCodexOwner=()=>null;
+context.resolveChatGptPlanType=()=> 'plus';
+context.readActivationSiteUrlFromOrderDetails=()=>'';
+context.startOutstockTaskWithRetry=async input=>{assert.equal(input.productKey,'codex-500');input.beforeSubmit();claims++;return {ok:true,taskId:'fixture-credit-task',tries:1,immediateSuccess:false};};
+const creditSession=JSON.stringify({accessToken:'fixture-access',account:{planType:'plus'},user:{email:'fixture@example.invalid'}});
+assert.equal((await context.startActivationUnsafe('fixture-order',creditSession,undefined,true)).queued,true);
+assert.equal(claims,0);assert.equal(record.attempts,0);stock=1;
+await context.resume.resumePendingCdkJobs();assert.equal(claims,1);assert.equal(record.taskId,'fixture-credit-task');
+await context.resume.resumePendingCdkJobs();assert.equal(claims,1);assert.equal(stock,0);
+context.startOutstockTaskWithRetry=grokTransport;
 reset();mode='timeout';await context.startActivationUnsafe('fixture-order',sso,undefined,true);assert.equal(claims,1);assert.equal(record.attempts,1);
 record.status='failed';record.verificationState='failed';await assert.rejects(context.startActivationUnsafe('fixture-order',sso,undefined,true),/уже отправлена/);assert.equal(claims,1);
 reset();record.externalFulfillmentOwner='website-grok-zovo-v1';await assert.rejects(context.startActivationUnsafe('fixture-order',sso,undefined,true),/исходным каналом/);assert.equal(reservations,0);

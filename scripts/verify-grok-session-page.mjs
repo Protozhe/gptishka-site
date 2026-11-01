@@ -11,7 +11,7 @@ const sample = 'eyJ0eXAiOiJKV1QifQ.Zml4dHVyZS1ub3QtYS1yZWFsLXNlc3Npb24.Zml4dHVyZ
 const response = (data, status = 200) => ({ ok: status >= 200 && status < 300, status, json: async () => data });
 for (const file of ['redeem-start.html', 'en/redeem-start.html']) assertAssetReference(read(file), 'assets/css/grok-session-activation.css', file);
 
-async function page(lang, slug, flow = 'grok_sso', compact = false) {
+async function page(lang, slug, flow = 'grok_sso', compact = false, state = {}) {
   const en = lang !== 'ru', name = (lang === 'en' ? 'en/' : '') + 'redeem-start.html';
   const html = read(name);
   const script = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map(match => match[1]).find(code => code.includes('function validateTokenNow'));
@@ -32,13 +32,53 @@ async function page(lang, slug, flow = 'grok_sso', compact = false) {
       assert.equal(data.orderToken, 'fixture-access');
       return response({ ok: valid, message: valid ? '' : 'Paste the sso cookie value', reasons: valid ? [] : ['Paste the sso cookie value'] }, valid ? 200 : 400);
     }
-    if (String(url).endsWith('/activation/start')) return response({ taskId: 'fixture-grok-task' });
+    if (String(url).endsWith('/activation/start')) {
+      if (state.queueOnStart) { state.phase = 'queued'; return response({taskId:'',queued:true}); }
+      return response({ taskId: 'fixture-grok-task' });
+    }
     if (String(url).includes('/activation/task/')) return response({ pending: true, success: false });
-    return response({ deliveryMode: flow === 'grok_account_id' ? 'support' : 'activation', activationFlow: flow, product: slug, productSlug: slug, productTitle: slug, status: 'issued', taskId: '' });
+    return response({ deliveryMode: flow === 'grok_account_id' ? 'support' : 'activation', activationFlow: flow, product: slug, productSlug: slug, productTitle: slug,
+      status: state.phase === 'success' ? 'success' : state.phase === 'processing' ? 'processing' : 'issued',
+      queued: state.phase === 'queued', taskId: state.phase === 'processing' ? 'fixture-grok-task' : '' });
   };
   w.eval(script); await flush();
   assert.deepEqual(errors, []);
-  return { dom, w, get, en, requests, timers, errors };
+  return { dom, w, get, en, requests, timers, errors, state };
+}
+
+for (const lang of ['ru', 'en', 'legacy-en']) {
+  const p = await page(lang, 'grok-premium-1', 'grok_sso', false, {queueOnStart:true});
+  try {
+    p.get('tokenInput').value = sample;
+    p.get('tokenInput').dispatchEvent(new p.w.Event('input',{bubbles:true}));
+    await p.timers.filter(t=>t.active&&t.ms<1000).at(-1).fn();await flush();
+    p.get('startBtn').click();await flush();
+    assert.match(p.get('statusText').textContent,p.en?/Request received/:/Заявка принята/);
+    assert.doesNotMatch(p.get('statusText').textContent,/ключ|CDK|AISOU|stock|\bkey\b/i);
+    assert.equal(p.get('startBtn').disabled,true);
+    p.get('startBtn').click();await flush();
+    assert.equal(p.requests.filter(r=>r.url.endsWith('/activation/start')).length,1);
+    const poll=p.timers.filter(t=>t.active&&t.ms===2000).at(-1);
+    assert.ok(poll,'Waiting for inventory must keep the existing client poll active');
+    await poll.fn();await flush();
+    assert.ok(p.requests.at(-1).url.includes('/activation?t=fixture-access'));
+    assert.ok(!p.requests.some(r=>r.url.includes('/task/?')),'Do not query an empty provider task');
+    p.state.phase='processing';await poll.fn();await flush();
+    await poll.fn();await flush();
+    assert.ok(p.requests.some(r=>r.url.includes('/activation/task/fixture-grok-task')));
+    assert.equal(p.requests.filter(r=>r.url.endsWith('/activation/start')).length,1);
+    assert.deepEqual(p.errors,[]);
+  } finally {p.dom.window.close();}
+  const restored=await page(lang,'grok-plus-1','grok_sso',false,{phase:'queued'});
+  try {
+    assert.equal(restored.get('startBtn').disabled,true);
+    assert.equal(restored.requests.filter(r=>r.method==='POST').length,0);
+    restored.state.phase='success';
+    await restored.timers.filter(t=>t.active&&t.ms===2000).at(-1).fn();await flush();
+    assert.match(restored.get('statusText').textContent,restored.en?/success/i:/успешно/i);
+    assert.equal(restored.requests.filter(r=>r.url.endsWith('/activation/start')).length,0);
+    assert.deepEqual(restored.errors,[]);
+  } finally {restored.dom.window.close();}
 }
 
 for (const lang of ['ru', 'en', 'legacy-en']) for (const plan of ['plus', 'premium', 'super', 'ultra']) {

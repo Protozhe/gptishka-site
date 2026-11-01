@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
+import ts from "typescript";
 
 const service = fs.readFileSync("apps/admin-backend/src/modules/orders/orders.service.ts", "utf8");
 const delivery = fs.readFileSync("apps/admin-backend/src/modules/orders/delivery.service.ts", "utf8");
@@ -21,7 +22,7 @@ assert.match(service, /isIosProviderBase\(input\.activationSiteUrl\)/, "IOS orde
 const planFunctions = service.slice(service.indexOf("function resolveChatGptPlanType("), service.indexOf("function publicActivationMessage("))
   .replaceAll(": { json: Record<string, unknown> | null }", "")
   .replaceAll(" as Record<string, unknown>", "");
-const selectFunction = service.slice(service.indexOf("async function selectChatGptPlusCandidate("), service.indexOf("async function startActivationUnsafe("))
+const selectFunction = ts.transpileModule(service.slice(service.indexOf("async function selectChatGptPlusCandidate("), service.indexOf("async function startActivationUnsafe(")), {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText
   .replace("stored: ActivationRecord", "stored")
   .replace("tokenInfo: { json: Record<string, unknown> | null }", "tokenInfo")
   .replace("const interim: ActivationRecord", "const interim")
@@ -92,7 +93,7 @@ for (const json of [null, {}, {account: []}, {account: {planType: "enterprise"}}
 }
 available = false; context.stored = stored; context.token = {json: {account: {planType: "free"}}};
 const before = reservations.length;
-await assert.rejects(() => vm.runInContext("selectChatGptPlusCandidate(stored, token)", context), error => error.status === 409);
+assert.equal((await vm.runInContext("selectChatGptPlusCandidate(stored, token)", context)).waitingForKey, true);
 assert.equal(reservations.length, before + 1, "Exhaustion must not fall back to the other pool");
 assert.equal(writes.at(-1).keyAllocationState, "exhausted");
 available = true;

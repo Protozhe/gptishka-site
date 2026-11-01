@@ -51,6 +51,7 @@ const checks = [
   "scripts/verify-aiee-codex-activation.mjs",
   "scripts/verify-codex-activation-copy.mjs",
   "scripts/verify-grok-aisou-cdk.mjs",
+  "scripts/verify-activation-stock-wait.mjs",
   "scripts/verify-chatgpt-plus-dual-pool.mjs",
   "scripts/verify-aichongzhi-grok-activation.mjs",
   "scripts/verify-supergrok-activation-page.mjs",

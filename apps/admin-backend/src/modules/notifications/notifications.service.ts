@@ -6,6 +6,7 @@ import { prisma } from "../../config/prisma";
 import { buildOrderActivationRecoveryLink } from "../orders/activation-recovery.service";
 import { ManagerNotificationsOutbox } from "./manager-notifications.outbox";
 import { paidManagerCard } from "./telegram-presentation";
+import { activationStore } from "../orders/activation.store";
 
 const telegramDispatcher = env.TELEGRAM_PROXY_URL ? new ProxyAgent(env.TELEGRAM_PROXY_URL) : undefined;
 const managerOutbox = new ManagerNotificationsOutbox(path.join(
@@ -365,12 +366,54 @@ async function deliverPaidManagerNotification(orderId: string) {
   return messageId;
 }
 
+export async function enqueueActivationStockNotification(orderId: string) {
+  if (!/^[a-z0-9]{20,40}$/.test(orderId)) return;
+  const event = `stock_${orderId}`;
+  await managerOutbox.enqueue(event);
+  void managerOutbox.deliver(event, deliverManagerEvent).catch(() => {
+    console.error(`[activation-stock] owner alert delivery deferred order=${orderId}`);
+  });
+}
+
+async function deliverActivationStockNotification(orderId: string) {
+  const activation = activationStore.findByOrderId(orderId);
+  if (!activation || activation.keyAllocationState !== "exhausted" || activation.cdk || activation.taskId || activation.attempts ||
+      activation.externalFulfillmentOwner || activation.status !== "issued" || activation.verificationState === "success" ||
+      !activation.lastProviderPayload?.cdkWaitRequestedAt) return null;
+  const order = await prisma.order.findUnique({ where: {id: orderId}, select: {
+    id: true, status: true, paymentMethod: true, source: true,
+    payments: {select: {status: true, provider: true}},
+    items: {select: {product: {select: {title: true}}}, take: 1},
+  } });
+  if (!order || order.status !== "PAID" || order.paymentMethod === "stub" ||
+      !order.payments.some(payment => payment.status === "SUCCESS" && payment.provider !== "stub")) return null;
+  const site = String(activation.keyAllocationSite || activation.activationSiteUrl || "");
+  const supplier = site === "https://aiee.fun" ? "AISOU / aiee.fun" : site === "https://aichongzhi.fun" ? "AI-BUY / aichongzhi.fun" : site || "Смотрите настройки товара";
+  const messageId = await sendTelegramNotification(
+    `🔑 <b>Нужно добавить ключ активации</b>\n\n` +
+    `🛍 <b>${escapeHtml(order.items[0]?.product?.title || activation.productKey)}</b>\n🧾 Заказ: <code>${escapeHtml(orderId)}</code>\n` +
+    `📍 ${order.source === "telegram" ? "Telegram-бот" : "Сайт"}\nПул: <code>${escapeHtml(activation.productKey)}</code>\nПоставщик: ${escapeHtml(supplier)}\n\n` +
+    `Добавьте ключ этого тарифа в SDK/CDK. Данные клиента сохранены — активация продолжится автоматически.\n` +
+    `Клиент видит: «Заявка принята, подготавливаем активацию».\n\n` +
+    `<code>Диагностика: cdk_stock_wait · отправка провайдеру ещё не выполнялась</code>`,
+    {inline_keyboard: [[{text: "Добавить ключ в SDK/CDK", url: `${resolveSiteOrigin()}/admin/cdks`}]]}
+  );
+  if (!messageId) throw new Error("Stock notification delivery not confirmed");
+  return messageId;
+}
+
+async function deliverManagerEvent(event: string) {
+  return event.startsWith("stock_")
+    ? deliverActivationStockNotification(event.slice(6))
+    : deliverPaidManagerNotification(event);
+}
+
 export async function retryPendingManagerNotifications() {
   if (managerRetryRunning) return;
   managerRetryRunning = true;
   try {
     for (const orderId of managerOutbox.dueIds()) {
-      await managerOutbox.deliver(orderId, deliverPaidManagerNotification);
+      await managerOutbox.deliver(orderId, deliverManagerEvent);
     }
   } finally { managerRetryRunning = false; }
 }

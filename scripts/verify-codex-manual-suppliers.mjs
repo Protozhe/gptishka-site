@@ -178,6 +178,7 @@ const start = ast.statements.find(node => ts.isFunctionDeclaration(node) && node
 let stored, providerRequest, procurementCalls = 0, wrongToken = false;
 const context = vm.createContext({
   ...errors, MAX_CLIENT_TOKEN_LENGTH: 50000, MAX_ACTIVATION_START_ATTEMPTS: 3,
+  enqueueActivationStockNotification:async()=>{},
   CHATGPT_PLUS_PRODUCT_KEY: "chatgpt-plus-1", env: { ACTIVATION_PROVIDER: "chongzhi" },
   ordersService: { getActivation: async () => ({ productSlug: stored.productKey }) },
   assertTokenActivationDeliveryMode() {}, ensureActivationRecordForTokenFlow: async () => stored,
@@ -213,7 +214,7 @@ const context = vm.createContext({
   },
 });
 vm.runInContext(ts.transpileModule(start, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, context);
-for(const name of ['isChongzhiCodeUsed','updateActivationFromChongzhiCodePayload']) {
+for(const name of ['queueActivationForCdk','isChongzhiCodeUsed','updateActivationFromChongzhiCodePayload']) {
   const node=ast.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text===name);
   vm.runInContext(ts.transpileModule(node.getText(ast),{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,context);
 }
@@ -246,7 +247,8 @@ for (const [supplier,cdk,site] of [['aisou','',origins[1]],['aibuy',legacyKey.co
 }
 stored={orderId:'fixture-no-stock',productKey:'codex-500',status:'issued',attempts:0,activationSiteUrl:origins[1],cdk:''};
 providerRequest=undefined;
-await assert.rejects(()=>context.startActivationUnsafe(stored.orderId,'{"fixture":true}'),e=>e.statusCode===409);
+assert.equal((await context.startActivationUnsafe(stored.orderId,'{"fixture":true}')).queued,true);
+assert.equal(stored.keyAllocationState,'exhausted');assert.equal(stored.attempts,0);
 assert.equal(providerRequest,undefined,'An empty matching stock cannot use another denomination or a reserved key');
 assert.equal(procurementCalls, 0, "Existing matching stock avoids any new purchase");
 

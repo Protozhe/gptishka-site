@@ -7,6 +7,7 @@ import {
   sendOrderPaidEmail,
   sendOrderPaidManagerNotification,
   sendTelegramNotification,
+  enqueueActivationStockNotification,
 } from "../notifications/notifications.service";
 import { activationReviewCard } from "../notifications/telegram-presentation";
 import { paymentsService } from "../payments/payments.service";
@@ -71,7 +72,7 @@ const STORED_CLIENT_TOKEN_TTL_HOURS = Math.max(
 const STORED_CLIENT_TOKEN_TTL_MS = STORED_CLIENT_TOKEN_TTL_HOURS * 60 * 60 * 1000;
 const activationOrderLocks = new Map<string, Promise<void>>();
 let aisouResumeRunning = false;
-let grokCdkResumeRunning = false;
+let cdkResumeRunning = false;
 const ORDER_FILE_LOCK_TIMEOUT_MS = 45_000;
 const ORDER_FILE_LOCK_STALE_MS = 5 * 60 * 1000;
 const ORDER_FILE_LOCK_POLL_MS = 120;
@@ -126,12 +127,31 @@ function validateGrokSsoSession(tokenInfo: { raw: string; json: Record<string, u
   try { normalizeAisouGrokSession(tokenInfo.raw); return ""; }
   catch { return "Вставьте действующее значение cookie sso с grok.com целиком. Данные ChatGPT для этого тарифа не подходят."; }
 }
-function isResumableGrokCdkRecord(record: ActivationRecord | null | undefined) {
-  return Boolean(record && isAisouGrokProduct(record.productKey) && record.activationSiteUrl === DEFAULT_AIEE_URL &&
+function isResumableCdkRecord(record: ActivationRecord | null | undefined) {
+  return Boolean(record && (record.lastProviderPayload?.cdkWaitRequestedAt || (isAisouGrokProduct(record.productKey) && record.lastProviderPayload?.grokCdkRequestedAt)) &&
     !record.externalFulfillmentOwner && !record.taskId && !record.attempts && record.status === "issued" &&
     record.verificationState !== "success" && record.verificationState !== "pending" &&
-    record.lastProviderPayload?.grokCdkRequestedAt && !record.lastProviderPayload?.grokCdkHold &&
+    !record.lastProviderPayload?.grokCdkHold && !record.lastProviderPayload?.cdkWaitHold &&
     record.clientTokenCiphertext && Date.parse(record.clientTokenExpiresAt || "") > Date.now());
+}
+function isQueuedCdkActivation(record: ActivationRecord | null | undefined) {
+  return Boolean(record && record.keyAllocationState === "exhausted" && !record.cdk && !record.taskId && !record.attempts &&
+    !record.externalFulfillmentOwner && record.status === "issued" && record.verificationState !== "success" &&
+    record.lastProviderPayload?.cdkWaitRequestedAt);
+}
+async function queueActivationForCdk(record: ActivationRecord, site: string) {
+  const current = activationStore.findByOrderId(record.orderId) || record;
+  if (current.externalFulfillmentOwner || current.cdk || current.taskId || current.attempts || current.status === "success" || current.verificationState === "success") {
+    throw new AppError("Проверяем исходную активацию. Повторный запуск не требуется.", 409);
+  }
+  const now = new Date().toISOString();
+  activationStore.upsert({ ...current, keyAllocationState: "exhausted", keyAllocationSite: site,
+    lastProviderMessage: "Ожидаем пополнения ключей нужного тарифа. Данные клиента сохранены; после загрузки ключа продолжим автоматически.",
+    lastProviderPayload: { ...(current.lastProviderPayload || {}), cdkWaitRequestedAt: current.lastProviderPayload?.cdkWaitRequestedAt || now }, updatedAt: now });
+  await enqueueActivationStockNotification(record.orderId).catch(() => {
+    console.error(`[activation-stock] owner alert could not be queued order=${record.orderId}`);
+  });
+  return { taskId: "", queued: true };
 }
 function isCodexCreditsProductKey(value: unknown) {
   return /^codex-(250|500|1000)$/.test(String(value || "").trim().toLowerCase());
@@ -793,6 +813,9 @@ export const ordersService = {
         trustedAdmin
       );
     }
+    if (!current && deliveryType === "activation") {
+      current = await ensureActivationRecordForTokenFlow(orderId, orderToken, {deliveryMode:"activation"}, trustedAdmin);
+    }
     if (!current) {
       throw new AppError("Activation key is not issued yet", 409);
     }
@@ -826,6 +849,7 @@ export const ordersService = {
       activationUrl,
       status: current.status,
       taskId: current.taskId || null,
+      queued: isQueuedCdkActivation(current),
       verificationState: current.verificationState || "unknown",
       lastProviderMessage: publicActivationMessage(current.status, current.verificationState),
       lastProviderCheckedAt: current.lastProviderCheckedAt || null,
@@ -878,11 +902,11 @@ export const ordersService = {
     } } finally { aisouResumeRunning = false; }
   },
 
-  async resumePendingGrokCdkJobs() {
-    if (grokCdkResumeRunning) return;
-    grokCdkResumeRunning = true;
+  async resumePendingCdkJobs() {
+    if (cdkResumeRunning) return;
+    cdkResumeRunning = true;
     try {
-      const candidates = activationStore.list().filter(isResumableGrokCdkRecord)
+      const candidates = activationStore.list().filter(isResumableCdkRecord)
         .sort((a, b) => Date.parse(a.updatedAt) - Date.parse(b.updatedAt));
       const available = new Map<string, number>();
       let started = 0;
@@ -891,23 +915,27 @@ export const ordersService = {
         try {
           await withActivationOrderLock(candidate.orderId, async () => {
             const record = activationStore.findByOrderId(candidate.orderId);
-            if (!isResumableGrokCdkRecord(record)) return;
+            if (!isResumableCdkRecord(record)) return;
             const token = decryptStoredClientToken(record!);
-            if (!token || validateGrokSsoSession(parseClientTokenInput(token))) return;
+            if (!token || (isAisouGrokProduct(record!.productKey) && validateGrokSsoSession(parseClientTokenInput(token)))) return;
             if (!record!.cdk) {
-              if (!available.has(record!.productKey)) available.set(record!.productKey, await prisma.licenseKey.count({ where: {
-                productKey: record!.productKey, activationSiteUrl: DEFAULT_AIEE_URL,
+              if (isQueuedCdkActivation(record)) await enqueueActivationStockNotification(record!.orderId).catch(() => {});
+              const site = record!.keyAllocationSite ?? record!.activationSiteUrl ?? "";
+              const pool = record!.productKey + "|" + site;
+              if (!available.has(pool)) available.set(pool, await prisma.licenseKey.count({ where: {
+                productKey: record!.productKey, activationSiteUrl: /^codex-(250|500|1000)$/.test(record!.productKey)
+                  ? { in: ["https://aichongzhi.fun", DEFAULT_AIEE_URL] } : site,
                 status: "available", orderId: null, usedAt: null, reservedAt: null,
               } }));
-              if (!available.get(record!.productKey)) return;
-              available.set(record!.productKey, available.get(record!.productKey)! - 1);
+              if (!available.get(pool)) return;
+              available.set(pool, available.get(pool)! - 1);
             }
             started++;
             await startActivationUnsafe(candidate.orderId, token, undefined, true);
           });
         } catch { /* Keep the same key and durable submission claim for reconciliation. */ }
       }
-    } finally { grokCdkResumeRunning = false; }
+    } finally { cdkResumeRunning = false; }
   },
 
   async startActivationFromAdmin(
@@ -1213,9 +1241,7 @@ export const ordersService = {
       reasons.push(...supportValidation.reasons);
     }
 
-    if (!String(stored.cdk || "").trim() && stored.productKey !== "claude-pro" && !isAisouGrokProduct(stored.productKey)) {
-      reasons.push("Activation key is not issued yet");
-    } else if (String(stored.cdk || "").trim()) {
+    if (String(stored.cdk || "").trim()) {
       // Sanity: ensure we actually have a DB-issued CDK for this order/product.
       const issued = await prisma.licenseKey.findFirst({
         where: {
@@ -1813,7 +1839,7 @@ export const ordersService = {
           record: activation,
         })
       : null;
-    if (activation && options?.forceCheck && !activationAlreadyConfirmed && !externalFulfillmentOwner) {
+    if (activation && options?.forceCheck && !activationAlreadyConfirmed && !externalFulfillmentOwner && !isQueuedCdkActivation(activation)) {
       if (isChongzhiActivationRecord(activation) && activation.cdk) {
         try {
           const statusBaseUrl = isCodexCreditsProductKey(activation.productKey)
@@ -2461,7 +2487,7 @@ async function ensureActivationRecordForTokenFlow(
 async function selectChatGptPlusCandidate(
   stored: ActivationRecord,
   tokenInfo: { json: Record<string, unknown> | null }
-) {
+): Promise<{ record: ActivationRecord; forceOverwrite: boolean; waitingForKey?: boolean }> {
   const productKey = canonicalProductKey(stored.productKey);
   if (!/^(?:chatgpt-plus-1|chatgpt-go-1|chatgpt-pro-(5|20|25)x-1)$/.test(productKey)) {
     return { record: stored, forceOverwrite: false };
@@ -2508,12 +2534,7 @@ async function selectChatGptPlusCandidate(
         keyAllocationSite: desiredSite,
         updatedAt: new Date().toISOString(),
       });
-      throw new AppError(
-        pool.planType === "free"
-          ? "Сейчас нет свободного ключа GPLUS для аккаунта Free."
-          : "Сейчас нет свободного ключа IOS для продления действующей подписки.",
-        409
-      );
+      return { record: activationStore.findByOrderId(stored.orderId) || stored, forceOverwrite: pool.forceOverwrite, waitingForKey: true };
     }
     chosen = { keyId: reserved.keyId, code: reserved.code, activationSiteUrl: reserved.activationSiteUrl || desiredSite };
   }
@@ -2692,6 +2713,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
 
   const chatGptPlusSelection = await selectChatGptPlusCandidate(stored, tokenInfo);
   stored = chatGptPlusSelection.record;
+  if (chatGptPlusSelection.waitingForKey) return queueActivationForCdk(stored, stored.keyAllocationSite || "");
 
   if (isCodexCreditsProductKey(stored.productKey) && !stored.cdk && !stored.taskId && !stored.attempts) {
     stored = { ...stored, activationSiteUrl: "https://aiee.fun" };
@@ -2744,7 +2766,7 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
       ...(isAisouGrokProduct(stored.productKey) ? {keyAllocationSite:DEFAULT_AIEE_URL,lastProviderMessage:"Ожидаем CDK AISOU для выбранного месячного тарифа Grok. Данные сохранены; после пополнения продолжим автоматически."} : {}),
       ...(isCodexCreditsProductKey(stored.productKey) ? {keyAllocationSite:"https://aiee.fun",lastProviderMessage:"Ожидаем пополнения ключей активации нужного номинала. Заказ сохранён."} : {}),
       updatedAt:new Date().toISOString()});
-    throw new AppError("Activation key is not issued yet", 409);
+    return queueActivationForCdk(stored, stored.keyAllocationSite || stored.activationSiteUrl || "");
   }
 
   // Upstream provider appears to bind tasks to a device id; keep it stable.
@@ -2844,7 +2866,9 @@ async function startActivationUnsafe(orderId: string, token: string, orderToken?
         ? "CDK не соответствует оплаченному месячному тарифу Grok. Отправка остановлена; проверьте пул ключей."
         : "Не удалось подтвердить запуск Grok через AISOU. Исходный ключ сохранён для проверки; другой ключ автоматически не расходуется." } : {}),
       lastProviderCheckedAt: failedAt,
-      lastProviderPayload: isAisouGrokProduct(stored.productKey) ? { ...(latestFailed.lastProviderPayload || {}), grokCdkHold: true } : durableJsonSubmission ? latestFailed.lastProviderPayload : null,
+      lastProviderPayload: isAisouGrokProduct(stored.productKey) || latestFailed.lastProviderPayload?.cdkWaitRequestedAt
+        ? { ...(latestFailed.lastProviderPayload || {}), cdkWaitHold: true, ...(isAisouGrokProduct(stored.productKey) ? {grokCdkHold:true} : {}) }
+        : durableJsonSubmission ? latestFailed.lastProviderPayload : null,
       updatedAt: failedAt,
     });
     throw new AppError("Не удалось запустить активацию автоматически. Повторите попытку или обратитесь в поддержку.", 502, {
@@ -4550,6 +4574,7 @@ function isChongzhiCodeUsed(
 function updateActivationFromChongzhiCodePayload(orderId: string, payload: { status?: number; json?: any; raw?: string }) {
   const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
   if (!stored) return;
+  if (stored.lastProviderPayload?.cdkWaitRequestedAt && !stored.taskId && !stored.attempts) return;
   const grok = /^grok-(plus|premium|super|ultra)-1$/.test(stored.productKey) && stored.activationSiteUrl === "https://aiee.fun";
   // A used key or another order's result cannot prove this order was activated.
   if (grok && (!stored.taskId || !stored.attempts || stored.status === "success" || stored.verificationState === "success")) return;
@@ -5106,6 +5131,7 @@ function updateActivationFromProviderCdkPayload(orderId: string, productId: stri
 function updateActivationProviderCheckError(orderId: string, error: unknown) {
   const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
   if (!stored) return;
+  if (stored.lastProviderPayload?.cdkWaitRequestedAt && !stored.taskId && !stored.attempts) return;
 
   const nowIso = new Date().toISOString();
   const message = summarizeProviderCheckError(error);

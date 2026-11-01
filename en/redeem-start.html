@@ -1536,6 +1536,7 @@
     ];
 
     let currentTaskId = '';
+    let activationWaitingForKey = false;
     let pollTimer = null;
     let pollStartedAt = 0;
     let lastToken = '';
@@ -1631,6 +1632,7 @@
 
     function markActivationCompleted() {
       activationCompleted = true;
+      activationWaitingForKey = false;
     }
 
     function shouldBlockLeaving() {
@@ -2532,6 +2534,9 @@
         if (!response.ok) {
           const resolved = await resolveActivationSuccessFallback();
           if (resolved) return;
+          if (response.status === 409 && /activation key is not issued|no unused cdk|нет свободного ключа/i.test(String(payload?.message || ''))) {
+            enterActivationQueue(); return;
+          }
           let details = '';
           if (payload?.details) {
             try {
@@ -2545,6 +2550,7 @@
           setStatus('error', (payload?.message || 'Failed to start activation') + (details ? `: ${details}` : ''), false);
           return;
         }
+        if (payload.queued) { enterActivationQueue(); return; }
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
         setStatus('pending', isCodexCreditsFlow ? codexCreditsText.pending : `In processing. Task: ${currentTaskId}`, true);
@@ -2558,7 +2564,7 @@
 
     checkBtn.addEventListener('click', async () => {
       if (isCredentialsDelivery) return;
-      if (!currentTaskId) {
+      if (!currentTaskId && !activationWaitingForKey) {
         setStatus('pending', 'First run activation', false);
         return;
       }
@@ -2685,6 +2691,7 @@
           showReviewReward();
           return;
         }
+        if (payload.queued) { enterActivationQueue(); return; }
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
         if (currentTaskId) {
@@ -2785,6 +2792,46 @@
       }
     }
 
+    function queuedActivationMessage() {
+      return 'Request received. We are preparing your activation. Your details are saved; the status will update automatically.';
+    }
+
+    function enterActivationQueue() {
+      activationWaitingForKey = true;
+      currentTaskId = '';
+      renderTask('');
+      retryNewKeyBtn.disabled = true;
+      retryNewKeyBtn.style.display = 'none';
+      updateStartButtonState();
+      setStatus('pending', queuedActivationMessage(), true);
+      startPolling();
+    }
+
+    async function checkQueuedActivation() {
+      try {
+        const suffix = orderLinkToken ? `?t=${encodeURIComponent(orderLinkToken)}` : '';
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation${suffix}`, {cache:'no-store'});
+        const payload = await response.json().catch(() => ({}));
+        if (activationCompleted) return true;
+        if (!response.ok || !activationWaitingForKey) return false;
+        if (payload.status === 'success' || payload.verificationState === 'success') {
+          markActivationCompleted();
+          setStatus('success', isCodexCreditsFlow ? codexCreditsText.success : 'Subscription activated successfully.', false);
+          clearActivationResumeStorage(); hideActionButtons(); showReviewReward();
+          return true;
+        }
+        if (payload.taskId) {
+          activationWaitingForKey = false;
+          currentTaskId = String(payload.taskId); renderTask(currentTaskId);
+          updateStartButtonState();
+          setStatus('pending', isCodexCreditsFlow ? codexCreditsText.pending : 'Activating your subscription. This usually takes a few minutes…', true);
+        } else {
+          setStatus('pending', queuedActivationMessage(), true);
+        }
+      } catch { /* The server queue continues even if this page temporarily loses connection. */ }
+      return false;
+    }
+
     function startPolling() {
       stopPolling();
       setPollPaused(false);
@@ -2798,6 +2845,11 @@
           if (!done && timeout) {
             const resolved = await resolveActivationSuccessFallback();
             if (resolved) return;
+            if (activationWaitingForKey) {
+              setStatus('pending', 'Your request is saved. Processing continues automatically. You can check the status later; no new payment or activation request is needed.', false);
+              retryNewKeyBtn.disabled = true;
+              return;
+            }
             setStatus('pending', isCodexCreditsFlow ? codexCreditsText.timeout(POLL_MAX_MS / 60000) : `Still in processing. Task: ${currentTaskId}. Click ”Check Status” later or ”Change Key and Repeat.”`, false);
             retryNewKeyBtn.disabled = false;
           }
@@ -2814,6 +2866,7 @@
     }
 
     async function checkTaskStatus() {
+      if (activationWaitingForKey && !currentTaskId) return checkQueuedActivation();
       try {
         const suffix = orderLinkToken ? `?t=${encodeURIComponent(orderLinkToken)}` : '';
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/task/${encodeURIComponent(currentTaskId)}${suffix}`);
@@ -2951,7 +3004,7 @@
         return;
       }
       const hasValue = Boolean(orderId && String(tokenInput.value || '').trim());
-      startBtn.disabled = !hasValue || !tokenValidatedOk;
+      startBtn.disabled = activationWaitingForKey || !hasValue || !tokenValidatedOk;
     }
 
     function validatePerplexitySessionInput() {

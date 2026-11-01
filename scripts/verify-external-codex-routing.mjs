@@ -59,7 +59,7 @@ const context = vm.createContext({
 for (const [table, names] of [
   [helper, ["resolveExternalCodexOwner"]],
   [delivery, ["hasTrustedPaidPayment", "resolveActivationKeyPoolProductKey", "deliverProduct"]],
-  [service, ["startActivationUnsafe", "storeActivationClientToken", "getActivationProof"]],
+  [service, ["isQueuedCdkActivation", "startActivationUnsafe", "storeActivationClientToken", "getActivationProof"]],
   [bot, ["activationState", "requiresActivationKey"]],
 ]) for (const name of names) vm.runInContext(ts.transpileModule(table.get(name), {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
@@ -214,6 +214,11 @@ reset(250,"https://aiee.fun");stored={orderId:order.id,productKey:"codex-250",st
 await context.getActivationProof(order.id,{forceCheck:true});assert.equal(proofChecks,1,"Legacy CDK orders still query their own provider");
 stored={orderId:order.id,productKey:"chatgpt-plus-1",status:"issued",attempts:0};order.items[0].product.slug="chatgpt-plus-1";
 await context.getActivationProof(order.id,{forceCheck:true});assert.equal(proofErrors,1,"Unowned missing-key failures remain visible");
+stored={orderId:order.id,productKey:'codex-500',status:'issued',verificationState:'unknown',attempts:0,cdk:'',keyAllocationState:'exhausted',lastProviderPayload:{cdkWaitRequestedAt:'fixture-request'}};
+const queuedBefore=JSON.stringify(stored);
+await context.getActivationProof(order.id,{forceCheck:true});
+assert.equal(JSON.stringify(stored),queuedBefore,'An accepted stock wait must not be replaced with a missing-key error');
+assert.equal(proofErrors,1);
 console.log("External fulfillment proof refresh: all owned product routes preserve progress; legacy provider checks remain active.");
 
 reset(500,"https://aiee.fun");await context.deliverProduct(order);assert.equal(reservations,0);assert.equal(stored.activationSiteUrl,"https://aiee.fun");assert.equal(stored.keyAllocationState,"awaiting_session");

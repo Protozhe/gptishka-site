@@ -2977,6 +2977,7 @@
 
     function markActivationCompleted() {
       activationCompleted = true;
+      activationWaitingForKey = false;
     }
 
     function shouldBlockLeaving() {
@@ -4110,18 +4111,13 @@
           const resolved = await resolveActivationSuccessFallback();
           if (resolved) return;
           if (response.status === 409 && isMissingActivationKeyMessage(payload)) {
-            activationWaitingForKey = true;
-            setStatus(
-              'pending',
-              'Сейчас возникла техническая задержка. ID аккаунта сохранён. Активация будет запущена после поступления ключа; при необходимости менеджер выполнит её вручную.',
-              false,
-              'process'
-            );
+            enterActivationQueue();
             return;
           }
           setStatus('error', friendlyActivationError(response.status), false);
           return;
         }
+        if (payload.queued) { enterActivationQueue(); return; }
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
         activationInFlight = true;
@@ -4137,7 +4133,7 @@
 
     checkBtn.addEventListener('click', async () => {
       if (isCredentialsDelivery) return;
-      if (!currentTaskId) {
+      if (!currentTaskId && !activationWaitingForKey) {
         setStatus('pending', 'Сначала запустите активацию', false);
         return;
       }
@@ -4295,6 +4291,7 @@
           showReviewReward();
           return;
         }
+        if (payload.queued) { enterActivationQueue(); return; }
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
         if (currentTaskId) {
@@ -4397,6 +4394,46 @@
       }
     }
 
+    function queuedActivationMessage() {
+      return codexCreditsEnglish
+        ? 'Request received. We are preparing your activation. Your details are saved; the status will update automatically.'
+        : 'Заявка принята. Подготавливаем активацию. Ваши данные сохранены, статус обновится автоматически.';
+    }
+
+    function enterActivationQueue() {
+      activationWaitingForKey = true;
+      currentTaskId = '';
+      renderTask('');
+      retryNewKeyBtn.disabled = true;
+      retryNewKeyBtn.style.display = 'none';
+      setStatus('pending', queuedActivationMessage(), true, 'process');
+      startPolling();
+    }
+
+    async function checkQueuedActivation() {
+      try {
+        const suffix = orderLinkToken ? `?t=${encodeURIComponent(orderLinkToken)}` : '';
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation${suffix}`, {cache:'no-store'});
+        const payload = await response.json().catch(() => ({}));
+        if (activationCompleted) return true;
+        if (!response.ok || !activationWaitingForKey) return false;
+        if (payload.status === 'success' || payload.verificationState === 'success') {
+          markActivationCompleted();
+          setStatus('success', isCodexCreditsFlow ? codexCreditsText.success : codexCreditsEnglish ? 'Subscription activated successfully.' : 'Подписка успешно активирована.', false, 'done');
+          clearActivationResumeStorage(); hideActionButtons(); showReviewReward();
+          return true;
+        }
+        if (payload.taskId) {
+          activationWaitingForKey = false;
+          currentTaskId = String(payload.taskId); renderTask(currentTaskId);
+          setStatus('pending', isCodexCreditsFlow ? codexCreditsText.pending : 'Подключаем подписку. Обычно это занимает несколько минут…', true, 'process');
+        } else {
+          setStatus('pending', queuedActivationMessage(), true, 'process');
+        }
+      } catch { /* The server queue continues even if this page temporarily loses connection. */ }
+      return false;
+    }
+
     function startPolling() {
       activationInFlight = true;
       updateStartButtonState();
@@ -4428,6 +4465,7 @@
     }
 
     async function checkTaskStatus() {
+      if (activationWaitingForKey && !currentTaskId) return checkQueuedActivation();
       try {
         const suffix = orderLinkToken ? `?t=${encodeURIComponent(orderLinkToken)}` : '';
         const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/task/${encodeURIComponent(currentTaskId)}${suffix}`, { cache: 'no-store' });
@@ -4750,7 +4788,7 @@
 
     function friendlyActivationError(status) {
       const code = Number(status || 0);
-      if (code === 409) return 'Сейчас нет свободного ключа для активации. Напишите в поддержку — мы поможем с заказом.';
+      if (code === 409) return 'Заявка сохранена. Проверяем данные и статус активации. Повторная оплата не требуется.';
       if (code === 401 || code === 403) return 'Ссылка на заказ недействительна или устарела. Откройте активацию из страницы успешной оплаты.';
       if (code === 429) return 'Слишком много попыток. Подождите немного и повторите.';
       return 'Не удалось запустить активацию автоматически. Повторите попытку или напишите в поддержку.';
