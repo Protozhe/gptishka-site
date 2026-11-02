@@ -49,6 +49,7 @@ const context = vm.createContext({
   getOrderWithFirstItem: async () => order, assertTokenActivationDeliveryMode() {},
   ensureActivationRecordForTokenFlow: async () => stored,
   parseClientTokenInput: raw => ({ raw, extracted: "fixture-session", json: { sessionToken: "fixture-session" } }),
+  tryDecodeJwtPayload: () => null,
   resolveChatGptPlanType: () => accountPlan,
   isCodexCreditsProductKey: value => /^codex-(250|500|1000)$/.test(value), validateAieeSessionJson: () => null,
   isSupportTokenActivationMode: () => false,
