@@ -1157,6 +1157,18 @@ export const ordersService = {
         token: { kind: existing.tokenMeta?.kind, length: existing.tokenMeta?.length,
           storedAt: existing.clientTokenStoredAt || null, expiresAt: existing.clientTokenExpiresAt || null } };
     }
+    if (chatgptSession && reasons.length === 0) {
+      const jwt = tryDecodeJwtPayload(tokenInfo.extracted || "");
+      const expMs = Number(jwt?.exp || 0) * 1000;
+      const sessionExpires = Date.parse(String(tokenInfo.json?.expires || ""));
+      if ((Number.isFinite(expMs) && expMs > 0 && expMs < Date.now() + 30_000) ||
+          (Number.isFinite(sessionExpires) && sessionExpires < Date.now() + 30_000)) {
+        reasons.push("Сессия ChatGPT истекла. Скопируйте новые полные данные после входа в аккаунт.");
+      }
+      if (existing?.tokenMeta?.principalFingerprint && !tokenMeta.principalFingerprint) {
+        reasons.push("Нужен полный JSON сессии ChatGPT того же аккаунта. Сохранённые данные не изменены.");
+      }
+    }
     if (isAisouGrokProduct(productSlug) && existing && (existing.externalFulfillmentOwner || existing.status === "success" || existing.verificationState === "success")) {
       throw new AppError("Заказ уже завершён или закреплён за исходным каналом. Данные сохранены без изменений.", 409);
     }
@@ -1284,7 +1296,8 @@ export const ordersService = {
     if (tokenInfo.raw && reasons.length === 0) {
       const latest = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
       const chatgptSession = /^chatgpt-(?:plus|go|pro-)/.test(latest.productKey || "");
-      if (latest.status !== "success" && latest.verificationState !== "success" &&
+      if (isTokenBoundToAnotherFingerprint(latest.tokenMeta, tokenMeta)) reasons.push("Order is already bound to another token");
+      if (reasons.length === 0 && latest.status !== "success" && latest.verificationState !== "success" &&
           (!chatgptSession || Number(latest.clientTokenInputVersion || 0) <= inputVersion)) {
         activationStore.upsert({
           ...latest, ...buildStoredClientTokenPatch(tokenInfo.raw), tokenMeta,

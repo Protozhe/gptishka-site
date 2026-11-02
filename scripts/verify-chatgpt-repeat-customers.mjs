@@ -53,6 +53,10 @@ for(const product of Object.keys(owners)){
  // Invalid and expired validation must never replace usable saved data.
  assert.equal((await c.service.validateActivationToken('new-order','{bad-json')).ok,false);
  const expired=session('expired',{accessToken:jwt('expired',1)});assert.equal((await c.service.validateActivationToken('new-order',expired)).ok,false);assert.equal(records.get('new-order').clientTokenCiphertext,rawNew);
+ await assert.rejects(c.service.storeActivationClientToken('new-order',expired),/истекла/);
+ await assert.rejects(c.service.storeActivationClientToken('new-order',session('expired-iso',{expires:'2000-01-01T00:00:00Z'})),/истекла/);
+ await assert.rejects(c.service.storeActivationClientToken('new-order',JSON.stringify({accessToken:jwt('incomplete')})),/полный JSON/);
+ assert.equal(records.get('new-order').clientTokenCiphertext,rawNew);
  // A delayed older request cannot overwrite the newest successfully saved input.
  let release;blockLookup=new Promise(r=>release=r);const slow=c.service.storeActivationClientToken('new-order',rawOld);
  await new Promise(r=>setImmediate(r));await c.service.storeActivationClientToken('new-order',rawNew);release();await slow;
@@ -67,4 +71,11 @@ await c.service.storeActivationClientToken('legacy',rawNew);assert.equal(records
 records.set('bound',record('bound',{status:'processing',taskId:'original-task',attempts:1,cdk:'original-key',clientTokenCiphertext:rawOld,tokenMeta:c.buildTokenMeta(c.parseClientTokenInput(rawOld))}));
 await c.service.storeActivationClientToken('bound',rawNew);await c.startActivationUnsafe('bound',rawNew,undefined,true);
 assert.equal(records.get('bound').taskId,'original-task');assert.equal(records.get('bound').attempts,1);assert.equal(records.get('bound').cdk,'original-key');assert.equal(providerCalls,0);
+// A key lookup can yield while another request establishes the recipient.
+// The late validator must check the current binding again before persistence.
+records.set('race',record('race',{cdk:'fixture-key'}));
+let finishKey;blockKey=new Promise(r=>finishKey=r);
+const validation=c.service.validateActivationToken('race',session('foreign',{user:{id:'another-user',email:'another@example.invalid'}}));
+await new Promise(r=>setImmediate(r));await c.service.storeActivationClientToken('race',rawNew);finishKey();
+assert.equal((await validation).ok,false);assert.equal(records.get('race').clientTokenCiphertext,rawNew);assert.equal(providerCalls,0);
 console.log('Website ChatGPT repeat buyers: all five plans, same-account refresh, separate orders, latest input and immutable payment claims verified.');
