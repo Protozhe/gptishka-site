@@ -44,6 +44,11 @@ import { assertOrderLinkAccess } from "../../common/security/order-link-access";
 import { resolveExternalCodexOwner } from "./external-codex";
 
 const MAX_CLIENT_TOKEN_LENGTH = 500_000;
+let clientTokenInputVersion = 0;
+function nextTokenInputVersion() {
+  clientTokenInputVersion = Math.max(Date.now(), clientTokenInputVersion + 1);
+  return clientTokenInputVersion;
+}
 const MAX_ACTIVATION_START_ATTEMPTS = 3;
 const ACTIVATION_OUTSTOCK_MAX_RETRIES = Math.min(
   120,
@@ -352,9 +357,18 @@ function normalizeActivationRecordForRead(record: ActivationRecord | null | unde
   if (!record) return null;
   const cleaned = cleanupExpiredStoredClientToken(record);
   const confirmed = cleaned.record.status === "success" || cleaned.record.verificationState === "success";
-  const normalized = confirmed && cleaned.record.lastProviderMessage !== "Активация подтверждена провайдером."
+  let normalized = confirmed && cleaned.record.lastProviderMessage !== "Активация подтверждена провайдером."
     ? { ...cleaned.record, lastProviderMessage: "Активация подтверждена провайдером." }
     : cleaned.record;
+  // Older pending records retain their credential fingerprint. Learn the
+  // stable account binding from their existing encrypted session before a
+  // credential refresh, without changing any task or financial claim.
+  if (!confirmed && /^chatgpt-(?:plus|go|pro-)/.test(normalized.productKey || "") &&
+      normalized.tokenMeta && !normalized.tokenMeta.principalFingerprint) {
+    const raw = decryptStoredClientToken(normalized);
+    const principal = raw ? buildTokenMeta(parseClientTokenInput(raw)).principalFingerprint : undefined;
+    if (principal) normalized = { ...normalized, tokenMeta: { ...normalized.tokenMeta, principalFingerprint: principal } };
+  }
   if (cleaned.changed || normalized !== cleaned.record) {
     activationStore.upsert(normalized);
     return normalized;
@@ -1028,6 +1042,7 @@ export const ordersService = {
   },
 
   async storeActivationClientToken(orderId: string, token: string, orderToken?: string) {
+    const inputVersion = nextTokenInputVersion();
     const order = await assertOrderTokenAccess(orderId, orderToken);
     const orderWithItem = await getOrderWithFirstItem(order.id);
     const firstItem = orderWithItem?.items?.[0];
@@ -1135,6 +1150,13 @@ export const ordersService = {
     }
 
     const existing = normalizeActivationRecordForRead(activationStore.findByOrderId(order.id));
+    const chatgptSession = /^chatgpt-(?:plus|go|pro-)/.test(productSlug);
+    if (chatgptSession && existing && (existing.status === "success" || existing.verificationState === "success" ||
+        Number(existing.clientTokenInputVersion || 0) > inputVersion)) {
+      return { ok: true, reused: true, orderId: order.id, status: existing.status, paid: order.status === OrderStatus.PAID,
+        token: { kind: existing.tokenMeta?.kind, length: existing.tokenMeta?.length,
+          storedAt: existing.clientTokenStoredAt || null, expiresAt: existing.clientTokenExpiresAt || null } };
+    }
     if (isAisouGrokProduct(productSlug) && existing && (existing.externalFulfillmentOwner || existing.status === "success" || existing.verificationState === "success")) {
       throw new AppError("Заказ уже завершён или закреплён за исходным каналом. Данные сохранены без изменений.", 409);
     }
@@ -1180,6 +1202,7 @@ export const ordersService = {
       issuedAt: existing?.issuedAt || nowIso,
       updatedAt: nowIso,
       ...storagePatch,
+      ...(chatgptSession ? { clientTokenInputVersion: inputVersion } : {}),
     };
     activationStore.upsert(next);
 
@@ -1198,6 +1221,7 @@ export const ordersService = {
   },
 
   async validateActivationToken(orderId: string, token: string, orderToken?: string) {
+    const inputVersion = nextTokenInputVersion();
     const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
     assertTokenActivationDeliveryMode(activationInfo);
 
@@ -1257,16 +1281,19 @@ export const ordersService = {
       }
     }
 
-    if (tokenInfo.raw) {
+    if (tokenInfo.raw && reasons.length === 0) {
       const latest = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId)) || stored;
-      const storagePatch = buildStoredClientTokenPatch(tokenInfo.raw);
-      activationStore.upsert({
-        ...latest,
-        ...storagePatch,
-        lastTokenValidatedAt: nowIso,
-        tokenValidationAttempts: Math.max(0, Number(latest.tokenValidationAttempts || 0)) + 1,
-        updatedAt: nowIso,
-      });
+      const chatgptSession = /^chatgpt-(?:plus|go|pro-)/.test(latest.productKey || "");
+      if (latest.status !== "success" && latest.verificationState !== "success" &&
+          (!chatgptSession || Number(latest.clientTokenInputVersion || 0) <= inputVersion)) {
+        activationStore.upsert({
+          ...latest, ...buildStoredClientTokenPatch(tokenInfo.raw), tokenMeta,
+          ...(chatgptSession ? { clientTokenInputVersion: inputVersion } : {}),
+          lastTokenValidatedAt: nowIso,
+          tokenValidationAttempts: Math.max(0, Number(latest.tokenValidationAttempts || 0)) + 1,
+          updatedAt: nowIso,
+        });
+      }
     }
 
     return {
@@ -4909,16 +4936,25 @@ function buildTokenMeta(tokenInfo: { raw: string; extracted: string; json: Recor
 
   // Don't store raw token; store a short fingerprint for debugging correlation only.
   const fp = crypto.createHash("sha256").update(String(tokenInfo.extracted || "")).digest("hex").slice(0, 16);
-  return { kind, length: Number(String(tokenInfo.raw || "").length), fingerprint: fp };
+  const session = tokenInfo.json as any;
+  const identity = [String(session?.user?.id || "").trim(), String(session?.account?.id || "").trim(),
+    String(session?.user?.email || "").trim().toLowerCase()];
+  const principalFingerprint = identity.every(Boolean)
+    ? crypto.createHash("sha256").update(JSON.stringify(identity)).digest("hex") : undefined;
+  return { kind, length: Number(String(tokenInfo.raw || "").length), fingerprint: fp,
+    ...(principalFingerprint ? { principalFingerprint } : {}) };
 }
 
 function isTokenBoundToAnotherFingerprint(
-  current: { fingerprint?: string } | null | undefined,
-  next: { fingerprint?: string } | null | undefined
+  current: { fingerprint?: string; principalFingerprint?: string } | null | undefined,
+  next: { fingerprint?: string; principalFingerprint?: string } | null | undefined
 ) {
   const currentFp = String(current?.fingerprint || "").trim();
   const nextFp = String(next?.fingerprint || "").trim();
   if (!currentFp || !nextFp) return false;
+  if (current?.principalFingerprint && next?.principalFingerprint) {
+    return current.principalFingerprint !== next.principalFingerprint;
+  }
   return currentFp !== nextFp;
 }
 

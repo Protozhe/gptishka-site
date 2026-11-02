@@ -21,6 +21,7 @@ export type ActivationRecord = {
     kind: "raw" | "json_accessToken" | "json_sessionToken" | "json_token" | "json_unknown";
     length: number;
     fingerprint: string; // sha256(extracted).slice(0, 16)
+    principalFingerprint?: string; // stable user + workspace + email, never credentials
   } | null;
   // Some upstream providers bind tasks to a device id; keep it stable per order activation.
   deviceId?: string | null;
@@ -34,6 +35,7 @@ export type ActivationRecord = {
   clientTokenAuthTag?: string | null;
   clientTokenStoredAt?: string | null;
   clientTokenExpiresAt?: string | null;
+  clientTokenInputVersion?: number;
   verificationLinkSubmittedAt?: string | null;
   verificationState?: "unknown" | "pending" | "success" | "failed";
   lastProviderMessage?: string | null;

@@ -88,6 +88,7 @@ findMethod(serviceSource);
 const no = () => false;
 let writes = 0;
 const backend = vm.createContext({
+  nextTokenInputVersion: () => Date.now(),
   assertOrderTokenAccess: async () => ({id: 'fixture-order', status: 'PAID'}),
   getOrderWithFirstItem: async () => ({items: [{product: {slug: 'chatgpt-plus-1'}}]}),
   resolveOrderDeliveryType: () => 'activation', readActivationSiteUrlFromOrderDetails: () => '',

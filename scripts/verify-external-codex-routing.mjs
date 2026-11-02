@@ -30,6 +30,7 @@ const context = vm.createContext({
   resolveTokenActivationFlowForProduct: () => "chatgpt_token", isSupportActivationFlow: () => false, isSupportLikeDeliveryType: () => false,
   resolveActivationPoolProductKeyForOrder: () => order.items[0].product.slug,
   exports: {}, console: { info() {}, warn() {} }, AppError,
+  nextTokenInputVersion: () => Date.now(),
   CHATGPT_PLUS_PRODUCT_KEY: "chatgpt-plus-1",
   OrderStatus: { PAID: "PAID" }, PaymentStatus: { SUCCESS: "SUCCESS" },
   prisma: { order: { findUnique: async () => order } },

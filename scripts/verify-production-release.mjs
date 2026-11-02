@@ -33,6 +33,7 @@ const checks = [
   "scripts/verify-manager-notifications.mjs",
   "scripts/verify-activation-start-limit.mjs",
   "scripts/verify-activation-token-recovery.mjs",
+  "scripts/verify-chatgpt-repeat-customers.mjs",
   "scripts/verify-metrika-sync-packaging.mjs",
   "scripts/verify-admin-cdk-duration-sort.mjs",
   "scripts/verify-cdk-activation-stock.mjs",

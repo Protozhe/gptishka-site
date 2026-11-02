@@ -28,6 +28,7 @@ for (const slug of ['claude-kyc', 'claude-cvp', 'claude-kyc-support', 'claude-cv
   let stored = null, writes = 0, paid = true;
   const order = { id: 'fixture-order', email: 'fixture@example.invalid', status: 'PAID' };
   const scope = vm.createContext({
+    nextTokenInputVersion: () => Date.now(),
     URL, Date, Buffer, crypto, AppError, isVerificationSupportProduct, validateVerificationSupportLink,
     VERIFICATION_MANAGER_URL: 'https://t.me/gptishkasupport',
     env: { JWT_ACCESS_SECRET: 'fixture-encryption-key-not-production' }, STORED_CLIENT_TOKEN_TTL_MS: 7 * 86400000,
