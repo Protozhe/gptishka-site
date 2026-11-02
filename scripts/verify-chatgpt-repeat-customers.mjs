@@ -55,7 +55,7 @@ for(const product of Object.keys(owners)){
  const expired=session('expired',{accessToken:jwt('expired',1)});assert.equal((await c.service.validateActivationToken('new-order',expired)).ok,false);assert.equal(records.get('new-order').clientTokenCiphertext,rawNew);
  await assert.rejects(c.service.storeActivationClientToken('new-order',expired),/истекла/);
  await assert.rejects(c.service.storeActivationClientToken('new-order',session('expired-iso',{expires:'2000-01-01T00:00:00Z'})),/истекла/);
- await assert.rejects(c.service.storeActivationClientToken('new-order',JSON.stringify({accessToken:jwt('incomplete')})),/полный JSON/);
+ await assert.rejects(c.service.storeActivationClientToken('new-order',JSON.stringify({user:{id:'fixture-user',email:'fixture@example.invalid'},accessToken:jwt('incomplete')})),/полный JSON/);
  assert.equal(records.get('new-order').clientTokenCiphertext,rawNew);
  // A delayed older request cannot overwrite the newest successfully saved input.
  let release;blockLookup=new Promise(r=>release=r);const slow=c.service.storeActivationClientToken('new-order',rawOld);
