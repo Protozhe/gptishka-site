@@ -157,7 +157,7 @@
   function collectPaymentMethod(form) {
     const checked = qs(form, 'input[name="paymentMethod"]:checked');
     const value = String(checked && checked.value || "pally").trim().toLowerCase();
-    return ["pally", "lava", "enot"].includes(value) ? value : "pally";
+    return ["pally", "enot"].includes(value) ? value : "pally";
   }
 
   function buildOrderDetails(form, productId, quantity, total, tradeUrl, telegram, email, steamAccount, paymentMethod) {

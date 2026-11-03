@@ -11,7 +11,7 @@ const input = { orderId: "fixture-order", amount: 100, currency: "RUB", descript
   orderData: { name: "fixture", payer_email: "fixture@example.invalid", items: [] } };
 const env = { PALLY_API_TOKEN: "fixture", PALLY_SHOP_ID: "fixture", PALLY_API_BASE_URL: "https://pally.invalid",
   ENOT_API_KEY: "fixture", ENOT_SHOP_ID: "fixture", PAYMENT_API_BASE_URL: "https://enot.invalid",
-  PAYMENT_CREATE_PATH: "/invoice/create", PAYMENT_REFUND_PATH: "/invoice/refund", LAVA_API_BASE_URL: "https://lava.invalid", LAVA_CREATE_PATH: "/business/invoice/create" };
+  PAYMENT_CREATE_PATH: "/invoice/create", PAYMENT_REFUND_PATH: "/invoice/refund" };
 const fakeAbort = { timeout(ms) {
   budgets.push(ms);
   const controller = new AbortController();
@@ -38,7 +38,6 @@ async function fakeFetch(url, options) {
 function load(file, extra = {}) {
   const dependencies = { "../../../config/env": { env }, "../../../common/errors/app-error": { AppError },
     "../payment-return-url": { buildPaymentReturnUrls: () => ({ successUrl: new URL("https://fixture.invalid/success"), failUrl: new URL("https://fixture.invalid/fail") }) },
-    "../lava.credentials": { resolveLavaCredentials: () => ({ shopId: "fixture", secretKey: "fixture" }) },
     crypto: { createHmac: () => ({ update: () => ({ digest: () => "fixture" }) }) }, ...extra };
   const context = vm.createContext({ exports: {}, URL, URLSearchParams, AbortSignal: fakeAbort, fetch: fakeFetch, console: quiet,
     require: name => { assert.ok(name in dependencies, `Unexpected import ${name}`); return dependencies[name]; } });
@@ -50,29 +49,31 @@ assert.equal(limits.PRIMARY_INVOICE_TIMEOUT_MS, 3000);
 assert.equal(limits.GATEWAY_INVOICE_TIMEOUT_MS, 4000);
 const dependencies = { "../invoice-timeouts": limits };
 const providers = { pally: new (load("providers/pally.provider.ts", dependencies).PallyProvider)(),
-  gateway: new (load("providers/gateway.provider.ts", dependencies).GatewayProvider)(),
-  lava: new (load("providers/lava.provider.ts", dependencies).LavaProvider)() };
+  gateway: new (load("providers/gateway.provider.ts", dependencies).GatewayProvider)() };
 const service = fs.readFileSync(root + "payments.service.ts", "utf8");
+const guard = service.slice(service.indexOf("    if (selectedProviderCode ==="), service.indexOf("    const selectedPaymentMethod"));
+assert.ok(guard.includes('selectedProviderCode === "lava"'));
+assert.ok(service.indexOf(guard) < service.indexOf("    const order = await prisma.$transaction"));
 const flow = service.slice(service.indexOf("    let provider = input.paymentMethod"), service.indexOf("    const payment = await prisma.payment.create"));
-const context = vm.createContext({ console: quiet, Date, order: { id: input.orderId }, paymentInput: input,
+const context = vm.createContext({ AppError, console: quiet, Date, order: { id: input.orderId }, paymentInput: input,
   getPaymentProvider: () => providers.pally, getProviderByCode: code => providers[code],
   prisma: { order: { update: async value => { updates.push(value); } } },
 });
-vm.runInContext(`async function create(input, selectedProviderCode) { ${flow}; return paymentResponse; }`, context);
+vm.runInContext(`async function create(input, selectedProviderCode) { ${guard} ${flow}; return paymentResponse; }`, context);
 async function run(method, stalls) {
   scenario = stalls; requests = []; budgets = []; timers = []; updates = [];
   try { return await context.create({ paymentMethod: method }, method); }
   finally { timers.forEach(clearTimeout); }
 }
 await run("pally", {}); assert.deepEqual(requests.map(r => r.provider), ["pally"]); assert.deepEqual(budgets, [3000]);
-for (const primary of ["pally", "lava"]) {
-  for (const fault of ["stall", "body-stall", "reject"]) {
-    assert.equal((await run(primary, { [primary]: fault })).provider, "gateway");
-    assert.deepEqual(requests.map(r => r.provider), [primary, "enot"]);
-    assert.deepEqual(budgets, [3000, 4000]);
-    assert.equal(JSON.parse(requests[1].body).order_id, input.orderId, "Fallback must reuse the existing order");
-    assert.equal(updates.length, 1);
-  }
+await assert.rejects(run("lava", {}), { message: "Unsupported payment method: lava", status: 400 });
+assert.deepEqual(requests, []);
+for (const fault of ["stall", "body-stall", "reject"]) {
+  assert.equal((await run("pally", { pally: fault })).provider, "gateway");
+  assert.deepEqual(requests.map(r => r.provider), ["pally", "enot"]);
+  assert.deepEqual(budgets, [3000, 4000]);
+  assert.equal(JSON.parse(requests[1].body).order_id, input.orderId, "Fallback must reuse the existing order");
+  assert.equal(updates.length, 1);
 }
 await assert.rejects(run("pally", { pally: "stall", enot: "stall" }));
 assert.deepEqual(requests.map(r => r.provider), ["pally", "enot"], "No parallel speculative invoice or retry loop");

@@ -33,7 +33,7 @@ const createPaymentSchema = z.object({
   orderDetails: z.unknown().optional(),
 }).passthrough();
 
-const allowedPublicPaymentMethods = new Set(["enot", "lava", "pally"]);
+const allowedPublicPaymentMethods = new Set(["enot", "pally"]);
 
 function normalizePublicPaymentMethod(input: string) {
   const raw = String(input || "").trim().toLowerCase();

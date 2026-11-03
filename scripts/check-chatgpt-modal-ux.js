@@ -61,7 +61,7 @@ requireSource("serviceLogin.required = showCredentials;", "login required state 
 requireSource("servicePassword.required = showPassword;", "password required state follows visibility");
 
 // Cache bust must move with JS/CSS changes on the ChatGPT page.
-requirePage("/assets/js/app.min.js?v=20260724-payment-logos1", "JS cache-bust");
+requirePage("/assets/js/app.min.js?v=sha256-ec9c4ceba1479afe", "JS cache-bust");
 requirePage("/assets/css/home-stability-hotfix.css?v=20260723-checkout-controls1", "CSS cache-bust");
 
 if (failures.length) {

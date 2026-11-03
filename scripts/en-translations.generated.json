@@ -348,8 +348,8 @@
     "— a third party platform/service to which the subscription/access relates (including services designated by third party trademarks)."
   ],
   [
-    "Платежи проходят безопасно. Мы не сохраняем платёжные данные — обработка оплаты осуществляется через платёжные системы Enot и Lava.",
-    "Payments are processed securely. We do not save payment data - payment processing is carried out through the Enot and Lava payment systems."
+    "Платежи проходят безопасно. Мы не сохраняем платёжные данные — обработка оплаты осуществляется через платёжные системы Enot и Pally.",
+    "Payments are processed securely. We do not save payment data - payment processing is carried out through the Enot and Pally payment systems."
   ],
   [
     "Да. GPTishka подключает подписки и сопровождает заказ после оплаты: если возникнет вопрос по доступу, менеджер поможет разобраться.",
@@ -756,8 +756,8 @@
     "Before connecting to PRO or MAX, the account must be on the FREE tariff."
   ],
   [
-    "На gptishka.shop доступны СБП и банковские карты через платёжные шлюзы Enot и Lava.",
-    "SBP and bank cards are available at gptishka.shop through payment gateways Enot and Lava."
+    "На gptishka.shop доступны СБП и банковские карты через платёжные шлюзы Enot и Pally.",
+    "SBP and bank cards are available at gptishka.shop through payment gateways Enot and Pally."
   ],
   [
     "Каталог V*N GPTishka. Откройте страницу GPTishka V*N и выберите срок VLESS-доступа.",
