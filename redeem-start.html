@@ -4404,6 +4404,10 @@
         : 'Заявка принята. Подготавливаем активацию. Ваши данные сохранены, статус обновится автоматически.';
     }
 
+    function keepsPollingWhileWaitingForKey() {
+      return isGrokSsoFlow || isCodexCreditsFlow || isClaudeSupportFlow();
+    }
+
     function enterActivationQueue() {
       activationWaitingForKey = true;
       currentTaskId = '';
@@ -4429,7 +4433,7 @@
         }
         if (payload.taskId) {
           activationWaitingForKey = false;
-          if (isGrokSsoFlow) pollStartedAt = Date.now();
+          if (keepsPollingWhileWaitingForKey()) pollStartedAt = Date.now();
           currentTaskId = String(payload.taskId); renderTask(currentTaskId);
           setStatus('pending', isCodexCreditsFlow ? codexCreditsText.pending : 'Подключаем подписку. Обычно это занимает несколько минут…', true, 'process');
         } else {
@@ -4448,7 +4452,7 @@
       pollStartedAt = Date.now();
       pollTimer = setInterval(async () => {
         const done = await checkTaskStatus();
-        const timeout = !(isGrokSsoFlow && activationWaitingForKey) &&
+        const timeout = !(activationWaitingForKey && keepsPollingWhileWaitingForKey()) &&
           Date.now() - pollStartedAt >= activationPollMaxMs;
         if (done || timeout) {
           stopPolling();

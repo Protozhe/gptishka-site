@@ -26,7 +26,15 @@ async function page(lang, slug, initial = 'processing') {
       if (task === 'error') return { ok: false, status: 503, json: async () => ({}) };
       return { ok: true, json: async () => ({ pending: task === 'pending', success: task === 'success', message: 'provider fixture message' }) };
     }
-    return { ok: true, status: 200, json: async () => ({ deliveryMode: 'activation', activationFlow: 'chatgpt_token', product: slug, productSlug: slug, productTitle: slug, status: state, taskId: state === 'issued' ? '' : 'reconcile-fixture-copy' }) };
+    const claude = slug === 'claude-pro';
+    return { ok: true, status: 200, json: async () => ({
+      deliveryMode: claude ? 'support' : 'activation',
+      activationFlow: claude ? 'support_token' : 'chatgpt_token',
+      product: slug, productSlug: slug, productTitle: slug,
+      queued: state === 'queued',
+      status: state === 'queued' ? 'issued' : state,
+      taskId: state === 'issued' || state === 'queued' ? '' : 'reconcile-fixture-copy',
+    }) };
   };
   w.eval(script); await flush();
   assert.deepEqual(errors, []);
@@ -83,4 +91,34 @@ for (const lang of ['ru', 'en']) {
     assert.doesNotMatch(subscription.get('reviewRewardTitle').textContent, /кредит|credits/i);
   } finally { subscription.dom.window.close(); }
 }
-console.log('Credit-specific activation copy: 250/500/1000, RU/EN/legacy language, start, restored processing, task/fallback success, completion UI and unchanged subscriptions passed using mocked transports.');
+for (const lang of ['ru', 'en', 'legacy-en']) {
+  for (const slug of ['codex-250', 'codex-500', 'codex-1000', 'claude-pro']) {
+    const p = await page(lang, slug, 'queued');
+    try {
+      const poll = p.intervals.find(timer => timer.active);
+      assert.ok(poll, `${lang} ${slug}: reload resumes checking the queued order`);
+      const waitingMessage = p.get('statusText').textContent;
+      assert.match(waitingMessage, p.en ? /Request received/ : /Заявка принята/);
+      const now = p.w.Date.now();
+      p.w.Date.now = () => now + 60 * 60 * 1000;
+      await poll.fn(); await flush();
+      assert.equal(poll.active, true);
+      assert.equal(p.get('statusText').textContent, waitingMessage);
+      assert.equal(p.get('statusSpinner').style.display, 'inline-block');
+      assert.equal(p.get('startBtn').disabled, true);
+      assert.ok(!p.requests.some(request => request.url.includes('/activation/task/')));
+
+      p.state('processing');
+      await poll.fn(); await flush();
+      assert.equal(poll.active, true, 'Wait for a result using a fresh activation deadline');
+      await poll.fn(); await flush();
+      assert.ok(p.requests.some(request => request.url.includes('/activation/task/reconcile-fixture-copy')));
+      p.task('success');
+      await poll.fn(); await flush();
+      assert.equal(p.get('statusBox').classList.contains('success'), true);
+      assert.equal(poll.active, false);
+      assert.ok(p.requests.every(request => request.method === 'GET'));
+    } finally { p.dom.window.close(); }
+  }
+}
+console.log('Codex and Claude Pro activation pages: localized status, long key wait, automatic task pickup, and completion passed using mocked transports.');
