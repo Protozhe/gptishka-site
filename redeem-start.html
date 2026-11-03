@@ -2545,7 +2545,7 @@
 <link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
-<link rel="stylesheet" href="/assets/css/redeem-clean-checkout-v2.css?v=20261007-all-services6">
+<link rel="stylesheet" href="/assets/css/redeem-clean-checkout-v2.css?v=sha256-b36a77d5e07acdcc">
 <style id="redeem-focus-header-v1">
   @media (max-width: 759px) {
     body.redeem-flow.home-wide-body header.gptishka-canonical-header .header-product-pill,
@@ -2655,12 +2655,12 @@
           </div>
 
           <p id="proActivationNote" class="redeem-manual-hint" hidden>Для активации нужен бесплатный аккаунт ChatGPT. После запуска дождитесь результата на этой странице — повторная оплата не требуется.</p>
-          <textarea id="tokenInput" class="redeem-input masked" placeholder="Токен аккаунта" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
+          <textarea id="tokenInput" aria-describedby="tokenWarn" class="redeem-input masked" placeholder="Токен аккаунта" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
 
           <label id="claudeZovoConsentBox" class="redeem-manual-hint" hidden><input id="claudeZovoConsent" type="checkbox"> Подтверждаю: аккаунт Claude прошёл требуемую KYC-проверку. Я ознакомился с условиями подключения и понимаю, что решения Anthropic о проверке и блокировке аккаунта не зависят от магазина.</label>
           <div class="redeem-meta">
             <span id="tokenInfo">Символов: 0</span>
-            <span id="tokenWarn">Данные защищены и используются только для заказа.</span>
+            <span id="tokenWarn" aria-live="polite">Данные защищены и используются только для заказа.</span>
           </div>
           <div id="perplexityNextStep" class="redeem-perplexity-next" hidden>
             <p>Данные получены. Скопируйте ссылку и отправьте её в личный чат поддержки.</p>
@@ -2885,6 +2885,7 @@
     let isMasked = true;
     let validateTimer = null;
     let validationRevision = 0;
+    let lastScheduledInput = '';
     let validationController = null;
     let tokenValidatedOk = false;
     let lastValidateReason = '';
@@ -2898,6 +2899,7 @@
     let isGeminiActivationLinkFlow = false;
     let currentGeminiActivationUrl = '';
     let isCodexCreditsFlow = false;
+    let isChatGptSessionFlow = false;
     const codexCreditsEnglish = /^\/en(?:\/|$)/.test(location.pathname) || params.get('lang') === 'en';
     const codexCreditsText = {
       button: codexCreditsEnglish ? 'Top up credits' : 'Пополнить кредиты',
@@ -3597,6 +3599,7 @@
       } else if (productKey.includes('chatgpt-plus') || productKey.includes('chatgpt plus') || productKey.includes('chatgpt_plus')) {
         chatGptPlanName = 'ChatGPT Plus';
       }
+      isChatGptSessionFlow = Boolean(chatGptPlanName) && deliveryMode === 'activation' && !forcedSupportFlow;
       if (codexCreditsMatch) {
         const credits = codexCreditsMatch[1];
         if (redeemTitleEl) redeemTitleEl.textContent = `Пополнение ${credits} кредитов Codex`;
@@ -3702,7 +3705,7 @@
           tokenGuideListEl.innerHTML = [
             '<li>Войдите через браузер в аккаунт ChatGPT (если ещё не вошли — просто авторизуйтесь).</li>',
             '<li>В этом же браузере откройте страницу токена:<a class="instruction-action" href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">Открыть страницу токена<span aria-hidden="true">↗</span></a></li>',
-            '<li>Скопируйте всё содержимое страницы и вставьте его в поле «Токен аккаунта ChatGPT».</li>',
+            '<li>Скопируйте всё содержимое страницы от первой { до последней } и вставьте в поле.</li>',
             '<li><a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">Открыть видеоинструкцию</a>.</li>',
           ].join('');
         }
@@ -3981,6 +3984,7 @@
       scheduleValidateToken();
     });
     tokenInput.addEventListener('change', () => {
+      if (getTokenForSubmit() === lastScheduledInput) return;
       updateTokenMeta();
       scheduleValidateToken();
     });
@@ -4647,6 +4651,7 @@
     }
 
     function scheduleValidateToken() {
+      lastScheduledInput = getTokenForSubmit();
       validationRevision += 1;
       if (validationController) validationController.abort();
       if (validateTimer) clearTimeout(validateTimer);
@@ -4674,6 +4679,20 @@
       validateTimer = setTimeout(() => {
         validateTokenNow();
       }, TOKEN_VALIDATE_DEBOUNCE_MS);
+    }
+
+    function chatGptSessionWarning(message) {
+      if (!isChatGptSessionFlow) return message;
+      if (message?.includes('истекла') || message === 'Token is expired') {
+        return 'Сессия ChatGPT истекла. Войдите снова и скопируйте всё содержимое страницы сессии.';
+      }
+      if (message === 'Order is already bound to another token') {
+        return 'Заказ привязан к другому аккаунту ChatGPT. Вставьте данные аккаунта, который использовали для этого заказа.';
+      }
+      if (/^(?:Paste the complete ChatGPT session JSON|ChatGPT session |Token JSON |Вставлен номер заказа)/.test(message || '')) {
+        return 'Данные неполные или неверные. Скопируйте всё содержимое страницы сессии ChatGPT и вставьте сюда.';
+      }
+      return message;
     }
 
     async function validateTokenNow() {
@@ -4717,7 +4736,7 @@
         if (!isCurrent()) return false;
         if (!response.ok) {
           tokenValidatedOk = false;
-          lastValidateReason = payload?.message || 'Не удалось проверить токен';
+          lastValidateReason = chatGptSessionWarning(payload?.message) || 'Не удалось проверить данные. Попробуйте ещё раз.';
           tokenWarn.textContent = lastValidateReason;
           tokenWarn.className = 'warn';
           updateStartButtonState();

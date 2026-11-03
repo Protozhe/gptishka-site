@@ -1280,7 +1280,7 @@
 <link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
-<link rel="stylesheet" href="/assets/css/redeem-clean-checkout-v2.css?v=20261007-all-services6">
+<link rel="stylesheet" href="/assets/css/redeem-clean-checkout-v2.css?v=sha256-b36a77d5e07acdcc">
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
 <link rel="stylesheet" href="/assets/css/instruction-actions.css?v=sha256-ba15eccd755cc1ff">
 </head>
@@ -1376,11 +1376,11 @@
           </div>
 
           <p id="proActivationNote" class="redeem-manual-hint" hidden>Use a free ChatGPT account. After starting, wait for the result on this page; you do not need to pay again.</p>
-          <textarea id="tokenInput" class="redeem-input masked" placeholder="Account token" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
+          <textarea id="tokenInput" aria-describedby="tokenWarn" class="redeem-input masked" placeholder="Account token" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
 
           <div class="redeem-meta">
             <span id="tokenInfo">Characters: 0</span>
-            <span id="tokenWarn">Protected and used only to fulfill your order.</span>
+            <span id="tokenWarn" aria-live="polite">Protected and used only to fulfill your order.</span>
           </div>
           <div id="perplexityNextStep" class="redeem-perplexity-next" hidden>
             <p>Data received. Copy this page link and send it in a private support chat.</p>
@@ -1545,6 +1545,8 @@
     let lastRetryAt = 0;
     let isMasked = true;
     let validateTimer = null;
+    let validationRevision = 0;
+    let validationController = null;
     let tokenValidatedOk = false;
     let lastValidateReason = '';
     const SUPPORT_ACTIVATION_FLOW_GROK = 'grok_token';
@@ -1559,6 +1561,7 @@
     let grokSessionMoved = [];
     let grokSessionForm = null;
     let isCodexCreditsFlow = false;
+    let isChatGptSessionFlow = false;
     const codexCreditsEnglish = /^\/en(?:\/|$)/.test(location.pathname) || params.get('lang') === 'en';
     const codexCreditsText = {
       button: codexCreditsEnglish ? 'Top up credits' : 'Пополнить кредиты',
@@ -2105,6 +2108,7 @@
       } else if (productKey.includes('chatgpt-plus') || productKey.includes('chatgpt plus') || productKey.includes('chatgpt_plus')) {
         chatGptPlanName = 'ChatGPT Plus';
       }
+      isChatGptSessionFlow = Boolean(chatGptPlanName) && deliveryMode === 'activation' && !forcedSupportFlow;
       if (codexCreditsMatch) {
         const credits = codexCreditsMatch[1];
         if (redeemTitleEl) redeemTitleEl.textContent = `Top up ${credits} Codex credits`;
@@ -2196,7 +2200,7 @@
           tokenGuideListEl.innerHTML = [
             '<li>Login through your browser to your ChatGPT account (if you haven’t logged in yet, just log in).</li>',
             '<li>Open the token page in the same browser:<a class="instruction-action" href="https://chatgpt.com/api/auth/session" target="_blank" rel="noreferrer noopener">Open token page<span aria-hidden="true">↗</span></a></li>',
-            '<li>Copy the entire page contents and paste them into the “ChatGPT account token” field.</li>',
+            '<li>Copy the entire page from the opening { to the closing } and paste it into the field.</li>',
             '<li><a href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noreferrer noopener">Open the video guide</a>.</li>',
           ].join('');
         }
@@ -3033,6 +3037,9 @@
     }
 
     function scheduleValidateToken() {
+      validationRevision += 1;
+      validationController?.abort();
+      if (validateTimer) clearTimeout(validateTimer);
       if (previewMode) {
         tokenValidatedOk = false;
         if (tokenWarn) {
@@ -3056,15 +3063,31 @@
       }
       tokenValidatedOk = false;
       lastValidateReason = '';
+      if (isChatGptSessionFlow && getTokenForSubmit()) tokenWarn.textContent = 'Checking your ChatGPT session…';
       updateStartButtonState();
-
-      if (validateTimer) clearTimeout(validateTimer);
       validateTimer = setTimeout(() => {
         validateTokenNow();
       }, TOKEN_VALIDATE_DEBOUNCE_MS);
     }
 
+    function chatGptSessionWarning(message) {
+      if (!isChatGptSessionFlow) return message;
+      if (message?.includes('истекла') || message === 'Token is expired') {
+        return 'Your ChatGPT session has expired. Sign in again and copy the full contents of the session page.';
+      }
+      if (message === 'Order is already bound to another token') {
+        return 'This order is linked to another ChatGPT account. Paste the session for the account you used for this order.';
+      }
+      if (/^(?:Paste the complete ChatGPT session JSON|ChatGPT session |Token JSON |Вставлен номер заказа)/.test(message || '')) {
+        return 'These details are incomplete or invalid. Copy the entire ChatGPT session page and paste it here.';
+      }
+      return message;
+    }
+
     async function validateTokenNow() {
+      if (validateTimer) clearTimeout(validateTimer);
+      validateTimer = null;
+      if (previewMode) return false;
       if (isPerplexityManualFlow) return validatePerplexitySessionInput();
       if (isCredentialsDelivery) {
         tokenValidatedOk = true;
@@ -3072,6 +3095,9 @@
         return true;
       }
       const token = getTokenForSubmit();
+      const revision = ++validationRevision;
+      validationController?.abort();
+      const isCurrent = () => revision === validationRevision && token === getTokenForSubmit();
       if (!orderId || !token) {
         tokenValidatedOk = false;
         lastValidateReason = isGrokSsoFlow ? 'Paste the sso cookie value' : isSupportTokenDelivery ? 'Enter your account ID' : 'Enter token';
@@ -3081,16 +3107,22 @@
         return false;
       }
 
+      const controller = new AbortController();
+      validationController = controller;
+      const timeout = setTimeout(() => controller.abort(), 15000);
       try {
-        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/validate-token`, {
+        const action = isChatGptSessionFlow ? 'store-token' : 'validate-token';
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/activation/${action}`, {
           method: 'POST',
+          signal: controller.signal,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token, orderToken: orderLinkToken }),
         });
         const payload = await response.json().catch(() => ({}));
+        if (!isCurrent()) return false;
         if (!response.ok) {
           tokenValidatedOk = false;
-          lastValidateReason = payload?.message || 'Failed to verify token';
+          lastValidateReason = chatGptSessionWarning(payload?.message) || 'Could not check your details. Try again.';
           tokenWarn.textContent = lastValidateReason;
           tokenWarn.className = 'warn';
           updateStartButtonState();
@@ -3103,9 +3135,11 @@
         lastValidateReason = reasons.join('; ');
 
         if (ok) {
-          tokenWarn.textContent = isSupportTokenDelivery
-            ? 'The account ID appears to be correct (no saving).'
-            : 'The token appears to be in the correct format (without saving).';
+          tokenWarn.textContent = isChatGptSessionFlow
+            ? 'Details checked and saved. Click “Activate” to continue.'
+            : isSupportTokenDelivery
+              ? 'The account ID appears to be correct (no saving).'
+              : 'The token appears to be in the correct format (without saving).';
           tokenWarn.className = '';
         } else {
           tokenWarn.textContent = lastValidateReason || 'The token is not suitable';
@@ -3115,12 +3149,16 @@
         updateStartButtonState();
         return ok;
       } catch {
+        if (!isCurrent()) return false;
         tokenValidatedOk = false;
-        lastValidateReason = 'Network error when validating token';
+        lastValidateReason = 'Could not check your details. Check your connection and try again.';
         tokenWarn.textContent = lastValidateReason;
         tokenWarn.className = 'warn';
         updateStartButtonState();
         return false;
+      } finally {
+        clearTimeout(timeout);
+        if (validationController === controller) validationController = null;
       }
     }
 

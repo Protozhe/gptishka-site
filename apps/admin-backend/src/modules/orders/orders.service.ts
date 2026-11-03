@@ -179,6 +179,21 @@ function validateAieeSessionJson(tokenInfo: { raw: string; json: Record<string, 
   return "";
 }
 
+function validateChatGptWebsiteSession(tokenInfo: Parameters<typeof validateAieeSessionJson>[0]) {
+  const session = tokenInfo.json;
+  const user = session?.user;
+  if (!user || typeof user !== "object" || Array.isArray(user) ||
+      typeof (user as Record<string, unknown>).email !== "string" || validateAieeSessionJson(tokenInfo)) {
+    return "Paste the complete ChatGPT session JSON";
+  }
+  const accessToken = typeof session?.accessToken === "string" ? session.accessToken.trim() : "";
+  if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(accessToken) ||
+      !Number.isFinite(tryDecodeJwtPayload(accessToken)?.exp)) {
+    return "ChatGPT session contains an invalid accessToken";
+  }
+  return "";
+}
+
 function resolveChatGptPlanType(tokenInfo: { json: Record<string, unknown> | null }) {
   const account = tokenInfo.json?.account;
   if (!account || typeof account !== "object" || Array.isArray(account)) return "";
@@ -1156,6 +1171,18 @@ export const ordersService = {
       return { ok: true, reused: true, orderId: order.id, status: existing.status, paid: order.status === OrderStatus.PAID,
         token: { kind: existing.tokenMeta?.kind, length: existing.tokenMeta?.length,
           storedAt: existing.clientTokenStoredAt || null, expiresAt: existing.clientTokenExpiresAt || null } };
+    }
+    if (chatgptSession && orderWithItem?.source === "site" && reasons.length === 0) {
+      const sessionError = validateChatGptWebsiteSession(tokenInfo);
+      if (sessionError) reasons.push(sessionError);
+      if (!sessionError && productSlug === CHATGPT_PLUS_PRODUCT_KEY &&
+          (typeof tokenInfo.json?.sessionToken !== "string" || !tokenInfo.json.sessionToken.trim()) &&
+          resolveExternalCodexOwner({
+            source: orderWithItem.source, productKey: productSlug, activationSiteUrl,
+            accountPlan: resolveChatGptPlanType(tokenInfo), record: existing,
+          }) === "pulse-siteplus-v1") {
+        reasons.push("ChatGPT session does not include sessionToken");
+      }
     }
     if (chatgptSession && reasons.length === 0) {
       const jwt = tryDecodeJwtPayload(tokenInfo.extracted || "");

@@ -29,7 +29,7 @@ const c=vm.createContext({crypto,Buffer,Date,JSON,Map,Math,AppError,clientTokenI
 });
 const external=ts.createSourceFile('external.ts',fs.readFileSync('apps/admin-backend/src/modules/orders/external-codex.ts','utf8'),ts.ScriptTarget.Latest,true);
 vm.runInContext(compile(external.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name.text==='resolveExternalCodexOwner').getText(external)).replace('export ',''),c);
-for(const name of ['nextTokenInputVersion','isAisouGrokProduct','buildTokenMeta','parseClientTokenInput','isTokenBoundToAnotherFingerprint','normalizeActivationRecordForRead','validateAieeSessionJson','base64UrlToBase64','tryDecodeJwtPayloadObject','tryDecodeJwtPayload','assertTokenActivationDeliveryMode','startActivationUnsafe'])vm.runInContext(compile(functions.get(name)),c);
+for(const name of ['nextTokenInputVersion','isAisouGrokProduct','buildTokenMeta','parseClientTokenInput','isTokenBoundToAnotherFingerprint','normalizeActivationRecordForRead','validateAieeSessionJson','validateChatGptWebsiteSession','base64UrlToBase64','tryDecodeJwtPayloadObject','tryDecodeJwtPayload','assertTokenActivationDeliveryMode','startActivationUnsafe'])vm.runInContext(compile(functions.get(name)),c);
 vm.runInContext(compile('this.service={'+['storeActivationClientToken','validateActivationToken'].map(n=>methods.get(n)).join(',')+'}'),c);
 c.service.getActivation=c.ordersService.getActivation;
 const jwt=(label,expiry=Date.now()/1000+3600)=>[{}, {exp:expiry,sub:label}].map(x=>Buffer.from(JSON.stringify(x)).toString('base64url')).join('.')+'.Zml4dHVyZQ';
@@ -47,6 +47,10 @@ for(const product of Object.keys(owners)){
  assert.equal(records.get('new-order').clientTokenCiphertext,rawNew);assert.equal((await c.startActivationUnsafe('new-order',rawNew,undefined,true)).reused,true);
  assert.equal(records.get('older-order').taskId,'old-confirmed-task');assert.equal(records.get('older-order').status,'success');
  const before=structuredClone(records.get('new-order'));
+ for (const invalid of ['copied-unrelated-text', jwt('partial'), session('bad', {accessToken: 'random-string'})]) {
+   await assert.rejects(c.service.storeActivationClientToken('new-order', invalid), /complete ChatGPT session JSON|invalid accessToken/);
+ }
+ assert.deepEqual(records.get('new-order'), before);
  for(const other of [session('foreign',{account:{id:'other-workspace',planType:'free'}}),session('foreign',{user:{id:'other-user',email:'other@example.invalid'}})])await assert.rejects(c.service.storeActivationClientToken('new-order',other),/bound/);
  assert.deepEqual(records.get('new-order'),before);assert.equal(providerCalls,0);
  assert.doesNotMatch(JSON.stringify(before.tokenMeta),/fixture@example|fixture-session/);
@@ -55,7 +59,7 @@ for(const product of Object.keys(owners)){
  const expired=session('expired',{accessToken:jwt('expired',1)});assert.equal((await c.service.validateActivationToken('new-order',expired)).ok,false);assert.equal(records.get('new-order').clientTokenCiphertext,rawNew);
  await assert.rejects(c.service.storeActivationClientToken('new-order',expired),/истекла/);
  await assert.rejects(c.service.storeActivationClientToken('new-order',session('expired-iso',{expires:'2000-01-01T00:00:00Z'})),/истекла/);
- await assert.rejects(c.service.storeActivationClientToken('new-order',JSON.stringify({user:{id:'fixture-user',email:'fixture@example.invalid'},accessToken:jwt('incomplete')})),/полный JSON/);
+ await assert.rejects(c.service.storeActivationClientToken('new-order',JSON.stringify({user:{id:'fixture-user',email:'fixture@example.invalid'},accessToken:jwt('incomplete')})),/полный JSON|does not include sessionToken/);
  assert.equal(records.get('new-order').clientTokenCiphertext,rawNew);
  // A delayed older request cannot overwrite the newest successfully saved input.
  let release;blockLookup=new Promise(r=>release=r);const slow=c.service.storeActivationClientToken('new-order',rawOld);
@@ -64,6 +68,9 @@ for(const product of Object.keys(owners)){
  // A completed old order remains completed and does not regain customer secrets.
  await c.service.storeActivationClientToken('older-order',rawNew);assert.equal(records.get('older-order').clientTokenCiphertext,undefined);assert.equal(providerCalls,0);
 }
+reset('chatgpt-plus-1');
+await assert.rejects(c.service.storeActivationClientToken('new-order', session('partial', {sessionToken: undefined})), /does not include sessionToken/);
+assert.equal(writes, 0);
 // Legacy pending records acquire stable binding from their existing encrypted data.
 reset('chatgpt-plus-1');records.set('legacy',record('legacy',{status:'processing',clientTokenCiphertext:rawOld,tokenMeta:{kind:'json_accessToken',length:rawOld.length,fingerprint:c.buildTokenMeta(c.parseClientTokenInput(rawOld)).fingerprint},externalFulfillmentOwner:'pulse-siteplus-v1'}));
 await c.service.storeActivationClientToken('legacy',rawNew);assert.equal(records.get('legacy').clientTokenCiphertext,rawNew);

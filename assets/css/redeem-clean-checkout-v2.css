@@ -392,6 +392,16 @@ body.redeem-flow.home-wide-body .redeem-btn-primary:not(:disabled) {
   box-shadow: none !important;
 }
 
+body.redeem-flow.home-wide-body #startBtn.redeem-btn-primary:not(:disabled):is(:hover, :focus-visible) {
+  border-color: #58e5b3 !important;
+  color: #0c241b !important;
+  background: #58e5b3 !important;
+}
+
+body.redeem-flow.home-wide-body #tokenWarn.warn {
+  color: #ffad98;
+}
+
 body.redeem-flow.home-wide-body .redeem-actions {
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;

@@ -19,12 +19,12 @@ const calls = [];
 const context = vm.createContext({
   AbortController, console,
   previewMode: false, isCredentialsDelivery: false, isPerplexityManualFlow: false,
-  isCodexCreditsFlow: false, isChatGptGoFlow: false, isSupportTokenDelivery: false,
+  isCodexCreditsFlow: false, isChatGptSessionFlow: false, isChatGptGoFlow: false, isSupportTokenDelivery: false,
   isGrokSsoFlow:false,isClaudeZovoFlow:false,
   activationWaitingForKey: false, activationInFlight: false, orderId: 'fixture-order', orderLinkToken: 'fixture-link',
   tokenInput: {value: '', addEventListener: (name, fn) => events.set(name, fn)},
   tokenWarn: {}, startBtn: {}, tokenValidatedOk: false, lastValidateReason: '',
-  validateTimer: null, validationRevision: 0, validationController: null,
+  validateTimer: null, validationRevision: 0, lastScheduledInput: '', validationController: null,
   TOKEN_VALIDATE_DEBOUNCE_MS: 600,
   updateTokenMeta() {},
   window: {addEventListener: (name, fn) => events.set(name, fn)},
@@ -38,7 +38,7 @@ const context = vm.createContext({
     });
   },
 });
-for (const name of ['getTokenForSubmit', 'updateStartButtonState', 'scheduleValidateToken', 'validateTokenNow']) {
+for (const name of ['getTokenForSubmit', 'updateStartButtonState', 'scheduleValidateToken', 'chatGptSessionWarning', 'validateTokenNow']) {
   vm.runInContext(functions.get(name), context);
 }
 const eventStart = script.indexOf("tokenInput.addEventListener('input'");
@@ -57,6 +57,10 @@ calls.at(-1).resolve(response(true));
 await flush();
 assert.equal(context.startBtn.disabled, false);
 assert.equal(calls.at(-1).token, context.tokenInput.value);
+const revisionBeforeBlur = context.validationRevision;
+events.get('change')();
+assert.equal(context.validationRevision, revisionBeforeBlur);
+assert.equal(context.startBtn.disabled, false);
 
 // An old failed response must not disable a newer valid token.
 context.tokenInput.value = 'fixture-old';

@@ -50,6 +50,7 @@ const context = vm.createContext({
   ensureActivationRecordForTokenFlow: async () => stored,
   parseClientTokenInput: raw => ({ raw, extracted: "fixture-session", json: { sessionToken: "fixture-session" } }),
   tryDecodeJwtPayload: () => null,
+  validateChatGptWebsiteSession: () => '',
   resolveChatGptPlanType: () => accountPlan,
   isCodexCreditsProductKey: value => /^codex-(250|500|1000)$/.test(value), validateAieeSessionJson: () => null,
   isSupportTokenActivationMode: () => false,
