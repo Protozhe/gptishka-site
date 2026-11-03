@@ -2929,6 +2929,7 @@
     let vpnOfferDismissed = false;
     let activationCompleted = false;
     let activationWaitingForKey = false;
+    let continuousKeyWait = false;
     let activationInFlight = false;
     let leaveGuardBypass = false;
     let leaveConfirmModalEl = null;
@@ -2980,6 +2981,7 @@
     function markActivationCompleted() {
       activationCompleted = true;
       activationWaitingForKey = false;
+      continuousKeyWait = false;
     }
 
     function shouldBlockLeaving() {
@@ -4121,7 +4123,7 @@
           setStatus('error', friendlyActivationError(response.status), false);
           return;
         }
-        if (payload.queued) { enterActivationQueue(); return; }
+        if (payload.queued) { enterActivationQueue(payload); return; }
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
         activationInFlight = true;
@@ -4295,7 +4297,7 @@
           showReviewReward();
           return;
         }
-        if (payload.queued) { enterActivationQueue(); return; }
+        if (payload.queued) { enterActivationQueue(payload); return; }
         currentTaskId = String(payload.taskId || '');
         renderTask(currentTaskId);
         if (currentTaskId) {
@@ -4405,11 +4407,12 @@
     }
 
     function keepsPollingWhileWaitingForKey() {
-      return isGrokSsoFlow || isCodexCreditsFlow || isClaudeSupportFlow();
+      return continuousKeyWait || isGrokSsoFlow || isCodexCreditsFlow || isClaudeSupportFlow();
     }
 
-    function enterActivationQueue() {
+    function enterActivationQueue(payload) {
       activationWaitingForKey = true;
+      continuousKeyWait = payload.continuousKeyWait === true;
       currentTaskId = '';
       renderTask('');
       retryNewKeyBtn.disabled = true;
@@ -4434,6 +4437,7 @@
         if (payload.taskId) {
           activationWaitingForKey = false;
           if (keepsPollingWhileWaitingForKey()) pollStartedAt = Date.now();
+          continuousKeyWait = false;
           currentTaskId = String(payload.taskId); renderTask(currentTaskId);
           setStatus('pending', isCodexCreditsFlow ? codexCreditsText.pending : 'Подключаем подписку. Обычно это занимает несколько минут…', true, 'process');
         } else {

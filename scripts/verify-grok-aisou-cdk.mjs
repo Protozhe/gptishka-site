@@ -58,7 +58,7 @@ const context=vm.createContext({
     throw Error('Unexpected provider action');
   },
 });
-for(const name of ['isAisouGrokProduct','normalizeAisouGrokSession','validateGrokSsoSession','isResumableCdkRecord','isQueuedCdkActivation','queueActivationForCdk','parseClientTokenInput','buildUpstreamUserCandidates','safeStableJsonKey','startChongzhiJsonTask','startChongzhiTaskWithRetry','startActivationUnsafe','isChongzhiCodeUsed','updateActivationFromChongzhiCodePayload','isSupportTokenActivationMode','validateSupportSessionJwtToken'])vm.runInContext(compile(functions.get(name)),context);
+for(const name of ['isAisouGrokProduct','normalizeAisouGrokSession','validateGrokSsoSession','isResumableCdkRecord','isQueuedCdkActivation','isChatGptPlusIosKeyWait','queueActivationForCdk','parseClientTokenInput','buildUpstreamUserCandidates','safeStableJsonKey','startChongzhiJsonTask','startChongzhiTaskWithRetry','startActivationUnsafe','isChongzhiCodeUsed','updateActivationFromChongzhiCodePayload','isSupportTokenActivationMode','validateSupportSessionJwtToken'])vm.runInContext(compile(functions.get(name)),context);
 context.startOutstockTaskWithRetry=input=>context.startChongzhiJsonTask(input,'https://aiee.fun');
 vm.runInContext(compile('this.resume={'+method('resumePendingCdkJobs')+'}'),context);
 function reset(tier='plus',available=1){plan=tier;stock=available;calls=[];claims=reservations=0;mode='pending';record={orderId:'fixture-order',email:'fixture@example.invalid',productKey:`grok-${tier}-1`,cdk:'',activationSiteUrl:'https://aiee.fun',status:'issued',verificationState:'unknown',attempts:0,taskId:null,issuedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};}
@@ -143,4 +143,51 @@ for(const tier of ['plus','premium','super','ultra']){
  assert.equal(imports.resolveCdkImportSite(`grok-${tier}-1`,'https://aiee.fun/#/'),'https://aiee.fun');
  assert.throws(()=>imports.resolveCdkImportSite(`grok-${tier}-1`,'https://aichongzhi.fun'),/CDK AISOU/);
 }
-console.log('CDK activation: four Grok plans, Codex 250/500/1000 on AISOU and AI-BUY, Claude Pro on AI-BUY; empty-pool refill resumes once with the bound supplier.');
+// Exercise Plus allocation and background resumption with a synthetic session.
+const iosSite = 'https://vip.sxzfd.com';
+context.CHATGPT_PLUS_IOS_SITE_URL = iosSite;
+context.CHATGPT_PLUS_FREE_SITE_URL = 'https://aiee.fun';
+context.canonicalProductKey = key => key;
+context.ordersService.getActivation = async () => ({
+  activationFlow: 'chatgpt_token', deliveryMode: 'activation', productSlug: 'chatgpt-plus-1',
+});
+for (const name of ['isIosProviderBase', 'resolveChatGptPlanType', 'resolveChatGptPlusPool', 'selectChatGptPlusCandidate']) {
+  vm.runInContext(compile(functions.get(name)), context);
+}
+for (const [planType, site] of [['plus', iosSite], ['free', 'https://aiee.fun']]) {
+  reset('plus', 0);
+  record.productKey = 'chatgpt-plus-1';
+  context.activationStore.reserveCdkRecordForOrder = async request => {
+    assert.equal(request.productKey, 'chatgpt-plus-1');
+    assert.equal(request.activationSiteUrl, site);
+    if (!stock) return null;
+    stock--;
+    return { keyId: 'fixture-plus-key', code: 'fixture-plus-cdk', activationSiteUrl: site };
+  };
+  context.prisma.licenseKey.count = async ({ where }) => {
+    assert.equal(where.productKey, 'chatgpt-plus-1');
+    assert.equal(where.activationSiteUrl, site);
+    return stock;
+  };
+  context.startOutstockTaskWithRetry = async input => {
+    assert.equal(input.activationSiteUrl, site);
+    assert.equal(input.forceOverwrite, site === iosSite);
+    input.beforeSubmit();
+    claims++;
+    return { ok: true, taskId: 'fixture-plus-task', tries: 1 };
+  };
+  const session = JSON.stringify({ ...JSON.parse(creditSession), account: { planType } });
+  const queued = await context.startActivationUnsafe('fixture-order', session, undefined, true);
+  assert.equal(queued.queued, true);
+  assert.equal(queued.continuousKeyWait, site === iosSite);
+  assert.equal(context.isQueuedCdkActivation(record), true);
+  await context.resume.resumePendingCdkJobs();
+  assert.equal(claims, 0);
+  stock = 1;
+  await context.resume.resumePendingCdkJobs();
+  await context.resume.resumePendingCdkJobs();
+  assert.equal(claims, 1);
+  assert.equal(record.taskId, 'fixture-plus-task');
+  assert.equal(record.attempts, 1);
+}
+console.log('CDK activation: Grok, Codex, Claude Pro and ChatGPT Plus queues resume once with the matching supplier stock.');

@@ -214,7 +214,7 @@ const context = vm.createContext({
   },
 });
 vm.runInContext(ts.transpileModule(start, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, context);
-for(const name of ['queueActivationForCdk','isChongzhiCodeUsed','updateActivationFromChongzhiCodePayload']) {
+for(const name of ['isChatGptPlusIosKeyWait','queueActivationForCdk','isChongzhiCodeUsed','updateActivationFromChongzhiCodePayload']) {
   const node=ast.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text===name);
   vm.runInContext(ts.transpileModule(node.getText(ast),{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,context);
 }

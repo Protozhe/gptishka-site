@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { JSDOM, VirtualConsole } from 'jsdom';
 
 const flush = async () => { for (let i = 0; i < 8; i++) await new Promise(resolve => setImmediate(resolve)); };
-async function page(lang, slug, initial = 'processing') {
+async function page(lang, slug, initial = 'processing', { iosKeyWait = false } = {}) {
   const en = lang !== 'ru';
   const html = fs.readFileSync((lang === 'en' ? 'en/' : '') + 'redeem-start.html', 'utf8');
   const script = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map(x => x[1]).find(x => x.includes('function validateTokenNow'));
@@ -21,7 +21,13 @@ async function page(lang, slug, initial = 'processing') {
   w.fetch = async (url, options = {}) => {
     requests.push({ url: String(url), method: options.method || 'GET', body: options.body });
     if (String(url).includes('/store-token') || String(url).includes('/validate-token')) return { ok: true, json: async () => ({ ok: true, reasons: [] }) };
-    if (String(url).endsWith('/activation/start')) return { ok: true, json: async () => ({ taskId: 'fixture-copy-task' }) };
+    if (String(url).endsWith('/activation/start')) {
+      if (iosKeyWait) {
+        state = 'queued';
+        return { ok: true, json: async () => ({ taskId: '', queued: true, continuousKeyWait: true }) };
+      }
+      return { ok: true, json: async () => ({ taskId: 'fixture-copy-task' }) };
+    }
     if (String(url).includes('/activation/task/')) {
       if (task === 'error') return { ok: false, status: 503, json: async () => ({}) };
       return { ok: true, json: async () => ({ pending: task === 'pending', success: task === 'success', message: 'provider fixture message' }) };
@@ -32,6 +38,7 @@ async function page(lang, slug, initial = 'processing') {
       activationFlow: claude ? 'support_token' : 'chatgpt_token',
       product: slug, productSlug: slug, productTitle: slug,
       queued: state === 'queued',
+      continuousKeyWait: state === 'queued' && iosKeyWait,
       status: state === 'queued' ? 'issued' : state,
       taskId: state === 'issued' || state === 'queued' ? '' : 'reconcile-fixture-copy',
     }) };
@@ -91,12 +98,27 @@ for (const lang of ['ru', 'en']) {
     assert.doesNotMatch(subscription.get('reviewRewardTitle').textContent, /кредит|credits/i);
   } finally { subscription.dom.window.close(); }
 }
+const stockWaitCases = [
+  ...['codex-250', 'codex-500', 'codex-1000', 'claude-pro'].map(slug => ({ slug, initial: 'queued' })),
+  { slug: 'chatgpt-plus-1', initial: 'queued', iosKeyWait: true },
+  { slug: 'chatgpt-plus-1', initial: 'issued', iosKeyWait: true },
+];
 for (const lang of ['ru', 'en', 'legacy-en']) {
-  for (const slug of ['codex-250', 'codex-500', 'codex-1000', 'claude-pro']) {
-    const p = await page(lang, slug, 'queued');
+  for (const { slug, initial, iosKeyWait } of stockWaitCases) {
+    const p = await page(lang, slug, initial, { iosKeyWait });
     try {
+      if (initial === 'issued') {
+        p.get('tokenInput').value = JSON.stringify({ accessToken: 'fixture-access', account: { planType: 'plus' } });
+        p.get('tokenInput').dispatchEvent(new p.w.Event('input', { bubbles: true }));
+        const validation = p.timers.filter(timer => timer.active && timer.ms < 1000).at(-1);
+        assert.ok(validation);
+        await validation.fn(); await flush();
+        p.get('startBtn').click(); await flush();
+        assert.equal(p.requests.filter(request => request.url.endsWith('/activation/start')).length, 1);
+      }
+      const priorPosts = p.requests.filter(request => request.method === 'POST').length;
       const poll = p.intervals.find(timer => timer.active);
-      assert.ok(poll, `${lang} ${slug}: reload resumes checking the queued order`);
+      assert.ok(poll, `${lang} ${slug}: queued order status is checked automatically`);
       const waitingMessage = p.get('statusText').textContent;
       assert.match(waitingMessage, p.en ? /Request received/ : /Заявка принята/);
       const now = p.w.Date.now();
@@ -117,8 +139,8 @@ for (const lang of ['ru', 'en', 'legacy-en']) {
       await poll.fn(); await flush();
       assert.equal(p.get('statusBox').classList.contains('success'), true);
       assert.equal(poll.active, false);
-      assert.ok(p.requests.every(request => request.method === 'GET'));
+      assert.equal(p.requests.filter(request => request.method === 'POST').length, priorPosts);
     } finally { p.dom.window.close(); }
   }
 }
-console.log('Codex and Claude Pro activation pages: localized status, long key wait, automatic task pickup, and completion passed using mocked transports.');
+console.log('Codex, Claude Pro and ChatGPT Plus iOS activation pages: localized status, long key wait, automatic task pickup, and completion passed using mocked transports.');

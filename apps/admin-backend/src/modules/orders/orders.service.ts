@@ -144,19 +144,23 @@ function isQueuedCdkActivation(record: ActivationRecord | null | undefined) {
     !record.externalFulfillmentOwner && record.status === "issued" && record.verificationState !== "success" &&
     record.lastProviderPayload?.cdkWaitRequestedAt);
 }
+function isChatGptPlusIosKeyWait(record: ActivationRecord) {
+  return record.productKey === CHATGPT_PLUS_PRODUCT_KEY && isIosProviderBase(record.keyAllocationSite);
+}
 async function queueActivationForCdk(record: ActivationRecord, site: string) {
   const current = activationStore.findByOrderId(record.orderId) || record;
   if (current.externalFulfillmentOwner || current.cdk || current.taskId || current.attempts || current.status === "success" || current.verificationState === "success") {
     throw new AppError("Проверяем исходную активацию. Повторный запуск не требуется.", 409);
   }
   const now = new Date().toISOString();
-  activationStore.upsert({ ...current, keyAllocationState: "exhausted", keyAllocationSite: site,
+  const queuedRecord: ActivationRecord = { ...current, keyAllocationState: "exhausted", keyAllocationSite: site,
     lastProviderMessage: "Ожидаем пополнения ключей нужного тарифа. Данные клиента сохранены; после загрузки ключа продолжим автоматически.",
-    lastProviderPayload: { ...(current.lastProviderPayload || {}), cdkWaitRequestedAt: current.lastProviderPayload?.cdkWaitRequestedAt || now }, updatedAt: now });
+    lastProviderPayload: { ...(current.lastProviderPayload || {}), cdkWaitRequestedAt: current.lastProviderPayload?.cdkWaitRequestedAt || now }, updatedAt: now };
+  activationStore.upsert(queuedRecord);
   await enqueueActivationStockNotification(record.orderId).catch(() => {
     console.error(`[activation-stock] owner alert could not be queued order=${record.orderId}`);
   });
-  return { taskId: "", queued: true };
+  return { taskId: "", queued: true, continuousKeyWait: isChatGptPlusIosKeyWait(queuedRecord) };
 }
 function isCodexCreditsProductKey(value: unknown) {
   return /^codex-(250|500|1000)$/.test(String(value || "").trim().toLowerCase());
@@ -866,6 +870,7 @@ export const ordersService = {
       productSlug.includes("gemini") && /^https?:\/\//i.test(String(current.cdk || "").trim())
         ? String(current.cdk || "").trim()
         : null;
+    const queued = isQueuedCdkActivation(current);
 
     return {
       orderId: current.orderId,
@@ -878,7 +883,8 @@ export const ordersService = {
       activationUrl,
       status: current.status,
       taskId: current.taskId || null,
-      queued: isQueuedCdkActivation(current),
+      queued,
+      continuousKeyWait: queued && isChatGptPlusIosKeyWait(current),
       verificationState: current.verificationState || "unknown",
       lastProviderMessage: publicActivationMessage(current.status, current.verificationState),
       lastProviderCheckedAt: current.lastProviderCheckedAt || null,
