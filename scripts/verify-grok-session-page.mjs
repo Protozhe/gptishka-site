@@ -36,7 +36,10 @@ async function page(lang, slug, flow = 'grok_sso', compact = false, state = {}) 
       if (state.queueOnStart) { state.phase = 'queued'; return response({taskId:'',queued:true}); }
       return response({ taskId: 'fixture-grok-task' });
     }
-    if (String(url).includes('/activation/task/')) return response({ pending: true, success: false });
+    if (String(url).includes('/activation/task/')) {
+      const success = state.phase === 'success';
+      return response({ pending: !success, success });
+    }
     return response({ deliveryMode: flow === 'grok_account_id' ? 'support' : 'activation', activationFlow: flow, product: slug, productSlug: slug, productTitle: slug,
       status: state.phase === 'success' ? 'success' : state.phase === 'processing' ? 'processing' : 'issued',
       queued: state.phase === 'queued', taskId: state.phase === 'processing' ? 'fixture-grok-task' : '' });
@@ -63,9 +66,20 @@ for (const lang of ['ru', 'en', 'legacy-en']) {
     await poll.fn();await flush();
     assert.ok(p.requests.at(-1).url.includes('/activation?t=fixture-access'));
     assert.ok(!p.requests.some(r=>r.url.includes('/task/?')),'Do not query an empty provider task');
+    const waitingMessage = p.get('statusText').textContent;
+    const startedAt = p.w.Date.now();
+    p.w.Date.now = () => startedAt + 60 * 60 * 1000;
+    await poll.fn();await flush();
+    assert.ok(poll.active, 'Keep checking the order after the normal activation timeout');
+    assert.equal(p.get('statusText').textContent, waitingMessage);
+    assert.equal(p.get('statusSpinner').style.display, 'inline-block');
     p.state.phase='processing';await poll.fn();await flush();
+    assert.ok(poll.active, 'Start the activation timeout when the task appears');
     await poll.fn();await flush();
     assert.ok(p.requests.some(r=>r.url.includes('/activation/task/fixture-grok-task')));
+    p.state.phase='success';await poll.fn();await flush();
+    assert.equal(p.get('statusBox').classList.contains('success'), true);
+    assert.equal(poll.active, false);
     assert.equal(p.requests.filter(r=>r.url.endsWith('/activation/start')).length,1);
     assert.deepEqual(p.errors,[]);
   } finally {p.dom.window.close();}

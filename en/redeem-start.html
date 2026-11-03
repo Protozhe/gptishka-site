@@ -2826,6 +2826,7 @@
         }
         if (payload.taskId) {
           activationWaitingForKey = false;
+          if (isGrokSsoFlow) pollStartedAt = Date.now();
           currentTaskId = String(payload.taskId); renderTask(currentTaskId);
           updateStartButtonState();
           setStatus('pending', isCodexCreditsFlow ? codexCreditsText.pending : 'Activating your subscription. This usually takes a few minutes…', true);
@@ -2843,7 +2844,8 @@
       pollStartedAt = Date.now();
       pollTimer = setInterval(async () => {
         const done = await checkTaskStatus();
-        const timeout = Date.now() - pollStartedAt >= POLL_MAX_MS;
+        const timeout = !(isGrokSsoFlow && activationWaitingForKey) &&
+          Date.now() - pollStartedAt >= POLL_MAX_MS;
         if (done || timeout) {
           stopPolling();
           if (!done && timeout) {
