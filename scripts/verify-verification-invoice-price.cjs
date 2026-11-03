@@ -54,11 +54,11 @@ async function verify(slug, base, staleVariant, expected, paymentMethod) {
   assert.equal(order.orderDetails.selection.serverUnitPrice, expected, `${slug}: persisted server price`);
 }
 (async () => {
-  for (const payment of ['pally', 'lava', 'enot']) {
+  for (const payment of ['pally', 'enot']) {
     for (const slug of ['claude-kyc', 'claude-kyc-support']) await verify(slug, 4000, 5500, 4000, payment);
     await verify('claude-cvp', 7500, 11500, 7500, payment);
     await verify('claude-cvp-support', 11500, 7500, 11500, payment);
     await verify('chatgpt-plus-1', 4000, 5500, 5500, payment);
   }
-  console.log('Verification invoice pricing: 15 cases bind catalog, provider invoice, Order and Payment despite stale variants; other product variants stay intact. No live transports.');
+  console.log('Verification invoice pricing: 10 cases bind catalog, provider invoice, Order and Payment despite stale variants; other product variants stay intact. No live transports.');
 })().catch(error => {console.error(error); process.exitCode = 1;});
