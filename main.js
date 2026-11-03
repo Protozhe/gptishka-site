@@ -1000,7 +1000,6 @@ function initActivationResumeShortcut() {
         emailPlaceholder: "Email for order details",
         invalidEmail: "Please enter a valid email",
         checkoutError: "Failed to start checkout. Please try again.",
-        lavaUnavailable: "Lava is temporarily unavailable. Please choose Enot.io.",
         checkoutProductMissing: "The selected item is outdated in cart. Please re-add it from pricing.",
         multiCartCheckout: "Checkout is currently available one item at a time. Please pay items separately.",
         paymentMethodRequired: "Select a payment method",
@@ -1048,7 +1047,6 @@ function initActivationResumeShortcut() {
         emailPlaceholder: "Email для получения данных заказа",
         invalidEmail: "Введите корректный email",
         checkoutError: "Не удалось начать оплату. Попробуйте снова.",
-        lavaUnavailable: "Lava временно недоступна. Выберите Enot.io.",
         checkoutProductMissing: "Товар в корзине устарел. Добавьте его заново из тарифов.",
         multiCartCheckout: "Сейчас оплата доступна по одному товару. Оплатите позиции по отдельности.",
         paymentMethodRequired: "Выберите способ оплаты",
@@ -1069,7 +1067,7 @@ function initActivationResumeShortcut() {
   const CHATGPT_GO_ORDER_KEY = "gptishka_chatgpt_go_order_v1";
   const CHATGPT_GO_ORDER_TTL_MS = 20 * 60 * 1000;
   const DEFAULT_PAYMENT_METHOD = "pally";
-  const AVAILABLE_PAYMENT_METHODS = new Set(["pally", "enot", "lava"]);
+  const AVAILABLE_PAYMENT_METHODS = new Set(["pally", "enot"]);
   const PROMO_TTL_MS = 30 * 60 * 1000;
   const PRODUCTS_CACHE_TTL_MS = 15 * 1000;
   const PRODUCTS_FETCH_TIMEOUT_MS = 8000;
@@ -1245,9 +1243,6 @@ function initActivationResumeShortcut() {
   function resolveCheckoutErrorMessage(error) {
     const raw = String(error && error.message ? error.message : "").trim();
     if (!raw) return TEXT.checkoutError;
-    if (/lava payment gateway is not configured/i.test(raw) || /lava webhook secret is not configured/i.test(raw)) {
-      return TEXT.lavaUnavailable;
-    }
     return raw;
   }
 
@@ -4562,7 +4557,6 @@ function initActivationResumeShortcut() {
   function getChatGptGoPaymentProvider(paymentMethod) {
     const method = String(paymentMethod || "").trim().toLowerCase();
     if (method === "pally") return "pally";
-    if (method === "lava" || method === "crypto") return "lava";
     if (method === "enot" || method === "card") return "enot";
     return DEFAULT_PAYMENT_METHOD;
   }
@@ -4570,7 +4564,6 @@ function initActivationResumeShortcut() {
   function normalizeChatGptGoPaymentChoice(value) {
     const method = String(value || "").trim().toLowerCase();
     if (method === "pally") return "pally";
-    if (method === "lava" || method === "crypto") return "lava";
     if (method === "enot" || method === "enot.io" || method === "gateway" || method === "card") return "enot";
     return DEFAULT_PAYMENT_METHOD;
   }
@@ -5210,7 +5203,7 @@ function initActivationResumeShortcut() {
             '<label class="chatgpt-order-soft-action"><span><strong>Пришёл по рекомендации</strong><small>Добавим контакт друга для скидки</small></span><input name="cameByRecommendation" type="checkbox"' + boolChecked(savedRecommendation) + '><i></i></label><div class="chatgpt-order-referral-extra"' + (savedRecommendation ? "" : " hidden") + ' data-chatgpt-go-referral-extra><strong>Кто пригласил</strong><p>Пришли от друга? Дайте ему 5% скидки за ваш первый заказ — напишите его контакт ниже.</p><input class="chatgpt-order-field__control" name="referrerContact" type="text" autocomplete="off" placeholder="@telegram" value="' + escapeHtml(String(draft.referrerContact || "")) + '"></div>' +
             '<details class="chatgpt-order-collapsible"' + (String(draft.orderComment || "").trim() ? " open" : "") + '><summary>Комментарий к заказу</summary><label class="chatgpt-order-field"><span>Комментарий</span><textarea class="chatgpt-order-field__control" name="orderComment" rows="3" placeholder="Например: продление аккаунта, пожелания, детали по заказу">' + escapeHtml(String(draft.orderComment || "")) + '</textarea></label></details>' +
             '<details class="chatgpt-order-collapsible" data-chatgpt-go-promo-panel' + (savedPromo ? " open" : "") + '><summary>У меня есть промокод</summary><div class="chatgpt-order-promo"><input class="chatgpt-order-field__control" name="promoCode" type="text" autocomplete="off" placeholder="Введите промокод" value="' + escapeHtml(savedPromo) + '"><button type="button" class="btn secondary" data-chatgpt-go-promo-apply>Применить</button></div><p class="chatgpt-order-promo-msg" data-chatgpt-go-promo-msg></p></details></section>' +
-          '<section class="chatgpt-order-section"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Оплата</h4><p>Выберите платёжный шлюз</p></div><div class="chatgpt-order-payment chatgpt-payment-options" role="radiogroup" aria-label="Способ оплаты">' + renderChatGptPaymentOption("pally", "Pally.info", "/assets/img/payment-pally.svg", savedPaymentMethod) + renderChatGptPaymentOption("lava", "LAVA", "/assets/img/payment-lava.svg?v=20260724-lava-mark2", savedPaymentMethod) + renderChatGptPaymentOption("enot", "ENOT", "/assets/img/payment-enot.svg?v=20260724-enot-mark1", savedPaymentMethod) + '</div><p class="chatgpt-order-error" data-chatgpt-go-error-for="paymentMethod"></p><details class="chatgpt-order-collapsible chatgpt-order-processing-details"><summary>Сроки выполнения заказа</summary><div class="chatgpt-order-processing-copy"><p>Мы обрабатываем заказы ежедневно с 08:00 до 20:00 по МСК.</p><p>Заказы с автоматическим подключением выполняются 24/7.</p><p>Среднее время ожидания — от 5 минут до 2 часов после оплаты.</p></div></details></section>' +
+          '<section class="chatgpt-order-section"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Оплата</h4><p>Выберите платёжный шлюз</p></div><div class="chatgpt-order-payment chatgpt-payment-options" role="radiogroup" aria-label="Способ оплаты">' + renderChatGptPaymentOption("pally", "Pally.info", "/assets/img/payment-pally.svg", savedPaymentMethod) + renderChatGptPaymentOption("enot", "ENOT", "/assets/img/payment-enot.svg?v=20260724-enot-mark1", savedPaymentMethod) + '</div><p class="chatgpt-order-error" data-chatgpt-go-error-for="paymentMethod"></p><details class="chatgpt-order-collapsible chatgpt-order-processing-details"><summary>Сроки выполнения заказа</summary><div class="chatgpt-order-processing-copy"><p>Мы обрабатываем заказы ежедневно с 08:00 до 20:00 по МСК.</p><p>Заказы с автоматическим подключением выполняются 24/7.</p><p>Среднее время ожидания — от 5 минут до 2 часов после оплаты.</p></div></details></section>' +
           '<p class="chatgpt-order-legal-note">Нажимая кнопку, вы соглашаетесь с <a href="/oferta.html" target="_blank" rel="noopener">офертой</a> и <a href="/politika.html" target="_blank" rel="noopener">политикой конфиденциальности</a>.</p><p class="chatgpt-order-status" data-chatgpt-go-status></p>' +
         '</div><div class="chatgpt-order-footer"><div class="chatgpt-order-footer__total"><span>Итого к оплате</span><strong data-chatgpt-go-total>' + escapeHtml(format(total)) + '</strong></div><button type="submit" class="btn chatgpt-order-submit" data-chatgpt-go-submit>Оформить заказ</button></div>' +
       '</form>'
@@ -5950,9 +5943,6 @@ function initActivationResumeShortcut() {
         if (plain && plain.length <= 220 && !/^<!doctype/i.test(plain)) {
           rawError = plain;
         }
-      }
-      if (selectedPaymentMethod === "lava" && /not configured/i.test(rawError)) {
-        throw new Error(TEXT.lavaUnavailable);
       }
       throw new Error(rawError || TEXT.checkoutError);
     }

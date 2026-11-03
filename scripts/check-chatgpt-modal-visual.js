@@ -29,7 +29,7 @@ function requirePage(marker, label = marker) {
 requireSource("chatgpt-payment-options", "payment options class");
 requireSource("chatgpt-payment-option", "payment option class");
 requireSource("chatgpt-payment-logo", "payment logo class");
-requireSource("/assets/img/payment-lava.svg", "LAVA local logo");
+rejectSource("/assets/img/payment-lava.svg", "removed LAVA option");
 requireSource("/assets/img/payment-enot.svg?v=20260724-enot-mark1", "ENOT local logo");
 rejectSource("СБП 0% и карты 3.2%", "LAVA fee caption");
 rejectSource("Карты 3.2% и СБП 0%", "ENOT fee caption");
@@ -96,7 +96,7 @@ requireCss('.chatgpt-order-title[tabindex="-1"]:focus', "focused modal title has
 
 if (/payment-method-modal__hint/.test(page)) failures.push("chatgpt.html should show only payment system names");
 requirePage("/assets/css/home-stability-hotfix.css?v=20260723-checkout-controls1", "CSS cache-bust");
-requirePage("/assets/js/app.min.js?v=20260724-payment-logos1", "JS cache-bust");
+requirePage("/assets/js/app.min.js?v=sha256-ec9c4ceba1479afe", "JS cache-bust");
 
 if (failures.length) {
   console.error(`ChatGPT modal visual checks failed:\n- ${failures.join("\n- ")}`);

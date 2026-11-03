@@ -328,6 +328,9 @@ export const paymentsService = {
     const redeemTokenHash = issueRedeemToken ? sha256Hex(redeemToken) : null;
 
     const selectedProviderCode = resolveProviderCodeByPaymentMethod(input.paymentMethod);
+    if (selectedProviderCode === "lava") {
+      throw new AppError("Unsupported payment method: lava", 400);
+    }
     const selectedPaymentMethod = normalizePaymentMethodCode(input.paymentMethod, selectedProviderCode);
     const pallyOrderData = selectedProviderCode === "pally"
       ? buildPallyOrderData({
@@ -415,7 +418,7 @@ export const paymentsService = {
       // Pally remains the primary method. If its invoice endpoint is temporarily
       // unavailable, complete the same order through the proven ENOT gateway so
       // the customer still receives a payment link.
-      const canFallbackToEnot = selectedProviderCode === "lava" || selectedProviderCode === "pally";
+      const canFallbackToEnot = selectedProviderCode === "pally";
       if (!canFallbackToEnot) throw error;
 
       invoiceFallback = true;
