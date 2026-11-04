@@ -2562,6 +2562,7 @@
 </style>
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
 <link rel="stylesheet" href="/assets/css/instruction-actions.css?v=sha256-ba15eccd755cc1ff">
+<link rel="stylesheet" href="/assets/css/chatgpt-activation-layout.css?v=sha256-6ed2f94961e622f6">
 </head>
 <body id="storefrontBody" class="redeem-flow home-wide-body">
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
@@ -2715,6 +2716,15 @@
         <button id="startBtn" type="button" class="redeem-btn redeem-btn-primary full" disabled>Активировать</button>
         <button id="stopPollingBtn" type="button" class="redeem-btn full" style="display:none">Остановить проверку</button>
       </section>
+
+      <template id="chatGptActivationGuide">
+        <ol>
+              <li>Войдите в свой аккаунт ChatGPT.<a class="instruction-action" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" data-chatgpt-guide>Открыть ChatGPT<span aria-hidden="true">↗</span></a></li>
+              <li>В том же браузере откройте страницу токена:<a class="instruction-action" href="https://chatgpt.com/api/auth/session" target="_blank" rel="noopener noreferrer">Открыть страницу токена<span aria-hidden="true">↗</span></a></li>
+              <li>Скопируйте всё содержимое страницы и вставьте в поле.</li>
+        </ol>
+        <a class="redeem-guide-video" href="https://www.youtube.com/watch?v=v_1MnQjwWDc" target="_blank" rel="noopener noreferrer"><svg aria-hidden="true" viewBox="0 0 20 20" fill="none" width="16" height="16"><rect x="2" y="3.5" width="16" height="13" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="m8 7 5 3-5 3V7Z" fill="currentColor"/></svg>Открыть видеоинструкцию<span aria-hidden="true">↗</span></a>
+      </template>
 
       <section id="statusBox" class="redeem-status" hidden>
         <span id="statusText">Ожидаю действия.</span>
@@ -3563,11 +3573,63 @@
       }
     }
 
+
+    let chatGptActivationEntry = null;
+    let chatGptActivationMoves = [];
+
+    function applyChatGptActivationLayout(enabled) {
+      const guide = tokenGuideSummaryEl?.closest('details');
+      const template = document.getElementById('chatGptActivationGuide');
+      if (!enabled) {
+        if (!chatGptActivationEntry) return;
+        chatGptActivationMoves.forEach(({node, anchor}) => anchor.replaceWith(node));
+        chatGptActivationMoves = [];
+        chatGptActivationEntry.remove();
+        chatGptActivationEntry = null;
+        guide?.querySelector('.redeem-guide-video')?.remove();
+        if (checkBtn) checkBtn.hidden = false;
+        document.body.classList.remove('redeem-chatgpt-layout');
+        return;
+      }
+      if (!tokenBlock || !guide || !template || !tokenGuideListEl) return;
+      if (!chatGptActivationEntry) {
+        chatGptActivationEntry = document.createElement('div');
+        chatGptActivationEntry.id = 'activationEntry';
+        chatGptActivationEntry.className = 'redeem-entry';
+        const nodes = [tokenLabelEl, tokenBlock.querySelector('.redeem-token-toolbar'), tokenInput,
+          document.getElementById('claudeZovoConsentBox'), tokenBlock.querySelector('.redeem-meta'),
+          actionsRow, document.getElementById('proActivationNote'), perplexityNextStep];
+        chatGptActivationMoves = nodes.filter(Boolean).map((node) => {
+          const anchor = document.createComment('chatgpt-activation-layout');
+          node.before(anchor);
+          chatGptActivationEntry.append(node);
+          return {node, anchor};
+        });
+        tokenBlock.prepend(chatGptActivationEntry);
+        guide.append(template.content.querySelector('.redeem-guide-video').cloneNode(true));
+        guide.open = true;
+      }
+      document.body.classList.add('redeem-chatgpt-layout');
+      tokenGuideSummaryEl.textContent = 'Инструкция';
+      tokenGuideListEl.replaceChildren(...template.content.querySelector('ol').cloneNode(true).childNodes);
+      if (tokenLabelEl) tokenLabelEl.textContent = 'Данные аккаунта ChatGPT';
+      if (tokenInput) tokenInput.placeholder = 'Вставьте содержимое страницы токена';
+      if (startBtn) startBtn.textContent = 'Активировать';
+      const note = document.getElementById('proActivationNote');
+      if (note && !note.hidden && !/25x|25×/.test(redeemTitleEl?.textContent || '')) {
+        note.textContent = 'Результат появится здесь. Повторная оплата не нужна.';
+      }
+      if (checkBtn) checkBtn.hidden = !currentTaskId && !activationWaitingForKey;
+    }
+
     function applyActivationPayloadMode(payload, deliveryMode) {
       if (!isGrokSessionPayload(payload)) restoreGrokSessionLayout();
       const activationFlow = resolveSupportActivationFlow(payload);
       const forcedSupportFlow = resolveForcedSupportActivationFlow(payload);
       const productKey = getActivationProductFingerprint(payload);
+      const usesChatGptLayout = deliveryMode === 'activation' && !forcedSupportFlow
+        && productKey.includes('chatgpt') && !productKey.includes('codex');
+      if (!usesChatGptLayout) applyChatGptActivationLayout(false);
       isGrokSsoFlow = isGrokSessionPayload(payload);
       isClaudeZovoFlow = payload?.activationFlow==='claude_zovo';
       document.getElementById('claudeZovoConsentBox').hidden=!isClaudeZovoFlow;
@@ -3634,6 +3696,7 @@
       }
       if(isClaudeZovoFlow||isGrokSsoFlow) {if(retryNewKeyBtn) retryNewKeyBtn.style.display='none';if(isClaudeZovoFlow) document.title='Подключение Claude Max — GPTишка';}
       applyProActivationMode(chatGptPlanName);
+      if (usesChatGptLayout) applyChatGptActivationLayout(true);
     }
 
     function applyProActivationMode(name) {
@@ -3829,6 +3892,7 @@
         setStatus('pending', 'Предпросмотр: данные не отправляются.', false);
       }
       applyProActivationMode(config.name);
+      if (normalizedKey.startsWith('chatgpt')) applyChatGptActivationLayout(true);
 
       [startBtn, checkBtn, retryNewKeyBtn, stopPollingBtn].forEach((button) => {
         if (button) button.disabled = true;
@@ -4558,6 +4622,7 @@
 
     function renderTask(taskId) {
       const value = String(taskId || '').trim();
+      if (chatGptActivationEntry && checkBtn) checkBtn.hidden = !value && !activationWaitingForKey;
       if (!value) {
         taskWrap.style.display = 'none';
         copyTaskBtn.style.display = 'none';
