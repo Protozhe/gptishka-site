@@ -1283,7 +1283,7 @@
 <link rel="stylesheet" href="/assets/css/redeem-clean-checkout-v2.css?v=sha256-b36a77d5e07acdcc">
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
 <link rel="stylesheet" href="/assets/css/instruction-actions.css?v=sha256-ba15eccd755cc1ff">
-<link rel="stylesheet" href="/assets/css/chatgpt-activation-layout.css?v=sha256-6ed2f94961e622f6">
+<link rel="stylesheet" href="/assets/css/chatgpt-activation-layout.css?v=sha256-124920d76dfebd38">
 </head>
 <body id="storefrontBody" class="redeem-flow home-wide-body">
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
@@ -2107,6 +2107,7 @@
         chatGptActivationMoves = [];
         chatGptActivationEntry.remove();
         chatGptActivationEntry = null;
+        delete statusBox.dataset.activationProcessing;
         guide?.querySelector('.redeem-guide-video')?.remove();
         if (checkBtn) checkBtn.hidden = false;
         document.body.classList.remove('redeem-chatgpt-layout');
@@ -2119,7 +2120,7 @@
         chatGptActivationEntry.className = 'redeem-entry';
         const nodes = [tokenLabelEl, tokenBlock.querySelector('.redeem-token-toolbar'), tokenInput,
           document.getElementById('claudeZovoConsentBox'), tokenBlock.querySelector('.redeem-meta'),
-          actionsRow, document.getElementById('proActivationNote'), perplexityNextStep];
+          statusBox, actionsRow, document.getElementById('proActivationNote'), perplexityNextStep];
         chatGptActivationMoves = nodes.filter(Boolean).map((node) => {
           const anchor = document.createComment('chatgpt-activation-layout');
           node.before(anchor);
@@ -2197,7 +2198,10 @@
       );
       if (isGrokSsoFlow) applyGrokSessionPage();
       applyProActivationMode(chatGptPlanName);
-      if (usesChatGptLayout) applyChatGptActivationLayout(true);
+      if (usesChatGptLayout) {
+        applyChatGptActivationLayout(true);
+        if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Paste the contents of the token page and start activation.';
+      }
     }
 
     function applyProActivationMode(name) {
@@ -3270,6 +3274,9 @@
       statusBox.className = `redeem-status ${tone}`;
       statusText.textContent = text;
       statusSpinner.style.display = loading ? 'inline-block' : 'none';
+      if (chatGptActivationEntry) {
+        statusBox.dataset.activationProcessing = String(Boolean(loading));
+      }
     }
 
     function hideStatus() {

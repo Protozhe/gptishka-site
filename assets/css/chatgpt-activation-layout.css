@@ -85,15 +85,7 @@ html body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #store
 }
 
 body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-card > .redeem-stage {
-  min-height: 0;
-  margin-bottom: 8px !important;
-  padding: 3px 8px;
-  font-size: calc(12px * var(--redeem-main-scale, 1)) !important;
-  letter-spacing: 0 !important;
-}
-
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-stage__dot {
-  box-shadow: none !important;
+  display: none !important;
 }
 
 body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-card > .redeem-title {
@@ -128,6 +120,30 @@ body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #copyOrderI
 
 body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-grid > .redeem-block::before {
   content: none !important;
+}
+
+body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #statusBox {
+  min-width: 0;
+  margin: 0 !important;
+  padding: 9px 11px !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+  overflow-wrap: anywhere;
+}
+
+body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-card:has(#statusBox[data-activation-processing="true"]:not([hidden])) > #redeemSubtitle,
+body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry:has(#statusBox[data-activation-processing="true"]:not([hidden])) .redeem-meta {
+  display: none !important;
+}
+
+body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #statusBox:not([data-activation-processing="true"]) {
+  order: 1;
+}
+
+body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #statusBox #copyTaskBtn {
+  min-height: 30px !important;
+  padding: 4px 8px !important;
+  font-size: 12px !important;
 }
 
 body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body.redeem-preview-mode #statusBox.pending {
@@ -371,6 +387,31 @@ body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activation
 body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #checkBtn { grid-column: 2 !important; grid-row: 1 !important; }
 body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry :is(#retryNewKeyBtn, #stopPollingBtn) { grid-column: 1 / -1 !important; }
 body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry .redeem-btn::before { display: none !important; }
+
+@media (max-height: 700px) {
+  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-card > .redeem-title {
+    font-size: clamp(23px, 3vw, 36px) !important;
+    line-height: 1.14 !important;
+  }
+
+  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-card > .redeem-grid {
+    margin-top: 10px !important;
+    gap: 8px !important;
+  }
+}
+
+@media (min-width: 801px) and (max-height: 700px) {
+  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #tokenInput {
+    min-height: 82px !important;
+    height: 88px !important;
+  }
+}
+
+@media (max-width: 800px) and (max-height: 680px), (max-height: 570px) {
+  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #statusBox[data-activation-processing="true"] {
+    order: -1;
+  }
+}
 
 @media (max-width: 800px) {
   body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock:has(> .redeem-entry):not([style*="display: none"]) {
