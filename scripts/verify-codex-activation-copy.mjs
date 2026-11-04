@@ -62,6 +62,8 @@ for (const lang of ['ru', 'en', 'legacy-en']) for (const quantity of [250, 500, 
     assert.equal(p.get('statusText').textContent, p.en ? 'Credits have been added to your account.' : 'Кредиты успешно зачислены.');
     assert.match(p.get('reviewRewardTitle').textContent, p.en ? /Credits have been added/ : /Кредиты успешно зачислены/);
     assert.equal(p.get('reviewRewardBox').hidden, false);
+    assert.equal(p.get('activationEntry').dataset.activationResult, 'complete');
+    assert.equal(progress.querySelector('[data-activation-step="done"]').classList.contains('is-current'), true);
     assert.equal(p.intervals.some(x => x.active), false, 'completion must still stop polling');
     assert.equal(p.requests.filter(x => x.method === 'POST').length, 0, 'status checks must not start or repay an order');
   } finally { p.dom.window.close(); }

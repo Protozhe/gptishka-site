@@ -18,19 +18,19 @@
 }
 
 /* The guide and the entry have independent layout tracks. */
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body {
   --redeem-entry-surface: #22282d;
   --redeem-entry-field: #191e23;
   --redeem-entry-line: #3a444a;
   --redeem-entry-accent: #6ddace;
 }
 
-html:has(body#storefrontBody.redeem-flow.redeem-chatgpt-layout #activationEntry) {
+html:has(body#storefrontBody.redeem-flow.redeem-unified-layout #activationEntry) {
   scroll-behavior: auto !important;
 }
 
-/* Enlarge the ChatGPT activation controls without scaling the guide or site chrome. */
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body {
+/* Enlarge the activation controls without scaling the guide or site chrome. */
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body {
   --redeem-main-scale: 1.2;
   --redeem-reading-font: "Golos Text", Manrope, system-ui, sans-serif;
   --redeem-guide-heading-size: 20px;
@@ -39,7 +39,7 @@ body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body {
   --redeem-main-width: min(1248px, calc(100% - clamp(40px, 7vw, 112px)));
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-page:has(#activationEntry) {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-page:has(#activationEntry) {
   width: var(--redeem-main-width, min(1040px, calc(100% - 40px))) !important;
   max-width: 1248px !important;
   zoom: 1;
@@ -47,7 +47,7 @@ body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-pag
   padding-block: clamp(12px, 2vh, 20px) 18px !important;
 }
 
-html body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body:has(#activationEntry) .gptishka-compliance-note {
+html body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body:has(#activationEntry) .gptishka-compliance-note {
   width: var(--redeem-main-width, min(1040px, calc(100% - 40px)));
   margin: 0 auto 12px !important;
   padding: 0 !important;
@@ -56,73 +56,73 @@ html body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body:has(#a
   -webkit-backdrop-filter: none !important;
 }
 
-html body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body:has(#activationEntry) footer.gptishka-unified-footer {
+html body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body:has(#activationEntry) footer.gptishka-unified-footer {
   margin-top: 12px !important;
   padding-top: 16px !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-card {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-card {
   --redeem-ui-speed: 110ms;
   text-shadow: none !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body :is(.redeem-title, .redeem-label, .redeem-guide, .redeem-grid .redeem-btn, .redeem-input),
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-input::placeholder {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body :is(.redeem-title, .redeem-label, .redeem-guide, .redeem-grid .redeem-btn, .redeem-input),
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-input::placeholder {
   text-shadow: none !important;
 }
 
-html body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body :is(.redeem-grid .redeem-btn, .redeem-input, .redeem-guide summary) {
+html body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body :is(.redeem-grid .redeem-btn, .redeem-input, .redeem-guide summary) {
   transition: background-color var(--redeem-ui-speed, 110ms) ease-out,
     border-color var(--redeem-ui-speed, 110ms) ease-out, color var(--redeem-ui-speed, 110ms) ease-out !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-grid .redeem-btn {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-grid .redeem-btn {
   filter: none !important;
 }
 
-html body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #storefrontHeader .logo-img {
+html body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #storefrontHeader .logo-img {
   filter: brightness(0) invert(1) !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-card > .redeem-stage {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-card > .redeem-stage {
   display: none !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-card > .redeem-title {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-card > .redeem-title {
   font-size: calc(clamp(24px, 3.2vw, 36px) * var(--redeem-main-scale, 1)) !important;
   line-height: 1.18 !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-card > #redeemSubtitle {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-card > #redeemSubtitle {
   margin-top: 6px !important;
   font-size: calc(15px * var(--redeem-main-scale, 1)) !important;
   line-height: 1.45 !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-card > .redeem-grid {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-card > .redeem-grid {
   margin-top: 14px !important;
   gap: 10px !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-grid > .redeem-block:first-child {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-grid > .redeem-block:first-child {
   min-height: calc(42px * var(--redeem-main-scale, 1));
 }
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-grid > .redeem-block:first-child :is(.redeem-label, #orderId, #copyOrderIdBtn) {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-grid > .redeem-block:first-child :is(.redeem-label, #orderId, #copyOrderIdBtn) {
   font-size: calc(14px * var(--redeem-main-scale)) !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #copyOrderIdBtn {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #copyOrderIdBtn {
   flex: 0 0 auto !important;
   width: auto !important;
   min-width: calc(112px * var(--redeem-main-scale)) !important;
   max-width: none !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-grid > .redeem-block::before {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-grid > .redeem-block::before {
   content: none !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #statusBox {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #statusBox {
   min-width: 0;
   margin: 0 !important;
   padding: 9px 11px !important;
@@ -131,29 +131,29 @@ body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activation
   overflow-wrap: anywhere;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-card:has(#statusBox[data-activation-processing="true"]:not([hidden])) > #redeemSubtitle,
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry:has(#statusBox[data-activation-processing="true"]:not([hidden])) .redeem-meta {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-card:has(#statusBox[data-activation-processing="true"]:not([hidden])) > #redeemSubtitle,
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry:has(#statusBox[data-activation-processing="true"]:not([hidden])) .redeem-meta {
   display: none !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #statusBox:not([data-activation-processing="true"]) {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #statusBox:not([data-activation-processing="true"]) {
   order: 1;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #statusBox #copyTaskBtn {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #statusBox #copyTaskBtn {
   min-height: 30px !important;
   padding: 4px 8px !important;
   font-size: 12px !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body.redeem-preview-mode #statusBox.pending {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body.redeem-preview-mode #statusBox.pending {
   background: var(--redeem-entry-field) !important;
   border-color: var(--redeem-entry-line) !important;
   color: var(--redeem-muted) !important;
 }
 
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock:has(> .redeem-entry):not([style*="display: none"]) {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock:has(> .redeem-entry):not([style*="display: none"]) {
   display: grid !important;
   grid-template-columns: minmax(0, .86fr) minmax(0, 1.14fr) !important;
   grid-template-rows: auto !important;
@@ -165,7 +165,7 @@ body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock
   border-radius: 14px !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock > .redeem-entry {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock > .redeem-entry {
   grid-column: 2 !important;
   grid-row: 1 !important;
   position: static;
@@ -178,7 +178,7 @@ body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock
   background: none;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock > .redeem-guide {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock > .redeem-guide {
   grid-column: 1 !important;
   grid-row: 1 !important;
   margin: 0 !important;
@@ -186,22 +186,22 @@ body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock
   border-inline-end: 1px solid var(--redeem-entry-line) !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock #tokenGuideSummary {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock #tokenGuideSummary {
   min-height: 36px;
   margin: 0 !important;
   padding: 7px 24px 7px 0 !important;
   font: 750 var(--redeem-guide-heading-size, 16px)/1.35 var(--redeem-reading-font, Manrope, system-ui, sans-serif) !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock .redeem-guide:not([open]) > #tokenGuideList {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock .redeem-guide:not([open]) > #tokenGuideList {
   display: none !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock #tokenGuideList {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock #tokenGuideList {
   margin-top: 6px !important;
 }
 
-html body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenGuideList .instruction-action {
+html body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenGuideList .instruction-action {
   min-height: 36px;
   margin: 6px 0 0;
   padding: 5px 10px !important;
@@ -214,20 +214,20 @@ html body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #token
   transition: background-color var(--redeem-ui-speed) ease-out, border-color var(--redeem-ui-speed) ease-out;
 }
 
-html body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenGuideList .instruction-action:hover {
+html body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenGuideList .instruction-action:hover {
   border-color: #54716f !important;
   background: #344446 !important;
 }
 
-html body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenGuideList .instruction-action span[aria-hidden] {
+html body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenGuideList .instruction-action span[aria-hidden] {
   font-size: 14px;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock .redeem-guide-video {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock .redeem-guide-video {
   display: none !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock .redeem-guide[open]:has(#tokenGuideList [data-chatgpt-guide]) > .redeem-guide-video {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock .redeem-guide[open]:has(#tokenGuideList [data-chatgpt-guide]) > .redeem-guide-video {
   display: flex !important;
   align-items: center;
   gap: 8px;
@@ -246,47 +246,47 @@ body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock
   transition: background-color var(--redeem-ui-speed) ease-out, border-color var(--redeem-ui-speed) ease-out;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock .redeem-guide-video:hover {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock .redeem-guide-video:hover {
   background: #303a3d;
   border-color: #54716f;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock .redeem-guide-video svg {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock .redeem-guide-video svg {
   flex: none;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock #tokenGuideSummary::after {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock #tokenGuideSummary::after {
   transition-duration: var(--redeem-ui-speed) !important;
 }
 
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body:not(.redeem-grok-sso) #tokenBlock #tokenGuideList > li:not(.redeem-guide-shot) {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body:not(.redeem-grok-sso) #tokenBlock #tokenGuideList > li:not(.redeem-guide-shot) {
   padding-block: 6px !important;
   font-size: var(--redeem-guide-text-size, 15px) !important;
   line-height: 1.45 !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body:not(.redeem-grok-sso) #tokenBlock #tokenGuideList > li:not(.redeem-guide-shot)::before {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body:not(.redeem-grok-sso) #tokenBlock #tokenGuideList > li:not(.redeem-guide-shot)::before {
   top: 6px !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry :is(#tokenLabel, .redeem-token-toolbar, .redeem-meta, #proActivationNote, #claudeZovoConsentBox) {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry :is(#tokenLabel, .redeem-token-toolbar, .redeem-meta, #proActivationNote, #claudeZovoConsentBox) {
   margin: 0 !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #tokenLabel {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #tokenLabel {
   font: 750 calc(16px * var(--redeem-main-scale, 1))/1.4 var(--redeem-reading-font, Manrope, system-ui, sans-serif) !important;
   letter-spacing: 0 !important;
   text-transform: none !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry .redeem-token-toolbar {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry .redeem-token-toolbar {
   display: flex !important;
   flex-wrap: wrap;
   gap: 6px !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry .redeem-token-toolbar .redeem-btn {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry .redeem-token-toolbar .redeem-btn {
   width: auto !important;
   min-width: 0 !important;
   min-height: 36px;
@@ -294,7 +294,7 @@ body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activation
   font-size: calc(14px * var(--redeem-main-scale, 1)) !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #tokenInput {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #tokenInput {
   box-sizing: border-box;
   width: 100% !important;
   min-height: 92px !important;
@@ -308,49 +308,49 @@ body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activation
   line-height: 1.5 !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #tokenInput:focus {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #tokenInput:focus {
   border-color: var(--redeem-entry-accent) !important;
   outline: 1px solid var(--redeem-entry-accent);
   outline-offset: 1px;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry .redeem-meta {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry .redeem-meta {
   display: flex !important;
   flex-flow: row wrap;
   align-items: baseline;
   gap: 2px 10px !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry :is(#tokenInfo, #tokenWarn, #proActivationNote) {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry :is(#tokenInfo, #tokenWarn, #proActivationNote) {
   font-size: calc(13px * var(--redeem-main-scale, 1)) !important;
   line-height: 1.45 !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry:has(#tokenInput:placeholder-shown) #tokenInfo {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry:has(#tokenInput:placeholder-shown) #tokenInfo {
   display: none !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #proActivationNote {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #proActivationNote {
   padding: 0 !important;
   border: 0 !important;
   background: none !important;
   box-shadow: none !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry [hidden] { display: none !important; }
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry [hidden] { display: none !important; }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #actionsRow:not([style*="display: none"]) {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #actionsRow:not([style*="display: none"]) {
   display: grid !important;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) !important;
   margin: 0 !important;
   gap: 6px !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #actionsRow:not(:has(#checkBtn:not([hidden], :disabled, [style*="display: none"]))) #startBtn {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #actionsRow:not(:has(#checkBtn:not([hidden], :disabled, [style*="display: none"]))) #startBtn {
   grid-column: 1 / -1 !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #actionsRow .redeem-btn {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #actionsRow .redeem-btn {
   min-width: 0;
   min-height: 44px;
   padding: 6px 9px !important;
@@ -359,7 +359,7 @@ body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activation
   white-space: normal;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #startBtn {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #startBtn {
   grid-column: 1 !important;
   grid-row: 1 !important;
   min-height: calc(46px * var(--redeem-main-scale, 1)) !important;
@@ -368,65 +368,65 @@ body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activation
   opacity: 1 !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #startBtn:not(:disabled) {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #startBtn:not(:disabled) {
   background: var(--redeem-entry-accent) !important;
   color: #102625 !important;
   border-color: transparent !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #startBtn:not(:disabled):is(:hover, :focus-visible) {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #startBtn:not(:disabled):is(:hover, :focus-visible) {
   background: #8ae6dc !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #startBtn:disabled {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #startBtn:disabled {
   background: #2c3c40 !important;
   border-color: #455a5d !important;
   color: #b2c9ca !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #checkBtn { grid-column: 2 !important; grid-row: 1 !important; }
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry :is(#retryNewKeyBtn, #stopPollingBtn) { grid-column: 1 / -1 !important; }
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry .redeem-btn::before { display: none !important; }
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #checkBtn { grid-column: 2 !important; grid-row: 1 !important; }
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry :is(#retryNewKeyBtn, #stopPollingBtn) { grid-column: 1 / -1 !important; }
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry .redeem-btn::before { display: none !important; }
 
 @media (max-height: 700px) {
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-card > .redeem-title {
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-card > .redeem-title {
     font-size: clamp(23px, 3vw, 36px) !important;
     line-height: 1.14 !important;
   }
 
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-card > .redeem-grid {
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-card > .redeem-grid {
     margin-top: 10px !important;
     gap: 8px !important;
   }
 }
 
 @media (min-width: 801px) and (max-height: 700px) {
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #tokenInput {
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #tokenInput {
     min-height: 82px !important;
     height: 88px !important;
   }
 }
 
 @media (max-width: 800px) and (max-height: 680px), (max-height: 570px) {
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #statusBox[data-activation-processing="true"] {
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #statusBox[data-activation-processing="true"] {
     order: -1;
   }
 }
 
 @media (max-width: 800px) {
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock:has(> .redeem-entry):not([style*="display: none"]) {
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock:has(> .redeem-entry):not([style*="display: none"]) {
     grid-template-columns: minmax(0, 1fr) !important;
     gap: 8px !important;
     padding: 12px !important;
   }
 
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock > .redeem-entry {
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock > .redeem-entry {
     grid-column: 1 !important;
     grid-row: 1 !important;
     gap: 6px;
   }
 
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock > .redeem-guide {
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock > .redeem-guide {
     grid-column: 1 !important;
     grid-row: 2 !important;
     padding-inline-end: 0 !important;
@@ -434,12 +434,12 @@ body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activation
     border-top: 1px solid var(--redeem-entry-line) !important;
   }
 
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #tokenInput {
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #tokenInput {
     min-height: 72px !important;
     height: 80px !important;
   }
 
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry .redeem-token-toolbar {
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry .redeem-token-toolbar {
     display: grid !important;
     grid-auto-flow: column;
     grid-auto-columns: minmax(0, 1fr);
@@ -447,63 +447,224 @@ body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activation
 }
 
 @media (max-width: 420px) and (max-height: 640px) {
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-page:has(#activationEntry) { padding-top: 8px !important; }
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-card > #redeemSubtitle { font-size: 14px !important; }
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-card > .redeem-grid { margin-top: 9px !important; }
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-grid > .redeem-block:first-child { min-height: 38px; }
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #activationEntry #tokenInput { height: 72px !important; }
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-page:has(#activationEntry) { padding-top: 8px !important; }
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-card > #redeemSubtitle { font-size: 14px !important; }
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-card > .redeem-grid { margin-top: 9px !important; }
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-grid > .redeem-block:first-child { min-height: 38px; }
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #tokenInput { height: 72px !important; }
 }
 
 
 @media (max-width: 800px) {
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body {
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body {
     --redeem-main-scale: 1.12;
     --redeem-guide-heading-size: 19px;
     --redeem-guide-text-size: 17px;
     --redeem-guide-link-size: 16px;
   }
 
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-page:has(#activationEntry),
-  html body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body:has(#activationEntry) .gptishka-compliance-note {
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-page:has(#activationEntry),
+  html body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body:has(#activationEntry) .gptishka-compliance-note {
     width: calc(100% - 28px) !important;
   }
 }
 
 @media (max-width: 420px) and (max-height: 640px) {
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body {
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body {
     --redeem-main-scale: 1;
   }
 
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body .redeem-page:has(#activationEntry),
-  html body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body:has(#activationEntry) .gptishka-compliance-note {
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-page:has(#activationEntry),
+  html body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body:has(#activationEntry) .gptishka-compliance-note {
     width: calc(100% - 16px) !important;
   }
 }
 
 /* Leave the page title and order identifier in their existing typefaces. */
-html body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body
+html body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body
   .redeem-card :is(.redeem-stage, #redeemSubtitle, .redeem-label, .redeem-grid .redeem-btn, #tokenInput, .redeem-meta, #proActivationNote, #statusBox, #tokenGuideList, #tokenGuideList .instruction-action, .redeem-guide-video) {
   font-family: var(--redeem-reading-font) !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenGuideList:has([data-chatgpt-guide]) > li {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenGuideList:has([data-chatgpt-guide]) > li {
   color: #e0e7e9 !important;
 }
 
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenGuideList:has([data-chatgpt-guide]) > li::before {
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenGuideList:has([data-chatgpt-guide]) > li::before {
   font-size: 13px !important;
 }
 
-html body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenGuideList:has([data-chatgpt-guide]) .instruction-action,
-body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock .redeem-guide[open]:has(#tokenGuideList [data-chatgpt-guide]) > .redeem-guide-video {
+html body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenGuideList:has([data-chatgpt-guide]) .instruction-action,
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock .redeem-guide[open]:has(#tokenGuideList [data-chatgpt-guide]) > .redeem-guide-video {
   min-height: 42px;
 }
 
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #claudeZovoConsentBox:not([hidden]) {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px !important;
+  font: 500 13px/1.4 var(--redeem-reading-font) !important;
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry #claudeZovoConsentBox input {
+  flex: none;
+  margin: 2px 0 0;
+  accent-color: var(--redeem-entry-accent);
+}
+
+@media (max-height: 700px) {
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry:has(#claudeZovoConsentBox:not([hidden])) {
+    gap: 6px;
+  }
+
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry:has(#claudeZovoConsentBox:not([hidden])) #tokenInput {
+    min-height: 72px !important;
+    height: 76px !important;
+  }
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry:has(#statusBox[data-activation-processing="true"]:not([hidden])) #claudeZovoConsentBox {
+  display: none !important;
+}
+
+/* Keep the confirmation visible after the input is no longer needed. */
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock:has(#activationEntry[data-activation-result]) {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock > #activationEntry[data-activation-result] {
+  grid-column: 1 !important;
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body .redeem-card:has(#activationEntry[data-activation-result]) > #redeemSubtitle,
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock:has(#activationEntry[data-activation-result]) > .redeem-guide,
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry[data-activation-result] > :not(#statusBox, #perplexityNextStep) {
+  display: none !important;
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry[data-activation-result] #statusBox {
+  order: 0;
+  padding: 14px !important;
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationEntry[data-activation-result="complete"] #statusText {
+  font-size: 16px;
+  font-weight: 650;
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationProgress:not([hidden]) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  gap: 8px;
+  margin-top: 3px;
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationProgress .redeem-progress-step {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 0;
+  color: #b0b9be;
+  font: 600 12px/1.35 var(--redeem-reading-font);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationProgress .redeem-progress-step::before {
+  content: "";
+  position: static;
+  width: 100%;
+  height: 3px;
+  border-radius: 4px;
+  background: #52595b;
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationProgress .is-done,
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationProgress .is-current {
+  color: inherit;
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationProgress :is(.is-done, .is-current)::before {
+  background: currentColor;
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #activationProgress .is-done::before { opacity: .65; }
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #statusBox[data-activation-processing="true"] .is-current::before {
+  animation: activation-step-pulse 1.15s ease-in-out infinite alternate;
+}
+
+@keyframes activation-step-pulse {
+  from { opacity: .62; }
+  to { opacity: 1; }
+}
+
+/* Success keeps its existing actions and uses the same flat surfaces. */
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #reviewRewardBox {
+  background: rgba(15, 19, 23, .82) !important;
+  backdrop-filter: none !important;
+  animation: activation-result-appear 110ms ease-out both !important;
+}
+
+@keyframes activation-result-appear {
+  from { opacity: .92; }
+  to { opacity: 1; }
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #reviewRewardBox .redeem-review-card {
+  box-sizing: border-box;
+  max-height: calc(100dvh - 28px);
+  overflow: auto;
+  border: 1px solid var(--redeem-entry-line) !important;
+  border-radius: 16px !important;
+  background: var(--redeem-entry-surface) !important;
+  box-shadow: none !important;
+  font-family: var(--redeem-reading-font);
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #reviewRewardBox .redeem-review-card::before,
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #reviewRewardBox .redeem-review-card::after {
+  content: none !important;
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #reviewRewardBox :is(.redeem-review-mark-wrap, .redeem-review-mark, .redeem-review-card h3, .redeem-review-star, textarea, .redeem-btn) {
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #reviewRewardBox :is(#activationReviewSubmitBtn, #updatesChannelBtn) {
+  border-color: #75c9bd !important;
+  background: #72d7c9 !important;
+  color: #112b28 !important;
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #reviewRewardBox :is(#activationReviewSubmitBtn, #updatesChannelBtn):not(:disabled):is(:hover, :focus-visible) {
+  background: #91e3d8 !important;
+  color: #112b28 !important;
+}
+
+body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #reviewRewardBox #activationReviewSubmitBtn:disabled {
+  background: #3b5355 !important;
+  border-color: #536d6c !important;
+  color: #deebea !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  html body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body :is(.redeem-grid .redeem-btn, .redeem-input, .redeem-guide summary),
-  html body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenGuideList .instruction-action,
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock .redeem-guide-video,
-  body#storefrontBody.redeem-flow.redeem-chatgpt-layout.home-wide-body #tokenBlock #tokenGuideSummary::after {
+  html body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body :is(.redeem-grid .redeem-btn, .redeem-input, .redeem-guide summary),
+  html body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenGuideList .instruction-action,
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock .redeem-guide-video,
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #tokenBlock #tokenGuideSummary::after {
     transition: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #statusBox[data-activation-processing="true"] .is-current::before,
+  body#storefrontBody.redeem-flow.redeem-unified-layout.home-wide-body #reviewRewardBox {
+    animation: none !important;
   }
 }

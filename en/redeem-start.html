@@ -1276,14 +1276,14 @@
 <link rel="stylesheet" href="/assets/css/home-stability-hotfix.css?v=sha256-4b642dad31012b96" />
 <link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260923-scroll-render1" />
 <link rel="stylesheet" href="/assets/css/redeem-start-refresh.css?v=20260724-redeem-refresh3" />
-<link rel="stylesheet" href="/assets/css/grok-session-activation.css?v=sha256-a5e5eb8c2f914c65" />
+<link rel="stylesheet" href="/assets/css/grok-session-activation.css?v=sha256-60389af3605441f8" />
 <link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/redeem-clean-checkout-v2.css?v=sha256-b36a77d5e07acdcc">
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
 <link rel="stylesheet" href="/assets/css/instruction-actions.css?v=sha256-ba15eccd755cc1ff">
-<link rel="stylesheet" href="/assets/css/chatgpt-activation-layout.css?v=sha256-124920d76dfebd38">
+<link rel="stylesheet" href="/assets/css/chatgpt-activation-layout.css?v=sha256-66d8d4fd2c0f6319">
 </head>
 <body id="storefrontBody" class="redeem-flow home-wide-body">
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
@@ -1379,6 +1379,8 @@
           <p id="proActivationNote" class="redeem-manual-hint" hidden>Use a free ChatGPT account. After starting, wait for the result on this page; you do not need to pay again.</p>
           <textarea id="tokenInput" aria-describedby="tokenWarn" class="redeem-input masked" placeholder="Account token" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
 
+          <label id="claudeZovoConsentBox" class="redeem-manual-hint" hidden><input id="claudeZovoConsent" type="checkbox"> <span>I confirm that my Claude account has passed the required identity check. I have read the activation terms and understand that Anthropic controls verification and account restrictions.</span></label>
+
           <div class="redeem-meta">
             <span id="tokenInfo">Characters: 0</span>
             <span id="tokenWarn" aria-live="polite">Protected and used only to fulfill your order.</span>
@@ -1435,6 +1437,11 @@
         <span id="statusSpinner" class="redeem-spinner" aria-hidden="true"></span>
         <span id="taskWrap" style="display:none">Task: <strong id="taskIdValue"></strong></span>
         <button id="copyTaskBtn" type="button" class="redeem-btn" style="display:none">Copy Task</button>
+        <div id="activationProgress" class="redeem-progress" hidden aria-label="Activation progress">
+          <span class="redeem-progress-step" data-activation-step="start">Start</span>
+          <span class="redeem-progress-step" data-activation-step="process">Activating</span>
+          <span class="redeem-progress-step" data-activation-step="done">Done</span>
+        </div>
       </section>
 
       <section id="reviewRewardBox" class="redeem-review-reward" hidden aria-modal="true" role="dialog" aria-live="polite" aria-labelledby="reviewRewardTitle">
@@ -1477,7 +1484,7 @@
     (() => {
     const params = new URLSearchParams(window.location.search);
     const previewServiceKey = String(params.get('service') || '').trim().toLowerCase().replace(/[\s_-]+/g, '');
-    const previewServices = new Set(['chatgptgo', 'chatgptpro5x', 'chatgptpro20x', 'chatgptpro25x', 'codex250', 'codex500', 'codex1000', 'claude', 'grok', 'supergrok', 'perplexity', 'pplx']);
+    const previewServices = new Set(['chatgptgo', 'chatgptplus', 'chatgptpro5x', 'chatgptpro20x', 'chatgptpro25x', 'codex250', 'codex500', 'codex1000', 'claude', 'grok', 'supergrok', 'perplexity', 'pplx']);
     const previewMode = params.get('preview') === '1' && previewServices.has(previewServiceKey);
     const orderId = previewMode ? 'PREVIEW' : String(params.get('order_id') || params.get('orderId') || '').trim();
     let orderLinkToken = String(params.get('t') || '').trim();
@@ -1520,6 +1527,7 @@
     const stopPollingBtn = document.getElementById('stopPollingBtn');
 
     const statusBox = document.getElementById('statusBox');
+    const activationProgress = document.getElementById('activationProgress');
     const statusText = document.getElementById('statusText');
     const statusSpinner = document.getElementById('statusSpinner');
     const taskWrap = document.getElementById('taskWrap');
@@ -1569,8 +1577,10 @@
     let isSteamKeyDeliveryFlow = false;
     let isSupportTokenDelivery = false;
     let isGrokSsoFlow = false;
-    let grokSessionMoved = [];
-    let grokSessionForm = null;
+    let activationEntry = null;
+    let activationLayout = '';
+    let activationLayoutMoves = [];
+    let isClaudeZovoFlow = false;
     let isCodexCreditsFlow = false;
     let isChatGptSessionFlow = false;
     const codexCreditsEnglish = /^\/en(?:\/|$)/.test(location.pathname) || params.get('lang') === 'en';
@@ -1646,6 +1656,8 @@
 
     function markActivationCompleted() {
       activationCompleted = true;
+      syncActivationLayoutResult();
+      if (activationEntry) setActivationProgress('done');
       activationWaitingForKey = false;
       continuousKeyWait = false;
     }
@@ -1955,7 +1967,7 @@
     }
 
     function resolveSupportActivationFlow(payload) {
-      if (isGrokSessionPayload(payload)) return '';
+      if (isGrokSessionPayload(payload) || payload?.activationFlow === 'claude_zovo') return '';
       const directFlow = String(payload?.activationFlow || '').trim().toLowerCase();
       if (directFlow === SUPPORT_ACTIVATION_FLOW_CLAUDE || directFlow === SUPPORT_ACTIVATION_FLOW_GROK) {
         return directFlow;
@@ -1986,7 +1998,7 @@
     }
 
     function resolveForcedSupportActivationFlow(payload) {
-      if (isGrokSessionPayload(payload)) return '';
+      if (isGrokSessionPayload(payload) || payload?.activationFlow === 'claude_zovo') return '';
       const productKey = getActivationProductFingerprint(payload);
       if (productKey.includes('claude') || productKey.endsWith('-sdk5') || productKey.includes('sdk5')) {
         return SUPPORT_ACTIVATION_FLOW_CLAUDE;
@@ -2041,14 +2053,6 @@
       return payload?.activationFlow === 'grok_sso' || /(?:^|\s)grok-(plus|premium|super|ultra)-1(?:\s|$)/.test(getActivationProductFingerprint(payload));
     }
 
-    function restoreGrokSessionLayout() {
-      document.body.classList.remove('redeem-grok-sso');
-      grokSessionMoved.forEach(({node, anchor}) => { if (anchor.parentNode) anchor.replaceWith(node); });
-      grokSessionMoved = [];
-      if (grokSessionForm) grokSessionForm.remove();
-      grokSessionForm = null;
-    }
-
     function applyGrokSessionPage() {
       const english = /^\/en(?:\/|$)/.test(window.location.pathname) || params.get('lang') === 'en';
       const text = (ru, en) => english ? en : ru;
@@ -2059,7 +2063,7 @@
       if (tokenLabelEl) tokenLabelEl.textContent = text('Подключение тарифа', 'Plan activation');
       if (tokenGuideSummaryEl) {
         tokenGuideSummaryEl.textContent = text('Как получить сессию Grok', 'How to get your Grok session');
-        if (!grokSessionForm) tokenGuideSummaryEl.closest('details').open = !window.matchMedia?.('(max-width: 800px), (max-height: 760px)').matches;
+        if (activationLayout !== 'grok') tokenGuideSummaryEl.closest('details').open = !window.matchMedia?.('(max-width: 800px), (max-height: 760px)').matches;
       }
       if (tokenGuideListEl) {
         tokenGuideListEl.classList.remove('redeem-guide-linear');
@@ -2080,81 +2084,97 @@
       if (startBtn) startBtn.textContent = text('Активировать', 'Activate');
       if (checkBtn) checkBtn.textContent = text('Проверить статус', 'Check status');
       if (retryNewKeyBtn) retryNewKeyBtn.style.display = 'none';
-      if (!grokSessionForm && tokenBlock) {
-        grokSessionForm = document.createElement('div');
-        grokSessionForm.className = 'grok-session-form';
-        const nodes = [tokenLabelEl, tokenBlock.querySelector('.redeem-token-toolbar'), document.getElementById('proActivationNote'), tokenInput, document.getElementById('claudeZovoConsentBox'), tokenBlock.querySelector('.redeem-meta'), perplexityNextStep, actionsRow];
-        grokSessionMoved = nodes.filter(Boolean).map(node => {
-          const anchor = document.createComment('grok-session-original-position');
-          node.before(anchor);
-          grokSessionForm.append(node);
-          return {node, anchor};
-        });
-        tokenBlock.append(grokSessionForm);
-      }
+      applyActivationLayout('grok');
     }
 
-
-    let chatGptActivationEntry = null;
-    let chatGptActivationMoves = [];
-
-    function applyChatGptActivationLayout(enabled) {
+    function applyActivationLayout(variant) {
       const guide = tokenGuideSummaryEl?.closest('details');
       const template = document.getElementById('chatGptActivationGuide');
-      if (!enabled) {
-        if (!chatGptActivationEntry) return;
-        chatGptActivationMoves.forEach(({node, anchor}) => anchor.replaceWith(node));
-        chatGptActivationMoves = [];
-        chatGptActivationEntry.remove();
-        chatGptActivationEntry = null;
+      if (!variant) {
+        if (!activationEntry) return;
+        activationLayoutMoves.forEach(({node, anchor}) => anchor.replaceWith(node));
+        activationLayoutMoves = [];
+        activationEntry.remove();
+        activationEntry = null;
+        activationLayout = '';
         delete statusBox.dataset.activationProcessing;
         guide?.querySelector('.redeem-guide-video')?.remove();
         if (checkBtn) checkBtn.hidden = false;
-        document.body.classList.remove('redeem-chatgpt-layout');
+        document.body.classList.remove('redeem-unified-layout', 'redeem-grok-sso');
         return;
       }
-      if (!tokenBlock || !guide || !template || !tokenGuideListEl) return;
-      if (!chatGptActivationEntry) {
-        chatGptActivationEntry = document.createElement('div');
-        chatGptActivationEntry.id = 'activationEntry';
-        chatGptActivationEntry.className = 'redeem-entry';
+      if (!tokenBlock || !guide || !tokenGuideListEl) return;
+      if (!activationEntry) {
+        activationEntry = document.createElement('div');
+        activationEntry.id = 'activationEntry';
+        activationEntry.className = 'redeem-entry';
         const nodes = [tokenLabelEl, tokenBlock.querySelector('.redeem-token-toolbar'), tokenInput,
           document.getElementById('claudeZovoConsentBox'), tokenBlock.querySelector('.redeem-meta'),
           statusBox, actionsRow, document.getElementById('proActivationNote'), perplexityNextStep];
-        chatGptActivationMoves = nodes.filter(Boolean).map((node) => {
-          const anchor = document.createComment('chatgpt-activation-layout');
+        activationLayoutMoves = nodes.filter(Boolean).map((node) => {
+          const anchor = document.createComment('activation-layout');
           node.before(anchor);
-          chatGptActivationEntry.append(node);
+          activationEntry.append(node);
           return {node, anchor};
         });
-        tokenBlock.prepend(chatGptActivationEntry);
-        guide.append(template.content.querySelector('.redeem-guide-video').cloneNode(true));
-        guide.open = true;
+        tokenBlock.prepend(activationEntry);
+        if (variant !== 'grok') guide.open = true;
       }
-      document.body.classList.add('redeem-chatgpt-layout');
-      tokenGuideSummaryEl.textContent = 'Instructions';
-      tokenGuideListEl.replaceChildren(...template.content.querySelector('ol').cloneNode(true).childNodes);
-      if (tokenLabelEl) tokenLabelEl.textContent = 'ChatGPT account session';
-      if (tokenInput) tokenInput.placeholder = 'Paste the contents of the token page';
-      if (startBtn) startBtn.textContent = 'Activate';
-      const note = document.getElementById('proActivationNote');
-      if (note && !note.hidden && !/25x|25×/.test(redeemTitleEl?.textContent || '')) {
-        note.textContent = 'Your result will appear here. You do not need to pay again.';
+      if (activationLayout !== variant) {
+        guide.querySelector('.redeem-guide-video')?.remove();
+        if (variant === 'chatgpt' && template) {
+          guide.append(template.content.querySelector('.redeem-guide-video').cloneNode(true));
+        }
+        activationLayout = variant;
+      }
+      activationEntry.classList.toggle('grok-session-form', variant === 'grok');
+      document.body.classList.add('redeem-unified-layout');
+      document.body.classList.toggle('redeem-grok-sso', variant === 'grok');
+      if (variant === 'chatgpt' && template) {
+        tokenGuideSummaryEl.textContent = 'Instructions';
+        tokenGuideListEl.replaceChildren(...template.content.querySelector('ol').cloneNode(true).childNodes);
+        if (tokenLabelEl) tokenLabelEl.textContent = 'ChatGPT account session';
+        if (tokenInput) tokenInput.placeholder = 'Paste the contents of the token page';
+        if (startBtn) startBtn.textContent = 'Activate';
+        const note = document.getElementById('proActivationNote');
+        if (note && !note.hidden && !/25x|25×/.test(redeemTitleEl?.textContent || '')) {
+          note.textContent = 'Your result will appear here. You do not need to pay again.';
+        }
+      } else if (variant === 'codex' && template) {
+        tokenGuideSummaryEl.textContent = 'Instructions';
+        tokenGuideListEl.replaceChildren(...template.content.querySelector('ol').cloneNode(true).childNodes);
       }
       if (checkBtn) checkBtn.hidden = !currentTaskId && !activationWaitingForKey;
+      syncActivationLayoutResult();
+    }
+
+    function syncActivationLayoutResult() {
+      if (!activationEntry) return;
+      if (activationCompleted) {
+        activationEntry.dataset.activationResult = 'complete';
+        if (redeemTitleEl) redeemTitleEl.textContent = isCodexCreditsFlow ? 'Codex credits added' : 'Activation complete';
+      } else if (isPerplexityManualFlow && perplexitySessionSubmitted) {
+        activationEntry.dataset.activationResult = 'handoff';
+        if (redeemTitleEl) redeemTitleEl.textContent = 'Details received';
+      }
     }
 
     function applyActivationPayloadMode(payload, deliveryMode) {
-      if (!isGrokSessionPayload(payload)) restoreGrokSessionLayout();
       const activationFlow = resolveSupportActivationFlow(payload);
       const forcedSupportFlow = resolveForcedSupportActivationFlow(payload);
       const productKey = getActivationProductFingerprint(payload);
       const usesChatGptLayout = deliveryMode === 'activation' && !forcedSupportFlow
         && productKey.includes('chatgpt') && !productKey.includes('codex');
-      if (!usesChatGptLayout) applyChatGptActivationLayout(false);
+      const usesTokenLayout = usesChatGptLayout || (['activation', 'support', 'support_claude'].includes(deliveryMode)
+        && /codex|claude|grok/.test(productKey));
+      const usesPerplexityLayout = /perplexity|pplx/.test(productKey) && deliveryMode === 'manual_login';
+      if (!usesTokenLayout && !usesPerplexityLayout) applyActivationLayout('');
       isGrokSsoFlow = isGrokSessionPayload(payload);
-      if ((productKey.includes('perplexity') || productKey.includes('pplx')) && deliveryMode === 'manual_login') {
+      isClaudeZovoFlow = payload?.activationFlow === 'claude_zovo';
+      document.getElementById('claudeZovoConsentBox').hidden = !isClaudeZovoFlow;
+      if (usesPerplexityLayout) {
         applyPerplexityManualFlow(payload);
+        applyActivationLayout('perplexity');
         return;
       }
       const codexCreditsMatch = productKey.includes('codex')
@@ -2197,10 +2217,27 @@
         forcedSupportFlow || activationFlow
       );
       if (isGrokSsoFlow) applyGrokSessionPage();
+      if (isClaudeZovoFlow) {
+        if (redeemTitleEl) redeemTitleEl.textContent = String(payload?.productTitle || 'Activate Claude Max');
+        if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Follow the instructions to finish activation.';
+        if (tokenLabelEl) tokenLabelEl.textContent = 'Claude account sessionKey';
+        if (tokenInput) tokenInput.placeholder = 'sk-ant-sid02-…';
+        if (retryNewKeyBtn) retryNewKeyBtn.style.display = 'none';
+        if (tokenGuideListEl) tokenGuideListEl.innerHTML = [
+          '<li>Sign in to the correct account on claude.ai in a desktop browser. Complete the identity check if Anthropic requests it.</li>',
+          '<li>Open F12 → Application → Cookies → https://claude.ai.</li>',
+          '<li>Find sessionKey and copy only its Value.</li>',
+          '<li>Keep these account details private. Do not include an API key, password, or ChatGPT token.</li>',
+          '<li>Confirm the terms and select Activate.</li>',
+        ].join('');
+        document.title = 'Claude Max activation — GPTishka';
+      }
       applyProActivationMode(chatGptPlanName);
       if (usesChatGptLayout) {
-        applyChatGptActivationLayout(true);
+        applyActivationLayout('chatgpt');
         if (redeemSubtitleEl) redeemSubtitleEl.textContent = 'Paste the contents of the token page and start activation.';
+      } else if (usesTokenLayout && !isGrokSsoFlow) {
+        applyActivationLayout(isCodexCreditsFlow ? 'codex' : 'generic');
       }
     }
 
@@ -2306,6 +2343,7 @@
         : (serviceKey === 'pplx' ? 'perplexity' : serviceKey);
       const configs = {
         chatgptgo: { name: 'ChatGPT GO', tokenFlow: true },
+        chatgptplus: { name: 'ChatGPT Plus', tokenFlow: true },
         chatgptpro25x: { name: 'ChatGPT Pro 25x / Pro 500', tokenFlow: true },
         chatgptpro5x: { name: 'ChatGPT Pro 5x / Pro 100', tokenFlow: true },
         chatgptpro20x: { name: 'ChatGPT Pro 20x / Pro 200', tokenFlow: true },
@@ -2348,7 +2386,10 @@
       }
 
       applyProActivationMode(config.name);
-      if (normalizedKey.startsWith('chatgpt')) applyChatGptActivationLayout(true);
+      if (normalizedKey.startsWith('chatgpt')) applyActivationLayout('chatgpt');
+      else if (normalizedKey.startsWith('codex')) applyActivationLayout('codex');
+      else if (normalizedKey === 'perplexity') applyActivationLayout('perplexity');
+      else if (activationLayout !== 'grok') applyActivationLayout('generic');
       setStatus('pending', 'Preview only: no data is sent.', false);
       [startBtn, checkBtn, retryNewKeyBtn, stopPollingBtn].forEach((button) => {
         if (button) button.disabled = true;
@@ -2493,6 +2534,7 @@
     updateTokenMeta();
     scheduleValidateToken();
 
+    document.getElementById('claudeZovoConsent').addEventListener('change', scheduleValidateToken);
     tokenInput.addEventListener('input', () => {
       updateTokenMeta();
       scheduleValidateToken();
@@ -3014,7 +3056,7 @@
 
     function renderTask(taskId) {
       const value = String(taskId || '').trim();
-      if (chatGptActivationEntry && checkBtn) checkBtn.hidden = !value && !activationWaitingForKey;
+      if (activationEntry && checkBtn) checkBtn.hidden = !value && !activationWaitingForKey;
       if (!value) {
         taskWrap.style.display = 'none';
         copyTaskBtn.style.display = 'none';
@@ -3243,8 +3285,10 @@
 
     function getTokenForSubmit() {
       const raw = String(tokenInput.value || '').trim();
-      if (isGrokSsoFlow && !raw) return '';
-      return isGrokSsoFlow ? JSON.stringify({sso: raw}) : raw;
+      if ((isGrokSsoFlow || isClaudeZovoFlow) && !raw) return '';
+      if (isGrokSsoFlow) return JSON.stringify({sso: raw});
+      if (isClaudeZovoFlow) return JSON.stringify({sessionKey: raw, riskAccepted: document.getElementById('claudeZovoConsent').checked});
+      return raw;
     }
 
     function extractTokenFromInput(raw) {
@@ -3269,13 +3313,28 @@
       return value;
     }
 
+    function setActivationProgress(stage) {
+      const steps = ['start', 'process', 'done'];
+      const active = steps.indexOf(stage);
+      activationProgress.hidden = active < 0;
+      activationProgress.querySelector('[data-activation-step="process"]').textContent = isCodexCreditsFlow ? 'Adding credits' : 'Activating';
+      activationProgress.querySelectorAll('[data-activation-step]').forEach((step, index) => {
+        step.classList.toggle('is-done', active >= 0 && index < active);
+        step.classList.toggle('is-current', index === active);
+      });
+    }
+
     function setStatus(tone, text, loading) {
       statusBox.hidden = false;
       statusBox.className = `redeem-status ${tone}`;
       statusText.textContent = text;
       statusSpinner.style.display = loading ? 'inline-block' : 'none';
-      if (chatGptActivationEntry) {
+      if (activationEntry) {
         statusBox.dataset.activationProcessing = String(Boolean(loading));
+        setActivationProgress(loading && !isPerplexityManualFlow
+          ? (currentTaskId || activationWaitingForKey ? 'process' : 'start')
+          : (tone === 'success' && activationCompleted ? 'done' : ''));
+        syncActivationLayoutResult();
       }
     }
 
