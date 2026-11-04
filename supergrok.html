@@ -42,7 +42,7 @@
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
-<link rel="stylesheet" href="/assets/css/grok-offer.css?v=sha256-ea7d2eac04e5b1d0">
+<link rel="stylesheet" href="/assets/css/grok-offer.css?v=sha256-e9101d3fd53848a0">
 </head>
 <body id="storefrontBody">
 <div class="page-overlay"></div>
@@ -112,7 +112,6 @@
       <div class="service-constructor-card">
         <div class="service-constructor-head">
           <div class="service-constructor-brand">
-            <span>Тарифные планы</span>
             <h1>Grok</h1>
           </div>
           <div class="service-constructor-price">
@@ -123,7 +122,10 @@
           <div id="servicePlanFilters"></div>
           <div id="serviceDurationFilters"></div>
         </div>
-        <p class="grok-account-requirement" role="note"><strong>Подходит только аккаунт Free</strong>У аккаунта Grok не должно быть действующей платной подписки. Отключённое автопродление не означает, что оплаченный период уже закончился.</p>
+        <div class="grok-account-requirement" role="note">
+          <p>Для подключения нужен аккаунт <strong>Free</strong> без активной платной подписки.</p>
+          <p><strong>В комплекте:</strong> Grok, X (Twitter) и Cursor.</p>
+        </div>
         <div class="service-selected-plan" id="servicePlansGrid" aria-live="polite">
           <div class="price-card price-card-skeleton" aria-hidden="true">
             <div class="price-card-skeleton__title"></div>
@@ -132,43 +134,33 @@
             <div class="price-card-skeleton__button"></div>
           </div>
         </div>
-        <div class="service-constructor-description">
-          <h3>Grok</h3>
-          <p>Подключаем выбранный тариф Grok на ваш аккаунт на 1 месяц. Выберите Plus, Premium, Super или Ultra, оплатите заказ и следуйте инструкции подключения.</p>
-        </div>
       </div>
     </div>
   </section>
 
-  <section class="service-info-section service-info-section--grok">
-    <div class="service-section-title"><h2>Месяц Grok на вашем аккаунте</h2><p>Выберите тариф для общения с ИИ, творчества или разработки. Мы подключим подписку и поможем с вопросами по заказу.</p></div>
-    <div class="service-info-grid">
-      <article class="service-info-card"><h3>Перед покупкой</h3><ul><li>Убедитесь, что в аккаунте указан статус Free и нет действующей платной подписки.</li><li>Аккаунт должен нормально работать и соответствовать требованиям Grok к аккаунту и региону.</li><li>Если подписка ещё действует, дождитесь её фактического окончания.</li></ul></article>
-      <article class="service-info-card"><h3>Как мы подключаем подписку</h3><ul><li>Выберите тариф и оплатите заказ удобным способом.</li><li>Откройте страницу активации и укажите данные аккаунта по инструкции.</li><li>Система автоматически подключит подписку. После завершения проверьте тариф и срок действия в настройках Grok.</li></ul></article>
-      <article class="service-info-card"><h3>Поддержка после оплаты</h3><ul><li>При задержке ориентируйтесь на статус заказа на странице активации.</li><li>Если подписка неожиданно пропала, обратитесь в поддержку с номером заказа и снимком статуса подписки.</li><li>Пока заказ обрабатывается, не запускайте подключение одновременно через другие сервисы.</li></ul></article>
-    </div>
-    <h3>Сравнение тарифов</h3>
-    <div class="grok-plan-comparison" role="region" tabindex="0" aria-label="Сравнение тарифов"><table>
-      <caption>Все тарифы — на 1 месяц. Ориентировочный общий лимит указан относительно Plus.</caption>
+  <section class="service-info-section service-info-section--grok" aria-labelledby="grok-compare-title">
+    <div class="service-section-title"><h2 id="grok-compare-title">Сравнение тарифов</h2></div>
+    <div class="grok-plan-comparison" role="region" tabindex="0" aria-labelledby="grok-compare-title"><table>
+      <caption>Все тарифы на 1 месяц. Лимиты указаны ориентировочно, в сравнении с Plus.</caption>
       <thead><tr><th scope="col">Тариф</th><th scope="col">Общий лимит</th><th scope="col">Основные возможности</th></tr></thead>
       <tbody>
-        <tr><th scope="row">Grok Plus</th><td>Базовый</td><td>Chat, Voice, Imagine, Build и возможности Cursor/X в рамках тарифа. Grok Bot не включён.</td></tr>
-        <tr><th scope="row">Grok Premium</th><td>Около 4× Plus</td><td>Возможности Plus, Grok Bot, инструменты работы с кодом, облачные агенты и расширенные преимущества X.</td></tr>
-        <tr><th scope="row">Grok Super</th><td>Около 15× Plus</td><td>Возможности Premium, видео до 1080p, приоритет в часы пик и более быстрые ответы.</td></tr>
-        <tr><th scope="row">Grok Ultra</th><td>Около 50× Plus</td><td>Возможности Super, старшие модели чата, приоритет новым функциям и максимальная скорость.</td></tr>
+        <tr><th scope="row">Grok Plus</th><td>Базовый</td><td>Чат, голос, генерация изображений и Build. Без Grok Bot.</td></tr>
+        <tr><th scope="row">Grok Premium</th><td>Около 4× Plus</td><td>Всё из Plus, а также Grok Bot, облачные агенты, инструменты для кода и расширенные возможности X.</td></tr>
+        <tr><th scope="row">Grok Super</th><td>Около 15× Plus</td><td>Всё из Premium, а также видео до 1080p и приоритет в часы пик.</td></tr>
+        <tr><th scope="row">Grok Ultra</th><td>Около 50× Plus</td><td>Всё из Super, а также доступ к старшим моделям чата и приоритет к новым функциям.</td></tr>
       </tbody>
     </table></div>
-    <p class="grok-offer-note">Grok и Cursor используют общий лимит ИИ. Отдельная подписка Cursor Pro и дополнительный баланс API в услугу не входят. Доступные модели, функции, привязка аккаунтов и региональные условия зависят от тарифа, отображаемого в вашем аккаунте. Для отдельных преимуществ X может потребоваться дополнительная проверка.</p>
+    <p class="grok-offer-note">Grok и Cursor расходуют общий лимит. Отдельная подписка Cursor Pro и баланс API не входят. Возможности X зависят от тарифа и аккаунта; для некоторых нужна дополнительная проверка.</p>
   </section>
 
   <section class="service-faq-section" id="faq">
     <div class="service-section-title"><h2>Вопросы перед покупкой</h2></div>
     <div class="service-faq-list">
-      <article class="service-faq-item active"><button class="service-faq-question" type="button" aria-expanded="true" aria-controls="grok-faq-answer-1">Мне выдадут новый аккаунт?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-1"><p>Мы подключаем выбранную подписку на ваш существующий аккаунт Grok. Регистрация нового аккаунта в услугу не входит.</p></div></article>
+      <article class="service-faq-item active"><button class="service-faq-question" type="button" aria-expanded="true" aria-controls="grok-faq-answer-1">Мне выдадут новый аккаунт?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-1"><p>Подключаем тариф на ваш аккаунт Grok.</p></div></article>
       <article class="service-faq-item"><button class="service-faq-question" type="button" aria-expanded="false" aria-controls="grok-faq-answer-2">Можно продлить действующую подписку?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-2"><p>Для этих тарифов нужен статус Free. Дождитесь фактического окончания текущей платной подписки: одного отключения автопродления недостаточно.</p></div></article>
-      <article class="service-faq-item"><button class="service-faq-question" type="button" aria-expanded="false" aria-controls="grok-faq-answer-3">Использование безлимитное?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-3"><p>Нет. У каждого тарифа есть общий лимит и правила его обновления. Исчерпание лимита не означает, что срок подписки закончился.</p></div></article>
+      <article class="service-faq-item"><button class="service-faq-question" type="button" aria-expanded="false" aria-controls="grok-faq-answer-3">Использование безлимитное?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-3"><p>У каждого тарифа свой лимит и период обновления. Когда лимит исчерпан, подписка остаётся активной.</p></div></article>
       <article class="service-faq-item"><button class="service-faq-question" type="button" aria-expanded="false" aria-controls="grok-faq-answer-4">Что делать, если подписка пропала?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-4"><p>Обратитесь в поддержку в течение оплаченного периода, укажите номер заказа и приложите снимок статуса подписки. Мы проверим ситуацию по условиям гарантии.</p><p>Окончание срока, исчерпание лимита и изменение функций платформой отличаются от потери подписки. Блокировки и ограничения самого аккаунта решаются с платформой.</p></div></article>
-      <article class="service-faq-item"><button class="service-faq-question" type="button" aria-expanded="false" aria-controls="grok-faq-answer-5">Сколько времени занимает подключение?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-5"><p>Мы обрабатываем заказы ежедневно с 08:00 до 20:00 по МСК. Заказы с автоматическим подключением выполняются 24/7. Среднее время ожидания — от 5 минут до 2 часов после оплаты.</p></div></article>
+      <article class="service-faq-item"><button class="service-faq-question" type="button" aria-expanded="false" aria-controls="grok-faq-answer-5">Что делать после оплаты?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-5"><p>Откройте страницу активации: там есть инструкция и статус заказа.</p><p>Мы обрабатываем заказы ежедневно с 08:00 до 20:00 по МСК. Заказы с автоматическим подключением выполняются 24/7. Среднее время ожидания — от 5 минут до 2 часов после оплаты.</p></div></article>
       <article class="service-faq-item"><button class="service-faq-question" type="button" aria-expanded="false" aria-controls="grok-faq-answer-6">Как защитить данные аккаунта?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-6"><p>Передавайте данные для подключения только через страницу своего заказа. Не публикуйте пароли, коды подтверждения и данные аккаунта в открытых сообщениях или на снимках экрана.</p></div></article>
     </div>
   </section>
@@ -184,6 +176,7 @@
   <span class="footer-copy">&copy; 2026 GPTishka. Все права защищены, копирование запрещено.</span>
 </footer>
 <script src="/assets/js/app.min.js?v=sha256-ec9c4ceba1479afe" defer></script>
+<script src="/assets/js/grok-offer.js?v=sha256-00b8b02f73640eb4" defer></script>
 <script src="/assets/js/support-widget.js?v=20260924-support-account1&build=sha256-9da6a0dc556ea999" defer></script>
   <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
 <script src="/assets/js/storefront-ui.js?v=sha256-bcae5e9700f06872" defer></script>

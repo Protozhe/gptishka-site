@@ -41,7 +41,7 @@
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
-<link rel="stylesheet" href="/assets/css/grok-offer.css?v=sha256-ea7d2eac04e5b1d0">
+<link rel="stylesheet" href="/assets/css/grok-offer.css?v=sha256-e9101d3fd53848a0">
 </head>
 <body id="storefrontBody">
 <div class="page-overlay"></div>
@@ -111,7 +111,6 @@
       <div class="service-constructor-card">
         <div class="service-constructor-head">
           <div class="service-constructor-brand">
-            <span>Tariff plans</span>
             <h1>Grok</h1>
           </div>
           <div class="service-constructor-price">
@@ -122,7 +121,10 @@
           <div id="servicePlanFilters"></div>
           <div id="serviceDurationFilters"></div>
         </div>
-        <p class="grok-account-requirement" role="note"><strong>Free accounts only</strong>Your Grok account must have no active paid subscription. Turning off auto-renewal does not mean the current subscription has expired.</p>
+        <div class="grok-account-requirement" role="note">
+          <p>Activation requires a <strong>Free</strong> account with no active paid subscription.</p>
+          <p><strong>Included:</strong> Grok, X (Twitter), and Cursor.</p>
+        </div>
         <div class="service-selected-plan" id="servicePlansGrid" aria-live="polite">
           <div class="price-card price-card-skeleton" aria-hidden="true">
             <div class="price-card-skeleton__title"></div>
@@ -131,43 +133,33 @@
             <div class="price-card-skeleton__button"></div>
           </div>
         </div>
-        <div class="service-constructor-description">
-          <h3>Grok</h3>
-          <p>We activate your selected Grok plan on your own account for one month. Choose Plus, Premium, Super or Ultra and follow the instructions after payment.</p>
-        </div>
       </div>
     </div>
   </section>
 
-  <section class="service-info-section service-info-section--grok">
-    <div class="service-section-title"><h2>One month of Grok on your own account</h2><p>Choose a plan for conversations, creative work or AI-assisted development. We handle activation and support your order.</p></div>
-    <div class="service-info-grid">
-      <article class="service-info-card"><h3>Before you order</h3><ul><li>Check that your account shows Free and has no active paid subscription.</li><li>Your account must work normally and meet Grok&#x27;s account and regional requirements.</li><li>If the current plan is still active, wait until it expires.</li></ul></article>
-      <article class="service-info-card"><h3>How we activate your plan</h3><ul><li>Select a plan and pay for your order.</li><li>Open the activation page and submit the account information requested in the instructions.</li><li>The system activates your subscription automatically. Once complete, check the plan and expiry date in your Grok settings.</li></ul></article>
-      <article class="service-info-card"><h3>Support after payment</h3><ul><li>If activation is delayed, follow the status on your order page.</li><li>Contact support with your order number and a redacted screenshot if the subscription unexpectedly disappears.</li><li>Do not submit the same activation through several services at once.</li></ul></article>
-    </div>
-    <h3>Compare the plans</h3>
-    <div class="grok-plan-comparison" role="region" tabindex="0" aria-label="Compare the plans"><table>
-      <caption>Every plan lasts one month. Approximate shared allowances are relative to Plus.</caption>
+  <section class="service-info-section service-info-section--grok" aria-labelledby="grok-compare-title">
+    <div class="service-section-title"><h2 id="grok-compare-title">Compare plans</h2></div>
+    <div class="grok-plan-comparison" role="region" tabindex="0" aria-labelledby="grok-compare-title"><table>
+      <caption>All plans last one month. Allowances are approximate and relative to Plus.</caption>
       <thead><tr><th scope="col">Plan</th><th scope="col">Shared allowance</th><th scope="col">Highlights</th></tr></thead>
       <tbody>
-        <tr><th scope="row">Grok Plus</th><td>Base level</td><td>Chat, Voice, Imagine, Build and plan-specific Cursor/X benefits. Grok Bot is not included.</td></tr>
-        <tr><th scope="row">Grok Premium</th><td>About 4× Plus</td><td>Plus features, Grok Bot, expanded coding tools, cloud agents and X benefits.</td></tr>
-        <tr><th scope="row">Grok Super</th><td>About 15× Plus</td><td>Premium features, video up to 1080p, peak-time priority and faster responses.</td></tr>
-        <tr><th scope="row">Grok Ultra</th><td>About 50× Plus</td><td>Super features, higher-tier chat models, priority for new features and the fastest responses.</td></tr>
+        <tr><th scope="row">Grok Plus</th><td>Base level</td><td>Chat, Voice, image generation, and Build. Grok Bot is not included.</td></tr>
+        <tr><th scope="row">Grok Premium</th><td>About 4× Plus</td><td>Everything in Plus, plus Grok Bot, cloud agents, coding tools, and expanded X benefits.</td></tr>
+        <tr><th scope="row">Grok Super</th><td>About 15× Plus</td><td>Everything in Premium, plus video up to 1080p and priority at peak times.</td></tr>
+        <tr><th scope="row">Grok Ultra</th><td>About 50× Plus</td><td>Everything in Super, plus higher-tier chat models and priority for new features.</td></tr>
       </tbody>
     </table></div>
-    <p class="grok-offer-note">Grok and Cursor use a shared AI allowance. These benefits do not include a separate Cursor Pro subscription or additional API balance. Models, features, account linking and regional eligibility depend on the plan shown in your account; some X benefits require additional checks.</p>
+    <p class="grok-offer-note">Grok and Cursor share a usage allowance. A separate Cursor Pro subscription and API credits are not included. X benefits depend on your plan and account; some require an additional check.</p>
   </section>
 
   <section class="service-faq-section" id="faq">
     <div class="service-section-title"><h2>Questions before ordering</h2></div>
     <div class="service-faq-list">
-      <article class="service-faq-item active"><button class="service-faq-question" type="button" aria-expanded="true" aria-controls="grok-faq-answer-1">Do I receive a new account?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-1"><p>We connect the selected subscription to your existing Grok account. Account registration is not included.</p></div></article>
+      <article class="service-faq-item active"><button class="service-faq-question" type="button" aria-expanded="true" aria-controls="grok-faq-answer-1">Do I receive a new account?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-1"><p>We activate the plan on your existing Grok account.</p></div></article>
       <article class="service-faq-item"><button class="service-faq-question" type="button" aria-expanded="false" aria-controls="grok-faq-answer-2">Can I renew an active subscription?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-2"><p>These plans require Free status. Wait until your current paid subscription has actually expired; disabling auto-renewal alone is not enough.</p></div></article>
-      <article class="service-faq-item"><button class="service-faq-question" type="button" aria-expanded="false" aria-controls="grok-faq-answer-3">Is usage unlimited?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-3"><p>No. Each plan has a shared allowance and reset rules. Reaching a usage limit does not mean that the subscription has expired.</p></div></article>
+      <article class="service-faq-item"><button class="service-faq-question" type="button" aria-expanded="false" aria-controls="grok-faq-answer-3">Is usage unlimited?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-3"><p>Each plan has its own usage allowance and reset period. Reaching the limit does not end your subscription.</p></div></article>
       <article class="service-faq-item"><button class="service-faq-question" type="button" aria-expanded="false" aria-controls="grok-faq-answer-4">What if my subscription disappears?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-4"><p>Contact support during the paid period with your order number and subscription-status screenshot. We will check the issue under our guarantee terms.</p><p>Normal expiry, exhausted allowances and changes to platform features are different from a lost subscription. Account bans or restrictions require resolution with the platform.</p></div></article>
-      <article class="service-faq-item"><button class="service-faq-question" type="button" aria-expanded="false" aria-controls="grok-faq-answer-5">How long does activation take?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-5"><p>We process orders daily from 08:00 to 20:00 Moscow time. Orders with automatic activation are handled 24/7. The average wait after payment is 5 minutes to 2 hours.</p></div></article>
+      <article class="service-faq-item"><button class="service-faq-question" type="button" aria-expanded="false" aria-controls="grok-faq-answer-5">What do I do after paying?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-5"><p>Open the activation page for instructions and your order status.</p><p>We process orders daily from 08:00 to 20:00 Moscow time. Orders with automatic activation are handled 24/7. The average wait after payment is 5 minutes to 2 hours.</p></div></article>
       <article class="service-faq-item"><button class="service-faq-question" type="button" aria-expanded="false" aria-controls="grok-faq-answer-6">How should I protect my account information?<span aria-hidden="true"></span></button><div class="service-faq-answer" id="grok-faq-answer-6"><p>Only submit activation details through your order page. Do not post passwords, verification codes or account information in public messages or screenshots.</p></div></article>
     </div>
   </section>
@@ -183,6 +175,7 @@
   <span class="footer-copy">&copy; 2026 GPTishka. All rights reserved, copying prohibited.</span>
 </footer>
 <script src="/assets/js/app.min.js?v=sha256-ec9c4ceba1479afe" defer></script>
+<script src="/assets/js/grok-offer.js?v=sha256-00b8b02f73640eb4" defer></script>
 <script src="/assets/js/support-widget.js?v=20260924-support-account1&build=sha256-9da6a0dc556ea999" defer></script>
   <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
 <script src="/assets/js/storefront-ui.js?v=sha256-bcae5e9700f06872" defer></script>

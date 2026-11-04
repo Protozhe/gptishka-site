@@ -1,14 +1,106 @@
 .service-page[data-service-page="grok"] .grok-account-requirement {
-  margin: 18px 0 0;
-  padding: 16px 18px;
-  border: 1px solid #e8bf6659;
+  display: grid;
+  gap: 4px;
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  border: 1px solid #3a464a;
   border-radius: 12px;
-  background: #e8bf660a;
-  color: #f3dfb1;
-  font-size: 15px;
-  line-height: 1.6;
+  background: #20272a;
+  font: 500 1rem/1.5 'Manrope', system-ui, sans-serif;
 }
-.grok-account-requirement strong { display: block; margin-bottom: 4px; }
+
+html body#storefrontBody .service-page[data-service-page="grok"] .grok-account-requirement p {
+  margin: 0;
+  max-inline-size: 72ch;
+  color: #d5dfe1 !important;
+  font: inherit;
+  text-wrap: pretty;
+}
+
+.grok-account-requirement strong { color: #f3f6f6; font-weight: 750; }
+.service-page[data-service-page="grok"] #serviceConstructorPrice { font-variant-numeric: tabular-nums; }
+.service-page[data-service-page="grok"] .service-checkout-card[data-delivery-key="sso"][data-duration-key="1m"] .service-checkout-card__summary {
+  display: none !important;
+}
+
+.service-page[data-service-page="grok"] #servicePlansGrid {
+  margin-top: 12px;
+}
+
+.service-page[data-service-page="grok"] .service-constructor-head {
+  margin-bottom: 10px;
+}
+
+.service-page[data-service-page="grok"] .service-filter-stack--constructor {
+  margin-top: 8px;
+}
+
+html body#storefrontBody .service-page[data-service-page="grok"] .service-filter-stack--constructor .service-filter-chip:not(:disabled) {
+  background: #262d31 !important;
+  border-color: #3d474c !important;
+  color: #e2e8e9 !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none;
+  transform: none;
+  transition: none;
+}
+
+html body#storefrontBody .service-page[data-service-page="grok"] .service-filter-stack--constructor .service-filter-chip:hover:not(:disabled) {
+  background: #30393d !important;
+  border-color: #59676d !important;
+}
+
+html body#storefrontBody .service-page[data-service-page="grok"] .service-filter-stack--constructor .service-filter-chip[aria-pressed="true"]:not(:disabled) {
+  background: #29463e !important;
+  border-color: #5e8e7c !important;
+  color: #d0f2e3 !important;
+}
+
+html body#storefrontBody .service-page[data-service-page="grok"] #servicePlansGrid .pay-now-btn:not(:disabled) {
+  background: #69d3b1 !important;
+  border-color: transparent !important;
+  border-radius: 12px;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none;
+  transform: none;
+  transition: none;
+}
+
+html body#storefrontBody .service-page[data-service-page="grok"] #servicePlansGrid .pay-now-btn:hover:not(:disabled) {
+  background: #80ddbe !important;
+}
+
+html body#storefrontBody .service-page[data-service-page="grok"] #plans :is(.service-filter-chip, .pay-now-btn)::before,
+html body#storefrontBody .service-page[data-service-page="grok"] #plans :is(.service-filter-chip, .pay-now-btn)::after {
+  content: none !important;
+}
+
+html body#storefrontBody main.service-page[data-service-page="grok"] :is(.service-info-section--grok, .service-faq-section) {
+  margin-top: clamp(28px, 4vw, 48px);
+  padding-top: 24px;
+  gap: 16px;
+}
+
+@media (max-width: 760px) and (max-height: 760px) {
+  html body#storefrontBody .service-page[data-service-page="grok"] { padding-top: 12px !important; }
+  html body#storefrontBody .service-page[data-service-page="grok"] .service-directory-back { margin-bottom: 8px; }
+  html body#storefrontBody .service-page[data-service-page="grok"] .service-constructor-shell { gap: 8px !important; }
+  html body#storefrontBody .service-page[data-service-page="grok"] .service-product-gallery { height: 48px !important; }
+  html body#storefrontBody .service-page[data-service-page="grok"] .service-product-gallery__brand {
+    width: 48px !important;
+    height: 48px !important;
+    max-height: 48px !important;
+    flex-basis: 48px !important;
+  }
+  .service-page[data-service-page="grok"] .service-constructor-head { margin-bottom: 6px; }
+  .service-page[data-service-page="grok"] .service-filter-stack--constructor { gap: 8px; margin-top: 6px; }
+  .service-page[data-service-page="grok"] .grok-account-requirement,
+  .service-page[data-service-page="grok"] #servicePlansGrid { margin-top: 8px; }
+}
+
 .grok-plan-comparison { overflow-x: auto; max-width: 100%; border: 1px solid #ffffff1a; border-radius: 14px; }
 .grok-plan-comparison table { width: 100%; min-width: 640px; border-collapse: collapse; text-align: left; font-size: 16px; line-height: 1.6; }
 .grok-plan-comparison caption { padding: 18px 22px; text-align: left; color: #aeb8c6; }
@@ -19,7 +111,7 @@
 .grok-plan-comparison th:first-child { white-space: nowrap; }
 .grok-plan-comparison tr:last-child > * { border-bottom: 0; }
 .grok-plan-comparison thead tr:last-child > * { border-bottom: 1px solid #ffffff1a; }
-.grok-offer-note { margin: 16px 0 0; color: #aeb8c6; font-size: 15px; line-height: 1.65; }
+.grok-offer-note { margin: 0; color: #aeb8c6; font-size: 15px; line-height: 1.65; }
 .grok-plan-comparison:focus-visible { outline: 2px solid #6ddace; outline-offset: 4px; }
 html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-list {
   display: grid;
@@ -114,7 +206,7 @@ html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page
 }
 html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-answer p:last-child { margin-bottom: 0; }
 @media (max-width: 700px) {
-  .service-page[data-service-page="grok"] .grok-account-requirement { padding: 14px; font-size: 14px; }
+  .service-page[data-service-page="grok"] .grok-account-requirement { padding: 8px 12px; }
   .grok-plan-comparison th, .grok-plan-comparison td { padding: 14px 16px; }
   html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-question { padding: 18px; gap: 14px; font-size: 18px !important; }
   html body#storefrontBody :is(.service-page, #chatgptWorkspace)[data-service-page="grok"] .service-faq-answer { padding: 0 18px 20px; }
