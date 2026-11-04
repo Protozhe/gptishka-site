@@ -1,0 +1,28 @@
+/* Reuse the Manrope heading and Golos Text reading fonts from the activation pages. */
+body#storefrontBody.redeem-gemini-typography .redeem-card {
+  font-family: "Golos Text", Manrope, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+body#storefrontBody.redeem-flow.home-wide-body.redeem-gemini-typography .redeem-card > .redeem-title {
+  font: 750 clamp(26px, 3vw, 36px)/1.2 Manrope, system-ui, sans-serif !important;
+  letter-spacing: -.03em !important;
+}
+
+body#storefrontBody.redeem-gemini-typography .redeem-card :is(p, li, label) {
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+body#storefrontBody.redeem-gemini-typography .redeem-card .redeem-label {
+  font: 600 15px/1.4 "Golos Text", Manrope, system-ui, sans-serif !important;
+}
+
+body#storefrontBody.redeem-gemini-typography .redeem-card :is(input, textarea) {
+  font: 400 16px/1.4 "Golos Text", Manrope, system-ui, sans-serif !important;
+}
+
+body#storefrontBody.redeem-gemini-typography .redeem-card .redeem-btn {
+  font: 650 16px/1.4 "Golos Text", Manrope, system-ui, sans-serif !important;
+}

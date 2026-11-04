@@ -91,18 +91,6 @@
       tabs.find(tab => tab.getAttribute('aria-selected') === 'true').focus({ preventScroll: true });
     }
   }
-  const prices = { kyc: 4000, cvp: 11500 };
-  workspace.querySelectorAll('[name="claude-verification"]').forEach(input => {
-    input.addEventListener('change', () => {
-      const amount = Number(workspace.dataset[input.value + 'Price'] || prices[input.value]);
-      document.getElementById('claudeVerificationDetails').hidden = input.value !== 'kyc';
-      document.getElementById('claudeKycWarning').hidden = input.value !== 'kyc';
-      document.getElementById('claudeVerificationPrice').textContent = amount.toLocaleString('ru-RU') + ' ₽';
-
-      document.getElementById('claudeVerificationSubmit').disabled = !workspace.dataset[input.value + 'Available'];
-      document.getElementById('claudeVerificationSubmit').textContent = (document.documentElement.lang === 'en' ? 'Order ' : 'Оформить ') + input.value.toUpperCase();
-    });
-  });
   window.addEventListener('hashchange', restoreSection);
   window.addEventListener('popstate', restoreSection);
   restoreSection();

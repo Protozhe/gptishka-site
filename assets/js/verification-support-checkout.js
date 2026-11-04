@@ -8,38 +8,23 @@
   const en = document.documentElement.lang === 'en';
   const status = form.querySelector('[data-support-payment-status]');
   const pay = form.querySelector('[data-support-pay]');
-  const kycAcknowledgement = form.querySelector('[data-support-kyc-acknowledgement]');
   const kycAcknowledgementInput = form.elements.kycWarningAcknowledged;
-  const products = new Map();
   let current = null;
   const rub = value => Number(value).toLocaleString('ru-RU') + ' ₽';
-  const selected = () => workspace.querySelector('[name="claude-verification"]:checked')?.value;
   fetch('/api/public/verification-support-products', { cache: 'no-store', credentials: 'same-origin' })
     .then(response => { if (!response.ok) throw new Error(); return response.json(); })
     .then(data => {
-      for (const name of ['kyc', 'cvp']) {
-        const product = data.items?.find(item => item.slug === `claude-${name}-support`) || data.items?.find(item => item.slug === `claude-${name}`);
-        if (!product || product.currency !== 'RUB' || !(Number(product.price) > 0)) continue;
-        products.set(name, product);
-        workspace.dataset[name + 'Available'] = 'true';
-        workspace.dataset[name + 'Price'] = String(product.price);
-      }
-      const product = products.get(selected());
-      if (product) {
-        document.getElementById('claudeVerificationPrice').textContent = rub(product.price);
-        open.disabled = false;
-      }
+      const product = data.items?.find(item => item.slug === 'claude-kyc-support')
+        || data.items?.find(item => item.slug === 'claude-kyc');
+      if (!product || product.currency !== 'RUB' || !(Number(product.price) > 0)) return;
+      current = product;
+      document.getElementById('claudeVerificationPrice').textContent = rub(product.price);
+      open.disabled = false;
     }).catch(() => {});
   open.addEventListener('click', () => {
-    current = products.get(selected());
     if (!current) return;
-    const isKyc = selected() === 'kyc';
-    kycAcknowledgement.hidden = !isKyc;
-    kycAcknowledgementInput.required = isKyc;
-    kycAcknowledgementInput.disabled = !isKyc;
     kycAcknowledgementInput.checked = false;
     status.textContent = '';
-    dialog.querySelector('[data-support-name]').textContent = selected().toUpperCase();
     dialog.querySelector('[data-support-price]').textContent = rub(current.price);
     pay.textContent = (en ? 'Pay ' : 'Оплатить ') + rub(current.price);
     dialog.showModal();
@@ -56,7 +41,7 @@
     status.textContent = en ? 'Creating payment…' : 'Создаём оплату…';
     const details = {
       source: 'verification_support_page', language: en ? 'en' : 'ru',
-      selection: { serviceKey: 'verification-support', plan: selected().toUpperCase(), quantity: 1, paymentMethod },
+      selection: { serviceKey: 'verification-support', plan: 'KYC', quantity: 1, paymentMethod },
       contact: { email, telegram },
     };
     try {

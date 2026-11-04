@@ -2563,6 +2563,7 @@
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
 <link rel="stylesheet" href="/assets/css/instruction-actions.css?v=sha256-ba15eccd755cc1ff">
 <link rel="stylesheet" href="/assets/css/chatgpt-activation-layout.css?v=sha256-66d8d4fd2c0f6319">
+<link rel="stylesheet" href="/assets/css/gemini-activation-typography.css?v=sha256-ea858fc80dbf0bf3">
 </head>
 <body id="storefrontBody" class="redeem-flow home-wide-body">
 <noscript><div><img src="https://mc.yandex.ru/watch/106969126" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
@@ -3633,6 +3634,8 @@
       const activationFlow = resolveSupportActivationFlow(payload);
       const forcedSupportFlow = resolveForcedSupportActivationFlow(payload);
       const productKey = getActivationProductFingerprint(payload);
+      const isGemini = productKey.includes('gemini') || productKey.includes('google ai');
+      document.body.classList.toggle('redeem-gemini-typography', isGemini);
       const usesChatGptLayout = deliveryMode === 'activation' && !forcedSupportFlow
         && productKey.includes('chatgpt') && !productKey.includes('codex');
       const usesTokenLayout = usesChatGptLayout || (['activation', 'support', 'support_claude'].includes(deliveryMode)
@@ -3642,7 +3645,7 @@
       isGrokSsoFlow = isGrokSessionPayload(payload);
       isClaudeZovoFlow = payload?.activationFlow==='claude_zovo';
       document.getElementById('claudeZovoConsentBox').hidden=!isClaudeZovoFlow;
-      if (productKey.includes('gemini') || productKey.includes('google ai')) {
+      if (isGemini) {
         applyGeminiActivationLinkFlow(payload);
         return;
       }
