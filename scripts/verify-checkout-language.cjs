@@ -139,13 +139,16 @@ for (const english of [false, true]) {
 vm.runInContext(functions.get('getEnglishServicePageContent'), geminiFallbackContext);
 const geminiEnglishFallback = geminiFallbackContext.getEnglishServicePageContent('gemini');
 assert.doesNotMatch(JSON.stringify(geminiEnglishFallback), /18.month|1,500|2,100/);
-assert.match(geminiEnglishFallback.metaTitle, /6, 12 or 24 months/);
+assert.match(geminiEnglishFallback.metaTitle, /Gemini Pro and Ultra/);
+assert.match(geminiEnglishFallback.heroDescription, /6, 12 or 24 months/);
+assert.match(geminiEnglishFallback.heroDescription, /Ultra 20× for 1 month/);
 for (const path of ['catalog/index.html', 'catalog/ai/index.html', 'en/catalog/index.html', 'en/catalog/ai/index.html']) {
   assert.doesNotMatch(fs.readFileSync(path, 'utf8'), /12 или 18|12 or 18/);
   assert.match(fs.readFileSync(path, 'utf8'), />GPT-6\.1 Sol\/Astra</);
   const geminiFallbackCard = fs.readFileSync(path, 'utf8').match(/<article\b[^>]*data-showcase-service-key="gemini"[^>]*>[\s\S]*?<\/article>/)?.[0];
   assert.ok(geminiFallbackCard);
-  assert.match(geminiFallbackCard, /3 тарифа|3 plans/);
+  assert.match(geminiFallbackCard, /5 тарифов|5 plans/);
+  assert.match(geminiFallbackCard, /Ultra 20×/);
   assert.match(geminiFallbackCard, /2 490/);
   assert.doesNotMatch(geminiFallbackCard, /2 тарифа|2 tariffs|1 500/);
 }

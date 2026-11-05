@@ -50,7 +50,7 @@ publicEnotRouter.post(
     }
 
     const publicOrigin = resolvePublicOrigin(req) || `${req.protocol}://${req.get("host")}`;
-    const activationPath = /^gemini-pro-(6|12|24)m$/.test(String(created.productSlug || ""))
+    const activationPath = /^gemini-(?:pro-(6|12|24)m|ultra-(ready|own)-1m)$/.test(String(created.productSlug || ""))
       ? "/gemini-activation.html"
       : created.deliveryType === "vpn"
       ? "/store/vpn/activate"

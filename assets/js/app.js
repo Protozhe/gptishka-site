@@ -867,7 +867,7 @@ function initActivationResumeShortcut() {
   const CLAUDE_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max-5x", "max-20x"]);
   const GROK_ORDER_MODAL_PLAN_KEYS = new Set(["grok-plus", "grok-premium", "grok-super", "grok-ultra"]);
   const PERPLEXITY_ORDER_MODAL_PLAN_KEYS = new Set(["pro"]);
-  const GEMINI_ORDER_MODAL_PLAN_KEYS = new Set(["pro"]);
+  const GEMINI_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "ultra"]);
   const SUNO_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "premier"]);
   const DEVIN_ORDER_MODAL_PLAN_KEYS = new Set(["pro", "max", "teams"]);
   const MIDJOURNEY_ORDER_MODAL_PLAN_KEYS = new Set(["basic", "standard", "pro"]);
@@ -2862,25 +2862,70 @@ function initActivationResumeShortcut() {
     }
     if (key === "gemini") {
       return {
-        metaTitle: "Gemini Pro — 6, 12 or 24 months | GPTishka",
-        heroEyebrow: "Subscription plans", heroTitle: "Gemini Pro",
-        heroDescription: "Gemini Pro on your Google Account. Choose 6, 12 or 24 months.",
-        constructorTitle: "Gemini Pro",
-        constructorDescription: "After payment, enter your Google email, password and authenticator key or an 8-digit backup code on your GPTishka order page. Activation runs automatically. A new account is available for an extra ₽200.",
-        infoSections: [
-          { title: "Before buying", items: ["Use a personal Google Account without an active paid subscription or family group membership.", "Two-step verification must be enabled. Activation needs your account email, password and authenticator key or one 8-digit backup code.", "Your account must meet Google's age and supported-region requirements."] },
-          { title: "How activation works", ordered: true, items: ["Choose a duration and pay for your order.", "Enter the account details in the secure form on GPTishka. No external redemption link is issued.", "Follow the activation status on the same order page."] },
-          { title: "A new account", items: ["Add a new account for ₽200 when selecting the plan.", "After payment, contact the manager with your order number. Your existing account details are not needed.", "The subscription will be on the new account, not transferred to an existing one."] },
-          { title: "After activation", items: ["Check the subscription in your Google Account.", "Change your password and replace any shared authenticator key or backup code.", "Google controls available features and limits. Contact support with your order number if you need help."] }
-        ],
-        faqItems: [
-          { question: "What is required for activation?", answer: "Your Google account email, password and authenticator key or one 8-digit backup code. Enter these only in the secure form on your paid GPTishka order page." },
-          { question: "Do you issue a redemption link?", answer: "No. Activation and progress tracking are on your GPTishka order page." },
-          { question: "Can I get a new account?", answer: "Yes. Select the new-account option for an extra ₽200 and contact the manager after payment. Your current account details are not required." },
-          { question: "Which durations are available?", answer: "6, 12 and 24 months. The final price is shown before payment." },
-          { question: "How do I contact support?", answer: "Use the support link and provide your order number. Do not send passwords through support chat." }
-        ]
-      };
+  "metaTitle": "Gemini Pro and Ultra — subscriptions | GPTishka",
+  "heroEyebrow": "Subscription plans",
+  "heroTitle": "Gemini",
+  "heroDescription": "Pro for 6, 12 or 24 months. Ultra 20× for 1 month — a ready account or activation on your account.",
+  "constructorTitle": "Gemini",
+  "constructorDescription": "Gemini Pro for text, files and images. After payment, enter your Google Account details in the secure order form. A new account costs an extra ₽200.",
+  "infoSections": [
+    {
+      "title": "Gemini Pro",
+      "items": [
+        "A subscription for 6, 12 or 24 months on your Google Account.",
+        "After payment, complete the secure form: email, password and authenticator key or one 8-digit backup code.",
+        "Activation is automatic. Track progress and the result on your order page."
+      ]
+    },
+    {
+      "title": "Gemini Ultra 20×",
+      "items": [
+        "A 1-month subscription with higher Gemini and Antigravity limits, and Flow tools.",
+        "Choose a ready account or activation on your account. After payment, contact the manager from your order page.",
+        "A ready account is separate: its subscription cannot be transferred. Check the login on the day you receive it."
+      ]
+    },
+    {
+      "title": "Your account requirements",
+      "items": [
+        "Use a personal Google Account without an active paid subscription or family group.",
+        "The account must meet Google’s age and region requirements. Wait until any existing subscription ends.",
+        "A new account for Pro costs an extra ₽200. A ready account for Ultra is a separate option with its own total price."
+      ]
+    },
+    {
+      "title": "After activation",
+      "items": [
+        "Check the plan and duration in your Google Account.",
+        "Change the password and replace any shared two-step verification details.",
+        "Google controls available features and limits. For order support, contact us with your order number."
+      ]
+    }
+  ],
+  "faqItems": [
+    { "question": "When is my order processed?", "answer": "We process orders daily from 08:00 to 20:00 Moscow time. Orders with automatic activation are handled 24/7. The average wait after payment is 5 minutes to 2 hours." },
+    {
+      "question": "How do Pro and Ultra differ?",
+      "answer": "Pro is available for 6, 12 or 24 months. Ultra 20× is for 1 month, with higher Gemini and Antigravity limits and Flow tools. Your Google Account shows the available features and limits."
+    },
+    {
+      "question": "How is Pro activated?",
+      "answer": "After payment, enter your email, password and authenticator key or one 8-digit backup code in the secure form on your GPTishka order page. Follow the result there. No external redemption link is issued."
+    },
+    {
+      "question": "How do I receive Ultra?",
+      "answer": "Choose a ready account or activation on your account and pay. Select Contact the manager on your order page and provide your order number. A manager handles Ultra; the automatic Pro form is not used."
+    },
+    {
+      "question": "Can I get a new account?",
+      "answer": "For Pro, select the new-account option for an extra ₽200. For Ultra, select Ready account: the account is included in that option’s price. Contact the manager after payment."
+    },
+    {
+      "question": "What should I do after activation?",
+      "answer": "Check the subscription, change your password and replace any shared two-step verification details. For order, guarantee or refund questions, contact support with your order number."
+    }
+  ]
+};
     }
     if (key === "suno") {
       return {
@@ -3144,7 +3189,7 @@ function initActivationResumeShortcut() {
     }
 
     if (key === "gemini") {
-      return "pro";
+      return text.includes("ultra") || joinedTags.includes("ultra") ? "ultra" : "pro";
     }
 
     if (key === "suno") {
@@ -3224,6 +3269,8 @@ function initActivationResumeShortcut() {
     const text = getProductSearchText(item);
     if (isStandaloneVpnProduct(item)) return "vpn";
     if (text.includes("midjourney") || text.includes("suno")) return "link";
+    if (/^gemini-ultra-ready-1m$/.test(String(item?.baseSlug || item?.product || item?.slug || "").replace(/-(login|link)$/, ""))) return "ready";
+    if (/^gemini-ultra-own-1m$/.test(String(item?.baseSlug || item?.product || item?.slug || "").replace(/-(login|link)$/, ""))) return "login";
     if (/^gemini-pro-(6|12|24)m$/.test(String(item?.baseSlug || item?.product || item?.slug || "").replace(/-(login|link)$/, ""))) return "login";
     if (/^grok-(plus|premium|super|ultra)-1$/.test(String(item?.baseSlug||''))) return "sso";
     if (activationVariant === "withoutlogin") return "id";
@@ -3243,7 +3290,7 @@ function initActivationResumeShortcut() {
       claude: new Set(["1m"]),
       grok: new Set(["1m"]),
       perplexity: new Set(["1m"]),
-      gemini: new Set(["6m", "12m", "18m", "24m"]),
+      gemini: new Set(["1m", "6m", "12m", "18m", "24m"]),
       suno: new Set(["1m"]),
       devin: new Set(["1m"]),
       midjourney: new Set(["1m"]),
@@ -3260,7 +3307,7 @@ function initActivationResumeShortcut() {
       if (key === "devin" && deliveryKey !== "login") return false;
       if (allowedDurations[key] && !allowedDurations[key].has(getServiceDurationKey(item))) return false;
       if (key === "claude" || key === "grok" || key === "devin") return true;
-      if (key === "gemini" && /^gemini-pro-(6|12|24)m$/.test(String(item?.baseSlug || item?.product || item?.slug || "").replace(/-(login|link)$/, ""))) return true;
+      if (key === "gemini" && /^gemini-(?:pro-(6|12|24)m|ultra-(ready|own)-1m)$/.test(String(item?.baseSlug || item?.product || item?.slug || "").replace(/-(login|link)$/, ""))) return true;
 
       const tags = Array.isArray(item?.tags) ? item.tags : [];
       const deliveryType = resolveDeliveryType(item?.deliveryType, item?.deliveryMethod, tags);
@@ -3304,6 +3351,7 @@ function initActivationResumeShortcut() {
       gemini: {
         all: isEnPage ? "All plans" : "Все тарифы",
         pro: "Pro",
+        ultra: "Ultra 20×",
       },
       suno: {
         all: isEnPage ? "All plans" : "Все тарифы",
@@ -3345,7 +3393,10 @@ function initActivationResumeShortcut() {
     const key = normalizeAiServiceKey(serviceKey);
     const value = String(deliveryKey || "").trim();
     if ((key === "claude" || key === "grok") && value === "id") return isEnPage ? "By ID" : "По ID";
-    if (key === "gemini") return isEnPage ? "Account sign-in" : "Со входом в аккаунт";
+    if (key === "gemini") {
+      if (value === "ready") return isEnPage ? "Ready account" : "Готовый аккаунт";
+      return isEnPage ? "Your account" : "На свой аккаунт";
+    }
     if (key === "claude" && value === "support") return isEnPage ? "Account sign-in" : "Со входом в аккаунт";
     if (key === "devin" && value === "login") return isEnPage ? "Payment link" : "По ссылке на оплату";
     if ((key === "midjourney" || key === "suno") && value === "link") return isEnPage ? "Payment link" : "По ссылке на оплату";
@@ -3392,7 +3443,7 @@ function initActivationResumeShortcut() {
       return planKey === "pro" ? 10 : 100;
     }
     if (key === "gemini") {
-      return planKey === "pro" ? 10 : 100;
+      return planKey === "pro" ? 10 : planKey === "ultra" ? 20 : 100;
     }
     if (key === "suno") {
       return planKey === "pro" ? 10 : planKey === "premier" ? 20 : 100;
@@ -3414,7 +3465,7 @@ function initActivationResumeShortcut() {
   }
 
   function getServiceDeliverySortScore(deliveryKey) {
-    const order = { login: 10, link: 20, id: 30, vpn: 40 };
+    const order = { ready: 5, login: 10, link: 20, id: 30, vpn: 40 };
     return order[deliveryKey] || 100;
   }
 
@@ -3777,6 +3828,7 @@ function initActivationResumeShortcut() {
     });
     const summary = labels.slice(0, 4).join(" / ");
     if (serviceKey === "gemini") {
+      if (seen.has("ultra")) return isEnPage ? "Pro · 6/12/24 months · Ultra 20× · 1 month" : "Pro · 6/12/24 мес. · Ultra 20× · 1 месяц";
       const durations = [...new Set(group.items.map(item => getServiceDurationKey(item)))];
       durations.sort((a, b) => getServiceDurationSortScore(a) - getServiceDurationSortScore(b));
       const durationSummary = durations.map(key => getServiceDurationLabel(key)).join(" / ");
@@ -4182,8 +4234,8 @@ function initActivationResumeShortcut() {
         duration: ["1m"],
       },
       gemini: {
-        plan: ["pro"],
-        duration: ["6m", "12m", "24m"],
+        plan: ["pro", "ultra"],
+        duration: safeOptions.some(option => option.key === "1m") ? ["1m"] : ["6m", "12m", "24m"],
       },
       suno: {
         plan: ["pro", "premier"],
@@ -5143,7 +5195,7 @@ function initActivationResumeShortcut() {
       : getAiOrderModalSummaryTitle(serviceDisplayName, summaryPlanLabel || planLabel);
     const showIdDelivery = (resolvedServiceKey === "claude" || resolvedServiceKey === "grok") && deliveryKey === "id";
     const isClaudeMaxManual = resolvedServiceKey === "claude" && ["max-5x", "max-20x"].includes(planKey) && deliveryKey === "support";
-    const showDeliveryLabel = showIdDelivery || isClaudeMaxManual;
+    const showDeliveryLabel = showIdDelivery || isClaudeMaxManual || (resolvedServiceKey === "gemini" && planKey === "ultra");
     const summaryDescription = [durationLabel, showDeliveryLabel ? deliveryLabel : ""].filter(Boolean).join(" · ");
     const deliveryChip = showDeliveryLabel ? '<span>' + escapeHtml(deliveryLabel) + '</span>' : '';
     const manualClaudeMaxNote = isClaudeMaxManual
@@ -5176,7 +5228,9 @@ function initActivationResumeShortcut() {
     const devinLinkNote = resolvedServiceKey === "devin"
       ? '<p class="chatgpt-order-security-note">После оплаты откроется страница с инструкцией. Вставьте на ней ссылку Stripe Checkout для выбранного тарифа Devin — логин и пароль передавать не нужно.</p>'
       : '';
-    const geminiActivationNote = resolvedServiceKey === "gemini"
+    const geminiActivationNote = resolvedServiceKey === "gemini" && planKey === "ultra"
+      ? '<p class="chatgpt-order-security-note">' + escapeHtml(isEnPage ? "After payment, contact the manager from your order page to receive the ready account or arrange activation on your account." : "После оплаты свяжитесь с менеджером по кнопке на странице заказа: получите готовый аккаунт или согласуйте подключение на свой.") + '</p>'
+      : resolvedServiceKey === "gemini"
       ? '<p class="chatgpt-order-security-note">' + escapeHtml(isEnPage
         ? "After payment, enter your Google email, password and authenticator key or an 8-digit backup code on your private GPTishka order page. If you select a new account, contact the manager instead."
         : "После оплаты укажите почту Google, пароль и ключ аутентификатора или 8-значный резервный код на личной странице заказа GPTishka. Если выбран новый аккаунт — свяжитесь с менеджером.") + '</p>'
@@ -5519,6 +5573,24 @@ function initActivationResumeShortcut() {
       for(const [selector,value] of texts){const el=servicePageRootEl.querySelector(selector);if(el){if(el.dataset.grokOriginal===undefined)el.dataset.grokOriginal=el.textContent;el.textContent=modern?String(value||''):el.dataset.grokOriginal;}}
       for(const el of servicePageRootEl.querySelectorAll('.service-info-section,.service-faq-section'))el.hidden=false;
     }
+    if (serviceKey === "gemini" && selectedItem) {
+      const ultra = getServicePlanKey(selectedItem, serviceKey) === "ultra";
+      const ready = getServiceDeliveryKey(selectedItem) === "ready";
+      const heading = servicePageRootEl.querySelector(".service-constructor-brand h1");
+      const descriptionTitle = servicePageRootEl.querySelector(".service-constructor-description h3");
+      const description = servicePageRootEl.querySelector(".service-constructor-description p");
+      if (heading) heading.textContent = ultra ? "Gemini Ultra 20×" : "Gemini Pro";
+      if (descriptionTitle) descriptionTitle.textContent = ultra ? "Gemini Ultra 20×" : "Gemini Pro";
+      if (description) description.textContent = ultra
+        ? (isEnPage ? "Higher Gemini and Antigravity limits, and Flow tools. Available features and limits are shown in your Google Account." : "Расширенные лимиты Gemini и Antigravity, инструменты Flow. Доступные функции и лимиты отображаются в аккаунте Google.")
+        : (isEnPage ? "Gemini Pro for text, files and images. After payment, enter your Google Account details in the secure order form. A new account costs an extra ₽200." : "Gemini Pro: работа с текстами, файлами и изображениями. После оплаты введите данные Google-аккаунта в защищённую форму заказа. Новый аккаунт — за доплату 200 ₽.");
+      const note = servicePageRootEl.querySelector("[data-gemini-requirements]");
+      if (note) note.textContent = ultra
+        ? (ready
+          ? (isEnPage ? "A separate Google Account with Ultra 20×. After payment, contact the manager from your order page. Check the login on the day you receive it." : "Отдельный Google-аккаунт с Ultra 20×. После оплаты свяжитесь с менеджером на странице заказа. Проверьте вход в день получения.")
+          : (isEnPage ? "Use a personal Google Account without an active paid subscription or family group. After payment, contact the manager from your order page to arrange activation." : "Нужен личный Google-аккаунт без платной подписки и семейной группы. После оплаты свяжитесь с менеджером на странице заказа, чтобы согласовать подключение."))
+        : (isEnPage ? "Use a personal Google Account without an active paid subscription or family group. For activation, prepare your email, password and authenticator key or one 8-digit backup code." : "Нужен личный Google-аккаунт без платной подписки и семейной группы. Для активации подготовьте почту, пароль и ключ аутентификатора или один 8-значный резервный код.");
+    }
     const accountNote = servicePageRootEl?.querySelector('[data-service-account-note]');
     if (accountNote) accountNote.textContent = pageNewAccount?.checked
       ? (serviceKey === "claude"
@@ -5563,14 +5635,19 @@ function initActivationResumeShortcut() {
     const deliverySourceItems = constructorMode && servicePageState.plan !== "all"
       ? allItems.filter(item => getServicePlanKey(item, serviceKey) === servicePageState.plan)
       : allItems;
-    if (serviceDeliveryFiltersEl) serviceDeliveryFiltersEl.innerHTML = "";
-    servicePageState.delivery = "all";
+    if (serviceKey === "gemini" && servicePageState.plan === "ultra" && serviceDeliveryFiltersEl) {
+      renderServiceFilterGroup(serviceDeliveryFiltersEl, "delivery", isEnPage ? "Account" : "Аккаунт", getServiceFilterOptions(deliverySourceItems, serviceKey, "delivery"), servicePageState.delivery, deliverySourceItems.length, serviceKey);
+    } else {
+      if (serviceDeliveryFiltersEl) serviceDeliveryFiltersEl.innerHTML = "";
+      servicePageState.delivery = "all";
+    }
 
     const durationSourceItems = constructorMode && servicePageState.delivery !== "all"
       ? deliverySourceItems.filter(item => getServiceDeliveryFilterKey(item, serviceKey) === servicePageState.delivery)
       : allItems;
+    const availableDurationItems = serviceKey === "gemini" ? (servicePageState.delivery === "all" ? deliverySourceItems : durationSourceItems) : durationSourceItems;
     const durationOptions = constructorMode
-      ? getConstructorFilterOptions(serviceKey, "duration", getServiceFilterOptions(durationSourceItems, serviceKey, "duration"))
+      ? getConstructorFilterOptions(serviceKey, "duration", getServiceFilterOptions(availableDurationItems, serviceKey, "duration"))
       : getServiceFilterOptions(durationSourceItems, serviceKey, "duration");
     renderServiceFilterGroup(serviceDurationFiltersEl, "duration", durationLabel, durationOptions, servicePageState.duration, allItems.length, serviceKey);
 

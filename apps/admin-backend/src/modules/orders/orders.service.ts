@@ -755,6 +755,16 @@ export const ordersService = {
       };
     }
 
+    if (/^gemini-ultra-(ready|own)-1m$/.test(productSlug)) {
+      await deliverProduct(order);
+      return {
+        orderId: order.id, deliveryMode: "manual_login", activationFlow: "gemini_ultra_manual",
+        productSlug, productTitle, phase: "ultra_manual", status: "pending_manual",
+        supportUrl: "https://t.me/gptishkasupport", supportEmail: resolveSupportEmail(),
+        message: "После оплаты свяжитесь с менеджером и сообщите номер заказа для выдачи аккаунта или подключения Ultra.",
+      };
+    }
+
     if (isGeminiAutomaticProduct(productSlug) && !needsNewAccount) {
       return geminiActivation.read(order.id, true);
     }

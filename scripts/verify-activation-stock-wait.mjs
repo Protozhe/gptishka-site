@@ -46,6 +46,18 @@ try{
  fail=false;now+=60001;await context.retryPendingManagerNotifications();assert.equal(sends,2);assert.equal(context.managerOutbox.snapshot()[0].status,'sent');
  fs.unlinkSync(file);reset();activation.productKey='codex-500';order.items[0].product.title='Пополнение Codex — 500 кредитов';
  await context.enqueueActivationStockNotification(id);await flush();assert.equal(sends,3);assert.match(message,/codex-500/);assert.match(message,/500 кредитов/);
+ for(const months of [6,12,24]){
+  fs.unlinkSync(file);reset();
+  activation.productKey=`gemini-pro-${months}m`;activation.activationSiteUrl='https://aichongzhi.fun';activation.keyAllocationSite='https://aichongzhi.fun';
+  activation.externalFulfillmentOwner='gemini-pro-cdk-v1';activation.status='processing';activation.verificationState='pending';
+  activation.lastProviderPayload={source:'gemini-pro-cdk-v1',phase:'awaiting_key'};
+  order.items[0].product.title=`Gemini Pro — ${months} месяцев`;
+  const before=sends;await Promise.all([context.enqueueActivationStockNotification(id),context.enqueueActivationStockNotification(id)]);await flush();
+  assert.equal(sends,before+1);assert.ok(message.includes(`gemini-pro-${months}m`));assert.match(message,/aichongzhi/);
+  assert.equal(reply.inline_keyboard.length,1,'Gemini uses the existing admin CDK upload');
+  assert.equal(reply.inline_keyboard[0][0].url,'https://fixture.invalid/admin/cdks');
+  assert.doesNotMatch(message,/fixture-private-session|sessionKey|password|twofa/);
+ }
  for(const invalid of ['completed','refunded','unpaid','stub','external','dispatched','restocked']){
   fs.unlinkSync(file);reset();
   if(invalid==='completed')activation.status='success';

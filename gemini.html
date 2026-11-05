@@ -18,11 +18,11 @@
 <meta name="robots" content="index, follow">
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="GPTishka" />
-<meta property="og:title" content="Gemini Pro — подключение подписки | GPTishka" />
+<meta property="og:title" content="Gemini Pro и Ultra — подписки | GPTishka" />
 <meta property="og:description" content="Выберите актуальный вариант Gemini Pro с помощью в подключении и поддержкой GPTishka." />
 <meta property="og:image" content="https://gptishka.shop/assets/img/services/gemini-card.webp?v=20260810-gemini1" />
 <meta property="og:url" content="https://gptishka.shop/gemini" />
-<title>Gemini Pro — подключение подписки | GPTishka</title>
+<title>Gemini Pro и Ultra — подписки | GPTishka</title>
 <link rel="stylesheet" href="/assets/css/logo.min.css">
 <link rel="stylesheet" href="/assets/css/gptishka-header-refresh.css?v=20260912-header-codex1">
 <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260516fix4">
@@ -37,7 +37,7 @@
 <link rel="stylesheet" href="/assets/css/codex-card.css?v=20260914-detail-brand1" />
 <link rel="stylesheet" href="/assets/css/chatgpt-grok-flat-page.css?v=20260825-rounded-header2" />
 <link rel="stylesheet" href="/assets/css/gemini-faq.css?v=20260923-gemini-faq1" />
-<link rel="stylesheet" href="/assets/css/gemini-purchase.css?v=sha256-1aa67c5fe0d26bdf" />
+<link rel="stylesheet" href="/assets/css/gemini-purchase.css?v=sha256-62b3b5bfd8cf3117" />
 <link rel="stylesheet" href="/assets/css/service-checkout-flat.css?v=sha256-3c00fffcfec9ef12" />
 <link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
@@ -106,6 +106,7 @@
         <div class="service-filter-stack service-filter-stack--constructor" aria-label="Фильтры тарифов">
           <div id="servicePlanFilters"></div>
           <div id="serviceDurationFilters"></div>
+          <div id="serviceDeliveryFilters"></div>
         </div>
         <div class="service-account-choice" data-gemini-new-account hidden>
           <label class="service-new-account">
@@ -116,6 +117,7 @@
           </label>
           <p data-service-account-note>По умолчанию подключаем подписку на ваш аккаунт.</p>
         </div>
+        <p class="gemini-requirements" data-gemini-requirements>Нужен личный Google-аккаунт без платной подписки и семейной группы.</p>
         <div class="service-selected-plan" id="servicePlansGrid" aria-live="polite">
           <div class="price-card price-card-skeleton" aria-hidden="true">
             <div class="price-card-skeleton__title"></div><div class="price-card-skeleton__price"></div><div class="price-card-skeleton__line"></div><div class="price-card-skeleton__button"></div>
@@ -130,56 +132,24 @@
   </section>
 
   <section class="service-info-section service-info-section--gemini" data-service-info-section>
-    <div class="service-section-title"><h2>О Gemini Pro перед покупкой</h2><p>Главное о подключении и сопровождении заказа.</p></div>
+    <div class="service-section-title"><h2>Перед покупкой Gemini</h2><p>Условия выбранного тарифа.</p></div>
     <div class="service-info-grid">
-      <article class="service-info-card">
-        <h3>Что входит в Gemini Pro</h3>
-        <ul>
-          <li>Доступ к возможностям актуального тарифа Gemini Pro.</li>
-          <li>Работа с текстами, файлами, изображениями и другими поддерживаемыми форматами.</li>
-          <li>Инструменты поиска, анализа и создания контента в пределах условий тарифа.</li>
-          <li>Точный набор функций и лимитов отображается непосредственно в аккаунте Gemini.</li>
-        </ul>
-      </article>
-      <article class="service-info-card">
-        <h3>Для каких задач подходит</h3>
-        <ul>
-          <li>Подготовка обзоров, сравнений, планов и исследовательских материалов.</li>
-          <li>Поиск актуальной информации с переходом к использованным источникам.</li>
-          <li>Разбор документов, таблиц, изображений и длинных материалов.</li>
-          <li>Помощь с текстами, идеями, кодом и рабочими вопросами.</li>
-        </ul>
-      </article>
-      <article class="service-info-card">
-        <h3>Как проходит подключение</h3>
-        <ol>
-          <li>Вы выбираете доступный вариант Gemini Pro и указываете контакт для связи.</li>
-          <li>После подтверждения оплаты получаете дальнейшую инструкцию.</li>
-          <li>Мы помогаем активировать подписку и проверяем появление тарифа Pro.</li>
-          <li>Статус и результат отправляем на указанный контакт.</li>
-        </ol>
-      </article>
-      <article class="service-info-card">
-        <h3>Поддержка и важные условия</h3>
-        <ul>
-          <li>Срок подписки и стоимость фиксируются в выбранном варианте при оформлении заказа.</li>
-          <li>Функции, модели и лимиты могут меняться на стороне Gemini.</li>
-          <li>GPTishka отвечает за корректное выполнение услуги и остаётся на связи после оплаты.</li>
-        </ul>
-        <p class="service-info-card__legal">Гарантия и возврат регулируются <a href="/guarantee.html">условиями гарантии</a>, <a href="/refund.html">условиями возврата</a> и <a href="/oferta.html">публичной офертой</a>.</p>
-      </article>
+      <article class="service-info-card"><h3>Gemini Pro</h3><ul><li>Подписка на 6, 12 или 24 месяца на вашем Google-аккаунте.</li><li>После оплаты заполните защищённую форму: почта, пароль и ключ аутентификатора или один 8-значный резервный код.</li><li>Подключение автоматическое. Статус и результат — на странице заказа.</li></ul></article>
+      <article class="service-info-card"><h3>Gemini Ultra 20×</h3><ul><li>Подписка на 1 месяц с расширенными лимитами Gemini и Antigravity, инструментами Flow.</li><li>Выберите готовый аккаунт или подключение на свой. После оплаты свяжитесь с менеджером по кнопке на странице заказа.</li><li>Готовый аккаунт выдаётся отдельно: подписку нельзя перенести на другой аккаунт. Проверьте вход в день получения.</li></ul></article>
+      <article class="service-info-card"><h3>Требования к своему аккаунту</h3><ul><li>Личный аккаунт Google без действующей платной подписки и участия в семейной группе.</li><li>Аккаунт должен соответствовать требованиям Google к возрасту и региону. Дождитесь окончания действующей подписки.</li><li>Новый аккаунт для Pro стоит дополнительно 200 ₽. Для Ultra готовый аккаунт — отдельный вариант с итоговой ценой.</li></ul></article>
+      <article class="service-info-card"><h3>После подключения</h3><ul><li>Проверьте тариф и срок подписки в аккаунте Google.</li><li>Смените пароль и замените переданные данные двухэтапной проверки.</li><li>Google определяет доступные функции и лимиты. По вопросам заказа обратитесь в поддержку с его номером.</li></ul></article>
     </div>
   </section>
 
   <section class="service-faq-section" id="faq" data-service-faq-section>
-    <div class="service-section-title"><h2>Часто задаваемые вопросы</h2><p>Короткие ответы на частые вопросы по Gemini Pro</p></div>
+    <div class="service-section-title"><h2>Часто задаваемые вопросы</h2><p>О подписках Gemini</p></div>
     <div class="service-faq-list">
-      <article class="service-faq-item active"><button class="service-faq-question" type="button">Что я получу после оплаты?<span></span></button><div class="service-faq-answer"><p>Подписку Gemini Pro согласно выбранному при оформлении варианту и помощь GPTishka с подключением.</p><p>После активации в аккаунте отобразятся возможности и актуальные условия тарифа Pro.</p></div></article>
-      <article class="service-faq-item"><button class="service-faq-question" type="button">Какие возможности есть в Gemini Pro?<span></span></button><div class="service-faq-answer"><p>Современные AI-модели, увеличенные лимиты работы с файлами и изображениями, Research и инструменты создания контента.</p><p>Список моделей и лимиты могут обновляться самим сервисом Gemini.</p></div></article>
-      <article class="service-faq-item"><button class="service-faq-question" type="button">Сколько времени занимает подключение?<span></span></button><div class="service-faq-answer"><p>После оплаты вы получите дальнейшие инструкции. Скорость подключения зависит от выбранного способа и обработки заказа; актуальный статус можно уточнить по номеру заказа.</p></div></article>
-      <article class="service-faq-item"><button class="service-faq-question" type="button">Какие способы оплаты доступны?<span></span></button><div class="service-faq-answer"><p>Доступны СБП и банковские карты через подключённые платёжные шлюзы.</p><p>GPTishka не сохраняет данные банковской карты.</p></div></article>
-      <article class="service-faq-item"><button class="service-faq-question" type="button">Как быстро подключат подписку?<span></span></button><div class="service-faq-answer"><p>Мы обрабатываем заказы ежедневно с 08:00 до 20:00 по МСК. Заказы с автоматическим подключением выполняются 24/7. Среднее время ожидания — от 5 минут до 2 часов после оплаты.</p></div></article>
-      <article class="service-faq-item"><button class="service-faq-question" type="button">Что делать, если возник вопрос после оплаты?<span></span></button><div class="service-faq-answer"><p>Напишите в поддержку и укажите номер заказа. Мы проверим статус подключения и поможем разобраться.</p></div></article>
+      <article class="service-faq-item"><button class="service-faq-question" type="button">Когда выполняется заказ?<span></span></button><div class="service-faq-answer"><p>Мы обрабатываем заказы ежедневно с 08:00 до 20:00 по МСК. Заказы с автоматическим подключением выполняются 24/7. Среднее время ожидания — от 5 минут до 2 часов после оплаты.</p></div></article>
+      <article class="service-faq-item"><button class="service-faq-question" type="button">Чем отличаются Pro и Ultra?<span></span></button><div class="service-faq-answer"><p>Pro доступен на 6, 12 или 24 месяца. Ultra 20× — на 1 месяц, с расширенными лимитами Gemini и Antigravity и инструментами Flow. Точные возможности и лимиты отображаются в аккаунте Google.</p></div></article>
+      <article class="service-faq-item"><button class="service-faq-question" type="button">Как подключается Pro?<span></span></button><div class="service-faq-answer"><p>После оплаты введите почту, пароль и ключ аутентификатора или один 8-значный резервный код в защищённую форму на странице заказа GPTishka. Там же появится результат. Ссылка для самостоятельного погашения не выдаётся.</p></div></article>
+      <article class="service-faq-item"><button class="service-faq-question" type="button">Как получить Ultra?<span></span></button><div class="service-faq-answer"><p>Выберите готовый аккаунт или подключение на свой и оплатите заказ. На странице заказа нажмите «Связаться с менеджером» и сообщите номер заказа. Ultra подключает менеджер; автоматическая форма Pro для этого тарифа не используется.</p></div></article>
+      <article class="service-faq-item"><button class="service-faq-question" type="button">Можно получить новый аккаунт?<span></span></button><div class="service-faq-answer"><p>Для Pro отметьте «Нужен новый аккаунт»: доплата 200 ₽. Для Ultra выберите «Готовый аккаунт» — его стоимость уже включена в цену. После оплаты свяжитесь с менеджером.</p></div></article>
+      <article class="service-faq-item"><button class="service-faq-question" type="button">Что делать после активации?<span></span></button><div class="service-faq-answer"><p>Проверьте подписку, смените пароль и замените переданные данные двухэтапной проверки. По вопросам выполнения заказа, гарантии или возврата обратитесь в поддержку с номером заказа.</p></div></article>
     </div>
   </section>
 </main>
@@ -189,7 +159,7 @@
   <div class="footer-links-secondary"><a class="footer-link" href="/about.html">О сервисе</a> &middot; <a class="footer-link" href="/guarantee.html">Гарантия</a> &middot; <a class="footer-link" href="/contact.html">Связь с нами</a></div>
   <span class="footer-copy">&copy; 2026 GPTishka. Все права защищены, копирование запрещено.</span>
 </footer>
-<script src="/assets/js/app.min.js?v=sha256-cb02def0b13f8de3" defer></script>
+<script src="/assets/js/app.min.js?v=sha256-e626f1e669f2d58e" defer></script>
 <script src="/assets/js/support-widget.js?v=20260924-support-account1&build=sha256-9da6a0dc556ea999" defer></script>
 <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
 <script src="/assets/js/storefront-ui.js?v=sha256-bcae5e9700f06872" defer></script>

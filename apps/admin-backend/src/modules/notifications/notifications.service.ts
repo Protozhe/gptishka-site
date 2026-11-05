@@ -378,8 +378,13 @@ export async function enqueueActivationStockNotification(orderId: string) {
 async function deliverActivationStockNotification(orderId: string) {
   const activation = activationStore.findByOrderId(orderId);
   if (!activation || activation.keyAllocationState !== "exhausted" || activation.cdk || activation.taskId || activation.attempts ||
-      activation.externalFulfillmentOwner || activation.status !== "issued" || activation.verificationState === "success" ||
-      !activation.lastProviderPayload?.cdkWaitRequestedAt) return null;
+      activation.verificationState === "success") return null;
+  const waitingGemini = /^gemini-pro-(6|12|24)m$/.test(activation.productKey) &&
+    activation.externalFulfillmentOwner === "gemini-pro-cdk-v1" && activation.status === "processing" &&
+    activation.verificationState === "pending" && activation.keyAllocationSite === "https://aichongzhi.fun" &&
+    activation.lastProviderPayload?.source === "gemini-pro-cdk-v1" && activation.lastProviderPayload?.phase === "awaiting_key";
+  const waitingNative = !activation.externalFulfillmentOwner && activation.status === "issued" && activation.lastProviderPayload?.cdkWaitRequestedAt;
+  if (!waitingGemini && !waitingNative) return null;
   const order = await prisma.order.findUnique({ where: {id: orderId}, select: {
     id: true, status: true, paymentMethod: true, source: true,
     payments: {select: {status: true, provider: true}},

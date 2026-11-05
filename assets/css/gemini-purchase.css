@@ -62,3 +62,18 @@ html body#storefrontBody main.service-page[data-service-page="gemini"] :is(.serv
 [data-service-page="gemini"] .service-constructor-head { margin-bottom: 8px !important; }
 [data-service-page="gemini"] .service-filter-stack { margin-top: 8px !important; }
 [data-service-page="gemini"] [data-gemini-new-account] { margin-top: 12px !important; padding-top: 12px; }
+
+[data-service-page="gemini"] .gemini-requirements {
+  margin: 14px 0 0; padding: 12px 14px; border: 1px solid #424b63;
+  border-radius: 12px; background: #222938; color: #c8d0df;
+  font-size: 15px; line-height: 1.5; box-shadow: none;
+}
+[data-service-page="gemini"] #serviceDeliveryFilters:empty { display: none; }
+[data-service-page="gemini"] .service-checkout-card__summary { display: none; }
+@media (min-width: 960px) {
+  [data-service-page="gemini"] .service-filter-stack--constructor {
+    display: grid; grid-template-columns: max-content minmax(0, 1fr);
+    align-items: start; gap: 16px 24px;
+  }
+  [data-service-page="gemini"] #serviceDeliveryFilters { grid-column: 1 / -1; }
+}

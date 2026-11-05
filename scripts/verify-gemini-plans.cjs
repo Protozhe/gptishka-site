@@ -5,6 +5,7 @@ const ts = require("typescript");
 const { spawnSync } = require("node:child_process");
 const { JSDOM } = require("jsdom");
 const { plans, productData } = require("../apps/admin-backend/scripts/configure-gemini-plans.js");
+const ultra = require("../apps/admin-backend/scripts/configure-gemini-ultra.js");
 
 const backend = spawnSync(process.execPath, ["--import", "tsx", "--test", "apps/admin-backend/src/modules/orders/gemini-activation.test.ts"], { encoding: "utf8" });
 if (backend.status !== 0) { process.stderr.write(backend.stdout + backend.stderr); process.exit(backend.status || 1); }
@@ -29,7 +30,8 @@ const service = source.statements.flatMap((node) => ts.isVariableStatement(node)
 const method = service.initializer.properties.find((node) => node.name?.getText(source) === "createOrderWithPayment");
 
 async function checkout(plan, stock, newAccount, lang) {
-  const product = { id: "fixture-product", ...productData(plan) };
+  const isUltra = plan.slug.startsWith("gemini-ultra-");
+  const product = { id: "fixture-product", ...(isUltra ? ultra.productData(plan) : productData(plan)) };
   let order, invoice, writes = 0, reads = 0;
   const provider = { createPayment: async (data) => { invoice = data; return { provider: "pally", paymentId: "fixture-bill", checkoutUrl: "https://fixture.invalid/pay", status: "processing" }; } };
   const prisma = {
@@ -51,47 +53,145 @@ async function checkout(plan, stock, newAccount, lang) {
     buildPallyOrderData: () => ({ name: "fixture", items: [] }),
   });
   vm.runInContext(ts.transpileModule(`globalThis.service = { ${method.getText(source)} };`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, context);
-  const input = { email: "contact@example.test", productId: product.id, quantity: 1, paymentMethod: "pally", orderDetails: { language: lang, selection: { activationVariant: "withLogin", needsNewAccount: newAccount } } };
-  if (!stock && !newAccount) {
-    await assert.rejects(context.service.createOrderWithPayment(input), /keys are being replenished/);
-    assert.equal(writes, 0); assert.equal(invoice, undefined); assert.equal(reads, 1); return;
-  }
+  const input = { email: "contact@example.test", productId: product.id, quantity: 1, paymentMethod: "pally", orderDetails: { language: lang, selection: { activationVariant: plan.account === "ready" ? "withoutLogin" : "withLogin", needsNewAccount: newAccount } } };
   const result = await context.service.createOrderWithPayment(input);
   const expected = plan.price + (newAccount ? 200 : 0);
   assert.equal(result.finalPrice, expected); assert.equal(invoice.amount, expected); assert.equal(order.totalAmount, expected);
   assert.equal(order.orderDetails.selection.serverNewAccountSurcharge, newAccount ? 200 : 0);
-  assert.equal(order.orderDetails.selection.serverDeliveryType, newAccount ? "manual_login" : "activation");
+  assert.equal(order.orderDetails.selection.serverDeliveryType, newAccount || isUltra ? "manual_login" : "activation");
   const url = returns.buildPaymentReturnUrls(invoice).successUrl;
   assert.equal(url.pathname, `${lang === "en" ? "/en" : ""}/gemini-activation.html`);
   assert.equal(url.searchParams.get("t"), "fixture-private-link");
-  assert.equal(reads, newAccount ? 0 : 1);
+  assert.equal(reads, 0, 'Gemini checkout does not require preloaded keys');
+  assert.equal(writes, 1);
 }
 
 const html = fs.readFileSync("gemini-activation.html", "utf8");
 const script = fs.readFileSync("assets/js/gemini-order-activation.js", "utf8");
 const flush = () => new Promise(setImmediate);
-async function storefrontCheckout() {
-  const dom = new JSDOM(fs.readFileSync("gemini.html", "utf8"), { url: "https://fixture.invalid/gemini?lang=ru", runScripts: "outside-only", pretendToBeVisual: true });
+async function storefrontCheckout(lang) {
+  const dom = new JSDOM(fs.readFileSync("gemini.html", "utf8"), { url: `https://fixture.invalid/${lang === "en" ? "en/" : ""}gemini?lang=${lang}`, runScripts: "outside-only", pretendToBeVisual: true });
   const w = dom.window, d = w.document;
+  const observers = [], Observer = w.MutationObserver;
+  w.MutationObserver = class extends Observer { constructor(callback) { super(callback); observers.push(this); } };
   w.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
   const items = plans.map((plan, index) => ({ ...productData(plan), id: `fixture-${index}`, baseSlug: plan.slug, product: plan.slug + "-login", slug: plan.slug + "-login", activationVariant: "withLogin", deliveryType: "activation", deliveryMethod: 1 }));
+  items.push(...ultra.plans.map((plan, index) => ({ ...ultra.productData(plan), id: `fixture-ultra-${index}`, baseSlug: plan.slug, product: plan.slug + (plan.account === "ready" ? "-link" : "-login"), slug: plan.slug, activationVariant: plan.account === "ready" ? "withoutLogin" : "withLogin", deliveryType: "manual_login", deliveryMethod: plan.account === "ready" ? 2 : 1 })));
+  if (lang === "en") for (const item of items) { item.title = item.titleEn; item.description = item.descriptionEn; item.modalDescription = item.modalDescriptionEn; }
   w.fetch = async (url) => ({ ok: true, json: async () => String(url).includes("service-pages/gemini")
     ? { page: { serviceKey: "gemini", heroTitle: "Gemini Pro", constructorTitle: "Gemini Pro", infoSections: [], faqItems: [] }, products: items, meta: { title: "Gemini Pro" } }
     : { items } });
   w.eval(fs.readFileSync("assets/js/app.min.js", "utf8"));
+  w.eval(fs.readFileSync("assets/js/client-i18n.js", "utf8"));
   for (let i = 0; i < 6; i++) await flush();
   assert.equal(d.querySelectorAll('#serviceDurationFilters button:not(:disabled)').length, 3);
   const accountOption = d.querySelector('[data-service-new-account]');
   assert.equal(accountOption.disabled, false);
   accountOption.checked = true; accountOption.dispatchEvent(new w.Event('change', { bubbles: true }));
-  assert.match(d.querySelector('#serviceConstructorPrice').textContent.replaceAll('\u00a0', ' '), /2\s*690/);
+  assert.match(d.querySelector('#serviceConstructorPrice').textContent.replaceAll('\u00a0', ' '), /2[\s,]*690/);
   d.querySelector('#servicePlansGrid .buy-btn').click(); await flush();
   const form = d.querySelector('[data-chatgpt-go-form]') || d.querySelector('#chatGptGoOrderModal form');
   assert.ok(form, 'Gemini checkout must open');
   assert.equal(form.querySelector('[name="serviceLogin"]'), null, 'Google credentials belong only on the paid-order page');
   assert.equal(form.querySelector('[name="servicePassword"]'), null);
-  assert.match(form.querySelector('[data-chatgpt-go-total]').textContent.replaceAll('\u00a0', ' '), /2\s*690/);
+  assert.match(form.querySelector('[data-chatgpt-go-total]').textContent.replaceAll('\u00a0', ' '), /2[\s,]*690/);
+  d.querySelector('#chatGptGoOrderModal [data-chatgpt-go-order-close]').click();
+  d.querySelector('#servicePlanFilters [data-service-filter-key="ultra"]').click(); await flush();
+  assert.equal(d.querySelectorAll('#serviceDurationFilters button').length, 1);
+  assert.equal(d.querySelector('#serviceDurationFilters button').dataset.serviceFilterKey, "1m");
+  assert.equal(accountOption.disabled, true); assert.equal(accountOption.checked, false);
+  assert.equal(d.querySelectorAll('#serviceDeliveryFilters button').length, 2);
+  assert.match(d.querySelector('#serviceConstructorPrice').textContent.replaceAll('\u00a0', ' '), /14[\s,]*990/);
+  for (const [key, price] of [["ready", /14[\s,]*990/], ["login", /16[\s,]*990/]]) {
+    d.querySelector(`#serviceDeliveryFilters [data-service-filter-key="${key}"]`).click();
+    assert.match(d.querySelector('#serviceConstructorPrice').textContent.replaceAll('\u00a0', ' '), price);
+    d.querySelector('#servicePlansGrid .buy-btn').click(); await flush();
+    const ultraForm = d.querySelector('#chatGptGoOrderModal form');
+    assert.ok(ultraForm, 'Both Ultra options open checkout');
+    assert.equal(ultraForm.querySelector('[name="servicePassword"]'), null);
+    assert.equal(ultraForm.querySelector('[name="serviceLogin"]'), null);
+    assert.equal(ultraForm.querySelector('[name="needsNewAccount"]'), null);
+    assert.match(ultraForm.querySelector('[data-chatgpt-go-total]').textContent.replaceAll('\u00a0', ' '), price);
+    if (lang === "en") {
+      assert.match(ultraForm.querySelector('.chatgpt-order-security-note').textContent, /After payment, contact the manager/);
+      assert.match(ultraForm.textContent, key === "ready" ? /Ready account/ : /Your account/);
+      assert.doesNotMatch(d.querySelector('[data-gemini-requirements]').textContent, /[А-Яа-яЁё]/);
+    }
+    d.querySelector('#chatGptGoOrderModal [data-chatgpt-go-order-close]').click();
+  }
+  d.querySelector('#servicePlanFilters [data-service-filter-key="pro"]').click();
+  assert.equal(d.querySelectorAll('#serviceDurationFilters button:not(:disabled)').length, 3);
+  assert.equal(d.querySelector('#serviceDeliveryFilters').textContent, "");
+  assert.equal(accountOption.disabled, false);
+  await flush();
+  for (const observer of observers) observer.disconnect();
   dom.window.close();
+}
+
+async function ultraBrowser(lang, plan) {
+  const dom = new JSDOM(lang === "en" ? fs.readFileSync("en/gemini-activation.html", "utf8") : html, { url: `https://fixture.invalid/gemini-activation.html?order_id=demo-ultra&t=private&lang=${lang}`, runScripts: "outside-only", pretendToBeVisual: true });
+  const w = dom.window, d = w.document;
+  w.setInterval = () => 1;
+  w.fetch = async (_url, options) => {
+    assert.equal(options.method, "GET", "Manual Ultra never sends automatic activation or credentials");
+    return { ok: true, json: async () => ({ deliveryMode: "manual_login", activationFlow: "gemini_ultra_manual", productSlug: plan.slug, productTitle: ultra.productData(plan).title, phase: "ultra_manual" }) };
+  };
+  w.eval(script); await flush(); await flush();
+  assert.equal(d.getElementById("gemini-workspace").hidden, true);
+  assert.equal(d.getElementById("gemini-account-form").hidden, true);
+  assert.equal(d.getElementById("gemini-fields").disabled, true);
+  assert.match(d.getElementById("gemini-plan").textContent, /Ultra/);
+  assert.equal(d.getElementById("gemini-manager").href, "https://t.me/gptishkasupport");
+  if (lang === "en") assert.doesNotMatch(d.querySelector("main").textContent, /[А-Яа-яЁё]/);
+  dom.window.close();
+}
+
+async function ultraOrderAccess(plan) {
+  const source = ts.createSourceFile("orders.ts", fs.readFileSync(base + "modules/orders/orders.service.ts", "utf8"), ts.ScriptTarget.Latest, true);
+  const service = source.statements.flatMap(node => ts.isVariableStatement(node) ? [...node.declarationList.declarations] : []).find(node => node.name.getText(source) === "ordersService");
+  const method = service.initializer.properties.find(node => node.name?.getText(source) === "getActivation");
+  let paid = true, deliveries = 0;
+  const order = { id: "fixture-ultra", items: [{ product: { id: "fixture-product", ...ultra.productData(plan) } }], orderDetails: { selection: { serverDeliveryType: "manual_login" } } };
+  const context = vm.createContext({
+    AppError, isGeminiAutomaticProduct: gemini.isGeminiAutomaticProduct,
+    assertPaidOrderAccess: async (id, token) => { if (!paid || token !== "private") throw new AppError("forbidden", 403); assert.equal(id, order.id); return order; },
+    getOrderWithFirstItem: async () => order, resolveOrderDeliveryType: () => "manual_login",
+    readActivationSiteUrlFromOrderDetails: () => null, resolveSuperGrokDurationMonths: () => 1, canonicalProductKey: slug => slug,
+    resolveTokenActivationFlowForProduct: () => null, isSupportLikeDeliveryType: () => false, isSupportActivationFlow: () => false,
+    isVerificationSupportProduct: () => false, resolveSupportEmail: () => "support@example.test",
+    deliverProduct: async value => { assert.equal(value.id, order.id); deliveries++; },
+  });
+  vm.runInContext(ts.transpileModule(`globalThis.service = { ${method.getText(source)} };`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, context);
+  await assert.rejects(context.service.getActivation(order.id, "wrong"));
+  paid = false; await assert.rejects(context.service.getActivation(order.id, "private"));
+  assert.equal(deliveries, 0);
+  paid = true;
+  const result = await context.service.getActivation(order.id, "private");
+  assert.equal(result.activationFlow, "gemini_ultra_manual");
+  assert.equal(result.phase, "ultra_manual"); assert.equal(result.productSlug, plan.slug);
+  assert.equal(result.supportUrl, "https://t.me/gptishkasupport");
+  assert.equal(result.tokenStored, undefined); assert.equal(result.credentials, undefined);
+  assert.equal(deliveries, 1);
+}
+
+async function scopedUltraCatalog() {
+  const touched = [];
+  const productIds = new Set();
+  const db = {
+    servicePage: { update: async q => { assert.equal(q.where.slug, "gemini"); touched.push("page"); return { id: "gemini-page" }; } },
+    product: { upsert: async q => {
+      assert.ok(ultra.plans.some(plan => plan.slug === q.where.slug));
+      assert.equal(q.update.price, undefined, "Reruns must preserve admin prices");
+      assert.equal(q.update.activationVariants, undefined);
+      const id = q.where.slug; productIds.add(id); touched.push(id); return { id, ...q.create };
+    } },
+    productVisualConfig: { upsert: async q => assert.ok(productIds.has(q.where.productId)) },
+    servicePageProductPlacement: { upsert: async q => { assert.equal(q.create.servicePageId, "gemini-page"); assert.ok(productIds.has(q.create.productId)); assert.ok(q.create.sortOrder >= 40); assert.deepEqual(q.update, {}); } },
+    productShowcaseServiceCard: { update: async q => { assert.equal(q.where.serviceKey, "gemini"); assert.deepEqual(Object.keys(q.data), ["planSummary"]); } },
+  };
+  const result = await ultra.apply(db);
+  assert.equal(result.length, 2); assert.equal(touched.length, 3);
+  assert.throws(() => surcharge.resolveNewAccountSurcharge(ultra.plans[0].slug, "RUB", true));
 }
 async function browser(lang, forbidden = false) {
   const dom = new JSDOM(lang === "en" ? fs.readFileSync("en/gemini-activation.html", "utf8") : html, { url: `https://fixture.invalid/${lang === "en" ? "en/" : ""}gemini-activation.html?order_id=demo-order&t=fixture-private-link&lang=${lang}`, runScripts: "outside-only", pretendToBeVisual: true });
@@ -140,7 +240,12 @@ async function browser(lang, forbidden = false) {
   for (const plan of plans) for (const lang of ["ru", "en"]) {
     await checkout(plan, 0, false, lang); await checkout(plan, 1, false, lang); await checkout(plan, 0, true, lang);
   }
+  for (const plan of ultra.plans) {
+    await ultraOrderAccess(plan);
+    for (const lang of ["ru", "en"]) { await checkout(plan, 0, false, lang); await ultraBrowser(lang, plan); }
+  }
+  await scopedUltraCatalog();
   for (const lang of ["ru", "en"]) { await browser(lang); await browser(lang, true); }
-  await storefrontCheckout();
-  console.log("Gemini: exact-term stock gate, server prices, +200 account option, RU/EN payment returns and private activation form verified with mocks only.");
+  for (const lang of ["ru", "en"]) await storefrontCheckout(lang);
+  console.log("Gemini: Pro waits for keys after payment; Ultra options, prices, scoped catalog, private manager page and RU/EN checkout verified with mocks only.");
 })().catch((error) => { console.error(error); process.exitCode = 1; });

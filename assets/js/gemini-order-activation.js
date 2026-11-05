@@ -39,19 +39,21 @@
   const t = (ru, english) => en ? english : ru;
   const states = {
     awaiting_account: ["Готово к активации", "Ready to activate", "Заполните данные своего Google-аккаунта в форме.", "Complete the form with your Google Account details."],
-    awaiting_key: ["Заказ в очереди", "Order queued", "Данные сохранены зашифрованно. Ожидаем ключ выбранного тарифа; новый платёж не требуется.", "Your details are encrypted. We are waiting for a key for your selected plan. Do not pay again."],
+    awaiting_key: ["Заказ обрабатывается", "Order processing", "Оплата и данные получены. Подключение продолжится автоматически; повторно оплачивать заказ не нужно.", "Payment and account details received. Activation will continue automatically; do not pay again."],
     checking: ["Проверяем возможность подключения", "Checking activation", "Данные приняты. Подготавливаем активацию выбранного тарифа.", "Details received. Preparing your selected plan for activation."],
     dispatching: ["Подключаем Gemini Pro", "Activating Gemini Pro", "Заявка отправляется. Не запускайте подключение через другие сервисы.", "Submitting your request. Do not activate through another service at the same time."],
     processing: ["Подключаем Gemini Pro", "Activating Gemini Pro", "Заявка обрабатывается. Можно вернуться по этой же ссылке — статус сохранится.", "Your request is being processed. You can return using this link; progress is saved."],
     success: ["Gemini Pro активирован", "Gemini Pro is active", "Проверьте подписку в аккаунте Google. Смените пароль и замените переданные данные двухэтапной проверки.", "Check the subscription in your Google Account. Change your password and replace the shared two-step verification details."],
     needs_help: ["Нужна проверка заказа", "Your order needs attention", "Свяжитесь с менеджером и укажите номер заказа. Не оплачивайте повторно и не отправляйте данные аккаунта в чат.", "Contact the manager with your order number. Do not pay again or send account credentials in chat."],
     credentials_expired: ["Обновите данные аккаунта", "Update your account details", "Срок хранения данных истёк. Заполните форму снова — заказ остаётся оплаченным.", "Stored details have expired. Complete the form again; your order remains paid."],
+    ultra_manual: ["Подключение Gemini Ultra 20×", "Gemini Ultra 20× order", "Свяжитесь с менеджером и укажите номер заказа. Менеджер выдаст готовый аккаунт или согласует подключение на ваш аккаунт. Повторная оплата не нужна.", "Contact the manager with your order number. The manager will provide the ready account or arrange activation on your account. Do not pay again."],
     new_account: ["Получите новый аккаунт", "Receive your new account", "Свяжитесь с менеджером и сообщите номер заказа. Менеджер подготовит аккаунт с выбранной подпиской. Данные вашего текущего аккаунта не нужны.", "Contact the manager with your order number. The manager will prepare a new account with your selected subscription. Your current account details are not needed."],
   };
   function show(data) {
+    const ultra = data.activationFlow === "gemini_ultra_manual" && /^gemini-ultra-(ready|own)-1m$/.test(String(data.productSlug || ""));
     const newAccount = data.deliveryMode === "manual_login" && data.needsNewAccount === true;
     const phase = newAccount ? "new_account" : data.phase;
-    if (!newAccount && data.activationFlow !== "gemini_account") throw Error("wrong_product");
+    if (!newAccount && !ultra && data.activationFlow !== "gemini_account") throw Error("wrong_product");
     const state = states[phase];
     if (!state) throw Error("status_unavailable");
     lastPhase = phase;
@@ -61,13 +63,18 @@
     spinner.hidden = !pending; progress.hidden = !pending && phase !== "success";
     progress.querySelectorAll("li").forEach((node, index) => node.classList.toggle("is-current", phase === "success" || index === 0 || (index === 1 && ["dispatching", "processing"].includes(phase))));
     fields.disabled = busy || !["awaiting_account", "credentials_expired"].includes(phase);
-    workspace.hidden = pending || newAccount || phase === "success" || phase === "needs_help";
+    workspace.hidden = pending || newAccount || ultra || phase === "success" || phase === "needs_help";
     workspace.dataset.processing = String(pending);
-    form.hidden = newAccount;
+    form.hidden = newAccount || ultra;
+    if (ultra) {
+      document.querySelector('[data-copy="title"]').textContent = t("Подключение Gemini Ultra 20×", "Gemini Ultra 20× order");
+      document.querySelector('[data-copy="intro"]').textContent = t("Заказ принят. Для получения аккаунта или подключения свяжитесь с менеджером.", "Your order is received. Contact the manager to receive the account or arrange activation.");
+      document.title = "Gemini Ultra 20× — GPTishka";
+    }
     if (pending || phase === "success" || phase === "needs_help") form.reset();
     if (data.productTitle && en) {
       const months = String(data.productSlug || "").match(/-(6|12|24)m$/)?.[1];
-      byId("gemini-plan").textContent = months ? `Gemini Pro · ${months} months` : "Gemini Pro";
+      byId("gemini-plan").textContent = ultra ? `Gemini Ultra 20× · 1 month · ${String(data.productSlug).includes("ready") ? "ready account" : "your account"}` : months ? `Gemini Pro · ${months} months` : "Gemini Pro";
     } else if (data.productTitle) byId("gemini-plan").textContent = data.productTitle;
   }
   const errors = {
@@ -122,5 +129,5 @@
   window.addEventListener("pagehide", () => form.reset());
   document.addEventListener("visibilitychange", () => { if (!document.hidden) void refresh(); });
   if (!orderId || !orderToken) detail.textContent = t("Откройте личную ссылку на активацию из своего заказа.", "Open the private activation link from your order.");
-  else { void refresh(); setInterval(() => { if (lastPhase !== "success" && lastPhase !== "new_account") void refresh(); }, 12_000); }
+  else { void refresh(); setInterval(() => { if (lastPhase !== "success" && lastPhase !== "new_account" && lastPhase !== "ultra_manual") void refresh(); }, 12_000); }
 })();
