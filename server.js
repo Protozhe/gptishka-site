@@ -2507,7 +2507,7 @@ function createApp() {
   });
 
   app.get(["/en/gemini-activation.html"], (_req, res) => {
-    sendFreshHtml(res, path.join(__dirname, "gemini-activation.html"));
+    sendFreshHtml(res, path.join(__dirname, "en", "gemini-activation.html"));
   });
 
   app.get(["/en/supergrok-activation", "/en/supergrok-activation.html"], (_req, res) => {

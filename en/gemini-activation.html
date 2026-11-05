@@ -1,13 +1,11 @@
-<!doctype html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="no-referrer">
 <title>Activate Gemini Pro — GPTishka</title>
 <link rel="icon" href="/favicon.png?v=20260920-white-cat-round1">
-<link rel="preload" href="/assets/fonts/manrope-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/manrope-cyrillic.woff2" as="font" type="font/woff2" crossorigin="">
 <link rel="stylesheet" href="/assets/css/site-fonts.css?v=20260930-first-paint1">
 <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260516fix4">
 <link rel="stylesheet" href="/assets/css/logo.min.css">
@@ -18,9 +16,9 @@
 <link rel="stylesheet" href="/assets/css/home-stability-hotfix.css?v=sha256-4b642dad31012b96">
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
 <link rel="stylesheet" href="/assets/css/gemini-order-activation.css?v=sha256-8ea529cd290f89ea">
-<script src="/assets/js/gemini-order-activation.js?v=sha256-c753050dea539ed1" defer></script>
-<script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer></script>
-<script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
+<script src="/assets/js/gemini-order-activation.js?v=sha256-c753050dea539ed1" defer=""></script>
+<script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer=""></script>
+<script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer=""></script>
 </head>
 <body id="storefrontBody" class="gemini-activation-body">
 <header class="gptishka-canonical-header">
@@ -62,42 +60,43 @@
   </div>
 </header>
 <main class="gemini-order" aria-labelledby="gemini-title">
-  <a class="gemini-order__back" href="/gemini" data-gemini-product-link><span aria-hidden="true">←</span> Gemini Pro</a>
+  <a class="gemini-order__back" href="/gemini" data-gemini-product-link=""><span aria-hidden="true">←</span> Gemini Pro</a>
   <div class="gemini-order__heading">
-    <h1 id="gemini-title" data-copy="title">Активируйте Gemini Pro</h1>
-    <p id="gemini-plan" data-copy="intro">Укажите данные Google-аккаунта. Статус подключения появится на этой странице.</p>
+    <h1 id="gemini-title" data-copy="title">Activate Gemini Pro</h1>
+    <p id="gemini-plan" data-copy="intro">Enter your Google Account details. Track activation on this page.</p>
   </div>
-  <div class="gemini-order__id"><span data-copy="order">Номер заказа</span><code id="gemini-order-id">—</code><button id="gemini-copy-order" type="button" data-copy="copy">Скопировать</button></div>
+  <div class="gemini-order__id"><span data-copy="order">Order number</span><code id="gemini-order-id">—</code><button id="gemini-copy-order" type="button" data-copy="copy">Copy</button></div>
   <div class="gemini-order__workspace" id="gemini-workspace">
     <section class="gemini-order__guide" aria-labelledby="guide-title">
-      <h2 id="guide-title" data-copy="guide">Перед активацией</h2>
+      <h2 id="guide-title" data-copy="guide">Before activation</h2>
       <ol>
-        <li data-copy="step1">Проверьте аккаунт: без активной платной подписки и участия в семейной группе.</li>
-        <li data-copy="step2">В Google должна быть включена двухэтапная проверка. Подготовьте ключ приложения-аутентификатора или один 8-значный резервный код. Текущий 6-значный код не подойдёт.</li>
-        <li data-copy="step3">Заполните форму и нажмите «Активировать». Дождитесь результата на этой странице — повторно оплачивать заказ не нужно.</li>
+        <li data-copy="step1">Check the account: no active paid subscription or family group membership.</li>
+        <li data-copy="step2">Google two-step verification must be enabled. Prepare your authenticator app key or one 8-digit backup code. A current 6-digit code will not work.</li>
+        <li data-copy="step3">Complete the form and select Activate. Wait for the result on this page. You do not need to pay again.</li>
       </ol>
-      <p class="gemini-order__hint" data-copy="safety">После активации смените пароль и замените переданный ключ или резервный код. Не отправляйте эти данные в переписке с поддержкой.</p>
-      <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="gemini-order__link" data-copy="google">Безопасность Google-аккаунта ↗</a>
+      <p class="gemini-order__hint" data-copy="safety">After activation, change your password and replace the shared authenticator key or backup code. Do not send these details in support chat.</p>
+      <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" class="gemini-order__link" data-copy="google">Google Account security ↗</a>
     </section>
     <form id="gemini-account-form" autocomplete="off">
-      <fieldset id="gemini-fields" disabled>
-        <legend data-copy="account">Данные Google-аккаунта</legend>
-        <label for="gemini-email"><span data-copy="email">Почта Google</span><input type="email" id="gemini-email" name="google-email" required maxlength="254" autocomplete="off" autocapitalize="none" spellcheck="false" inputmode="email"></label>
-        <label for="gemini-password"><span data-copy="password">Пароль аккаунта</span><input type="password" id="gemini-password" name="google-password" required maxlength="1024" autocomplete="new-password" spellcheck="false"></label>
-        <label for="gemini-twofa"><span data-copy="twofa">Ключ аутентификатора или резервный код</span><input type="password" id="gemini-twofa" name="google-twofa" required maxlength="160" autocomplete="off" autocapitalize="none" spellcheck="false"><small data-copy="twofaHint">Ключ из букв и цифр 2–7 либо один 8-значный резервный код.</small></label>
-        <label class="gemini-order__consent"><input type="checkbox" id="gemini-consent" required><span data-copy="consent">Это мой аккаунт. Разрешаю использовать данные для подключения подписки и передать их сервису автоматической активации.</span></label>
-        <button class="gemini-order__activate" type="submit" id="gemini-activate" data-copy="activate">Активировать</button>
-        <p class="gemini-order__privacy" data-copy="privacy">Данные хранятся зашифрованно до отправки на активацию, не дольше 24 часов. После отправки удаляются из формы и хранилища GPTishka.</p>
+      <fieldset id="gemini-fields" disabled="">
+        <legend data-copy="account">Google Account details</legend>
+        <label for="gemini-email"><span data-copy="email">Google email</span><input type="email" id="gemini-email" name="google-email" required="" maxlength="254" autocomplete="off" autocapitalize="none" spellcheck="false" inputmode="email"></label>
+        <label for="gemini-password"><span data-copy="password">Account password</span><input type="password" id="gemini-password" name="google-password" required="" maxlength="1024" autocomplete="new-password" spellcheck="false"></label>
+        <label for="gemini-twofa"><span data-copy="twofa">Authenticator key or backup code</span><input type="password" id="gemini-twofa" name="google-twofa" required="" maxlength="160" autocomplete="off" autocapitalize="none" spellcheck="false"><small data-copy="twofaHint">A key containing letters and digits 2–7, or one 8-digit backup code.</small></label>
+        <label class="gemini-order__consent"><input type="checkbox" id="gemini-consent" required=""><span data-copy="consent">This is my account. I authorize using these details to activate the subscription and sharing them with the automatic activation service.</span></label>
+        <button class="gemini-order__activate" type="submit" id="gemini-activate" data-copy="activate">Activate</button>
+        <p class="gemini-order__privacy" data-copy="privacy">Details are encrypted until sent for activation, for no more than 24 hours. After submission, they are removed from this form and GPTishka storage.</p>
       </fieldset>
     </form>
   </div>
   <section class="gemini-order__status" id="gemini-status" role="status" aria-live="polite" aria-atomic="true">
-    <div class="gemini-order__status-top"><span class="gemini-order__spinner" aria-hidden="true" hidden></span><strong id="gemini-status-title" data-copy="loading">Проверяем заказ…</strong></div>
+    <div class="gemini-order__status-top"><span class="gemini-order__spinner" aria-hidden="true" hidden=""></span><strong id="gemini-status-title" data-copy="loading">Checking your order…</strong></div>
     <p id="gemini-status-detail"></p>
-    <ol class="gemini-order__progress" id="gemini-progress" hidden><li data-copy="accepted">Данные приняты</li><li data-copy="processing">Подключение</li><li data-copy="done">Готово</li></ol>
-    <a class="gemini-order__link" id="gemini-manager" href="https://t.me/gptishkasupport" target="_blank" rel="noopener noreferrer" data-copy="manager">Связаться с менеджером ↗</a>
+    <ol class="gemini-order__progress" id="gemini-progress" hidden=""><li data-copy="accepted">Details received</li><li data-copy="processing">Activating</li><li data-copy="done">Complete</li></ol>
+    <a class="gemini-order__link" id="gemini-manager" href="https://t.me/gptishkasupport" target="_blank" rel="noopener noreferrer" data-copy="manager">Contact the manager ↗</a>
   </section>
 </main>
 <noscript><p>Для активации включите JavaScript. / Enable JavaScript to activate your order.</p></noscript>
-</body>
-</html>
+
+
+</body></html>

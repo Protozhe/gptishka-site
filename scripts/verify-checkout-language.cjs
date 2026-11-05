@@ -224,6 +224,11 @@ for (const filename of execFileSync('git', ['ls-files', '*.html'], { encoding: '
     dom.window.fetch = () => { throw new Error('Static translation fixture has no API'); };
     dom.window.eval(fs.readFileSync('assets/js/itunes-page.js', 'utf8'));
   }
+  if (filename.endsWith('gemini-activation.html')) {
+    dom.window.history.replaceState(null, '', '/en/gemini-activation.html');
+    dom.window.fetch = () => { throw new Error('Static translation fixture has no API'); };
+    dom.window.eval(fs.readFileSync('assets/js/gemini-order-activation.js', 'utf8'));
+  }
   dom.window.gptishkaI18n.translateElement(dom.window.document.body);
   for (const form of dom.window.document.querySelectorAll('form,dialog,[role="dialog"],.modal,[id$="Modal"]')) check(form, filename);
   if (dom.window.document.querySelector('form,dialog,[role="dialog"]') && /app\.min\.js/.test(fs.readFileSync(filename, 'utf8'))) {

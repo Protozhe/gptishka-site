@@ -94,7 +94,7 @@ async function storefrontCheckout() {
   dom.window.close();
 }
 async function browser(lang, forbidden = false) {
-  const dom = new JSDOM(html, { url: `https://fixture.invalid/${lang === "en" ? "en/" : ""}gemini-activation.html?order_id=demo-order&t=fixture-private-link&lang=${lang}`, runScripts: "outside-only", pretendToBeVisual: true });
+  const dom = new JSDOM(lang === "en" ? fs.readFileSync("en/gemini-activation.html", "utf8") : html, { url: `https://fixture.invalid/${lang === "en" ? "en/" : ""}gemini-activation.html?order_id=demo-order&t=fixture-private-link&lang=${lang}`, runScripts: "outside-only", pretendToBeVisual: true });
   const w = dom.window, d = w.document; let phase = "awaiting_account", submits = 0, reads = 0; const timers = [];
   w.setInterval = (fn) => { timers.push(fn); return 1; };
   w.fetch = async (url, options) => {
