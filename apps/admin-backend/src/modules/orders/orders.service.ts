@@ -1192,7 +1192,7 @@ export const ordersService = {
         token: { kind: existing.tokenMeta?.kind, length: existing.tokenMeta?.length,
           storedAt: existing.clientTokenStoredAt || null, expiresAt: existing.clientTokenExpiresAt || null } };
     }
-    if (chatgptSession && orderWithItem?.source === "site" && reasons.length === 0) {
+    if (chatgptSession && (orderWithItem?.source === "site" || orderWithItem?.source === "telegram") && reasons.length === 0) {
       const sessionError = validateChatGptWebsiteSession(tokenInfo);
       if (sessionError) reasons.push(sessionError);
       if (!sessionError && productSlug === CHATGPT_PLUS_PRODUCT_KEY &&

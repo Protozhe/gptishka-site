@@ -95,7 +95,29 @@ export async function notifyPendingAisouFunds() {
   try {
     const waitingIds = activationStore.list().filter(r => r.status !== "success" && r.verificationState !== "success" && r.lastProviderPayload?.fundsWait).map(r=>r.orderId);
     if (!waitingIds.length) return;
-    const paid = await prisma.order.findMany({where:{id:{in:waitingIds},source:"site",status:"PAID"},select:{id:true}});
+    const paid = await prisma.order.findMany({
+      where: {
+        id: { in: waitingIds },
+        status: "PAID",
+        OR: [
+          { source: "site" },
+          {
+            source: "telegram",
+            items: {
+              some: {
+                product: {
+                  slug: { in: [
+                    "chatgpt-plus-1", "chatgpt-go-1",
+                    "chatgpt-pro-5x-1", "chatgpt-pro-20x-1", "chatgpt-pro-25x-1",
+                  ] },
+                },
+              },
+            },
+          },
+        ],
+      },
+      select: { id: true },
+    });
     const { notifyDueFunds } = require(path.resolve(__dirname,"../../../../ops/supplier-procurement/aisou-live.cjs"));
     await notifyDueFunds(paid.map(r=>r.id),sendTelegramNotification);
     await require(path.resolve(__dirname,"../../../../ops/supplier-procurement/aibuy-live.cjs")).due(paid.map(r=>r.id),sendTelegramNotification);

@@ -174,7 +174,7 @@ for(const plan of ["plus","go","pro",""]) {
 for(const record of [{cdk:"allocated"},{taskId:"already-started"},{attempts:1},{reservedCandidates:[{keyId:"allocated"}]}]) {
  assert.equal(context.resolveExternalCodexOwner({source:"site",productKey:"chatgpt-plus-1",activationSiteUrl:"",accountPlan:"free",record}),null);
 }
-assert.equal(context.resolveExternalCodexOwner({source:"telegram",productKey:"chatgpt-plus-1",activationSiteUrl:"",accountPlan:"free"}),null);
+assert.equal(context.resolveExternalCodexOwner({source:"telegram",productKey:"chatgpt-plus-1",activationSiteUrl:"",accountPlan:"free"}),"pulse-siteplus-v1");
 
 // Repeated form submissions must retain fulfillment ownership and key reservations.
 const ownerBefore=stored.externalFulfillmentOwner;
@@ -225,3 +225,37 @@ assert.equal(proofErrors,1);
 console.log("External fulfillment proof refresh: all owned product routes preserve progress; legacy provider checks remain active.");
 
 reset(500,"https://aiee.fun");await context.deliverProduct(order);assert.equal(reservations,0);assert.equal(stored.activationSiteUrl,"https://aiee.fun");assert.equal(stored.keyAllocationState,"awaiting_session");
+
+// Telegram subscriptions must take the same guarded path before key allocation.
+for (const source of ["site", "telegram"]) {
+  for (const [slug, owner] of [
+    ["chatgpt-go-1", "pulse-sitego-v1"], ["chatgpt-plus-1", "pulse-siteplus-v1"],
+    ["chatgpt-pro-5x-1", "pulse-sitepro5x-v1"], ["chatgpt-pro-20x-1", "pulse-sitepro20x-v1"],
+    ["chatgpt-pro-25x-1", "pulse-sitepro500-v1"],
+  ]) {
+    reset(250, "https://vip.sxzfd.com");
+    order.source = source;
+    order.items[0].product.slug = slug;
+    await context.deliverProduct(order);
+    assert.equal(reservations, 0);
+    assert.equal(stored.externalFulfillmentOwner, undefined);
+    await context.startActivationUnsafe(order.id, '{"fixture":true}');
+    const assigned = structuredClone(stored);
+    await context.startActivationUnsafe(order.id, '{"fixture":true}');
+    assert.equal(stored.externalFulfillmentOwner, owner);
+    assert.equal(stored.lastProviderPayload.routeAssignedAt, assigned.lastProviderPayload.routeAssignedAt);
+    assert.equal(reservations, 0);
+    assert.equal(providerCalls, 0);
+    stored = {...stored, externalFulfillmentOwner: "pulse-subscription-reserve-v1"};
+    const reserveState = JSON.stringify(stored);
+    await context.startActivationUnsafe(order.id, '{"fixture":true}');
+    assert.equal(JSON.stringify(stored), reserveState, "A sealed fallback keeps its owner");
+    for (const plan of ["go", "plus", "pro", "prolight", "unknown", ""]) {
+      assert.equal(context.resolveExternalCodexOwner({source, productKey: slug, accountPlan: plan}), null);
+    }
+    assert.equal(context.resolveExternalCodexOwner({
+      source, productKey: slug, accountPlan: "free",
+      record: {lastProviderPayload: {supplierProcurement: {managed: true, phase: "reconcile"}}},
+    }), null, "An unresolved key purchase cannot initiate a card payment");
+  }
+}

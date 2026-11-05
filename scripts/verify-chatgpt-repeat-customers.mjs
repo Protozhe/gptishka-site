@@ -5,8 +5,8 @@ const functions=new Map(),methods=new Map();
 function walk(n){if(ts.isFunctionDeclaration(n)&&n.name)functions.set(n.name.text,n.getText(ast));if(ts.isMethodDeclaration(n))methods.set(n.name.getText(ast),n.getText(ast));ts.forEachChild(n,walk);}walk(ast);
 const compile=s=>ts.transpileModule(s,{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
 class AppError extends Error {constructor(message,status){super(message);this.status=status;}}
-let records=new Map(),key='chatgpt-plus-1',blockLookup=null,blockKey=null,writes=0,providerCalls=0;
-const order=id=>({id,status:'PAID',source:'site',email:'fixture@example.invalid',orderDetails:{selection:{}},items:[{product:{slug:key,tags:[]}}]});
+let source='site',records=new Map(),key='chatgpt-plus-1',blockLookup=null,blockKey=null,writes=0,providerCalls=0;
+const order=id=>({id,status:'PAID',source,email:'fixture@example.invalid',orderDetails:{selection:{}},items:[{product:{slug:key,tags:[]}}]});
 const no=()=>false;
 const c=vm.createContext({crypto,Buffer,Date,JSON,Map,Math,AppError,clientTokenInputVersion:0,
  OrderStatus:{PAID:'PAID'},MAX_CLIENT_TOKEN_LENGTH:500000,MAX_ACTIVATION_START_ATTEMPTS:3,CHATGPT_PLUS_PRODUCT_KEY:'chatgpt-plus-1',env:{ACTIVATION_PROVIDER:'chongzhi'},
@@ -38,7 +38,7 @@ const rawOld=session('old'),rawNew=session('new');
 function record(id,patch={}){return {orderId:id,email:'fixture@example.invalid',productKey:key,cdk:'',activationSiteUrl:'https://aiee.fun',status:'issued',verificationState:'unknown',attempts:0,taskId:null,issuedAt:new Date().toISOString(),updatedAt:new Date().toISOString(),...patch};}
 function reset(product){key=product;records=new Map();providerCalls=writes=0;blockLookup=blockKey=null;}
 const owners={'chatgpt-plus-1':'pulse-siteplus-v1','chatgpt-go-1':'pulse-sitego-v1','chatgpt-pro-5x-1':'pulse-sitepro5x-v1','chatgpt-pro-20x-1':'pulse-sitepro20x-v1','chatgpt-pro-25x-1':'pulse-sitepro500-v1'};
-for(const product of Object.keys(owners)){
+for(source of ['site','telegram']) for(const product of Object.keys(owners)){
  reset(product);records.set('older-order',record('older-order',{status:'success',verificationState:'success',attempts:1,taskId:'old-confirmed-task',externalFulfillmentOwner:owners[product]}));records.set('new-order',record('new-order'));
  await c.service.storeActivationClientToken('new-order',rawOld);assert.equal((await c.service.validateActivationToken('new-order',rawOld)).ok,true);
  await c.startActivationUnsafe('new-order',rawOld,undefined,true);assert.equal(records.get('new-order').externalFulfillmentOwner,owners[product]);

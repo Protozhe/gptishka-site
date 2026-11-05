@@ -26,7 +26,7 @@ async function lock(id,fn){
 }
 function check(o,p){
  const j=p.job,def=products[j?.product_type],cfg=rpcRequest.context.config;
- if(!cfg.enabled||!j||!def||!o||o.source!=='site'||o.status!=='PAID'||o.currency!=='RUB'||o.items.length!==1||o.items[0].quantity!==1||o.items[0].product.slug!==def[0]||o.orderDetails?.selection?.serverDeliveryType!=='activation')throw Error('reserve_order_ineligible');
+ if(!cfg.enabled||!j||!def||!o||!['site','telegram'].includes(o.source)||o.status!=='PAID'||o.currency!=='RUB'||o.items.length!==1||o.items[0].quantity!==1||o.items[0].product.slug!==def[0]||o.orderDetails?.selection?.serverDeliveryType!=='activation')throw Error('reserve_order_ineligible');
  const paid=o.payments.filter(x=>x.status==='SUCCESS');
  const cutoff=new Date(cfg.product_enabled_after?.[j.product_type]||cfg.enabled_after);
  if(!Number.isFinite(+cutoff)||paid.length!==1||!['pally','lava','enot','enot.io','gateway'].includes(String(paid[0].provider).toLowerCase())||o.paymentMethod==='stub'||paid[0].currency!=='RUB'||Number(paid[0].amount)!==Number(o.totalAmount)||o.createdAt<cutoff||(paid[0].processedAt||paid[0].createdAt)<cutoff)throw Error('reserve_payment_unverified');
@@ -41,7 +41,7 @@ function check(o,p){
  let input='';for await(const part of process.stdin){input+=part;if(input.length>8192)throw Error('reserve_request_invalid')};const req=JSON.parse(input);rpcRequest=req;
  if(req.action==='watch'){
   const since=new Date(req.since);if(!Number.isFinite(+since))throw Error('reserve_request_invalid');
-  const orders=await db.order.findMany({where:{source:'site',createdAt:{gte:since},items:{some:{product:{slug:{in:Object.values(products).map(x=>x[0])}}}}},include:{payments:true,items:{include:{product:true}},licenseKeys:true},orderBy:{createdAt:'asc'},take:100});
+  const orders=await db.order.findMany({where:{source:{in:['site','telegram']},createdAt:{gte:since},items:{some:{product:{slug:{in:Object.values(products).map(x=>x[0])}}}}},include:{payments:true,items:{include:{product:true}},licenseKeys:true},orderBy:{createdAt:'asc'},take:100});
   const result=[];for(const o of orders){const pay=o.payments.find(x=>x.status==='SUCCESS'&&(x.processedAt||x.createdAt)>=since);if(!pay)continue;
    const a=activationStore.findByOrderId(o.id),nativeKey=!!a?.cdk&&['https://aiee.fun','https://vip.sxzfd.com'].includes(a?.activationSiteUrl)&&o.licenseKeys.filter(k=>k.status==='used'&&k.keyValue===a.cdk&&k.orderId===o.id&&k.activationSiteUrl===a.activationSiteUrl).length===1;
    let manual=false;if(nativeKey&&a?.status==='success'&&a?.verificationState==='success')manual=(await db.auditLog.count({where:{entityType:'order',entityId:o.id,action:{in:['activation_admin_start','activation_admin_complete','activation_manual_complete']}}}))>0;
@@ -55,7 +55,7 @@ function check(o,p){
   const {a,pay,def}=check(o,p),j=p.job,r=p.reserve;
   const s=req.action==='complete'?{raw:'',email:j.email}:decrypt(a);
   let fee=null;if(pay.payload?.commission!=null&&/^\d+(\.\d+)?$/.test(String(pay.payload.commission)))fee=String(pay.payload.commission);
-  const evidence={session:s.raw,order:{platform:'gptishka',account_id:'site',order_id:o.id,product_type:j.product_type,product_id:o.items[0].product.id,product_slug:def[0],order_source:'site',quantity:1,package:1,payment_status:'paid',paid_at:(pay.processedAt||pay.createdAt).toISOString(),created_at:o.createdAt.toISOString(),routed_at:j.created_at,job_id:j.id,job_status:'ready',email:s.email,has_prior_dispatch:false,has_external_fulfillment:false},financial:{platform:'gptishka',order_id:o.id,payment_verified:true,gross_rub:String(o.totalAmount),quantity:1,title:j.title,provider:pay.provider,payment_commission_rub:fee,key_pool:'subscription_reserve'}};
+  const evidence={session:s.raw,order:{platform:'gptishka',account_id:'site',order_id:o.id,product_type:j.product_type,product_id:o.items[0].product.id,product_slug:def[0],order_source:o.source,quantity:1,package:1,payment_status:'paid',paid_at:(pay.processedAt||pay.createdAt).toISOString(),created_at:o.createdAt.toISOString(),routed_at:j.created_at,job_id:j.id,job_status:'ready',email:s.email,has_prior_dispatch:false,has_external_fulfillment:false},financial:{platform:'gptishka',order_id:o.id,payment_verified:true,gross_rub:String(o.totalAmount),quantity:1,title:j.title,provider:pay.provider,payment_commission_rub:fee,key_pool:'subscription_reserve'}};
   if(req.action==='evidence')return evidence;
   if(req.action==='available'){
    const plan=String(JSON.parse(s.raw).account?.planType||'').trim().toLowerCase(),active=['plus','go','pro','prolight','prolite','promax','pro_5x','pro_20x','pro_50x'];

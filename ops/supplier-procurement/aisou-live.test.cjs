@@ -230,3 +230,41 @@ test('merchant rejection details remain encrypted and do not grant another finan
  const bytes=fs.readFileSync(path.join(f.stateDir,'journal.sqlite'));assert.ok(!bytes.includes(Buffer.from('fixture-private-detail')));
  const {purchaseRejection}=require('./aisou-live.cjs');assert.equal(purchaseRejection('permission denied'),'supplier_api_access_refused');
 });
+
+test('Telegram subscription renewals use the same exact paid and stock guards',async()=>{
+ for(const product of ['chatgpt-plus-1','chatgpt-go-1','chatgpt-pro-5x-1','chatgpt-pro-20x-1']){
+  const o=order();o.source='telegram';o.items[0].product.slug=product;
+  const p={...policy,products:[product]},expected=contract(product,'plus');
+  assert.ok(assertPaidWebsiteOrder(o,activation(),product,expected,p));
+  for(const change of [{status:'PENDING'},{source:'unknown'},{licenseKeys:[{}]}]){
+   assert.throws(()=>assertPaidWebsiteOrder({...o,...change},activation(),product,expected,p));
+  }
+  let providerCalls=0;
+  const existing=await procureWebsiteKey({
+   orderId:oid,productKey:product,accountPlan:'plus',activationSiteUrl:expected.site,
+   prisma:{order:{findUnique:async()=>o},licenseKey:{findFirst:async()=>({id:'fixture-stock'})}},
+   activationStore:{findByOrderId:()=>activation()},
+   settings:{policy:p},transport:async()=>{providerCalls++;throw Error('Unexpected purchase');},
+  });
+  assert.deepEqual(existing,{stockAvailable:true});
+  assert.equal(providerCalls,0);
+ }
+ const o=order();o.source='telegram';
+ assert.throws(()=>assertPaidWebsiteOrder(o,activation(),'codex-250',contract('codex-250','plus'),policy));
+ assert.throws(()=>contract('chatgpt-pro-25x-1','plus'));
+});
+
+test('Telegram free accounts cannot buy a native key before the card route is sealed',async()=>{
+ for(const product of ['chatgpt-plus-1','chatgpt-go-1','chatgpt-pro-5x-1','chatgpt-pro-20x-1','chatgpt-pro-25x-1']){
+  const o=order();o.source='telegram';o.items[0].product.slug=product;
+  let calls=0;
+  await assert.rejects(procureWebsiteKey({
+   orderId:oid,productKey:product,accountPlan:'free',activationSiteUrl:'https://aiee.fun',
+   prisma:{order:{findUnique:async()=>o}},
+   activationStore:{findByOrderId:()=>activation()},
+   settings:{policy:{...policy,products:[product]}},
+   transport:async()=>{calls++;throw Error('Unexpected supplier call');},
+  }),/supplier_primary_seal_required/);
+  assert.equal(calls,0);
+ }
+});

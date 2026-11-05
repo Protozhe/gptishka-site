@@ -108,7 +108,8 @@ function finance(order, payment, quote, policy, openingRub = 0, now = Date.now()
 function assertPaidWebsiteOrder(order, activation, productKey, expected, policy, now = Date.now()) {
   const productStart = policy.productEnabledAfter?.[productKey];
   const start = Math.max(Date.parse(policy.enabledAfter), productStart ? Date.parse(productStart) : 0), o = order, a = activation;
-  if (!Number.isFinite(start) || start > now || !o || o.source !== "site" || o.status !== "PAID" || o.currency !== "RUB" || o.items?.length !== 1 || o.items[0].quantity !== 1 || o.items[0].product?.slug !== productKey || !(+new Date(o.createdAt) >= start)) throw Error("supplier_order_ineligible");
+  const supportedSource = o?.source === "site" || (o?.source === "telegram" && /^chatgpt-(?:plus|go|pro-(?:5|20|25)x)-1$/.test(productKey));
+  if (!Number.isFinite(start) || start > now || !o || !supportedSource || o.status !== "PAID" || o.currency !== "RUB" || o.items?.length !== 1 || o.items[0].quantity !== 1 || o.items[0].product?.slug !== productKey || !(+new Date(o.createdAt) >= start)) throw Error("supplier_order_ineligible");
   const paid = (o.payments || []).filter(p => p.status === "SUCCESS");
   if (paid.length !== 1 || !["pally","lava","enot","gateway","enot.io"].includes(String(paid[0].provider || "").toLowerCase()) || o.paymentMethod === "stub" || paid[0].currency !== "RUB" || Number(paid[0].amount) !== Number(o.totalAmount) || !(+new Date(paid[0].processedAt || paid[0].createdAt) >= start)) throw Error("supplier_payment_unverified");
   if (!a || a.status === "success" || a.verificationState === "success" || a.cdk || a.taskId || Number(a.attempts || 0) > 0 || (o.licenseKeys || []).length || a.reservedCandidates?.length) throw Error("supplier_prior_fulfillment");
@@ -146,6 +147,10 @@ async function procureWebsiteKey({ prisma, activationStore, orderId, productKey,
     if (audit?.meta?.orderId === orderId) return { keyId: bound[0].id, code: bound[0].keyValue, activationSiteUrl, costRub: audit.meta.costRub };
   }
   let payment = assertPaidWebsiteOrder(order, activation, productKey, expected, policy);
+  if (order.source === "telegram" && /^chatgpt-(?:plus|go|pro-(?:5|20|25)x)-1$/.test(productKey) &&
+      expected.site === "https://aiee.fun" && reserveProof?.state !== "fallback_sealed") {
+    throw Error("supplier_primary_seal_required");
+  }
   if (activation.externalFulfillmentOwner) {
     const proof = reserveProof;
     if (proof?.state !== "fallback_sealed" || proof.orderId !== orderId || proof.site !== expected.site || proof.product !== expected.product || !/^[a-f0-9]{16}$/.test(proof.sessionFingerprint || "") || proof.sessionFingerprint !== activation.tokenMeta?.fingerprint) throw Error("supplier_primary_seal_required");
