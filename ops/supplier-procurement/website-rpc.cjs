@@ -29,6 +29,12 @@ function decrypt(a){
    const audit=await prisma.licenseKeyAuditLog.findFirst({where:{keyId,action:'aisou_purchase'},orderBy:{id:'desc'}});
    console.log(JSON.stringify(audit?.meta?.orderId===oid?{keyId,costRub:audit.meta.costRub}:{keyId,costRub:null}));return;
   }
+  // ChatGPT reserves are owner-supplied CDKs. The coordinator already checks
+  // matching stock before this RPC and keeps a durable wait if it returns
+  // disabled. Keep cost mode above available for previously purchased keys.
+  if(['chatgpt_plus','chatgpt_go','chatgpt_pro_5x','chatgpt_pro_20x','chatgpt_pro_25x'].includes(j.product_type)){
+   console.log(JSON.stringify({enabled:false,ownerStockOnly:true}));return;
+  }
   const sessionRaw=decrypt(a),s=JSON.parse(sessionRaw),plan=String(s.account?.planType||'').trim().toLowerCase();
   const proof=JSON.parse(r?.proof||'null');
   if(proof?.state!=='fallback_sealed'||proof.source_id!=='gptishka:site:'+oid||!Number.isSafeInteger(proof.prior_attempt_opening_usd_minor)||proof.prior_attempt_opening_usd_minor<0)throw Error('supplier_primary_seal_required');

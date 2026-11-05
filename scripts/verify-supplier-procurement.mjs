@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-const result = spawnSync(process.execPath, ["--test", "ops/supplier-procurement/market-shared-stock.test.cjs", "ops/supplier-procurement/aisou-core.test.cjs", "ops/supplier-procurement/aisou-live.test.cjs", "ops/supplier-procurement/aibuy.test.cjs", "ops/supplier-procurement/aibuy-order.test.cjs", "ops/subscription-routes/native-grok.test.cjs"], {
+const result = spawnSync(process.execPath, ["--test", "ops/supplier-procurement/website-rpc.test.cjs", "ops/supplier-procurement/market-shared-stock.test.cjs", "ops/supplier-procurement/aisou-core.test.cjs", "ops/supplier-procurement/aisou-live.test.cjs", "ops/supplier-procurement/aibuy.test.cjs", "ops/supplier-procurement/aibuy-order.test.cjs", "ops/subscription-routes/native-grok.test.cjs"], {
   cwd: process.cwd(), env: process.env, stdio: "inherit",
 });
 if (result.error) throw result.error;
