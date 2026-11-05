@@ -40,6 +40,11 @@ jobs:
       - name: Build native modules used by compatibility checks
         run: npm rebuild bcrypt sqlite3
 
+      - name: Generate Prisma client used by regression checks
+        env:
+          DATABASE_URL: postgresql://fixture:fixture@127.0.0.1:9/fixture
+        run: npm run prisma:generate --workspace @gptishka/admin-backend
+
       - name: Block known high and critical production dependency vulnerabilities
         run: npm audit --omit=dev --audit-level=high --ignore-scripts
 
