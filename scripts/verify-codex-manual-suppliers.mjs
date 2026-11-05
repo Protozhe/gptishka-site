@@ -21,6 +21,7 @@ const base = "apps/admin-backend/src/";
 const errors = load(base + "common/errors/app-error.ts");
 const sites = load(base + "common/utils/activation-site.ts");
 const products = load(base + "common/utils/product-key.ts");
+const geminiHelpers = load(base + "common/utils/gemini-product.ts", { "../errors/app-error": errors });
 const supplierHelpers = load(base + "modules/cdks/codex-key-suppliers.ts", {
   "../../common/errors/app-error": errors, "../../common/utils/activation-site": sites,
   "../../common/utils/product-key": products,
@@ -81,6 +82,7 @@ const { licenseService } = load(base + "services/licenseService.ts", {
   "../common/utils/activation-site": sites, "../common/utils/product-key": products,
   "../modules/cdks/chatgpt-plus-pool-validation": { validateChatGptPlusKeyImport: () => null },
   "../modules/cdks/codex-key-suppliers": supplierHelpers,
+  "../common/utils/gemini-product": geminiHelpers,
 });
 const { cdkKeysStore } = load(base + "modules/cdks/cdk-keys.store.ts", {
   "../../services/licenseService": { licenseService }, "./codex-key-suppliers": supplierHelpers,

@@ -4,6 +4,7 @@ import { canonicalProductKey } from "../common/utils/product-key";
 import { AppError } from "../common/errors/app-error";
 import { validateChatGptPlusKeyImport } from "../modules/cdks/chatgpt-plus-pool-validation";
 import { CodexKeySupplier, resolveCodexImportSite } from "../modules/cdks/codex-key-suppliers";
+import { GEMINI_ACTIVATION_SITE, isGeminiAutomaticProduct } from "../common/utils/gemini-product";
 
 export type LicenseKeyStatus = "available" | "reserved" | "used" | "revoked";
 
@@ -17,6 +18,10 @@ function normalizeKeyValue(value: string) {
 
 function resolveCdkImportSite(productKey: string, value: unknown) {
   const site = normalizeActivationSiteUrl(value);
+  if (isGeminiAutomaticProduct(productKey)) {
+    if (String(value || "").trim() && site !== GEMINI_ACTIVATION_SITE) throw new AppError("Gemini Pro CDK must use https://aichongzhi.fun", 400);
+    return GEMINI_ACTIVATION_SITE;
+  }
   if (!/^grok-(plus|premium|super|ultra)-1$/.test(productKey)) return site;
   if (String(value || "").trim() && site !== "https://aiee.fun") {
     throw new AppError("Для месячных тарифов Grok загружайте CDK AISOU с сайтом https://aiee.fun в пул выбранного тарифа", 400);
@@ -32,7 +37,7 @@ function isGeminiActivationLinkPool(productKey: string) {
 
 function normalizeKeyValueForProduct(productKey: string, value: string) {
   const raw = String(value || "").trim();
-  return isGeminiActivationLinkPool(productKey) ? raw : raw.toUpperCase();
+  return isGeminiActivationLinkPool(productKey) || isGeminiAutomaticProduct(productKey) ? raw : raw.toUpperCase();
 }
 
 function validateGeminiActivationLinks(productKey: string, values: string[]) {

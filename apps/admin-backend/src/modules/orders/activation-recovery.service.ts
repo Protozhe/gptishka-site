@@ -66,6 +66,8 @@ export async function buildOrderActivationRecoveryLink(
     ? `${language === "en" ? "/en" : ""}/verification-support.html`
     : deliveryType === "code" && appStoreCard(firstItem?.product)
       ? `${language === "en" ? "/en" : ""}/itunes.html`
+      : /^gemini-pro-(6|12|24)m$/.test(String(firstItem?.product?.slug || ""))
+        ? `${language === "en" ? "/en" : ""}/gemini-activation.html`
       : deliveryType === "vpn" ? "/store/vpn/activate" : "/redeem-start.html";
   const url = new URL(path, resolveSiteOrigin());
   url.searchParams.set("order_id", order.id);

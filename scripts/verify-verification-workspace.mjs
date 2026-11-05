@@ -28,6 +28,9 @@ for (const slug of ['claude-kyc', 'claude-cvp', 'claude-kyc-support', 'claude-cv
   let stored = null, writes = 0, paid = true;
   const order = { id: 'fixture-order', email: 'fixture@example.invalid', status: 'PAID' };
   const scope = vm.createContext({
+  isGeminiAutomaticProduct: value => /^gemini-pro-(6|12|24)m$/.test(String(value || "")),
+  GEMINI_FULFILLMENT_OWNER: "gemini-pro-cdk-v1",
+
     nextTokenInputVersion: () => Date.now(),
     URL, Date, Buffer, crypto, AppError, isVerificationSupportProduct, validateVerificationSupportLink,
     VERIFICATION_MANAGER_URL: 'https://t.me/gptishkasupport',

@@ -98,8 +98,8 @@ assert.ok(proPlanContext.getServicePlanSortScore('chatgpt', 'pro-25x') > proPlan
 vm.runInContext(functions.get('getConstructorFilterOptions'), geminiFallbackContext);
 const proOptions = geminiFallbackContext.getConstructorFilterOptions('chatgpt', 'plan', [{ key: 'pro-20x', count: 1 }]);
 assert.equal(proOptions.find(option => option.key === 'pro-25x').disabled, true, 'Pro 500 cannot be purchased without an active product');
-const geminiDurations = geminiFallbackContext.getConstructorFilterOptions('gemini', 'duration', [{ key: '18m', count: 1 }]);
-assert.equal(JSON.stringify(geminiDurations), JSON.stringify([{ key: '18m', count: 1, disabled: false }]));
+const geminiDurations = geminiFallbackContext.getConstructorFilterOptions('gemini', 'duration', [{ key: '6m', count: 1 }, { key: '12m', count: 1 }, { key: '24m', count: 1 }]);
+assert.equal(JSON.stringify(geminiDurations), JSON.stringify([{ key: '6m', count: 1, disabled: false }, { key: '12m', count: 1, disabled: false }, { key: '24m', count: 1, disabled: false }]));
 // Reproduce a stale CMS card summary with only the current 18-month product.
 // Both languages must use the actual offered duration and keep its live price.
 for (const english of [false, true]) {
@@ -138,15 +138,15 @@ for (const english of [false, true]) {
 }
 vm.runInContext(functions.get('getEnglishServicePageContent'), geminiFallbackContext);
 const geminiEnglishFallback = geminiFallbackContext.getEnglishServicePageContent('gemini');
-assert.doesNotMatch(JSON.stringify(geminiEnglishFallback), /12.month|1,500|2,100/);
-assert.match(geminiEnglishFallback.metaTitle, /18 months/);
+assert.doesNotMatch(JSON.stringify(geminiEnglishFallback), /18.month|1,500|2,100/);
+assert.match(geminiEnglishFallback.metaTitle, /6, 12 or 24 months/);
 for (const path of ['catalog/index.html', 'catalog/ai/index.html', 'en/catalog/index.html', 'en/catalog/ai/index.html']) {
   assert.doesNotMatch(fs.readFileSync(path, 'utf8'), /12 или 18|12 or 18/);
   assert.match(fs.readFileSync(path, 'utf8'), />GPT-6\.1 Sol\/Astra</);
   const geminiFallbackCard = fs.readFileSync(path, 'utf8').match(/<article\b[^>]*data-showcase-service-key="gemini"[^>]*>[\s\S]*?<\/article>/)?.[0];
   assert.ok(geminiFallbackCard);
-  assert.match(geminiFallbackCard, /1 тариф|1 plan/);
-  assert.match(geminiFallbackCard, /449/);
+  assert.match(geminiFallbackCard, /3 тарифа|3 plans/);
+  assert.match(geminiFallbackCard, /2 490/);
   assert.doesNotMatch(geminiFallbackCard, /2 тарифа|2 tariffs|1 500/);
 }
 const geminiDom = page('<html><body></body></html>');
@@ -177,7 +177,7 @@ for (const service of ['chatgpt', 'claude', 'grok', 'perplexity', 'gemini', 'sun
     const dom = page('<html lang="en"><body></body></html>');
     const { window } = dom;
     const context = vm.createContext({
-      window, document: window.document, localStorage: window.localStorage,
+      window, document: window.document, localStorage: window.localStorage, isEnPage: true,
       normalizeAiServiceKey: value => value,
       getAiOrderModalServiceConfig: () => ({ displayName: service === 'chatgpt' ? 'ChatGPT' : service === 'claude' ? 'Claude' : service }),
       toAmount: Number, getServicePlanLabel: (_, plan) => plan,

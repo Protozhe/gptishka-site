@@ -36,6 +36,9 @@ export function buildPaymentReturnUrls(input: PaymentCreateInput) {
     successUrl.pathname = input.metadata?.language === "en" ? "/en/verification-support.html" : "/verification-support.html";
   } else if (input.metadata?.appStoreCard === true) {
     successUrl.pathname = input.metadata?.language === "en" ? "/en/itunes.html" : "/itunes.html";
+  } else if (input.metadata?.geminiActivation === true) {
+    const prefix = input.metadata?.language === "en" ? "/en" : "";
+    successUrl.pathname = `${prefix}/gemini-activation.html`;
   }
   successUrl.searchParams.set("order_id", input.orderId);
   const failUrl = new URL(env.PAYMENT_FAIL_URL);

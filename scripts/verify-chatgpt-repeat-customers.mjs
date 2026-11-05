@@ -8,7 +8,10 @@ class AppError extends Error {constructor(message,status){super(message);this.st
 let source='site',records=new Map(),key='chatgpt-plus-1',blockLookup=null,blockKey=null,writes=0,providerCalls=0;
 const order=id=>({id,status:'PAID',source,email:'fixture@example.invalid',orderDetails:{selection:{}},items:[{product:{slug:key,tags:[]}}]});
 const no=()=>false;
-const c=vm.createContext({crypto,Buffer,Date,JSON,Map,Math,AppError,clientTokenInputVersion:0,
+const c=vm.createContext({
+  isGeminiAutomaticProduct: value => /^gemini-pro-(6|12|24)m$/.test(String(value || "")),
+  GEMINI_FULFILLMENT_OWNER: "gemini-pro-cdk-v1",
+crypto,Buffer,Date,JSON,Map,Math,AppError,clientTokenInputVersion:0,
  OrderStatus:{PAID:'PAID'},MAX_CLIENT_TOKEN_LENGTH:500000,MAX_ACTIVATION_START_ATTEMPTS:3,CHATGPT_PLUS_PRODUCT_KEY:'chatgpt-plus-1',env:{ACTIVATION_PROVIDER:'chongzhi'},
  assertOrderTokenAccess:async id=>order(id),assertPaidOrderForAdmin:async id=>order(id),assertPaidOrderAccess:async id=>order(id),
  getOrderWithFirstItem:async id=>{if(blockLookup){const wait=blockLookup;blockLookup=null;await wait;}return order(id);},

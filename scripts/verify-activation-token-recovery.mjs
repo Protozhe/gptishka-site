@@ -17,6 +17,9 @@ let timerId = 0;
 const events = new Map();
 const calls = [];
 const context = vm.createContext({
+  isGeminiAutomaticProduct: value => /^gemini-pro-(6|12|24)m$/.test(String(value || "")),
+  GEMINI_FULFILLMENT_OWNER: "gemini-pro-cdk-v1",
+
   AbortController, console,
   previewMode: false, isCredentialsDelivery: false, isPerplexityManualFlow: false,
   isCodexCreditsFlow: false, isChatGptSessionFlow: false, isChatGptGoFlow: false, isSupportTokenDelivery: false,
@@ -92,6 +95,9 @@ findMethod(serviceSource);
 const no = () => false;
 let writes = 0;
 const backend = vm.createContext({
+  isGeminiAutomaticProduct: value => /^gemini-pro-(6|12|24)m$/.test(String(value || "")),
+  GEMINI_FULFILLMENT_OWNER: "gemini-pro-cdk-v1",
+
   nextTokenInputVersion: () => Date.now(),
   assertOrderTokenAccess: async () => ({id: 'fixture-order', status: 'PAID'}),
   getOrderWithFirstItem: async () => ({items: [{product: {slug: 'chatgpt-plus-1'}}]}),
@@ -145,6 +151,9 @@ findProviderFunctions(serviceSource);
 let submits = 0;
 let transportFailure = Object.assign(new Error('AIEE transport failed'), {transportExitCode: 28});
 const provider = vm.createContext({
+  isGeminiAutomaticProduct: value => /^gemini-pro-(6|12|24)m$/.test(String(value || "")),
+  GEMINI_FULFILLMENT_OWNER: "gemini-pro-cdk-v1",
+
   isAieeProviderBase: () => true, isIosProviderBase: () => false,
   recoverCompletedChongzhiJsonTask: async () => null,
   async callChongzhiJsonApi(_base, action) {

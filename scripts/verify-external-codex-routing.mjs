@@ -22,6 +22,9 @@ const bot = functions(read("../ops/telegram-monitor-bot/worker.mjs"));
 let order, stored, reservations = 0, providerCalls = 0, wrongToken = false, accountPlan = "free";
 class AppError extends Error { constructor(message, status) { super(message); this.status = status; } }
 const context = vm.createContext({
+  isGeminiAutomaticProduct: value => /^gemini-pro-(6|12|24)m$/.test(String(value || "")),
+  GEMINI_FULFILLMENT_OWNER: "gemini-pro-cdk-v1",
+
   assertOrderTokenAccess: async () => order,
   CLAUDE_ZOVO_OWNER:"website-claude-zovo-v1",isClaudeZovoProduct:()=>false,
   GROK_ZOVO_OWNER:"website-grok-zovo-v1",isGrokZovoProduct:()=>false,

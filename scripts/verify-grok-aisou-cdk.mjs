@@ -21,6 +21,9 @@ const sso=jwt({session_id:'00000000-0000-4000-8000-000000000001'});
 let record,stock,calls,claims,reservations,mode,plan,selectedSite='https://aiee.fun';
 const saved=value=>JSON.parse(JSON.stringify(value));
 const context=vm.createContext({
+  isGeminiAutomaticProduct: value => /^gemini-pro-(6|12|24)m$/.test(String(value || "")),
+  GEMINI_FULFILLMENT_OWNER: "gemini-pro-cdk-v1",
+
   Buffer,Date,Math,Map,Set,JSON,AppError,Error,crypto,
   DEFAULT_AIEE_URL:'https://aiee.fun',GROK_ZOVO_OWNER:'website-grok-zovo-v1',
   CHATGPT_PLUS_PRODUCT_KEY:'chatgpt-plus-1',
@@ -136,7 +139,7 @@ reset();record.cdk='fixture-cdk';context.updateActivationFromChongzhiCodePayload
 const licenseText=fs.readFileSync('apps/admin-backend/src/services/licenseService.ts','utf8');
 const licenseAst=ts.createSourceFile('license.ts',licenseText,ts.ScriptTarget.Latest,true);
 const resolver=licenseAst.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name.text==='resolveCdkImportSite');
-const imports=vm.createContext({AppError,normalizeActivationSiteUrl:value=>{try{const u=new URL(value);return u.origin+u.pathname.replace(/\/+$/,'');}catch{return '';}}});
+const imports=vm.createContext({isGeminiAutomaticProduct:value=>/^gemini-pro-(6|12|24)m$/.test(String(value||"")),AppError,normalizeActivationSiteUrl:value=>{try{const u=new URL(value);return u.origin+u.pathname.replace(/\/+$/,'');}catch{return '';}}});
 vm.runInContext(compile(resolver.getText(licenseAst)),imports);
 for(const tier of ['plus','premium','super','ultra']){
  assert.equal(imports.resolveCdkImportSite(`grok-${tier}-1`,undefined),'https://aiee.fun');

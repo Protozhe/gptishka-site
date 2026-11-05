@@ -544,10 +544,12 @@ function KeyProductColumn({
   const isCodexSupplierPool = !isSupportMode && isDualSupplierCodexPool(productKey);
   const isGrokAisouPool = !isSupportMode && /^grok-(plus|premium|super|ultra)-1$/.test(productKey);
   const isGeminiActivationLinkPool = !isSupportMode && productKey === "gemini-pro-18";
+  const isGeminiProCdkPool = !isSupportMode && /^gemini-pro-(6|12|24)m$/.test(productKey);
   const isAppStoreCodePool = !isSupportMode && Boolean(appStoreCard(product));
   const keyColumnLabel = isGeminiActivationLinkPool ? "Ссылка активации" : isSupportMode ? "SDK" : "CDK";
   const modeLabel = isGeminiActivationLinkPool
     ? "Ссылки активации Google · одна уникальная ссылка на один оплаченный заказ"
+    : isGeminiProCdkPool ? "Gemini Pro · CDK строго для выбранного срока (6, 12 или 24 месяца) · автоматическая активация"
     : isAppStoreCodePool ? "Подарочные коды App Store для выбранного региона и номинала"
     : isSupportMode
       ? (isClaudeMode ? TEXT.modeSupportClaude : TEXT.modeSupport)
@@ -562,11 +564,11 @@ function KeyProductColumn({
     : isSupportMode
       ? TEXT.fillSdkKeys
       : TEXT.fillKeys;
-  const defaultActivationSiteUrl = isGrokAisouPool ? "https://aiee.fun" : String(product.activationVariants?.withoutLogin?.activationSiteUrl || "").trim();
+  const defaultActivationSiteUrl = isGeminiProCdkPool ? "https://aichongzhi.fun" : isGrokAisouPool ? "https://aiee.fun" : String(product.activationVariants?.withoutLogin?.activationSiteUrl || "").trim();
   const [text, setText] = useState("");
   const [activationSiteUrl, setActivationSiteUrl] = useState(defaultActivationSiteUrl);
   const [codexSupplier, setCodexSupplier] = useState<CodexKeySupplier | "">("");
-  const selectedActivationSiteUrl = isGrokAisouPool ? "https://aiee.fun" : isCodexSupplierPool
+  const selectedActivationSiteUrl = isGeminiProCdkPool ? "https://aichongzhi.fun" : isGrokAisouPool ? "https://aiee.fun" : isCodexSupplierPool
     ? (CODEX_KEY_SUPPLIERS.find((supplier) => supplier.id === codexSupplier)?.url || "")
     : isChatGptPlusDualPool
     ? (activationSiteUrl === CHATGPT_PLUS_FREE_SITE_URL ? CHATGPT_PLUS_FREE_SITE_URL : CHATGPT_PLUS_IOS_SITE_URL)
@@ -812,6 +814,11 @@ function KeyProductColumn({
             <div className="font-semibold">AISOU · aiee.fun · {product.title}</div>
             <p className="mt-1 text-xs">Добавляйте CDK только этого тарифа на 1 месяц — по одному в строке. Сайт активации закреплён автоматически. Перед отправкой система проверит тариф ключа у поставщика.</p>
             <p className="mt-1 text-xs">Клиент передаёт sso на странице активации. Если CDK закончились, данные сохраняются; после пополнения обработка продолжится автоматически.</p>
+          </div>
+        ) : isGeminiProCdkPool ? (
+          <div className="rounded-xl border border-slate-200 p-3 text-sm dark:border-slate-700">
+            <div className="font-semibold">Gemini Pro · {product.title}</div>
+            <p className="mt-1 text-xs">Загрузите CDK только выбранного срока — по одному в строке. Сайт aichongzhi.fun закреплён автоматически. Перед активацией проверяется срок ключа; ключ другого тарифа не используется.</p>
           </div>
         ) : !isSupportMode && !isGeminiActivationLinkPool && !isAppStoreCodePool ? (
           <label className="grid gap-1">

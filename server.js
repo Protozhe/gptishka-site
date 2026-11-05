@@ -101,6 +101,8 @@ const NOINDEX_PUBLIC_PATHS = new Set([
   "/fail.html",
   "/redeem-start.html",
   "/new-account.html",
+  "/gemini-activation.html",
+  "/en/gemini-activation.html",
   "/supergrok-activation",
   "/supergrok-activation.html",
   "/en/supergrok-activation",
@@ -1206,6 +1208,7 @@ function createApp() {
   app.post([
     "/payment/success", "/payment/fail", "/success.html", "/fail.html",
     "/verification-support.html", "/en/verification-support.html",
+    "/gemini-activation.html", "/en/gemini-activation.html",
   ], (req, res) => {
     res.redirect(303, req.originalUrl);
   });
@@ -2501,6 +2504,10 @@ function createApp() {
 
   app.get(["/supergrok-activation", "/supergrok-activation.html"], (_req, res) => {
     sendFreshHtml(res, path.join(__dirname, "redeem-start.html"));
+  });
+
+  app.get(["/en/gemini-activation.html"], (_req, res) => {
+    sendFreshHtml(res, path.join(__dirname, "gemini-activation.html"));
   });
 
   app.get(["/en/supergrok-activation", "/en/supergrok-activation.html"], (_req, res) => {

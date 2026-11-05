@@ -1,0 +1,69 @@
+@font-face {
+  font-family: "Golos Text"; font-style: normal; font-weight: 400 900; font-display: swap;
+  src: url("/assets/fonts/golos-text-v7-cyrillic.woff2") format("woff2");
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: "Golos Text"; font-style: normal; font-weight: 400 900; font-display: swap;
+  src: url("/assets/fonts/golos-text-v7-latin.woff2") format("woff2");
+}
+html body#storefrontBody.gemini-activation-body { margin: 0; background: #181d23 !important; color: #edf0f3; }
+.gemini-activation-body [hidden] { display: none !important; }
+html body#storefrontBody.gemini-activation-body .gemini-order, .gemini-order * { box-sizing: border-box; }
+html body#storefrontBody.gemini-activation-body .gemini-order { width: min(1080px, calc(100% - 40px)); margin: 28px auto 48px; font: 400 17px/1.5 "Golos Text", Manrope, system-ui, sans-serif; }
+html body#storefrontBody.gemini-activation-body .gemini-order h1 { margin: 12px 0 8px; font: 750 clamp(26px, 3vw, 36px)/1.2 Manrope, system-ui, sans-serif; letter-spacing: -.03em; }
+html body#storefrontBody.gemini-activation-body .gemini-order p { margin: 0; }
+html body#storefrontBody.gemini-activation-body .gemini-order__heading p { color: #b9c1cc; }
+html body#storefrontBody.gemini-activation-body .gemini-order__back, .gemini-order a { color: #bdcaff; text-decoration: none; }
+html body#storefrontBody.gemini-activation-body .gemini-order a:hover { color: #e0e6ff; text-decoration: underline; text-underline-offset: 3px; }
+html body#storefrontBody.gemini-activation-body .gemini-order__back { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; }
+html body#storefrontBody.gemini-activation-body .gemini-order__id { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 22px 0 12px; padding: 10px 14px; border: 1px solid #3a414b; border-radius: 10px; font-size: 14px; }
+html body#storefrontBody.gemini-activation-body .gemini-order__id > span { color: #bec7d2; }
+html body#storefrontBody.gemini-activation-body .gemini-order__id code { margin-left: auto; overflow-wrap: anywhere; font-size: 13px; }
+html body#storefrontBody.gemini-activation-body .gemini-order button { min-height: 36px; border: 1px solid #4b5361; border-radius: 8px; padding: 7px 12px; color: #edf0f3; background: #2a3039; font: 600 14px/1.4 "Golos Text", system-ui, sans-serif; cursor: pointer; transition: background-color 120ms ease, border-color 120ms ease; }
+html body#storefrontBody.gemini-activation-body .gemini-order button:not(:disabled):hover { background: #363f50; border-color: #7b8fb7; }
+html body#storefrontBody.gemini-activation-body .gemini-order__workspace { display: grid; grid-template-columns: .95fr 1.05fr; align-items: start; gap: 32px; padding: 26px; background: #222830; border: 1px solid #3b4350; border-radius: 16px; }
+html body#storefrontBody.gemini-activation-body .gemini-order h2 { margin: 0 0 16px; font-size: 20px; line-height: 1.3; }
+html body#storefrontBody.gemini-activation-body .gemini-order__guide ol { display: grid; gap: 16px; margin: 0; padding-left: 25px; }
+html body#storefrontBody.gemini-activation-body .gemini-order__guide li { padding-left: 4px; }
+html body#storefrontBody.gemini-activation-body .gemini-order__guide li::marker { color: #b8c6ff; font-weight: 600; }
+html body#storefrontBody.gemini-activation-body .gemini-order__guide .gemini-order__hint { margin: 22px 0 16px; font-size: 15px; color: #aeb9c8; }
+html body#storefrontBody.gemini-activation-body .gemini-order__link { display: inline-flex; font-size: 15px; font-weight: 600; }
+html body#storefrontBody.gemini-activation-body .gemini-order fieldset { display: grid; gap: 16px; min-width: 0; margin: 0; padding: 0; border: 0; }
+html body#storefrontBody.gemini-activation-body .gemini-order legend { margin: 0 0 16px; padding: 0; font-size: 20px; font-weight: 650; }
+html body#storefrontBody.gemini-activation-body .gemini-order label { display: grid; gap: 6px; font-size: 16px; font-weight: 550; }
+html body#storefrontBody.gemini-activation-body .gemini-order input:not([type="checkbox"]) { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #4b5263; border-radius: 8px; color: #f1f4ff; background: #181e26; font: 400 16px/1.4 "Golos Text", system-ui, sans-serif; }
+html body#storefrontBody.gemini-activation-body .gemini-order input:focus-visible, .gemini-order button:focus-visible, .gemini-order a:focus-visible { outline: 2px solid #b5c5ff; outline-offset: 3px; }
+html body#storefrontBody.gemini-activation-body .gemini-order label small { font-size: 13px; font-weight: 400; color: #acb7c7; }
+html body#storefrontBody.gemini-activation-body .gemini-order label.gemini-order__consent { display: flex; align-items: flex-start; gap: 10px; color: #bdc7d6; font-size: 14px; font-weight: 400; }
+html body#storefrontBody.gemini-activation-body .gemini-order__consent input { flex: none; margin: 3px 0 0; width: 18px; height: 18px; accent-color: #acbfff; }
+html body#storefrontBody.gemini-activation-body .gemini-order button.gemini-order__activate { min-height: 48px; background: #a7b9ff; color: #151d35; border-color: #a7b9ff; font-size: 17px; }
+html body#storefrontBody.gemini-activation-body .gemini-order button.gemini-order__activate:not(:disabled):hover { background: #c0cbff; border-color: #c0cbff; }
+html body#storefrontBody.gemini-activation-body .gemini-order button:disabled { cursor: default; opacity: .6; }
+html body#storefrontBody.gemini-activation-body .gemini-order__privacy { color: #aab5c4; font-size: 13px; line-height: 1.45; }
+html body#storefrontBody.gemini-activation-body .gemini-order__status { margin-top: 14px; padding: 18px 22px; border: 1px solid #4b5671; border-radius: 12px; background: #212936; }
+html body#storefrontBody.gemini-activation-body .gemini-order__status-top { display: flex; align-items: center; gap: 10px; font-size: 18px; }
+html body#storefrontBody.gemini-activation-body .gemini-order__status p { margin-top: 7px; color: #bec9d8; }
+html body#storefrontBody.gemini-activation-body .gemini-order__status .gemini-order__link { margin-top: 12px; }
+html body#storefrontBody.gemini-activation-body .gemini-order__status[data-state="success"] { border-color: #45816b; }
+html body#storefrontBody.gemini-activation-body .gemini-order__status[data-state="error"] { border-color: #a86c66; }
+html body#storefrontBody.gemini-activation-body .gemini-order__spinner { flex: none; width: 18px; height: 18px; border: 2px solid #55617d; border-top-color: #c3ceff; border-radius: 50%; animation: gemini-progress .8s linear infinite; }
+html body#storefrontBody.gemini-activation-body .gemini-order__progress { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; list-style: none; margin: 18px 0 0; padding: 0; font-size: 13px; color: #aab5c5; }
+html body#storefrontBody.gemini-activation-body .gemini-order__progress li { padding-top: 9px; border-top: 3px solid #43516b; }
+html body#storefrontBody.gemini-activation-body .gemini-order__progress li.is-current { border-color: #bccaff; color: #ecf0ff; }
+@keyframes gemini-progress { to { transform: rotate(360deg); } }
+@media (max-width: 760px) {
+  html body#storefrontBody.gemini-activation-body .gemini-order { width: calc(100% - 28px); margin-top: 18px; font-size: 16px; }
+  html body#storefrontBody.gemini-activation-body .gemini-order__workspace { grid-template-columns: 1fr; gap: 26px; padding: 20px; }
+  html body#storefrontBody.gemini-activation-body .gemini-order__id { gap: 8px; }
+  html body#storefrontBody.gemini-activation-body .gemini-order__id code { font-size: 12px; }
+  html body#storefrontBody.gemini-activation-body .gemini-order__id button { margin-left: auto; }
+  html body#storefrontBody.gemini-activation-body .gemini-order__status { padding: 18px; }
+  html body#storefrontBody.gemini-activation-body .gemini-order__workspace[data-processing="true"] { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .gemini-order *, .gemini-order *::before { transition: none !important; animation: none !important; } }
+
+@media (min-width: 980px) {
+  html body#storefrontBody.gemini-activation-body .gemini-order fieldset { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html body#storefrontBody.gemini-activation-body .gemini-order fieldset > :is(label:nth-of-type(3), .gemini-order__consent, button, p) { grid-column: 1 / -1; }
+}

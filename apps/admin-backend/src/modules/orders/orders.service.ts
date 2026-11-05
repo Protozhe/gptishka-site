@@ -19,6 +19,8 @@ import { activationStore, type ActivationRecord } from "./activation.store";
 import { deliverProduct, hasTrustedPaidPayment } from "./delivery.service";
 import { appStoreCard } from "../../common/utils/app-store-card";
 import { createAppStoreDeliveryService } from "./app-store-delivery";
+import { createGeminiActivation, GEMINI_FULFILLMENT_OWNER } from "./gemini-activation";
+import { isGeminiAutomaticProduct } from "../../common/utils/gemini-product";
 import { sendDirectCodeTelegram } from "./direct-code-notifications.service";
 import { buildActivationSiteEndpointUrl, readActivationSiteUrlFromOrderDetails } from "../../common/utils/activation-site";
 import { resolveOrderDeliveryType, resolveProductDeliveryType } from "../../common/utils/product-delivery";
@@ -330,6 +332,7 @@ function normalizePaymentChannel(value: unknown) {
 }
 
 function assertTokenActivationDeliveryMode(activationInfo: any) {
+  if (activationInfo?.activationFlow === "gemini_account") throw new AppError("Use the Gemini account form", 409);
   const deliveryMode = String(activationInfo?.deliveryMode || "activation").trim().toLowerCase();
   if (deliveryMode === "activation") return;
   if (deliveryMode === "support") return;
@@ -479,6 +482,17 @@ function sleep(ms: number) {
 }
 
 const appStoreDeliveryService = createAppStoreDeliveryService({ db: prisma, records: activationStore, isTrustedPaid: hasTrustedPaidPayment, notify: sendDirectCodeTelegram });
+const geminiActivation = createGeminiActivation({
+  loadOrder: (id) => prisma.order.findUnique({ where: { id }, include: { payments: true, items: { include: { product: true }, orderBy: { id: "asc" }, take: 1 } } }),
+  isPaid: hasTrustedPaidPayment, records: activationStore, lock: withActivationOrderLock,
+  protect: (raw) => {
+    if (raw && !String(env.ACTIVATION_TOKEN_ENCRYPTION_KEY || "").trim()) throw new AppError("Gemini credential encryption is not configured", 503);
+    return buildStoredClientTokenPatch(raw);
+  }, unprotect: decryptStoredClientToken,
+  reserve: (input) => activationStore.reserveCdkRecordForOrder(input),
+  provider: (action, data) => callAichongzhiApi(action, data, "gemini"),
+  notifyStock: enqueueActivationStockNotification,
+});
 
 export const ordersService = {
   async issueAppStoreCode(orderId: string, code: string, userId: string) {
@@ -741,6 +755,10 @@ export const ordersService = {
       };
     }
 
+    if (isGeminiAutomaticProduct(productSlug) && !needsNewAccount) {
+      return geminiActivation.read(order.id, true);
+    }
+
     const isSunoLink = isSunoPaymentLinkOrder(productSlug, fullOrder?.orderDetails);
     const isDevinLink = isDevinProductSlug(productSlug);
     if (isMidjourneyProductSlug(productSlug) || isSunoLink || isDevinLink) {
@@ -910,9 +928,12 @@ export const ordersService = {
 
   async startActivation(orderId: string, token: string, orderToken?: string) {
     const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
+    if (activationInfo.activationFlow === "gemini_account") return geminiActivation.start(orderId, token);
     assertTokenActivationDeliveryMode(activationInfo);
     return withActivationOrderLock(orderId, async () => startActivationUnsafe(orderId, token, orderToken));
   },
+
+  async resumeGeminiJobs() { return geminiActivation.tick(); },
 
   async resumeClaudeZovoJobs() {
     return tickClaudeZovo({prisma,activationStore,decrypt:decryptStoredClientToken,lock:withActivationOrderLock,
@@ -1084,6 +1105,7 @@ export const ordersService = {
     const deliveryType = resolveOrderDeliveryType(orderWithItem?.orderDetails, firstItem?.product?.tags || []);
     const activationSiteUrl = readActivationSiteUrlFromOrderDetails(orderWithItem?.orderDetails);
     const productSlug = String(firstItem?.product?.slug || "").trim().toLowerCase();
+    if (isGeminiAutomaticProduct(productSlug)) throw new AppError("Use the Gemini account form", 409);
     if (isVerificationSupportProduct(productSlug)) {
       return withActivationOrderLock(order.id, async () => {
         await assertPaidOrderAccess(orderId, orderToken);
@@ -1282,6 +1304,7 @@ export const ordersService = {
   async validateActivationToken(orderId: string, token: string, orderToken?: string) {
     const inputVersion = nextTokenInputVersion();
     const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
+    if (activationInfo.activationFlow === "gemini_account") throw new AppError("Use the Gemini account form", 409);
     assertTokenActivationDeliveryMode(activationInfo);
 
     const stored = await ensureActivationRecordForTokenFlow(orderId, orderToken, activationInfo);
@@ -1468,6 +1491,7 @@ export const ordersService = {
   async getActivationTask(orderId: string, taskId: string, orderToken?: string) {
     assertOrderId(orderId);
     const activationInfo = (await this.getActivation(orderId, orderToken)) as any;
+    if (activationInfo.activationFlow === "gemini_account") return activationInfo;
     assertTokenActivationDeliveryMode(activationInfo);
     const stored = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
     const storedIsSuccess = stored?.status === "success" || stored?.verificationState === "success";
@@ -1648,6 +1672,7 @@ export const ordersService = {
     assertOrderId(orderId);
     const current = normalizeActivationRecordForRead(activationStore.findByOrderId(orderId));
     if (!current) throw new AppError("Client token is not stored or expired", 404);
+    if (isGeminiAutomaticProduct(current.productKey)) throw new AppError("Gemini credentials cannot be revealed", 403);
 
     const cleaned = cleanupExpiredStoredClientToken(current);
     if (cleaned.changed) {
@@ -1913,12 +1938,17 @@ export const ordersService = {
       activation = normalizeActivationRecordForRead(activationStore.findByOrderId(id));
     }
 
-    const activationAlreadyConfirmed =
-      activation?.status === "success" || activation?.verificationState === "success";
     // Card-worker jobs are reconciled by their persistent owner. An admin or
     // browser status refresh must never query a legacy CDK provider or replace
     // its authoritative progress with "Activation key is missing".
-    const externalFulfillmentOwner = [CLAUDE_ZOVO_OWNER,GROK_ZOVO_OWNER].includes(String(activation?.externalFulfillmentOwner||'')) ? activation?.externalFulfillmentOwner : order.status === OrderStatus.PAID
+    if (isGeminiAutomaticProduct(product?.slug) && order.status === OrderStatus.PAID &&
+        (order.orderDetails as any)?.selection?.needsNewAccount !== true) {
+      await geminiActivation.read(id, Boolean(options?.forceCheck));
+      activation = normalizeActivationRecordForRead(activationStore.findByOrderId(id));
+    }
+    const activationAlreadyConfirmed =
+      activation?.status === "success" || activation?.verificationState === "success";
+    const externalFulfillmentOwner = [CLAUDE_ZOVO_OWNER,GROK_ZOVO_OWNER,GEMINI_FULFILLMENT_OWNER].includes(String(activation?.externalFulfillmentOwner||'')) ? activation?.externalFulfillmentOwner : order.status === OrderStatus.PAID
       ? resolveExternalCodexOwner({
           source: order.source,
           productKey: product?.slug || activation?.productKey,
@@ -3121,7 +3151,7 @@ async function startAibuySubscription(input: Parameters<typeof startOutstockTask
 }
 
 function resolveAichongzhiTarget(product: AichongzhiProduct) {
-  const base = String(env.ACTIVATION_GROK_BASE_URL || DEFAULT_AICHONGZHI_URL).trim();
+  const base = product === "gemini" ? DEFAULT_AICHONGZHI_URL : String(env.ACTIVATION_GROK_BASE_URL || DEFAULT_AICHONGZHI_URL).trim();
   const parsed = new URL(base);
   const apiUrl = new URL("/api/redeem.php", parsed.origin);
   return {
@@ -3165,6 +3195,7 @@ async function callAichongzhiApi(
         response.setEncoding("utf8");
         response.on("data", (chunk) => {
           raw += chunk;
+          if (product === "gemini" && raw.length > 131_072) request.destroy(new Error("Gemini provider response too large"));
         });
         response.on("end", () => {
           resolve({

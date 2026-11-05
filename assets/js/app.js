@@ -1243,6 +1243,9 @@ function initActivationResumeShortcut() {
   function resolveCheckoutErrorMessage(error) {
     const raw = String(error && error.message ? error.message : "").trim();
     if (!raw) return TEXT.checkoutError;
+    if (raw.startsWith("Gemini activation keys are being replenished")) return isEnPage
+      ? "Gemini activation is temporarily unavailable. Contact support before payment."
+      : "Автоактивация Gemini временно недоступна. Уточните наличие в поддержке до оплаты.";
     return raw;
   }
 
@@ -2859,24 +2862,23 @@ function initActivationResumeShortcut() {
     }
     if (key === "gemini") {
       return {
-        metaTitle: "Gemini Pro — 18 months | GPTishka",
-        heroEyebrow: "Subscription plans",
-        heroTitle: "Gemini Pro",
-        heroDescription: "Gemini Pro for writing, files, ideas and complex tasks. An 18-month subscription with GPTishka support.",
+        metaTitle: "Gemini Pro — 6, 12 or 24 months | GPTishka",
+        heroEyebrow: "Subscription plans", heroTitle: "Gemini Pro",
+        heroDescription: "Gemini Pro on your Google Account. Choose 6, 12 or 24 months.",
         constructorTitle: "Gemini Pro",
-        constructorDescription: "Gemini Pro is available for 18 months. The current price is shown in the plan before checkout.",
+        constructorDescription: "After payment, enter your Google email, password and authenticator key or an 8-digit backup code on your GPTishka order page. Activation runs automatically. A new account is available for an extra ₽200.",
         infoSections: [
-          { title: "What is included", items: ["Gemini Pro for 18 months.", "Access to the models and features included in the current Pro plan.", "Higher limits for working with text, files and images.", "GPTishka assistance during activation."] },
-          { title: "What it is useful for", items: ["Writing, editing and summarizing content.", "Analyzing documents, images and structured information.", "Study, research and planning.", "Ideas, creative work and everyday tasks."] },
-          { title: "How activation works", ordered: true, items: ["Select Gemini Pro for 18 months.", "Place the order and complete payment.", "Follow the activation instructions from GPTishka.", "Check that Gemini Pro is active on your account."] },
-          { title: "Support and important terms", items: ["The term starts after successful activation.", "Google may update available models, features and limits.", "Keep access to your account and linked email.", "Contact GPTishka support if you have an order question."] }
+          { title: "Before buying", items: ["Use a personal Google Account without an active paid subscription or family group membership.", "Two-step verification must be enabled. Activation needs your account email, password and authenticator key or one 8-digit backup code.", "Your account must meet Google's age and supported-region requirements."] },
+          { title: "How activation works", ordered: true, items: ["Choose a duration and pay for your order.", "Enter the account details in the secure form on GPTishka. No external redemption link is issued.", "Follow the activation status on the same order page."] },
+          { title: "A new account", items: ["Add a new account for ₽200 when selecting the plan.", "After payment, contact the manager with your order number. Your existing account details are not needed.", "The subscription will be on the new account, not transferred to an existing one."] },
+          { title: "After activation", items: ["Check the subscription in your Google Account.", "Change your password and replace any shared authenticator key or backup code.", "Google controls available features and limits. Contact support with your order number if you need help."] }
         ],
         faqItems: [
-          { question: "What will I receive after payment?", answer: "Gemini Pro for 18 months and GPTishka assistance with activation." },
-          { question: "Do I need to choose a duration?", answer: "No. One duration is currently available: 18 months. The current price is shown before payment." },
-          { question: "How long does activation take?", answer: "Most orders are completed within 5 minutes to 2 hours. The maximum processing time is 48 hours." },
-          { question: "Which payment methods are available?", answer: "Available payment methods are shown during checkout. GPTishka does not store bank card details." },
-          { question: "What if I need help after payment?", answer: "Contact support with your order number and we will check the activation status." }
+          { question: "What is required for activation?", answer: "Your Google account email, password and authenticator key or one 8-digit backup code. Enter these only in the secure form on your paid GPTishka order page." },
+          { question: "Do you issue a redemption link?", answer: "No. Activation and progress tracking are on your GPTishka order page." },
+          { question: "Can I get a new account?", answer: "Yes. Select the new-account option for an extra ₽200 and contact the manager after payment. Your current account details are not required." },
+          { question: "Which durations are available?", answer: "6, 12 and 24 months. The final price is shown before payment." },
+          { question: "How do I contact support?", answer: "Use the support link and provide your order number. Do not send passwords through support chat." }
         ]
       };
     }
@@ -3222,6 +3224,7 @@ function initActivationResumeShortcut() {
     const text = getProductSearchText(item);
     if (isStandaloneVpnProduct(item)) return "vpn";
     if (text.includes("midjourney") || text.includes("suno")) return "link";
+    if (/^gemini-pro-(6|12|24)m$/.test(String(item?.baseSlug || item?.product || item?.slug || "").replace(/-(login|link)$/, ""))) return "login";
     if (/^grok-(plus|premium|super|ultra)-1$/.test(String(item?.baseSlug||''))) return "sso";
     if (activationVariant === "withoutlogin") return "id";
     if (text.includes("devin") && (normalizedTags.includes("delivery:manual_login") || activationVariant === "withlogin")) return "login";
@@ -3240,7 +3243,7 @@ function initActivationResumeShortcut() {
       claude: new Set(["1m"]),
       grok: new Set(["1m"]),
       perplexity: new Set(["1m"]),
-      gemini: new Set(["12m", "18m"]),
+      gemini: new Set(["6m", "12m", "18m", "24m"]),
       suno: new Set(["1m"]),
       devin: new Set(["1m"]),
       midjourney: new Set(["1m"]),
@@ -3257,6 +3260,7 @@ function initActivationResumeShortcut() {
       if (key === "devin" && deliveryKey !== "login") return false;
       if (allowedDurations[key] && !allowedDurations[key].has(getServiceDurationKey(item))) return false;
       if (key === "claude" || key === "grok" || key === "devin") return true;
+      if (key === "gemini" && /^gemini-pro-(6|12|24)m$/.test(String(item?.baseSlug || item?.product || item?.slug || "").replace(/-(login|link)$/, ""))) return true;
 
       const tags = Array.isArray(item?.tags) ? item.tags : [];
       const deliveryType = resolveDeliveryType(item?.deliveryType, item?.deliveryMethod, tags);
@@ -3341,6 +3345,7 @@ function initActivationResumeShortcut() {
     const key = normalizeAiServiceKey(serviceKey);
     const value = String(deliveryKey || "").trim();
     if ((key === "claude" || key === "grok") && value === "id") return isEnPage ? "By ID" : "По ID";
+    if (key === "gemini") return isEnPage ? "Account sign-in" : "Со входом в аккаунт";
     if (key === "claude" && value === "support") return isEnPage ? "Account sign-in" : "Со входом в аккаунт";
     if (key === "devin" && value === "login") return isEnPage ? "Payment link" : "По ссылке на оплату";
     if ((key === "midjourney" || key === "suno") && value === "link") return isEnPage ? "Payment link" : "По ссылке на оплату";
@@ -4178,7 +4183,7 @@ function initActivationResumeShortcut() {
       },
       gemini: {
         plan: ["pro"],
-        duration: ["18m"],
+        duration: ["6m", "12m", "24m"],
       },
       suno: {
         plan: ["pro", "premier"],
@@ -4327,7 +4332,7 @@ function initActivationResumeShortcut() {
     const durationKey = getServiceDurationKey(item);
     const planLabel = getServicePlanLabel(serviceKey, planKey);
     const planTitle = getServiceConstructorPlanTitle(item, serviceKey, planLabel);
-    const summaryPlanTitle = ["chatgpt", "claude"].includes(normalizeAiServiceKey(serviceKey)) ? planLabel : planTitle;
+    const summaryPlanTitle = ["chatgpt", "claude", "gemini"].includes(normalizeAiServiceKey(serviceKey)) ? planLabel : planTitle;
     const durationLabel = getServiceDurationLabel(durationKey);
     const description = String(item.description || "").trim();
     const modalDescriptionRaw = String(item.modalDescription || description).trim();
@@ -4538,7 +4543,9 @@ function initActivationResumeShortcut() {
 
   function getNewAccountSurcharge(serviceKey, productSlug) {
     const key = normalizeAiServiceKey(serviceKey);
-    if (!String(productSlug || "").trim().toLowerCase().startsWith(`${key}-`)) return 0;
+    const slug = String(productSlug || "").trim().toLowerCase();
+    if (!slug.startsWith(`${key}-`)) return 0;
+    if (key === "gemini" && /^gemini-pro-(6|12|24)m(?:-login|-link)?$/.test(slug)) return 200;
     return key === "chatgpt" ? 250 : 0;
   }
 
@@ -4874,7 +4881,7 @@ function initActivationResumeShortcut() {
       }
     } else {
       const deliveryKey = String(form.getAttribute("data-delivery-key") || "link").trim();
-      const needsAccountCredentials = deliveryKey === "login" && form.getAttribute("data-service-key") !== "devin";
+      const needsAccountCredentials = deliveryKey === "login" && form.getAttribute("data-service-key") !== "devin" && form.getAttribute("data-service-key") !== "gemini";
       if (needsAccountCredentials && !accountStatus) {
         setChatGptGoFieldError(form, "accountStatus", "Выберите вариант аккаунта.");
         valid = false;
@@ -4939,9 +4946,9 @@ function initActivationResumeShortcut() {
       giftSendDate: String(getChatGptGoOrderField(form, "giftSendDate")?.value || "").trim(),
       giftSendTime: String(getChatGptGoOrderField(form, "giftSendTime")?.value || "").trim(),
       giftMessage: String(getChatGptGoOrderField(form, "giftMessage")?.value || "").trim(),
-      accountStatus: deliveryKey === "login" && serviceKey !== "devin" ? (getChatGptGoCheckedValue(form, "accountStatus") || "has_account") : "",
-      serviceLogin: deliveryKey === "login" && serviceKey !== "devin" ? String(getChatGptGoOrderField(form, "serviceLogin")?.value || "").trim() : "",
-      servicePassword: deliveryKey === "login" && serviceKey !== "devin" ? String(getChatGptGoOrderField(form, "servicePassword")?.value || "") : "",
+      accountStatus: deliveryKey === "login" && serviceKey !== "devin" && serviceKey !== "gemini" ? (getChatGptGoCheckedValue(form, "accountStatus") || "has_account") : "",
+      serviceLogin: deliveryKey === "login" && serviceKey !== "devin" && serviceKey !== "gemini" ? String(getChatGptGoOrderField(form, "serviceLogin")?.value || "").trim() : "",
+      servicePassword: deliveryKey === "login" && serviceKey !== "devin" && serviceKey !== "gemini" ? String(getChatGptGoOrderField(form, "servicePassword")?.value || "") : "",
       cameByRecommendation: Boolean(getChatGptGoOrderField(form, "cameByRecommendation")?.checked),
       referrerContact: String(getChatGptGoOrderField(form, "referrerContact")?.value || "").trim(),
       orderComment: String(getChatGptGoOrderField(form, "orderComment")?.value || "").trim(),
@@ -5169,7 +5176,12 @@ function initActivationResumeShortcut() {
     const devinLinkNote = resolvedServiceKey === "devin"
       ? '<p class="chatgpt-order-security-note">После оплаты откроется страница с инструкцией. Вставьте на ней ссылку Stripe Checkout для выбранного тарифа Devin — логин и пароль передавать не нужно.</p>'
       : '';
-    const accountSectionMarkup = deliveryKey === "login" && resolvedServiceKey !== "devin"
+    const geminiActivationNote = resolvedServiceKey === "gemini"
+      ? '<p class="chatgpt-order-security-note">' + escapeHtml(isEnPage
+        ? "After payment, enter your Google email, password and authenticator key or an 8-digit backup code on your private GPTishka order page. If you select a new account, contact the manager instead."
+        : "После оплаты укажите почту Google, пароль и ключ аутентификатора или 8-значный резервный код на личной странице заказа GPTishka. Если выбран новый аккаунт — свяжитесь с менеджером.") + '</p>'
+      : '';
+    const accountSectionMarkup = deliveryKey === "login" && resolvedServiceKey !== "devin" && resolvedServiceKey !== "gemini"
       ? '<section class="chatgpt-order-section" data-chatgpt-go-account-section><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Данные аккаунта ' + escapeHtml(serviceDisplayName) + '</h4><p>Нужны только для подключения выбранного тарифа</p></div><input name="accountStatus" type="radio" value="has_account" checked hidden><div class="chatgpt-order-account-fields" data-chatgpt-go-account-fields><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Почта или логин Devin</span><small>Почта, на которую зарегистрирован аккаунт</small><input class="chatgpt-order-field__control" name="serviceLogin" type="text" autocomplete="username" placeholder="name@email.com" required></label><label class="chatgpt-order-field" data-chatgpt-go-password-field><span>Пароль от Devin</span><small>После подключения рекомендуем сменить пароль</small><span class="chatgpt-order-password-wrap"><input class="chatgpt-order-field__control" name="servicePassword" type="password" autocomplete="current-password" placeholder="Введите пароль" required><button type="button" class="chatgpt-order-password-toggle" data-chatgpt-go-password-toggle aria-label="Показать пароль" title="Показать пароль" aria-pressed="false"><span data-chatgpt-go-password-icon>' + getChatGptGoPasswordIcon(false) + '</span></button></span></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="serviceLogin"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="servicePassword"></p></div></div><p class="chatgpt-order-security-note"><strong>Безопасная передача</strong> Данные шифруются на сервере, доступны только сотруднику, который выполняет заказ, и не передаются платёжной системе. Никому не сообщайте коды 2FA или резервные коды.</p></section>'
       : '';
     const newAccountMarkup = newAccountSurcharge
@@ -5203,7 +5215,7 @@ function initActivationResumeShortcut() {
             '<div class="chatgpt-order-summary-card__price chatgpt-order-total"><span>Итого</span><strong data-chatgpt-go-total>' + escapeHtml(format(total)) + '</strong></div>' +
             '<div class="chatgpt-order-summary-lines"><div data-chatgpt-go-summary-discount' + (discount > 0 ? "" : " hidden") + '><span>Скидка:</span><strong>−' + escapeHtml(format(discount)) + '</strong></div></div>' +
           '</section>' + manualClaudeMaxNote + devinLinkNote +
-          '<section class="chatgpt-order-section"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Контакты</h4><p>Для статуса заказа и связи</p></div><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Почта</span><small>Нужна для связи по заказу</small><input class="chatgpt-order-field__control" name="contactEmail" type="email" autocomplete="email" placeholder="name@email.com" value="' + escapeHtml(savedEmail) + '" required></label><label class="chatgpt-order-field"><span>Telegram</span><small>Сюда придет вся информация по заказу</small><input class="chatgpt-order-field__control" name="telegram" type="text" autocomplete="off" placeholder="@username" value="' + escapeHtml(savedTelegram) + '" required></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="contactEmail"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="telegram"></p></div></section>' + newAccountMarkup + accountSectionMarkup +
+          '<section class="chatgpt-order-section"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Контакты</h4><p>Для статуса заказа и связи</p></div><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Почта</span><small>Нужна для связи по заказу</small><input class="chatgpt-order-field__control" name="contactEmail" type="email" autocomplete="email" placeholder="name@email.com" value="' + escapeHtml(savedEmail) + '" required></label><label class="chatgpt-order-field"><span>Telegram</span><small>Сюда придет вся информация по заказу</small><input class="chatgpt-order-field__control" name="telegram" type="text" autocomplete="off" placeholder="@username" value="' + escapeHtml(savedTelegram) + '" required></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="contactEmail"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="telegram"></p></div></section>' + newAccountMarkup + accountSectionMarkup + geminiActivationNote +
           '<section class="chatgpt-order-section chatgpt-order-soft-actions"><div class="chatgpt-order-section__head"><h4 class="chatgpt-order-section-title">Дополнительно</h4></div>' +
             '<label class="chatgpt-order-soft-action"><span><strong>Оформить в подарок</strong><small>Покажем поля получателя после включения</small></span><input name="isGift" type="checkbox"' + boolChecked(savedGift) + '><i></i></label><div class="chatgpt-order-gift-extra"' + (savedGift ? "" : " hidden") + ' data-chatgpt-go-gift-extra><div class="chatgpt-order-gift-note"><strong>🎁 Хотите устроить сюрприз?</strong><p>Вы выбираете подписку и указываете получателя. Мы сами свяжемся с ним, уточним данные и подключим подписку без передачи логинов и паролей.</p></div><div class="chatgpt-order-gift-panel"><h4 class="chatgpt-order-section-title">Данные подарка</h4><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Отправитель</span><small>Укажем в подарке</small><input class="chatgpt-order-field__control" name="giftSender" type="text" autocomplete="name" placeholder="Никита" value="' + escapeHtml(String(draft.giftSender || "")) + '"></label><label class="chatgpt-order-field"><span>Получатель</span><small>Укажем в подарке</small><input class="chatgpt-order-field__control" name="giftRecipient" type="text" autocomplete="off" placeholder="Артём" value="' + escapeHtml(String(draft.giftRecipient || "")) + '"></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftSender"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftRecipient"></p></div><label class="chatgpt-order-field chatgpt-order-field--full"><span>Где прислать подарок</span><select class="chatgpt-order-field__control" name="giftDeliveryMethod"><option value=""' + selected("", savedGiftDeliveryMethod) + '>Выберите способ</option><option value="telegram"' + selected("telegram", savedGiftDeliveryMethod) + '>Telegram</option><option value="vk"' + selected("vk", savedGiftDeliveryMethod) + '>VK</option><option value="whatsapp"' + selected("whatsapp", savedGiftDeliveryMethod) + '>WhatsApp</option><option value="email"' + selected("email", savedGiftDeliveryMethod) + '>Электронная почта</option></select></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftDeliveryMethod"></p><label class="chatgpt-order-field chatgpt-order-field--full"><span>Контакт получателя</span><input class="chatgpt-order-field__control" name="giftRecipientContact" type="text" autocomplete="off" placeholder="@telegram / vk.com/name / WhatsApp / name@mail.ru" value="' + escapeHtml(String(draft.giftRecipientContact || "")) + '"></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftRecipientContact"></p><div class="chatgpt-order-grid"><label class="chatgpt-order-field"><span>Дата отправки</span><input class="chatgpt-order-field__control" name="giftSendDate" type="date" min="' + escapeHtml(todayIso) + '" value="' + escapeHtml(String(draft.giftSendDate || "")) + '"></label><label class="chatgpt-order-field"><span>Время отправки (МСК)</span><input class="chatgpt-order-field__control" name="giftSendTime" type="time" value="' + escapeHtml(String(draft.giftSendTime || "")) + '"></label><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftSendDate"></p><p class="chatgpt-order-error" data-chatgpt-go-error-for="giftSendTime"></p></div><p class="chatgpt-order-gift-time-note"><strong>Подарки отправляем с 10:00 до 20:00 МСК.</strong><br>Ставьте время минимум +4 часа от оформления. Если заказ ночью, доставка должна быть не раньше 14:00.</p><label class="chatgpt-order-field chatgpt-order-field--full"><span>Сообщение получателю</span><small>Пришлём вместе с подарком</small><textarea class="chatgpt-order-field__control" name="giftMessage" rows="4" placeholder="Напишите поздравление или пожелание">' + escapeHtml(String(draft.giftMessage || "")) + '</textarea></label></div></div>' +
             '<label class="chatgpt-order-soft-action"><span><strong>Пришёл по рекомендации</strong><small>Добавим контакт друга для скидки</small></span><input name="cameByRecommendation" type="checkbox"' + boolChecked(savedRecommendation) + '><i></i></label><div class="chatgpt-order-referral-extra"' + (savedRecommendation ? "" : " hidden") + ' data-chatgpt-go-referral-extra><strong>Кто пригласил</strong><p>Пришли от друга? Дайте ему 5% скидки за ваш первый заказ — напишите его контакт ниже.</p><input class="chatgpt-order-field__control" name="referrerContact" type="text" autocomplete="off" placeholder="@telegram" value="' + escapeHtml(String(draft.referrerContact || "")) + '"></div>' +
@@ -5491,6 +5503,12 @@ function initActivationResumeShortcut() {
     const filteredItems = filterServicePageItems(allItems, serviceKey);
     const selectedItem = filteredItems[0] || null;
     const pageNewAccount = servicePageRootEl?.querySelector('[data-service-new-account]');
+    const geminiAccountChoice = servicePageRootEl?.querySelector('[data-gemini-new-account]');
+    if (geminiAccountChoice) {
+      const eligible = getNewAccountSurcharge(serviceKey, selectedItem?.product || selectedItem?.slug) > 0;
+      geminiAccountChoice.hidden = !eligible;
+      if (pageNewAccount) { pageNewAccount.disabled = !eligible; if (!eligible) pageNewAccount.checked = false; }
+    }
     const selectedPrice = selectedItem
       ? Math.max(0, toAmount(selectedItem.price)) + (pageNewAccount?.checked ? getNewAccountSurcharge(serviceKey, selectedItem.product || selectedItem.slug) : 0)
       : 0;

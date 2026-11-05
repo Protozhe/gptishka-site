@@ -9,7 +9,7 @@ export function resolveNewAccountSurcharge(slug: unknown, currency: unknown, req
   if (requested !== true) return 0;
   const productSlug = String(slug || "").trim().toLowerCase();
   const service = productSlug.split("-")[0];
-  const surcharge = NEW_ACCOUNT_SURCHARGES[service];
+  const surcharge = /^gemini-pro-(6|12|24)m$/.test(productSlug) ? 200 : NEW_ACCOUNT_SURCHARGES[service];
   if (!surcharge || (productSlug !== service && !productSlug.startsWith(`${service}-`)) ||
       String(currency || "").trim().toUpperCase() !== "RUB") {
     throw new AppError("New account option is not available for this product", 400);

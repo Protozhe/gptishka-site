@@ -15,6 +15,7 @@ function processingRecords() {
   return activationStore
     .list()
     .filter((record) => {
+      if (record.externalFulfillmentOwner === "gemini-pro-cdk-v1") return false;
       if (record.lastProviderPayload?.cdkWaitRequestedAt && !record.taskId && !record.attempts) return false;
       const status = String(record.status || "").toLowerCase();
       const verification = String(record.verificationState || "").toLowerCase();
@@ -71,6 +72,7 @@ async function runCycle() {
     void ordersService.resumePendingCdkJobs().catch(() => {});
     void ordersService.resumeClaudeZovoJobs().catch(() => {});
     void ordersService.resumeGrokZovoJobs().catch(() => {});
+    void ordersService.resumeGeminiJobs().catch(() => {});
     for (const record of processingRecords()) {
       try {
         await ordersService.getActivationProof(record.orderId, { forceCheck: true });

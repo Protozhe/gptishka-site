@@ -36,6 +36,9 @@ const writes = [], reservations = [], releases = [];
 let available = true, existing = null, fullOrder;
 class AppError extends Error { constructor(message, status) { super(message); this.status = status; } }
 const context = vm.createContext({
+  isGeminiAutomaticProduct: value => /^gemini-pro-(6|12|24)m$/.test(String(value || "")),
+  GEMINI_FULFILLMENT_OWNER: "gemini-pro-cdk-v1",
+
   AppError, console: {info() {}, warn() {}},
   procureSelectedWebsiteKey: async () => null,
   CHATGPT_PLUS_PRODUCT_KEY: "chatgpt-plus-1",

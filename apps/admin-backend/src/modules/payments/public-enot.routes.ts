@@ -50,7 +50,9 @@ publicEnotRouter.post(
     }
 
     const publicOrigin = resolvePublicOrigin(req) || `${req.protocol}://${req.get("host")}`;
-    const activationPath = created.deliveryType === "vpn"
+    const activationPath = /^gemini-pro-(6|12|24)m$/.test(String(created.productSlug || ""))
+      ? "/gemini-activation.html"
+      : created.deliveryType === "vpn"
       ? "/store/vpn/activate"
       : /^midjourney-(basic|standard|pro)-1$/.test(String(created.productSlug || ""))
         ? "/midjourney-link.html"

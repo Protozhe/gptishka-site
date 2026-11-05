@@ -1,0 +1,64 @@
+/* Keep the Gemini constructor layout and match its controls to the product artwork. */
+[data-service-page="gemini"] [data-gemini-new-account] {
+  --account-accent: #a7b9ff;
+}
+
+html body#storefrontBody main.service-page[data-service-page="gemini"] .service-filter-chip:not(:disabled):hover,
+html body#storefrontBody main.service-page[data-service-page="gemini"] .service-filter-chip:not(:disabled):focus-visible {
+  background: #303e63 !important;
+  border-color: #809cf6 !important;
+  color: #f1f4ff !important;
+  box-shadow: none !important;
+}
+
+html body#storefrontBody main.service-page[data-service-page="gemini"] .service-filter-chip.is-active:not(:disabled) {
+  background: #a7b9ff !important;
+  border-color: #a7b9ff !important;
+  color: #151d35 !important;
+  box-shadow: none !important;
+}
+
+html body#storefrontBody main.service-page[data-service-page="gemini"] .service-filter-chip.is-active:not(:disabled):hover {
+  background: #c0cbff !important;
+  border-color: #c0cbff !important;
+}
+
+html body#storefrontBody main.service-page[data-service-page="gemini"] .service-checkout-card .buy-btn:not(:disabled) {
+  background: #a7b9ff !important;
+  border-color: #a7b9ff !important;
+  color: #151d35 !important;
+  box-shadow: none !important;
+}
+
+html body#storefrontBody main.service-page[data-service-page="gemini"] .service-checkout-card .buy-btn:not(:disabled):is(:hover, :focus-visible) {
+  background: #c0cbff !important;
+  border-color: #c0cbff !important;
+}
+
+html body#storefrontBody main.service-page[data-service-page="gemini"] .service-checkout-card .buy-btn:disabled {
+  background: #2b3344 !important;
+  border-color: #434c63 !important;
+  color: #c0c9dd !important;
+  box-shadow: none !important;
+}
+
+html body#storefrontBody main.service-page[data-service-page="gemini"] .service-checkout-card .buy-btn::before,
+html body#storefrontBody main.service-page[data-service-page="gemini"] .service-checkout-card .buy-btn::after {
+  display: none !important;
+}
+
+html body#storefrontBody main.service-page[data-service-page="gemini"] :is(.service-filter-chip, .buy-btn):focus-visible {
+  outline: 2px solid #c0cbff;
+  outline-offset: 3px;
+}
+
+[data-service-page="gemini"] [hidden] { display: none !important; }
+[data-service-page="gemini"] .service-new-account { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 16px; }
+[data-service-page="gemini"] .service-new-account input { width: 18px; height: 18px; margin: 0; accent-color: #a7b9ff; }
+[data-service-page="gemini"] .service-new-account__price { margin-left: auto; white-space: nowrap; }
+[data-service-page="gemini"] [data-gemini-new-account] { padding-top: 14px; }
+[data-service-page="gemini"] [data-service-account-note] { margin: 8px 0 0; color: #abb6c3; font-size: 14px; }
+
+[data-service-page="gemini"] .service-constructor-head { margin-bottom: 8px !important; }
+[data-service-page="gemini"] .service-filter-stack { margin-top: 8px !important; }
+[data-service-page="gemini"] [data-gemini-new-account] { margin-top: 12px !important; padding-top: 12px; }

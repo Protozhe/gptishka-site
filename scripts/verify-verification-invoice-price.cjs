@@ -44,6 +44,7 @@ async function verify(slug, base, staleVariant, expected, paymentMethod, card = 
   const context = vm.createContext({prisma, Math, Number, String, Date, Prisma: {JsonNull: null}, OrderStatus: statuses, PaymentStatus: statuses,
     AppError: class AppError extends Error {}, console: {info() {}, warn() {}},
     isVerificationSupportProduct, appStoreCard, canonicalProductKey: value => value,
+    isGeminiAutomaticProduct: value => /^gemini-pro-(6|12|24)m$/.test(String(value || "")),
     resolveActivationVariant, resolveProductDeliveryType: () => 'activation',
     resolveNewAccountSurcharge: () => 0, isDevinProductSlug: () => false,
     normalizeOrderSource: () => 'site', ORDER_SOURCE_TELEGRAM: 'telegram',

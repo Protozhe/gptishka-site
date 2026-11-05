@@ -253,6 +253,8 @@ publicPaymentsRouter.post(
     const publicOrigin = resolvePublicOrigin(req) || `${req.protocol}://${req.get("host")}`;
     const activationPath = ["claude-kyc-support", "claude-cvp-support", "claude-kyc", "claude-cvp"].includes(String(created.productSlug || ""))
       ? "/verification-support.html"
+      : /^gemini-pro-(6|12|24)m$/.test(String(created.productSlug || ""))
+      ? "/gemini-activation.html"
       : Boolean(orderDetails && typeof orderDetails === "object" && !Array.isArray(orderDetails) &&
       (orderDetails as Record<string, any>).selection?.needsNewAccount === true &&
       /^\s*(chatgpt|claude)-/i.test(String(created.productSlug || "")))

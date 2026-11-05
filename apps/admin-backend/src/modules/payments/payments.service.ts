@@ -14,6 +14,7 @@ import { resolveProductDeliveryType } from "../../common/utils/product-delivery"
 import { resolveActivationVariant } from "../../common/utils/product-activation-variants";
 import { canonicalProductKey } from "../../common/utils/product-key";
 import { appStoreCard } from "../../common/utils/app-store-card";
+import { GEMINI_ACTIVATION_SITE, isGeminiAutomaticProduct } from "../../common/utils/gemini-product";
 import { encryptManualLoginCredentials, ManualLoginCredentials } from "../../common/security/manual-login-credentials";
 import { isDevinProductSlug } from "../orders/devin-payment-link";
 import { isVerificationSupportProduct } from "../orders/verification-support";
@@ -216,7 +217,15 @@ export const paymentsService = {
       rawOrderDetails?.selection?.needsNewAccount
     );
     const needsNewAccount = newAccountSurcharge > 0;
+    if (isGeminiAutomaticProduct(product.slug) && !needsNewAccount) {
+      const available = await prisma.licenseKey.count({ where: {
+        productKey: product.slug, activationSiteUrl: GEMINI_ACTIVATION_SITE,
+        status: "available", orderId: null, usedAt: null, reservedAt: null,
+      } });
+      if (!available) throw new AppError("Gemini activation keys are being replenished. Please contact support before payment.", 409);
+    }
     const quantity = Math.max(1, input.quantity);
+    if (isGeminiAutomaticProduct(product.slug) && quantity !== 1) throw new AppError("Order one Gemini subscription at a time", 422);
     if (appStoreCard(product) && (quantity !== 1 || selectedVariant.deliveryType !== "code")) {
       throw new AppError("Order one App Store card at a time with code delivery", 422);
     }
@@ -241,6 +250,8 @@ export const paymentsService = {
     }
     const protectedAccount = needsNewAccount
       ? { status: "new_account" }
+      : isGeminiAutomaticProduct(product.slug)
+      ? { status: "has_account" }
       : isDevinCredentialsFlow
       ? {
           ...(rawOrderDetails?.account && typeof rawOrderDetails.account === "object" ? rawOrderDetails.account : {}),
@@ -397,6 +408,7 @@ export const paymentsService = {
       metadata: {
         productId: product.id,
         ...(appStoreCard(product) && selectedVariant.deliveryType === "code" ? { appStoreCard: true, language: rawOrderDetails?.language === "en" ? "en" : "ru" } : {}),
+        ...(isGeminiAutomaticProduct(product.slug) ? { geminiActivation: true, needsNewAccount, language: rawOrderDetails?.language === "en" ? "en" : "ru" } : {}),
         ...(["claude-kyc-support", "claude-cvp-support", "claude-kyc", "claude-cvp"].includes(product.slug) ? { verificationSupport: true, language: rawOrderDetails?.language === "en" ? "en" : "ru" } : {}),
         planId: product.id,
         quantity: input.quantity,

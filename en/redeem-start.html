@@ -1480,7 +1480,7 @@
     <span class="footer-copy">© 2026 GPTishka. All rights reserved, copying prohibited.</span>
   </footer>
 
-  <script src="/assets/js/app.min.js?v=sha256-ec9c4ceba1479afe" defer></script>
+  <script src="/assets/js/app.min.js?v=sha256-cb02def0b13f8de3" defer></script>
   <script>
     (() => {
     const params = new URLSearchParams(window.location.search);
@@ -2161,6 +2161,13 @@
     }
 
     function applyActivationPayloadMode(payload, deliveryMode) {
+      if (payload?.activationFlow === 'gemini_account' || /^gemini-pro-(6|12|24)m$/.test(String(payload?.productSlug || payload?.product || ''))) {
+        const target = new URL(location.pathname.startsWith('/en/') ? '/en/gemini-activation.html' : '/gemini-activation.html', location.origin);
+        target.search = location.search;
+        location.replace(target.href);
+        return;
+      }
+
       const activationFlow = resolveSupportActivationFlow(payload);
       const forcedSupportFlow = resolveForcedSupportActivationFlow(payload);
       const productKey = getActivationProductFingerprint(payload);

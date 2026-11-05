@@ -1,4 +1,4 @@
-export type AichongzhiProduct = "grok" | "claude";
+export type AichongzhiProduct = "grok" | "claude" | "gemini";
 
 export function resolveAichongzhiProduct(productKey?: string | null): AichongzhiProduct | null {
   const key = String(productKey || "").trim().toLowerCase();
