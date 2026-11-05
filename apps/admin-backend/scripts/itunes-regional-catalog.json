@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "priceCurrency": "RUB",
+  "quotedAt": "2026-11-05",
+  "sourceCatalog": "https://ggsel.net/catalog/itunes-ru",
+  "pricingNote": "Exact displayed RUB quotes of the selected GGsel seller at the chosen denomination are preserved as sourcePrice. Retail prices include a fixed 100 RUB surcharge per card; no currency conversion.",
+  "regions": [
+    {
+      "region": "ru",
+      "name": "Россия",
+      "nameEn": "Russia",
+      "currency": "RUB",
+      "unit": "₽",
+      "seller": "All for Gamers",
+      "sourceUrl": "https://ggsel.net/catalog/product/podarocnaia-karta-apple-itunes-500-8000-rub-rossiia-podarok-103200324",
+      "items": [
+        {
+          "denomination": 500,
+          "price": 728,
+          "sourcePrice": 628
+        },
+        {
+          "denomination": 1000,
+          "price": 1599,
+          "sourcePrice": 1499
+        },
+        {
+          "denomination": 1500,
+          "price": 2349,
+          "sourcePrice": 2249
+        },
+        {
+          "denomination": 2000,
+          "price": 3099,
+          "sourcePrice": 2999
+        },
+        {
+          "denomination": 3000,
+          "price": 4599,
+          "sourcePrice": 4499
+        },
+        {
+          "denomination": 5000,
+          "price": 7699,
+          "sourcePrice": 7599
+        }
+      ]
+    },
+    {
+      "region": "us",
+      "name": "США",
+      "nameEn": "USA",
+      "currency": "USD",
+      "unit": "$",
+      "seller": "nbshop",
+      "sourceUrl": "https://ggsel.net/catalog/product/podarocnaia-karta-apple-itunes-2-100-usd-usa-ssa-5294527",
+      "items": [
+        {
+          "denomination": 2,
+          "price": 289,
+          "sourcePrice": 189
+        },
+        {
+          "denomination": 5,
+          "price": 659,
+          "sourcePrice": 559
+        },
+        {
+          "denomination": 10,
+          "price": 1179,
+          "sourcePrice": 1079
+        },
+        {
+          "denomination": 15,
+          "price": 1849,
+          "sourcePrice": 1749
+        },
+        {
+          "denomination": 30,
+          "price": 3699,
+          "sourcePrice": 3599
+        },
+        {
+          "denomination": 50,
+          "price": 5909,
+          "sourcePrice": 5809
+        }
+      ]
+    },
+    {
+      "region": "tr",
+      "name": "Турция",
+      "nameEn": "Turkey",
+      "currency": "TRY",
+      "unit": "₺",
+      "seller": "All for Gamers",
+      "sourceUrl": "https://ggsel.net/catalog/product/podarocnaia-karta-apple-itunes-10-4000-tl-turciia-podarok-5211965",
+      "items": [
+        {
+          "denomination": 100,
+          "price": 354,
+          "sourcePrice": 254
+        },
+        {
+          "denomination": 250,
+          "price": 754,
+          "sourcePrice": 654
+        },
+        {
+          "denomination": 500,
+          "price": 1328,
+          "sourcePrice": 1228
+        },
+        {
+          "denomination": 1000,
+          "price": 2848,
+          "sourcePrice": 2748
+        },
+        {
+          "denomination": 1500,
+          "price": 4048,
+          "sourcePrice": 3948
+        },
+        {
+          "denomination": 2000,
+          "price": 5148,
+          "sourcePrice": 5048
+        }
+      ]
+    },
+    {
+      "region": "in",
+      "name": "Индия",
+      "nameEn": "India",
+      "currency": "INR",
+      "unit": "₹",
+      "seller": "nbshop",
+      "sourceUrl": "https://ggsel.net/catalog/product/podarocnaia-karta-apple-itunes-appstore-indiia-100-10000-inr-5424244",
+      "items": [
+        {
+          "denomination": 100,
+          "price": 189,
+          "sourcePrice": 89
+        },
+        {
+          "denomination": 200,
+          "price": 319,
+          "sourcePrice": 219
+        },
+        {
+          "denomination": 500,
+          "price": 649,
+          "sourcePrice": 549
+        },
+        {
+          "denomination": 1000,
+          "price": 1199,
+          "sourcePrice": 1099
+        },
+        {
+          "denomination": 2000,
+          "price": 2279,
+          "sourcePrice": 2179
+        },
+        {
+          "denomination": 5000,
+          "price": 5559,
+          "sourcePrice": 5459
+        }
+      ]
+    },
+    {
+      "region": "ae",
+      "name": "ОАЭ",
+      "nameEn": "UAE",
+      "currency": "AED",
+      "unit": "AED",
+      "seller": "ClickToPay",
+      "sourceUrl": "https://ggsel.net/catalog/product/24-7-50-aed-300-aed-oae-apple-gift-card-103241224",
+      "items": [
+        {
+          "denomination": 50,
+          "price": 1372,
+          "sourcePrice": 1272
+        },
+        {
+          "denomination": 100,
+          "price": 2699,
+          "sourcePrice": 2599
+        },
+        {
+          "denomination": 150,
+          "price": 3966,
+          "sourcePrice": 3866
+        },
+        {
+          "denomination": 200,
+          "price": 5234,
+          "sourcePrice": 5134
+        },
+        {
+          "denomination": 250,
+          "price": 6501,
+          "sourcePrice": 6401
+        },
+        {
+          "denomination": 300,
+          "price": 7768,
+          "sourcePrice": 7668
+        }
+      ]
+    }
+  ],
+  "retailSurchargeRub": 100
+}

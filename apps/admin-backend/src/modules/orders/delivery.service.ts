@@ -12,6 +12,7 @@ import { sendDirectCodeTelegram } from "./direct-code-notifications.service";
 import { isMidjourneyProductSlug } from "./midjourney-payment-link";
 import { isSunoPaymentLinkOrder } from "./suno-payment-link";
 import { resolveExternalCodexOwner } from "./external-codex";
+import { appStoreCard } from "../../common/utils/app-store-card";
 
 const CHATGPT_PLUS_PRODUCT_KEY = "chatgpt-plus-1";
 const CHATGPT_PLUS_IOS_SITE_URL = "https://vip.sxzfd.com";
@@ -55,6 +56,9 @@ export async function deliverProduct(order: Order) {
   const product = firstItem?.product || null;
   const deliveryType = resolveOrderDeliveryType(fullOrder.orderDetails, product?.tags || []);
   const vpnProvision = resolveVpnProvisionPayload(product);
+
+  // The operator binds the exact card to this paid order; never take a random stock key.
+  if (deliveryType === "code" && appStoreCard(product)) return;
 
   async function ensureBundleVpnAccess() {
     if (!vpnProvision || vpnProvision.source !== "bundle") return;

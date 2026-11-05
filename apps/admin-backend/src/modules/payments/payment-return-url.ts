@@ -34,6 +34,8 @@ export function buildPaymentReturnUrls(input: PaymentCreateInput) {
   const successUrl = new URL(env.PAYMENT_SUCCESS_URL);
   if (input.metadata?.verificationSupport === true) {
     successUrl.pathname = input.metadata?.language === "en" ? "/en/verification-support.html" : "/verification-support.html";
+  } else if (input.metadata?.appStoreCard === true) {
+    successUrl.pathname = input.metadata?.language === "en" ? "/en/itunes.html" : "/itunes.html";
   }
   successUrl.searchParams.set("order_id", input.orderId);
   const failUrl = new URL(env.PAYMENT_FAIL_URL);

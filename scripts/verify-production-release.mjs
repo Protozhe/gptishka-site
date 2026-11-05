@@ -13,6 +13,7 @@ const checks = [
   "scripts/verify-external-codex-routing.mjs",
   "scripts/verify-codex-manual-suppliers.mjs",
   "scripts/verify-checkout-language.cjs",
+  "scripts/verify-app-store-delivery.cjs",
   "scripts/verify-claude-plan-links.mjs",
   "scripts/verify-activation-confidentiality.mjs",
   "scripts/verify-pally-settlement.mjs",

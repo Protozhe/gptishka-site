@@ -1,7 +1,7 @@
 ﻿import { Fragment, FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
-import { ActivationInventory, activationPoolLabel, CdkStockBreakdown, matchesActivationStockFilter } from "../components/CdkStockBreakdown";
+import { ActivationInventory, activationPoolLabel, CdkStockBreakdown, matchesActivationStockFilter, parseAppStorePoolKey } from "../components/CdkStockBreakdown";
 import {
   compareProductsByFamilyAndDuration,
   getProductDurationLabel,
@@ -33,7 +33,23 @@ type ProductItem = {
 
 type ProductListResponse = {
   items: ProductItem[];
+  totalPages: number;
 };
+
+const APP_STORE_REGIONS = [
+  { code: "ru", name: "Россия", unit: "₽" },
+  { code: "us", name: "США", unit: "$" },
+  { code: "tr", name: "Турция", unit: "₺" },
+  { code: "in", name: "Индия", unit: "₹" },
+  { code: "ae", name: "ОАЭ", unit: "AED" },
+] as const;
+
+function appStoreCard(product: ProductItem) {
+  const card = parseAppStorePoolKey(product.slug);
+  if (!card || resolveDeliveryType(product) !== "code") return null;
+  const region = APP_STORE_REGIONS.find((item) => item.code === card.region);
+  return region ? { region, amount: card.amount } : null;
+}
 
 type CdkRow = {
   id: string;
@@ -528,9 +544,11 @@ function KeyProductColumn({
   const isCodexSupplierPool = !isSupportMode && isDualSupplierCodexPool(productKey);
   const isGrokAisouPool = !isSupportMode && /^grok-(plus|premium|super|ultra)-1$/.test(productKey);
   const isGeminiActivationLinkPool = !isSupportMode && productKey === "gemini-pro-18";
+  const isAppStoreCodePool = !isSupportMode && Boolean(appStoreCard(product));
   const keyColumnLabel = isGeminiActivationLinkPool ? "Ссылка активации" : isSupportMode ? "SDK" : "CDK";
   const modeLabel = isGeminiActivationLinkPool
     ? "Ссылки активации Google · одна уникальная ссылка на один оплаченный заказ"
+    : isAppStoreCodePool ? "Подарочные коды App Store для выбранного региона и номинала"
     : isSupportMode
       ? (isClaudeMode ? TEXT.modeSupportClaude : TEXT.modeSupport)
       : TEXT.modeActivation;
@@ -617,7 +635,7 @@ function KeyProductColumn({
         await api.post("/cdks/import", {
           productKey,
           supplier: isCodexSupplierPool ? codexSupplier : undefined,
-          activationSiteUrl: isSupportMode || isGeminiActivationLinkPool ? "" : selectedActivationSiteUrl,
+          activationSiteUrl: isSupportMode || isGeminiActivationLinkPool || isAppStoreCodePool ? "" : selectedActivationSiteUrl,
           text,
         })
       ).data as CdkImportResult,
@@ -700,7 +718,7 @@ function KeyProductColumn({
       setError(fillErrorMessage);
       return;
     }
-    if (!isSupportMode && !isGeminiActivationLinkPool && !selectedActivationSiteUrl.trim()) {
+    if (!isSupportMode && !isGeminiActivationLinkPool && !isAppStoreCodePool && !selectedActivationSiteUrl.trim()) {
       setError(isCodexSupplierPool ? "Выберите поставщика ключей: AI-BUY или AISOU" : TEXT.fillActivationSite);
       return;
     }
@@ -756,7 +774,7 @@ function KeyProductColumn({
         </div>
       </div>
 
-      <CdkStockBreakdown productKey={productKey} inventory={activationInventory} expectedSite={isSupportMode || isGeminiActivationLinkPool ? "" : defaultActivationSiteUrl} />
+      <CdkStockBreakdown productKey={productKey} inventory={activationInventory} expectedSite={isSupportMode || isGeminiActivationLinkPool || isAppStoreCodePool ? "" : defaultActivationSiteUrl} />
 
       <form onSubmit={onImport} className="space-y-2">
         {isChatGptPlusDualPool ? (
@@ -795,7 +813,7 @@ function KeyProductColumn({
             <p className="mt-1 text-xs">Добавляйте CDK только этого тарифа на 1 месяц — по одному в строке. Сайт активации закреплён автоматически. Перед отправкой система проверит тариф ключа у поставщика.</p>
             <p className="mt-1 text-xs">Клиент передаёт sso на странице активации. Если CDK закончились, данные сохраняются; после пополнения обработка продолжится автоматически.</p>
           </div>
-        ) : !isSupportMode && !isGeminiActivationLinkPool ? (
+        ) : !isSupportMode && !isGeminiActivationLinkPool && !isAppStoreCodePool ? (
           <label className="grid gap-1">
             <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
               Сайт активации для этой партии CDK
@@ -1130,6 +1148,7 @@ function ProductsTable({
   activationInventory,
   resolvePoolKey = inventoryPoolKey,
   showDurationEditor = true,
+  showDenomination = false,
   title = TEXT.products,
   hint = "Остатки по каждому каналу активации. Нажмите на товар, чтобы добавить или посмотреть ключи.",
 }: {
@@ -1141,6 +1160,7 @@ function ProductsTable({
   activationInventory?: ActivationInventory;
   resolvePoolKey?: (product: ProductItem) => string | null;
   showDurationEditor?: boolean;
+  showDenomination?: boolean;
   title?: string;
   hint?: string;
 }) {
@@ -1155,7 +1175,7 @@ function ProductsTable({
           <thead>
             <tr>
               <th className="px-4 py-3">Товар</th>
-              <th className="px-4 py-3">Срок</th>
+              {showDenomination ? <th className="px-4 py-3">Номинал</th> : <th className="px-4 py-3">Срок</th>}
               <th className="px-4 py-3">Способ активации / остаток</th>
               <th className="px-4 py-3 cdk-total-heading">Свободные ключи</th>
               <th className="px-4 py-3 text-right">Действие</th>
@@ -1167,6 +1187,8 @@ function ProductsTable({
               const title = cleanProductTitle(product.title) || product.title;
               const poolKey = resolvePoolKey(product);
               const unusedCount = poolKey && unusedByPool ? unusedByPool[poolKey]?.unused ?? 0 : null;
+              const card = showDenomination ? appStoreCard(product) : null;
+              const term = card ? `${card.amount.toLocaleString("ru-RU")} ${card.region.unit}` : getProductDurationLabel(product);
 
               return (
                 <Fragment key={product.id}>
@@ -1176,10 +1198,10 @@ function ProductsTable({
                   >
                     <td className="cdk-product-cell">
                       <div className="cdk-product-title">{title}</div>
-                      <div className="cdk-product-mobile-duration">{getProductDurationLabel(product)}</div>
+                      <div className="cdk-product-mobile-duration">{term}</div>
                     </td>
                     <td className="cdk-duration-cell">
-                      {getProductDurationLabel(product) || <span className="text-slate-400">—</span>}
+                      {term || <span className="text-slate-400">—</span>}
                     </td>
                     <td className="cdk-channel-cell">
                       {poolKey ? <CdkStockBreakdown compact productKey={poolKey} inventory={activationInventory} expectedSite={resolveDeliveryType(product) === "activation" || resolveDeliveryType(product) === "code" ? product.activationVariants?.withoutLogin?.activationSiteUrl : ""} /> : <span className="cdk-stock-muted">{resolveDeliveryType(product) === "vpn" ? "Автоматическая выдача VPN" : "Готовые цифровые доступы"}</span>}
@@ -1305,18 +1327,14 @@ export default function CdkKeysPage() {
 
   const productsQuery = useQuery<ProductListResponse>({
     queryKey: ["products", "cdk-page"],
-    queryFn: async () =>
-      (
-        await api.get("/products", {
-          params: {
-            page: 1,
-            limit: 100,
-            isArchived: false,
-            sortBy: "title",
-            sortDir: "asc",
-          },
-        })
-      ).data,
+    queryFn: async () => {
+      const loadPage = async (page: number) => (await api.get<ProductListResponse>("/products", {
+        params: { page, limit: 100, isArchived: false, sortBy: "title", sortDir: "asc" },
+      })).data;
+      const first = await loadPage(1);
+      const pages = await Promise.all(Array.from({ length: Math.max(0, first.totalPages - 1) }, (_, index) => loadPage(index + 2)));
+      return { ...first, items: [first, ...pages].flatMap((page) => page.items) };
+    },
   });
 
   const poolStatsQuery = useQuery<CdkInventoryResponse>({
@@ -1438,6 +1456,16 @@ export default function CdkKeysPage() {
   const searchedProducts = sortedProducts.filter(matchesSearch);
   // Keep the open form mounted when a filter or refreshed stock would hide its row.
   const filteredProducts = sortedProducts.filter(product => (matchesSearch(product) && matchesStock(product, stockFilter)) || product.id === selectedProductId);
+  const otherProducts = filteredProducts.filter(product => !appStoreCard(product));
+  const appStoreGroups = APP_STORE_REGIONS.map(region => {
+    const cards = filteredProducts.filter(product => appStoreCard(product)?.region.code === region.code);
+    if (sortMode === "product-duration") cards.sort((a, b) => appStoreCard(a)!.amount - appStoreCard(b)!.amount);
+    return { ...region, products: cards };
+  });
+  const renderProductDetails = (product: ProductItem) => <div className="cdk-product-workspace">
+    <label className="cdk-key-search">Найти ключ в открытом товаре<input className="input" value={q} onChange={e => setQ(e.target.value)} placeholder={TEXT.searchPlaceholder} /></label>
+    <ProductColumn key={product.id} product={product} search={q} activationInventory={activationInventory} />
+  </div>;
   const openOutsideFilter = activeProduct && (!matchesSearch(activeProduct) || !matchesStock(activeProduct, stockFilter));
   const filterOptions: Array<{ id: StockFilter; label: string }> = [
     { id: "all", label: "Все товары" }, { id: "low", label: "Мало ключей" }, { id: "empty", label: "Пустые каналы" },
@@ -1490,18 +1518,40 @@ export default function CdkKeysPage() {
 
       {!productsQuery.isLoading && !products.length ? <div className="card p-4 text-sm text-rose-600">{TEXT.noProducts}</div> : null}
 
-      {filteredProducts.length ? (
+      {otherProducts.length ? (
         <ProductsTable
-          products={filteredProducts}
+          products={otherProducts}
           activeProductId={activeProduct?.id}
           onSelect={toggleSelectedProduct}
           unusedByPool={unusedByPool}
           activationInventory={activationInventory}
-          renderDetails={(product) => <div className="cdk-product-workspace">
-            <label className="cdk-key-search">Найти ключ в открытом товаре<input className="input" value={q} onChange={e => setQ(e.target.value)} placeholder={TEXT.searchPlaceholder} /></label>
-            <ProductColumn key={product.id} product={product} search={q} activationInventory={activationInventory} />
-          </div>}
+          renderDetails={renderProductDetails}
         />
+      ) : null}
+      {!productsQuery.isLoading && (stockFilter === "all" && !productSearch.trim() || appStoreGroups.some(group => group.products.length)) ? (
+        <section className="cdk-inventory-section" aria-label="Подарочные карты App Store">
+          <div className="cdk-section-heading">
+            <h3 className="text-base font-semibold">App Store</h3>
+            <p className="mt-1 text-xs text-slate-500">Подарочные коды по регионам и номиналам.</p>
+          </div>
+          {appStoreGroups.filter(group => group.products.length || stockFilter === "all" && !productSearch.trim()).map(group => (
+            <details className="cdk-apple-region" key={group.code} open={group.products.some(product => product.id === selectedProductId) || Boolean(productSearch.trim()) || undefined}>
+              <summary>{group.name} · {group.products.length}</summary>
+              {group.products.length ? <ProductsTable
+                title={group.name}
+                hint="Выберите номинал для загрузки кодов."
+                products={group.products}
+                activeProductId={activeProduct?.id}
+                onSelect={toggleSelectedProduct}
+                unusedByPool={unusedByPool}
+                activationInventory={activationInventory}
+                showDurationEditor={false}
+                showDenomination
+                renderDetails={renderProductDetails}
+              /> : <p className="px-4 py-3 text-sm text-slate-500">Номиналов пока нет.</p>}
+            </details>
+          ))}
+        </section>
       ) : null}
       {!productsQuery.isLoading && products.length > 0 && !filteredProducts.length ? <div className="cdk-empty-filter"><strong>По этому фильтру товаров нет</strong><p>Измените поиск или покажите весь список.</p><button type="button" onClick={() => { setProductSearch(""); setStockFilter("all"); }}>Показать все товары</button></div> : null}
 

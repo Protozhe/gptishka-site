@@ -10,6 +10,7 @@ import {
   revokeOrderActivationLink,
   getOrderActivationToken,
   getOrder,
+  issueAppStoreCode,
   getOrderManualLoginCredentials,
   listOrders,
   manuallyCompleteOrderActivation,
@@ -21,6 +22,7 @@ import {
 } from "./orders.controller";
 import {
   adminStartActivationSchema,
+  issueAppStoreCodeSchema,
   createOrderSchema,
   manualConfirmSchema,
   ordersQuerySchema,
@@ -56,6 +58,7 @@ ordersRouter.post(
   startOrderActivationFromAdmin
 );
 ordersRouter.get("/:id", allowRoles(["OWNER", "ADMIN", "MANAGER"]), getOrder);
+ordersRouter.post("/:id/app-store-code", allowRoles(["OWNER", "ADMIN"]), validateBody(issueAppStoreCodeSchema), issueAppStoreCode);
 ordersRouter.patch("/:id/status", allowRoles(["OWNER", "ADMIN", "MANAGER"]), validateBody(updateOrderStatusSchema), updateOrderStatus);
 ordersRouter.post("/:id/manual-confirm", allowRoles(["OWNER", "ADMIN"]), validateBody(manualConfirmSchema), manualConfirmOrder);
 ordersRouter.post("/:id/refund", allowRoles(["OWNER", "ADMIN"]), refundOrder);

@@ -88,6 +88,8 @@
 .cdk-technical-details>p {margin:4px 0 10px;overflow-wrap:anywhere}
 .cdk-legacy-pools,.cdk-method-help {margin-top:20px;font-size:12px;color:var(--cdk-muted)}
 .cdk-legacy-pools>summary {font-size:13px}
+.cdk-apple-region > summary {cursor:pointer;font-size:13px;font-weight:650;padding:12px 22px}
+.cdk-apple-region + .cdk-apple-region {border-top:1px solid var(--cdk-line)}
 .cdk-method-help {border-top:1px solid var(--cdk-line);padding-top:8px}
 .cdk-method-help p {line-height:1.8;max-width:900px}
 .cdk-empty-filter {padding:55px 20px;text-align:center;border:1px dashed var(--cdk-line);border-radius:12px;background:var(--cdk-surface)}

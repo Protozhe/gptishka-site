@@ -7,6 +7,7 @@ import { env } from "../../config/env";
 import { prisma } from "../../config/prisma";
 import { writeAuditLog } from "../audit/audit.service";
 import { isVerificationSupportProduct } from "./verification-support";
+import { appStoreCard } from "../../common/utils/app-store-card";
 
 type RecoveryLinkActor = {
   userId?: string;
@@ -63,7 +64,9 @@ export async function buildOrderActivationRecoveryLink(
   const language = (order.orderDetails as any)?.language === "en" ? "en" : "ru";
   const path = verificationSupport
     ? `${language === "en" ? "/en" : ""}/verification-support.html`
-    : deliveryType === "vpn" ? "/store/vpn/activate" : "/redeem-start.html";
+    : deliveryType === "code" && appStoreCard(firstItem?.product)
+      ? `${language === "en" ? "/en" : ""}/itunes.html`
+      : deliveryType === "vpn" ? "/store/vpn/activate" : "/redeem-start.html";
   const url = new URL(path, resolveSiteOrigin());
   url.searchParams.set("order_id", order.id);
   if (recoveryToken) url.searchParams.set("t", recoveryToken);

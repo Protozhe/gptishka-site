@@ -38,6 +38,7 @@ assert.equal(recovery.isActivationRecoveryTokenValid(order.id, hash, "r1." + old
 // Normal recovery initializes a formerly unprotected legacy order. Revocation
 // rotates the hash and makes every previous token fail while a new link works.
 let row = { ...order, status: "PAID", redeemTokenHash: null, items: [] }; let audit;
+let fixtureDeliveryType = "activation";
 const prisma = { order: {
   findUnique: async () => ({ ...row }),
   updateMany: async query => { assert.equal(query.where.redeemTokenHash, row.redeemTokenHash); row = { ...row, ...query.data }; return { count: 1 }; },
@@ -45,7 +46,8 @@ const prisma = { order: {
 const { buildOrderActivationRecoveryLink } = load("modules/orders/activation-recovery.service.ts", {
   "@prisma/client": { OrderStatus: { PAID: "PAID" } }, "../../common/errors/app-error": { AppError },
   "../../common/security/activation-recovery-token": recovery,
-  "../../common/utils/product-delivery": { resolveOrderDeliveryType: () => "activation" },
+  "../../common/utils/product-delivery": { resolveOrderDeliveryType: () => fixtureDeliveryType },
+  "../../common/utils/app-store-card": load("common/utils/app-store-card.ts", {}),
   "../../config/env": { env: { APP_BASE_URL: "https://fixture.invalid" } }, "../../config/prisma": { prisma },
   "../audit/audit.service": { writeAuditLog: async value => { audit = value; } },
   "./verification-support": load("modules/orders/verification-support.ts", {}, { URL }),
@@ -67,6 +69,17 @@ for (const slug of ['claude-kyc', 'claude-cvp', 'claude-kyc-support', 'claude-cv
     assertOrderLinkAccess(row, url.searchParams.get('t'));
   }
 }
+for (const slug of ["itunes-ru-500", "itunes-app-store-5", "itunes-tr-100", "itunes-in-100", "itunes-ae-50"]) {
+  for (const language of ["ru", "en"]) {
+    fixtureDeliveryType = "code";
+    row = { ...row, orderDetails: { language }, items: [{ product: { slug, tags: ["itunes", "delivery:code"] } }] };
+    const result = await buildOrderActivationRecoveryLink(row.id);
+    const url = new URL(result.activationUrl);
+    assert.equal(url.pathname, `${language === "en" ? "/en" : ""}/itunes.html`);
+    assertOrderLinkAccess(row, url.searchParams.get("t"));
+  }
+}
+fixtureDeliveryType = "activation";
 row = { ...row, orderDetails: {}, items: [] };
 
 // Execute status/reconcile methods to prove authorization precedes payment

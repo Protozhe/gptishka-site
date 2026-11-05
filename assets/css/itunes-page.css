@@ -280,6 +280,28 @@ html body.itunes-page-body .service-page--itunes .service-filter-stack--construc
   letter-spacing: 0.02em;
 }
 
+.service-page--itunes [data-itunes-us-guide][hidden] {
+  display: none !important;
+}
+
+html body.itunes-page-body .service-page--itunes [data-itunes-regions] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 540px) {
+  html body.itunes-page-body .service-page--itunes [data-itunes-regions] {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  html body.itunes-page-body .service-page--itunes [data-itunes-regions] .service-filter-chip {
+    min-width: 0;
+    padding-inline: 6px;
+  }
+}
+
 .service-page--itunes [data-itunes-denominations] {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1074,6 +1096,55 @@ body.is-itunes-modal-open {
 .itunes-delivery-card__guide:hover {
   color: #0a84ff;
 }
+
+.itunes-delivery-card[data-state="processing"] .itunes-delivery-card__icon,
+.itunes-delivery-card[data-state="checking"] .itunes-delivery-card__icon {
+  background: transparent;
+  box-shadow: none;
+}
+.itunes-delivery-card[data-state="processing"] .itunes-delivery-card__icon::after,
+.itunes-delivery-card[data-state="checking"] .itunes-delivery-card__icon::after {
+  content: "";
+  width: 28px;
+  height: 28px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: itunes-processing 1s linear infinite;
+}
+.itunes-delivery-card [hidden] { display: none !important; }
+@keyframes itunes-processing { to { transform: rotate(360deg); } }
+
+/* Paid gift-card delivery stays compact and uses the storefront's dark palette. */
+#itunesOrderModal:has(#itunesDeliveryResult:not([hidden])) .itunes-order-modal__dialog {
+  display: block !important;
+  width: min(560px, calc(100vw - 28px)) !important;
+  height: auto !important;
+  max-width: 560px !important;
+  max-height: calc(100dvh - 28px) !important;
+  border: 1px solid #414a52 !important;
+  border-radius: 20px !important;
+  background: #242b31 !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+}
+#itunesOrderModal:has(#itunesDeliveryResult:not([hidden])) .chatgpt-go-order-modal__content {
+  display: block !important;
+  height: auto !important;
+}
+#itunesOrderModal #itunesDeliveryResult {
+  box-sizing: border-box;
+  padding: 42px 28px;
+  color: #edf2f2 !important;
+  background: #242b31 !important;
+}
+#itunesDeliveryResult h3 { color: #edf2f2 !important; font-size: clamp(25px, 5vw, 30px); line-height: 1.2; letter-spacing: -0.025em; }
+#itunesDeliveryResult .itunes-delivery-card__description { color: #b7c2c9 !important; font-size: 16px; font-weight: 500; }
+#itunesDeliveryResult .itunes-delivery-card__eyebrow { color: #77d4db !important; }
+#itunesDeliveryResult .itunes-delivery-card__icon { color: #77d4db; }
+#itunesDeliveryResult .itunes-delivery-card__code { border: 1px solid #48565f; background: #1b2227; box-shadow: none; }
+#itunesDeliveryResult .itunes-delivery-card__code strong { color: #f1f5f5; }
+#itunesDeliveryResult .itunes-delivery-card__guide { color: #77d4db; }
+#itunesDeliveryResult #itunesDeliveryOrder { font-size: 13px; overflow-wrap: anywhere; }
 
 @media (prefers-reduced-motion: reduce) {
   .service-page--itunes .service-product-gallery__viewport,

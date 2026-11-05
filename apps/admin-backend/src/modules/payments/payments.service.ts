@@ -13,6 +13,7 @@ import crypto from "crypto";
 import { resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { resolveActivationVariant } from "../../common/utils/product-activation-variants";
 import { canonicalProductKey } from "../../common/utils/product-key";
+import { appStoreCard } from "../../common/utils/app-store-card";
 import { encryptManualLoginCredentials, ManualLoginCredentials } from "../../common/security/manual-login-credentials";
 import { isDevinProductSlug } from "../orders/devin-payment-link";
 import { isVerificationSupportProduct } from "../orders/verification-support";
@@ -216,8 +217,11 @@ export const paymentsService = {
     );
     const needsNewAccount = newAccountSurcharge > 0;
     const quantity = Math.max(1, input.quantity);
+    if (appStoreCard(product) && (quantity !== 1 || selectedVariant.deliveryType !== "code")) {
+      throw new AppError("Order one App Store card at a time with code delivery", 422);
+    }
     const unitPrice = selectedVariant.price + newAccountSurcharge;
-    if (!needsNewAccount && selectedVariant.deliveryType === "code") {
+    if (!needsNewAccount && selectedVariant.deliveryType === "code" && !appStoreCard(product)) {
       const productKey = canonicalProductKey(product.slug || product.id);
       const availableCodes = productKey
         ? await prisma.licenseKey.count({ where: { productKey, status: "available" } })
@@ -392,6 +396,7 @@ export const paymentsService = {
       orderData: pallyOrderData,
       metadata: {
         productId: product.id,
+        ...(appStoreCard(product) && selectedVariant.deliveryType === "code" ? { appStoreCard: true, language: rawOrderDetails?.language === "en" ? "en" : "ru" } : {}),
         ...(["claude-kyc-support", "claude-cvp-support", "claude-kyc", "claude-cvp"].includes(product.slug) ? { verificationSupport: true, language: rawOrderDetails?.language === "en" ? "en" : "ru" } : {}),
         planId: product.id,
         quantity: input.quantity,

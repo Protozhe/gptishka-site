@@ -19,6 +19,7 @@ const fixtures = [
   { id: "fixture-done", status: "PAID", paymentStatus: "SUCCESS", activation: { status: "success" } },
   { id: "fixture-pending", status: "PENDING", paymentStatus: "PROCESSING", source: "telegram", botType: "chatgpt", email: "tg_chatgpt_12345678@telegram.local", telegramUsername: "fixture_user" },
   { id: "fixture-refunded", status: "REFUNDED", paymentStatus: "REFUNDED" },
+  { id: "fixture-apple", status: "PAID", paymentStatus: "SUCCESS", appStoreDelivery: { region: "ru", denomination: 500, state: "processing" } },
 ].map(order => ({ createdAt: "2026-10-28T09:00:00Z", source: "site", currency: "RUB", totalAmount: 2290, email: "buyer@example.invalid", paymentMethod: "pally", product: { title: "Тестовый продукт", slug: "fixture-product", quantity: 1, unitPrice: 2290 }, ...order }));
 const requests = [], copied = [];
 let confirm = false, proofDeferred, proofFailure = false;
@@ -45,6 +46,11 @@ const api = {
   },
   post(url, body) {
     requests.push({ method: "POST", url, body });
+    if (url === "/orders/fixture-apple/app-store-code") {
+      assert.equal(body.code, "XDEMO12345678901");
+      fixtures.find(order => order.id === "fixture-apple").appStoreDelivery.state = "delivered";
+      return response({ status: "code_ready" });
+    }
     if (url.endsWith("/activation-link/revoke")) return response({ orderId: url.split("/")[2], activationUrl: "https://example.invalid/reissued", deliveryType: "activation" });
     assert.match(url, /^\/orders\/fixture-[a-z]+\/(refund|activation\/manual-complete)$/);
     return response({ ok: true });
@@ -58,7 +64,10 @@ function load(name, mocks = {}) {
   vm.runInNewContext(code, { module, exports: module.exports, window: dom.window, navigator: dom.window.navigator, setTimeout, clearTimeout, require: name => Object.hasOwn(mocks, name) ? mocks[name] : localRequire(name) }, { filename: file.pathname });
   return module.exports;
 }
-const Page = load("apps/admin-ui/src/pages/OrdersPage.tsx", { "../lib/api": { api }, "../lib/format": load("apps/admin-ui/src/lib/format.ts") }).default;
+const Page = load("apps/admin-ui/src/pages/OrdersPage.tsx", {
+  "../lib/api": { api }, "../lib/format": load("apps/admin-ui/src/lib/format.ts"),
+  "../components/AppStoreOrderFulfillment": load("apps/admin-ui/src/components/AppStoreOrderFulfillment.tsx", { "../lib/api": { api } }),
+}).default;
 const client = new query.QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } });
 const container = dom.window.document.getElementById("root"), root = createRoot(container);
 const row = id => container.querySelector(`[aria-label="Заказ ${id}"]`);
@@ -70,7 +79,7 @@ const writes = () => requests.filter(item => item.method !== "GET");
 async function change(el, value, delay = 20) { await React.act(async () => Simulate.change(el, { target: { value } })); await settle(delay); await settle(); }
 try {
   await React.act(async () => root.render(React.createElement(query.QueryClientProvider, { client }, React.createElement(Page)))); await settle();
-  assert.equal(container.querySelectorAll(".orders-order-card").length, 5);
+  assert.equal(container.querySelectorAll(".orders-order-card").length, fixtures.length);
   assert.equal(writes().length, 0, "Rendering never changes an order");
   assert.equal(container.querySelector('a[href="/api/admin/orders/export/csv"]').textContent, "Экспорт CSV");
   assert.equal(row("fixture-pending").textContent.includes("tg_chatgpt_"), false, "Synthetic Telegram addresses remain hidden");
@@ -78,6 +87,14 @@ try {
   assert.equal(button(row("fixture-done"), "Отметить активированным").disabled, true);
   assert.equal(button(row("fixture-pending"), "Ссылка активации"), undefined);
   assert(button(row("fixture-paid"), "Ссылка активации"));
+  assert.equal(button(row("fixture-apple"), "Токен клиента"), undefined);
+  assert.equal(button(row("fixture-apple"), "Отметить активированным"), undefined);
+  assert(button(row("fixture-apple"), "Страница выдачи"));
+  assert.equal(button(row("fixture-apple"), "Выдать клиенту").disabled, true);
+  await change(row("fixture-apple").querySelector(".orders-app-store input"), "XDEMO12345678901");
+  await click(row("fixture-apple"), "Выдать клиенту");
+  assert(requests.some(request => request.url === "/orders/fixture-apple/app-store-code"));
+  assert.match(row("fixture-apple").textContent, /Код App Store выдан/);
   assert.equal(button(row("fixture-done"), "Логин и пароль Devin"), undefined);
   assert(button(row("fixture-paid"), "Логин и пароль Devin"));
   assert.equal(button(row("fixture-pending"), "Вернуть в ожидание"), undefined);

@@ -219,6 +219,11 @@ for (const service of ['chatgpt', 'claude', 'grok', 'perplexity', 'gemini', 'sun
 for (const filename of execFileSync('git', ['ls-files', '*.html'], { encoding: 'utf8' }).trim().split('\n')) {
   if (!filename) continue;
   const dom = page(fs.readFileSync(filename, 'utf8'));
+  if (filename === 'itunes.html') {
+    dom.window.history.replaceState(null, '', '/en/itunes.html');
+    dom.window.fetch = () => { throw new Error('Static translation fixture has no API'); };
+    dom.window.eval(fs.readFileSync('assets/js/itunes-page.js', 'utf8'));
+  }
   dom.window.gptishkaI18n.translateElement(dom.window.document.body);
   for (const form of dom.window.document.querySelectorAll('form,dialog,[role="dialog"],.modal,[id$="Modal"]')) check(form, filename);
   if (dom.window.document.querySelector('form,dialog,[role="dialog"]') && /app\.min\.js/.test(fs.readFileSync(filename, 'utf8'))) {

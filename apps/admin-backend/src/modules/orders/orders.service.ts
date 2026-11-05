@@ -16,7 +16,10 @@ import { paymentWebhookService } from "../payments/payment-webhook.service";
 import { verifyPallyPaidBill } from "../payments/pally-verification";
 import { resolveLavaCredentials } from "../payments/lava.credentials";
 import { activationStore, type ActivationRecord } from "./activation.store";
-import { deliverProduct } from "./delivery.service";
+import { deliverProduct, hasTrustedPaidPayment } from "./delivery.service";
+import { appStoreCard } from "../../common/utils/app-store-card";
+import { createAppStoreDeliveryService } from "./app-store-delivery";
+import { sendDirectCodeTelegram } from "./direct-code-notifications.service";
 import { buildActivationSiteEndpointUrl, readActivationSiteUrlFromOrderDetails } from "../../common/utils/activation-site";
 import { resolveOrderDeliveryType, resolveProductDeliveryType } from "../../common/utils/product-delivery";
 import { canonicalProductKey, resolveProductPoolBaseKey } from "../../common/utils/product-key";
@@ -475,7 +478,13 @@ function sleep(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
 }
 
+const appStoreDeliveryService = createAppStoreDeliveryService({ db: prisma, records: activationStore, isTrustedPaid: hasTrustedPaidPayment, notify: sendDirectCodeTelegram });
+
 export const ordersService = {
+  async issueAppStoreCode(orderId: string, code: string, userId: string) {
+    assertOrderId(orderId);
+    return withActivationOrderLock(orderId, () => appStoreDeliveryService.issue(orderId, code, userId));
+  },
   async list(params: any) {
     const result = await ordersRepository.list(params);
     const orderIds = (Array.isArray(result.items) ? result.items : [])
@@ -496,6 +505,7 @@ export const ordersService = {
       const productId = String(firstItem?.productId || product?.id || "").trim() || null;
       const productSlug = String(product?.slug || "").trim() || null;
       const productTitle = String(product?.title || firstItem?.productRaw || "").trim();
+      const card = deliveryType === "code" ? appStoreCard(product) : null;
       const quantity = Math.max(1, Number(firstItem?.quantity || 1));
       const unitPrice = firstItem?.price === undefined || firstItem?.price === null ? null : Number(firstItem.price);
       const recentPayments = Array.isArray(order.payments) ? order.payments : [];
@@ -542,6 +552,7 @@ export const ordersService = {
               unitPrice,
             },
         paymentStatus: latestPayment?.status || null,
+        appStoreDelivery: card ? { ...card, state: activation?.cdk ? "delivered" : "processing" } : null,
         paymentProvider,
         paymentProviderRaw,
         checkoutDetails,
@@ -705,6 +716,9 @@ export const ordersService = {
       productTags: firstItem?.product?.tags,
     });
     const activationProductKey = canonicalProductKey(productSlug || String(firstItem?.productId || "chatgpt")) || productSlug || "chatgpt";
+    if (deliveryType === "code" && appStoreCard(firstItem?.product)) {
+      return appStoreDeliveryService.read(order.id);
+    }
     const tokenActivationFlow = resolveTokenActivationFlowForProduct({
       deliveryType,
       productKey: activationProductKey,

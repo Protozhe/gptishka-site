@@ -32,6 +32,11 @@ export const getOrder = asyncHandler(async (req: Request, res: Response) => {
   res.json(data);
 });
 
+export const issueAppStoreCode = asyncHandler(async (req: Request, res: Response) => {
+  res.setHeader("Cache-Control", "no-store");
+  res.json(await ordersService.issueAppStoreCode(String(req.params.id), String(req.body.code), String(req.auth?.userId || "")));
+});
+
 export const getOrderManualLoginCredentials = asyncHandler(async (req: Request, res: Response) => {
   const orderId = String(req.params.id || "");
   const order = await ordersService.getById(orderId) as any;

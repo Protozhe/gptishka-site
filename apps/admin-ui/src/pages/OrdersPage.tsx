@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { api } from "../lib/api";
 import { fmtDate, money } from "../lib/format";
+import { AppStoreOrderFulfillment } from "../components/AppStoreOrderFulfillment";
 
 function getCheckErrorMessage(error: unknown) {
   if (axios.isAxiosError(error)) {
@@ -112,6 +113,8 @@ function buildCheckoutDetailRows(details: any) {
   }
   push("Доставка", selection.deliveryMethod);
   push("Длительность", selection.duration);
+  push("Регион карты", selection.region);
+  push("Номинал карты", selection.denomination);
   push("Способ оплаты", selection.paymentMethod);
   push("Email", contact.email);
   push(
@@ -237,6 +240,7 @@ export default function OrdersPage() {
     staleTime: 15_000,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
+    refetchInterval: 15_000,
     retry: 1,
   });
 
@@ -501,17 +505,18 @@ export default function OrdersPage() {
                   <div className="orders-muted">{paymentMethodSelected || "—"}{paymentProviderUsed && paymentProviderUsed !== paymentMethodSelected ? ` · ${paymentProviderUsed}` : ""}</div>
                   {o.promoCodeSnapshot ? <div className="orders-muted">Промокод: {o.promoCodeSnapshot}</div> : null}
                 </section>
-                <section className="orders-activation"><div className="orders-field-label">Активация</div>
-                  <div className="orders-activation-state" data-state={String(o.activation?.status || "").toLowerCase()}>{activationStatusTitle(o.activation?.status)}</div>
-                  {o.activation ? <><div className="orders-muted">{o.activation.tokenStored ? "Токен сохранён" : "Токен не сохранён"}</div><div className="orders-muted">Попытки: {Number(o.activation.attempts || 0)} / 3</div></> : null}
+                <section className="orders-activation"><div className="orders-field-label">{o.appStoreDelivery ? "Выдача карты" : "Активация"}</div>
+                  <div className="orders-activation-state" data-state={String(o.activation?.status || "").toLowerCase()}>{o.appStoreDelivery ? o.appStoreDelivery.state === "delivered" ? "Код выдан" : isSuccessfullyPaid ? "Ожидает кода" : "После оплаты" : activationStatusTitle(o.activation?.status)}</div>
+                  {o.activation && !o.appStoreDelivery ? <><div className="orders-muted">{o.activation.tokenStored ? "Токен сохранён" : "Токен не сохранён"}</div><div className="orders-muted">Попытки: {Number(o.activation.attempts || 0)} / 3</div></> : null}
                   {o.telegramLastError ? <p className="orders-warning">{o.telegramLastError}</p> : null}
                 </section>
               </div>
+              {o.appStoreDelivery && isSuccessfullyPaid ? <AppStoreOrderFulfillment orderId={o.id} card={o.appStoreDelivery} /> : null}
               <div className="orders-actions">
                     <div className="orders-action-buttons">
-                      <button className="btn-secondary" onClick={() => checkActivation.mutate(o.id)} disabled={checkActivation.isPending}>
+                      {!o.appStoreDelivery ? <button className="btn-secondary" onClick={() => checkActivation.mutate(o.id)} disabled={checkActivation.isPending}>
                         {checkActivation.isPending && checkActivation.variables === o.id ? "Проверяем..." : "Проверить активацию"}
-                      </button>
+                      </button> : null}
                       {o.status === "PAID" ? (
                         <button
                           className="btn-secondary"
@@ -520,16 +525,16 @@ export default function OrdersPage() {
                         >
                           {readActivationLink.isPending && readActivationLink.variables === o.id
                             ? "Готовим ссылку..."
-                            : "Ссылка активации"}
+                            : o.appStoreDelivery ? "Страница выдачи" : "Ссылка активации"}
                         </button>
                       ) : null}
-                      <button
+                      {!o.appStoreDelivery ? <button
                         className="btn-secondary"
                         onClick={() => readActivationToken.mutate(o.id)}
                         disabled={readActivationToken.isPending}
                       >
                         {readActivationToken.isPending && readActivationToken.variables === o.id ? "Загружаем..." : "Токен клиента"}
-                      </button>
+                      </button> : null}
                       {checkoutDetails?.account?.credentialsEncrypted ? (
                         <button
                           className="btn-secondary"
@@ -541,13 +546,13 @@ export default function OrdersPage() {
                             : "Логин и пароль Devin"}
                         </button>
                       ) : null}
-                      <button
+                      {!o.appStoreDelivery ? <button
                         className="btn-secondary"
                         onClick={() => completeActivation.mutate(o.id)}
                         disabled={completeActivation.isPending || String(o.activation?.status || "").toLowerCase() === "success"}
                       >
                         {completeActivation.isPending && completeActivation.variables === o.id ? "Сохраняем..." : "Отметить активированным"}
-                      </button>
+                      </button> : null}
                       <button className="btn-secondary" onClick={() => patch.mutate({ id: o.id, status: "PAID" })}>
                         Отметить оплаченным
                       </button>

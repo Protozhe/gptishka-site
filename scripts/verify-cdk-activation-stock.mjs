@@ -73,6 +73,9 @@ assert.equal(ui.activationPools("codex-1000", result.stats.byActivationSite).fin
 assert.equal(ui.activationPoolLabel("grok-1-sdk4", "").title, "SDK · Grok");
 assert.equal(ui.activationPoolLabel("claude-pro-sdk5", "").title, "SDK · Claude");
 assert.equal(ui.activationPoolLabel("gemini-pro-18", "").title, "Ссылки Gemini");
+assert.equal(ui.parseAppStorePoolKey("itunes-app-store-50").region, "us");
+assert.equal(ui.parseAppStorePoolKey("itunes-tr-50").region, "tr");
+assert.equal(ui.visibleActivationPools("itunes-tr-50", {}).current[0].title, "Подарочные коды App Store");
 assert.equal(ui.activationPools("other-product", {}, "https://example.invalid/activate/")[0].unused, 0);
 assert.equal(ui.CdkStockBreakdown({ productKey: "codex-250", inventory: undefined }), null, "Missing statistics must not be rendered as empty stock");
 assert.equal(ui.matchesActivationStockFilter("codex-250", result.stats.byActivationSite, "empty"), false);

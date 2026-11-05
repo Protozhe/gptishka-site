@@ -5,6 +5,11 @@ const IOS_SITE = "https://vip.sxzfd.com";
 const AISOU_SITE = "https://aiee.fun";
 const AIBUY_SITE = "https://aichongzhi.fun";
 
+export function parseAppStorePoolKey(productKey: string) {
+  const match = /^itunes-(app-store|ru|us|tr|in|ae)-([1-9]\d*)$/.exec(productKey);
+  return match ? { region: match[1] === "app-store" ? "us" : match[1], amount: Number(match[2]) } : null;
+}
+
 export function normalizeInventorySite(value: string) {
   try {
     const url = new URL(value);
@@ -28,6 +33,7 @@ export function activationPoolLabel(productKey: string, siteUrl: string) {
   if (!site && productKey.endsWith("-sdk5")) return { title: "SDK · Claude", hint: "Активация по токену Claude" };
   if (!site && productKey.endsWith("-sdk4")) return { title: "SDK · Grok", hint: "Активация по токену Grok" };
   if (!site && productKey === "gemini-pro-18") return { title: "Ссылки Gemini", hint: "Одна ссылка на один заказ" };
+  if (!site && parseAppStorePoolKey(productKey)) return { title: "Подарочные коды App Store", hint: "Выдача из оплаченного заказа; предварительная загрузка не обязательна" };
   return site ? { title: site.replace(/^https?:\/\//, ""), hint: site } : { title: "Способ не указан", hint: "Проверьте привязку этих ключей к сайту активации" };
 }
 
@@ -35,6 +41,7 @@ export function activationPools(productKey: string, inventory: ActivationInvento
   const stored = inventory[productKey] || {};
   const knownSites = productKey === "chatgpt-plus-1" ? [IOS_SITE, AISOU_SITE]
     : /^codex-(250|500|1000)$/.test(productKey) ? [AISOU_SITE, AIBUY_SITE]
+    : parseAppStorePoolKey(productKey) ? [""]
     : normalizeInventorySite(expectedSite) ? [normalizeInventorySite(expectedSite)] : [];
   const sites = [...new Set([...knownSites, ...Object.keys(stored)])];
   return sites.map((siteUrl) => ({
@@ -49,7 +56,7 @@ export function visibleActivationPools(productKey: string, inventory: Activation
   const required = new Set(productKey === "chatgpt-plus-1" ? [IOS_SITE, AISOU_SITE]
     : /^codex-(250|500|1000)$/.test(productKey) ? [AISOU_SITE, AIBUY_SITE]
     : normalizeInventorySite(expectedSite) ? [normalizeInventorySite(expectedSite)] : []);
-  if (/-sdk[45]$/.test(productKey) || productKey === "gemini-pro-18") required.add("");
+  if (/-sdk[45]$/.test(productKey) || productKey === "gemini-pro-18" || parseAppStorePoolKey(productKey)) required.add("");
   const current = pools.filter(pool => required.has(pool.siteUrl) || pool.unused > 0 || pool.reserved > 0);
   const historical = pools.filter(pool => !current.includes(pool));
   return { current, historical };

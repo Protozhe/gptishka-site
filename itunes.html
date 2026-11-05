@@ -14,15 +14,15 @@
 <link rel="apple-touch-icon" href="/favicon.png?v=20260920-white-cat-round1">
 <link rel="canonical" href="https://gptishka.shop/itunes">
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="Подарочные карты iTunes и App Store для Apple ID региона США. Выберите номинал 2, 5, 10, 15, 30 или 50 долларов." />
+<meta name="description" content="Подарочные карты iTunes и App Store. Выберите регион Apple ID и доступный номинал." />
 <meta name="robots" content="index, follow">
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="GPTishka" />
-<meta property="og:title" content="iTunes и App Store — пополнение Apple ID США | GPTishka" />
-<meta property="og:description" content="Выберите подарочную карту Apple ID региона США номиналом от 2 до 50 долларов." />
+<meta property="og:title" content="iTunes и App Store — пополнение Apple ID | GPTishka" />
+<meta property="og:description" content="Выберите регион и номинал подарочной карты Apple ID." />
 <meta property="og:image" content="https://gptishka.shop/assets/img/services/appstore-card-v3.webp" />
 <meta property="og:url" content="https://gptishka.shop/itunes" />
-<title>iTunes и App Store — пополнение Apple ID США | GPTishka</title>
+<title>iTunes и App Store — пополнение Apple ID | GPTishka</title>
 <link rel="stylesheet" href="/assets/css/logo.min.css">
 <link rel="stylesheet" href="/assets/css/gptishka-header-refresh.css?v=20260912-header-codex1">
 <link rel="stylesheet" href="/assets/css/theme.min.css?v=20260516fix4">
@@ -36,7 +36,7 @@
 <link rel="stylesheet" href="/assets/css/gptishka-global-dark.css?v=20260923-scroll-render1" />
 <link rel="stylesheet" href="/assets/css/codex-card.css?v=20260914-detail-brand1" />
 <link rel="stylesheet" href="/assets/css/chatgpt-grok-flat-page.css?v=20260825-rounded-header2" />
-<link rel="stylesheet" href="/assets/css/itunes-page.css?v=20260825-rounded-header2" />
+<link rel="stylesheet" href="/assets/css/itunes-page.css?v=sha256-f4393a8811573d73" />
 <link rel="stylesheet" href="/assets/css/service-checkout-flat.css?v=sha256-3c00fffcfec9ef12" />
 <link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
@@ -96,7 +96,13 @@
         <div class="service-filter-stack service-filter-stack--constructor" aria-label="Параметры подарочной карты">
           <div class="service-filter-group">
             <div class="service-filter-group__label">Регион</div>
-            <div class="service-filter-group__chips"><button type="button" class="service-filter-chip is-active" aria-pressed="true" data-itunes-region="us"><span>США</span></button></div>
+            <div class="service-filter-group__chips" data-itunes-regions>
+              <button type="button" class="service-filter-chip" aria-pressed="false" data-itunes-region="ru"><span>Россия</span></button>
+              <button type="button" class="service-filter-chip is-active" aria-pressed="true" data-itunes-region="us"><span>США</span></button>
+              <button type="button" class="service-filter-chip" aria-pressed="false" data-itunes-region="tr"><span>Турция</span></button>
+              <button type="button" class="service-filter-chip" aria-pressed="false" data-itunes-region="in"><span>Индия</span></button>
+              <button type="button" class="service-filter-chip" aria-pressed="false" data-itunes-region="ae"><span>ОАЭ</span></button>
+            </div>
           </div>
           <div class="service-filter-group">
             <div class="service-filter-group__label">Номинал</div>
@@ -114,7 +120,7 @@
         <div class="service-selected-plan" aria-live="polite">
           <div class="price-card service-checkout-card itunes-checkout-card">
             <div class="service-checkout-card__summary">
-              <div><span class="service-checkout-card__label">Регион</span><strong>США</strong></div>
+              <div><span class="service-checkout-card__label">Регион</span><strong id="itunesSelectedRegion">США</strong></div>
               <div><span class="service-checkout-card__label">Номинал</span><strong id="itunesSelectedDenomination">2 $</strong></div>
               <div><span class="service-checkout-card__label">Стоимость</span><strong id="itunesSelectedPrice">—</strong></div>
             </div>
@@ -123,7 +129,7 @@
         </div>
         <div class="service-constructor-description">
           <h3>Подарочная карта Apple ID</h3>
-          <p>Пополнение баланса Apple ID для приложений, игр, музыки и подписок. Выберите номинал карты для региона США.</p>
+          <p>Выберите регион Apple ID и номинал карты. После оплаты подготовим код — обычно это занимает до 5 минут.</p>
         </div>
       </div>
     </div>
@@ -132,10 +138,10 @@
   <section class="service-info-section service-info-section--itunes" data-service-info-section>
     <div class="service-section-title"><h2>Перед покупкой подарочной карты</h2><p>Регион, номинал и порядок активации.</p></div>
     <div class="service-info-grid">
-      <article class="service-info-card"><h3>Что вы получите</h3><ul><li>Код подарочной карты Apple ID выбранного номинала.</li><li>Регион карты — США.</li><li>Инструкцию по зачислению средств на баланс Apple ID.</li></ul></article>
+      <article class="service-info-card"><h3>Что вы получите</h3><ul><li>Код подарочной карты Apple ID выбранного номинала.</li><li>Карта для региона, выбранного при оформлении.</li><li>Инструкцию по зачислению средств на баланс Apple ID.</li></ul></article>
       <article class="service-info-card"><h3>Для чего подходит</h3><ul><li>Покупки приложений и игр в App Store.</li><li>Оплата музыки, фильмов и другого цифрового контента.</li><li>Оплата доступных подписок с баланса Apple ID.</li></ul></article>
-      <article class="service-info-card"><h3>Как активировать</h3><ol><li>Убедитесь, что регион вашего Apple ID — США.</li><li>Получите код после оформления заказа.</li><li>Откройте App Store и выберите погашение подарочной карты или кода.</li><li>Введите код и проверьте баланс аккаунта.</li></ol></article>
-      <article class="service-info-card"><h3>Важные условия</h3><ul><li>Карта предназначена для Apple ID региона США.</li><li>Перед заказом проверьте регион аккаунта.</li><li>После передачи корректного цифрового кода отмена заказа может быть недоступна.</li></ul><p class="service-info-card__legal">Условия регулируются <a href="/refund.html">правилами возврата</a> и <a href="/oferta.html">публичной офертой</a>.</p></article>
+      <article class="service-info-card"><h3>Как активировать</h3><ol><li>Убедитесь, что регион карты совпадает с регионом вашего Apple ID.</li><li>Получите код после оформления заказа.</li><li>Откройте App Store и выберите погашение подарочной карты или кода.</li><li>Введите код и проверьте баланс аккаунта.</li></ol></article>
+      <article class="service-info-card"><h3>Важные условия</h3><ul><li>Карта подходит для Apple ID выбранного региона.</li><li>Перед заказом проверьте регион аккаунта.</li><li>После передачи корректного цифрового кода отмена заказа может быть недоступна.</li></ul><p class="service-info-card__legal">Условия регулируются <a href="/refund.html">правилами возврата</a> и <a href="/oferta.html">публичной офертой</a>.</p></article>
     </div>
   </section>
 
@@ -143,10 +149,10 @@
     <div class="service-section-title">
       <span class="itunes-guide-section__eyebrow">Пошаговая инструкция</span>
       <h2 id="itunesGuideTitle">Как сменить регион Apple ID и активировать карту</h2>
-      <p>Инструкция для iPhone: подготовьте аккаунт, выберите регион США и пополните баланс подарочным кодом.</p>
+      <p>Инструкция по погашению подарочного кода на iPhone.</p>
     </div>
 
-    <aside class="itunes-guide-warning" role="note" aria-label="Важное условие перед сменой региона">
+    <aside data-itunes-us-guide class="itunes-guide-warning" role="note" aria-label="Важное условие перед сменой региона">
       <span class="itunes-guide-warning__icon" aria-hidden="true">!</span>
       <div>
         <strong>Перед сменой региона проверьте подписки</strong>
@@ -155,7 +161,7 @@
     </aside>
 
     <div class="itunes-guide-grid">
-      <article class="itunes-guide-card">
+      <article class="itunes-guide-card" data-itunes-us-guide>
         <div class="itunes-guide-card__heading"><span>01</span><div><small>На iPhone</small><h3>Смена региона на США</h3></div></div>
         <ol class="itunes-guide-steps">
           <li>Откройте <strong>«Настройки»</strong>.</li>
@@ -186,7 +192,7 @@
           <li>Готово — средства появятся на балансе Apple ID.</li>
         </ol>
 
-        <div class="itunes-icloud-prices" aria-label="Тарифы iCloud для региона США">
+        <div class="itunes-icloud-prices" data-itunes-us-guide aria-label="Тарифы iCloud для региона США">
           <div class="itunes-icloud-prices__heading"><span aria-hidden="true">☁</span><div><small>Регион США</small><h3>Тарифы iCloud+</h3></div></div>
           <dl>
             <div><dt>50 ГБ</dt><dd>0,99 $</dd></div>
@@ -203,7 +209,7 @@
   <section class="service-faq-section" id="faq" data-service-faq-section>
     <div class="service-section-title"><h2>Часто задаваемые вопросы</h2><p>Главное о подарочных картах iTunes и App Store.</p></div>
     <div class="service-faq-list">
-      <article class="service-faq-item active"><button class="service-faq-question" type="button">Для какого региона подходит карта?<span></span></button><div class="service-faq-answer"><p>Для Apple ID с регионом США. Перед заказом обязательно проверьте регион аккаунта.</p></div></article>
+      <article class="service-faq-item active"><button class="service-faq-question" type="button">Для какого региона подходит карта?<span></span></button><div class="service-faq-answer"><p>Для Apple ID с регионом, выбранным при оформлении. Перед заказом обязательно проверьте регион аккаунта.</p></div></article>
       <article class="service-faq-item"><button class="service-faq-question" type="button">Какие номиналы доступны?<span></span></button><div class="service-faq-answer"><p>Доступные номиналы показаны выше, в форме заказа.</p></div></article>
       <article class="service-faq-item"><button class="service-faq-question" type="button">Что придёт после оформления?<span></span></button><div class="service-faq-answer"><p>Код подарочной карты выбранного номинала и короткая инструкция по активации.</p></div></article>
       <article class="service-faq-item"><button class="service-faq-question" type="button">Сколько стоит подарочная карта?<span></span></button><div class="service-faq-answer"><p>Актуальная цена указана рядом с каждым доступным номиналом выше.</p></div></article>
@@ -224,7 +230,7 @@
               <div class="chatgpt-order-summary-card__body chatgpt-order-info">
                 <h3 class="chatgpt-order-title" id="itunesOrderModalTitle" tabindex="-1">iTunes и App Store</h3>
                 <p class="chatgpt-order-summary-card__meta chatgpt-order-meta">Подарочная карта Apple ID</p>
-                <div class="chatgpt-order-summary-card__chips chatgpt-order-chips"><span>Регион: США</span><span>Номинал: <b id="itunesModalDenomination">2 $</b></span></div>
+                <div class="chatgpt-order-summary-card__chips chatgpt-order-chips"><span id="itunesModalRegion">Регион: США</span><span>Номинал: <b id="itunesModalDenomination">2 $</b></span></div>
               </div>
             </div>
             <div class="chatgpt-order-summary-card__price chatgpt-order-total"><span>Стоимость</span><strong id="itunesModalPrice">—</strong></div>
@@ -244,7 +250,7 @@
               <label class="chatgpt-payment-option" role="radio" aria-checked="true"><input type="radio" name="paymentMethod" value="pally" checked><span class="chatgpt-payment-logo"><img src="/assets/img/payment-pally.svg" alt="" loading="lazy" decoding="async"></span><span class="chatgpt-payment-text"><strong class="chatgpt-payment-name">Pally.info</strong></span><span class="chatgpt-payment-check" aria-hidden="true"></span></label>
               <label class="chatgpt-payment-option" role="radio" aria-checked="false"><input type="radio" name="paymentMethod" value="enot"><span class="chatgpt-payment-logo"><img src="/assets/img/payment-enot.svg?v=20260724-enot-mark1" alt="" loading="lazy" decoding="async"></span><span class="chatgpt-payment-text"><strong class="chatgpt-payment-name">ENOT</strong></span><span class="chatgpt-payment-check" aria-hidden="true"></span></label>
             </div>
-            <details class="chatgpt-order-collapsible chatgpt-order-processing-details"><summary>Как вы получите карту</summary><p>После успешной оплаты сайт автоматически выдаст свободный код из админки. Код также придёт через Telegram-бота, если Telegram заранее привязан к аккаунту с указанным email. Карта подходит только для Apple ID региона США.</p></details>
+            <details class="chatgpt-order-collapsible chatgpt-order-processing-details"><summary>Как вы получите карту</summary><p>После оплаты подготовим код для выбранного региона и номинала. Обычно выдача занимает до 5 минут. Код появится на этой странице автоматически. Если Telegram привязан к аккаунту с указанным email, бот также пришлёт его сообщением.</p></details>
           </section>
 
           <p class="chatgpt-order-legal-note">Нажимая кнопку, вы соглашаетесь с <a href="/oferta.html" target="_blank" rel="noopener">офертой</a> и <a href="/politika.html" target="_blank" rel="noopener">политикой конфиденциальности</a>.</p>
@@ -254,9 +260,10 @@
       </form>
       <section class="itunes-delivery-card" id="itunesDeliveryResult" hidden aria-live="polite">
         <div class="itunes-delivery-card__icon" aria-hidden="true">✓</div>
-        <p class="itunes-delivery-card__eyebrow">Оплата подтверждена</p>
-        <h3>Ваша подарочная карта готова</h3>
-        <p class="itunes-delivery-card__description" id="itunesDeliveryDescription">Получаем свободный код из админки…</p>
+        <p class="itunes-delivery-card__eyebrow">Проверяем заказ</p>
+        <h3 id="itunesDeliveryTitle">Проверяем оплату</h3>
+        <p class="itunes-delivery-card__description" id="itunesDeliveryDescription">Подождите, загружаем состояние заказа…</p>
+        <p id="itunesDeliveryOrder" class="itunes-delivery-card__description"></p>
         <div class="itunes-delivery-card__code" id="itunesDeliveryCode" hidden><span>Код Apple Gift Card</span><strong></strong></div>
         <button class="btn itunes-delivery-card__copy" id="itunesDeliveryCopy" type="button" hidden>Скопировать код</button>
         <a class="itunes-delivery-card__guide" href="#region-guide" data-itunes-modal-close>Открыть инструкцию по активации</a>
@@ -271,7 +278,7 @@
   <span class="footer-copy">&copy; 2026 GPTishka. Все права защищены, копирование запрещено.</span>
 </footer>
 <script src="/assets/js/app.min.js?v=sha256-ec9c4ceba1479afe" defer></script>
-<script src="/assets/js/itunes-page.js?v=sha256-71b295b90a8b62e8" defer></script>
+<script src="/assets/js/itunes-page.js?v=sha256-f73f1f0b77ba4d27" defer></script>
 <script src="/assets/js/support-widget.js?v=20260924-support-account1&build=sha256-9da6a0dc556ea999" defer></script>
 <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
 <script src="/assets/js/storefront-ui.js?v=sha256-bcae5e9700f06872" defer></script>

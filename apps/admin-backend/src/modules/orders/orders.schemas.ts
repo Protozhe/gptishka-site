@@ -26,6 +26,8 @@ export const adminStartActivationSchema = z.object({
   accountId: z.string().trim().uuid().max(128),
 });
 
+export const issueAppStoreCodeSchema = z.object({ code: z.string().trim().min(16).max(80) });
+
 function normalizePublicPaymentMethod(value: unknown) {
   const raw = String(value || "")
     .trim()

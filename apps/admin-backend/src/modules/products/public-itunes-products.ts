@@ -10,11 +10,18 @@ type ItunesProduct = {
   activationVariants: unknown;
 };
 
+const supportedRegions = new Set(["ru", "us", "tr", "in", "ae"]);
+
 export function buildPublicItunesProducts(products: ItunesProduct[]) {
   return products.flatMap((product) => {
     const denominationTag = product.tags.find((tag) => /^denomination:\d+$/.test(tag));
     const denomination = Number(denominationTag?.split(":")[1]);
     if (!Number.isInteger(denomination) || denomination <= 0) return [];
+    const region = product.tags.find((tag) => tag.startsWith("region:"))?.slice(7) || "us";
+    if (!supportedRegions.has(region)) return [];
+    const regionalSlug = `itunes-${region}-${denomination}`;
+    const legacyUsSlug = region === "us" && product.slug === `itunes-app-store-${denomination}`;
+    if (product.slug !== regionalSlug && !legacyUsSlug) return [];
     const variant = resolveActivationVariant(
       product.activationVariants,
       { price: Number(product.price), deliveryType: resolveProductDeliveryType(product.tags) },
@@ -26,6 +33,6 @@ export function buildPublicItunesProducts(products: ItunesProduct[]) {
     if (product.currency !== "RUB") return [];
     const price = variant.price;
     if (!Number.isFinite(price) || price <= 0) return [];
-    return [{ denomination, price, slug: product.slug }];
+    return [{ region, denomination, price, slug: product.slug }];
   }).sort((a, b) => a.denomination - b.denomination);
 }
