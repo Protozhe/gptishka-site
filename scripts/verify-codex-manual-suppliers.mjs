@@ -264,6 +264,17 @@ const recovery=load(base+'services/aisou-procurement.ts',{
   'aisou-live.cjs':{procureWebsiteKey:async()=>{aisouRecovery++;return {keyId:'fixture-aisou',code:'FIXTURE',activationSiteUrl:origins[1]}}},
   'aibuy-live.cjs':{policy:()=>({}),managed:()=>aibuyEnabled,procure:async()=>{aibuyRecovery++;return {keyId:'fixture-aibuy',code:'FIXTURE',activationSiteUrl:origins[0]}}},
 });
+for (const productKey of ['chatgpt-plus-1','chatgpt-go-1','chatgpt-pro-5x-1','chatgpt-pro-20x-1','chatgpt-pro-25x-1']) {
+  for (const accountPlan of ['free','plus','pro']) {
+    for (const supplier of [undefined,'aisou','aibuy']) {
+      previousSupplier=supplier;
+      const activationSiteUrl=accountPlan==='free'?origins[1]:'https://vip.sxzfd.com';
+      assert.equal(await recovery.procureSelectedWebsiteKey({orderId:'fixture-paid',productKey,accountPlan,activationSiteUrl}),null);
+    }
+  }
+}
+assert.equal(aisouRecovery+aibuyRecovery,0,'ChatGPT empty stock, including a held old purchase, must wait for owner CDKs without contacting a purchasing integration');
+previousSupplier=undefined;
 for(const size of [250,500,1000])assert.equal(await recovery.procureSelectedWebsiteKey({orderId:'fixture-paid',productKey:'codex-'+size,accountPlan:'pro',activationSiteUrl:origins[1]}),null);
 assert.equal(aisouRecovery+aibuyRecovery,0,'Fresh Codex requests cannot start a new supplier purchase');
 for(const supplier of ['aisou','aibuy']){

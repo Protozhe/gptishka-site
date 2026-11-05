@@ -8,10 +8,15 @@ export function verifiedAieeGrokProduct(payload:unknown):string|null {
   return require(path.resolve(__dirname,"../../../../ops/supplier-procurement/aisou-core.cjs")).grokProductFromProvider(payload);
 }
 
-/** Only the selected account-type route may request an empty-pool purchase. */
+/** Apply the owner's stock policy before loading any purchasing integration. */
 export async function procureSelectedWebsiteKey(input: {
   orderId: string; productKey: string; accountPlan: string; activationSiteUrl: string;
 }) {
+  // ChatGPT CDKs are supplied by the owner, including IOS renewals. Returning
+  // null lets the existing stock queue notify the owner once and resume when
+  // the exact product/site is restocked. Keep any earlier purchase journal
+  // intact; its uncertain result must never trigger another purchase here.
+  if (/^chatgpt-(?:plus|go|pro-(?:5|20|25)x)-1$/.test(input.productKey)) return null;
   // Monthly Grok is fulfilled exclusively from owner-imported AISOU CDKs.
   // Empty stock must never initiate a merchant purchase.
   if (/^grok-(plus|premium|super|ultra)-1$/.test(input.productKey)) return null;
