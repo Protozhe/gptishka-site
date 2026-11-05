@@ -9,7 +9,7 @@ for (const slug of ['claude-kyc', 'claude-cvp', 'claude-kyc-support', 'claude-cv
 assert.equal(helper.exports.isVerificationSupportProduct('chatgpt-plus-1'), false);
 for (const file of ['claude.html', 'en/claude.html']) {
   const html = fs.readFileSync(file, 'utf8');
-  assert.match(html, /id="claudeVerificationPrice"[^>]*>4 000 ₽/);
+  assert.match(html, /id="claudeVerificationPrice"[^>]*>4 500 ₽/);
   assert.match(html, /name="kycWarningAcknowledged"[^>]*required/);
   assert.doesNotMatch(html, /6 500 ₽|\bCVP\b|name="claude-verification"/i);
 }
@@ -63,6 +63,19 @@ async function verify(slug, price) {
   assert.equal(acknowledgement.checked, false, 'reopening checkout requires a fresh acknowledgement');
 }
 (async () => {
-  for (const [slug, price] of [['claude-kyc', 4000], ['claude-kyc-support', 4000], ['claude-cvp', 7500], ['claude-cvp-support', 11500]]) await verify(slug, price);
+  const config = require('../apps/admin-backend/scripts/configure-kyc-price.js');
+  const variants = { withLogin: { enabled: false, price: 6500, deliveryType: 'support', activationSiteUrl: null }, withoutLogin: { enabled: true, price: 4000, deliveryType: 'support' } };
+  const products = config.slugs.map((slug, index) => ({ id: 'kyc-' + index, slug, currency: 'RUB', price: 4000, activationVariants: variants, isActive: index === 0, isArchived: index !== 0 }));
+  const writes = [];
+  await config.apply({ product: { update: async query => { writes.push(query); return { ...products.find(p => p.id === query.where.id), ...query.data }; } } }, products);
+  assert.equal(writes.length, 2);
+  for (const query of writes) {
+    assert.deepEqual(Object.keys(query.data).sort(), ['activationVariants', 'price']);
+    assert.equal(query.data.price, 4500);
+    assert.deepEqual(query.data.activationVariants, { withLogin: { ...variants.withLogin, price: 4500 }, withoutLogin: { ...variants.withoutLogin, price: 4500 } });
+  }
+  assert.equal(variants.withLogin.price, 6500, 'Preparing the price update must not mutate the backup');
+  await assert.rejects(config.apply({ product: { update() { throw Error('Unrelated update'); } } }, [{ id: 'other', slug: 'claude-cvp', currency: 'RUB' }]));
+  for (const [slug, price] of [['claude-kyc', 4500], ['claude-kyc-support', 4500], ['claude-cvp', 7500], ['claude-cvp-support', 11500]]) await verify(slug, price);
   console.log('Both KYC SKUs require fresh acknowledgement. Retired CVP cannot open checkout.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

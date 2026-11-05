@@ -77,7 +77,7 @@ async function verify(slug, base, staleVariant, expected, paymentMethod, card = 
 }
 (async () => {
   for (const payment of ['pally', 'enot']) {
-    for (const slug of ['claude-kyc', 'claude-kyc-support']) await verify(slug, 4000, 5500, 4000, payment);
+    for (const slug of ['claude-kyc', 'claude-kyc-support']) await verify(slug, 4500, 5500, 4500, payment);
     await verify('claude-cvp', 7500, 11500, 7500, payment);
     await verify('claude-cvp-support', 11500, 7500, 11500, payment);
     await verify('chatgpt-plus-1', 4000, 5500, 5500, payment);
