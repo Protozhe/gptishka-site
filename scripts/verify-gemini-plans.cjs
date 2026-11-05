@@ -76,7 +76,7 @@ async function storefrontCheckout(lang) {
   w.MutationObserver = class extends Observer { constructor(callback) { super(callback); observers.push(this); } };
   w.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
   const items = plans.map((plan, index) => ({ ...productData(plan), id: `fixture-${index}`, baseSlug: plan.slug, product: plan.slug + "-login", slug: plan.slug + "-login", activationVariant: "withLogin", deliveryType: "activation", deliveryMethod: 1 }));
-  items.push(...ultra.plans.map((plan, index) => ({ ...ultra.productData(plan), id: `fixture-ultra-${index}`, baseSlug: plan.slug, product: plan.slug + (plan.account === "ready" ? "-link" : "-login"), slug: plan.slug, activationVariant: plan.account === "ready" ? "withoutLogin" : "withLogin", deliveryType: "manual_login", deliveryMethod: plan.account === "ready" ? 2 : 1 })));
+  items.push(...ultra.plans.map((plan, index) => ({ ...ultra.productData(plan), id: `fixture-ultra-${index}`, baseSlug: plan.slug, product: plan.slug + (plan.account === "ready" ? "-link" : "-login"), slug: plan.slug, activationVariant: plan.account === "ready" ? "withoutLogin" : "withLogin", deliveryType: "support", deliveryMethod: 4 })));
   if (lang === "en") for (const item of items) { item.title = item.titleEn; item.description = item.descriptionEn; item.modalDescription = item.modalDescriptionEn; }
   w.fetch = async (url) => ({ ok: true, json: async () => String(url).includes("service-pages/gemini")
     ? { page: { serviceKey: "gemini", heroTitle: "Gemini Pro", constructorTitle: "Gemini Pro", infoSections: [], faqItems: [] }, products: items, meta: { title: "Gemini Pro" } }
@@ -99,30 +99,36 @@ async function storefrontCheckout(lang) {
   d.querySelector('#servicePlanFilters [data-service-filter-key="ultra"]').click(); await flush();
   assert.equal(d.querySelectorAll('#serviceDurationFilters button').length, 1);
   assert.equal(d.querySelector('#serviceDurationFilters button').dataset.serviceFilterKey, "1m");
-  assert.equal(accountOption.disabled, true); assert.equal(accountOption.checked, false);
-  assert.equal(d.querySelectorAll('#serviceDeliveryFilters button').length, 2);
-  assert.match(d.querySelector('#serviceConstructorPrice').textContent.replaceAll('\u00a0', ' '), /14[\s,]*990/);
-  for (const [key, price] of [["ready", /14[\s,]*990/], ["login", /16[\s,]*990/]]) {
-    d.querySelector(`#serviceDeliveryFilters [data-service-filter-key="${key}"]`).click();
+  assert.equal(accountOption.disabled, false); assert.equal(accountOption.checked, false);
+  assert.equal(d.querySelector('#serviceDeliveryFilters'), null, 'Ultra uses the same account checkbox as Pro');
+  assert.match(d.querySelector('#serviceConstructorPrice').textContent.replaceAll('\u00a0', ' '), /16[\s,]*990/);
+  for (const [ready, price, id] of [[false, /16[\s,]*990/, 'fixture-ultra-1'], [true, /14[\s,]*990/, 'fixture-ultra-0'], [false, /16[\s,]*990/, 'fixture-ultra-1']]) {
+    accountOption.checked = ready; accountOption.dispatchEvent(new w.Event('change', { bubbles: true }));
+    assert.equal(accountOption.checked, ready);
     assert.match(d.querySelector('#serviceConstructorPrice').textContent.replaceAll('\u00a0', ' '), price);
+    assert.equal(d.querySelector('#servicePlansGrid .price-card').dataset.productId, id);
     d.querySelector('#servicePlansGrid .buy-btn').click(); await flush();
     const ultraForm = d.querySelector('#chatGptGoOrderModal form');
     assert.ok(ultraForm, 'Both Ultra options open checkout');
     assert.equal(ultraForm.querySelector('[name="servicePassword"]'), null);
     assert.equal(ultraForm.querySelector('[name="serviceLogin"]'), null);
     assert.equal(ultraForm.querySelector('[name="needsNewAccount"]'), null);
+    assert.equal(ultraForm.dataset.productId, id, 'The checkbox changes the purchased SKU, not the Pro account surcharge');
     assert.match(ultraForm.querySelector('[data-chatgpt-go-total]').textContent.replaceAll('\u00a0', ' '), price);
     if (lang === "en") {
       assert.match(ultraForm.querySelector('.chatgpt-order-security-note').textContent, /After payment, contact the manager/);
-      assert.match(ultraForm.textContent, key === "ready" ? /Ready account/ : /Your account/);
+      assert.match(ultraForm.textContent, ready ? /Ready account/ : /Your account/);
       assert.doesNotMatch(d.querySelector('[data-gemini-requirements]').textContent, /[А-Яа-яЁё]/);
     }
     d.querySelector('#chatGptGoOrderModal [data-chatgpt-go-order-close]').click();
   }
   d.querySelector('#servicePlanFilters [data-service-filter-key="pro"]').click();
   assert.equal(d.querySelectorAll('#serviceDurationFilters button:not(:disabled)').length, 3);
-  assert.equal(d.querySelector('#serviceDeliveryFilters').textContent, "");
+  assert.equal(d.querySelector('#serviceDeliveryFilters'), null);
   assert.equal(accountOption.disabled, false);
+  assert.equal(accountOption.checked, false);
+  assert.match(d.querySelector('#serviceConstructorPrice').textContent.replaceAll('\u00a0', ' '), /2[\s,]*490/);
+  assert.match(d.querySelector('.service-new-account__price').textContent.replaceAll('\u00a0', ' '), /\+200/);
   await flush();
   for (const observer of observers) observer.disconnect();
   dom.window.close();

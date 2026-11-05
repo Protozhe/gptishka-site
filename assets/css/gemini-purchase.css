@@ -68,7 +68,6 @@ html body#storefrontBody main.service-page[data-service-page="gemini"] :is(.serv
   border-radius: 12px; background: #222938; color: #c8d0df;
   font-size: 15px; line-height: 1.5; box-shadow: none;
 }
-[data-service-page="gemini"] #serviceDeliveryFilters:empty { display: none; }
 [data-service-page="gemini"] .service-checkout-card__summary { display: none; }
 [data-service-page="gemini"] .service-filter-stack--constructor {
   display: grid; grid-template-columns: minmax(0, 1fr);

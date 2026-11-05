@@ -5547,15 +5547,44 @@ function initActivationResumeShortcut() {
     });
   }
 
+  function getGeminiUltraAccountItems(items) {
+    const ultra = (Array.isArray(items) ? items : []).filter(item => getServicePlanKey(item, "gemini") === "ultra");
+    return {
+      own: ultra.find(item => getServiceDeliveryKey(item) === "login") || null,
+      ready: ultra.find(item => getServiceDeliveryKey(item) === "ready") || null,
+    };
+  }
+
   function renderServiceConstructorPage(allItems, serviceKey) {
     const filteredItems = filterServicePageItems(allItems, serviceKey);
     const selectedItem = filteredItems[0] || null;
     const pageNewAccount = servicePageRootEl?.querySelector('[data-service-new-account]');
     const geminiAccountChoice = servicePageRootEl?.querySelector('[data-gemini-new-account]');
+    const ultraAccountItems = serviceKey === "gemini" && servicePageState.plan === "ultra"
+      ? getGeminiUltraAccountItems(allItems) : null;
     if (geminiAccountChoice) {
-      const eligible = getNewAccountSurcharge(serviceKey, selectedItem?.product || selectedItem?.slug) > 0;
-      geminiAccountChoice.hidden = !eligible;
-      if (pageNewAccount) { pageNewAccount.disabled = !eligible; if (!eligible) pageNewAccount.checked = false; }
+      const eligible = ultraAccountItems
+        ? Boolean(ultraAccountItems.own && ultraAccountItems.ready)
+        : getNewAccountSurcharge(serviceKey, selectedItem?.product || selectedItem?.slug) > 0;
+      geminiAccountChoice.hidden = ultraAccountItems ? !ultraAccountItems.ready : !eligible;
+      if (pageNewAccount) {
+        pageNewAccount.disabled = !eligible;
+        if (ultraAccountItems) pageNewAccount.checked = getServiceDeliveryKey(selectedItem) === "ready";
+        else if (!eligible) pageNewAccount.checked = false;
+      }
+      const accountPrice = geminiAccountChoice.querySelector(".service-new-account__price");
+      if (accountPrice) {
+        if (ultraAccountItems?.own && ultraAccountItems?.ready) {
+          const difference = toAmount(ultraAccountItems.ready.price) - toAmount(ultraAccountItems.own.price);
+          accountPrice.textContent = difference === 0
+            ? (isEnPage ? "No extra charge" : "Без доплаты")
+            : (difference > 0 ? "+" : "−") + formatPriceByCurrency(Math.abs(difference), selectedItem?.currency || "RUB");
+        } else if (ultraAccountItems) {
+          accountPrice.textContent = ultraAccountItems.ready ? formatPriceByCurrency(ultraAccountItems.ready.price, ultraAccountItems.ready.currency) : "";
+        } else {
+          accountPrice.textContent = "+" + formatPriceByCurrency(getNewAccountSurcharge(serviceKey, selectedItem?.product || selectedItem?.slug), selectedItem?.currency || "RUB");
+        }
+      }
     }
     const selectedPrice = selectedItem
       ? Math.max(0, toAmount(selectedItem.price)) + (pageNewAccount?.checked ? getNewAccountSurcharge(serviceKey, selectedItem.product || selectedItem.slug) : 0)
@@ -5586,7 +5615,9 @@ function initActivationResumeShortcut() {
         : (isEnPage ? "Use a personal Google Account without an active paid subscription or family group. For activation, prepare your email, password and authenticator key or one 8-digit backup code." : "Нужен личный Google-аккаунт без платной подписки и семейной группы. Для активации подготовьте почту, пароль и ключ аутентификатора или один 8-значный резервный код.");
     }
     const accountNote = servicePageRootEl?.querySelector('[data-service-account-note]');
-    if (accountNote) accountNote.textContent = pageNewAccount?.checked
+    if (accountNote) accountNote.textContent = ultraAccountItems && pageNewAccount?.checked
+      ? (isEnPage ? "After payment, the manager will send you a ready Google Account with Ultra. Check the login on the day you receive it." : "После оплаты менеджер выдаст готовый Google-аккаунт с Ultra. Проверьте вход в день получения.")
+      : pageNewAccount?.checked
       ? (serviceKey === "claude"
         ? (isEnPage ? "After payment, contact the manager to receive your login details. Future renewals cost only the plan price, without the account creation fee." : "После оплаты свяжитесь с менеджером для получения данных входа. В дальнейшем продлевайте этот аккаунт по цене тарифа — без повторной доплаты за создание.")
         : (isEnPage ? "After payment, a manager will create your account and send you the login details." : "После оплаты менеджер создаст аккаунт и передаст вам данные для входа."))
@@ -5629,12 +5660,17 @@ function initActivationResumeShortcut() {
     const deliverySourceItems = constructorMode && servicePageState.plan !== "all"
       ? allItems.filter(item => getServicePlanKey(item, serviceKey) === servicePageState.plan)
       : allItems;
-    if (serviceKey === "gemini" && servicePageState.plan === "ultra" && serviceDeliveryFiltersEl) {
-      renderServiceFilterGroup(serviceDeliveryFiltersEl, "delivery", isEnPage ? "Account" : "Аккаунт", getServiceFilterOptions(deliverySourceItems, serviceKey, "delivery"), servicePageState.delivery, deliverySourceItems.length, serviceKey);
-    } else {
-      if (serviceDeliveryFiltersEl) serviceDeliveryFiltersEl.innerHTML = "";
-      servicePageState.delivery = "all";
-    }
+    if (serviceDeliveryFiltersEl) serviceDeliveryFiltersEl.innerHTML = "";
+    if (serviceKey === "gemini") {
+      const accountInput = servicePageRootEl.querySelector("[data-service-new-account]");
+      if (accountInput && accountInput.dataset.geminiAccountPlan !== servicePageState.plan) accountInput.checked = false;
+      if (accountInput) accountInput.dataset.geminiAccountPlan = servicePageState.plan;
+      if (servicePageState.plan === "ultra") {
+        const accounts = getGeminiUltraAccountItems(deliverySourceItems);
+        servicePageState.delivery = accountInput?.checked && accounts.ready
+          ? "ready" : accounts.own ? "login" : accounts.ready ? "ready" : "all";
+      } else servicePageState.delivery = "all";
+    } else servicePageState.delivery = "all";
 
     const durationSourceItems = constructorMode && servicePageState.delivery !== "all"
       ? deliverySourceItems.filter(item => getServiceDeliveryFilterKey(item, serviceKey) === servicePageState.delivery)
@@ -5677,7 +5713,9 @@ function initActivationResumeShortcut() {
       const target = event.target instanceof Element ? event.target : null;
       if (!target?.matches('[data-service-new-account]')) return;
       const serviceKey = getServicePageKey();
-      renderServiceConstructorPage(sortServicePageItems(serviceKey, getPublicServiceItems(servicePageItems, serviceKey)), serviceKey);
+      if (serviceKey === "gemini" && servicePageState.plan === "ultra") {
+        renderServicePageFromItems();
+      } else renderServiceConstructorPage(sortServicePageItems(serviceKey, getPublicServiceItems(servicePageItems, serviceKey)), serviceKey);
     });
     servicePageRootEl.addEventListener("click", event => {
       const target = event.target instanceof Element ? event.target : null;
