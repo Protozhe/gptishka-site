@@ -295,9 +295,41 @@ class Tests(unittest.TestCase):
                         with self.assertRaisesRegex(ValueError,'margin_hold'):root.validate_job(1,policy=p,payment_reader=lambda *a:financial)
                         financial['gross_rub']=7000;rate['costCheckedAt']=iso(-999999)
                         with self.assertRaisesRegex(ValueError,'cost_unconfirmed'):root.validate_job(1,policy=p,payment_reader=lambda *a:financial)
+                        if code in (250,500,1000):
+                            with contextlib.closing(sqlite3.connect(path/'profit.db')) as profit,profit:
+                                profit.execute('CREATE TABLE capital_inventory_prices(pool TEXT PRIMARY KEY,unit_cost_rub REAL)')
+                                profit.execute('INSERT INTO capital_inventory_prices VALUES(?,?)',('codex_'+str(code),990))
+                            with patch.object(root,'PROFIT',str(path/'profit.db')),patch.object(shared_stock,'enabled',return_value=True):
+                                prepaid=root.validate_job(1,shared=True,policy=p,payment_reader=lambda *a:financial)
+                                self.assertEqual(prepaid['cost_rub'],'990.0')
+                                financial['gross_rub']=1
+                                with self.assertRaisesRegex(ValueError,'margin_hold'):root.validate_job(1,shared=True,policy=p,payment_reader=lambda *a:financial)
+                                financial['gross_rub']=7000
                         rate['costCheckedAt']=iso(-30)
                         with a.connect() as c:c.execute("INSERT INTO marketplace_refund_holds VALUES(?,?,?)",(platform,'2' if platform=='funpay' else 'playerok:fixture','FIXTURE-ORDER'))
                         with self.assertRaisesRegex(ValueError,'refund_hold'):root.validate_job(1,policy=p,payment_reader=lambda *a:financial)
+
+    def test_prepaid_codex_uses_exact_ruble_inventory_cost_and_keeps_margin_guard(self):
+        for platform in ('funpay','playerok'):
+            for code in (250,500,1000):
+                a,path,p,_,_=self.fixture(code,platform)
+                with contextlib.closing(sqlite3.connect(path/'profit.db')) as c,c:
+                    c.execute('CREATE TABLE capital_inventory_prices(pool TEXT PRIMARY KEY,unit_cost_rub REAL)')
+                    c.execute('INSERT INTO capital_inventory_prices VALUES(?,?)',('codex_'+str(code),990))
+                seen=[]
+                def assessor(order,fees,lookup,now):
+                    profile=lookup(order['title']);seen.append(profile)
+                    profit=common.money(order['gross_rub'])-common.money(profile['cost_rub'])-100
+                    return {'allowed':order['payment_verified'] and profit>=0,'profit_bound_rub':str(profit)}
+                order={'platform':platform,'title':'Codex '+str(code),'gross_rub':1500,'payment_verified':True}
+                with patch.object(root,'PROFIT',str(path/'profit.db')):
+                    self.assertEqual(root.prepaid_codex_quote(code,order,{'enabled':True},assessor),'990.0')
+                    self.assertEqual(seen[-1]['id'],'prepaid_codex_'+str(code))
+                    with self.assertRaisesRegex(ValueError,'margin_hold'):root.prepaid_codex_quote(code,{**order,'gross_rub':100}, {'enabled':True},assessor)
+                    with self.assertRaisesRegex(ValueError,'margin_hold'):root.prepaid_codex_quote(code,{**order,'payment_verified':False}, {'enabled':True},assessor)
+                    with self.assertRaisesRegex(ValueError,'cost_unconfirmed'):root.prepaid_codex_quote(code,order,{'enabled':False},assessor)
+                    with contextlib.closing(sqlite3.connect(path/'profit.db')) as c,c:c.execute('DELETE FROM capital_inventory_prices')
+                    with self.assertRaisesRegex(ValueError,'cost_unconfirmed'):root.prepaid_codex_quote(code,order,{'enabled':True},assessor)
 
     def test_fresh_funpay_payment_cannot_change_product_quantity_or_currency(self):
         a,path,p,calls,result=self.fixture(500)

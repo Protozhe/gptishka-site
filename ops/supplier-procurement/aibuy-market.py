@@ -8,7 +8,7 @@ from urllib.parse import quote as escape
 from urllib.request import Request,urlopen
 from cryptography.fernet import Fernet
 from contextlib import contextmanager
-from market_aibuy_common import PRICES,classify,identity,eligible,stamp,session,quote
+from market_aibuy_common import PRICES,classify,identity,eligible,stamp,session,quote,money
 
 HERE=pathlib.Path(__file__).resolve().parent
 spec=importlib.util.spec_from_file_location('aibuy_root',HERE/'aibuy-broker.py');b=importlib.util.module_from_spec(spec);spec.loader.exec_module(b)
@@ -67,6 +67,23 @@ def paid(job,policy,*,worker_read=None,player_read=None,classifier=classify):
     if payload.get('quantity',1)!=1:raise ValueError('supplier_product_mismatch')
     return {'platform':'playerok','order_id':job['order_id'],'gross_rub':row['gross_revenue_rub'],'marketplace_commission_rub':row['commission_rub'],'quantity':1,'title':row['title'],'payment_verified':True}
 
+def prepaid_codex_quote(code,financial,fee_policy,assessor,minimum_profit=0):
+    # Imported CDKs already have an owner-configured RUB inventory valuation.
+    # Buying CNY is not part of issuing them: an expired purchase FX quote must
+    # not hold prepaid stock. Keep the same verified-payment/fee/margin guard.
+    if code not in (250,500,1000) or fee_policy.get('enabled') is not True:
+        raise ValueError('supplier_cost_unconfirmed')
+    with db(PROFIT) as c:
+        row=c.execute('SELECT unit_cost_rub FROM capital_inventory_prices WHERE pool=?',('codex_'+str(code),)).fetchone()
+    if not row:raise ValueError('supplier_cost_unconfirmed')
+    cost=money(row['unit_cost_rub'])
+    if cost<=0:raise ValueError('supplier_cost_unconfirmed')
+    result=assessor(financial,fee_policy,lambda _: {'id':'prepaid_codex_'+str(code),'cost_rub':str(cost)},now=time.time())
+    if result.get('allowed') is not True or money(result.get('profit_bound_rub'))<money(minimum_profit):
+        raise ValueError('supplier_margin_hold')
+    return str(cost)
+
+
 def validate_job(jid,amount=None,*,bound=False,shared=False,policy=None,payment_reader=paid):
     policy=policy or b.protected(b.SECRET/'aibuy-policy.json')
     if policy.get('paused') is True and not bound and not shared:raise ValueError('supplier_owner_topup_pause')
@@ -99,7 +116,7 @@ def validate_job(jid,amount=None,*,bound=False,shared=False,policy=None,payment_
     rate_policy=b.protected(b.SECRET/'policy.json')
     fee_policy=json.loads(FEE_POLICY.read_text())
     s=importlib.util.spec_from_file_location('margin_read',GUARD);guard=importlib.util.module_from_spec(s);s.loader.exec_module(guard)
-    cost=quote(amount,code,rate_policy,financial,fee_policy,guard.assess)
+    cost=prepaid_codex_quote(code,financial,fee_policy,guard.assess,rate_policy.get('minimumProfitRub',0)) if shared and code in (250,500,1000) else quote(amount,code,rate_policy,financial,fee_policy,guard.assess)
     if bound and not shared:
         if amount!=attempt['amount_minor'] or str(cost)!=attempt['cost_rub']:raise ValueError('supplier_cost_binding_invalid')
         with db(b.STATE/'journal.sqlite') as c:
