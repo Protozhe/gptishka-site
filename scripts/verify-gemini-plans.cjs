@@ -101,8 +101,9 @@ async function storefrontCheckout(lang) {
   assert.equal(d.querySelector('#serviceDurationFilters button').dataset.serviceFilterKey, "1m");
   assert.equal(accountOption.disabled, false); assert.equal(accountOption.checked, false);
   assert.equal(d.querySelector('#serviceDeliveryFilters'), null, 'Ultra uses the same account checkbox as Pro');
-  assert.match(d.querySelector('#serviceConstructorPrice').textContent.replaceAll('\u00a0', ' '), /16[\s,]*990/);
-  for (const [ready, price, id] of [[false, /16[\s,]*990/, 'fixture-ultra-1'], [true, /14[\s,]*990/, 'fixture-ultra-0'], [false, /16[\s,]*990/, 'fixture-ultra-1']]) {
+  assert.match(d.querySelector('#serviceConstructorPrice').textContent.replaceAll('\u00a0', ' '), /12[\s,]*900/);
+  assert.match(d.querySelector('.service-new-account__price').textContent.replaceAll('\u00a0', ' '), /\+200/);
+  for (const [ready, price, id] of [[false, /12[\s,]*900/, 'fixture-ultra-1'], [true, /13[\s,]*100/, 'fixture-ultra-0'], [false, /12[\s,]*900/, 'fixture-ultra-1']]) {
     accountOption.checked = ready; accountOption.dispatchEvent(new w.Event('change', { bubbles: true }));
     assert.equal(accountOption.checked, ready);
     assert.match(d.querySelector('#serviceConstructorPrice').textContent.replaceAll('\u00a0', ' '), price);
@@ -199,6 +200,37 @@ async function scopedUltraCatalog() {
   assert.equal(result.length, 2); assert.equal(touched.length, 3);
   assert.throws(() => surcharge.resolveNewAccountSurcharge(ultra.plans[0].slug, "RUB", true));
 }
+async function scopedUltraPrices() {
+  const pricing = require("../apps/admin-backend/scripts/configure-gemini-ultra-price.js");
+  assert.equal(pricing.prices["gemini-ultra-own-1m"], 12900);
+  assert.equal(pricing.prices["gemini-ultra-ready-1m"], 13100);
+  const before = ultra.plans.map((plan, index) => ({...ultra.productData(plan), id:"fixture-price-" + index, price:index ? 16990 : 14990,
+    activationVariants:{withLogin:{enabled:Boolean(index),price:index ? 16990 : 14990,deliveryType:"manual_login",activationSiteUrl:null},
+      withoutLogin:{enabled:!index,price:index ? 16990 : 14990,deliveryType:"manual_login",activationSiteUrl:null}}}));
+  const rows = structuredClone(before), writes = [];
+  const db = {product:{
+    findMany:async q => {assert.deepEqual(q.where.slug.in,pricing.slugs);return structuredClone(rows);},
+    update:async q => {
+      const row = rows.find(x=>x.id===q.where.id);
+      assert.ok(row,"Only existing Ultra rows may be updated");
+      assert.deepEqual(Object.keys(q.data).sort(),["activationVariants","price"]);
+      writes.push(q);Object.assign(row,q.data);return structuredClone(row);
+    }
+  }};
+  await pricing.apply(db, await pricing.snapshot(db));
+  assert.equal(writes.length,2);
+  for (const row of rows) {
+    const old = before.find(x=>x.id===row.id), price = pricing.prices[row.slug];
+    assert.equal(row.price,price);
+    for (const key of ["withLogin","withoutLogin"]) assert.deepEqual(row.activationVariants[key],{...old.activationVariants[key],price});
+    assert.deepEqual({...row,price:old.price,activationVariants:old.activationVariants},old,"No flags, fulfillment or other product data may change");
+  }
+  const writesBeforeRejected = writes.length;
+  await assert.rejects(pricing.apply(db,[...before.slice(0,1),{...before[1],slug:"gemini-pro-12m"}]));
+  assert.equal(writes.length,writesBeforeRejected);
+  await pricing.rollback(db,{kind:"gemini-ultra-price-12900-account-200-v1",before},null);
+  assert.deepEqual(rows,before,"Price rollback restores both original SKU and variant prices");
+}
 async function browser(lang, forbidden = false) {
   const dom = new JSDOM(lang === "en" ? fs.readFileSync("en/gemini-activation.html", "utf8") : html, { url: `https://fixture.invalid/${lang === "en" ? "en/" : ""}gemini-activation.html?order_id=demo-order&t=fixture-private-link&lang=${lang}`, runScripts: "outside-only", pretendToBeVisual: true });
   const w = dom.window, d = w.document; let phase = "awaiting_account", submits = 0, reads = 0; const timers = [];
@@ -251,6 +283,7 @@ async function browser(lang, forbidden = false) {
     for (const lang of ["ru", "en"]) { await checkout(plan, 0, false, lang); await ultraBrowser(lang, plan); }
   }
   await scopedUltraCatalog();
+  await scopedUltraPrices();
   for (const lang of ["ru", "en"]) { await browser(lang); await browser(lang, true); }
   for (const lang of ["ru", "en"]) await storefrontCheckout(lang);
   console.log("Gemini: Pro waits for keys after payment; Ultra options, prices, scoped catalog, private manager page and RU/EN checkout verified with mocks only.");

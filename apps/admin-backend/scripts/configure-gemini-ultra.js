@@ -1,9 +1,10 @@
 const fs = require("node:fs");
 const path = require("node:path");
+const { prices } = require("./configure-gemini-ultra-price.js");
 
 const plans = [
-  { slug: "gemini-ultra-ready-1m", account: "ready", price: 14990 },
-  { slug: "gemini-ultra-own-1m", account: "own", price: 16990 },
+  { slug: "gemini-ultra-ready-1m", account: "ready", price: prices["gemini-ultra-ready-1m"] },
+  { slug: "gemini-ultra-own-1m", account: "own", price: prices["gemini-ultra-own-1m"] },
 ];
 const image = "/assets/img/services/gemini-card.webp?v=20260810-gemini1";
 const hover = "/assets/img/services/gemini-card-hover.webp?v=20260810-gemini1";
