@@ -41,7 +41,7 @@
 <link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
-<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-f88bbb690fd45355">
+<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-92e5b8f03b0c07df">
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
 </head>
 <body id="storefrontBody" class="claude-workspace-body">
@@ -133,7 +133,17 @@
           <div id="servicePlanFilters"></div>
           <div id="serviceDurationFilters"></div>
         </div>
-        <aside id="claudeAccountAgeNotice" class="claude-account-age" aria-live="polite" hidden>
+        <aside id="claudeProNotice" class="claude-account-age claude-plan-notice" aria-labelledby="claudeProNoticeTitle" hidden>
+          <strong id="claudeProNoticeTitle" data-verification-en="Before paying for Claude Pro">Перед оплатой Claude Pro</strong>
+          <p data-verification-en="Check your account. Both requirements are mandatory:">Проверьте аккаунт. Обязательны оба условия:</p>
+          <ul class="claude-plan-notice__requirements">
+            <li><strong data-verification-en="Created before 15 September 2026.">Создан до 15 сентября 2026 года.</strong> <span data-verification-en="Accounts registered on 15 September or later are not eligible.">Аккаунты от 15 сентября и позже не подходят.</span></li>
+            <li><strong data-verification-en="KYC completed before placing the order.">KYC пройден до оформления заказа.</strong></li>
+          </ul>
+          <p data-verification-en="Even when both conditions are met, Apple may charge you while Claude's anti-fraud checks prevent subscription activation.">Даже при выполнении обоих условий Apple может списать оплату, а антифрод-проверка Claude — помешать зачислению подписки.</p>
+          <p class="claude-plan-notice__limits" data-verification-en="If either requirement is not met, do not place an order. Failure to credit the subscription due to Claude's anti-fraud checks is not covered by the guarantee: repeat activation and compensation are not provided.">Если хотя бы одно условие не выполнено, не оформляйте заказ. Незачисление подписки из-за антифрод-проверок Claude не покрывается гарантией: повторная активация и компенсация не предусмотрены.</p>
+        </aside>
+        <aside id="claudeAccountAgeNotice" class="claude-account-age claude-plan-notice" aria-live="polite" hidden>
           <strong>Перед подключением Max 5× и Max 20×</strong>
           <p>Для подключения через наш сервис нужен аккаунт Claude старше 30 дней с уже пройденной проверкой личности (KYC). На аккаунте без KYC активация может не пройти.</p>
           <p>Мы помогаем оплатить подписку, но не обходим проверку личности. Подключение не исключает дополнительных проверок, ограничений или блокировки со стороны Anthropic.</p>
@@ -293,7 +303,7 @@
   <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
   <script src="/assets/js/claude-onboarding-v1.js?v=20261002-new-account1" defer></script>
 <script src="/assets/js/verification-support-checkout.js?v=sha256-05016e76d1666cd0" defer></script>
-<script src="/assets/js/claude-workspace.js?v=sha256-e7faa2db520d841e" defer></script>
+<script src="/assets/js/claude-workspace.js?v=sha256-d7f06b0638cb6c00" defer></script>
 <script src="/assets/js/storefront-ui.js?v=sha256-bcae5e9700f06872" defer></script>
 <script src="/assets/js/client-i18n.js?v=sha256-d6f152c390656f25" defer></script>
 <script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer></script>

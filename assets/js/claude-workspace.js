@@ -13,10 +13,12 @@
   const panels = tabs.map(tab => document.getElementById(tab.getAttribute('aria-controls')));
   const defaultSection = workspace.dataset.defaultSection === 'verification' ? 'verification' : 'subscriptions';
 
+  const proNotice = document.getElementById('claudeProNotice');
   const accountAgeNotice = document.getElementById('claudeAccountAgeNotice');
   const plansGrid = workspace.querySelector('#servicePlansGrid');
   function updateAccountAgeNotice() {
     const planKey = plansGrid?.querySelector('.price-card')?.dataset.planKey || '';
+    if (proNotice) proNotice.hidden = planKey !== 'pro';
     if (accountAgeNotice) accountAgeNotice.hidden = !planKey.startsWith('max-');
   }
   if (plansGrid) {

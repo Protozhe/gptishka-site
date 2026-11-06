@@ -40,7 +40,7 @@
 <link rel="stylesheet" href="/assets/css/language-slider.css?v=20260811-mobile-header1" data-language-menu-styles="20260913-header-grid1">
 <link rel="stylesheet" href="/assets/css/header-navigation-state.css?v=20261007-shared-header2" data-header-navigation-styles="20261007-shared-header2">
 <link rel="stylesheet" href="/assets/css/site-footer-unified.css?v=20260724-unified-footer1" data-unified-footer-styles="20260913-header-grid1">
-<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-f88bbb690fd45355">
+<link rel="stylesheet" href="/assets/css/claude-workspace.css?v=sha256-92e5b8f03b0c07df">
 <link rel="stylesheet" href="/assets/css/storefront-design.css?v=sha256-d628a124db703a03">
 </head>
 <body id="storefrontBody" class="claude-workspace-body">
@@ -132,7 +132,17 @@
           <div id="servicePlanFilters"></div>
           <div id="serviceDurationFilters"></div>
         </div>
-        <aside id="claudeAccountAgeNotice" class="claude-account-age" aria-live="polite" hidden>
+        <aside id="claudeProNotice" class="claude-account-age claude-plan-notice" aria-labelledby="claudeProNoticeTitle" hidden>
+          <strong id="claudeProNoticeTitle">Before paying for Claude Pro</strong>
+          <p>Check your account. Both requirements are mandatory:</p>
+          <ul class="claude-plan-notice__requirements">
+            <li><strong>Created before 15 September 2026.</strong> Accounts registered on 15 September or later are not eligible.</li>
+            <li><strong>KYC completed before placing the order.</strong></li>
+          </ul>
+          <p>Even when both conditions are met, Apple may charge you while Claude's anti-fraud checks prevent subscription activation.</p>
+          <p class="claude-plan-notice__limits">If either requirement is not met, do not place an order. Failure to credit the subscription due to Claude's anti-fraud checks is not covered by the guarantee: repeat activation and compensation are not provided.</p>
+        </aside>
+        <aside id="claudeAccountAgeNotice" class="claude-account-age claude-plan-notice" aria-live="polite" hidden>
           <strong>Before activating Max 5× or Max 20×</strong>
           <p>To activate a plan through our service, use a Claude account older than 30 days that has already completed identity verification (KYC). Activation may fail on an account without KYC.</p>
           <p>We help pay for the subscription, but do not bypass identity verification. Activation does not prevent additional checks, restrictions or account suspension by Anthropic.</p>
@@ -292,7 +302,7 @@
   <script src="/assets/js/language-switcher.js?v=sha256-cb85dc6ea74c7f3e" defer></script>
   <script src="/assets/js/claude-onboarding-v1.js?v=20261002-new-account1" defer></script>
 <script src="/assets/js/verification-support-checkout.js?v=sha256-05016e76d1666cd0" defer></script>
-<script src="/assets/js/claude-workspace.js?v=sha256-e7faa2db520d841e" defer></script>
+<script src="/assets/js/claude-workspace.js?v=sha256-d7f06b0638cb6c00" defer></script>
 <script src="/assets/js/storefront-ui.js?v=sha256-bcae5e9700f06872" defer></script>
 <script src="/assets/js/client-i18n.js?v=sha256-d6f152c390656f25" defer></script>
 <script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer></script>
