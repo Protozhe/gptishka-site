@@ -2009,7 +2009,7 @@
   ],
   [
     "Если спор не урегулирован",
-    "If the dispute is not resolved"
+    "If a dispute remains unresolved"
   ],
   [
     "на +10% ключами Манн Ко.",
@@ -2221,7 +2221,7 @@
   ],
   [
     "Как оформить обращение",
-    "How to submit an appeal"
+    "How to submit a claim"
   ],
   [
     "Karing: раздел Профили",
@@ -3089,7 +3089,7 @@
   ],
   [
     "Сроки",
-    "Deadlines"
+    "Timeframes"
   ],
   [
     "Тариф",
@@ -3122,5 +3122,577 @@
   [
     "и",
     "And"
+  ],
+  [
+    "1 Общие положения",
+    "1 General provisions"
+  ],
+  [
+    "1.1. Оферта определяет порядок оформления, оплаты и исполнения заказов, условия гарантии, рассмотрения обращений и возврата денежных средств.",
+    "1.1. This Offer sets out how orders are placed, paid for and fulfilled, as well as guarantee terms, claims handling and refunds."
+  ],
+  [
+    "1.2. Оплата заказа означает принятие Покупателем условий оферты и описания выбранного продукта, доступных до оплаты.",
+    "1.2. Payment for an order constitutes acceptance of the Offer and the selected product description made available before payment."
+  ],
+  [
+    "1.3. До оплаты Покупателю предоставляется возможность ознакомиться с составом продукта, его стоимостью, сроком исполнения, требованиями к аккаунту и условиями возврата.",
+    "1.3. Before payment, the Buyer can review what the product includes, its price, fulfilment period, account requirements and refund terms."
+  ],
+  [
+    "1.4. К отношениям сторон применяется законодательство Российской Федерации. Условия оферты действуют в части, не противоречащей обязательным требованиям закона.",
+    "1.4. The laws of the Russian Federation apply. The Offer applies to the extent that it is consistent with mandatory legal requirements."
+  ],
+  [
+    "1.5. Условия оплаченного заказа фиксируются на момент заключения договора. Последующие изменения оферты не ухудшают условия ранее оплаченных заказов.",
+    "1.5. The terms of a paid order are determined when the contract is concluded. Later amendments do not worsen the terms of previously paid orders."
+  ],
+  [
+    "2 Предмет договора",
+    "2 Subject of the contract"
+  ],
+  [
+    "2.1. Продавец предоставляет выбранный цифровой продукт и/или оказывает указанную в заказе услугу. Покупатель оплачивает заказ.",
+    "2.1. The Seller supplies the selected digital product and/or provides the service specified in the order. The Buyer pays for the order."
+  ],
+  [
+    "2.2. В зависимости от описания продукта предметом заказа могут быть подключение или продление подписки, предоставление цифрового кода, пополнение баланса, сопровождение верификации либо иная указанная на Сайте услуга.",
+    "2.2. Depending on the description, an order may include subscription activation or renewal, a digital code, a balance top-up, verification guidance or another service listed on the Website."
+  ],
+  [
+    "2.3. Наименование, состав, стоимость, срок и способ исполнения заказа определяются его описанием на Сайте и подтверждением заказа.",
+    "2.3. The name, contents, price, term and fulfilment method are defined by the Website description and order confirmation."
+  ],
+  [
+    "2.4. Передача инструкции, ссылки, кода или выполнение операции подключения фиксирует соответствующий этап исполнения. Если заказ предусматривает подписку на определённый срок, подключение не прекращает гарантийные обязательства Продавца на оплаченный период.",
+    "2.4. Delivering instructions, a link or a code, or performing activation, records the relevant stage of fulfilment. Where an order includes a subscription for a specified term, activation does not end the Seller's guarantee for that paid term."
+  ],
+  [
+    "2.5. Если заказ состоит из нескольких отдельно оплачиваемых услуг, их состав и стоимость сообщаются до оплаты. После оплаты Продавец не вправе задним числом выделять из общей цены отдельную невозвратную плату за оформление.",
+    "2.5. Any separately priced services and their prices are disclosed before payment. The Seller may not retrospectively allocate a non-refundable setup fee from the total price."
+  ],
+  [
+    "3 Оформление и исполнение заказа",
+    "3 Placing and fulfilling an order"
+  ],
+  [
+    "3.1. Покупатель выбирает продукт, предоставляет необходимые сведения и оплачивает заказ.",
+    "3.1. The Buyer selects a product, supplies the necessary information and pays for the order."
+  ],
+  [
+    "3.2. Покупатель сообщает достоверные сведения, необходимые для исполнения заказа, и соблюдает требования к аккаунту, указанные до оплаты.",
+    "3.2. The Buyer supplies accurate information needed to fulfil the order and follows the account requirements disclosed before payment."
+  ],
+  [
+    "3.3. Продавец запрашивает только сведения, необходимые для исполнения заказа, идентификации платежа и рассмотрения обращения.",
+    "3.3. The Seller requests only information needed for fulfilment, payment identification and claims handling."
+  ],
+  [
+    "3.4. Способ и срок исполнения указываются в описании продукта или согласуются до оплаты. Изменение согласованного срока производится с согласия Покупателя.",
+    "3.4. The fulfilment method and period are stated in the description or agreed before payment. Changes to an agreed period require the Buyer's consent."
+  ],
+  [
+    "3.5. Результат предоставляется в электронном виде через Сайт, электронную почту или согласованный канал поддержки.",
+    "3.5. The result is delivered electronically through the Website, email or an agreed support channel."
+  ],
+  [
+    "3.6. Если для исполнения не хватает сведений, Продавец уведомляет Покупателя и сообщает, какие сведения требуются. Последствия задержки оцениваются с учётом её причины и требований закона.",
+    "3.6. If information is missing, the Seller notifies the Buyer and identifies what is required. The consequences of a delay depend on its cause and applicable law."
+  ],
+  [
+    "3.7. Если исполнение на согласованных условиях невозможно, Продавец уведомляет Покупателя и разрешает вопрос об отмене заказа и возврате денежных средств.",
+    "3.7. If fulfilment on the agreed terms is impossible, the Seller notifies the Buyer and addresses cancellation and refund."
+  ],
+  [
+    "4 Цена и оплата",
+    "4 Price and payment"
+  ],
+  [
+    "4.1. Цена заказа указывается в рублях и фиксируется при оплате.",
+    "4.1. The price is stated in rubles and fixed at payment."
+  ],
+  [
+    "4.2. До оплаты Покупателю сообщается итоговая сумма к оплате Продавцу. Дополнительные платные услуги предоставляются только с согласия Покупателя.",
+    "4.2. The total payable to the Seller is disclosed before payment. Additional paid services require the Buyer's consent."
+  ],
+  [
+    "4.3. Оплата производится на условиях полной предоплаты, если в описании продукта не установлен другой порядок.",
+    "4.3. Full prepayment applies unless the product description specifies otherwise."
+  ],
+  [
+    "4.4. Комиссия, самостоятельно взимаемая банком или платёжным сервисом Покупателя, определяется отношениями Покупателя с соответствующим банком или сервисом.",
+    "4.4. Charges independently imposed by the Buyer's bank or payment service are governed by the Buyer's relationship with that provider."
+  ],
+  [
+    "4.5. Комиссии у Продавца не являются основанием для автоматического уменьшения возврата. Возможность учёта расходов определяется разделом 6 и законом.",
+    "4.5. Charges incurred by the Seller do not automatically reduce a refund. Deductible expenses are determined under section 6 and applicable law."
+  ],
+  [
+    "5 Права и обязанности сторон",
+    "5 Rights and obligations"
+  ],
+  [
+    "5.1. Продавец предоставляет продукт или оказывает услугу в согласованном объёме и сроке, сообщает существенные условия до оплаты, рассматривает обращения и предоставляет обоснованный расчёт возврата.",
+    "5.1. The Seller supplies the product or service within the agreed scope and period, discloses material terms before payment, handles claims and provides a reasoned refund calculation."
+  ],
+  [
+    "5.2. Покупатель предоставляет достоверные сведения, соблюдает применимые правила сторонней платформы, сохраняет конфиденциальность данных доступа и сообщает о проблемах с заказом.",
+    "5.2. The Buyer supplies accurate information, follows applicable platform rules, protects access credentials and reports order issues."
+  ],
+  [
+    "5.3. Продавец вправе привлекать других исполнителей. Их привлечение само по себе не освобождает Продавца от обязательств перед Покупателем.",
+    "5.3. The Seller may engage other providers. Doing so does not itself release the Seller from obligations to the Buyer."
+  ],
+  [
+    "5.4. При выявлении обстоятельств, препятствующих законному и надлежащему исполнению заказа, Продавец уведомляет Покупателя и действует в соответствии с законом и условиями возврата.",
+    "5.4. If lawful and proper fulfilment is prevented, the Seller notifies the Buyer and follows applicable law and refund terms."
+  ],
+  [
+    "6 Гарантия и возврат денежных средств",
+    "6 Guarantee and refunds"
+  ],
+  [
+    "6.1. Основание обращения определяет порядок его рассмотрения. Невыполнение заказа, недостаток услуги, добровольный отказ и досрочное прекращение подписки рассматриваются с учётом соответствующих обстоятельств.",
+    "6.1. Claims are handled according to their grounds. Non-fulfilment, service defects, voluntary cancellation and early subscription termination are assessed according to their circumstances."
+  ],
+  [
+    "6.2. Для подписок договорная гарантия действует в течение всего оплаченного периода. Передача инструкции или первоначальное подключение не отменяют эту гарантию.",
+    "6.2. A subscription guarantee covers the entire paid term. Delivering instructions or performing the initial activation does not cancel that guarantee."
+  ],
+  [
+    "6.3. Если заказ не выполнен по причинам на стороне Продавца, возвращается вся уплаченная за него сумма без удержания комиссий и операционных расходов.",
+    "6.3. If an order is not fulfilled for reasons on the Seller's side, the full amount paid is refunded without deducting fees or operating expenses."
+  ],
+  [
+    "6.4. При недостатках продукта или услуги Покупатель вправе предъявить предусмотренные законом требования. При наличии законного основания для полного возврата расчёт не ограничивается стоимостью неиспользованных дней.",
+    "6.4. For product or service defects, the Buyer may exercise statutory remedies. Where there is a legal basis for a full refund, the calculation is not limited to unused days."
+  ],
+  [
+    "6.5. Замена продукта, повторное подключение или иной вариант исполнения вместо причитающегося возврата допускаются по согласованию с Покупателем.",
+    "6.5. Replacement, reactivation or another fulfilment option instead of a refund due requires the Buyer's agreement."
+  ],
+  [
+    "6.6. Если подписка действовала и прекратилась до окончания оплаченного периода, Покупатель вправе получить возврат за его неиспользованную часть, кроме обоснованного исключения по пунктам 6.14–6.17.",
+    "6.6. If a subscription was active and ends before its paid term, the Buyer is entitled to a refund for the unused portion, unless an exception under clauses 6.14–6.17 is substantiated."
+  ],
+  [
+    "6.7. Возврат = уплаченная цена подписки × длительность неиспользованного периода ÷ длительность всего оплаченного периода.",
+    "6.7. Refund = price paid for the subscription × unused duration ÷ total paid duration."
+  ],
+  [
+    "6.8. Неиспользованный период отсчитывается от подтверждённого момента прекращения доступа до окончания оплаченного срока. При отсутствии точного времени применяется подтверждённая дата с округлением периода в пользу Покупателя. Итоговая сумма округляется до копеек.",
+    "6.8. The unused portion runs from the confirmed loss of access until the end of the paid term. If the exact time is unavailable, the confirmed date is used with the period rounded in the Buyer's favour. The final amount is rounded to kopecks."
+  ],
+  [
+    "6.9. При возврате по пункту 6.6 дополнительные 20%, комиссии, расходы на подключение и расходы привлечённых исполнителей не удерживаются.",
+    "6.9. Refunds under clause 6.6 carry no additional 20% deduction, fees, activation expenses or expenses of other providers."
+  ],
+  [
+    "6.10. Указанный порядок не ограничивает более широкие требования Покупателя, предоставленные законом.",
+    "6.10. This procedure does not limit broader statutory remedies."
+  ],
+  [
+    "6.11. Покупатель вправе отказаться от услуги в порядке, предусмотренном законом.",
+    "6.11. The Buyer may withdraw from a service as provided by law."
+  ],
+  [
+    "6.12. При добровольном отказе до подключения Продавец может учесть только фактически понесённые, документально подтверждённые расходы, непосредственно связанные с исполнением данного заказа, не более 20% оплаченной суммы. Это верхний предел, а не фиксированный сбор. При отсутствии подтверждённых расходов возврат полный.",
+    "6.12. For voluntary cancellation before activation, only actual, documented expenses directly related to that order may be deducted, capped at 20% of the amount paid. This is a maximum, not a fixed fee. If there are no documented expenses, the refund is full."
+  ],
+  [
+    "6.13. После начала оказания услуги расчёт учитывает надлежаще оказанную часть и допустимые подтверждённые расходы в соответствии с законом. Одни и те же суммы повторно не учитываются. Возмещённые Продавцу расходы исключаются. Покупателю предоставляются расчёт и подтверждение учитываемых расходов.",
+    "6.13. After a service has started, the calculation accounts for the properly provided portion and legally deductible documented expenses. The same amounts are not counted twice. Reimbursed expenses are excluded. The Buyer receives the calculation and supporting expense documents."
+  ],
+  [
+    "6.14. При блокировке аккаунта или ограничении доступа проверяются причина, обстоятельства и связь ограничения с исполнением заказа.",
+    "6.14. For account suspension or restricted access, the cause, circumstances and connection with order fulfilment are examined."
+  ],
+  [
+    "6.15. Исключение из договорной гарантии может применяться, если прекращение доступа вызвано подтверждённым нарушением Покупателем правил платформы. Продавец сообщает применимое правило, установленные обстоятельства и их связь с прекращением подписки.",
+    "6.15. An exception to the contractual guarantee may apply if loss of access was caused by a documented breach of platform rules by the Buyer. The Seller identifies the applicable rule, established circumstances and their connection with the termination."
+  ],
+  [
+    "6.16. Сам факт блокировки, проверки, отказа в апелляции или возврата платформой денежных средств не устанавливает вину Покупателя.",
+    "6.16. Suspension, checks, a rejected appeal or a platform refund do not by themselves establish the Buyer's fault."
+  ],
+  [
+    "6.17. Ошибки подключения и оплаты на стороне Продавца или привлечённого им исполнителя не относятся к нарушениям Покупателя. Исключение из договорной гарантии не отменяет законные требования Покупателя.",
+    "6.17. Activation or payment errors on the Seller's or its provider's side are not breaches by the Buyer. A guarantee exception does not remove statutory remedies."
+  ],
+  [
+    "6.18. Расчёты Продавца со сторонней платформой, платёжным сервисом или привлечённым исполнителем учитываются отдельно от обязательств перед Покупателем.",
+    "6.18. The Seller's settlements with platforms, payment services or other providers are accounted for separately from obligations to the Buyer."
+  ],
+  [
+    "6.19. Сумма и срок возмещения Продавцу не определяют автоматически размер и срок возврата Покупателю.",
+    "6.19. The amount and timing of reimbursement to the Seller do not automatically determine the Buyer's refund amount or timing."
+  ],
+  [
+    "6.20. Если при добровольном отказе учтены расходы, впоследствии возмещённые Продавцу, Продавец корректирует расчёт и возвращает Покупателю излишне удержанную сумму.",
+    "6.20. If expenses deducted for voluntary cancellation are later reimbursed to the Seller, the calculation is adjusted and any excess deduction is refunded to the Buyer."
+  ],
+  [
+    "7 Обращения и сроки возврата",
+    "7 Claims and refund periods"
+  ],
+  [
+    "7.1. Обращения принимаются по контактам из раздела 14.",
+    "7.1. Claims are accepted through the contacts in section 14."
+  ],
+  [
+    "7.2. Покупатель сообщает номер заказа либо сведения, позволяющие найти оплату. При наличии предоставляются описание проблемы, даты прекращения доступа и относящиеся к обращению материалы.",
+    "7.2. The Buyer provides an order number or information identifying the payment, and any available issue description, dates of access loss and relevant materials."
+  ],
+  [
+    "7.3. Для рассмотрения обращения не требуется сообщать пароль, CVV, коды входа или полный номер банковской карты.",
+    "7.3. Passwords, CVV, login codes or a full card number are not required to review a claim."
+  ],
+  [
+    "7.4. Первичное рассмотрение обращения проводится в течение 72 часов с момента получения.",
+    "7.4. Initial review takes place within 72 hours of receipt."
+  ],
+  [
+    "7.5. Требования, к которым применяется статья 31 Закона Российской Федерации «О защите прав потребителей», удовлетворяются в течение десяти календарных дней со дня предъявления соответствующего требования. Для остальных требований применяется срок, установленный законом или договором.",
+    "7.5. Claims covered by Article 31 of the Russian Consumer Protection Law are satisfied within ten calendar days of submission. Other claims follow the period established by law or contract."
+  ],
+  [
+    "7.6. Запрос дополнительных материалов и ожидание ответа платформы сами по себе не продлевают обязательный срок исполнения требования.",
+    "7.6. Requests for further materials or waiting for a platform response do not by themselves extend mandatory deadlines."
+  ],
+  [
+    "7.7. Возврат производится тем же способом, которым поступила оплата, если иной порядок не согласован с Покупателем и допускается правилами платёжной системы и законом.",
+    "7.7. Refunds use the original payment method unless another method is agreed with the Buyer and permitted by law and payment provider rules."
+  ],
+  [
+    "7.8. Продавец сообщает сумму, основание и сведения о выполненном возврате. Технический срок обработки банком не используется для продления обязательного срока исполнения Продавцом.",
+    "7.8. The Seller provides the amount, grounds and transaction details of a refund. Bank processing time does not extend the Seller's mandatory deadline."
+  ],
+  [
+    "7.9. Обращение в поддержку не ограничивает право Покупателя обратиться в банк, государственные органы или суд в установленном законом порядке.",
+    "7.9. Contacting support does not limit the Buyer's right to contact a bank, public authority or court as provided by law."
+  ],
+  [
+    "8 Сторонние платформы и требования к аккаунту",
+    "8 Third-party platforms and account requirements"
+  ],
+  [
+    "8.1. Продавец не является оператором сторонних платформ, если иное прямо не указано в описании продукта.",
+    "8.1. The Seller is not the operator of third-party platforms unless the description expressly states otherwise."
+  ],
+  [
+    "8.2. Платформы самостоятельно устанавливают правила использования, региональной доступности, проверки личности и ограничения аккаунтов.",
+    "8.2. Platforms independently set their usage, regional availability, identity verification and account restriction rules."
+  ],
+  [
+    "8.3. Существенные требования к аккаунту, известные Продавцу и необходимые для выбранного способа исполнения, сообщаются до оплаты.",
+    "8.3. Material account requirements known to the Seller and needed for the selected fulfilment method are disclosed before payment."
+  ],
+  [
+    "8.4. Если требование установлено способом подключения Продавца, оно обозначается как условие этого способа. Оно не представляется официальным требованием платформы без соответствующего основания.",
+    "8.4. Requirements arising from the Seller's activation method are labelled as conditions of that method. They are not presented as official platform requirements without a basis."
+  ],
+  [
+    "8.5. Ознакомление с предупреждением о рисках не означает отказа от гарантии Продавца и прав, предоставленных законом.",
+    "8.5. Acknowledging a risk warning does not waive the Seller's guarantee or statutory rights."
+  ],
+  [
+    "8.6. Решение платформы оценивается вместе с обстоятельствами заказа. Обязанности Продавца определяются офертой и законом.",
+    "8.6. Platform decisions are assessed alongside order circumstances. The Seller's obligations are governed by the Offer and law."
+  ],
+  [
+    "9 Ответственность сторон",
+    "9 Liability"
+  ],
+  [
+    "9.1. Стороны несут ответственность за нарушение обязательств в соответствии с законодательством Российской Федерации.",
+    "9.1. The parties are liable for breaches under the laws of the Russian Federation."
+  ],
+  [
+    "9.2. Ответственность за недостатки и причины прекращения доступа определяется с учётом закона, предоставленной гарантии и подтверждённых обстоятельств.",
+    "9.2. Liability for defects and loss of access is determined by law, the guarantee and established circumstances."
+  ],
+  [
+    "9.3. Ограничения ответственности применяются только в пределах, допускаемых законом. Они не исключают обязательные меры ответственности, возмещение убытков и другие законные требования Покупателя.",
+    "9.3. Liability limitations apply only where permitted by law. They do not exclude mandatory liability, damages or other statutory remedies."
+  ],
+  [
+    "10 Обстоятельства непреодолимой силы",
+    "10 Force majeure"
+  ],
+  [
+    "10.1. Сторона освобождается от ответственности в той мере, в какой докажет обстоятельства непреодолимой силы и их влияние на исполнение обязательства.",
+    "10.1. A party is released from liability to the extent that it proves force majeure and its effect on fulfilment."
+  ],
+  [
+    "10.2. О возникших обстоятельствах и предполагаемых последствиях сторона уведомляет другую сторону в разумный срок.",
+    "10.2. The other party is notified of such events and their expected consequences within a reasonable period."
+  ],
+  [
+    "10.3. Блокировка аккаунта, изменение правил платформы или нарушение обязательств привлечённым исполнителем не признаются обстоятельствами непреодолимой силы автоматически.",
+    "10.3. Account suspension, platform rule changes or a provider's breach are not automatically force majeure."
+  ],
+  [
+    "10.4. Последствия невозможности исполнения, включая возврат денежных средств, определяются законом и обстоятельствами заказа.",
+    "10.4. The consequences of inability to fulfil, including refunds, depend on law and order circumstances."
+  ],
+  [
+    "11 Персональные данные",
+    "11 Personal data"
+  ],
+  [
+    "11.1. Данные обрабатываются для оформления и исполнения заказа, идентификации платежа, поддержки и выполнения обязанностей Продавца на предусмотренных законом основаниях.",
+    "11.1. Data is processed for orders, fulfilment, payment identification, support and the Seller's duties on lawful grounds."
+  ],
+  [
+    "11.2. Цели, состав данных, порядок обработки и права Покупателя раскрываются в политике обработки персональных данных на Сайте.",
+    "11.2. Processing purposes, data categories, procedures and Buyer rights are described in the Website's privacy policy."
+  ],
+  [
+    "11.3. Если для отдельной обработки требуется согласие, оно запрашивается в установленном законом порядке.",
+    "11.3. Consent is obtained as required by law where a particular processing operation requires it."
+  ],
+  [
+    "11.4. Запрашиваются только необходимые сведения. Покупатель вправе закрыть в материалах данные, не относящиеся к обращению.",
+    "11.4. Only necessary information is requested. The Buyer may redact unrelated information from supporting materials."
+  ],
+  [
+    "12 Разрешение споров",
+    "12 Dispute resolution"
+  ],
+  [
+    "12.1. Стороны вправе урегулировать разногласия путём переговоров и рассмотрения обращения.",
+    "12.1. The parties may resolve disagreements through discussion and claims review."
+  ],
+  [
+    "12.2. При недостижении соглашения спор разрешается в установленном законом порядке.",
+    "12.2. If no agreement is reached, the dispute is resolved as provided by law."
+  ],
+  [
+    "12.3. Покупатель сохраняет предусмотренное законом право выбора суда и другие способы защиты своих прав.",
+    "12.3. The Buyer retains statutory choice of court and other remedies."
+  ],
+  [
+    "13 Действие и изменение оферты",
+    "13 Validity and amendments"
+  ],
+  [
+    "13.1. Оферта действует с даты публикации до её отзыва или замены новой редакцией.",
+    "13.1. The Offer applies from publication until withdrawn or replaced."
+  ],
+  [
+    "13.2. Новая редакция применяется к заказам, оплаченным после её публикации.",
+    "13.2. A new revision applies to orders paid after its publication."
+  ],
+  [
+    "13.3. Изменение условий ранее оплаченного заказа допускается по соглашению сторон либо в случаях, предусмотренных законом.",
+    "13.3. Terms of previously paid orders may change by agreement or as permitted by law."
+  ],
+  [
+    "13.4. Продавец сохраняет сведения, позволяющие установить условия, действовавшие при оформлении и оплате заказа.",
+    "13.4. The Seller retains information allowing the terms applicable when an order was placed and paid to be established."
+  ],
+  [
+    "14 Контакты",
+    "14 Contacts"
+  ],
+  [
+    "Передача продукта и состав заказа",
+    "Product delivery and order contents"
+  ],
+  [
+    "Состав, срок и стоимость продукта сообщаются до оплаты. Передача инструкции или первоначальное подключение не прекращают гарантию на оплаченный период подписки.",
+    "Product contents, term and price are disclosed before payment. Delivering instructions or initial activation does not end the guarantee for the paid subscription term."
+  ],
+  [
+    "Заказ не выполнен или имеет недостатки",
+    "Non-fulfilment or defects"
+  ],
+  [
+    "Если заказ не выполнен по причинам на нашей стороне, возвращаем всю уплаченную за него сумму без комиссий и расходов. При недостатках продукта или услуги применяются законные требования покупателя, включая полный возврат при наличии соответствующего основания.",
+    "If an order is not fulfilled for reasons on our side, we refund the full amount without fees or expense deductions. Statutory remedies apply to defects, including a full refund where legally justified."
+  ],
+  [
+    "Замена и повторное подключение вместо причитающегося возврата возможны по согласованию с покупателем.",
+    "Replacement or reactivation instead of a refund due requires the buyer's agreement."
+  ],
+  [
+    "Добровольный отказ покупателя",
+    "Voluntary cancellation"
+  ],
+  [
+    "При добровольном отказе до подключения можно учесть только фактически понесённые, документально подтверждённые расходы по этому заказу, не более 20% оплаты. Это верхний предел, а не фиксированный сбор. При отсутствии расходов возврат полный.",
+    "For voluntary cancellation before activation, only actual, documented expenses for that order may be deducted, capped at 20% of the payment. This is a maximum, not a fixed fee. Without such expenses, the refund is full."
+  ],
+  [
+    "После начала услуги расчёт учитывает надлежаще оказанную часть и допустимые подтверждённые расходы по закону. Возмещённые расходы исключаются. Одни суммы повторно не учитываются. Предоставляем расчёт и подтверждения.",
+    "After a service starts, the calculation accounts for the properly provided portion and legally deductible documented expenses. Reimbursed expenses are excluded. The same amounts are not counted twice. We provide the calculation and evidence."
+  ],
+  [
+    "Подписка прекратилась раньше срока",
+    "Early subscription termination"
+  ],
+  [
+    "Гарантия действует весь оплаченный срок. Если подписка действовала и прекратилась раньше, возвращаем стоимость неиспользованной части периода, кроме подтверждённого исключения из гарантии по оферте.",
+    "The guarantee covers the entire paid term. If an active subscription ends early, we refund its unused portion unless an exception under the Offer is substantiated."
+  ],
+  [
+    "Возврат = уплаченная цена подписки × длительность неиспользованного периода ÷ длительность всего оплаченного периода.",
+    "Refund = price paid for the subscription × unused duration ÷ total paid duration."
+  ],
+  [
+    "Период считаем от подтверждённого прекращения доступа до окончания оплаченного срока. Если точное время неизвестно, используем подтверждённую дату с округлением периода в пользу покупателя. Сумму округляем до копеек.",
+    "The period runs from the confirmed loss of access until the paid term ends. If the exact time is unknown, we use the confirmed date with rounding in the buyer's favour. The amount is rounded to kopecks."
+  ],
+  [
+    "Например, при цене 3 000 ₽ за 30 дней и 10 неиспользованных днях возврат составит 1 000 ₽. Дополнительные 20% и комиссии при гарантийном возврате не удерживаются. Более широкие законные требования покупателя сохраняются.",
+    "For example, a 30-day subscription priced at RUB 3,000 with 10 unused days gives a RUB 1,000 refund. No additional 20% deduction or fees apply to a guarantee refund. Broader statutory remedies remain available."
+  ],
+  [
+    "Блокировка аккаунта и решение платформы",
+    "Account suspension and platform decisions"
+  ],
+  [
+    "Проверяем причину блокировки и её связь с заказом. Сам факт ограничения, проверки или отказа в апелляции не устанавливает вину покупателя.",
+    "We examine the reason for suspension and its connection with the order. Restrictions, checks or a rejected appeal do not by themselves establish the buyer's fault."
+  ],
+  [
+    "При исключении из гарантии сообщаем применимое правило, подтверждённые обстоятельства нарушения покупателем и связь с прекращением подписки. Ошибки подключения и оплаты на нашей стороне или у привлечённого исполнителя не относятся к нарушениям покупателя.",
+    "When applying a guarantee exception, we identify the applicable rule, established breach by the buyer and its connection with termination. Activation and payment errors on our side or our provider's side are not breaches by the buyer."
+  ],
+  [
+    "Возврат платформой или исполнителем",
+    "Reimbursement by a platform or provider"
+  ],
+  [
+    "Сумма и срок возмещения нам не определяют автоматически размер и срок возврата покупателю. Если при добровольном отказе были учтены расходы, впоследствии возмещённые нам, корректируем расчёт и возвращаем излишне удержанную сумму.",
+    "The amount and timing of reimbursement to us do not automatically determine the buyer's refund. If expenses deducted for voluntary cancellation are later reimbursed to us, we adjust the calculation and refund any excess deduction."
+  ],
+  [
+    "Напишите в поддержку и укажите номер заказа либо сведения, позволяющие найти оплату. Опишите проблему и приложите имеющиеся даты прекращения доступа и уведомления платформы. Пароль, CVV, коды входа и полный номер карты не нужны.",
+    "Contact support with the order number or information identifying the payment. Describe the issue and include any available access-loss dates and platform notices. Passwords, CVV, login codes and a full card number are not needed."
+  ],
+  [
+    "Первичное рассмотрение проводится в течение 72 часов. Требования по статье 31 Закона о защите прав потребителей удовлетворяются в течение десяти календарных дней со дня предъявления. Для остальных требований действует срок, установленный законом или договором.",
+    "Initial review takes place within 72 hours. Claims covered by Article 31 of the Consumer Protection Law are satisfied within ten calendar days of submission. Other claims follow the period established by law or contract."
+  ],
+  [
+    "Запрос материалов, ожидание ответа платформы и техническая обработка банком не увеличивают обязательный срок исполнения продавцом. Возврат выполняется исходным способом оплаты либо согласованным допустимым способом. Сообщаем сумму, основание и сведения об операции.",
+    "Requests for materials, waiting for a platform and bank processing do not extend the seller's mandatory deadline. Refunds use the original payment method or another agreed and permitted method. We provide the amount, grounds and transaction details."
+  ],
+  [
+    "Обращение в поддержку не ограничивает право обратиться в банк, государственные органы или суд и выбрать суд в предусмотренных законом случаях.",
+    "Contacting support does not limit the right to contact a bank, public authority or court, or to choose a court where provided by law."
+  ],
+  [
+    "Гарантия на весь срок подписки",
+    "Guarantee for the entire subscription term"
+  ],
+  [
+    "Мы отвечаем за надлежащее исполнение заказа. Для подписок гарантия действует в течение всего оплаченного периода, включая подписки на 6 месяцев и более.",
+    "We are responsible for proper order fulfilment. Subscription guarantees cover the entire paid term, including subscriptions lasting six months or more."
+  ],
+  [
+    "Если действовавшая подписка прекратилась раньше срока, возвращаем стоимость неиспользованной части по оферте, кроме обоснованного исключения из гарантии. Дополнительные 20% и комиссии не удерживаются. Восстановление или замена вместо возврата согласуются с покупателем.",
+    "If an active subscription ends early, we refund its unused portion under the Offer unless a guarantee exception is substantiated. No additional 20% deduction or fees apply. Restoration or replacement instead of a refund requires the buyer's agreement."
+  ],
+  [
+    "Блокировки и проверки аккаунта",
+    "Account suspensions and checks"
+  ],
+  [
+    "Решение платформы оцениваем с учётом причины и обстоятельств заказа. Сам факт блокировки, проверки, отказа в апелляции или возврата платформой денег не устанавливает вину покупателя.",
+    "We assess platform decisions according to their cause and order circumstances. Suspension, checks, a rejected appeal or a platform refund do not by themselves establish the buyer's fault."
+  ],
+  [
+    "При исключении из гарантии сообщаем применимое правило, установленное нарушение покупателя и его связь с прекращением доступа. Предупреждение о рисках не отменяет гарантию и законные права.",
+    "When applying a guarantee exception, we identify the applicable rule, the established breach by the buyer and its connection with access loss. Risk warnings do not waive the guarantee or statutory rights."
+  ],
+  [
+    "Невыполненный заказ и недостатки",
+    "Non-fulfilment and defects"
+  ],
+  [
+    "Если заказ не выполнен по причинам на нашей стороне, возвращаем всю оплату без комиссий и расходов. При недостатках действуют законные требования покупателя, включая полный возврат при наличии основания.",
+    "If an order is not fulfilled for reasons on our side, we refund the full payment without deducting fees or expenses. Statutory remedies apply to defects, including a full refund where justified."
+  ],
+  [
+    "Добровольный отказ и расходы",
+    "Voluntary cancellation and expenses"
+  ],
+  [
+    "До подключения при добровольном отказе можно учесть только фактические подтверждённые расходы по заказу в пределах 20% оплаты. При отсутствии расходов возврат полный. После начала услуги учитываем надлежаще оказанную часть и допустимые расходы по закону без двойного учёта.",
+    "For voluntary cancellation before activation, only actual documented order expenses may be deducted, capped at 20% of payment. Without expenses, the refund is full. After a service starts, we account for the properly provided portion and legally deductible expenses without counting amounts twice."
+  ],
+  [
+    "Возмещение нам от платформы или исполнителя рассматривается отдельно от обязательств перед покупателем.",
+    "Reimbursement to us by a platform or provider is considered separately from obligations to the buyer."
+  ],
+  [
+    "Данные и поддержка",
+    "Data and support"
+  ],
+  [
+    "Для заказа используем только сведения, необходимые выбранному способу исполнения. Для разбора претензии пароль, CVV, полный номер карты и коды входа не нужны. Данные обрабатываются по политике конфиденциальности.",
+    "We use only information needed for the chosen fulfilment method. Passwords, CVV, a full card number and login codes are not needed to assess a claim. Data is processed under the privacy policy."
+  ],
+  [
+    "Поддержка помогает до покупки, при подключении и в течение оплаченного срока. Укажите номер заказа и описание проблемы. Первичное рассмотрение проводится в течение 72 часов с соблюдением обязательных сроков исполнения требований.",
+    "Support is available before purchase, during activation and throughout the paid term. Provide the order number and issue description. Initial review takes place within 72 hours, subject to mandatory deadlines for satisfying claims."
+  ],
+  [
+    "Если хотя бы одно условие не выполнено, не оформляйте заказ. Проверки Anthropic не отменяют гарантию продавца и законные права покупателя. При незачислении подписки проверяем причину и рассматриваем исполнение или возврат по оферте.",
+    "If either requirement is not met, do not place an order. Anthropic checks do not waive the seller's guarantee or statutory rights. If activation fails, we examine the cause and handle fulfilment or a refund under the Offer."
+  ],
+  [
+    "Мы оказываем сопровождение KYC. Решение о верификации принимает Anthropic. При проблеме проверяем причину и качество оказанного сопровождения. Сам факт проверки или блокировки не устанавливает вину покупателя и не отменяет его права по оферте и закону.",
+    "We provide KYC guidance. Anthropic decides the verification outcome. If an issue occurs, we examine its cause and the quality of our guidance. A check or suspension alone does not establish buyer fault or waive rights under the Offer or law."
+  ],
+  [
+    "Anthropic может запросить повторную проверку или ограничить аккаунт, в том числе после прохождения KYC. Сопровождение не гарантирует положительное решение платформы или отсутствие последующих проверок.",
+    "Anthropic may request verification again or restrict an account, including after KYC. Guidance does not guarantee a positive platform decision or freedom from later checks."
+  ],
+  [
+    "До оплаты ознакомьтесь с составом сопровождения и условиями возврата.",
+    "Before payment, review what the guidance includes and the refund terms."
+  ],
+  [
+    "Я ознакомился с составом сопровождения KYC, предупреждением о проверках и условиями возврата. Мои права по оферте и закону сохраняются.",
+    "I have reviewed the KYC guidance scope, warning about checks and refund terms. My rights under the Offer and law remain available."
+  ],
+  [
+    "Исключение из гарантии применяется при подтверждённом нарушении покупателем правил платформы и установленной связи с прекращением доступа. Сам факт блокировки или отказа в апелляции не устанавливает вину покупателя.",
+    "A guarantee exception applies where a documented breach of platform rules by the buyer is established as causing access loss. Suspension or a rejected appeal alone does not establish buyer fault."
+  ],
+  [
+    "Гарантия действует весь оплаченный срок подписки. При досрочном прекращении доступа возврат рассчитывается по оферте без дополнительных 20% и комиссий, если исключение из гарантии не подтверждено.",
+    "The guarantee covers the entire paid subscription term. If access ends early, a refund is calculated under the Offer with no additional 20% deduction or fees unless a guarantee exception is substantiated."
+  ],
+  [
+    "После передачи ключей вопросы качества, соответствия заказу и возврата рассматриваются по публичной оферте и закону.",
+    "After the keys are delivered, quality, order conformity and refund claims are handled under the Public Offer and applicable law."
+  ],
+  [
+    "Администрация сайта gptishka.shop, далее — «Продавец», предлагает физическим лицам, далее — «Покупатель», заключить договор о предоставлении цифровых продуктов и услуг на следующих условиях.",
+    "The administration of gptishka.shop, the Seller, offers individuals, the Buyer, a contract for digital products and services on the following terms."
+  ],
+  [
+    "Редакция от 06.11.2026",
+    "Revision dated 6 November 2026"
+  ],
+  [
+    "Для выбранного способа подключения через наш сервис обязательны оба условия:",
+    "Both requirements apply to the selected activation method through our service:"
+  ],
+  [
+    "Порядок возврата зависит от причины обращения, условий оплаченного заказа и закона. Новая редакция применяется к заказам, оплаченным после её публикации.",
+    "Refunds depend on the grounds for the claim, paid order terms and applicable law. The new revision applies to orders paid after its publication."
+  ],
+  [
+    "Условия распространяются на оплаченные продукты и услуги с учётом их описания. Права покупателя, установленные законом, сохраняются.",
+    "These terms cover paid products and services according to their descriptions. Statutory buyer rights remain available."
+  ],
+  [
+    "Контакты и подробные условия",
+    "Contacts and full terms"
   ]
 ]

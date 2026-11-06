@@ -134,13 +134,13 @@
         </div>
         <aside id="claudeProNotice" class="claude-account-age claude-plan-notice" aria-labelledby="claudeProNoticeTitle" hidden>
           <strong id="claudeProNoticeTitle">Before paying for Claude Pro</strong>
-          <p>Check your account. Both requirements are mandatory:</p>
+          <p>Both requirements apply to the selected activation method through our service:</p>
           <ul class="claude-plan-notice__requirements">
             <li><strong>Created before 15 September 2026.</strong> Accounts registered on 15 September or later are not eligible.</li>
             <li><strong>KYC completed before placing the order.</strong></li>
           </ul>
           <p>Even when both conditions are met, Apple may charge you while Claude's anti-fraud checks prevent subscription activation.</p>
-          <p class="claude-plan-notice__limits">If either requirement is not met, do not place an order. Failure to credit the subscription due to Claude's anti-fraud checks is not covered by the guarantee: repeat activation and compensation are not provided.</p>
+          <p class="claude-plan-notice__limits">If either requirement is not met, do not place an order. Anthropic checks do not waive the seller's guarantee or statutory rights. If activation fails, we examine the cause and handle fulfilment or a refund under the Offer.</p>
         </aside>
         <aside id="claudeAccountAgeNotice" class="claude-account-age claude-plan-notice" aria-live="polite" hidden>
           <strong>Before activating Max 5× or Max 20×</strong>
@@ -178,9 +178,9 @@
       </aside>
       <aside id="claudeKycWarning" class="claude-kyc-warning" aria-labelledby="claudeKycWarningTitle">
         <h3 id="claudeKycWarningTitle"><span aria-hidden="true">⚠</span> Important warning</h3>
-        <p>If your account has a low trust rating, it may be suspended or repeatedly asked to complete verification, even after verification has been completed successfully.</p>
-        <p class="claude-kyc-warning__limits">These situations are not covered by the service guarantee. We are not responsible for suspensions or verification issues related to the state of your account.</p>
-        <p>Please consider these risks before paying.</p>
+        <p>Anthropic may request verification again or restrict an account, including after KYC. Guidance does not guarantee a positive platform decision or freedom from later checks.</p>
+        <p class="claude-kyc-warning__limits">We provide KYC guidance. Anthropic decides the verification outcome. If an issue occurs, we examine its cause and the quality of our guidance. A check or suspension alone does not establish buyer fault or waive rights under the Offer or law.</p>
+        <p>Before payment, review what the guidance includes and the refund terms.</p>
       </aside>
       <button id="claudeVerificationSubmit" class="claude-verification-submit" type="button" disabled>Order KYC</button>
     </section>
@@ -226,9 +226,9 @@
         <h3>Warranty and important conditions</h3>
         <ul>
           <li>We are responsible for connecting the subscription correctly and resolve problems caused by us under the <a href="/en/guarantee.html">warranty terms</a>.</li>
-          <li>The warranty applies when a paid subscription stops working before the stated end date due to an issue related to the connection.</li>
+          <li>The guarantee covers the entire paid subscription term. If access ends early, a refund is calculated under the Offer with no additional 20% deduction or fees unless a guarantee exception is substantiated.</li>
           <li>Identity verification requests, KYC/ID Verification, and other anti-fraud checks are performed directly by Anthropic and are outside GPTishka's control.</li>
-          <li>An account block or restriction imposed by Anthropic is not a warranty case when it is related to the account's condition, violation of service rules, frequent IP address or region changes, third-party software, or actions by the account owner.</li>
+          <li>A guarantee exception applies where a documented breach of platform rules by the buyer is established as causing access loss. Suspension or a rejected appeal alone does not establish buyer fault.</li>
           <li>If the account could not send messages on the free plan before purchase, that issue is not related to the connected subscription.</li>
           <li>If the tariff is connected through the App Store or Google Play, the expiration date may not be displayed in the Claude interface. The subscription is valid for the paid period.</li>
         </ul>
@@ -279,10 +279,10 @@
     </fieldset>
     <label class="verification-support-checkout__acknowledgement" data-support-kyc-acknowledgement>
       <input name="kycWarningAcknowledged" type="checkbox" required>
-      <span>I have read the KYC risk warning and guarantee conditions.</span>
+      <span>I have reviewed the KYC guidance scope, warning about checks and refund terms. My rights under the Offer and law remain available.</span>
     </label>
     <p class="verification-support-checkout__hint">A contact button will appear after payment is confirmed.</p>
-    <p class="verification-support-checkout__terms">By clicking Pay, you accept our <a href="/oferta.html" target="_blank" rel="noopener">terms</a> and <a href="/politika.html" target="_blank" rel="noopener">privacy policy</a>.</p>
+    <p class="verification-support-checkout__terms">By clicking Pay, you accept our <a href="/en/oferta.html" target="_blank" rel="noopener">terms</a> and <a href="/en/politika.html" target="_blank" rel="noopener">privacy policy</a>.</p>
     <p data-support-payment-status role="status" aria-live="polite"></p>
     <button class="claude-verification-submit" type="submit" data-support-pay>Pay</button>
   </form>
@@ -304,7 +304,7 @@
 <script src="/assets/js/verification-support-checkout.js?v=sha256-05016e76d1666cd0" defer></script>
 <script src="/assets/js/claude-workspace.js?v=sha256-d7f06b0638cb6c00" defer></script>
 <script src="/assets/js/storefront-ui.js?v=sha256-bcae5e9700f06872" defer></script>
-<script src="/assets/js/client-i18n.js?v=sha256-d6f152c390656f25" defer></script>
+<script src="/assets/js/client-i18n.js?v=sha256-37e2dd6a015404d4" defer></script>
 <script src="/assets/js/site-header-unify.js?v=sha256-dc51d5478c9ce737" defer></script>
 </body>
 </html>

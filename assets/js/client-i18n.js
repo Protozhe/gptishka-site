@@ -7,7 +7,7 @@
   document.documentElement.dataset.clientLanguage = "en";
 
   const translations = new Map([
-    ["Я прочитал предупреждение о рисках KYC и условиях гарантии.", "I have read the KYC risk warning and guarantee conditions."],
+    ["Я ознакомился с составом сопровождения KYC, предупреждением о проверках и условиями возврата. Мои права по оферте и закону сохраняются.", "I have reviewed the KYC guidance scope, warning about checks and refund terms. My rights under the Offer and law remain available."],
     ["Добавьте ссылку на проверку", "Add your verification link"],
     ["Используйте персональную ссылку, которая открылась после Start.", "Use the personal link that opened after Start."],
     ["Ссылка для верификации", "Verification link"],
