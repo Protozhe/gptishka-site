@@ -383,7 +383,7 @@ export default function OrdersPage() {
         <input
           id="orders-search" className="input"
           value={qInput}
-          placeholder="Поиск: order id / email / payment id / telegram"
+          placeholder="Заказ, email, платёж, Telegram ID или @username"
           onChange={(e) => setQInput(e.target.value)}
         />
         </div><label className="orders-filter-field">Статус заказа<select className="input" value={status} onChange={(e) => setStatus(e.target.value)}>

@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../config/prisma";
+import { orderContactSearch } from "./order-contact-search";
 
 export const ordersRepository = {
   async list(params: any) {
@@ -14,6 +15,7 @@ export const ordersRepository = {
               { telegramUserId: { contains: searchQuery, mode: "insensitive" } },
               { telegramUsername: { contains: searchQuery, mode: "insensitive" } },
               { telegramChatId: { contains: searchQuery, mode: "insensitive" } },
+              ...orderContactSearch(searchQuery),
               { items: { some: { product: { title: { contains: searchQuery, mode: "insensitive" } } } } },
               { items: { some: { product: { slug: { contains: searchQuery, mode: "insensitive" } } } } },
             ],
