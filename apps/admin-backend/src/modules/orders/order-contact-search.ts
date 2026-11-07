@@ -7,7 +7,7 @@ export function orderContactSearch(query: string): Prisma.OrderWhereInput[] {
   const fields = ["telegram", "telegramUsername", "telegramUserId", "telegramId"];
   const filters: Prisma.OrderWhereInput[] = [];
   for (const field of fields) {
-    const conditions: Prisma.JsonFilter[] = [
+    const conditions: Exclude<Prisma.OrderWhereInput["orderDetails"], undefined>[] = [
       { path: ["contact", field], string_contains: value, mode: "insensitive" },
     ];
     // Older checkout forms may have saved numeric IDs as JSON numbers.
