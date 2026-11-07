@@ -81,6 +81,14 @@ for (const [file, pathname, lang] of [['claude.html','/claude','ru'], ['en/claud
     d.querySelector('#servicePlansGrid .buy-btn').click(); await flush();
     const form = d.querySelector('#chatGptGoOrderModal form');
     assert.ok(form,'Checkout still opens');
+    const kycNotice = form.querySelector('[data-claude-kyc-notice]');
+    assert.ok(kycNotice, 'Every Claude plan shows the KYC requirement before payment');
+    assert.equal(form.querySelectorAll('[data-claude-kyc-notice]').length, 1);
+    assert.equal(kycNotice.hidden, false);
+    assert.match(kycNotice.textContent, lang === 'en' ? /KYC is required before activation/ : /Для зачисления необходимо пройти KYC/);
+    assert.match(kycNotice.textContent, lang === 'en' ? /losses caused by missing KYC on the selected account/ : /потери, связанные с отсутствием KYC на выбранном аккаунте/);
+    if (lang === 'en') assert.doesNotMatch(kycNotice.textContent, /[А-Яа-яЁё]/);
+    assert.ok(kycNotice.compareDocumentPosition(form.querySelector('[data-chatgpt-go-submit]')) & w.Node.DOCUMENT_POSITION_FOLLOWING);
     assert.equal(form.dataset.productId,'fixture-' + key);
     const price = plans.find(x=>x[0]===key)[2];
     assert.equal(Number(form.querySelector('[data-chatgpt-go-total]').textContent.replace(/\D/g,'')),price);

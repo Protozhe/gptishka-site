@@ -198,6 +198,7 @@ for (const service of ['chatgpt', 'claude', 'grok', 'perplexity', 'gemini', 'sun
     for (const name of ['getNewAccountSurcharge', 'renderChatGptGoOrderCard', 'applyAiOrderModalServiceCopy', 'setChatGptGoStatus']) vm.runInContext(functions.get(name), context);
     window.document.body.innerHTML = context.renderChatGptGoOrderCard({ product: service + '-plan', id: service + '-plan', serviceKey: service, price: 2000, planKey: 'max-5x', deliveryKey: delivery, durationKey: '1m' }, service);
     const form = window.document.querySelector('form');
+    assert.equal(form.querySelectorAll('[data-claude-kyc-notice]').length, service === 'claude' ? 1 : 0, 'KYC notice is exclusive to Claude checkout');
     if (service === 'claude') {
       assert.equal(form.querySelector('[name="needsNewAccount"]'), null);
       assert.equal(form.querySelector('.chatgpt-order-new-account'), null);
